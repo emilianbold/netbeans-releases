@@ -119,6 +119,7 @@ static int removeAUClustersListFile(char *userdir);
 int checkForNewUpdater(const char *basePath);
 int createProcessNoVirt(const char *exePath, char *argv[], DWORD *retCode = 0);
 double getPreciseTime();
+int createPath(const char *path);
 
 #define HELP_STRING \
 "Usage: launcher {options} arguments\n\
@@ -210,8 +211,6 @@ int main(int argc, char *argv[]) {
 
         newargv[i] = NULL;
             
-        // check for patches first (for updater first)
-        checkForNewUpdater(plathome);
         bool runUpdater = runAutoUpdaterOnClusters(true);
 
         if (runUpdater) {
@@ -226,8 +225,6 @@ int main(int argc, char *argv[]) {
         newargv[1] = RUN_NORMAL;
         retCode = _spawnv(_P_WAIT, exepath, newargv);
 
-        // check for patches again (for updater first)
-        checkForNewUpdater(plathome);
         runUpdater = runAutoUpdaterOnClusters(false);
         if (runUpdater) {
             newargv[1] = RUN_UPDATER;
@@ -260,13 +257,17 @@ bool runAutoUpdaterOnClusters(bool firstStart) {
     }
     char *pc;
 
+    checkForNewUpdater(plathome);
     runUpdater = runAutoUpdater(firstStart, plathome);
     
     pc = strtok(sClusters, ";");
     while (pc != NULL) {
+        checkForNewUpdater(pc);
         runUpdater |= runAutoUpdater(firstStart, pc);
         pc = strtok(NULL, ";");
     }
+
+    checkForNewUpdater(userdir);
     runUpdater |= runAutoUpdater(firstStart, userdir);
     
 #ifdef DEBUG
@@ -1045,14 +1046,23 @@ int checkForNewUpdater(const char *basePath)
     {
         FindClose(hFind);
         char destPath[MAX_PATH] = "";
-        _snprintf(destPath, MAX_PATH, "%s\\modules\\ext", basePath);
-        if (!CreateDirectory(destPath, 0) && GetLastError() != ERROR_ALREADY_EXISTS)
-                return -1;
-        strncat(destPath, "\\updater.jar", MAX_PATH - strlen(destPath));
+        _snprintf(destPath, MAX_PATH, "%s\\modules\\ext\\updater.jar", basePath);
+        createPath(destPath);
         if (!MoveFileEx(srcPath, destPath, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH))
             return -1;
         _snprintf(srcPath, MAX_PATH, "%s\\update\\new_updater", basePath);
         RemoveDirectory(srcPath);
+    }
+    return 0;
+}
+
+int createPath(const char *path) {
+    char dir[MAX_PATH] = "";
+    const char *sep = strchr(path, '\\');
+    while (sep) {
+        strncpy(dir, path, sep - path);
+        CreateDirectory(dir, 0);
+        sep = strchr(sep + 1, '\\');
     }
     return 0;
 }
