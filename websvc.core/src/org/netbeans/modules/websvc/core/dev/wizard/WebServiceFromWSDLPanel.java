@@ -108,7 +108,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     private JAXWSSupport wss;
     private boolean jsr109Supported;
     private boolean jsr109oldSupported;
-    //private boolean jwsdpSupported;
+    private boolean noMetroInstalledOnGlassFishV3;
     private boolean jaxWsInJ2ee14Supported;
     private WebModule wm;
     private RequestProcessor.Task generateWsdlModelTask;
@@ -380,6 +380,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         WSStackUtils wsStackUtils = new WSStackUtils(project);
         jsr109Supported = wsStackUtils.isJsr109Supported();
         jaxWsInJ2ee14Supported = ServerType.JBOSS == wsStackUtils.getServerType();
+        noMetroInstalledOnGlassFishV3 = !jsr109Supported && ServerType.GLASSFISH_V3 == wsStackUtils.getServerType();
         jsr109oldSupported = wsStackUtils.isJsr109OldSupported();
         wm = WebModule.getWebModule(project.getProjectDirectory());
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
@@ -497,7 +498,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         } else {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
-        wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        
+        if (noMetroInstalledOnGlassFishV3) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_NoMetroInstalled")); //NOI18N            
+        } else {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N
+        }
 
         return true;
     }
