@@ -1,0 +1,185 @@
+Code completion result for source line:
+def name='Petr'.|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     addShutdownHook(Closure)                   void
+METHOD     any()                                      boolean
+METHOD     any(Closure)                               boolean
+METHOD     asType(Class)                              Object
+METHOD     bitwiseNegate()                            Pattern
+METHOD     center(Number)                             String
+METHOD     center(Number, String)                     String
+METHOD     charAt(int)                                char
+METHOD     codePointAt(int)                           int
+METHOD     codePointBefore(int)                       int
+METHOD     codePointCount(int, int)                   int
+METHOD     collect(Closure)                           List
+METHOD     collect(Collection, Closure)               Collection
+METHOD     compareTo(Object)                          int
+METHOD     compareTo(String)                          int
+METHOD     compareToIgnoreCase(String)                int
+METHOD     concat(String)                             String
+METHOD     contains(CharSequence)                     boolean
+METHOD     contains(String)                           boolean
+METHOD     contentEquals(CharSequence)                boolean
+METHOD     contentEquals(StringBuffer)                boolean
+METHOD     copyValueOf(char[])                        String
+METHOD     copyValueOf(char[], int, int)              String
+METHOD     count(String)                              int
+METHOD     decodeBase64()                             class [B
+METHOD     dump()                                     String
+METHOD     each(Closure)                              Object
+METHOD     eachLine(Closure)                          Object
+METHOD     eachMatch(String, Closure)                 void
+METHOD     eachWithIndex(Closure)                     Object
+METHOD     endsWith(String)                           boolean
+METHOD     equals(Object)                             boolean
+METHOD     equalsIgnoreCase(String)                   boolean
+METHOD     every()                                    boolean
+METHOD     every(Closure)                             boolean
+METHOD     execute()                                  Process
+METHOD     execute(List, File)                        Process
+METHOD     execute(String, File)                      Process
+METHOD     find(Closure)                              Object
+METHOD     findAll(Closure)                           List
+METHOD     findIndexOf(Closure)                       int
+METHOD     findIndexOf(int, Closure)                  int
+METHOD     findIndexValues(Closure)                   List
+METHOD     findIndexValues(int, Closure)              List
+METHOD     findLastIndexOf(Closure)                   int
+METHOD     findLastIndexOf(int, Closure)              int
+METHOD     format(Locale, String, Object[             String
+METHOD     format(String, Object[])                   String
+METHOD     getAt(Collection)                          CharSequence
+METHOD     getAt(Collection)                          String
+METHOD     getAt(EmptyRange)                          CharSequence
+METHOD     getAt(EmptyRange)                          String
+METHOD     getAt(IntRange)                            CharSequence
+METHOD     getAt(IntRange)                            String
+METHOD     getAt(Range)                               CharSequence
+METHOD     getAt(Range)                               String
+METHOD     getAt(String)                              Object
+METHOD     getAt(int)                                 CharSequence
+METHOD     getAt(int)                                 String
+METHOD     getBytes()                                 class [B
+METHOD     getBytes(String)                           class [B
+METHOD     getBytes(int, int, byte[], int             void
+METHOD     getChars(int, int, char[], int             void
+METHOD     getClass()                                 Class
+METHOD     getMetaClass()                             MetaClass
+METHOD     getMetaPropertyValues()                    List
+METHOD     getProperties()                            Map
+METHOD     grep(Object)                               Collection
+METHOD     hashCode()                                 int
+METHOD     identity(Closure)                          Object
+METHOD     indexOf(String)                            int
+METHOD     indexOf(String, int)                       int
+METHOD     indexOf(int)                               int
+METHOD     indexOf(int, int)                          int
+METHOD     inject(Object, Closure)                    Object
+METHOD     inspect()                                  String
+METHOD     intern()                                   String
+METHOD     invokeMethod(String, Object)               Object
+METHOD     is(Object)                                 boolean
+METHOD     isBigDecimal()                             boolean
+METHOD     isBigInteger()                             boolean
+METHOD     isCase(Object)                             boolean
+METHOD     isDouble()                                 boolean
+METHOD     isFloat()                                  boolean
+METHOD     isInteger()                                boolean
+METHOD     isLong()                                   boolean
+METHOD     isNumber()                                 boolean
+METHOD     iterator()                                 Iterator
+METHOD     lastIndexOf(String)                        int
+METHOD     lastIndexOf(String, int)                   int
+METHOD     lastIndexOf(int)                           int
+METHOD     lastIndexOf(int, int)                      int
+METHOD     leftShift(Object)                          StringBuffer
+METHOD     length()                                   int
+METHOD     matches(String)                            boolean
+METHOD     minus(Object)                              String
+METHOD     multiply(Number)                           String
+METHOD     next()                                     String
+METHOD     notify()                                   void
+METHOD     notifyAll()                                void
+METHOD     offsetByCodePoints(int, int)               int
+METHOD     padLeft(Number)                            String
+METHOD     padLeft(Number, String)                    String
+METHOD     padRight(Number)                           String
+METHOD     padRight(Number, String)                   String
+METHOD     plus(Object)                               String
+METHOD     previous()                                 String
+METHOD     print(Object)                              void
+METHOD     print(PrintWriter)                         void
+METHOD     printf(String, Object)                     void
+METHOD     printf(String, Object)                     void
+METHOD     println()                                  void
+METHOD     println(Object)                            void
+METHOD     println(PrintWriter)                       void
+METHOD     putAt(String, Object)                      void
+METHOD     readLines()                                List
+METHOD     regionMatches(boolean, int, St             boolean
+METHOD     regionMatches(int, String, int             boolean
+METHOD     replace(CharSequence, CharSequ             String
+METHOD     replace(char, char)                        String
+METHOD     replaceAll(String, Closure)                String
+METHOD     replaceAll(String, String)                 String
+METHOD     replaceFirst(String, String)               String
+METHOD     reverse()                                  String
+METHOD     size()                                     int
+METHOD     sleep(long)                                void
+METHOD     sleep(long, Closure)                       void
+METHOD     split()                                    String
+METHOD     split(String)                              String
+METHOD     split(String, int)                         String
+METHOD     splitEachLine(String, Closure)             Object
+METHOD     sprintf(String, Object)                    String
+METHOD     sprintf(String, Object)                    String
+METHOD     startsWith(String)                         boolean
+METHOD     startsWith(String, int)                    boolean
+METHOD     subSequence(int, int)                      CharSequence
+METHOD     substring(int)                             String
+METHOD     substring(int, int)                        String
+METHOD     toBigDecimal()                             BigDecimal
+METHOD     toBigInteger()                             BigInteger
+METHOD     toBoolean()                                Boolean
+METHOD     toCharArray()                              class [C
+METHOD     toCharacter()                              Character
+METHOD     toDouble()                                 Double
+METHOD     toFloat()                                  Float
+METHOD     toInteger()                                Integer
+METHOD     toList()                                   List
+METHOD     toLong()                                   Long
+METHOD     toLowerCase()                              String
+METHOD     toLowerCase(Locale)                        String
+METHOD     toString()                                 String
+METHOD     toURI()                                    URI
+METHOD     toURL()                                    URL
+METHOD     toUpperCase()                              String
+METHOD     toUpperCase(Locale)                        String
+METHOD     tokenize()                                 List
+METHOD     tokenize(String)                           List
+METHOD     trim()                                     String
+METHOD     use(Class, Closure)                        Object
+METHOD     use(List, Closure)                         Object
+METHOD     use(Object)                                Object
+METHOD     valueOf(Object)                            String
+METHOD     valueOf(boolean)                           String
+METHOD     valueOf(char)                              String
+METHOD     valueOf(char[])                            String
+METHOD     valueOf(char[], int, int)                  String
+METHOD     valueOf(double)                            String
+METHOD     valueOf(float)                             String
+METHOD     valueOf(int)                               String
+METHOD     valueOf(long)                              String
+METHOD     wait()                                     void
+METHOD     wait(long)                                 void
+METHOD     wait(long, int)                            void
+METHOD     with(Closure)                              Object
+FIELD      CASE_INSENSITIVE_ORDER                     Comparator
+FIELD      count                                      int
+FIELD      hash                                       int
+FIELD      offset                                     int
+FIELD      serialPersistentFields                     ObjectStreamField[]
+FIELD      serialVersionUID                           long
+FIELD      value                                      char[]
