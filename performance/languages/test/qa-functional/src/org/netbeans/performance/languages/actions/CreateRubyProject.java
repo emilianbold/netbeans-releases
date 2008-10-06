@@ -41,7 +41,6 @@
 package org.netbeans.performance.languages.actions;
 
 
-import java.awt.Container;
 import javax.swing.JComponent;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
@@ -85,11 +84,7 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
 
             public boolean accept(JComponent c) {
                 String cn = c.getClass().getName();
-                if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
-                    return false;
-                } else if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
-                    return false;
-                } else if ("javax.swing.JRootPane".equals(cn)
+                if ("javax.swing.JRootPane".equals(cn)
                         && "org.netbeans.core.windows.view.ui.MainWindow".equals(
                         c.getParent().getClass().getName())) {
                     return false;
@@ -101,11 +96,13 @@ public class CreateRubyProject  extends org.netbeans.modules.performance.utiliti
             }
 
             public String getFilterName() {
-                return "Ignores 1) DiffSidebar, 2) TreeView$ExplorerTree, 3) JRootPane under MainWindow, and 4) nbGlassPane";
+                return "Ignores JRootPane under MainWindow, and nbGlassPane";
             }
         });
 
         repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_EXPLORER_TREE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
 
         closeAllModal();
     }
