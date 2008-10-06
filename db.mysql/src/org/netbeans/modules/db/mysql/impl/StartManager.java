@@ -39,9 +39,10 @@
 
 package org.netbeans.modules.db.mysql.impl;
 
-import org.netbeans.modules.db.mysql.impl.ConnectManager;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -49,15 +50,14 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.DatabaseServer;
-import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog;
 import org.netbeans.modules.db.mysql.ui.PropertiesDialog.Tab;
+import org.netbeans.modules.db.mysql.util.DatabaseUtils;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
@@ -69,14 +69,15 @@ import org.openide.util.RequestProcessor;
  * 
  * @author David Van Couvering
  */
-public class StartManager {
+public final class StartManager {
     private static final StartManager DEFAULT = new StartManager();
     private static final Logger LOGGER = Logger.getLogger(StartManager.class.getName());
 
-    private PropertyChangeListener listener = new StartPropertyChangeListener();
-    private volatile boolean isStarting = false;
-    private volatile boolean startRequested = false;
-    private DatabaseServer server;
+    private final PropertyChangeListener listener = new StartPropertyChangeListener();
+    private final AtomicBoolean isStarting = new AtomicBoolean(false);
+    private final AtomicBoolean startRequested = new AtomicBoolean(false);
+    private volatile DatabaseServer server;
+    private volatile String errorMessage;
 
     private StartManager() {
     }
@@ -90,11 +91,11 @@ public class StartManager {
     }
 
     public boolean isStartRequested() {
-        return startRequested;
+        return startRequested.get();
     }
 
     private synchronized void setIsStarting(boolean isStarting) {
-        this.isStarting = isStarting;
+        this.isStarting.set(isStarting);
     }
 
     public void start(final DatabaseServer server) {
@@ -103,13 +104,11 @@ public class StartManager {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
-                    startRequested = true;
-                    synchronized(this) {
-                        if (isStarting) {
-                            LOGGER.log(Level.INFO, "Server is already starting");
-                            return;
-                        }
-                        isStarting = true;
+                    startRequested.set(true);
+                    boolean starting = isStarting.getAndSet(true);
+                    if (starting) {
+                        LOGGER.log(Level.FINE, "Server is already starting");
+                        return;
                     }
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(StartManager.class, "MSG_StartingMySQL"));
 
@@ -137,7 +136,7 @@ public class StartManager {
                 try {
                     for ( ; ; ) {
                         if (waitForStart()) {
-                            startRequested = false;
+                            startRequested.set(false);
                             return;
                         }
 
@@ -146,12 +145,18 @@ public class StartManager {
                             break;
                         }
                     }
-                } finally {
+                } catch (DatabaseException dbe) {
+                    LOGGER.log(Level.INFO, null, dbe);
+                    Utils.displayErrorMessage(NbBundle.getMessage(StartManager.class, "MSG_ConnectFailedAfterStart", dbe.getMessage()));
+                }
+                finally {
                     handle.finish();
                 }
             }
+
         });
     }
+
     private boolean displayServerNotRunning() {
         JButton cancelButton = new JButton();
         Mnemonics.setLocalizedText(cancelButton, NbBundle.getMessage(StartManager.class, "StartManager.CancelButton")); // NOI18N
@@ -165,7 +170,7 @@ public class StartManager {
         Mnemonics.setLocalizedText(propsButton, NbBundle.getMessage(StartManager.class, "StartManager.PropsButton")); // NOI18N
         propsButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(StartManager.class, "StartManager.PropsButtonA11yDesc")); //NOI18N
 
-        String message = NbBundle.getMessage(StartManager.class, "MSG_ServerDoesNotAppearToHaveStarted");
+        String message = NbBundle.getMessage(StartManager.class, "MSG_ServerDoesNotAppearToHaveStarted", errorMessage);
         final NotifyDescriptor ndesc = new NotifyDescriptor(message,
                 NbBundle.getMessage(StartManager.class, "StartManager.ServerNotRunningTitle"),
                 NotifyDescriptor.YES_NO_CANCEL_OPTION,
@@ -181,7 +186,7 @@ public class StartManager {
         });
 
         if (cancelButton.equals(ret)) {
-            startRequested = false;
+            startRequested.set(false);
             return false;
         } else if (keepWaitingButton.equals(ret)) {
             return true;
@@ -194,43 +199,47 @@ public class StartManager {
     private void displayAdminProperties(final DatabaseServer server)  {
         Mutex.EVENT.postReadRequest(new Runnable() {
             public void run() {
-                PropertiesDialog dlg = new PropertiesDialog(server);
-                dlg.displayDialog(Tab.ADMIN);
+                new PropertiesDialog(server).displayDialog();
             }
         });
     }
 
-    private boolean waitForStart() {
+    private boolean waitForStart() throws DatabaseException {
         int tries = 0;
-        while (tries <= 10) {
+        while (tries <= 5) {
             tries++;
-            if (server.checkRunning()) {
-                ConnectManager.getDefault().reconnect(server);
-                return true;
-            }
+
             try {
-                Thread.sleep(1000);
+                Thread.sleep(2000);
             } catch (InterruptedException ie) {
+                LOGGER.log(Level.INFO, "Interrupted waiting for server to start", ie);
+                Thread.currentThread().interrupt();
                 return false;
             }
+
+            try {
+                server.reconnect();
+                return true;
+            } catch (DatabaseException dbe) {
+                errorMessage = dbe.getMessage();
+                LOGGER.log(Level.INFO, null, dbe);
+            } catch (TimeoutException te) {
+                errorMessage = te.getMessage();
+                LOGGER.log(Level.INFO, null, te);
+                continue;
+            }
+
         }
 
         return false;
     }
 
-    public class StartPropertyChangeListener implements PropertyChangeListener {
+    private class StartPropertyChangeListener implements PropertyChangeListener {
         public void propertyChange(PropertyChangeEvent evt) {
             final DatabaseServer server = (DatabaseServer)evt.getSource();
             if ((MySQLOptions.PROP_START_ARGS.equals(evt.getPropertyName()) ||
-                    MySQLOptions.PROP_START_PATH.equals(evt.getPropertyName()))) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        // Run in task because checkRunning can't be run on AWT thread
-                        if (! server.checkRunning() && startRequested) {
-                            start(server);
-                        }
-                    }
-                });
+                    MySQLOptions.PROP_START_PATH.equals(evt.getPropertyName())) && (startRequested.get())) {
+                start(server);
             }
         }
     }

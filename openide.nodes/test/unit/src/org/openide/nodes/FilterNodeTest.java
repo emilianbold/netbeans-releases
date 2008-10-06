@@ -48,9 +48,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.OpenCookie;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
 import org.openide.util.RequestProcessor;
@@ -849,6 +852,9 @@ public class FilterNodeTest extends NbTestCase {
         }
 
         protected Node[] createNodes(Object key) {
+            if (key.toString().startsWith("-")) {
+                return null;
+            }
             AbstractNode an = new AbstractNode(Children.LEAF);
             an.setName(key.toString());
             return new Node[]{an};
@@ -1143,6 +1149,109 @@ public class FilterNodeTest extends NbTestCase {
         assertEquals("b2", ffn.getChildren().getNodeAt(1).getName());
         assertEquals("b3", ffn.getChildren().getNodeAt(2).getName());
         assertEquals(lazyB, ffn.getChildren().isLazy());
+    }
+
+    public void testEventSnapshotAfterChangeOriginalEagerToEager() {
+        doTestEventSnapshotAfterChangeOriginal(false, false);
+    }
+
+    public void testEventSnapshotAfterChangeOriginalEagerTolazy() {
+        doTestEventSnapshotAfterChangeOriginal(false, true);
+    }
+
+    public void testEventSnapshotAfterChangeOriginalLazyToEager() {
+        doTestEventSnapshotAfterChangeOriginal(true, false);
+    }
+
+    public void testEventSnapshotAfterChangeOriginalLazyToLazy() {
+        doTestEventSnapshotAfterChangeOriginal(true, true);
+    }
+
+    public void doTestEventSnapshotAfterChangeOriginal(boolean lazyA, boolean lazyB) {
+        class Listener extends NodeAdapter {
+
+            List<Node> state;
+            List<Node> snapshot;
+
+            public Listener(List<Node> snapshot) {
+                this.snapshot = snapshot;
+                this.state = new ArrayList<Node>(snapshot.size());
+                for (int i = 0; i < snapshot.size(); i++) {
+                    this.state.add(null);
+                }
+            }
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                snapshot = ev.getSnapshot();
+                ListIterator<Node> it = state.listIterator();
+                int[] indxs = ev.getDeltaIndices();
+
+                int current = 0;
+                int inIndxs = 0;
+
+                while (inIndxs < indxs.length) {
+                    while (current++ < indxs[inIndxs]) {
+                        it.next();
+                    }
+                    it.add(null);
+                    inIndxs++;
+                }
+                assertEquals("State size must be same as new snapshot", state.size(), snapshot.size());
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                snapshot = ev.getSnapshot();
+                int[] idxs = ev.getDeltaIndices();
+                for (int i = idxs.length - 1; i >= 0; i--) {
+                    state.remove(idxs[i]);
+                }
+                assertEquals("State size must be same as new snapshot.", state.size(), snapshot.size());
+            }
+        }
+
+        AbstractNode a = new AbstractNode(new Keys(lazyA, "-a1", "a2"));
+        AbstractNode b = new AbstractNode(new Keys(lazyB, "b1", "b2", "b3"));
+        FN fn = new FN(a);
+        fn.getChildren().getNodesCount();
+
+        final List<Node> snapshot = fn.getChildren().snapshot();
+        Listener listner = new Listener(snapshot);
+        fn.addNodeListener(listner);
+
+        final AtomicBoolean ex = new AtomicBoolean(false);
+        Thread thread = new Thread() {
+
+            @Override
+            public void run() {
+                try {
+                    snapshot.get(0);
+                } catch (Throwable e) {
+                    ex.set(true);
+                }
+            }
+        };
+
+        try {
+            Children.PR.enterWriteAccess();
+            thread.start();
+            fn.changeOriginal(b, true);
+        } finally {
+            Children.PR.exitWriteAccess();
+        }
+        try {
+            thread.join();
+        } catch (InterruptedException ex1) {
+            Exceptions.printStackTrace(ex1);
+        }
+
+        if (ex.get()) {
+            fail("State/event inconsistency");
+        }
+        assertEquals("b1", listner.snapshot.get(0).getName());
+        assertEquals("b2", listner.snapshot.get(1).getName());
+        assertEquals("b3", listner.snapshot.get(2).getName());
     }
 }
 

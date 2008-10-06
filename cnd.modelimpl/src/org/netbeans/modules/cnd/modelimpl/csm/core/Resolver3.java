@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.UsingDeclarationImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 
 /**
@@ -162,9 +163,9 @@ public class Resolver3 implements Resolver {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
-        Set<CharSequence> set = new HashSet<CharSequence>(100);
+        AntiLoop set = new AntiLoop(100);
         while (true) {
-            set.add(orig.getQualifiedName());
+            set.add(orig);
             if (CsmKindUtilities.isClassForwardDeclaration(orig)){
                 CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
                 CsmClass definition;
@@ -190,7 +191,7 @@ public class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
-                if (set.contains(resovedClassifier.getQualifiedName())) {
+                if (set.contains(resovedClassifier)) {
                     // try to recover from this error
                     resovedClassifier = findOtherClassifier(orig);
                     if (resovedClassifier == null) {
@@ -729,12 +730,12 @@ public class Resolver3 implements Resolver {
     
     private CsmObject resolveInBaseClasses(CsmClass cls, CharSequence name) {
         resolveInBaseClass = true;
-        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CsmClass>(), 0);
+        CsmObject res = _resolveInBaseClasses(cls, name, new HashSet<CharSequence>(), 0);
         resolveInBaseClass = false;
         return res;
     }
     
-    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CsmClass> antiLoop, int depth) {
+    private CsmObject _resolveInBaseClasses(CsmClass cls, CharSequence name, Set<CharSequence> antiLoop, int depth) {
         if (depth == 50) {
             new Exception("Too many loops in resolver!!!").printStackTrace(System.err); // NOI18N
             return null;
@@ -744,8 +745,8 @@ public class Resolver3 implements Resolver {
             for (CsmClass csmClass : toAnalyze) {
                 for (CsmInheritance inh : csmClass.getBaseClasses()) {
                     CsmClass base = getInheritanceClass(inh);
-                    if (base != null && !antiLoop.contains(base)) {
-                        antiLoop.add(base);
+                    if (base != null && !antiLoop.contains(base.getQualifiedName())) {
+                        antiLoop.add(base.getQualifiedName());
                         CsmObject result = resolveInClass(base, name);
                         if (result != null) {
                             return result;

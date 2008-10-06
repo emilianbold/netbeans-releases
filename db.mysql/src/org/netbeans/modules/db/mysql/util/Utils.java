@@ -59,6 +59,15 @@ import org.openide.util.Utilities;
 public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
     
+    public static RuntimeException launderThrowable(Throwable t) {
+        if (t instanceof RuntimeException)
+            return (RuntimeException)t;
+        else if (t instanceof Error)
+            throw (Error)t;
+        else
+            throw new IllegalStateException("Unexpected checked exception", t);
+    }
+
     public static void displayError(String msg, Exception ex) {
         LOGGER.log(Level.INFO, msg, ex);
         

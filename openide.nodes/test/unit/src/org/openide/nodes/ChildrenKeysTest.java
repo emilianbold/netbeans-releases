@@ -1538,6 +1538,32 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("2nd is b", "b", nodes[1].getName());
     }
 
+    public void testSnapshot() {
+        Keys ch = new Keys(lazy(), "a1", "a2", "a3");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+
+        ch.keys("b1", "b2");
+
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a2", snapshot.get(1).getName());
+        assertEquals("a3", snapshot.get(2).getName());
+    }
+
+    public void testSnapshotFN() {
+        Keys ch = new Keys(lazy(), "a1", "a2", "a3");
+        Node root = new FilterNode(createNode(ch));
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+
+        ch.keys("b1", "b2");
+
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a2", snapshot.get(1).getName());
+        assertEquals("a3", snapshot.get(2).getName());
+    }
+
     // test for issue #145892
     public void testSnapshotIsUpdated() {
 

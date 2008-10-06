@@ -610,8 +610,6 @@ public final class ProjectEar extends J2eeApplicationProvider
 
         private final List<ArtifactListener> listeners = new ArrayList<ArtifactListener>();
 
-        
-        
         public DeployOnSaveSupportProxy() {
             super();
         }
@@ -647,6 +645,19 @@ public final class ProjectEar extends J2eeApplicationProvider
             }
         }
 
+        public boolean containsIdeArtifacts() {
+            for (J2eeModuleProvider provider : getChildModuleProviders()) {
+                DeployOnSaveSupport support = provider.getDeployOnSaveSupport();
+                if (support != null) {
+                    if (support.containsIdeArtifacts()) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        
         public void artifactsUpdated(Iterable<Artifact> artifacts) {
             List<Artifact> recomputed = new ArrayList<Artifact>();
             for (Artifact artifact : artifacts) {
