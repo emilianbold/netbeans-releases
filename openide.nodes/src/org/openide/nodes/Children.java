@@ -573,7 +573,7 @@ public abstract class Children extends Object {
     static interface Entry {
         /** Set of nodes associated with this entry.
         */
-        public Collection<Node> nodes();
+        public Collection<Node> nodes(Object source);
     }
 
     /** Empty list of children. Does not allow anybody to insert a node.
@@ -803,7 +803,7 @@ public abstract class Children extends Object {
 
             /** List of elements.
             */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 Collection<Node> c = getCollection();
 
                 if (c.isEmpty()) {
@@ -1041,7 +1041,7 @@ public abstract class Children extends Object {
             }
 
             /** Nodes */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 return Collections.singleton(node);
             }
 
@@ -1136,7 +1136,7 @@ public abstract class Children extends Object {
 
             /** List of elements.
             */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 List<Node> al = new ArrayList<Node>(getCollection());
                 Collections.sort(al, comp);
 
@@ -1597,7 +1597,7 @@ public abstract class Children extends Object {
 
             /** Nodes are taken from the create nodes.
             */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 Node[] arr = createNodes(getKey());
 
                 if (arr == null) {
