@@ -59,9 +59,6 @@ public class ScriptingMeasureActionsTest2 {
         System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EditorMenuPopup.class)
-                .addTest(FormatFileTest.class)
-                .addTest(CloseProjectTest.class)
-                .addTest(CloseScriptingFiles.class)
                 .addTest(TypingInScriptingEditor.class)
                 .addTest(ScriptingCodeCompletionInEditor.class)
                 .addTest(OpenScriptingFiles.class)
