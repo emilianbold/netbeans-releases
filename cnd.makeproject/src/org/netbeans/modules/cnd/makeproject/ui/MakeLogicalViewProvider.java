@@ -1218,7 +1218,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Item item;
 
         public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject) {
-            super(dataObject.getNodeDelegate(), Children.LEAF, Lookups.fixed(item));
+            super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
@@ -1516,9 +1516,11 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             if (activatedNodes.length > 0) {
                 Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);
                 if (folder == null) {
-                    Item item = activatedNodes[0].getLookup().lookup(Item.class);
-                    if (item != null) {
-                        folder = item.getFolder();
+                    // TODO: looking up for views is not a good technique, this should
+                    // be changed one day all other this class
+                    ViewItemNode vin = activatedNodes[0].getLookup().lookup(ViewItemNode.class);
+                    if (vin != null) {
+                        folder = vin.getFolder();
                     }
                 }
 
