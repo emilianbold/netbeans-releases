@@ -151,7 +151,9 @@ public class HTMLAutoCompletion {
 //            TokenSequence ts = hi.tokenSequence();
             
             TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
-            
+            if(ts == null) {
+                return ; //no html ts at the caret position
+            }
             ts.move(dotPos);
             if(!ts.moveNext()) {
                 return ; //no token
