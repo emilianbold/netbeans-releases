@@ -117,9 +117,10 @@ public class PathValidatorVisitor extends XPathModelTracerVisitor {
 //System.out.println();
 //System.out.println("TYPE IS: " + gType.getClass().getName());
 //System.out.println();
-                  if ( !(gType instanceof SimpleType)) {
-                    myContext.addResultItem(ResultType.ERROR, "TYPE_MUST_BE_SIMPLE"); // NOI18N
-                  }
+// # 148447
+//                  if ( !(gType instanceof SimpleType)) {
+//                    myContext.addResultItem(ResultType.ERROR, "TYPE_MUST_BE_SIMPLE"); // NOI18N
+//                  }
                 }
             } 
             else {
