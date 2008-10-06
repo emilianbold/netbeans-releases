@@ -143,7 +143,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String MASK = "mask"; // NOI18N
-    
+
     static StandardNodeAction renameAction = null;
     static StandardNodeAction deleteAction = null;
 
@@ -1373,6 +1373,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             fireIconChange();
             fireOpenedIconChange();
         }
+
+        public boolean isOkToChange() {
+            return gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().okToChange();
+        }
     }
     
     private static class ViewItemTransferable extends ExTransferable.Single {
@@ -1501,8 +1505,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }
-    
-    private class StandardNodeAction extends NodeAction {
+
+    // this class should be static, because successors are shared classes
+    // and accesssing MakeLogicalViewProvider.this would use wrong one!
+    private static class StandardNodeAction extends NodeAction {
         SystemAction systemAction;
         
         public StandardNodeAction(SystemAction systemAction) {
@@ -1511,9 +1517,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
-            if (!gotMakeConfigurationDescriptor() || !(getMakeConfigurationDescriptor().okToChange())) {
-                return;
+            if (activatedNodes.length > 0) {
+                ViewItemNode vin = activatedNodes[0].getLookup().lookup(ViewItemNode.class);
+                if (vin != null && !vin.isOkToChange()) {
+                    return;
+                }
             }
+//            if (!gotMakeConfigurationDescriptor() || !(getMakeConfigurationDescriptor().okToChange())) {
+//                return;
+//            }
             InstanceContent ic = new InstanceContent();
             for (int i = 0; i < activatedNodes.length; i++) {
                 ic.add(activatedNodes[i]);
@@ -1553,13 +1565,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-    private class RenameNodeAction extends StandardNodeAction {
+    private static class RenameNodeAction extends StandardNodeAction {
         public RenameNodeAction() {
             super(SystemAction.get(RenameAction.class));
         }
     }
     
-    private class DeleteNodeAction extends StandardNodeAction {
+    private static class DeleteNodeAction extends StandardNodeAction {
         public DeleteNodeAction() {
             super(SystemAction.get(DeleteAction.class));
         }
