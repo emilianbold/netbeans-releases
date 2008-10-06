@@ -87,6 +87,7 @@ public final class RepositoryPreferences {
     private RepositoryPreferences() {
     }
 
+
     private Preferences getPreferences() {
         return NbPreferences.root().node("org/netbeans/modules/maven/nexus/indexing"); //NOI18N
     }
@@ -140,16 +141,34 @@ public final class RepositoryPreferences {
         try {
             FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
             if (fo == null) {
+                int position = calculatePosition();
                 fo = getSystemFsRoot().createData(getFileObjectName(info.getId()));
+                fo.setAttribute("position", position); //NOI18N
             }
             fo.setAttribute(KEY_TYPE, info.getType());
-            fo.setAttribute(KEY_PATH, info.getRepositoryPath());
-            fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
-            fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl());
+            if (info.getRepositoryPath() != null) {
+                fo.setAttribute(KEY_PATH, info.getRepositoryPath());
+            }
+            if (info.getRepositoryUrl() != null) {
+                fo.setAttribute(KEY_REPO_URL, info.getRepositoryUrl());
+                fo.setAttribute(KEY_INDEX_URL, info.getIndexUpdateUrl());
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
+
+    private int calculatePosition() {
+        int customStart = 5000;
+        for (FileObject fo : getSystemFsRoot().getChildren()) {
+            Integer attr = (Integer) fo.getAttribute("position"); //NOI18N
+            if (attr != null && attr.intValue() > customStart) {
+                customStart = attr.intValue();
+            }
+        }
+        return customStart + 1;
+    }
+
 
     private String getFileObjectName(String id) {
         String toRet = id;
@@ -212,11 +231,13 @@ public final class RepositoryPreferences {
             }
             Integer pos1 = (Integer)o1.getAttribute("position");
             if (pos1 == null) {
-                pos1 = new Integer(9999);
+                Logger.getLogger(RepositoryPreferences.class.getName()).warning("FileObject " + o1.getPath() + " doesn't have attribute 'position' defined.");
+                pos1 = o1.hashCode();
             }
             Integer pos2 = (Integer)o2.getAttribute("position");
             if (pos2 == null) {
-                pos2 = new Integer(9999);
+                Logger.getLogger(RepositoryPreferences.class.getName()).warning("FileObject " + o1.getPath() + " doesn't have attribute 'position' defined.");
+                pos2 = o1.hashCode();
             }
             if (pos2 > pos1) {
                 return -1;

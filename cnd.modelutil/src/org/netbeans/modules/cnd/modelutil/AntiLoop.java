@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,25 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.cnd.modelutil;
+
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmClassifier;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
- *
- * @author mkuchtiak
+ * Analog of Set<CsmClass> used for anti loop checks
+ * @author Vladimir Kvashin
  */
-public enum ServerType {
-    GLASSFISH,
-    GLASSFISH_V3,
-    JBOSS,
-    TOMCAT,
-    WEBLOGIC,
-    WEBSPHERE,
-    NOT_SPECIFIED,
-    UNKNOWN;
+public class AntiLoop {
+    
+    private Set<Object> set;
+    
+    public AntiLoop() {
+        set = new HashSet<Object>();
+    }
+    
+    public AntiLoop(int capacity) {
+        set = new HashSet<Object>(capacity);
+    }
+    
+    
+    public boolean add(CsmClassifier cls) {
+        if(CsmKindUtilities.isInstantiation(cls)) {
+            return set.add(cls.getQualifiedName());
+        } else {
+            return set.add(cls);
+        }
+    }
+
+    public boolean contains(CsmClassifier cls) {
+        if(CsmKindUtilities.isInstantiation(cls)) {
+            return set.contains(cls.getQualifiedName());
+        } else {
+            return set.contains(cls);
+        }
+    }
 }

@@ -827,9 +827,7 @@ public class TreeModelNode extends AbstractNode {
             WeakHashMap<Object, WeakReference<TreeModelNode>> newObjectToNode = new WeakHashMap<Object, WeakReference<TreeModelNode>>();
             for (i = 0; i < k; i++) {
                 if (ch [i] == null) {
-                    throw (NullPointerException) ErrorManager.getDefault().annotate(
-                            new NullPointerException(),
-                            "model: " + model + "\nparent: " + object);
+                    throw new NullPointerException("Null child at index "+i+", parent: "+object+", model: "+model);
                 }
                 WeakReference<TreeModelNode> wr = objectToNode.get(ch [i]);
                 if (wr == null) continue;

@@ -315,6 +315,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                         if (enclType != null) {
                             ObjectReference enclObject = findEnclosingObject(arg0, objectReference, enclType, null, methodName);
                             if (enclObject != null) type = enclObject.referenceType();
+                            else Assert2.error(arg0, "noSuchMethod", methodName, type.name());
                         }
                     }
                 } else {
@@ -1298,13 +1299,15 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 if (thisObject != null) {
                     if (field.isPrivate()) {
                         ObjectReference to = findEnclosingObject(arg0, thisObject, declaringType, field.name(), null);
-                        if (to != null) thisObject = to;
+                        thisObject = to;
                     } else {
                         if (!instanceOf(thisObject.referenceType(), declaringType)) {
                             ObjectReference to = findEnclosingObject(arg0, thisObject, declaringType, field.name(), null);
-                            if (to != null) thisObject = to;
+                            thisObject = to;
                         }
                     }
+                }
+                if (thisObject != null) {
                     evaluationContext.getVariables().put(arg0, new VariableInfo(field, thisObject));
                     try {
                         return thisObject.getValue(field);
@@ -2394,20 +2397,22 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
                 value = type.invokeMethod(evaluationThread, method, argVals,
                                           ObjectReference.INVOKE_SINGLE_THREADED);
             } else {
+                ObjectReference object = objectReference;
                 if (type != null) {
                     if (method.isPrivate()) {
-                        ObjectReference to = findEnclosingObject(arg0, objectReference, type, null, method.name());
-                        if (to != null) objectReference = to;
+                        object = findEnclosingObject(arg0, objectReference, type, null, method.name());
                     } else {
                         if (!instanceOf(objectReference.referenceType(), type)) {
-                            ObjectReference to = findEnclosingObject(arg0, objectReference, type, null, method.name());
-                            if (to != null) objectReference = to;
+                            object = findEnclosingObject(arg0, objectReference, type, null, method.name());
                         }
                     }
                 }
-                value = objectReference.invokeMethod(evaluationThread, method,
-                                                     argVals,
-                                                     ObjectReference.INVOKE_SINGLE_THREADED);
+                if (object == null) {
+                    Assert2.error(arg0, "noSuchMethod", method.name(), objectReference.referenceType().name());
+                }
+                value = object.invokeMethod(evaluationThread, method,
+                                            argVals,
+                                            ObjectReference.INVOKE_SINGLE_THREADED);
             }
             if (loggerMethod.isLoggable(Level.FINE)) {
                 loggerMethod.fine("   return = "+value);

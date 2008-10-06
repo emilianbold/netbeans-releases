@@ -588,7 +588,13 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
                 
                 if (registry.keyExists(section, rootKey)) {
-                    registry.setStringValue(section, rootKey, name, value, expand);
+                    if (value != null) {
+                        registry.setStringValue(section, rootKey, name, value, expand);
+                    } else if(registry.valueExists(section, rootKey, name)) {
+                        registry.deleteValue(section, rootKey, name);
+                    } else {
+			LogManager.log(ErrorLevel.MESSAGE, "Environment variable " + name + " is not set");
+		    }
                     notifyEnvironmentChanged0();
                 } else {
                     LogManager.log(ErrorLevel.WARNING,

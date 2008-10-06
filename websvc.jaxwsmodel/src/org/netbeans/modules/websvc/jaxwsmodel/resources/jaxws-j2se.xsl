@@ -187,9 +187,10 @@ made subject to such option by the copyright holder.
                         </xsl:for-each>
                     </xsl:attribute>
                 </target>
-                
-                <target name="wsimport-client-compile" depends="-pre-pre-compile">
+                <target name="wsimport-client-compile-depend" if="do.depend.true">
                     <j2seproject3:depend srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
+                </target>
+                <target name="wsimport-client-compile" depends="-pre-pre-compile, wsimport-client-compile-depend">
                     <j2seproject3:javac srcdir="${{build.generated.dir}}/wsimport/client" classpath="${{libs.jaxws21.classpath}}:${{javac.classpath}}" destdir="${{build.classes.dir}}"/>
                     <copy todir="${{build.classes.dir}}">
                         <fileset dir="${{build.generated.dir}}/wsimport/client" includes="**/*.xml"/>
