@@ -211,7 +211,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put (project, dialog);
         dialog.setVisible(true);
-        
+        clonedProjectdescriptor.closed();
     }    
     
 
