@@ -202,7 +202,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
     private String sig = null;
-    private IOProxy inputProxy = null;
+    private IOProxy ioProxy = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -387,7 +387,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-                        inputProxy = IOProxy.create(hkey, iotab);
+                        ioProxy = IOProxy.create(hkey, iotab);
                     }
                 }
 
@@ -407,9 +407,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gdb.data_list_register_names("");
                 try {
                     String inRedir = "";
-                    if (inputProxy != null) {
-                        String inFile = inputProxy.getInFilename();
-                        String outFile = inputProxy.getOutFilename();
+                    if (ioProxy != null) {
+                        String inFile = ioProxy.getInFilename();
+                        String outFile = ioProxy.getOutFilename();
                         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                             inFile = win2UnixPath(inFile);
                             outFile = win2UnixPath(outFile);
@@ -869,8 +869,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gah.executionFinished(0);
             }
             Disassembly.close();
-            if (inputProxy != null) {
-                inputProxy.stop();
+            if (ioProxy != null) {
+                ioProxy.stop();
             }
             if (iotab != null) {
                 iotab.getOut().close();
