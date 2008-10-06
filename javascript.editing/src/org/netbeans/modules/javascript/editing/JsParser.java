@@ -250,9 +250,14 @@ public class JsParser implements IncrementalParser {
                         String line = doc.substring(lineStart, lineEnd + 1);
                         int removeChars = 0;
                         int removeEnd = lineEnd+1;
+                        boolean isLineEnd = GsfUtilities.getRowLastNonWhite(context.source, lineEnd) <= lineEnd;
 
-                        if (line.endsWith(".") || line.endsWith("(")) { // NOI18N
+                        if (line.endsWith(".")) { // NOI18N
                             removeChars = 1;
+                        } else if (line.endsWith("(")) { // NOI18N
+                            if (isLineEnd) {
+                                removeChars = 1;
+                            }
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
                             removeChars = 1;
                         } else if (line.endsWith(", ")) { // NOI18N
@@ -273,6 +278,15 @@ public class JsParser implements IncrementalParser {
                             // (new, do, etc) - we can't handle that!
                             for (String keyword : JsUtils.JAVASCRIPT_KEYWORDS) { // reserved words are okay
                                 if (line.endsWith(keyword)) {
+                                    if ("var".equals(keyword)) { // NOI18N
+                                        // Special case - see 149226
+                                        // Only remove the keyword if it's the end of the line. Otherwise,
+                                        // it could have just been typed in front of something and we don't
+                                        // want to confuse the parser with "va foo" instead of "var foo"
+                                        if (!isLineEnd) {
+                                            continue;
+                                        }
+                                    }
                                     removeChars = 1;
                                     break;
                                 }
