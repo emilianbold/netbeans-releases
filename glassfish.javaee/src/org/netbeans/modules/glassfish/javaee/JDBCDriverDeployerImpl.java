@@ -84,7 +84,7 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
     }
 
     public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
-        List urls = JDBCDriverDeployHelper.getMissingDrivers(driverLoc, datasources);
+        List urls = JDBCDriverDeployHelper.getMissingDrivers(getDriverLocations(), datasources);
         ProgressObject retVal = JDBCDriverDeployHelper.getProgressObject(driverLoc, urls);
         if (urls.size() > 0) {
             retVal.addProgressListener(new ProgressListener() {
@@ -99,5 +99,12 @@ public class JDBCDriverDeployerImpl implements JDBCDriverDeployer {
         }
         RequestProcessor.getDefault().post((Runnable) retVal);
         return retVal; // new JDBCDriverDeployHelper.getProgressObject(dmp.getDriverLocation(), datasources);
+    }
+
+    private File[] getDriverLocations(){
+        String installLoc = commonSupport.getInstanceProperties().get(GlassfishModule.INSTALL_FOLDER_ATTR);
+        File installLib = new File (installLoc + File.separator + "lib"); //NOI18N
+        File[] locs = {driverLoc, installLib};
+        return locs;
     }
 }
