@@ -57,7 +57,7 @@ public class MeasureJ2EEStartupTest {
     
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2EE Memory suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEStartupTest");
+        System.setProperty("suitename", MeasureJ2EEStartupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(MeasureBaselineMemoryFootprint.class, ".*", ".*"));
 
