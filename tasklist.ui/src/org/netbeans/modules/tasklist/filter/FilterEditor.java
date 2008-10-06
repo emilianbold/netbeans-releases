@@ -43,8 +43,6 @@ package org.netbeans.modules.tasklist.filter;
 
 import java.awt.BorderLayout;
 import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -164,8 +162,8 @@ public class FilterEditor extends JPanel implements PropertyChangeListener {
         btnRemoveFilter.setEnabled(filterModel.getSelectedIndex() != -1);
         
         
-        btnOk= new JButton( "Ok" );
-        btnCancel = new JButton( "Cancel" );
+        btnOk= new JButton( NbBundle.getMessage(FilterEditor.class, "btnOk") ); //NOI18N
+        btnCancel = new JButton( NbBundle.getMessage(FilterEditor.class, "btnCancel") ); //NOI18N
     }
     
     /**
