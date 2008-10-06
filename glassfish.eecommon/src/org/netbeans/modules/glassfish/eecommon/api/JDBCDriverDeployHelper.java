@@ -86,27 +86,22 @@ public class JDBCDriverDeployHelper {
     }
 
     /** Returns a list of jdbc drivers that need to be deployed. */
-    static public List getMissingDrivers(File driverLoc, Set<Datasource> datasources) {
-        Parameters.notNull("driverLoc", driverLoc);
+    static public List getMissingDrivers(File[] driverLocs, Set<Datasource> datasources) {
         List drivers = new ArrayList();
-        if (!driverLoc.exists()) {
-            boolean mkdirs = driverLoc.mkdirs();
-            // Fail if assertions are on.
-            assert mkdirs : "failed to create the directory for driver deployment: "+driverLoc.getPath();
-            // Log and continue if assertions are off.
-            if (!mkdirs) {
-                Logger.getLogger("glassfish.eecommon").finer("failed to create the directory for driver deployment");
-                return drivers;
-            }
-        }
-        Collection driversLocation = Arrays.asList(driverLoc.listFiles()); // getJDBCDriversLocation().listFiles());
         for (Datasource datasource : datasources) {
             String className = datasource.getDriverClassName();
             boolean exists = false;
-            try {
-                exists = Util.containsClass(driversLocation, className);
-            } catch (IOException e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+            for (int j = 0; j < driverLocs.length; j++) {
+                File driverLoc = driverLocs[j];
+                Collection driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));                           
+                try {
+                    exists = Util.containsClass(driversLocation, className);
+                } catch (IOException e) {
+                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                }
+                if (exists) {
+                    break;
+                }
             }
             if (!exists) {
                 for (DatabaseConnection databaseConnection : DatasourceHelper.findDatabaseConnections(datasource)) {
@@ -132,10 +127,11 @@ public class JDBCDriverDeployHelper {
                     } //JDBCDriver
                 }
             } //If
+            
         }
         return drivers;
     }
-
+    
     static private class JDBCDriversProgressObject implements ProgressObject, Runnable {
 
         private final ProgressEventSupport eventSupport;
