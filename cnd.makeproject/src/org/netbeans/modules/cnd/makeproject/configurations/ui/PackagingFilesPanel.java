@@ -44,10 +44,12 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -58,6 +60,7 @@ import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -70,8 +73,8 @@ import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -88,7 +91,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
     private JButton addLinkButton;
     private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
-    public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
+    public PackagingFilesPanel(List<PackagerFileElement> fileList, String baseDir) {
         super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton(), new JButton()});
         getAddButton().setVisible(false);
         this.baseDir = baseDir;
@@ -148,7 +151,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
             String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
-            addObjectAction(new FileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
+            addObjectAction(new PackagerFileElement(FileType.UNKNOWN, "", topFolder)); // NOI18N
         }
     }
     
@@ -161,7 +164,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             DialogDisplayer.getDefault().notify(dialogDescriptor);
 	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
 		return;
-            addObjectAction(new FileElement(
+            addObjectAction(new PackagerFileElement(
                     FileType.SOFTLINK,
                     packagingNewEntryPanel.getLink(),
                     packagingNewEntryPanel.getName(),
@@ -203,7 +206,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 itemPath = FilePathAdaptor.normalize(itemPath);
                 String topFolder = "${PACKAGE_TOP_DIR}"; // NOI18N
                 if (files[i].isDirectory()) {
-                    addObjectAction(new FileElement(
+                    addObjectAction(new PackagerFileElement(
                             FileType.DIRECTORY,
                             "", // NOI18N
                             topFolder + files[i].getName(),
@@ -221,7 +224,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();
                     }
-                    addObjectAction(new FileElement(
+                    addObjectAction(new PackagerFileElement(
                             FileType.FILE,
                             itemPath,
                             topFolder + files[i].getName(),
@@ -286,8 +289,15 @@ public class PackagingFilesPanel extends ListEditorPanel {
             
             @Override
             public void run() {
-                addFilesFromDirectory(dir, dir, progressPanel);
-                progressDialog.setVisible(false);
+                final ArrayList<PackagerFileElement> listToAdd = new ArrayList<PackagerFileElement>();
+                addFilesFromDirectory(listToAdd, dir, dir, progressPanel);
+                
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        addObjectsAction(listToAdd);
+                        progressDialog.setVisible(false);
+                    }
+                });
             }
         }
         
@@ -297,14 +307,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
             }
         }
         
-        private void addFilesFromDirectory(File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
+        private void addFilesFromDirectory(ArrayList<PackagerFileElement> listToAdd, File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
             File[] files = dir.listFiles();
             for (int i = 0; i < files.length; i++) {
                 if (cancelled) {
                     break;
                 }
                 if (files[i].isDirectory()) {
-                    addFilesFromDirectory(origDir, files[i], progressPanel);
+                    addFilesFromDirectory(listToAdd, origDir, files[i], progressPanel);
                 }
                 else {
                     String path;
@@ -328,7 +338,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     else {
                         perm = packagingFilesOuterPanel.getFilePermTextField().getText();
                     }
-                    addObjectAction(new FileElement(
+//                    addObjectAction(new FileElement(
+                    listToAdd.add(new PackagerFileElement(
                             FileType.FILE,
                             path,
                             topFolder + toFile,
@@ -344,8 +355,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     @Override
     public Object copyAction(Object o) {
-        FileElement elem = (FileElement) o;
-        return new FileElement(elem.getType(), new String(elem.getFrom()), new String(elem.getTo()));
+        PackagerFileElement elem = (PackagerFileElement) o;
+        return new PackagerFileElement(elem.getType(), new String(elem.getFrom()), new String(elem.getTo()));
     }
 
     @Override
@@ -406,8 +417,6 @@ public class PackagingFilesPanel extends ListEditorPanel {
             getTargetList().getColumnModel().getColumn(5).setMaxWidth(200);
         }
         //
-        getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
         // Left align table header
         ((DefaultTableCellRenderer) getTargetList().getTableHeader().getDefaultRenderer()).setHorizontalAlignment(SwingConstants.LEFT);
     }
@@ -424,10 +433,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     @Override
     protected void ensureIndexIsVisible(int selectedIndex) {
-        // FIXUP...
-        //targetList.ensureIndexIsVisible(selectedIndex);
-        //java.awt.Rectangle rect = targetList.getCellRect(selectedIndex, 0, true);
-        //targetList.scrollRectToVisible(rect);
+	Rectangle rect = getTargetList().getCellRect(selectedIndex, 0, true);
+	getTargetList().scrollRectToVisible(rect);
     }
 
     @Override
@@ -440,6 +447,8 @@ public class PackagingFilesPanel extends ListEditorPanel {
             targetList = new MyTable();
             setData(null);
             getListLabel().setLabelFor(targetList);
+            getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
         }
         return targetList;
     }
@@ -480,16 +489,16 @@ public class PackagingFilesPanel extends ListEditorPanel {
         @Override
 	public TableCellEditor getCellEditor(int row, int col) {
 	    if (col == 0) {
-                FileElement elem = (FileElement) listData.elementAt(row);
+                PackagerFileElement elem = (PackagerFileElement) listData.elementAt(row);
                 
                 JComboBox comboBox = new JComboBox();
                 comboBox.addItem(FileType.FILE);
                 comboBox.addItem(FileType.DIRECTORY);
                 comboBox.addItem(FileType.SOFTLINK);
-                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     comboBox.setSelectedIndex(1);
                 }
-                else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     comboBox.setSelectedIndex(2);
                 }
                 else {
@@ -508,19 +517,19 @@ public class PackagingFilesPanel extends ListEditorPanel {
         @Override
         public Component getTableCellRendererComponent(JTable table, Object color, boolean isSelected, boolean hasFocus, int row, int col) {
             JLabel label = (JLabel) super.getTableCellRendererComponent(table, color, isSelected, hasFocus, row, col);
-            FileElement elem = (FileElement) listData.elementAt(row);
+            PackagerFileElement elem = (PackagerFileElement) listData.elementAt(row);
             if (col == 0) {
                 label.setText(elem.getType().toString());
             } else if (col == 1) {
-                if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
                     String msg = getString("Softlink_tt", elem.getTo() + "->" + elem.getFrom()); // NOI18N
                     label.setToolTipText(msg);
                 }
-                else if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     String msg = getString("Directory_tt", elem.getTo()); // NOI18N
                     label.setToolTipText(msg);
                 }
-                else if (elem.getType() == FileElement.FileType.FILE) {
+                else if (elem.getType() == PackagerFileElement.FileType.FILE) {
                     String msg = getString("File_tt", (new File(IpeUtils.toAbsolutePath(baseDir, elem.getFrom())).getAbsolutePath())); // NOI18N
                     label.setToolTipText(msg);
                 }
@@ -576,12 +585,12 @@ public class PackagingFilesPanel extends ListEditorPanel {
         @Override
         public Object getValueAt(int row, int col) {
 //            return listData.elementAt(row);
-            FileElement elem = (FileElement) listData.elementAt(row);
+            PackagerFileElement elem = (PackagerFileElement) listData.elementAt(row);
             if (col == 0) {
                 return elem.getType();
             }
             if (col == 2) {
-                if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     return ""; // NOI18N
                 }
                 else {
@@ -615,7 +624,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
         @Override
         public void setValueAt(Object val, int row, int col) {
-            FileElement elem = (FileElement) listData.elementAt(row);
+            PackagerFileElement elem = (PackagerFileElement) listData.elementAt(row);
             if (col == 0) {
                 FileType fileType = (FileType)val;
                 if (fileType == FileType.FILE) {

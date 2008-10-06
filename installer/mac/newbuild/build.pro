@@ -14,6 +14,8 @@
     <property name="nbClusterDir" value="nb6.5"/>      
 
     <property name="appversion" value="Development Version"/>
+    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
+    <property name="nb.display.version.short" value="Dev"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="6.0.18"/>
@@ -33,7 +35,7 @@
     <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
 
     <loadresource property="glassfish.v3.build.number">
-          <url url="${glassfish.v3.location.prefix}/prelude/b20/bundles"/>
+          <url url="${glassfish.v3.location.prefix}/prelude/latest/archive/bundles"/>
           <filterchain>
 	    <striplinebreaks/>
             <tokenfilter>
@@ -44,7 +46,7 @@
 
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}"/>    
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/archive/bundles/glassfish-v3-${glassfish.v3.build.type}-${glassfish.v3.version}.zip"/>
     <!--<property name="glassfish_v3_location" value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>-->
     <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
     <property name="glassfish.v3.subdir"       value="glassfishv3-prelude"/>
@@ -54,6 +56,10 @@
     <property name="openesb.version" value="v2"/>
     <property name="openesb_location" value="${openesb_builds_host}/kits/ojc/openesb_as9_ur2/latest/installers/jbi_components_installer.jar"/>
     <!--property name="openesb_core_source" value="${openesb_builds_host}/kits/openesb/main/latest/CORE/jbi-core-installer.jar"/-->                  
+
+    <!-- JavaFX Properties -->
+    <property name="javafx_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-cluster-mac.zip"/>
+
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
 

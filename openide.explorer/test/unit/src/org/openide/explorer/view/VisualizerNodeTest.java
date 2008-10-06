@@ -54,7 +54,7 @@ import org.openide.nodes.Node;
  */
 public class VisualizerNodeTest extends NbTestCase {
     {
-        System.setProperty("org.openide.explorer.VisualizerChildren.prefetchCount", "0");
+        System.setProperty("org.openide.explorer.VisualizerNode.prefetchCount", "0");
     }
 
     public VisualizerNodeTest(String name) {

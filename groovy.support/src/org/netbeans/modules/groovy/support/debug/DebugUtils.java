@@ -70,6 +70,9 @@ public class DebugUtils {
         String relativePath = url;
         if (fo != null) {
             FileObject root = ClassPath.getClassPath(fo, ClassPath.SOURCE).findOwnerRoot(fo);
+            if (root == null) {
+                return null;
+            }
             relativePath = FileUtil.getRelativePath(root, fo);
         }
         if (relativePath.endsWith(".groovy")) { // NOI18N

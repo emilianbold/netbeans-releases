@@ -65,8 +65,8 @@ import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.view.ResourceType;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -80,7 +80,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
     private ImageWidget nodeIconWidget = null;
     private UMLLabelWidget stereotypeWidget = null;
     private UMLLabelWidget staticTextWidget = null;
-    private UMLLabelWidget taggedValuesWidget = null;
+    private MultiLineTaggedValueWidget taggedValuesWidget = null;
     private boolean showIcon = true;
     private boolean isAbstract = false;
     private ArrayList<String> hiddenStereotypes = new ArrayList<String>();
@@ -149,7 +149,7 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
                 if (icon != null)
                 {
                     nodeIconWidget = new ImageWidget(getScene());
-                    nodeIconWidget.setImage(Utilities.icon2Image(icon));
+                    nodeIconWidget.setImage(ImageUtilities.icon2Image(icon));
                     nodeIconWidget.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 3));
                     classNameContainer.addChild(nodeIconWidget);
                 }
@@ -163,13 +163,12 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
             classNameContainer.addChild(className);
 
             addChild(classNameContainer);
-            String taggedValues = data.getTaggedValuesAsString();
-            taggedValuesWidget = new UMLLabelWidget(getScene(),
+
+            List<String> taggedValues = data.getTaggedValuesAsList();
+            taggedValuesWidget = new MultiLineTaggedValueWidget(getScene(),
                     nodeWidgetID + "." + taggedValueID,
                     loc("LBL_taggedValue"));
-            taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-
-            updateTaggedValues(taggedValues);
+            taggedValuesWidget.updateTaggedValues(taggedValues);
             addChild(taggedValuesWidget);
 
             if (data instanceof IClassifier)
@@ -225,16 +224,6 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
         staticText = text;
     }
 
-    private void updateTaggedValues(String taggedValues)
-    {
-        taggedValuesWidget.setVisible(taggedValues.length() > 0);
-        if (taggedValues.length() > 0)
-        {
-            taggedValuesWidget.setLabel("{" + taggedValues + "}");
-            taggedValuesWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
-        }
-    }
-
     public void setNameFont(Font font)
     {
         font = updateforAbstract(font);
@@ -282,15 +271,8 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
         {
             // There is a specific tagged value event.  Therefore we have to 
             // check everytime the element is modified.
-            String taggedValues = element.getTaggedValuesAsString();
-            if (taggedValues.length() > 0)
-            {
-                taggedValuesWidget.setLabel("{" + taggedValues + "}");
-                taggedValuesWidget.setVisible(true);
-            } else
-            {
-                taggedValuesWidget.setVisible(false);
-            }
+            List<String> taggedValues = element.getTaggedValuesAsList();
+            taggedValuesWidget.updateTaggedValues(taggedValues);
         }
 
         // If the abstract property changed, then update the font.
@@ -352,6 +334,6 @@ public class UMLNameWidget extends Widget implements PropertyChangeListener,org.
     public void showAllWidgets()
     {
         updateStereotypes(Arrays.asList(new String[]{ "manager" }));
-        updateTaggedValues("Extend, Import");
+        taggedValuesWidget.updateTaggedValues("Extend, Import");
     }
 }

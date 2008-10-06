@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 
 /**
  *
@@ -112,14 +113,28 @@ public class CsmDeclarationResolver {
         return null;
     }
     
-    public static CsmObject findInnerFileObject(CsmFile file, int offset, CsmContext context) {
+    public static CsmObject findInnerFileObject(CsmFile file, int offset, CsmContext context, FileReferencesContext fileContext) {
         assert (file != null) : "can't be null file in findTopFileDeclaration";
         // add file scope to context
         CsmContextUtilities.updateContext(file, offset, context);
+        CsmObject lastObject = null;
+        if (fileContext != null && !fileContext.isCleaned()) {
+            fileContext.advance(offset);
+            lastObject = fileContext.findInnerFileDeclaration(offset);
+            if (lastObject == null) {
+                return fileContext.findInnerFileObject(offset);
+            } else {
+                if (CsmOffsetUtilities.isInObject(lastObject, offset)) {
+                    return findInnerDeclaration((CsmDeclaration)lastObject, context, offset);
+                }
+                // found old invalid object, so clear cache and use not cached algorithm.
+                fileContext.advance(offset-1);
+            }
+        }
         // check file declarations
         CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
         Iterator<CsmOffsetableDeclaration> it = CsmSelect.getDefault().getDeclarations(file, filter);
-        CsmObject lastObject = findInnerDeclaration(it, context, offset);
+        lastObject = findInnerDeclaration(it, context, offset);
         // check includes if needed
         if (lastObject == null) {
             Iterator<CsmInclude> it1 = CsmSelect.getDefault().getIncludes(file, filter);
@@ -156,6 +171,23 @@ public class CsmDeclarationResolver {
                 }
             }
         }
+        return innerDecl;
+    }
+
+    private static CsmDeclaration findInnerDeclaration(CsmDeclaration decl, final CsmContext context, final int offset) {
+        CsmDeclaration innerDecl = null;
+        assert (decl != null) : "can't be null declaration";
+        if (!CsmKindUtilities.isFunction(decl) || CsmOffsetUtilities.isInFunctionScope((CsmFunction)decl, offset)) {
+            // add declaration scope to context
+            CsmContextUtilities.updateContext(decl, offset, context);
+            // we are inside declaration, but try to search deeper
+            innerDecl = findInnerDeclaration(decl, offset, context);
+        } else {
+            context.setLastObject(decl);
+        }
+        innerDecl = innerDecl != null ? innerDecl : decl;
+        // we can break loop, because list of declarations is sorted
+        // by offset and we found already one of container declaration
         return innerDecl;
     }
         

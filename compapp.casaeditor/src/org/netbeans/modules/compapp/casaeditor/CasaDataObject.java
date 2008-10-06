@@ -56,6 +56,7 @@ import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
@@ -96,6 +97,11 @@ public class CasaDataObject extends MultiDataObject {
     @Override
     protected Node createNodeDelegate() {
         return new CasaDataNode(this);
+    }
+    
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
     @Override

@@ -118,6 +118,8 @@ public class Compositor extends AXIComponent {
      * Sets the type of this compositor.
      */
     public void setType(CompositorType value) {
+        if(getModel() == null)
+            return;
         getModel().startTransaction();
         try{
             firePropertyChangeEvent(Compositor.PROP_TYPE, getType(), value);

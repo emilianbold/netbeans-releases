@@ -69,14 +69,15 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LinkerConfigurati
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.VersionException;
+import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
-import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.xml.sax.Attributes;
@@ -253,14 +254,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             currentPackagingConfiguration.getFiles().getValue().clear();
             //currentPackagingConfiguration.getHeader().getValue().clear();
         } else if (element.equals(PACK_INFOS_LIST_ELEMENT)) {
-            if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                currentPackagingConfiguration.getSvr4Header().getValue().clear();
-            }
-            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-                currentPackagingConfiguration.getRpmHeader().getValue().clear();
-            }
-            else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                // FIXUP
+            List<PackagerInfoElement> toBeRemove = currentPackagingConfiguration.getHeaderSubList(currentPackagingConfiguration.getType().getValue());
+            for (PackagerInfoElement elem : toBeRemove) {
+                currentPackagingConfiguration.getInfo().getValue().remove(elem);
             }
         } else if (element.equals(ARCHIVERTOOL_ELEMENT)) {
             currentArchiverConfiguration = ((MakeConfiguration)currentConf).getArchiverConfiguration();
@@ -316,24 +312,16 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             String perm = atts.getValue(PERM_ATTR); // NOI18N
             String owner = atts.getValue(OWNER_ATTR); // NOI18N
             String group = atts.getValue(GROUP_ATTR); // NOI18N
-            FileElement fileElement = new FileElement(FileElement.toFileType(type), from, to, perm, owner, group);
+            PackagerFileElement fileElement = new PackagerFileElement(PackagerFileElement.toFileType(type), from, to, perm, owner, group);
             if (currentPackagingConfiguration != null)
                 currentPackagingConfiguration.getFiles().add(fileElement);
         } else if (element.equals(PACK_INFO_LIST_ELEMENT)) {
             String name = atts.getValue(NAME_ATTR); // NOI18N
             String value = atts.getValue(VALUE_ATTR); // NOI18N
             String mandatory = atts.getValue(MANDATORY_ATTR); // NOI18N
-            InfoElement infoElement = new InfoElement(name, value, mandatory.equals(TRUE_VALUE), false);
+            PackagerInfoElement infoElement = new PackagerInfoElement(currentPackagingConfiguration.getType().getValue(), name, value, mandatory.equals(TRUE_VALUE), false);
             if (currentPackagingConfiguration != null) {
-                if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-                    currentPackagingConfiguration.getSvr4Header().add(infoElement);
-                }
-                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-                    currentPackagingConfiguration.getRpmHeader().add(infoElement);
-                }
-                else if (currentPackagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-                    // FIXUP
-                }
+                currentPackagingConfiguration.getInfo().add(infoElement);
             }
         }
     }
@@ -431,7 +419,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 currentFolder = null;
             }
         } else if (element.equals(SOURCE_ENCODING_ELEMENT)) {
-            ((MakeConfigurationDescriptor)projectDescriptor).setSourceEncoding(currentText);
+            ((MakeProject)((MakeConfigurationDescriptor)projectDescriptor).getProject()).setSourceEncoding(currentText);
         } else if (element.equals(PREPROCESSOR_LIST_ELEMENT)) {
             currentList = null;
         } else if (element.equals(ITEM_PATH_ELEMENT)) {
@@ -541,7 +529,27 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
             }
         } else if (element.equals(PACK_TYPE_ELEMENT)) {
             if (currentPackagingConfiguration != null) {
-                int type = new Integer(currentText).intValue();
+                String type;
+                if (descriptorVersion <= 50) {
+                    int i;
+                    i = new Integer(currentText).intValue();
+                    if (i == 0)
+                        type = "Tar"; // NOI18N
+                    else if (i == 1) 
+                        type = "Zip"; // NOI18N
+                    else if (i == 2) 
+                        type = "SVR4"; // NOI18N
+                    else if (i == 3) 
+                        type = "RPM"; // NOI18N
+                    else if (i == 4) 
+                        type = "Debian"; // NOI18N
+                    else
+                        type = "Tar"; // NOI18N
+                
+                }
+                else {
+                    type = currentText;
+                }
                 currentPackagingConfiguration.getType().setValue(type);
             }
         } else if (element.equals(PREPROCESSOR_ELEMENT)) {

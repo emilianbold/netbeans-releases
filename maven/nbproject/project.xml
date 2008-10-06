@@ -150,7 +150,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.0.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -324,6 +324,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
+                <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.maven.buildplan</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>

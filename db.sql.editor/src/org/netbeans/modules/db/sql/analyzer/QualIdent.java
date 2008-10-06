@@ -83,6 +83,13 @@ public class QualIdent implements Comparable<QualIdent> {
         return parts.get(0);
     }
 
+    public String getSecondQualifier() {
+        if (parts.size() < 2) {
+            throw new IllegalArgumentException("The identifier is empty or simple.");
+        }
+        return parts.get(1);
+    }
+
     public String getSimpleName() {
         if (parts.size() == 0) {
             throw new IllegalArgumentException("The identifier is empty.");

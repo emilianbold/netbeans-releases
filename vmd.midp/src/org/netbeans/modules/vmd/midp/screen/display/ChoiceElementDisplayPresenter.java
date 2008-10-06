@@ -57,6 +57,7 @@ import org.netbeans.modules.vmd.midp.components.resources.ImageCD;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenBooleanPropertyEditor;
 import org.netbeans.modules.vmd.midp.screen.display.property.ScreenStringPropertyEditor;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import javax.swing.*;
 import java.awt.*;
@@ -82,12 +83,12 @@ public class ChoiceElementDisplayPresenter extends ScreenDisplayPresenter {
     public static final String ICON_POPUP_PATH = "org/netbeans/modules/vmd/midp/resources/screen/drop-down.png"; // NOI18N
     public static final String ICON_BROKEN_PATH = "org/netbeans/modules/vmd/midp/resources/screen/broken-image.png"; // NOI18N
     
-    public static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
-    public static final Icon ICON_CHECKBOX = new ImageIcon(Utilities.loadImage(ICON_CHECKBOX_PATH));
-    public static final Icon ICON_EMPTY_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_EMPTY_RADIOBUTTON_PATH));
-    public static final Icon ICON_RADIOBUTTON = new ImageIcon(Utilities.loadImage(ICON_RADIOBUTTON_PATH));
-    public static final Icon ICON_POPUP = new ImageIcon(Utilities.loadImage(ICON_POPUP_PATH));
-    public static final Icon ICON_BROKEN = new ImageIcon(Utilities.loadImage(ICON_BROKEN_PATH));
+    public static final Icon ICON_EMPTY_CHECKBOX = new ImageIcon(ImageUtilities.loadImage(ICON_EMPTY_CHECKBOX_PATH));
+    public static final Icon ICON_CHECKBOX = new ImageIcon(ImageUtilities.loadImage(ICON_CHECKBOX_PATH));
+    public static final Icon ICON_EMPTY_RADIOBUTTON = new ImageIcon(ImageUtilities.loadImage(ICON_EMPTY_RADIOBUTTON_PATH));
+    public static final Icon ICON_RADIOBUTTON = new ImageIcon(ImageUtilities.loadImage(ICON_RADIOBUTTON_PATH));
+    public static final Icon ICON_POPUP = new ImageIcon(ImageUtilities.loadImage(ICON_POPUP_PATH));
+    public static final Icon ICON_BROKEN = new ImageIcon(ImageUtilities.loadImage(ICON_BROKEN_PATH));
     
     private JPanel view;
     private JLabel state;

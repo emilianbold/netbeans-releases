@@ -15,6 +15,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.logging.Handler;
+import java.util.logging.Logger;
 import javax.swing.JCheckBoxMenuItem;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -26,6 +28,7 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.QueueTool;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxMenuItemOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JFileChooserOperator;
@@ -56,6 +59,8 @@ public final class TestKit {
     public static final String PROJECT_CATEGORY = "Java";
     public static final String CLONE_SUF_0 = "_clone0";
     public static final String CLONE_SUF_1 = "_clone1";
+    public final static String LOGGER_NAME = "org.netbeans.modules.mercurial.t9y";
+    public static int TIME_OUT = 15;
 
     public static File prepareProject(String prj_category, String prj_type, String prj_name) throws Exception {
         //create temporary folder for test
@@ -300,5 +305,31 @@ public final class TestKit {
         RepositoryMaintenance.updateRepository(project);
         openProject(work, projectName);
         return work;
+    }
+
+    public static boolean waitText(MessageHandler handler) {
+        int i = 0;
+
+        while (!handler.isFinished()) {
+            i++;
+            if (i > TIME_OUT) {
+                throw new TimeoutExpiredException("Text [" + handler.message + "] hasn't been found in reasonable time!");
+            }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+            }
+        }
+        return true;
+    }
+
+    public static void removeHandlers(Logger log) {
+        if (log != null) {
+            Handler[] handlers = log.getHandlers();
+            for (int i = 0; i < handlers.length; i++) {
+                log.removeHandler(handlers[i]);
+            }
+        }
     }
 }

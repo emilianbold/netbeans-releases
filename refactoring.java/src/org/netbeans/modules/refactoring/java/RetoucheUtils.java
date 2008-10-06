@@ -58,7 +58,6 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -116,13 +115,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.filesystems.FileUtil;
@@ -646,6 +643,17 @@ public class RetoucheUtils {
         ClassPath nullPath = ClassPathSupport.createClassPath(new FileObject[0]);
         ClassPath boot = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.BOOT):nullPath;
         ClassPath compile = files[0]!=null?ClassPath.getClassPath(files[0], ClassPath.COMPILE):nullPath;
+        //When file[0] is a class file, there is no compile cp but execute cp
+        //try to get it
+        if (compile == null) {
+            compile = ClassPath.getClassPath(files[0], ClassPath.EXECUTE);
+        }
+        //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
+        //doesn't accept null compile or boot cp.
+        if (compile == null) {
+            LOG.warning ("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
+            compile = nullPath;
+        }
         ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
         return cpInfo;
     }
@@ -801,7 +809,6 @@ public class RetoucheUtils {
         private String fqn;
         private String typeToCheck;
         private boolean typeExist;
-        private ElementHandle<TypeElement> enclosingTypeHandle;
         private ElementKind kind;
         private IllegalArgumentException iae;
         
@@ -827,6 +834,9 @@ public class RetoucheUtils {
                 throw (RuntimeException) new RuntimeException().initCause(ex);
             }
             Element el = handle.resolveElement(cc);
+            if (el == null) {
+                return;
+            }
             f = SourceUtils.getFile(el, cc.getClasspathInfo());
             try {
                 eh=ElementHandle.create(el);
@@ -834,18 +844,15 @@ public class RetoucheUtils {
                 this.iae = iae;
             }
             name = el.getSimpleName().toString();
-            if (el instanceof TypeElement) 
+            kind = el.getKind();
+            if (kind.isClass() || kind.isInterface()) {
                 fqn = ((TypeElement) el).getQualifiedName().toString();
+            }
+
             if (typeToCheck!=null) {
                 typeExist = cc.getElements().getTypeElement(typeToCheck)!=null;
             }
-                if (el instanceof TypeElement) {
-                    enclosingTypeHandle = ElementHandle.create((TypeElement)el);
-                } else {
-                    enclosingTypeHandle = ElementHandle.create(SourceUtils.getEnclosingTypeElement(el));
-                }
             
-            kind = el.getKind();
         }
         
         public FileObject getFileObject() {
@@ -866,12 +873,6 @@ public class RetoucheUtils {
         
         public boolean typeExist() {
             return typeExist;
-        }
-        
-        public ElementHandle<TypeElement> getEnclosingTypeHandle() {
-            if (iae!=null)
-                throw iae;
-            return enclosingTypeHandle;
         }
         
         public ElementKind getElementKind() {

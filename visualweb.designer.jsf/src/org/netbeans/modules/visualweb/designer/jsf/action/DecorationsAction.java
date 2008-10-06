@@ -56,6 +56,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JToggleButton;
 import org.netbeans.modules.visualweb.designer.jsf.JsfDesignerPreferences;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -76,7 +77,7 @@ public class DecorationsAction extends AbstractAction implements Presenter.Toolb
     public DecorationsAction() {
         putValue(NAME, NbBundle.getMessage(DecorationsAction.class, "LBL_DecorationsActionName"));
         putValue(SHORT_DESCRIPTION, NbBundle.getMessage(DecorationsAction.class, "LBL_DecorationsAction"));
-        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/decorations.png"))); // NOI18N
+        putValue(SMALL_ICON, new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/resources/decorations.png"))); // NOI18N
 
         DecorationManager decorationManager = DecorationManager.getDefault();
         decorationManager.addPropertyChangeListener(WeakListeners.propertyChange(decorationManagerListener, decorationManager));

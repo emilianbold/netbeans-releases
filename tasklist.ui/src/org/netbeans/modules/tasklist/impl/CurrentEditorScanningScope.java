@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -87,7 +88,7 @@ public class CurrentEditorScanningScope extends TaskScanningScope
         return new CurrentEditorScanningScope(
                 NbBundle.getBundle( CurrentEditorScanningScope.class ).getString( "LBL_CurrentEditorScope" ), //NOI18N)
                 NbBundle.getBundle( CurrentEditorScanningScope.class ).getString( "HINT_CurrentEditorScope" ), //NOI18N
-                Utilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/cur_editor_scope.png" ) //NOI18N
+                ImageUtilities.loadImage( "org/netbeans/modules/tasklist/ui/resources/cur_editor_scope.png" ) //NOI18N
                 );
     }
     
@@ -124,15 +125,10 @@ public class CurrentEditorScanningScope extends TaskScanningScope
         }
         if( null != newCallback && newCallback != this.callback ) {
             this.callback = newCallback;
-            Runnable noRefershRunnable = new Runnable() {
-                public void run() {
-                    switchCurrentFile(false);
-                }
-            };
             if( SwingUtilities.isEventDispatchThread() ) {
-                noRefershRunnable.run();
+                run();
             } else {
-                SwingUtilities.invokeLater( noRefershRunnable );
+                SwingUtilities.invokeLater( this );
             }
         }
         this.callback = newCallback;

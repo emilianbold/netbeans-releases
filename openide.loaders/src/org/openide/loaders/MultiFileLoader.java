@@ -45,7 +45,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 
-import org.openide.*;
 import org.openide.filesystems.*;
 
 /** Loader for any kind of <code>MultiDataObject</code>. It provides

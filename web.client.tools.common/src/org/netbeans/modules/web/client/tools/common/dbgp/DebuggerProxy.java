@@ -62,6 +62,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.Eval.*;
 import org.netbeans.modules.web.client.tools.common.dbgp.Property.*;
 import org.netbeans.modules.web.client.tools.common.dbgp.Source.*;
 import org.netbeans.modules.web.client.tools.common.dbgp.Stack.*;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -139,8 +140,14 @@ public class DebuggerProxy {
     public boolean stopDebugging() {
         boolean successfullyStopped = false;
         if(messageHandlerThread != null) {
-            sendCommand(commandFactory.stopCommand());
             stop.set(true);
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    sendCommand(commandFactory.stopCommand());
+                }
+            });
+            
+            sendStopMessage(statusTextUser);
             successfullyStopped = true;
         }
         return successfullyStopped;
@@ -279,34 +286,37 @@ public class DebuggerProxy {
 
     public synchronized ResponseMessage sendCommand(Command command) {
         if(sessionSocket == null) {
-            try {
-                throw new IllegalStateException();
-            } catch (Exception ex) {
-                Log.getLogger().log(Level.INFO, "Cannot send command after session is closed", ex);  //NOI18N
-            }
+            Log.getLogger().log(Level.FINE, "Cannot send command after session is closed: " + command.getCommandName());
             
+            return null;
+        } else if (stop.get() && !(command instanceof Continue.StopCommand)) {
+            Log.getLogger().log(Level.INFO, "Ignored command after session is closed: " + command.getCommandName());
             return null;
         }
         try {
             messageSentThread = Thread.currentThread();
+            
             command.send(sessionSocket.getOutputStream());
             if (command.wantAcknowledgment()) {
                 Message message = responseQueue.poll(20, TimeUnit.SECONDS);
-                if (message instanceof ResponseMessage) {
-                    ResponseMessage response = (ResponseMessage) message;
-                    assert (response.getTransactionId() == command.getTransactionId());
-                    
-                    if (message instanceof RuntimeErrorResponse) {
-                        Log.getLogger().log(Level.WARNING, "Unexpected debugger extension error: " + 
-                                ((RuntimeErrorResponse)message).getMessage());
-                        return null;
+                //Synchronize to ensure timed out response is ignored
+                synchronized(ignoreIDs) {                
+                    if (message instanceof ResponseMessage) {
+                        ResponseMessage response = (ResponseMessage) message;
+                        assert (response.getTransactionId() == command.getTransactionId());
+
+                        if (message instanceof RuntimeErrorResponse) {
+                            Log.getLogger().log(Level.WARNING, "Unexpected debugger extension error: " + 
+                                    ((RuntimeErrorResponse)message).getMessage());
+                            return null;
+                        }
+
+                        return response;
                     }
-                    
-                    return response;
+                    Log.getLogger().log(Level.FINE, command.getCommandName() + " request timed-out");  //NOI18N
+                    //Track the id of the timed-out request to ignore the corresponding response
+                    ignoreIDs.add(command.getTransactionId());
                 }
-                Log.getLogger().log(Level.FINE, command.getCommandName() + " request timed-out");  //NOI18N
-                //Track the id of the timed-out request to ignore the corresponding response
-                ignoreIDs.add(command.getTransactionId());
             }
         } catch (SocketException se) {
             Log.getLogger().log(Level.WARNING, se.getMessage(), se);
@@ -328,15 +338,18 @@ public class DebuggerProxy {
             if( txID == -1) {
                 suspensionPointQueue.add(message);
             }else {
-                //Ignore if the response is for a timed-out request
-                if(ignoreIDs.size() > 0) {
-                    int index = ignoreIDs.indexOf(txID);
-                    if(index != -1) {
-                        ignoreIDs.remove(index);
-                        return;
+                //Synchronize to ensure timed out response is ignored
+                synchronized(ignoreIDs) {
+                    //Ignore if the response is for a timed-out request
+                    if(ignoreIDs.size() > 0) {
+                        int index = ignoreIDs.indexOf(txID);
+                        if(index != -1) {
+                            ignoreIDs.remove(index);
+                            return;
+                        }
                     }
+                    responseQueue.add((ResponseMessage) message);
                 }
-                responseQueue.add((ResponseMessage) message);
             }
         } else if (message instanceof InitMessage ||
                    message instanceof OnloadMessage ||
@@ -367,8 +380,16 @@ public class DebuggerProxy {
     
     private void sendStopMessage(String msg) {
         Message message = Message.createMessage(msg);
-        suspensionPointQueue.add(message);
-        httpQueue.add(message);        
+        boolean addedToSuspensionQueue = suspensionPointQueue.offer(message);
+        boolean addedToHttpQueue = httpQueue.offer(message);
+
+        if (!addedToSuspensionQueue) {
+            Log.getLogger().log(Level.INFO, "Could not send terminate message to Suspension Point Handler");
+        }
+
+        if (!addedToHttpQueue) {
+            Log.getLogger().log(Level.INFO, "Could not send terminate message to HTTP Message Handler");
+        }
     }
 
     private class MessageHandler extends Thread {

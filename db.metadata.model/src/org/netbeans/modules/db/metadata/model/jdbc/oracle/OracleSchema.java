@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.metadata.model.jdbc.oracle;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -55,7 +54,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCCatalog;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCSchema;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 
 /**
  *
@@ -79,14 +77,14 @@ public class OracleSchema extends JDBCSchema {
         LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
         try {
-            DatabaseMetaData dmd = catalog.getMetadata().getDmd();
+            DatabaseMetaData dmd = jdbcCatalog.getJDBCMetadata().getDmd();
             Set<String> recycleBinTables = getRecycleBinTables(dmd);
-            ResultSet rs = dmd.getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            ResultSet rs = dmd.getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
             try {
                 while (rs.next()) {
                     String tableName = rs.getString("TABLE_NAME"); // NOI18N
                     if (!recycleBinTables.contains(tableName)) {
-                        Table table = MetadataFactory.createTable(createTable(tableName));
+                        Table table = createJDBCTable(tableName).getTable();
                         newTables.put(tableName, table);
                         LOGGER.log(Level.FINE, "Created table {0}", table);
                     } else {

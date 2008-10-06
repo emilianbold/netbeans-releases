@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+The contents of this file are subject to the terms of the Common Development
+and Distribution License (the License). You may not use this file except in
+compliance with the License.
+
+You can obtain a copy of the License at http://www.netbeans.org/cddl.html
+or http://www.netbeans.org/cddl.txt.
+
+When distributing Covered Code, include this CDDL Header Notice in each file
+and include the License file at http://www.netbeans.org/cddl.txt.
+If applicable, add the following below the CDDL Header, with the fields
+enclosed by brackets [] replaced by your own identifying information:
+"Portions Copyrighted [year] [name of copyright owner]"
+
+The Original Software is NetBeans. The Initial Developer of the Original
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+Microsystems, Inc. All Rights Reserved.
+-->
+
+<project name="Mac Installer" basedir="." default="build-all-dmg">
+    
+    <import file="${basedir}/build.pro"/>
+    <echo message="Properties Loaded..."/>
+
+    <property file="${basedir}/Bundle.properties"/>
+    <echo message="Bundle Properties Loaded..."/>
+    <echo message="NetBeans Title : ${netbeans-title}"/>
+
+    <condition property="ml.suffix" value="-ml" else="">
+        <istrue value="${mlbuild}"/>
+    </condition>      
+            
+    <target name="clean">
+        <delete dir="${basedir}/build"/>
+        <delete dir="${basedir}/dist"/>             
+        <delete dir="${basedir}/netBeans/javase/build"/>
+        <delete dir="${basedir}/netBeans/baseide/build"/>    
+        <delete dir="${basedir}/netBeans/javafx/build"/> 
+        <delete dir="${basedir}/tools/classes"/>           
+    </target>
+    
+    <target name="init">    
+        <mkdir dir="${basedir}/tools/classes"/> 
+        <javac 
+            srcdir="${basedir}/tools/src" 
+            destdir="${basedir}/tools/classes"          
+            debug="true"/>  
+        <taskdef 
+           name="for-each" 
+           classname="org.netbeans.installer.mac.ant.ForEach" 
+           classpath="${basedir}/tools/classes/"/>           
+        <property
+           name="VerifyFile.class.name" 
+           value="org.netbeans.installer.mac.ant.VerifyFile"/>
+        <property
+           name="VerifyFile.classpath" 
+           value="${basedir}/tools/classes"/>
+    </target>        
+
+    <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
+        <mkdir dir="build"/> 
+	<get src="${javafx_location}" dest="${common.name}-javafx.zip"/>
+
+        <property name="clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
+                                         ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide),
+					 javafx(javafx)"/>        
+        <for-each list="${clusters}" separator="," property="cluster.name"  propertyArg="module.name">
+            <antcall target="unzip-cluster"/>                           
+        </for-each>                                                  
+    </target>
+    
+    <target name="unzip-cluster">
+        <mkdir dir="${basedir}/netBeans/${module.name}/build/netbeans"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d ${basedir}/netBeans/${module.name}/build/netbeans ${common.name}-${cluster.name}.zip"/>
+        </exec>      
+    </target>
+    
+    <target name="size-pack-module" description="Count up size of the module, pack200">           
+        <exec executable="sh" failonerror="no" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="cd ${basedir}/netBeans/${module.name}; du -sk build | sed 's/[\t]*build//'"/>
+        </exec>        
+        <echo message="sizeof.${module.name}=${size}${line.separator}" file="${basedir}/build/sizes.pro" append="true"/>                    
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sh ${basedir}/pack200.sh ${basedir}/netBeans/${module.name}/build ${VerifyFile.class.name} ${VerifyFile.classpath}"/>
+        </exec>           
+    </target>
+
+    <target name="build-pkg" depends="unzip-nb" description="Builds NB and packs packages" >                  
+        <antcall target="size-pack-module">
+            <param name="module.name" value="baseide"/>            
+        </antcall>            
+        <ant dir="${basedir}/netBeans/baseide"/>          
+        <antcall target="build-modules"/>       
+    </target>
+    
+    <target name="build-modules">        
+        <property name="modules" value="javase(${javase-title}),
+                                        javafx(${javafx-title})"/>        
+        <for-each list="${modules}" separator="," property="module.name"  propertyArg="module.title">
+            <antcall target="build-module"/>                           
+        </for-each>                        
+    </target>
+    
+    <target name="build-module">
+        <copy file="commonfiles/Info.plist" filtering="true" tofile="netBeans/${module.name}/build/Info.plist">
+            <filterset>
+                <filter token="INSTALLDIR" value="${app.name}/Contents/Resources/NetBeans"/>
+                <filter token="BUNDLE" value="netbeans.ide.${module.name}"/>
+            </filterset>
+        </copy>
+        
+        <antcall target="size-pack-module"/>
+        
+        <copy file="commonfiles/Description.plist" filtering="true" overwrite="true" tofile="${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist">
+            <filterset>
+                <filter token="TITLE" value="${module.title}"/>
+            </filterset>
+        </copy>  
+        
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/env.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/> 
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/addproduct_id.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
+        <copy file="${basedir}/netBeans/baseide/pkg/scripts/add_cluster.sh" 
+              todir="${basedir}/netBeans/${module.name}/pkg/scripts"/>        
+        
+        <echo message="Building ${module.name} into ${basedir}/build/${module.name}.pkg"/>
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value=" /Developer/Tools/packagemaker -build -v -p ${basedir}/build/${module.name}.pkg -f ${basedir}/netBeans/${module.name}/build/netbeans -i ${basedir}/netBeans/${module.name}/build/Info.plist -r ${basedir}/netBeans/${module.name}/pkg/scripts -d ${basedir}/netBeans/${module.name}/pkg/scripts/Description.plist"/>
+        </exec>                                         
+    </target>          
+    
+    <target name="build-all-dmg" depends="clean,init,build-pkg">                                                        
+        <mkdir dir="dist"/>                  
+        <property name="bundles" value="-javafx(./build/baseide.pkg ./build/javase.pkg  ./build/javafx.pkg)"/>        
+        <for-each list="${bundles}" separator="," property="bundle.type"  propertyArg="packages">
+            <delete dir="${basedir}/dist_dmg"/>                          
+            <antcall target="build-dmg">
+                 <param name="dmg.name" value="${dmg.prefix.name}${ml.suffix}${bundle.type}-macosx"/>  
+                 <param name="mpkg.name" value="${mpkg.name_nb}"/>
+                 <param name="license.file" value="${basedir}/dmg/Resources/license_javafx.txt"/>                                  
+            </antcall>     
+        </for-each>         
+        <delete file="${basedir}/build/sizes.pro"/>
+    </target>     
+            
+    <target name="prepare-lproj-dirs">  
+        <mkdir dir="${basedir}/dmg/Resources_full"/>
+        <property name="resources.full.dir" value="${basedir}/dmg/Resources_full"/> 
+        <copy file="${basedir}/Bundle.properties" todir="${resources.full.dir}"/>
+        <copy  todir="${resources.full.dir}">
+            <fileset dir="${basedir}/dmg/Resources/" includes="*.html"/>
+        </copy>
+       
+        <condition property="nb.locales.nonzero.length">
+            <and>
+                <isset property="nb.locales"/>
+                <length string="${nb.locales}" when="greater" length="0"/>
+            </and>
+        </condition>   
+        <condition property="locales" value=",${nb.locales}" else="">
+            <and>
+                <istrue value="${mlbuild}"/>
+                <istrue value="${nb.locales.nonzero.length}"/>
+            </and>   
+        </condition>
+        <echo message="locales are: ${locales}"/>        
+        
+        <condition property="do.copy.translated.files">
+            <istrue value="${mlbuild}"/>
+        </condition>        
+        <antcall target="copy-translated-files"/> 
+        
+        <for-each list="${locales}" separator="," property="locale">
+            <antcall target="build-lproj-dir"/>                           
+        </for-each>            
+        <delete dir="${resources.full.dir}"/>
+    </target> 
+       
+    <target name="copy-translated-files" if="do.copy.translated.files">         
+        <copy todir="${resources.full.dir}" flatten="true" includeEmptyDirs="false" failonerror="false">                    
+            <fileset dir="${translatedfiles.src}"> 
+                <include name="**/mac/newbuild/**"/>
+            </fileset>
+        </copy>               
+    </target>        
+       
+    <target name="init-locale-propeties">
+        <echo message="Init locale properties for locale: ${locale}"/>
+        <!-- set the name of the locale suffix-->                                   
+        <condition property="locale.suffix" value="" else="_${locale}">
+            <equals arg1="${locale}" arg2=""/>
+        </condition>
+        <condition property="locale.name" value="english" else="${locale}">
+            <equals arg1="${locale}" arg2=""/>
+        </condition>                                                            
+        <!-- find out name of lproj dir from the map file-->
+        <exec executable="sh" failonerror="yes" outputproperty="locale.dir">
+            <arg value="-c"/>
+            <arg value="cat ${basedir}/dmg/lprojdirnames.map  | sed '/'${locale.name}'=/!d;s/'${locale.name}'=//'"/>
+        </exec>                     
+    </target>  
+
+    <target name="build-lproj-dir" depends="init-locale-propeties">
+        <echo message="Building ${locale.dir}.lproj dir..."/>        
+        <!-- create lproj dir -->
+        <mkdir dir="${mpkg.file}/Contents/Resources/${locale.dir}.lproj"/>
+        <!-- copy Welcome.html and Localizable.strings -->                 
+        <copy file="${resources.full.dir}/Welcome${bundle.type}${locale.suffix}.html"
+              tofile="${mpkg.file}/Contents/Resources/${locale.dir}.lproj/Welcome.html" failonerror="false"/>               
+        <exec executable="sh" failonerror="no">
+            <arg value="-c"/>
+            <arg value="cat ${resources.full.dir}/Bundle${locale.suffix}.properties |
+                sed 's/#.*$//;s/^/&quot;/;s/$/&quot;;/;s/=/&quot; = &quot;/;s/^&quot;&quot;;//' 
+                > ${resources.full.dir}/Localizable.strings"/>
+        </exec>
+
+        <loadfile property="Localizable.strings.content" srcFile="${resources.full.dir}/Localizable.strings">
+            <filterchain>
+                <expandproperties/>
+            </filterchain>
+        </loadfile>
+
+	<echo message="${Localizable.strings.content}" file="${resources.full.dir}/Localizable.strings" append="false"/>
+
+        <native2ascii encoding="UTF-16" src="${resources.full.dir}" dest="${mpkg.file}/Contents/Resources/${locale.dir}.lproj" 
+                      reverse="true" includes="Localizable.strings"/>                        
+    </target>     
+  
+    
+    <target name="size-package" description="Count up size of the package">        
+        <exec executable="sh" failonerror="no" outputproperty="size">
+            <arg value="-c"/>
+            <arg value="cd ${package}/Contents; cat Info.plist | sed -n '/IFPkgFlagInstalledSize/{n;p;}' | sed 's/\&lt;integer\&gt;//' | sed 's/\&lt;\/integer\&gt;//'"/>
+        </exec>        
+        <echo message="sizeof.${module.name}=${size}${line.separator}" file="${basedir}/build/sizes.pro" append="true"/>                                     
+    </target>    
+    
+        
+    <target name="build-dmg">   
+        <property file="${basedir}/build/sizes.pro"/>         
+        <echo message="Building dmg for ${dmg.name}.dmg..."/>                    
+        <property name="mpkg.file" value="${basedir}/dist_dmg/${mpkg.name}.mpkg"/>   
+       
+        <copy file="${basedir}/dmg/Resources/bgimage.tif" 
+              tofile="${mpkg.file}/Contents/Resources/background.tif"/>  
+        <copy file="${license.file}" 
+              tofile="${mpkg.file}/Contents/Resources/License.txt" />                         
+
+        <!-- temp workaround with productid for NB in NBFX bundles: replace "NB" with "NBFX" in postflight for baseide.pkg-->     
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBFX&quot;/'
+                            ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
+        </exec>
+                 
+        <antcall target="prepare-lproj-dirs"/>                                             
+        
+        <copy file="dmg/distribution${bundle.type}.dist" tofile="${mpkg.file}/Contents/distribution.dist">                                    
+            <filterset>                      
+                <filter token="SIZE_JAVASE" value="${sizeof.javase}"/> 
+                <filter token="SIZE_JAVAFX" value="${sizeof.javafx}"/>
+                <filter token="SIZE_BASEIDE" value="${sizeof.baseide}"/>                
+            </filterset>
+        </copy> 
+        
+        <mkdir dir="${mpkg.file}/Contents/Packages"/>         
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="cp -RPf ${packages} '${mpkg.file}'/Contents/Packages"/>
+        </exec>                                            
+        
+        <exec executable="sh" failonerror="yes">
+          <arg value="-c"/>
+          <arg value="sh dmg/createdmg.sh '${dmg.name}'.dmg '${mpkg.name}'"/>
+        </exec>  
+        <delete dir="dist_dmg"/>
+    </target>             
+</project>          

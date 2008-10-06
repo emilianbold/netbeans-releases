@@ -97,6 +97,7 @@ import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Node;
 import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -108,7 +109,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WSDLNamedElementNode<ExtensibilityElement> {
 
-    private static final Image ICON = Utilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/resources/generic.png");
+    private static final Image ICON = ImageUtilities.loadImage("org/netbeans/modules/xml/wsdl/ui/view/resources/generic.png");
     private ExtensibilityElement mWSDLConstruct;
     private Node mLayerDelegateNode;
     private Element mSchemaElement;
@@ -122,7 +123,7 @@ public class ExtensibilityElementNode<T extends ExtensibilityElement> extends WS
     private boolean isExtensionIdentified = false;
 
     public ExtensibilityElementNode(ExtensibilityElement wsdlConstruct) {
-        super(new GenericWSDLComponentChildren<ExtensibilityElement>(wsdlConstruct), wsdlConstruct);
+        super(wsdlConstruct);
         mWSDLConstruct = wsdlConstruct;
         QName qName = mWSDLConstruct.getQName();
         //Fix qname, sometimes there is no namespace associated with it.

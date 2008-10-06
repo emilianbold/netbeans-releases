@@ -44,6 +44,7 @@ import org.apache.maven.lifecycle.model.MojoBinding;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -63,7 +64,7 @@ public class ConfigurationNode extends AbstractNode {
 
     @Override
     public Image getIcon(int arg0) {
-        return Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/config.png");
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/config.png");
     }
 
     @Override

@@ -86,7 +86,6 @@ public class AstPath implements Iterable<Node> {
     /**
      * Find the path to the given node in the AST
      */
-    @SuppressWarnings("unchecked")
     public AstPath(Node node, Node target) {
         if (!find(node, target)) {
             path.clear();
@@ -125,7 +124,6 @@ public class AstPath implements Iterable<Node> {
      * Find the position closest to the given offset in the AST. Place the path from the leaf up to the path in the
      * passed in path list.
      */
-    @SuppressWarnings("unchecked")
     public Node findPathTo(Node node, int offset) {
         Node result = find(node, offset);
         if (result != null) {
@@ -148,7 +146,7 @@ public class AstPath implements Iterable<Node> {
         int end = pos.getEndOffset();
 
         if ((offset >= begin) && (offset <= end)) {
-            List<Node> children = (List<Node>)node.childNodes();
+            List<Node> children = node.childNodes();
 
             for (Node child : children) {
                 if (child.isInvisible()) {
@@ -165,7 +163,7 @@ public class AstPath implements Iterable<Node> {
 
             return node;
         } else {
-            List<Node> children = (List<Node>)node.childNodes();
+            List<Node> children = node.childNodes();
             if (children == null) {
                 Logger logger = Logger.getLogger(AstPath.class.getName());
                 logger.log(Level.WARNING, "JRuby AST node " + node + " of type " + node.getClass().getName() + " has null as children");
@@ -202,7 +200,7 @@ public class AstPath implements Iterable<Node> {
             return true;
         }
 
-        List<Node> children = (List<Node>)node.childNodes();
+        List<Node> children = node.childNodes();
 
         for (Node child : children) {
             if (child.isInvisible()) {

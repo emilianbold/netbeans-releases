@@ -109,6 +109,7 @@ import org.netbeans.modules.xml.xam.AbstractComponent;
 import org.netbeans.modules.xml.xam.ui.XAMUtils;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -748,7 +749,7 @@ public class MessageWidget extends AbstractWidget<Message>
             new Insets(2, 0, 0, 0), new Insets(0, 0, 0, 0),
             Color.LIGHT_GRAY, new Color(0x999999));
 
-    private static final Image IMAGE  = Utilities.loadImage
+    private static final Image IMAGE  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/message.png"); // NOI18N
     
     public static final Border HEADER_CELL_BORDER = new FilledBorder(0, 0, 1, 8, null, 

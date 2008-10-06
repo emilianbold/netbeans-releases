@@ -66,6 +66,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -104,7 +105,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     
     private java.awt.Image getServicesImage() {
         if (cachedServicesBadge == null) {
-            cachedServicesBadge = Utilities.loadImage(SERVICES_BADGE);
+            cachedServicesBadge = ImageUtilities.loadImage(SERVICES_BADGE);
         }            
         return cachedServicesBadge;        
     }
@@ -131,7 +132,7 @@ public class JaxWsRootNode extends AbstractNode implements PropertyChangeListene
     private Image computeIcon( boolean opened) {        
         Icon icon = getFolderIcon(opened);
         Image image = ((ImageIcon)icon).getImage();
-        image = Utilities.mergeImages(image, getServicesImage(), 7, 7 );
+        image = ImageUtilities.mergeImages(image, getServicesImage(), 7, 7 );
         return image;        
     }
 

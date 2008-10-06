@@ -133,7 +133,7 @@ public final class ActionToGoalUtils {
                             brc.setGoals(toRet);
                             brc.setExecutionName(project.getName());
                             brc.setProperties(new Properties());
-                            brc.setActivatedProfiles(Collections.EMPTY_LIST);
+                            brc.setActivatedProfiles(Collections.<String>emptyList());
                             rc= brc;
                         }
                     }
@@ -249,10 +249,8 @@ public final class ActionToGoalUtils {
 
     public static NetbeansActionMapping getDefaultMapping(String action, Project project) {
         NetbeansActionMapping na = null;
-        Lookup.Result res = Lookup.getDefault().lookup(new Lookup.Template(MavenActionsProvider.class));
-        Iterator it = res.allInstances().iterator();
-        while (it.hasNext()) {
-            MavenActionsProvider add = (MavenActionsProvider) it.next();
+        Lookup.Result<MavenActionsProvider> res = Lookup.getDefault().lookup(new Lookup.Template<MavenActionsProvider>(MavenActionsProvider.class));
+        for (MavenActionsProvider add : res.allInstances()) {
             na = add.getMappingForAction(action, project);
             if (na != null) {
                 break;

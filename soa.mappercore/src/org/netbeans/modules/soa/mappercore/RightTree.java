@@ -1100,9 +1100,12 @@ public class RightTree extends MapperPanel implements
         collectVisibleTreePathes(pathList, null, null, getRoot(),
                 new int[] { -1 });
 
+        int mod = pathList.size();
+        int row1 = Math.max(0, Math.min(startingRow, mod - 1));
+        
         if (bias == Bias.Forward) {
-            for (int row = startingRow + 1; row < pathList.size(); row++) {
-                TreePath treePath = pathList.get(row);
+            for (int row = row1; row < row1 + mod; row++) {
+                TreePath treePath = pathList.get(row % mod);
                 Object object = treePath.getLastPathComponent();
                 String text = context.getRightDysplayText(model, object);
                 text = (text == null) ? "" : text.trim().toLowerCase(); // NOI18N
@@ -1112,8 +1115,8 @@ public class RightTree extends MapperPanel implements
                 }
             }
         } else {
-            for (int row = startingRow - 1; row >= 0; row--) {
-                TreePath treePath = pathList.get(row);
+            for (int row = row1 + mod; row > row1; row--) {
+                TreePath treePath = pathList.get(row % mod);
                 Object object = treePath.getLastPathComponent();
                 String text = context.getRightDysplayText(model, object);
                 text = (text == null) ? "" : text.trim().toLowerCase(); // NOI18N

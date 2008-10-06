@@ -135,6 +135,10 @@ function get_language(variants) {
 
 function load_js(script_filename) {
     document.write('<script language="javascript" type="text/javascript" src="' + script_filename + '"></script>');
+} 
+
+function load_page_js_locale(name,locale) {
+    load_js_locale(JS_LOCATION + name, locale);
 }
 
 function load_js_locale(script_filename, extension) {  
@@ -146,6 +150,17 @@ function load_js_locale(script_filename, extension) {
     }
      
     load_js(script_filename + suffix + extension);
+}
+
+function load_page_img(img,add) {
+    if(add) {
+        document.write('<img src="' + IMG_LOCATION + img + '" ' + add + '/>');
+    } else {
+        document.write('<img src="' + IMG_LOCATION + img + '"/>');
+    }
+}
+function load_page_css(css) {
+    document.write('<link rel="stylesheet" type="text/css" href="' + CSS_LOCATION + css + '" media="screen"/>');
 }
 
 function write_page_languages() {    
@@ -198,6 +213,21 @@ function startList() {
     }
 }
 
+function get_file_list(dir) {	
+	lst = new Array();
+	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
+            for (var i = 0; i < file_names.length; i++) {		
+		if(file_names[i].indexOf(dir)==0) {
+			var stripped = file_names[i].substring(dir.length, file_names[i].length);
+			if(stripped.indexOf('/')==-1) {
+			    lst[lst.length] = stripped;
+			}
+		}
+            }
+	}
+	return lst;
+}
+
 function getSize(filename) {
 	var size = "";
 	if(typeof file_names!='undefined' && typeof file_sizes!='undefined') {
@@ -209,6 +239,62 @@ function getSize(filename) {
             }
 	}
 	return size;
+}
+
+function get_file_name(platform, option) {
+    var fn = "";
+    if(platform=="zip") {
+        fn += "zip/";
+    } else {
+        fn += "bundles/";
+    }
+    return fn + get_file_name_short(platform, option);
+}
+
+
+function get_file_name_short(platform, option) {
+    var file_name = "";
+    if(platform=="zip") {
+        file_name += ZIP_FILES_PREFIX;
+    } else {
+        file_name += BUNDLE_FILES_PREFIX;
+    }
+    if (option != "all") {
+    	file_name += "-" + option;
+    }
+
+    if ( platform != "zip" ) {
+   	file_name += "-" + platform;
+    }
+    if (platform == "windows") {
+        file_name += ".exe";
+    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
+        file_name += ".tgz";
+    } else if (platform == "macosx") {
+	file_name += ".dmg";
+    } else if(platform == "zip"){
+	file_name += ".zip"        
+    } else {
+        file_name += ".sh";
+    }
+    return file_name;
+}
+
+function get_file_url(filename) {
+    var url  = BUILD_LOCATION;
+    url += filename;    
+    return url;
+}
+
+
+function get_file_bouncer_url(platform, option) {
+    var url = BOUNCER_URL;
+    url += "?" + "product=" + BOUNCER_PRODUCT_PREFIX;
+    if(option != "all") {
+        url += "-" + option;
+    }
+    url += "&" + "os=" + platform;
+    return url;
 }
 
 function message(msg) {

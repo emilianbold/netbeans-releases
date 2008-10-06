@@ -17,7 +17,7 @@ class ExtractMethodSample
     c = 1, d = 2, e = 3
 
     # Begin
-    a, c, g, i = extract(a, b, d)
+    a, c, g, i = new_name(a, b, d)
     # End
 
     puts g
@@ -29,7 +29,7 @@ class ExtractMethodSample
   end
   
   # TODO Comment
-  def extract(a, b, d)
+  def new_name(a, b, d)
     if (b > 4)
       a = 1
     end

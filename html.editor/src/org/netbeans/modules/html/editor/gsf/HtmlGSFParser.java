@@ -41,6 +41,7 @@ package org.netbeans.modules.html.editor.gsf;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.editor.ext.html.dtd.DTD;
 import org.netbeans.editor.ext.html.dtd.DTD.Element;
@@ -62,6 +63,7 @@ import org.netbeans.modules.gsf.api.PositionManager;
 import org.netbeans.modules.gsf.api.Severity;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.html.editor.NbReaderProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -71,7 +73,12 @@ import org.openide.util.NbBundle;
  */
 public class HtmlGSFParser implements Parser, PositionManager {
 
+    public HtmlGSFParser() {
+        NbReaderProvider.setupReaders(); //initialize DTD registry
+    }
     
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static final Logger LOGGER = Logger.getLogger(HtmlGSFParser.class.getName());
     private static final boolean LOG = LOGGER.isLoggable(Level.FINE);
 
@@ -84,8 +91,11 @@ public class HtmlGSFParser implements Parser, PositionManager {
                 HtmlParserResult result = null;
 
                 CharSequence buffer = job.reader.read(file);
-                int caretOffset = job.reader.getCaretOffset(file);
-
+                if(buffer == null) {
+                    //likely invalid state, the source shouldn't be null I guess
+                    LOGGER.info("Job.reader.read(file) returned null for file " + file.getFile().getAbsolutePath());
+                    buffer = ""; //recover
+                }
                 List<SyntaxElement> elements = SyntaxParser.parseImmutableSource(buffer);
 
                 if (LOG) {
@@ -96,11 +106,17 @@ public class HtmlGSFParser implements Parser, PositionManager {
 
                 result = new HtmlParserResult(this, file, elements);
 
+                if (TIMERS.isLoggable(Level.FINE)) {
+                    LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N
+                    rec.setParameters(new Object[] { result });
+                    TIMERS.log(rec);
+                }
+
                 //highlight unpaired tags
                 final DTD dtd = result.dtd();
                 AstNodeUtils.visitChildren(result.root(),
                         new AstNodeVisitor() {
-
+                            
                             public void visit(AstNode node) {
                                 if (node.type() == AstNode.NodeType.UNMATCHED_TAG) {
                                     AstNode unmatched = node.children().get(0);
@@ -146,8 +162,8 @@ public class HtmlGSFParser implements Parser, PositionManager {
             return new OffsetRange(AstUtils.documentPosition(node.startOffset(), source), AstUtils.documentPosition(node.endOffset(), source));
 
         } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
         }
     }
     

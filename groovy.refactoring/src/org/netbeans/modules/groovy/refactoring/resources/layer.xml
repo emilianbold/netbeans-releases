@@ -21,6 +21,7 @@
         </folder>
     </folder>
         
+<!--
     <folder name="Loaders">
         <folder name="text">
             <folder name="x-groovy">
@@ -37,13 +38,10 @@
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
-                    <!-- File renaming is still legitimate in Ruby
-              <attr boolvalue="true" name="RefactoringSeparator-1.instance/ToolsAction.instance"/>
-              <file name="RenameAction.instance_hidden"/>
-              -->
                 </folder>
             </folder>
         </folder>
     </folder>
+-->
     
 </filesystem>

@@ -75,8 +75,6 @@ import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.modules.ModuleInfo;
-import org.openide.util.Lookup;
 
 /**
  * Tests for JavaProjectGenerator.
@@ -95,8 +93,12 @@ public class JavaProjectGeneratorTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
-        Lookup.getDefault().lookup(ModuleInfo.class);
         clearWorkDir();
+    }
+
+    @Override
+    protected int timeOut() {
+        return 300000;
     }
     
     private AntProjectHelper createEmptyProject(String projectFolder, String projectName, boolean notSoEmpty) throws Exception {

@@ -44,7 +44,9 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -131,7 +133,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         String gfRootStr = properties.getGlassfishRoot();
         if (gfRootStr != null) {
-            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt");
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt" + ServerUtilities.GFV3_VERSION_MATCHER);
             jsr109lib = new File(gfRootStr, "jsr109-impl");
         }
 
@@ -193,9 +195,16 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                                              "webservices-rt", 
                                              "webservices-tools", 
                                              "jsr109-impl"};
-            ArrayList<File> cPath = new ArrayList<File>();
-            for (String entry : entries) {
-                File f = ServerUtilities.getJarName(gfRootStr, entry);
+            List<File> cPath = new ArrayList<File>();
+            List<String> entryList = Arrays.asList(entries);
+            File f = ServerUtilities.getJarName(gfRootStr, "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
+            if (null == f) {
+                // Prelude release hack
+                entryList = ServerUtilities.filterByManifest(entryList, 
+                        new File(gfRootStr, "modules"), 0, true);
+            }
+            for (String entry : entryList) {
+                f = ServerUtilities.getJarName(gfRootStr, entry);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }

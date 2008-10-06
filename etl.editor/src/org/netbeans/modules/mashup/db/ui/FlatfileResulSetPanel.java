@@ -69,6 +69,7 @@ import org.openide.DialogDisplayer;
 
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import net.java.hulp.i18n.Logger;
@@ -205,7 +206,7 @@ public class FlatfileResulSetPanel extends JPanel implements ActionListener, Pro
     public static Icon getDbIcon() {
         Icon icon = null;
         try {
-            icon = new ImageIcon(Utilities.loadImage("org/netbeans/modules/mashup/db/ui/resource/images/root.png"));
+            icon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/mashup/db/ui/resource/images/root.png"));
         } catch (Exception ex) {
             // Log exception
         }

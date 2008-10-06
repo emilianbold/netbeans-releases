@@ -164,7 +164,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                 if(c instanceof InterruptedException) {                    
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
                 }
-                if(support.isCanceled()) {
+                if(support != null && support.isCanceled()) {
                     Subversion.LOG.log(Level.WARNING, null, t);
                     // who knows what might have happened ...
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);

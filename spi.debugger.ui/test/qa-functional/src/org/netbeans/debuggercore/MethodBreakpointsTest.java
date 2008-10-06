@@ -55,6 +55,7 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.debugger.actions.ContinueAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
@@ -95,9 +96,9 @@ public class MethodBreakpointsTest extends JellyTestCase {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(MethodBreakpointsTest.class).addTest(
+                    "testMethodBreakpointCreation",
                     "testMethodBreakpointPrefilledConstructor",
                     "testMethodBreakpointPrefilledMethod",
-                    "testMethodBreakpointCreation",
                     "testMethodBreakpointFunctionalityInPrimaryClass",
                     "testMethodBreakpointFunctionalityInSecondClass",
                     "testMethodBreakpointFunctionalityOnAllMethods",
@@ -126,6 +127,28 @@ public class MethodBreakpointsTest extends JellyTestCase {
         Utilities.endAllSessions();
         Utilities.deleteAllBreakpoints();
     }
+
+    /**
+     *
+     */
+    public void testMethodBreakpointCreation() throws Throwable {
+        try {
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            NbDialogOperator dialog = Utilities.newBreakpoint(92);
+            setBreakpointType(dialog, "Method");
+            new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
+            new JTextFieldOperator(dialog, 0).setText("updateStatus()");
+            dialog.ok();
+            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
+            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
+            assertEquals("Method MemoryView.updateStatus", jTableOperator.getValueAt(0, 0).toString());
+        } catch (Throwable th) {
+            Utilities.captureScreen(this);
+            throw th;
+        }
+    }
     
     /**
      *
@@ -135,11 +158,10 @@ public class MethodBreakpointsTest extends JellyTestCase {
             //open source
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-
-            NbDialogOperator dialog = Utilities.newBreakpoint(53);
+            EditorOperator eo = new EditorOperator("MemoryView.java");            
+            NbDialogOperator dialog = Utilities.newBreakpoint(53);            
             setBreakpointType(dialog, "Method");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
             assertEquals("Method Name was not set to correct value.", "MemoryView ()", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
         } catch (Throwable th) {
@@ -155,26 +177,9 @@ public class MethodBreakpointsTest extends JellyTestCase {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
             setBreakpointType(dialog, "Method");
-            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JEditorPaneOperator(dialog, 0).getText());
+            assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
             assertEquals("Method Name was not set to correct value.", "updateStatus ()", new JTextFieldOperator(dialog, 0).getText());
             dialog.cancel();
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
-    }
-
-    /**
-     *
-     */
-    public void testMethodBreakpointCreation() throws Throwable {
-        try {
-            NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            setBreakpointType(dialog, "Method");
-            dialog.ok();
-            Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
-            JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.breakpointsViewTitle));
-            assertEquals("Method MemoryView.updateStatus", jTableOperator.getValueAt(0, 0).toString());
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -187,10 +192,15 @@ public class MethodBreakpointsTest extends JellyTestCase {
     public void testMethodBreakpointFunctionalityInPrimaryClass() throws Throwable {
         try {
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
-            setBreakpointType(dialog, "Method");
+            setBreakpointType(dialog, "Method");            
             dialog.ok();
-            Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", 0);
+            try {
+                Utilities.startDebugger();
+            } catch (Throwable th) {
+                dialog.ok();
+                Utilities.startDebugger();
+            }
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -206,7 +216,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:154", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:154");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -222,19 +232,19 @@ public class MethodBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Method");
             dialog.ok();
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:39", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:114", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:114");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:51", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:51");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:121", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:121");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -259,13 +269,13 @@ public class MethodBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:50", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:50");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:76", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:79", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:79");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:109", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -278,7 +288,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
             setBreakpointType(dialog, "Method");
             new JComboBoxOperator(dialog, 2).setSelectedItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Method_Breakpoint_Type_Entry")); //method entry
             new JCheckBoxOperator(dialog, 1).changeSelection(true);
-            new JEditorPaneOperator(dialog, 1).setText("UPDATE_TIME >= 1001");
+            new JEditorPaneOperator(dialog, 0).setText("UPDATE_TIME >= 1001");
 
             dialog.ok();
             EditorOperator eo = new EditorOperator("MemoryView.java");
@@ -286,9 +296,9 @@ public class MethodBreakpointsTest extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 104);
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:104", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:92", lines + 1);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -304,13 +314,13 @@ public class MethodBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname, 0);
+            Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
             dialog = Utilities.newBreakpoint(104);
             setBreakpointType(dialog, "Method");
             wrongname = "wrong2";
             new JTextFieldOperator(dialog, 0).setText(wrongname);
             dialog.ok();
-            //lines = Utilities.waitDebuggerConsole("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname, lines + 1);
+            Utilities.waitStatusText("Not able to submit breakpoint MethodBreakpoint [examples.advanced.MemoryView]." + wrongname);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

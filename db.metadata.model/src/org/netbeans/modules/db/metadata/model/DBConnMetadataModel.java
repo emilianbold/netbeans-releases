@@ -55,7 +55,6 @@ import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.mssql.MSSQLMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.openide.util.Mutex;
 
 /**
@@ -69,8 +68,7 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
     private final ReentrantLock lock = new ReentrantLock();
     private final WeakReference<DatabaseConnection> dbconnRef;
 
-    private JDBCMetadata metadataImpl;
-    private Metadata metadata;
+    private JDBCMetadata jdbcMetadata;
 
     public DBConnMetadataModel(DatabaseConnection dbconn) {
         this.dbconnRef = new WeakReference<DatabaseConnection>(dbconn);
@@ -87,7 +85,8 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             }
             try {
                 enterReadAccess(dbconn);
-                if (metadata != null) {
+                if (jdbcMetadata != null) {
+                    Metadata metadata = jdbcMetadata.getMetadata();
                     action.run(metadata);
                 }
             } catch (SQLException e) {
@@ -104,7 +103,7 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
         LOGGER.fine("Refreshing model");
         lock.lock();
         try {
-            metadataImpl = null;
+            jdbcMetadata = null;
         } finally {
             lock.unlock();
         }
@@ -114,8 +113,8 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
         LOGGER.log(Level.FINE, "Refreshing table ''{0}''", tableName);
         lock.lock();
         try {
-            if (metadataImpl != null) {
-                metadataImpl.refreshTable(tableName);
+            if (jdbcMetadata != null) {
+                jdbcMetadata.refreshTable(tableName);
             }
         } finally {
             lock.unlock();
@@ -132,7 +131,7 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
                 }
             });
         }
-        Connection oldConn = (metadataImpl != null) ? metadataImpl.getConnection() : null;
+        Connection oldConn = (jdbcMetadata != null) ? jdbcMetadata.getConnection() : null;
         if (oldConn != conn) {
             // If the connection has been reconnected, reinit the metadata.
             String defaultSchemaName = dbconn.getSchema();
@@ -140,11 +139,9 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
                 defaultSchemaName = null;
             }
             if (conn != null) {
-                metadataImpl = createMetadata(conn, defaultSchemaName);
-                metadata = MetadataFactory.createMetadata(metadataImpl);
+                jdbcMetadata = createMetadata(conn, defaultSchemaName);
             } else {
-                metadataImpl = null;
-                metadata = null;
+                jdbcMetadata = null;
             }
         }
     }

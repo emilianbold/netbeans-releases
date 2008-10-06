@@ -45,11 +45,9 @@ package org.netbeans.modules.debugger.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 
 
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -72,11 +70,6 @@ public class ViewActions extends AbstractAction {
             return NbBundle.getMessage (ViewActions.class, (String) super.getValue(key));
         }
         Object value = super.getValue(key);
-        if (key == Action.SMALL_ICON) {
-            if (value instanceof String) {
-                value = new ImageIcon (Utilities.loadImage ((String) value));
-            }
-        }
         return value;
     }
     
@@ -104,7 +97,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("breakpointsView");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_BreakpointsAction");
-        action.putValue (Action.SMALL_ICON, 
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif" // NOI18N
         );
         return action;
@@ -117,7 +110,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("callstackView");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_CallStackAction");
-        action.putValue (Action.SMALL_ICON, 
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/callStackView/call_stack_16.png" // NOI18N
         );
         return action;
@@ -130,7 +123,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("localsView");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_LocalVariablesAction");
-        action.putValue (Action.SMALL_ICON, 
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/localsView/local_variable_16.png" // NOI18N
         );
         return action;
@@ -143,7 +136,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("sessionsView");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_SessionsAction");
-        action.putValue (Action.SMALL_ICON, 
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/sessionsView/session_16.png" // NOI18N
         );
         return action;
@@ -156,7 +149,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("threadsView");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_ThreadsAction");
-        action.putValue (Action.SMALL_ICON, 
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/threadsView/ThreadGroup.gif" // NOI18N
         );
         return action;
@@ -170,7 +163,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("watchesView");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_WatchesAction");
-        action.putValue (Action.SMALL_ICON, 
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/watchesView/watch_16.png" // NOI18N
         );
         return action;
@@ -183,7 +176,7 @@ public class ViewActions extends AbstractAction {
         ViewActions action = new ViewActions("sources");
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_SourcesAction");
-        action.putValue (Action.SMALL_ICON,
+        action.putValue ("iconbase",
                 "org/netbeans/modules/debugger/resources/sourcesView/sources_16.png" // NOI18N
         );
         return action;

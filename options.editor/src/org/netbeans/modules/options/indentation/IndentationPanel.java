@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.options.indentation;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -61,9 +63,12 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSpinner;
 import javax.swing.SpinnerNumberModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
@@ -71,6 +76,7 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
 import org.openide.awt.Mnemonics;
+import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -105,7 +111,14 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         if (this.allLangPrefs == null) {
             assert preview == null;
             assert mimePath == MimePath.EMPTY;
-            this.preview = new IndentationPreview(prefs);
+            PreviewProvider pp;
+            try {
+                pp = new TextPreview(prefs, "text/xml", getClass().getClassLoader(), "/org/netbeans/modules/options/indentation/indentationExample"); //NOI18N
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+                pp = new NoPreview();
+            }
+            this.preview = pp;
             this.showOverrideGlobalOptions = false;
         } else {
             assert preview != null;
@@ -222,11 +235,13 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
         
         if (key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
-            int nue = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefInt(SimpleValueNames.SPACES_PER_TAB, 4));
-            if (nue != (Integer) sNumberOfSpacesPerIndent.getValue()) {
-                sNumberOfSpacesPerIndent.setValue(nue);
+            if (prefs.get(SimpleValueNames.INDENT_SHIFT_WIDTH, null) == null) {
+                int nue = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, getDefInt(SimpleValueNames.SPACES_PER_TAB, 4));
+                if (nue != (Integer) sNumberOfSpacesPerIndent.getValue()) {
+                    sNumberOfSpacesPerIndent.setValue(nue);
+                }
+                needsRefresh = true;
             }
-            needsRefresh = true;
         }
         
         if (key == null || SimpleValueNames.TAB_SIZE.equals(key)) {
@@ -328,6 +343,8 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         sTabSize = new ControlledSpinner();
         lRightMargin = new ControlledLabel();
         sRightMargin = new ControlledSpinner();
+
+        setOpaque(false);
 
         cbOverrideGlobalOptions.setText("Override Global Options");
         cbOverrideGlobalOptions.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -455,14 +472,34 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         return allLangPrefs != null ? allLangPrefs.getInt(key, def) : def;
     }
 
-    private static class IndentationPreview implements PreviewProvider {
+    public static final class TextPreview implements PreviewProvider {
 
         private final Preferences prefs;
+        private final String mimeType;
+        private final String previewText;
+        
         private JEditorPane jep;
-        private String previewText;
 
-        public IndentationPreview(Preferences prefs) {
+        public TextPreview(Preferences prefs, FileObject previewFile) throws IOException {
+            this(prefs, previewFile.getMIMEType(), loadPreviewText(previewFile.getInputStream()));
+        }
+
+        public TextPreview(Preferences prefs, String mimeType, FileObject previewFile) throws IOException {
+            this(prefs, mimeType, loadPreviewText(previewFile.getInputStream()));
+        }
+
+        public TextPreview(Preferences prefs, String mimeType, String previewText) {
             this.prefs = prefs;
+            this.mimeType = mimeType;
+            this.previewText = previewText;
+        }
+
+        public TextPreview(Preferences prefs, String mimeType, ClassLoader loader, String resourceName) throws IOException {
+            this(prefs, mimeType, loadPreviewText(loader.getResourceAsStream(resourceName)));
+        }
+
+        public TextPreview(Preferences prefs, String mimeType, Class clazz, String bundleKey) {
+            this(prefs, mimeType, NbBundle.getMessage(clazz, bundleKey));
         }
 
         public JComponent getPreviewComponent() {
@@ -471,61 +508,80 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 jep.getAccessibleContext().setAccessibleName(NbBundle.getMessage(IndentationPanel.class, "AN_Preview")); //NOI18N
                 jep.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(IndentationPanel.class, "AD_Preview")); //NOI18N
                 jep.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-                jep.setEditorKit(CloneableEditorSupport.getEditorKit("text/xml")); //NOI18N
+                jep.setEditorKit(CloneableEditorSupport.getEditorKit(mimeType)); //NOI18N
                 jep.setEditable(false);
             }
             return jep;
         }
 
         public void refreshPreview() {
-            if (previewText == null) {
-                // add text to preview
-                try {
-                    InputStream is = getClass ().getResourceAsStream("/org/netbeans/modules/options/indentation/indentationExample"); //NOI18N
-                    BufferedReader r = new BufferedReader (new InputStreamReader (is));
-                    try {
-                        StringBuilder sb = new StringBuilder();
-                        for (String line = r.readLine (); line != null; line = r.readLine()) {
-                            sb.append (line).append ('\n'); //NOI18N
-                        }
-                        previewText = sb.toString();
-                    } finally {
-                        r.close();
-                    }
-                } catch (IOException ioe) {
-                    LOG.log(Level.WARNING, null, ioe);
-                }
-            }
-
             JEditorPane pane = (JEditorPane) getPreviewComponent();
             pane.setText(previewText);
             
-            BaseDocument doc = (BaseDocument) pane.getDocument();
-            Reformat reformat = Reformat.get(doc);
-            reformat.lock();
-            try {
-                doc.atomicLock();
+            final Document doc = pane.getDocument();
+            if (doc instanceof BaseDocument) {
+                final Reformat reformat = Reformat.get(doc);
+                reformat.lock();
                 try {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
-                                + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
-                                + ", tabSize=" + IndentUtils.tabSize(doc) //NOI18N
-                                + ", mimeType='" + doc.getProperty("mimeType") + "'" //NOI18N
-                                + ", doc=" + s2s(doc)); //NOI18N
-                    }
-                    reformat.reformat(0, doc.getLength());
-                } catch (BadLocationException ble) {
-                    LOG.log(Level.WARNING, null, ble);
+                    ((BaseDocument) doc).runAtomic(new Runnable() {
+                        public void run() {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Refreshing preview: expandTabs=" + IndentUtils.isExpandTabs(doc) //NOI18N
+                                        + ", indentLevelSize=" + IndentUtils.indentLevelSize(doc) //NOI18N
+                                        + ", tabSize=" + IndentUtils.tabSize(doc) //NOI18N
+                                        + ", mimeType='" + doc.getProperty("mimeType") + "'" //NOI18N
+                                        + ", doc=" + s2s(doc)); //NOI18N
+                            }
+
+                            try {
+                                reformat.reformat(0, doc.getLength());
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.WARNING, null, ble);
+                            }
+                        }
+                    });
                 } finally {
-                    doc.atomicUnlock();
+                    reformat.unlock();
                 }
-            } finally {
-                reformat.unlock();
+            } else {
+                LOG.warning("Can't format " + doc + "; it's not BaseDocument."); //NOI18N
             }
-            
         }
 
+        private static String loadPreviewText(InputStream is) throws IOException {
+            BufferedReader r = new BufferedReader(new InputStreamReader(is));
+            try {
+                StringBuilder sb = new StringBuilder();
+                for (String line = r.readLine(); line != null; line = r.readLine()) {
+                    sb.append(line).append('\n'); //NOI18N
+                }
+                return sb.toString();
+            } finally {
+                r.close();
+            }
+        }
     } // End of IndentationPreview class
+
+    public static final class NoPreview implements PreviewProvider {
+        private JComponent component = null;
+
+        public JComponent getPreviewComponent() {
+            if (component == null) {
+                JLabel noPreviewLabel = new JLabel(NbBundle.getMessage(IndentationPanel.class, "MSG_no_preview_available")); //NOI18N
+                noPreviewLabel.setOpaque(true);
+                noPreviewLabel.setHorizontalAlignment(SwingConstants.CENTER);
+                noPreviewLabel.setBorder(new EmptyBorder(new Insets(11, 11, 11, 11)));
+                noPreviewLabel.setVisible(true);
+                component = new JPanel(new BorderLayout());
+                component.add(noPreviewLabel, BorderLayout.CENTER);
+            }
+            return component;
+        }
+
+        public void refreshPreview() {
+            // noop
+        }
+    } // End of NoPreview class
 
     private static String s2s(Object o) {
         return o == null ? "null" : o.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(o));

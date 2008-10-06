@@ -51,6 +51,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.PropertyAlias;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
@@ -61,7 +62,7 @@ import org.openide.util.actions.SystemAction;
  */
 public class PropertyAliasNode extends AbstractNode {
 
-    private static Image ICON  = Utilities.loadImage
+    private static Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/propertyalias.png");
     
     protected PropertyAlias mWSDLConstruct;

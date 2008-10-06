@@ -67,6 +67,7 @@ import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -108,7 +109,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
                     if (!KeyboardPopupSwitcher.isShown()) {
                         KeyboardPopupSwitcher.selectItem(
                                 createSwitcherItems(threads),
-                                releaseKey, triggerKey, (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0);
+                                releaseKey, triggerKey, true); // (evt.getModifiers() & KeyEvent.SHIFT_MASK) == 0
                     }
                     return;
                 }
@@ -159,7 +160,7 @@ public final class ThreadsHistoryAction extends AbstractAction {
             }
             String htmlName = name;
             String description = ""; // tc.getToolTipText();
-            Image image = Utilities.loadImage(DebuggingNodeModel.getIconBase(thread));
+            Image image = ImageUtilities.loadImage(DebuggingNodeModel.getIconBase(thread));
             Icon icon = null;
             if (image != null) {
                 boolean isCurrent = thread == currentThread;

@@ -57,8 +57,9 @@ public final class NbJSPreferences {
         PROP_SUSPEND_ON_DEBUGGER_KEYWORD("debuggerKeywordSuspend", true),   // NOI18N
         PROP_SHOW_FUNCTIONS("functionsShow", false),                        // NOI18N
         PROP_SHOW_CONSTANTS("constantsShow", true),                         // NOI18N
-        PROP_HTTP_MONITOR_ENABLED("PROP_HTTP_MONITOR_ENABLED", false),      // NOI18N
-        PROP_HTTP_MONITOR_OPENED("http_monitor_opened", false);             // NOI18N
+        PROP_HTTP_MONITOR_ENABLED("PROP_HTTP_MONITOR_ENABLED", true),       // NOI18N
+        PROP_HTTP_MONITOR_OPENED("http_monitor_opened", false),             // NOI18N
+        PROP_IGNORE_QUERY_STRINGS("ignoreQueryStrings", true);              // NOI18N
         PROPERTIES( String string, boolean b_default){
             this.string = string;
             this.b_default = b_default;
@@ -82,7 +83,7 @@ public final class NbJSPreferences {
 
     }
 
-    public static NbJSPreferences getInstance() {
+    public static synchronized NbJSPreferences getInstance() {
         if (INSTANCE == null) {
             INSTANCE = new NbJSPreferences();
         }
@@ -167,6 +168,14 @@ public final class NbJSPreferences {
     }
     public void seHttpMonitorEnabled(boolean b) {
         PROPERTIES.PROP_HTTP_MONITOR_ENABLED.setBooleanPreferences(b);
+    }
+
+    public void setIgnoreQueryStrings(boolean b) {
+        PROPERTIES.PROP_IGNORE_QUERY_STRINGS.setBooleanPreferences(b);
+    }
+
+    public boolean getIgnoreQueryStrings() {
+        return PROPERTIES.PROP_IGNORE_QUERY_STRINGS.getBooleanPreference();
     }
 
     public void addPreferenceChangeListener(PreferenceChangeListener listener) {

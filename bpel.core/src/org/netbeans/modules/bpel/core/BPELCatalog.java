@@ -36,6 +36,7 @@ import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.BPELQName;
 import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.schema.resources.ResourceMarker;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -249,7 +250,7 @@ public class BPELCatalog implements CatalogReader, CatalogDescriptor, EntityReso
      * @return icon representing current state or null
      */
     public Image getIcon(int type) {
-        return Utilities.loadImage(IMAGE_PATH);
+        return ImageUtilities.loadImage(IMAGE_PATH);
     }
     
     /**

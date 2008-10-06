@@ -46,8 +46,6 @@ import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableListNodeInfo;
 import org.netbeans.modules.db.explorer.infos.TableNodeInfo;
 
@@ -200,18 +198,8 @@ public abstract class DBTestBase extends TestBase {
      */
     protected DatabaseConnection getDatabaseConnection(boolean connect) throws Exception {
         DatabaseConnection dbconn = DatabaseConnection.create(getJDBCDriver(), dbUrl, username, SCHEMA_NAME, password, false);
-        DatabaseConnection existing = ConnectionManager.getDefault().getConnection(dbconn.getName());
-        if (existing != null) {
-            dbconn = existing;
-        } else {
-            ConnectionManager.getDefault().addConnection(dbconn);
-        }
 
-        if (connect) {
-            ConnectionManager.getDefault().connect(dbconn);
-        }
-
-        return dbconn;
+        return addConnection(dbconn, connect);
     }
 
     protected String getSchema() throws Exception {
@@ -586,6 +574,29 @@ public abstract class DBTestBase extends TestBase {
         getConnection();
         dropSchema();
         removeConnection();
+    }
+
+    /**
+     * Is this vendor one that doesn't (really) support schemas?  In particular, if you
+     * specify a schema in the database connection creation, does it matter?
+     *
+     * @return
+     */
+    public boolean schemaNotUsed() {
+        return isMySQL();
+    }
+
+    public DatabaseConnection addConnection(DatabaseConnection dbconn, boolean connect) throws DatabaseException {
+        DatabaseConnection existing = ConnectionManager.getDefault().getConnection(dbconn.getName());
+        if (existing != null) {
+            dbconn = existing;
+        } else {
+            ConnectionManager.getDefault().addConnection(dbconn);
+        }
+        if (connect) {
+            ConnectionManager.getDefault().connect(dbconn);
+        }
+        return dbconn;
     }
 
     private void initQuoteString() throws Exception {

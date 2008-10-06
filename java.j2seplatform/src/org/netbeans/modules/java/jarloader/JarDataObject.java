@@ -46,6 +46,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  * Represents a JAR file.
@@ -63,6 +64,11 @@ public final class JarDataObject extends MultiDataObject {
     
     protected Node createNodeDelegate() {
         return new JarDataNode(this);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return getCookieSet().getLookup();
     }
     
 }

@@ -55,6 +55,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -117,7 +118,7 @@ public class WSDLDesignMultiViewDesc extends Object
 	 *
 	 */
 	public java.awt.Image getIcon() {
-		return Utilities.loadImage(WSDLDataObject.WSDL_ICON_BASE_WITH_EXT);
+		return ImageUtilities.loadImage(WSDLDataObject.WSDL_ICON_BASE_WITH_EXT);
 	}
 
 

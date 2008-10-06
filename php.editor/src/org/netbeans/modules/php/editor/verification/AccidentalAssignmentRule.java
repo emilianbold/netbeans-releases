@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.HintSeverity;
 import org.netbeans.modules.gsf.api.OffsetRange;
@@ -46,6 +48,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.util.NbBundle;
@@ -54,8 +57,11 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class AccidentalAssignmentRule extends PHPRule {
-
+public class AccidentalAssignmentRule extends PHPRule implements PHPRuleWithPreferences {
+    private static final String INCL_WHILE_PREFS_KEY = "php.verification.accidental.assignment.include.while"; //NOI18N
+    private Preferences prefs = null;
+    private boolean inclWhile = false;
+    
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
     }
@@ -68,6 +74,13 @@ public class AccidentalAssignmentRule extends PHPRule {
         return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDesc");
     }
 
+    @Override
+    public void visit(Program program) {
+        // avoid searching the prefs every time
+        inclWhile = includeAssignementsInWhile(prefs);
+        super.visit(program);
+    }
+    
     @Override
     public void visit(IfStatement node) {
         check(node.getCondition());
@@ -91,7 +104,10 @@ public class AccidentalAssignmentRule extends PHPRule {
 
     @Override
     public void visit(WhileStatement node) {
-        check(node.getCondition());
+        if (inclWhile){
+            check(node.getCondition());
+        }
+        
         super.visit(node);
     }
 
@@ -101,6 +117,23 @@ public class AccidentalAssignmentRule extends PHPRule {
 
     public String getDisplayName() {
         return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDispName");
+    }
+
+    @Override
+    public JComponent getCustomizer(Preferences node) {
+        return new AccidentalAssignmentCustomizer(node);
+    }
+
+    public static final boolean includeAssignementsInWhile(Preferences prefs){
+        return prefs.getBoolean(INCL_WHILE_PREFS_KEY, false);
+    }
+    
+    public static final void setIncludeAssignementsInWhile(Preferences prefs, boolean value){
+        prefs.putBoolean(INCL_WHILE_PREFS_KEY, value);
+    }
+
+    public void setPreferences(Preferences prefs) {
+        this.prefs = prefs;
     }
     
     private class ExpressionFinder extends DefaultVisitor{

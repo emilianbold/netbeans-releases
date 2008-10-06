@@ -40,15 +40,16 @@
  */
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
-#include <iostream.h>
+#include <iostream>
 
 int main(int argc, char**argv) {
     pid_t pid;
     pid_t f_res;
 
     // Prints welcome message...
-    cout << "Welcome ...\n";
+    std::cout << "Welcome ..." << std::endl;
     pid=getpid();
 
     // Prints arguments...
@@ -57,14 +58,16 @@ int main(int argc, char**argv) {
         if (0 == f_res) {
             /* Child */
             pid=getpid();
-            cout << "\nPID child = " << pid << "\n";
+            std::cout << std::endl << "PID child = " << pid << std::endl;
             _exit(0);
         }
-        cout << "PID parent = " << pid  << "  PID child = " << f_res << "\n";
-        cout << "\nArguments:\n";
+        std::cout << "PID parent = " << pid  << "  PID child = " << f_res << std::endl;
+        std::cout << std::endl << "Arguments:" << std::endl;
         for (int i = 1; i < argc; i++) {
-            cout << i << ": " << argv[i] << "\n";
+            std::cout << i << ": " << argv[i] << std::endl;
         }
     }
+    int status;
+    wait(&status);
     return 0;
 }

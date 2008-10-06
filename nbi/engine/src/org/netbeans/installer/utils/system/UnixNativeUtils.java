@@ -129,6 +129,8 @@ public class UnixNativeUtils extends NativeUtils {
             ".config/user-dirs.conf";//NOI18N    
     public static final String XDG_USERDIRS_GLOBAL_CONF = 
             "/etc/xdg/user-dirs.conf";//NOI18N
+    public static final String DESKTOP_EXT = 
+            ".desktop";//NOI18N
     
     public static final String DEFAULT_XDG_DATA_HOME =
             ".local/share"; // NOI18N
@@ -245,21 +247,66 @@ public class UnixNativeUtils extends NativeUtils {
         LogManager.logIndent(
                 "devising the shortcut location by type: " + locationType); // NOI18N
 
-        final String XDG_DATA_HOME =
-                SystemUtils.getEnvironmentVariable(XDG_DATA_HOME_ENV_VARIABLE);
-        final String XDG_DATA_DIRS =
-                SystemUtils.getEnvironmentVariable(XDG_DATA_DIRS_ENV_VARIABLE);
+        final File shortcutFile;
+        
+        switch (locationType) {
+            case CURRENT_USER_DESKTOP:
+            case ALL_USERS_DESKTOP:
+                final File desktopLocation = getDesktopFolder();
+                LogManager.log("... desktop folder : " + desktopLocation);
+                shortcutFile = new File(desktopLocation, getShortcutFileName(shortcut));
+                break;
+            case CURRENT_USER_START_MENU:
+                final File currentUserAppFolder = 
+                        getApplicationsLocation(
+                        getCurrentUserLocation());
+                LogManager.log("... current user app folder : " + currentUserAppFolder);
+                shortcutFile =  new File(currentUserAppFolder, 
+                        getShortcutFileName(shortcut));
+                break;
+            case ALL_USERS_START_MENU:
+                final File allUsersAppFolder = 
+                        getApplicationsLocation(
+                        getAllUsersLocation());
+                LogManager.log("... all users app folder : " + allUsersAppFolder);
+                shortcutFile = new File(allUsersAppFolder,
+                        getShortcutFileName(shortcut));
+                break;
+            default:
+                shortcutFile = null;
 
-        final File currentUserLocation;
-        if (XDG_DATA_HOME == null) {
-            currentUserLocation = new File(
-                    SystemUtils.getUserHomeDirectory(),
-                    DEFAULT_XDG_DATA_HOME);
-        } else {
-            currentUserLocation = new File(
-                    XDG_DATA_HOME);
         }
 
+        LogManager.logUnindent(
+                "shortcut file: " + shortcutFile); // NOI18N
+
+        return shortcutFile;
+    }
+    
+    private String getShortcutFileName(Shortcut shortcut) {
+        String fileName = shortcut.getFileName();
+        if (fileName == null) {
+            if (shortcut instanceof FileShortcut) {
+                final File target = ((FileShortcut) shortcut).getTarget();
+
+                fileName = target.getName();
+                if(!target.isDirectory()) {
+                    fileName += DESKTOP_EXT;
+                }
+            } else if(shortcut instanceof InternetShortcut) {
+                fileName = ((InternetShortcut) shortcut).getURL().getFile() +
+                        DESKTOP_EXT;
+            }
+        }
+        return fileName;
+    }
+    
+    private File getApplicationsLocation(File location) {
+        return new File(location, "applications");
+    }
+    
+    private File getAllUsersLocation() {
+        final String XDG_DATA_DIRS = System.getenv(XDG_DATA_DIRS_ENV_VARIABLE);                
         final File allUsersLocation;
         if (XDG_DATA_DIRS == null) {
             allUsersLocation = new File(DEFAULT_XDG_DATA_DIRS);
@@ -274,54 +321,26 @@ public class UnixNativeUtils extends NativeUtils {
             allUsersLocation = new File(firstPath);
         }
         
-        LogManager.log(
-                "XDG_DATA_HOME = " + currentUserLocation); // NOI18N
-        LogManager.log(
-                "XDG_DATA_DIRS = " + allUsersLocation); // NOI18N
+        LogManager.log(XDG_DATA_DIRS_ENV_VARIABLE + " = " + allUsersLocation); // NOI18N
+        
+        return allUsersLocation;
+    }
+    
+    private File getCurrentUserLocation() {
+        final File currentUserLocation;
+        final String XDG_DATA_HOME = System.getenv(XDG_DATA_HOME_ENV_VARIABLE);
 
-        String fileName = shortcut.getFileName();
-        if (fileName == null) {
-            if (shortcut instanceof FileShortcut) {
-                final File target = ((FileShortcut) shortcut).getTarget();
-
-                fileName = target.getName();
-                if(!target.isDirectory()) {
-                    fileName += ".desktop";
-                }
-            } else if(shortcut instanceof InternetShortcut) {
-                fileName = ((InternetShortcut) shortcut).getURL().getFile() +
-                        ".desktop";
-            }
+        if (XDG_DATA_HOME == null) {
+            currentUserLocation = new File(
+                    SystemUtils.getUserHomeDirectory(),
+                    DEFAULT_XDG_DATA_HOME);
+        } else {
+            currentUserLocation = new File(XDG_DATA_HOME);
         }
+        
+        LogManager.log(XDG_DATA_DIRS_ENV_VARIABLE + " = " + currentUserLocation); // NOI18N
 
-        LogManager.log(""); // NOI18N
-
-        final File shortcutFile;
-        switch (locationType) {
-            case CURRENT_USER_DESKTOP:
-            case ALL_USERS_DESKTOP:
-                final File desktopLocation = getDesktopFolder();
-                LogManager.log("... desktop folder : " + desktopLocation);
-                shortcutFile = new File(desktopLocation, fileName);
-                break;
-            case CURRENT_USER_START_MENU:
-                shortcutFile = new File(
-                        currentUserLocation,
-                        "applications/" + fileName);
-                break;
-            case ALL_USERS_START_MENU:
-                shortcutFile = new File(
-                        allUsersLocation,
-                        "applications/" + fileName);
-                break;
-            default:
-                shortcutFile = null;
-        }
-
-        LogManager.logUnindent(
-                "shortcut file: " + shortcutFile); // NOI18N
-
-        return shortcutFile;
+        return currentUserLocation;
     }
     
     private File getDesktopFolder() {
@@ -335,16 +354,16 @@ public class UnixNativeUtils extends NativeUtils {
         final File userConfigFile = new File(userHome, XDG_USERDIRS_CONF);
         LogManager.log("... getting desktop folder");
         if (desktopDir != null && !desktopDir.equals("")) {
-            LogManager.log("XDG_DESKTOP_DIR = " + desktopDir);
+            LogManager.log(XDG_DESKTOP_DIR_ENV_VARIABLE + " = " + desktopDir);
             File f = new File(desktopDir);
             if (f.exists()) {
                 LogManager.log("... desktop dir : " + f);
                 return f;
             } else {
-                LogManager.log("... XDG_DESKTOP_DIR is defined but does not exist:" + desktopDir);
+                LogManager.log("... " + XDG_DESKTOP_DIR_ENV_VARIABLE + " is defined but does not exist:" + desktopDir);
             }
-        } else if (System.getenv("XDG_SESSION_COOKIE") == null) {
-            LogManager.log("... XDG_SESSION_COOKIE environment variable is not defined");
+        } else if (System.getenv("XDG_SESSION_COOKIE") == null && System.getenv(XDG_DATA_DIRS_ENV_VARIABLE) == null) {
+            LogManager.log("... neither XDG_SESSION_COOKIE nor " + XDG_DATA_DIRS_ENV_VARIABLE + " environment variable is defined");
         } else if (!FileUtils.exists(globalConfigFile)) {
             LogManager.log("... global XDG config file does not exist");
         } else if (!FileUtils.exists(userDirsFile)) {
@@ -363,6 +382,7 @@ public class UnixNativeUtils extends NativeUtils {
                         if (matcher.find()) {
                             if (!Boolean.parseBoolean(matcher.group(1).toLowerCase(Locale.ENGLISH))) {
                                 LogManager.log("... XDG dirs are disabled");
+                                useXdgDirs = false;
                                 break;
                             } else {
                                 LogManager.log("... XDG dirs are enabled");
@@ -399,20 +419,42 @@ public class UnixNativeUtils extends NativeUtils {
                     List<String> content = (encoding == null) ? FileUtils.readStringList(userDirsFile) : FileUtils.readStringList(userDirsFile, encoding);
 
                     for (String s : content) {
-                        final Matcher matcher = Pattern.compile(XDG_DESKTOP_DIR_ENV_VARIABLE + "=\"(.*)\"").matcher(s);
-                        if (matcher.find()) {                            
-                            File f = new File(matcher.group(1).replace("$HOME", 
-                                    userHome.getAbsolutePath()));
+                        LogManager.log("...... evaluating string : " + s);
+                        Matcher matcher = Pattern.compile("^" + XDG_DESKTOP_DIR_ENV_VARIABLE + "=\"(.*)\"").matcher(s);
+                        if (matcher.find()) {
+                            LogManager.log("...... matches expected pattern");
+                            final String value = matcher.group(1).replace("$HOME", userHome.getAbsolutePath());
+                            File f = new File(value);
                             if (FileUtils.exists(f)) {
                                 return f;
                             } else {
                                 LogManager.log("... custom desktop directory defined but does not exist: " + f);
+                                LogManager.log("... probably wrong encoding used, fallback to system utils");
+                                throw new IOException("File " + f + " is defined as desktop folder but does not exist");
                             }
                         }
                     }
                 }
             } catch (Exception e) {
                 LogManager.log(e);
+                //fallback
+                try {
+                    final File bin = new File("/usr/bin/xdg-user-dir");
+                    if (FileUtils.exists(bin)) {
+                        String stdout = SystemUtils.executeCommand(bin.getAbsolutePath(), "DESKTOP").getStdOut();
+                        if (stdout.length() > 0) {
+                            File dsk = new File(stdout);
+                            if (FileUtils.exists(dsk)) {
+                                return dsk;
+                            } else {
+                                LogManager.log("... custom desktop directory defined (system util) but does not exist: " + dsk);
+                                LogManager.log("... probably wrong encoding, fallback to default");                                
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    LogManager.log(ex);
+                }
             }
         }
         return new File(userHome, "Desktop");

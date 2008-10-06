@@ -773,7 +773,7 @@ public class InstallSupportImpl {
             byte [] bytes = new byte [1024];
             int size;
             int c = 0;
-            while ((size = bsrc.read (bytes)) != -1) {
+            while (STEP.CANCEL != currentStep && (size = bsrc.read (bytes)) != -1) {
                 bdest.write (bytes, 0, size);
                 increment += size;
                 c += size;

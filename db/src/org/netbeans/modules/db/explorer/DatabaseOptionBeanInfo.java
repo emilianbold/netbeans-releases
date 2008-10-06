@@ -45,6 +45,7 @@ import java.beans.*;
 import java.awt.*;
 import java.util.ResourceBundle;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -69,9 +70,9 @@ public class DatabaseOptionBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type)
     {
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            return Utilities.loadImage("/org/netbeans/modules/db/resources/optionIcon.gif"); //NOI18N
+            return ImageUtilities.loadImage("/org/netbeans/modules/db/resources/optionIcon.gif"); //NOI18N
         } else if (type == BeanInfo.ICON_COLOR_32x32) {
-            return Utilities.loadImage("/org/netbeans/modules/db/resources/optionIcon32.gif"); //NOI18N
+            return ImageUtilities.loadImage("/org/netbeans/modules/db/resources/optionIcon32.gif"); //NOI18N
         }
 
         return super.getIcon(type);

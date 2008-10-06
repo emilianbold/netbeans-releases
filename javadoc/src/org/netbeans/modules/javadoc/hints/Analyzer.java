@@ -185,7 +185,7 @@ final class Analyzer {
 
         String jdText = javac.getElements().getDocComment(elm);
         // create hint descriptor + prepare javadoc
-        if (jdText == null) {
+        if (jdText == null || jdText.length() == 0 && null == JavadocUtilities.findTokenSequence(javac, elm)) {
             if (!createJavadocKind)
                 return errors;
 
@@ -195,6 +195,9 @@ final class Analyzer {
 
             try {
                 Position[] positions = createSignaturePositions(node);
+                if (positions == null) {
+                    return errors;
+                }
                 ErrorDescription err = createErrorDescription(
                         NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
                         createGenerateFixes(elm),
@@ -660,20 +663,10 @@ final class Analyzer {
                         span = javac.getTreeUtilities().findNameSpan((VariableTree) t);
                     }
 
-                    if (span == null) {
-                        throw new IllegalStateException(String.format(
-                                "Please attach the stack trace and if possible also " + // NOI18N
-                                "the edited source file '%s' to issue " + // NOI18N
-                                "http://www.netbeans.org/issues/show_bug.cgi?id=134663" + // NOI18N
-                                "\nkind: %s\ntree: '%s'", // NOI18N
-                                file.toString(),
-                                t.getKind(),
-                                t.toString()
-                                ));
+                    if (span != null) {
+                        pos[0] = doc.createPosition(span[0]);
+                        pos[1] = doc.createPosition(span[1]);
                     }
-
-                    pos[0] = doc.createPosition(span[0]);
-                    pos[1] = doc.createPosition(span[1]);
                 } catch (BadLocationException ex) {
                     blex[0] = ex;
                 }
@@ -681,7 +674,7 @@ final class Analyzer {
         });
         if (blex[0] != null)
             throw (BadLocationException) new BadLocationException(blex[0].getMessage(), blex[0].offsetRequested()).initCause(blex[0]);
-        return pos;
+        return pos[0] != null ? pos : null;
     }
 
     private boolean isGuarded(Tree node) {

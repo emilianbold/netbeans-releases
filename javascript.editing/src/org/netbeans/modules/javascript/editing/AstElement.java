@@ -138,7 +138,7 @@ public class AstElement extends JsElement {
                 }
             } else if (node.isStringNode()) {
                 name = node.getString();
-            } else if (node.getType() == Token.CALL) {
+            } else if (node.getType() == Token.CALL || node.getType() == Token.NEW) {
                 name = AstUtilities.getCallName(node, false);
             }
         }
@@ -278,6 +278,7 @@ public class AstElement extends JsElement {
         return js;
     }
     
+    @SuppressWarnings("fallthrough")
     public static AstElement getElement(CompilationInfo info, Node node) {
         if (node.element != null) {
             return (AstElement)node.element;

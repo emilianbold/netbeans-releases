@@ -43,6 +43,7 @@
 package org.netbeans.modules.palette.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.FocusTraversalPolicy;
@@ -106,7 +107,8 @@ public class CategoryList extends JList implements Autoscroll {
 
     private static WeakReference<ListCellRenderer> rendererRef;
     
-    private Item draggingItem;
+    static final boolean isGTK = "GTK".equals( UIManager.getLookAndFeel().getID() );
+    static final boolean isNimbus = "Nimbus".equals( UIManager.getLookAndFeel().getID() );
     
     private AutoscrollSupport support;
 
@@ -116,7 +118,12 @@ public class CategoryList extends JList implements Autoscroll {
     CategoryList( Category category, PalettePanel palettePanel ) {
         this.category = category;
         this.palettePanel = palettePanel;
-        setBackground(UIManager.getColor ("Panel.background"));
+        if( isGTK || isNimbus ) {
+            setBackground( new Color( UIManager.getColor("Tree.background").getRGB() ) );//NOI18N
+            setOpaque(true);
+        } else {
+            setBackground(UIManager.getColor ("Panel.background"));
+        }
         setBorder (new EmptyBorder (0, 0, 0, 0));
         setVisibleRowCount (0);
         setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -329,6 +336,11 @@ public class CategoryList extends JList implements Autoscroll {
             button.setHorizontalAlignment (showNames ? SwingConstants.LEFT : SwingConstants.CENTER);
             button.setHorizontalTextPosition (SwingConstants.RIGHT);
             button.setVerticalTextPosition (SwingConstants.CENTER);
+            Color c = new Color(UIManager.getColor("Tree.background").getRGB()); //NOI18N
+            if( isNimbus )
+                toolbar.setBackground(c);
+            if( isGTK )
+                button.setBackground(c);
 
             return rendererComponent;
         }

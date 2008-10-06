@@ -89,10 +89,13 @@ public class HijackAction extends AbstractAction {
     }
 
     private int getActionStatus() {
+        Set<File> files = context.getFiles();
+        for (File file : files) {
+            if(file.isDirectory()) return STATUS_DISABLED;
+        }
         if (!ClearcaseUtils.containsSnapshot(context)) return STATUS_DISABLED;
         FileStatusCache cache = Clearcase.getInstance().getFileStatusCache();
         int actionStatus = STATUS_DISABLED;
-        Set<File> files = context.getFiles();
         for (File file : files) {
             if ((cache.getInfo(file).getStatus() & ALLOW_HIJACK) != 0) {
                 if (actionStatus == STATUS_UNHIJACK) return STATUS_DISABLED;
@@ -144,7 +147,7 @@ public class HijackAction extends AbstractAction {
         Mnemonics.setLocalizedText(unHijackButton, NbBundle.getMessage(HijackAction.class, "CTL_UnhijackDialog_Unhijack")); //NOI18N
         
         dd.setOptions(new Object[] {unHijackButton, DialogDescriptor.CANCEL_OPTION}); // NOI18N
-        dd.setHelpCtx(new HelpCtx(HijackAction.class));
+        dd.setHelpCtx(new HelpCtx("org.netbeans.modules.clearcase.ui.hijack.Unhijack"));
                 
         panel.putClientProperty("contentTitle", contextTitle);  // NOI18N
         panel.putClientProperty("DialogDescriptor", dd); // NOI18N

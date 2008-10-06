@@ -58,7 +58,7 @@ public class OracleMetadata extends JDBCMetadata {
     }
 
     @Override
-    protected OracleCatalog createCatalog(String catalogName, boolean _default, String defaultSchemaName) {
+    protected OracleCatalog createJDBCCatalog(String catalogName, boolean _default, String defaultSchemaName) {
         return new OracleCatalog(this, catalogName, _default, defaultSchemaName);
     }
 }

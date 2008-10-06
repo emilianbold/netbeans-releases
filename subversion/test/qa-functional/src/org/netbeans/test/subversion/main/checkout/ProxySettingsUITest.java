@@ -36,7 +36,6 @@ public class ProxySettingsUITest extends JellyTestCase {
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
         System.out.println("### "+getName()+" ###");
         
     }
@@ -83,6 +82,7 @@ public class ProxySettingsUITest extends JellyTestCase {
     }
     
     public void testProxyBeforeUrl() throws Exception {
+        try {
         comOperator = new Operator.DefaultStringComparator(true, true);
         oldOperator = (DefaultStringComparator) Operator.getDefaultStringComparator();
         Operator.setDefaultStringComparator(comOperator);
@@ -126,5 +126,8 @@ public class ProxySettingsUITest extends JellyTestCase {
         }
         assertNotNull(tee);     
         co.btCancel().pushNoBlock();
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
+        }
     }
 }

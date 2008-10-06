@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-#include <iostream.h>
+#include <iostream>
 
 #include "../hello1lib/hello1.h"
 #include "../hello2lib/hello2.h"
@@ -48,19 +48,19 @@
 
 int main(int argc, char**argv) {
     // Print welcome messages...
-    cout << "Hello from main...\n";
-    cout << hello1();
-    cout << hello2();
-    cout << hello3();
-    cout << hello4();
-    
+    std::cout << "Hello from main..." << std::endl;
+    std::cout << hello1();
+    std::cout << hello2();
+    std::cout << hello3();
+    std::cout << hello4();
+
     // Prints arguments...
     if (argc > 1) {
-        cout << "\nArguments:\n";
+        std::cout << std::endl << "Arguments:" << std::endl;
         for (int i = 1; i < argc; i++) {
-            cout << i << ": " << argv[i] << "\n";
+            std::cout << i << ": " << argv[i] << std::endl;
         }
     }
-    
+
     return 0;
 }

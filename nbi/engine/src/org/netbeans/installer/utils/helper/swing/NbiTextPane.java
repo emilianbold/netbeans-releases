@@ -36,7 +36,9 @@
 
 package org.netbeans.installer.utils.helper.swing;
 
+import java.awt.Color;
 import javax.swing.JTextPane;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.utils.helper.Text;
 import org.netbeans.installer.utils.helper.Text.ContentType;
@@ -54,6 +56,12 @@ public class NbiTextPane extends JTextPane {
         setBorder(new EmptyBorder(0, 0, 0, 0));
         
         putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, true);
+        
+        if (UIManager.getLookAndFeel().getID().equals("Nimbus")) {
+            //#134837
+            //http://forums.java.net/jive/thread.jspa?messageID=283882
+            setBackground(new Color(0, 0, 0, 0));
+        }
     }
     
     @Override

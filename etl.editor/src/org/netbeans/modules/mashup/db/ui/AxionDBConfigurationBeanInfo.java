@@ -43,6 +43,7 @@ import java.beans.SimpleBeanInfo;
 import net.java.hulp.i18n.Logger;
 import org.netbeans.modules.etl.logger.Localizer;
 import org.openide.ErrorManager;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -83,7 +84,7 @@ public class AxionDBConfigurationBeanInfo extends SimpleBeanInfo {
     public Image getIcon(int type) {
         Image image = null;
         if (type == BeanInfo.ICON_COLOR_16x16) {
-            image = Utilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/DatabaseProperties.png"); // NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/sql/framework/ui/resources/images/DatabaseProperties.png"); // NOI18N
         }
 
         return image != null ? image : super.getIcon(type);

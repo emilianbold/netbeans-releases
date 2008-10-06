@@ -68,6 +68,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
@@ -84,15 +85,27 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
     private static final String SPEC_BIN = "spec"; // NOI18N
     private static final TestRunner INSTANCE = new RspecRunner();
     private static final String SPEC_OPTS = "spec/spec.opts"; // NOI18N
-    private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + ".netbeans"; // NOI18N
-
+    private static final String NETBEANS_SPEC_OPTS_SUFFIX = "netbeans"; //NOI18N
+    private static final String NETBEANS_SPEC_OPTS = SPEC_OPTS + "." + NETBEANS_SPEC_OPTS_SUFFIX; // NOI18N
     public static final String RSPEC_MEDIATOR_SCRIPT = "nb_rspec_mediator.rb"; //NOI18N
+    /**
+     * The name of the system property that specifies whether a warning message should
+     * be displayed when using spec/spec.opts instead of spec/spec.opts.netbeans.
+     * See #101997.
+     */
+    private static final String SPEC_OPTS_WARN_PROP = "ruby.rspec.specopts.warn"; //NOI18N
+
     public TestRunner getInstance() {
         return INSTANCE;
     }
 
     public boolean supports(TestType type) {
         return TestType.RSPEC == type;
+    }
+
+    private static boolean warnWhenUsingSpecOpts() {
+        return Boolean.valueOf(System.getProperty(SPEC_OPTS_WARN_PROP, "true")); //NOI18N
+
     }
 
     public void runTest(FileObject testFile, boolean debug) {
@@ -139,7 +152,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(locator, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, locator, debug ? SessionType.DEBUG : SessionType.TEST);
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -150,7 +163,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         arguments.add("--runner"); //NOI18N
         arguments.add("NbRspecMediator"); //NOI18N
 
-        addSpecOpts(project, additionalArgs);
+        FileObject opts = addSpecOpts(project, additionalArgs);
 
         arguments.addAll(additionalArgs);
 
@@ -167,11 +180,17 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
+        desc.setRerun(false); //disabled for now, see #147482
+        TestSession session = new TestSession(name,
+                locator,
+                debug ? SessionType.DEBUG : SessionType.TEST);
+
+        addSpecOptsWarningIfNeeded(session, opts);
 
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                locator,
                 RspecHandlerFactory.getHandlers(),
-                debug ? SessionType.DEBUG : SessionType.TEST);
+                session,
+                false);
         TestExecutionManager.getInstance().start(desc, recognizer);
     }
 
@@ -216,12 +235,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         return mediatorScript;
     }
 
-    private static void addSpecOpts(Project project, List<String> additionalArgs) {
+    private static FileObject addSpecOpts(Project project, List<String> additionalArgs) {
         FileObject specOpts = getSpecOpts(project);
         if (specOpts != null) {
             additionalArgs.add("--options"); // NOI18N
             additionalArgs.add(FileUtil.toFile(specOpts).getAbsolutePath());
         }
+        return specOpts;
     }
 
     private static FileObject getSpecOpts(Project project) {
@@ -234,7 +254,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (specOpts == null) {
             specOpts = projectDir.getFileObject(SPEC_OPTS);
-        }
+        } 
 
         return specOpts;
     }
@@ -261,6 +281,16 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
             }
         }
         return result.toString();
+    }
+
+    private static void addSpecOptsWarningIfNeeded(TestSession session, FileObject specOpts) {
+        if (specOpts == null || !warnWhenUsingSpecOpts()) {
+            return;
+        }
+        if (!NETBEANS_SPEC_OPTS_SUFFIX.equals(specOpts.getExt())) { //NOI18N
+            session.setStartingMsg(NbBundle.getMessage(RspecRunner.class,
+                    "MSG_SpecOptsWarning", SPEC_OPTS, NETBEANS_SPEC_OPTS, SPEC_OPTS_WARN_PROP));
+        }
     }
 
     public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
@@ -292,10 +322,15 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         task.addTaskParameters("SPEC_OPTS=" + options); //NOI18N
 
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+        TestSession session = new TestSession(task.getDisplayName(),
                 locator,
-                RspecHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
+        addSpecOptsWarningIfNeeded(session, specOpts);
+        
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                RspecHandlerFactory.getHandlers(),
+                session,
+                false);
         taskDescriptor.addOutputRecognizer(recognizer);
         // using a shorter wait time than for test/unit since the only cases
         // i've seen requiring more than 1000ms have all been test/unit executions

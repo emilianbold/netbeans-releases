@@ -178,7 +178,12 @@ public final class InspectorManagerView implements DesignDocumentAwareness, Acti
                         return;
                     JComponent panel = InspectorPanel.getInstance().getComponent();
                     panel.removeAll();
-                    panel.add(ui, BorderLayout.CENTER);
+                    if (ui != null) {
+                        //Component was closed while still initializing
+                        panel.add(ui, BorderLayout.CENTER);
+                    } else {
+                        panel.add (emptyPanel, BorderLayout.CENTER);
+                    }
                     panel.revalidate();
                     panel.repaint();
                 }

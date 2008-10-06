@@ -750,7 +750,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             
             if (n instanceof HashNode) {
                 if (prev instanceof ListNode) { // uhm... why am I going back to prev?
-                    List<Node> hashItems = (List<Node>)prev.childNodes();
+                    List<Node> hashItems = prev.childNodes();
 
                     Iterator<Node> hi = hashItems.iterator();
                     while (hi.hasNext()) {
@@ -812,7 +812,13 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             if (begin != -1) {
                 int end = Utilities.getRowEnd(doc, lexOffset);
                 String s = doc.getText(begin, end-begin); // TODO - limit to a narrower region around the caret?
-                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => " }; // NOI18N
+                if (!(s.indexOf(":partial") != -1 || s.indexOf(":controller") != -1 || s.indexOf(":action") != -1)) { // NOI18N
+                    return null;
+                }
+                String[] targets = new String[] { ":partial => ", ":controller => ", ":action => ", // NOI18N
+                                                  ":partial=> ", ":controller=> ", ":action=> ", // NOI18N
+                                                   ":partial =>", ":controller =>", ":action =>", // NOI18N
+                                                   ":partial=>", ":controller=>", ":action=>"}; // NOI18N
                 for (String target : targets) {
                     int index = s.indexOf(target);
                     if (index != -1) {
@@ -1908,11 +1914,11 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
             ArgsNode an = (ArgsNode)node;
 
             if (an.getRequiredArgsCount() > 0) {
-                List<Node> args = (List<Node>)an.childNodes();
+                List<Node> args = an.childNodes();
 
                 for (Node arg : args) {
                     if (arg instanceof ListNode) {
-                        List<Node> args2 = (List<Node>)arg.childNodes();
+                        List<Node> args2 = arg.childNodes();
 
                         for (Node arg2 : args2) {
                             if (arg2 instanceof ArgumentNode) {

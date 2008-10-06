@@ -38,10 +38,18 @@
  */
 package org.netbeans.modules.css.gsf;
 
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.JTree;
 import org.netbeans.modules.css.parser.CssParserResultHolder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.modules.css.editor.Css;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.ElementHandle;
@@ -62,6 +70,8 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  */
 public class CSSGSFParser implements Parser, PositionManager {
 
+    /** logger for timers/counters */
+    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
     private static String asString(CharSequence sequence) {
         if (sequence instanceof String) {
             return (String) sequence;
@@ -98,6 +108,8 @@ public class CSSGSFParser implements Parser, PositionManager {
 
                 result = new CSSParserResult(this, file, css_result.root());
 
+//                debugParserResult(result);
+                
                 for (Error error : css_result.errors(file)) {
                     job.listener.error(error);
                 }
@@ -114,6 +126,12 @@ public class CSSGSFParser implements Parser, PositionManager {
 
             } catch (IOException ioe) {
                 job.listener.exception(ioe);
+            }
+
+            if (TIMERS.isLoggable(Level.FINE)) {
+                LogRecord rec = new LogRecord(Level.FINE, "CSS parse result"); // NOI18N
+                rec.setParameters(new Object[] { result });
+                TIMERS.log(rec);
             }
 
             ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
@@ -133,8 +151,31 @@ public class CSSGSFParser implements Parser, PositionManager {
             return new OffsetRange(AstUtils.documentPosition(handle.node().startOffset(), source), 
                     AstUtils.documentPosition(handle.node().endOffset(), source));
         } else {
-            throw new IllegalArgumentException((("Foreign element: " + object + " of type " +
-                    object) != null) ? object.getClass().getName() : "null"); //NOI18N
+            throw new IllegalArgumentException("Foreign element: " + object + " of type " +
+                    ((object != null) ? object.getClass().getName() : "null")); //NOI18N
         }
     }
+    
+    private static JFrame debugFrame = null;
+    private static JPanel debugPanel = null;
+
+    private void debugParserResult(ParserResult result) {
+        if (debugFrame == null) {
+            debugFrame = new JFrame("css ast view"); //NOI18N
+            debugPanel = new JPanel(new BorderLayout());
+            debugPanel.setPreferredSize(new Dimension(400, 800));
+            debugFrame.setContentPane(debugPanel);
+            debugFrame.setVisible(true);
+        }
+
+        JTree tree = new JTree(result.getAst());
+        debugPanel.removeAll();
+        debugPanel.add(tree, BorderLayout.CENTER);
+        for (int i = 0; i < tree.getRowCount(); i++) {
+            tree.expandRow(i);
+        }
+        debugFrame.pack();
+        
+    }
+    
 }

@@ -44,6 +44,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
@@ -65,16 +66,16 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
         if (isScriptSelected()) {
-            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             localCommand.invokeAction(context);
         } else {
-            if (!isUrlSet()) {
-                return;
-            }
             try {
                 // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
-                final URL url = urlForContext(context);
+                final URL url = urlForContext(context, true);
 
                 eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
                 showURL(url);
@@ -87,7 +88,11 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null;
+        FileObject file = fileForContext(context);
+        if (isScriptSelected()) {
+            return isPhpFileSelected(file);
+        }
+        return file != null;
     }
 
     @Override

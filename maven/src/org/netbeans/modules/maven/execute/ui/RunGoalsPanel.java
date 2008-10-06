@@ -56,6 +56,7 @@ import org.netbeans.modules.maven.customizer.ActionMappings;
 import org.netbeans.modules.maven.customizer.PropertySplitter;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import hidden.org.codehaus.plexus.util.StringUtils;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -79,8 +80,8 @@ public class RunGoalsPanel extends javax.swing.JPanel {
     public RunGoalsPanel() {
         initComponents();
         historyMappings = new ArrayList<NetbeansActionMapping>();
-        btnPrev.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/execute/back.png"))); //NOI18N
-        btnNext.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/execute/forward.png"))); //NOI18N
+        btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/back.png"))); //NOI18N
+        btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/execute/forward.png"))); //NOI18N
 
         goalcompleter = new TextValueCompleter(new ArrayList<String>(0), txtGoals, " "); //NOI18N
         goalcompleter.setLoading(true);

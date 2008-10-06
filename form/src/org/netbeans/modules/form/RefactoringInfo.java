@@ -44,6 +44,7 @@ package org.netbeans.modules.form;
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -78,15 +79,23 @@ public class RefactoringInfo {
 
     private AbstractRefactoring refactoring;
     private ChangeType changeType;
-    private FileObject primaryFile; // the source file where the refactoring change originated
-    private String oldName;
+    private FileObject[] origFiles;
+    private Map<FileObject, String> originalFiles; // original files and associated name
     private Map<FileObject,FormRefactoringUpdate> fileToUpdateMap = new HashMap<FileObject,FormRefactoringUpdate>();
 
-    RefactoringInfo(AbstractRefactoring refactoring, ChangeType changeType, FileObject primaryFile, String oldName) {
+    RefactoringInfo(AbstractRefactoring refactoring, ChangeType changeType,
+                    FileObject[] files,
+                    String[] oldNames)
+    {
         this.refactoring = refactoring;
         this.changeType = changeType;
-        this.primaryFile = primaryFile;
-        this.oldName = oldName;
+        Map<FileObject, String> fileMap = new HashMap<FileObject, String>();
+        for (int i=0; i < files.length; i++) {
+            fileMap.put(files[i], oldNames[i]);
+        }
+        this.originalFiles = Collections.unmodifiableMap(fileMap);
+        this.origFiles = new FileObject[files.length];
+        System.arraycopy(files, 0, origFiles, 0, files.length);
     }
 
     AbstractRefactoring getRefactoring() {
@@ -97,35 +106,36 @@ public class RefactoringInfo {
         return changeType;
     }
 
-    public FileObject getPrimaryFile() {
-        return primaryFile;
+    public boolean containsOriginalFile(FileObject file) {
+        return originalFiles.containsKey(file);
     }
 
-    public boolean isForm() {
-        return primaryFile != null && isJavaFileOfForm(primaryFile);
+    public FileObject[] getOriginalFiles() {
+        return origFiles;
     }
 
-    void setOldName(String oldName) {
-        this.oldName = oldName;
-    }
-
-    String getOldName() {
-        return oldName;
+    String getOldName(FileObject file) {
+        return originalFiles.get(file);
     }
 
     String getNewName() {
+        return getNewName(null);
+    }
+
+    String getNewName(FileObject file) {
         if (refactoring instanceof RenameRefactoring) {
             // return the new name of the file/element
             return ((RenameRefactoring)refactoring).getNewName();
-        } else if (refactoring instanceof MoveRefactoring) {
+        } else if (refactoring instanceof MoveRefactoring
+                   && file != null && containsOriginalFile(file)) {
             // return full class name of the java file on its new location
             FileObject targetFolder = getTargetFolder((MoveRefactoring)refactoring);
             if (targetFolder != null) {
                 String pkg = ClassPath.getClassPath(targetFolder, ClassPath.SOURCE)
                     .getResourceName(targetFolder, '.', false);
                 return (pkg != null && pkg.length() > 0)
-                       ? pkg + "." + primaryFile.getName() // NOI18N
-                       : primaryFile.getName();
+                       ? pkg + "." + file.getName() // NOI18N
+                       : file.getName();
             }
         }
         return null;

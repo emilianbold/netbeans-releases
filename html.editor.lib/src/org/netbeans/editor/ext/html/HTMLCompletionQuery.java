@@ -205,7 +205,7 @@ public class HTMLCompletionQuery  {
             
             /* Character reference finder */
             int ampIndex = preText.lastIndexOf('&'); //NOI18N
-            if((id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && ampIndex > 0) {
+            if((id == HTMLTokenId.TEXT || id == HTMLTokenId.VALUE) && ampIndex > -1) {
                 len = preText.length() - ampIndex;
                 String refNamePrefix = preText.substring(ampIndex + 1);
                 result = translateCharRefs( offset-len, len, dtd.getCharRefList( refNamePrefix ) );
@@ -300,6 +300,10 @@ public class HTMLCompletionQuery  {
                     //for example: < a hre|<td>...</td>
                     
                     elem = sup.getElementChain(offset - 1);
+                }
+                
+                if( elem == null ) {
+                    return null;
                 }
                 
                 if( elem.getType() == SyntaxElement.TYPE_TAG ) { // not endTags

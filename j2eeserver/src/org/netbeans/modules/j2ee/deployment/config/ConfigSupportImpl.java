@@ -185,7 +185,7 @@ public final class ConfigSupportImpl implements J2eeModuleProvider.ConfigSupport
                 return null;
             Project owner = FileOwnerQuery.getOwner(fo);
             if (owner != null)
-                return owner.getProjectDirectory().getName();
+                return owner.getProjectDirectory().getNameExt();
             
         } catch (IOException ioe) {
             Logger.getLogger("global").log(Level.INFO, null, ioe);

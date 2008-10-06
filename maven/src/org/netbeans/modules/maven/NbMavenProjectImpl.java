@@ -286,26 +286,12 @@ public final class NbMavenProjectImpl implements Project {
                 
             } finally {
                 if (project == null) {
+                    File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
                     try {
-                        if (projectFile.exists()) { //#120860
-
-                            project = new MavenProject(getEmbedder().readModel(projectFile));
-                        }
-                    } catch (FileNotFoundException ex2) {
-                        ex2.printStackTrace();
-                    } catch (IOException ex2) {
-                        ex2.printStackTrace();
-                    } catch (XmlPullParserException ex2) {
-                        ex2.printStackTrace();
-                    } finally {
-                        File fallback = InstalledFileLocator.getDefault().locate("maven2/fallback_pom.xml", null, false); //NOI18N
-
-                        try {
-                            project = getEmbedder().readProject(fallback);
-                        } catch (Exception x) {
-                            // oh well..
-                            //NOPMD
-                        }
+                        project = getEmbedder().readProject(fallback);
+                    } catch (Exception x) {
+                        // oh well..
+                        //NOPMD
                     }
                 }
             }
@@ -329,6 +315,15 @@ public final class NbMavenProjectImpl implements Project {
         ACCESSOR.doFireReload(watcher);
         doBaseProblemChecks();
     }
+    
+    
+    public static void refreshLocalRepository(NbMavenProjectImpl project) {
+        String basedir = project.getEmbedder().getLocalRepository().getBasedir();
+        File file = FileUtil.normalizeFile(new File(basedir));
+        FileUtil.refreshFor(file);
+    }
+    
+    
 
     void doBaseProblemChecks() {
         problemReporter.doBaseProblemChecks(project);
@@ -440,9 +435,11 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public URI[] getSourceRoots(boolean test) {
-        List<String> srcs = test ? getOriginalMavenProject().getTestCompileSourceRoots() : getOriginalMavenProject().getCompileSourceRoots();
+        List<String> srcs = new ArrayList<String>();
+        @SuppressWarnings("unchecked")
+        List<String> s1 = test ? getOriginalMavenProject().getTestCompileSourceRoots() : getOriginalMavenProject().getCompileSourceRoots();
+        srcs.addAll(s1);
         if (!test && getProjectDirectory().getFileObject("src/main/aspect") != null) { //NOI18N
-            srcs = new ArrayList<String>(srcs);
             srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject("src/main/aspect")).getAbsolutePath()); //NOI18N
         }
         //TODO groovy and scala stuff should probably end up in separate module's
@@ -450,20 +447,16 @@ public final class NbMavenProjectImpl implements Project {
         //TODO the folder should be checked against the configuration of scala/groovy plugin.
         String groovy = test ? "src/test/groovy" : "src/main/groovy"; //NOI18N
         if (getProjectDirectory().getFileObject(groovy) != null) {
-            srcs = new ArrayList(srcs);
             srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject(groovy)).getAbsolutePath());
         }
         String scala = test ? "src/test/scala" : "src/main/scala"; //NOI18N
         if (getProjectDirectory().getFileObject(scala) != null) {
-            srcs = new ArrayList(srcs);
             srcs.add(FileUtil.toFile(getProjectDirectory().getFileObject(scala)).getAbsolutePath());
         }
         
         URI[] uris = new URI[srcs.size()];
-        Iterator it = srcs.iterator();
         int count = 0;
-        while (it.hasNext()) {
-            String str = (String) it.next();
+        for (String str : srcs) {
             File fil = FileUtil.normalizeFile(new File(str));
             uris[count] = fil.toURI();
             count = count + 1;
@@ -541,10 +534,9 @@ public final class NbMavenProjectImpl implements Project {
 
     public URI[] getResources(boolean test) {
         List<URI> toRet = new ArrayList<URI>();
-        List res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
-        Iterator it = res.iterator();
-        while (it.hasNext()) {
-            Resource elem = (Resource) it.next();
+        @SuppressWarnings("unchecked")
+        List<Resource> res = test ? getOriginalMavenProject().getTestResources() : getOriginalMavenProject().getResources();
+        for (Resource elem : res) {
             URI uri = FileUtilities.getDirURI(getProjectDirectory(), elem.getDirectory());
 //            if (new File(uri).exists()) {
             toRet.add(uri);

@@ -60,15 +60,18 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
+ * Copy from openide.util to avoid any external dependency of reglib.
+ *
  * Utilities for working with generics.
  * <p>Note that there is no <code>checkedListByFilter</code> method currently.
  * If constant-time operation is important (e.g. your raw list is large and {@link RandomAccess})
  * you can use {@link #checkedListByCopy}, assuming you do not need to modify the underlying list.
  * If you are only interested in an iterator anyway, try {@link #checkedIteratorByFilter}.
+ *
  * @author Jesse Glick
- * @since org.openide.util 7.1
+ * 
  */
-public class NbCollections {
+class NbCollections {
 
     private NbCollections() {}
     

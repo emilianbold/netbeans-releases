@@ -42,10 +42,15 @@ package org.netbeans.modules.j2ee.common.project.ui;
 import java.text.MessageFormat;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -53,6 +58,8 @@ import org.openide.util.NbBundle;
  * @since 1.28
  */
 public final class DeployOnSaveUtils {
+
+    private static final String COS_MARK = ".netbeans_automatic_build"; // NOI18N
 
     private DeployOnSaveUtils() {
         super();
@@ -89,6 +96,38 @@ public final class DeployOnSaveUtils {
             return true;
         } else {
             return false;
+        }
+    }
+
+    /**
+     * Disbles the compile on save.
+     *
+     * @param project
+     * @param evaluator
+     * @param updateHelper
+     * @param classesPropertyName
+     * @since 1.30
+     */
+    public static void performCleanup(Project project, PropertyEvaluator evaluator,
+            UpdateHelper updateHelper, String classesPropertyName, boolean forceCleanup) {
+
+        // Delete COS mark
+        FileObject mark = null;
+        String propertyValue = (classesPropertyName != null)
+                ? evaluator.getProperty(classesPropertyName)
+                : null;
+
+        if (propertyValue != null) {
+            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(propertyValue);
+            if (buildClasses != null) {
+                mark = buildClasses.getFileObject(COS_MARK);
+            }
+        }
+
+        if (mark != null || forceCleanup) {
+            final ActionProvider ap = project.getLookup().lookup(ActionProvider.class);
+            assert ap != null;
+            ap.invokeAction(ActionProvider.COMMAND_CLEAN, Lookups.fixed(project));
         }
     }
 

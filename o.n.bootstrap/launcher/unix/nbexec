@@ -90,6 +90,7 @@ Usage: $0 {options} arguments
 
 General options:
   --help                show this help 
+  --nosplash            do not show the splash screen
   --jdkhome <path>      path to Java(TM) 2 SDK, Standard Edition
   -J<jvm_option>        pass <jvm_option> to JVM
 
@@ -186,7 +187,7 @@ append_jars_to_cp() {
     for ex in jar zip ; do
         if [ "`echo "${dir}"/*.$ex`" != "${dir}/*.$ex" ] ; then
             for x in "${dir}"/*.$ex ; do
-                subx=${x:${#dir}}
+                subx=`basename "$x"`
                 if echo "$paths" | fgrep -v "$subpath$subx" > /dev/null ; then
                     if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
                     cp="$cp$x"
@@ -321,6 +322,13 @@ install_new_updater() {
 
 # detect system http proxy setting
 
+detect_system_proxy () {
+    if [ ! -z "$http_proxy" ]; then
+        http_proxy_tmp=$http_proxy
+    fi
+    return 0
+}
+
 detect_gnome_proxy () {
     gconftool=/usr/bin/gconftool-2
     if [ -x  $gconftool ] ; then
@@ -340,7 +348,10 @@ detect_gnome_proxy () {
             return 0
         else
             if [ "$proxy_mode" = "none" ] ; then
-                http_proxy_tmp="DIRECT"
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
                 return 0
             fi
         fi
@@ -363,7 +374,10 @@ detect_kde_proxy () {
             fi
         else
             if /bin/grep -q 'ProxyType=0' "$kioslaverc" ; then
-                http_proxy_tmp="DIRECT"
+                detect_system_proxy
+                if [ -z "$http_proxy_tmp" ]; then
+                    http_proxy_tmp="DIRECT"
+                fi
                 return 0
             fi
         fi

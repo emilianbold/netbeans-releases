@@ -213,7 +213,7 @@ public class WindowsNativeUtils extends NativeUtils {
     // constructor //////////////////////////////////////////////////////////////////
     WindowsNativeUtils() {
         if (SystemUtils.isCurrentJava64Bit()) {
-            if(System.getProperty("os.arch").equals("ia64)")) {
+            if(System.getProperty("os.arch").equals("ia64")) {
                 loadNativeLibrary(LIBRARY_PATH_IA64);
             } else {
                 loadNativeLibrary(LIBRARY_PATH_X64);
@@ -228,7 +228,7 @@ public class WindowsNativeUtils extends NativeUtils {
     @Override
     protected Platform getPlatform() {
         return SystemUtils.isCurrentJava64Bit() ? 
-                            (System.getProperty("os.arch").equals("ia64)") ? 
+                            (System.getProperty("os.arch").equals("ia64") ? 
                                Platform.WINDOWS_IA64 : 
                                Platform.WINDOWS_X64) : 
                             Platform.WINDOWS_X86;
@@ -588,7 +588,13 @@ public class WindowsNativeUtils extends NativeUtils {
                 }
                 
                 if (registry.keyExists(section, rootKey)) {
-                    registry.setStringValue(section, rootKey, name, value, expand);
+                    if (value != null) {
+                        registry.setStringValue(section, rootKey, name, value, expand);
+                    } else if(registry.valueExists(section, rootKey, name)) {
+                        registry.deleteValue(section, rootKey, name);
+                    } else {
+			LogManager.log(ErrorLevel.MESSAGE, "Environment variable " + name + " is not set");
+		    }
                     notifyEnvironmentChanged0();
                 } else {
                     LogManager.log(ErrorLevel.WARNING,

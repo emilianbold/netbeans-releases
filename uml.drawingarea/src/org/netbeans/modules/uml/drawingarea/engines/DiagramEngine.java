@@ -89,7 +89,6 @@ import org.netbeans.modules.uml.drawingarea.actions.DiscoverRelationshipAction;
 import org.netbeans.modules.uml.drawingarea.actions.ExportImageAction;
 import org.netbeans.modules.uml.drawingarea.actions.HierarchicalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.InteractiveZoomAction;
-//import org.netbeans.modules.uml.drawingarea.actions.OrthogonalLayoutAction;
 import org.netbeans.modules.uml.drawingarea.actions.PanAction;
 import org.netbeans.modules.uml.drawingarea.actions.SceneAcceptProvider;
 import org.netbeans.modules.uml.drawingarea.actions.SyncDiagramAction;
@@ -105,6 +104,7 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -305,8 +305,8 @@ abstract public class DiagramEngine {
                     ImageUtil.instance().getIcon("selection-arrow.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
                     Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),
-                    KeyStroke.getKeyStroke("ctrl shift S"),
-                    null));
+                    KeyStroke.getKeyStroke("ctrl alt shift S"),
+                    KeyStroke.getKeyStroke("meta ctrl shift S")));
         selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
         
         JToggleButton handToolButton = new JToggleButton(
@@ -314,37 +314,40 @@ abstract public class DiagramEngine {
                     DesignerTools.PAN, ImageUtil.instance().getIcon("pan.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_HandToolAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                    Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand"),
-                    KeyStroke.getKeyStroke("ctrl alt shift P"),
-                    KeyStroke.getKeyStroke("meta ctrl shift P")));
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand"),
+                    KeyStroke.getKeyStroke("ctrl alt shift N"),
+                    KeyStroke.getKeyStroke("meta ctrl shift N")));
+        handToolButton.setName(DesignerTools.PAN);
         
         JToggleButton marqueeZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.MARQUEE_ZOOM, ImageUtil.instance().getIcon("magnify.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_MarqueeZoomAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                    Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom"),
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom"),
                     KeyStroke.getKeyStroke("ctrl alt shift Z"),
                      KeyStroke.getKeyStroke("meta ctrl shift Z")));
+        marqueeZoomButton.setName(DesignerTools.MARQUEE_ZOOM);
         
         JToggleButton interactiveZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.INTERACTIVE_ZOOM, ImageUtil.instance().getIcon("interactive-zoom.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_InteractiveZoomAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                    Utilities.icon2Image(ImageUtil.instance().getIcon("interactive-zoom.gif")), "InteractiveZoom"),
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("interactive-zoom.gif")), "InteractiveZoom"),
                     KeyStroke.getKeyStroke("ctrl alt shift I"),
                     KeyStroke.getKeyStroke("meta ctrl shift I")));
-
-        
+        interactiveZoomButton.setName(DesignerTools.INTERACTIVE_ZOOM);
+                    
         JToggleButton navigateLinkButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.NAVIGATE_LINK, ImageUtil.instance().getIcon("navigate-link.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_NavigateLinkAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                    Utilities.icon2Image(ImageUtil.instance().getIcon("link-navigation.gif")), "NavigateLink"),
+                    ImageUtilities.icon2Image(ImageUtil.instance().getIcon("link-navigation.gif")), "NavigateLink"),
                     KeyStroke.getKeyStroke("ctrl alt shift L"),
                     KeyStroke.getKeyStroke("meta ctrl shift L")));
+        navigateLinkButton.setName(DesignerTools.NAVIGATE_LINK);
         
         selectToolBtnGroup.add(selectToolButton);
         selectToolBtnGroup.add(handToolButton);

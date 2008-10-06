@@ -49,14 +49,19 @@ import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassName;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InstanceOfExpression;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ParenthesisExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.Scalar.Type;
@@ -64,6 +69,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
@@ -153,6 +159,34 @@ public class NavUtils {
                 result = a.getElement(leaf);
                 previous = leaf;
                 continue;
+            } else if (leaf instanceof FormalParameter) {
+                FormalParameter param = (FormalParameter) leaf;
+                Identifier type = param.getParameterType();
+                if (type != null && offset < type.getEndOffset()) {
+                    return a.getElement(type);
+                }
+            } else if (leaf instanceof CatchClause) {
+                Identifier clsName = ((CatchClause)leaf).getClassName();
+                if (clsName != null && offset < clsName.getEndOffset()) {
+                    return a.getElement(clsName);
+                } else {
+                    Variable var = ((CatchClause)leaf).getVariable();
+                    if (var != null) {
+                        return a.getElement(var);
+                    }
+                }
+            } else if (leaf instanceof InstanceOfExpression) {
+                InstanceOfExpression instOf = (InstanceOfExpression)leaf;
+                ClassName className = instOf != null ? instOf.getClassName() : null;
+                Expression expression = instOf != null ? instOf.getExpression() : null;
+                Expression name = className.getName();
+                if (name != null && offset > name.getStartOffset() && (name instanceof Identifier)) {
+                    return a.getElement(name);
+                } else if (expression != null && offset < expression.getEndOffset()
+                        && (expression instanceof Variable)) {
+                    return a.getElement(expression);
+                }
+                return null;
             }
 
             if (leaf instanceof Variable && !(leaf instanceof ArrayAccess)) {
@@ -161,9 +195,14 @@ public class NavUtils {
                 continue;
             }
 
-            if (leaf instanceof ArrayAccess) {
-                if (result == null) {
-                    return a.getElement(leaf);
+            if (result == null && leaf instanceof ArrayAccess) {
+                ArrayAccess arrayAccess = (ArrayAccess) leaf;
+                VariableBase name = arrayAccess.getName();
+                Expression index = arrayAccess.getIndex();
+                if (index != null && offset >= index.getStartOffset()) {
+                    return a.getElement(index);
+                } else if (name != null && offset <= name.getEndOffset()) {
+                    return a.getElement(name);
                 } else {
                     continue;
                 }
@@ -209,8 +248,29 @@ public class NavUtils {
                     return e;
 
                 }
+                List<Identifier> interfaes = cDeclaration.getInterfaes();
+                for (Identifier identifier : interfaes) {
+                    if (identifier == previous) {
+                        AttributedElement e = a.getElement(previous);
+                        return e;
+                    }
+                }
+            } else if (leaf instanceof InterfaceDeclaration) {
+                InterfaceDeclaration iDeclaration = (InterfaceDeclaration) leaf;
+                //class declaration
+                if (iDeclaration.getName() == previous) {
+                    return a.getElement(leaf);
+                }
 
+                List<Identifier> interfaes = iDeclaration.getInterfaes();
+                for (Identifier identifier : interfaes) {
+                    if (identifier == previous) {
+                        AttributedElement e = a.getElement(previous);
+                        return e;
+                    }
+                }
             }
+
 
             if (leaf instanceof FieldAccess) {
                 FieldAccess i = (FieldAccess) leaf;

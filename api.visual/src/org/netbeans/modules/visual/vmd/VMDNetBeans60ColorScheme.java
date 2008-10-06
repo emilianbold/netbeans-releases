@@ -48,6 +48,7 @@ import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.anchor.AnchorShape;
 import org.netbeans.api.visual.anchor.PointShape;
 import org.netbeans.api.visual.anchor.PointShapeFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 import java.awt.*;
@@ -68,7 +69,7 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
     private static final Border BORDER60_PIN_SELECT = BorderFactory.createCompositeBorder (BorderFactory.createLineBorder (0, 1, 0, 1, COLOR60_SELECT), BorderFactory.createLineBorder (2, 7, 2, 7, COLOR60_SELECT));
 //        private static final Border BORDER60_PIN_HOVER = BorderFactory.createLineBorder (2, 8, 2, 8, COLOR60_HOVER);
 
-    private static final PointShape POINT_SHAPE60_IMAGE = PointShapeFactory.createImagePointShape (Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin-60.png")); // NOI18N
+    private static final PointShape POINT_SHAPE60_IMAGE = PointShapeFactory.createImagePointShape (ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-pin-60.png")); // NOI18N
 
     public void installUI (VMDNodeWidget widget) {
         widget.setBorder (BORDER60);
@@ -148,8 +149,8 @@ public class VMDNetBeans60ColorScheme extends VMDColorScheme {
 
     public Image getMinimizeWidgetImage (VMDNodeWidget widget) {
         return widget.isMinimized ()
-                ? Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand-60.png") // NOI18N
-                : Utilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse-60.png"); // NOI18N
+                ? ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-expand-60.png") // NOI18N
+                : ImageUtilities.loadImage ("org/netbeans/modules/visual/resources/vmd-collapse-60.png"); // NOI18N
     }
 
     public Widget createPinCategoryWidget (VMDNodeWidget widget, String categoryDisplayName) {

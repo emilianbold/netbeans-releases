@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JEditorPane;
 import org.netbeans.api.debugger.Breakpoint.VALIDITY;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
@@ -61,7 +62,10 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 
+import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 
 /**
@@ -94,6 +98,16 @@ public class EditorContextBridge {
 
     
     // ContextProvider methods .................................................
+
+    public static String getMostRecentMethodSignature() {
+        // TODO: return getContext ().getMostRecentMethodSignature ();
+        String ms = getReflectionMethodValue("getMostRecentMethodSignature");
+        if (ms == null) {
+            ms = getCurrentMethodSignature();
+        }
+        return ms;
+
+    }
     
     /**
      * Returns signature of method currently selected in editor or <code>null</code>.
@@ -102,21 +116,11 @@ public class EditorContextBridge {
      */
     public static String getCurrentMethodSignature () {
         // TODO: return getContext ().getCurrentMethodSignature ();
-        try {
-        return (String) getContext ().getClass().getMethod("getCurrentMethodSignature", new Class[] {}).
-                invoke(getContext(), new Object[] {});
-        } catch (java.lang.reflect.InvocationTargetException itex) {
-            Throwable tex = itex.getTargetException();
-            if (tex instanceof RuntimeException) {
-                throw (RuntimeException) tex;
-            } else {
-                ErrorManager.getDefault().notify(tex);
-                return "";
-            }
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
-            return "";
+        String ms = getReflectionMethodValue("getCurrentMethodSignature");
+        if (ms == null) {
+            ms = "";
         }
+        return ms;
     }
 
     
@@ -144,20 +148,61 @@ public class EditorContextBridge {
                     return CLASS;
                 return FIELD;
             } else {
-                String s = getContext().getCurrentFieldName ();
+                String s = getMostRecentFieldName();
                 if (s != null && s.length () > 0)
                     return FIELD;
-                s = getContext().getCurrentMethodName();
+                s = getMostRecentMethodName();
                 if (s != null && s.length () > 0)
                     return METHOD;
                 if (s != null && s.length () < 1) {
-                    s = getContext().getCurrentClassName ();
+                    s = getMostRecentClassName();
                     if (s.length () > 0)
                         return CLASS;
                 }
             }
         } catch (java.awt.IllegalComponentStateException icsex) {}
         return null;
+    }
+
+    public static String getMostRecentFieldName() {
+        String field = getReflectionMethodValue("getMostRecentFieldName");
+        if (field == null) {
+            field = getContext().getCurrentFieldName ();
+        }
+        return field;
+    }
+
+    public static String getMostRecentMethodName() {
+        String field = getReflectionMethodValue("getMostRecentMethodName");
+        if (field == null) {
+            field = getContext().getCurrentMethodName ();
+        }
+        return field;
+    }
+
+    public static String getMostRecentClassName() {
+        String field = getReflectionMethodValue("getMostRecentClassName");
+        if (field == null) {
+            field = getContext().getCurrentClassName ();
+        }
+        return field;
+    }
+
+    private static String getReflectionMethodValue(String methodName) {
+        try {
+            return (String) getContext().getClass().getMethod(methodName).invoke(getContext());
+        } catch (java.lang.reflect.InvocationTargetException itex) {
+            Throwable tex = itex.getTargetException();
+            if (tex instanceof RuntimeException) {
+                throw (RuntimeException) tex;
+            } else {
+                ErrorManager.getDefault().notify(tex);
+                return null;
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
     public static Object annotate (
@@ -364,6 +409,10 @@ public class EditorContextBridge {
             return s;
         }
 
+        public String getMostRecentClassName() {
+            return getReflectionMethodValue("getMostRecentClassName");
+        }
+
         public String getCurrentURL () {
             String s = cp1.getCurrentURL ();
             if (s.trim ().length () < 1)
@@ -378,6 +427,10 @@ public class EditorContextBridge {
             return s;
         }
         
+        public String getMostRecentFieldName() {
+            return getReflectionMethodValue("getMostRecentFieldName");
+        }
+
         public int getCurrentLineNumber () {
             int i = cp1.getCurrentLineNumber ();
             if (i < 1)
@@ -391,11 +444,23 @@ public class EditorContextBridge {
                 return cp2.getCurrentMethodName ();
             return s;
         }
-        
+
+        public String getMostRecentMethodName() {
+            return getReflectionMethodValue("getMostRecentMethodName");
+        }
+
         public String getCurrentMethodSignature() {
+            return getReflectionMethodValue("getCurrentMethodSignature");
+        }
+
+        public String getMostRecentMethodSignature() {
+            return getReflectionMethodValue("getMostRecentMethodSignature");
+        }
+        
+        private String getReflectionMethodValue(String methodName) {
             String s = null;
             try {
-                s = (String) cp1.getClass().getMethod("getCurrentMethodSignature", new Class[] {}). // NOI18N
+                s = (String) cp1.getClass().getMethod(methodName).
                         invoke(getContext(), new Object[] {});
             } catch (java.lang.reflect.InvocationTargetException itex) {
                 Throwable tex = itex.getTargetException();
@@ -411,7 +476,7 @@ public class EditorContextBridge {
             }
             if ( (s == null) || (s.trim ().length () < 1)) {
                 try {
-                    s = (String) cp2.getClass().getMethod("getCurrentMethodSignature", new Class[] {}). // NOI18N
+                    s = (String) cp2.getClass().getMethod(methodName).
                             invoke(getContext(), new Object[] {});
                 } catch (java.lang.reflect.InvocationTargetException itex) {
                     Throwable tex = itex.getTargetException();
@@ -427,8 +492,9 @@ public class EditorContextBridge {
                 }
             }
             return s;
+
         }
-        
+
         public String getSelectedIdentifier () {
             String s = cp1.getSelectedIdentifier ();
             if ( (s == null) || (s.trim ().length () < 1))

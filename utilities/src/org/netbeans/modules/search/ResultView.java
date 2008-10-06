@@ -48,6 +48,10 @@ import java.awt.event.ActionListener;
 import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.lang.ref.Reference;
 import java.text.MessageFormat;
 import java.util.List;
@@ -73,6 +77,7 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreePath;
 import org.openide.awt.Mnemonics;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.Mode;
@@ -138,6 +143,7 @@ final class ResultView extends TopComponent {
     private final JTree tree;
     /** listens on various actions performed on nodes in the tree */
     private final NodeListener nodeListener;
+    private final ArrowStatusUpdater arrowUpdater;
     
     /** */
     private String searchScopeType;
@@ -214,7 +220,7 @@ final class ResultView extends TopComponent {
         //PENDING - icons, accessible names, accessible descriptions
         JToolBar toolBar = new JToolBar(SwingConstants.VERTICAL);
         btnDisplayContext = new JToggleButton();
-        btnDisplayContext.setIcon(new ImageIcon(Utilities.loadImage(
+        btnDisplayContext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/context.gif", true))); //NOI18N
         btnDisplayContext.setToolTipText(
                 NbBundle.getMessage(getClass(), "TOOLTIP_ShowContext"));//NOI18N
@@ -222,10 +228,10 @@ final class ResultView extends TopComponent {
                 NbBundle.getMessage(getClass(), "ACSD_ShowContext"));   //NOI18N
         btnDisplayContext.setSelected(SHOW_CONTEXT_BY_DEFAULT);
         btnPrev = new JButton();
-        btnPrev.setIcon(new ImageIcon(Utilities.loadImage(
+        btnPrev.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/prev.png", true)));    //NOI18N
         btnNext = new JButton();
-        btnNext.setIcon(new ImageIcon(Utilities.loadImage(
+        btnNext.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/next.png", true)));    //NOI18N
         toolBar.add(btnDisplayContext);
         toolBar.add(new JToolBar.Separator());
@@ -234,8 +240,9 @@ final class ResultView extends TopComponent {
         toolBar.setRollover(true);
         toolBar.setFloatable(false);
         
+        arrowUpdater = new ArrowStatusUpdater(this);
         treeModel = createTreeModel();
-        tree = createTree(treeModel, nodeListener = new NodeListener());
+        tree = createTree(treeModel, nodeListener = new NodeListener(), arrowUpdater);
         treeView = new JScrollPane(tree);
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(ResultView.class, "ACS_TREEVIEW")); //NOI18N
@@ -302,7 +309,7 @@ final class ResultView extends TopComponent {
                                            "TITLE_SEARCH_RESULTS"));    //NOI18N
         setToolTipText(NbBundle.getMessage(ResultView.class,
                                            "TOOLTIP_SEARCH_RESULTS"));  //NOI18N
-        setIcon(Utilities.loadImage(
+        setIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/search/res/find.gif"));           //NOI18N
         
         initAccessibility();
@@ -321,7 +328,8 @@ final class ResultView extends TopComponent {
     /**
      */
     private static JTree createTree(ResultTreeModel treeModel,
-                                    NodeListener nodeListener) {
+                                    NodeListener nodeListener,
+                                    ArrowStatusUpdater arrowUpdater) {
         JTree tree = new JTree(treeModel);
 
         TreeCellRenderer cellRenderer = new NodeRenderer(false);
@@ -345,8 +353,75 @@ final class ResultView extends TopComponent {
         tree.addTreeExpansionListener(nodeListener);
         
         tree.setToggleClickCount(0);
+
+        tree.addMouseListener(arrowUpdater);
+        tree.addKeyListener(arrowUpdater);
         
         return tree;
+    }
+
+    /**
+     * This listener updates "enabled" property of Up and Down button
+     */
+    private class ArrowStatusUpdater implements KeyListener, MouseListener {
+
+        private ResultView resultView;
+        
+        public ArrowStatusUpdater(ResultView component) {
+            resultView = component;
+        }
+        
+        private void update() {
+            if (resultModel == null || tree == null) {
+                return;
+            }
+            
+            if (!resultView.hasResults) {
+                btnPrev.setEnabled(false);
+                btnNext.setEnabled(false);
+            } else {
+                TreePath leadPath = tree.getLeadSelectionPath();
+                if (leadPath == null) {
+                    btnPrev.setEnabled(false);
+                    btnNext.setEnabled(true);
+                } else {
+                    btnPrev.setEnabled(findNextPath(leadPath, false) != null);
+                    btnNext.setEnabled(findNextPath(leadPath, true) != null);
+                }
+            }
+        }
+
+        public void keyReleased(KeyEvent e) {
+            int key = e.getKeyCode();
+
+            if (key == KeyEvent.VK_ENTER || key == KeyEvent.VK_SPACE 
+                    || key == KeyEvent.VK_UP || key == KeyEvent.VK_DOWN 
+                    || key == KeyEvent.VK_LEFT || key == KeyEvent.VK_RIGHT) {
+                update();
+            }
+        }
+
+        public void mousePressed(MouseEvent e) {
+            update();            
+        }
+
+        public void keyPressed(KeyEvent e) {
+        }
+
+        public void keyTyped(KeyEvent e) {
+        }
+
+        public void mouseClicked(MouseEvent e) {
+        }
+
+        public void mouseReleased(MouseEvent e) {
+        }
+
+        public void mouseEntered(MouseEvent e) {
+        }
+
+        public void mouseExited(MouseEvent e) {
+        }
     }
     
     /**
@@ -569,6 +644,7 @@ final class ResultView extends TopComponent {
         btnModifySearch.setEnabled(true);
         btnStop.setEnabled(true);
         btnReplace.setEnabled(false);
+        arrowUpdater.update();        
     }
     
     /**
@@ -583,6 +659,7 @@ final class ResultView extends TopComponent {
         updateShowAllDetailsBtn();
         btnStop.setEnabled(false);
         btnReplace.setEnabled(true);
+        arrowUpdater.update();        
     }
     
     /**
@@ -605,6 +682,7 @@ final class ResultView extends TopComponent {
         updateShowAllDetailsBtn();
         btnStop.setEnabled(false);
         btnReplace.setEnabled(true);
+        arrowUpdater.update();
     }
     
     /**
@@ -662,6 +740,9 @@ final class ResultView extends TopComponent {
      */
     private void updateShowAllDetailsBtn() {
         assert EventQueue.isDispatchThread();
+        
+        if (hasResults && !searchInProgress)
+            tree.setSelectionPath(new TreePath(tree.getModel().getRoot()));
         
         btnShowDetails.setEnabled(hasResults
                                   && !searchInProgress
@@ -931,6 +1012,8 @@ final class ResultView extends TopComponent {
             
             tree.setSelectionPath(nextPath);
             tree.scrollRectToVisible(tree.getPathBounds(nextPath));
+            
+            arrowUpdater.update();
         }
     }
     

@@ -64,7 +64,6 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
-import org.openide.util.Lookup;
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.DOMException;
@@ -177,7 +176,6 @@ public final class XMLUtil extends Object {
     private static final char[] DEC2HEX = {
         '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'
     };
-    private static Class fastParserFactoryClass = null;
 
     /** Forbids creating new XMLUtil */
     private XMLUtil() {
@@ -201,6 +199,7 @@ public final class XMLUtil extends Object {
         return createXMLReader(validate, false);
     }
 
+    private static SAXParserFactory[][] saxes  = new SAXParserFactory[2][2];
     /** Create a SAX parser from the JAXP factory.
      * The result can be used to parse XML files.
      *
@@ -217,11 +216,13 @@ public final class XMLUtil extends Object {
      */
     public static XMLReader createXMLReader(boolean validate, boolean namespaceAware)
     throws SAXException {
-        SAXParserFactory factory;
-        factory = SAXParserFactory.newInstance();
-
-        factory.setValidating(validate);
-        factory.setNamespaceAware(namespaceAware);
+        SAXParserFactory factory = saxes[validate ? 0 : 1][namespaceAware ? 0 : 1];
+        if (factory == null) {
+            factory = SAXParserFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
+            saxes[validate ? 0 : 1][namespaceAware ? 0 : 1] = factory;
+        }
 
         try {
             return factory.newSAXParser().getXMLReader();
@@ -280,7 +281,7 @@ public final class XMLUtil extends Object {
     private static DOMImplementation getDOMImplementation()
     throws DOMException { //can be made public
 
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilderFactory factory = getFactory(false, false);
 
         try {
             return factory.newDocumentBuilder().getDOMImplementation();
@@ -292,6 +293,18 @@ public final class XMLUtil extends Object {
             // E.g. #36578, IllegalArgumentException. Try to recover gracefully.
             throw (DOMException) new DOMException(DOMException.NOT_SUPPORTED_ERR, e.toString()).initCause(e);
         }
+    }
+
+    private static DocumentBuilderFactory[][] doms = new DocumentBuilderFactory[2][2];
+    private static DocumentBuilderFactory getFactory(boolean validate, boolean namespaceAware) {
+        DocumentBuilderFactory factory = doms[validate ? 0 : 1][namespaceAware ? 0 : 1];
+        if (factory == null) {
+            factory = DocumentBuilderFactory.newInstance();
+            factory.setValidating(validate);
+            factory.setNamespaceAware(namespaceAware);
+            doms[validate ? 0 : 1][namespaceAware ? 0 : 1] = factory;
+        }
+        return factory;
     }
 
     /**
@@ -316,9 +329,7 @@ public final class XMLUtil extends Object {
     ) throws IOException, SAXException {
         
         DocumentBuilder builder = null;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(validate);
-        factory.setNamespaceAware(namespaceAware);
+        DocumentBuilderFactory factory = getFactory(validate, namespaceAware);
 
         try {
             builder = factory.newDocumentBuilder();
@@ -395,22 +406,6 @@ public final class XMLUtil extends Object {
         }
         ser.write(doc2, output);
          */
-        // XXX #66563 workaround
-        ClassLoader orig = Thread.currentThread().getContextClassLoader();
-        ClassLoader global = Lookup.getDefault().lookup(ClassLoader.class);
-        ClassLoader target = XMLUtil.class.getClassLoader();
-        if (global == null) {
-            global = target;
-        }
-        try {
-            Class clazz = global.loadClass("org.netbeans.core.startup.SAXFactoryImpl");
-            if (clazz != null) target = clazz.getClassLoader();
-        } catch (Exception e) {
-            //Ignore...
-            //ErrorManager.getDefault().notify(e);
-        } 
-        Thread.currentThread().setContextClassLoader(target);
-        
         try {
             Transformer t = TransformerFactory.newInstance().newTransformer(
                     new StreamSource(new StringReader(IDENTITY_XSLT_WITH_INDENT)));
@@ -440,8 +435,6 @@ public final class XMLUtil extends Object {
             t.transform(source, result);
         } catch (Exception e) {
             throw (IOException) new IOException(e.toString()).initCause(e);
-        } finally {
-            Thread.currentThread().setContextClassLoader(orig);
         }
     }
 
@@ -786,9 +779,7 @@ public final class XMLUtil extends Object {
      */
     private static Document normalize(Document orig) throws IOException {
         DocumentBuilder builder = null;
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setNamespaceAware(false);
+        DocumentBuilderFactory factory = getFactory(false, false);
         try {
             builder = factory.newDocumentBuilder();
         } catch (ParserConfigurationException e) {

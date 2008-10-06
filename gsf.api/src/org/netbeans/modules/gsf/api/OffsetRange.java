@@ -95,6 +95,37 @@ public final class OffsetRange implements Comparable<OffsetRange> {
         }
     }
 
+    /**
+     * Create a new OffsetRange that bounds the current OffsetRange with the given range.
+     * (e.g. an intersection)
+     * @param minimumStart The minimum starting position. Both the start and end
+     *   will be at least this value.
+     * @param maximumEnd The maximum ending position. Both the start and end will
+     *   be at most this value.
+     * @return A new offset range limited to the given bounds.
+     */
+    public OffsetRange boundTo(int minimumStart, int maximumEnd) {
+        assert minimumStart <= maximumEnd;
+        assert this != OffsetRange.NONE;
+
+        int newStart = start;
+        int newEnd = end;
+        if (newEnd > maximumEnd) {
+            newEnd = maximumEnd;
+            if (newStart > maximumEnd) {
+                newStart = maximumEnd;
+            }
+        }
+        if (newStart < minimumStart) {
+            newStart = minimumStart;
+            if (newEnd < minimumStart) {
+                newEnd = minimumStart;
+            }
+        }
+
+        return new OffsetRange(newStart, newEnd);
+    }
+
     @Override
     public String toString() {
         if (this == NONE) {

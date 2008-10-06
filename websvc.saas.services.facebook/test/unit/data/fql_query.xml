@@ -8,14 +8,14 @@
                 <name>Facebook</name>
                 <type>work</type>
                 <status/>
-                <year/>
+                <year>0</year>
             </affiliation>
             <affiliation>
                 <nid>16777217</nid>
                 <name>Harvard</name>
                 <type>college</type>
                 <status>Undergrad</status>
-                <year/>
+                <year>0</year>
             </affiliation>
         </affiliations>
     </user>
@@ -27,7 +27,7 @@
                 <name>Facebook</name>
                 <type>work</type>
                 <status/>
-                <year/>
+                <year>0</year>
             </affiliation>
         </affiliations>
     </user>
@@ -39,14 +39,14 @@
                 <name>Facebook</name>
                 <type>work</type>
                 <status/>
-                <year/>
+                <year>0</year>
             </affiliation>
             <affiliation>
                 <nid>16777217</nid>
                 <name>Harvard</name>
                 <type>college</type>
                 <status>Undergrad</status>
-                <year/>
+                <year>0</year>
             </affiliation>
         </affiliations>
     </user>

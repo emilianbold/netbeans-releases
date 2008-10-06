@@ -64,6 +64,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
@@ -84,6 +85,7 @@ import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
 
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -197,6 +199,14 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     doAction(url, event.getReferenceType(), methodLine, methodOffset, method);
                 }
             });
+            // TODO: cbrkp.setSession(debugger);
+            try {
+                java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+                setSessionMethod.setAccessible(true);
+                setSessionMethod.invoke(cbrkp, debugger);
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
             DebuggerManager.getDebuggerManager().addBreakpoint(cbrkp);
             resume(debugger);
         }

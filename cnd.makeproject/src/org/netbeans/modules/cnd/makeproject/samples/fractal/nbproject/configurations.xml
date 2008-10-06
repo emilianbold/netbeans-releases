@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="47">
+  <logicalFolder name="root" displayName="root" projectFiles="true">
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false">
+      <itemPath>Makefile</itemPath>
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>fractal.cc</itemPath>
+    </logicalFolder>
+    <logicalFolder name="HeaderFiles"
+                   displayName="Header Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+      <itemPath>readme.txt</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <defaultConf>1</defaultConf>
+  <confs>
+    <conf name="FastBuild" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>0</developmentMode>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>0</developmentMode>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="Debug" type="1">
+      <compileType>
+        <cCompilerTool>
+        </cCompilerTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="PerformanceDebug" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>2</developmentMode>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>2</developmentMode>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="DianogsableRelease" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>4</developmentMode>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>4</developmentMode>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="Release" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>5</developmentMode>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>5</developmentMode>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="PerformanceRelease" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>6</developmentMode>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>6</developmentMode>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+    <conf name="PerformanceRelease64Bits" type="1">
+      <compileType>
+        <cCompilerTool>
+          <developmentMode>6</developmentMode>
+          <sixtyfourBits>true</sixtyfourBits>
+        </cCompilerTool>
+        <ccCompilerTool>
+          <developmentMode>6</developmentMode>
+          <sixtyfourBits>true</sixtyfourBits>
+        </ccCompilerTool>
+        <linkerTool>
+          <linkerLibItems>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+      <item path="fractal.cc">
+        <itemTool>1</itemTool>
+        <ccCompilerTool>
+        </ccCompilerTool>
+      </item>
+      <item path="readme.txt">
+        <itemTool>3</itemTool>
+      </item>
+    </conf>
+  </confs>
+</configurationDescriptor>

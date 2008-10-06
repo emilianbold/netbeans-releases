@@ -51,6 +51,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
@@ -164,14 +165,14 @@ public class EjbJarMultiViewDataNode extends DataNode {
     }
     
     public java.awt.Image getIcon(int type) {
-        Image ejbJarXmlIcon = Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
+        Image ejbJarXmlIcon = ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/DDDataIcon.gif"); //NOI18N
         
         if (dataObject.getSaxError() == null){
             return ejbJarXmlIcon;
         }
 
-        Image errorBadgeIcon = Utilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/error-badge.gif"); //NOI18N
-        return Utilities.mergeImages(ejbJarXmlIcon, errorBadgeIcon, 6, 6);
+        Image errorBadgeIcon = ImageUtilities.loadImage("org/netbeans/modules/j2ee/ddloaders/web/resources/error-badge.gif"); //NOI18N
+        return ImageUtilities.mergeImages(ejbJarXmlIcon, errorBadgeIcon, 6, 6);
     }
     
     void descriptionChanged(String oldDesc, String newDesc) {

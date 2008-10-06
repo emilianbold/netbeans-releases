@@ -45,8 +45,8 @@ import javax.swing.ImageIcon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
 /**
@@ -56,12 +56,12 @@ import org.openide.util.WeakListeners;
 public abstract class AbstractOutputAction extends AbstractAction implements ChangeListener {
 
     private static final String PROP_ENABLED = "enabled"; // NOI18N
-    
+
     protected final GlassfishModule commonSupport;
 
     public AbstractOutputAction(final GlassfishModule commonSupport, 
             String localizedName, String localizedShortDesc, String iconBase) {
-        super(localizedName, new ImageIcon(Utilities.loadImage(iconBase)));
+        super(localizedName, new ImageIcon(ImageUtilities.loadImage(iconBase)));
         putValue(SHORT_DESCRIPTION, localizedShortDesc);
         this.commonSupport = commonSupport;
 

@@ -45,6 +45,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory;
@@ -53,6 +54,8 @@ import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
 import org.netbeans.modules.ruby.rubyproject.Util;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener {
     
@@ -82,12 +85,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
 
     private void initWarCheckBox() {
-        RubyPlatform platform = getPlatform();
-        boolean jruby = platform != null ? platform.isJRuby() : false;
-        warCheckBox.setEnabled(jruby);
-        if (!jruby) {
-            warCheckBox.setSelected(false);
-        }
         warCheckBox.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
@@ -110,7 +107,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jrubyUsedLabel = new javax.swing.JLabel();
         warCheckBox = new javax.swing.JCheckBox();
         rubyPlatformLabel = new javax.swing.JLabel();
         manageButton = new javax.swing.JButton();
@@ -119,8 +115,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
         serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
 
         setPreferredSize(new java.awt.Dimension(226, 100));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jrubyUsedLabel, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "UsingRuby")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(warCheckBox, org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "WarFile")); // NOI18N
 
@@ -157,19 +151,17 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(warCheckBox)
-                    .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverLabel)
-                            .add(rubyPlatformLabel))
-                        .add(20, 20, 20)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(serverComboBox, 0, 186, Short.MAX_VALUE)
-                            .add(platforms, 0, 186, Short.MAX_VALUE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(manageButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                    .add(jrubyUsedLabel))
+                    .add(serverLabel)
+                    .add(rubyPlatformLabel))
+                .add(20, 20, 20)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(serverComboBox, 0, 223, Short.MAX_VALUE)
+                    .add(platforms, 0, 223, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(manageButton)
+                .add(0, 0, 0))
+            .add(layout.createSequentialGroup()
+                .add(warCheckBox)
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -183,10 +175,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(serverLabel)
                     .add(serverComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(19, 19, 19)
-                .add(jrubyUsedLabel)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(warCheckBox))
+                .add(18, 18, 18)
+                .add(warCheckBox)
+                .addContainerGap())
         );
 
         warCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PanelOptionsVisual.class, "ACSD_WarFile")); // NOI18N
@@ -229,6 +220,9 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     boolean valid(WizardDescriptor settings) {
+        if (warCheckBox.isSelected() && !isJdk()) {
+            settings.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, NbBundle.getMessage(PanelOptionsVisual.class, "MSG_NoJDK"));
+        }
         if (PlatformComponentFactory.getPlatform(platforms) == null) {
             return false;
         }
@@ -250,7 +244,6 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jrubyUsedLabel;
     private javax.swing.JButton manageButton;
     private javax.swing.JComboBox platforms;
     private javax.swing.JLabel rubyPlatformLabel;
@@ -262,5 +255,13 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
     private void fireChangeEvent() {
         this.panel.fireChangeEvent();
     }
-    
+
+    private boolean isJdk() {
+        String jdkHome = System.getProperty("jdk.home"); //NOI18N
+        if (Utilities.isMac()) {
+            return true; // AFAIK Macs can't have a JRE only
+        }
+        File jreDir = new File(jdkHome, "jre"); //NOI18N
+        return jreDir.exists() && jreDir.isDirectory();
+    }
 }

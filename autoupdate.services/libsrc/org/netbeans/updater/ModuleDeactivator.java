@@ -204,11 +204,7 @@ public final class ModuleDeactivator extends Object {
                     }
                 }
             }
-            if (ModuleUpdater.isWindows ()) {
-                res = ModuleUpdater.trickyDeleteOnWindows (d);
-            } else {
-                res = d.delete ();
-            }
+            res = d.delete ();
         } else {
             res = d.delete ();
         }

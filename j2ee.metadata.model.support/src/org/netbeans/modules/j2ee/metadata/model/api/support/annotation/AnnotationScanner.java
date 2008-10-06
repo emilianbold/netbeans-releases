@@ -115,7 +115,7 @@ public class AnnotationScanner {
         CompilationController controller = helper.getCompilationController();
         TypeElement searchedType = controller.getElements().getTypeElement(searchedTypeName);
         if (searchedType == null) {
-            LOGGER.log(Level.WARNING, "findAnnotations: could not find type {0}", searchedTypeName); // NOI18N
+            LOGGER.log(Level.FINE, "findAnnotations: could not find type {0}", searchedTypeName); // NOI18N
             return;
         }
         ElementHandle<TypeElement> searchedTypeHandle = ElementHandle.create(searchedType);

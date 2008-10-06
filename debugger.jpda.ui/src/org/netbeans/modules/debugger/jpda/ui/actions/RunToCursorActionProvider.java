@@ -54,6 +54,7 @@ import org.netbeans.api.debugger.ActionsManagerListener;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -145,6 +146,14 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
         JPDAThread currentThread = debugger.getCurrentThread();
         if (currentThread != null) {
             breakpoint.setThreadFilters(debugger, new JPDAThread[] { currentThread });
+        }
+        // TODO: mb.setSession(debugger);
+        try {
+            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+            setSessionMethod.setAccessible(true);
+            setSessionMethod.invoke(breakpoint, debugger);
+        } catch (Exception ex) {
+            org.openide.util.Exceptions.printStackTrace(ex);
         }
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         if (currentThread != null) {

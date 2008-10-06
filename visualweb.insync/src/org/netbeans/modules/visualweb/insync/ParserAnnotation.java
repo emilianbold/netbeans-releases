@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.text.Annotatable;
@@ -148,7 +149,7 @@ public class ParserAnnotation extends Annotation implements PropertyChangeListen
      */
     public Icon getIcon() {
         if (icon == null) {
-            java.awt.Image image = Utilities.loadImage("org/netbeans/modules/visualweb/insync/error-glyph.gif");
+            java.awt.Image image = ImageUtilities.loadImage("org/netbeans/modules/visualweb/insync/error-glyph.gif");
             if (image != null)
                 icon = image instanceof Icon ? (Icon)image : new ImageIcon(image);
         }

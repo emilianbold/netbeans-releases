@@ -38,8 +38,12 @@
  */
 package org.netbeans.modules.maven.indexer.api;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -121,6 +125,32 @@ public final class RepositoryInfo {
     public boolean isLocal() {
         return repositoryPath != null;
     }
+    
+    public void addChangeListener(ChangeListener cl) {
+        synchronized (changeListeners) {
+            changeListeners.add(cl);
+        }
+    }
+
+    public void removeChangeListener(ChangeListener cl) {
+        synchronized (changeListeners) {
+            changeListeners.remove(cl);
+        }
+    }
+    private final List<ChangeListener> changeListeners = new ArrayList<ChangeListener>();
+
+    /**
+     * Notifies listeners that the index content has changed.
+     * to be called from RepositoryIndexerImplementation only.
+     */
+    public void fireChangeIndex() {
+        synchronized (changeListeners) {
+            for (ChangeListener changeListener : changeListeners) {
+                changeListener.stateChanged(new ChangeEvent(this));
+            }
+        }
+
+    }    
     
 }
 

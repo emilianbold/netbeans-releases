@@ -99,7 +99,7 @@ public class FSCompletion implements CompletionProvider {
                 try {
                 FileObject file = NavUtils.getFile(doc);
                 
-                if (file == null) {
+                if (file == null || caretOffset == -1) {
                     return ;
                 }
 

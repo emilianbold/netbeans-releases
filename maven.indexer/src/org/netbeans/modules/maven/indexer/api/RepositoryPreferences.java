@@ -40,8 +40,13 @@ package org.netbeans.modules.maven.indexer.api;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -77,6 +82,7 @@ public final class RepositoryPreferences {
     public static final int FREQ_ONCE_DAY = 1;
     public static final int FREQ_STARTUP = 2;
     public static final int FREQ_NEVER = 3;
+    private final Map<FileObject, RepositoryInfo> infoCache = new TreeMap<FileObject, RepositoryInfo>(new Comp());
     //---------------------------------------------------------------------------
     private RepositoryPreferences() {
     }
@@ -99,10 +105,6 @@ public final class RepositoryPreferences {
 
     public RepositoryInfo getRepositoryInfoById(String id) {
         assert getSystemFsRoot() != null;
-        FileObject fo = getSystemFsRoot().getFileObject(id);
-        if (fo != null) {
-            return RepositoryInfo.createRepositoryInfo(fo);
-        }
         for (RepositoryInfo ri : getRepositoryInfos()) {
             if (ri.getId().equals(id)) {
                 return ri;
@@ -113,9 +115,19 @@ public final class RepositoryPreferences {
 
     public List<RepositoryInfo> getRepositoryInfos() {
         List<RepositoryInfo> toRet = new ArrayList<RepositoryInfo>();
-        for (FileObject fo : getSystemFsRoot().getChildren()) {
-            RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
-            toRet.add(ri);
+        synchronized (infoCache) {
+            for (FileObject fo : getSystemFsRoot().getChildren()) {
+                if (!infoCache.containsKey(fo)) {
+                    RepositoryInfo ri = RepositoryInfo.createRepositoryInfo(fo);
+                    infoCache.put(fo, ri);
+                }
+            }
+            HashSet<FileObject> gone = new HashSet<FileObject>(infoCache.keySet());
+            gone.removeAll(Arrays.asList(getSystemFsRoot().getChildren()));
+            for (FileObject g : gone) {
+                infoCache.remove(g);
+            }
+            toRet.addAll(infoCache.values());
         }
         return toRet;
     }
@@ -126,9 +138,9 @@ public final class RepositoryPreferences {
      */
     public synchronized void addOrModifyRepositoryInfo(RepositoryInfo info) {
         try {
-            FileObject fo = getSystemFsRoot().getFileObject(info.getId());
+            FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
             if (fo == null) {
-                fo = getSystemFsRoot().createData(info.getId());
+                fo = getSystemFsRoot().createData(getFileObjectName(info.getId()));
             }
             fo.setAttribute(KEY_TYPE, info.getType());
             fo.setAttribute(KEY_PATH, info.getRepositoryPath());
@@ -138,11 +150,21 @@ public final class RepositoryPreferences {
             Exceptions.printStackTrace(ex);
         }
     }
-    
+
+    private String getFileObjectName(String id) {
+        String toRet = id;
+        if (toRet.contains(".")) { //NOI18N
+            toRet = toRet + ".ext"; //NOI18N
+        }
+        return toRet;
+    }
     
     public void removeRepositoryInfo(RepositoryInfo info) {
-        FileObject fo = getSystemFsRoot().getFileObject(info.getId());
+        FileObject fo = getSystemFsRoot().getFileObject(getFileObjectName(info.getId()));
         if (fo != null) {
+            synchronized (infoCache) {
+                infoCache.remove(fo);
+            }
             try {
                 fo.delete();
             } catch (IOException x) {
@@ -173,6 +195,38 @@ public final class RepositoryPreferences {
 
     public void setIncludeSnapshots(boolean includeSnapshots) {
         getPreferences().putBoolean(PROP_SNAPSHOTS, includeSnapshots);
+    }
+
+
+    private static class Comp implements Comparator<FileObject> {
+
+        public int compare(FileObject o1, FileObject o2) {
+            if (!o1.isValid() && !o2.isValid()) {
+                return 0;
+            }
+            if (!o1.isValid()) {
+                return 1;
+            }
+            if (!o2.isValid()) {
+                return -1;
+            }
+            Integer pos1 = (Integer)o1.getAttribute("position");
+            if (pos1 == null) {
+                pos1 = new Integer(9999);
+            }
+            Integer pos2 = (Integer)o2.getAttribute("position");
+            if (pos2 == null) {
+                pos2 = new Integer(9999);
+            }
+            if (pos2 > pos1) {
+                return -1;
+            }
+            if (pos2 < pos1) {
+                return 1;
+            }
+            return 0;
+        }
+
     }
 
 }

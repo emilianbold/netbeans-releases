@@ -7,9 +7,10 @@ select c|
 insert into customer values (3);
 
 --
-customers*
-  customer
-    customer_id
-  address
-    address_id
-
+<unknown>
+  customers*
+    customer
+      customer_id
+    address
+      address_id
+  

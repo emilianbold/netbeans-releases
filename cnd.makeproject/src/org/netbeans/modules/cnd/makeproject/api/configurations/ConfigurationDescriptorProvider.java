@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -52,9 +54,12 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
@@ -63,6 +68,9 @@ public class ConfigurationDescriptorProvider {
     private ConfigurationDescriptor projectDescriptor = null;
     boolean hasTried = false;
     private String relativeOffset = null;
+
+    private List<FileObject> trackedFiles;
+    private volatile boolean needReload;
     
     public ConfigurationDescriptorProvider(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
@@ -74,28 +82,48 @@ public class ConfigurationDescriptorProvider {
     
     private final Object readLock = new Object();
     public ConfigurationDescriptor getConfigurationDescriptor() {
-        if (projectDescriptor == null) {
+        if (projectDescriptor == null || needReload) {
             // attempt to read configuration descriptor
             if (!hasTried) {
                 // do this only once
                 synchronized (readLock) {
                     // check again that someone already havn't read
                     if (!hasTried) {
-                        ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
-                        
-                        if (SwingUtilities.isEventDispatchThread()) {
-                            //System.err.println("ConfigurationDescriptorProvider Switching thead...");
-                            ProjectReader projectReader = new ProjectReader(reader, relativeOffset);
-                            RequestProcessor.Task task = RequestProcessor.getDefault().post(projectReader); 
-                            task.waitFinished();
-                            projectDescriptor = projectReader.projectDescriptor;
-                        }
-                        else {
-                            try {
-                                projectDescriptor = reader.read(relativeOffset);
-                            } catch (java.io.IOException x) {
-                                // most likely open failed
+                        // It's important to set needReload=false before calling
+                        // projectDescriptor.assign(), otherwise there will be
+                        // infinite recursion.
+                        needReload = false;
+
+                        if (trackedFiles == null) {
+                            FileChangeListener fcl = new ConfigurationXMLChangeListener();
+                            trackedFiles = new ArrayList<FileObject>();
+                            for (String path : new String[] {
+                                    "nbproject/configurations.xml", //NOI18N
+                                    "nbproject/private/configurations.xml"}) { //NOI18N
+                                FileObject fo = projectDirectory.getFileObject(path);
+                                if (fo != null) {
+                                    fo.addFileChangeListener(fcl);
+                                    // We have to store tracked files somewhere.
+                                    // Otherwise they will be GCed, and we won't get notifications.
+                                    trackedFiles.add(fo);
+                                }
                             }
+                        }
+                        ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
+                        ConfigurationDescriptor newDescriptor = null;
+
+                        //if (SwingUtilities.isEventDispatchThread()) {
+                        //    new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
+                        //    // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+                        //    // CHANGE YOUR LOGIC INSTEAD
+                        //
+                        //    // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+                        //    // return null;
+                        //}
+                        try {
+                            projectDescriptor = reader.read(relativeOffset);
+                        } catch (java.io.IOException x) {
+                            // most likely open failed
                         }
                         
                         hasTried = true;
@@ -106,28 +134,9 @@ public class ConfigurationDescriptorProvider {
         }
         return projectDescriptor;
     }
-    
+
     public boolean gotDescriptor() {
         return projectDescriptor != null;   
-    }
-    
-    private class ProjectReader implements Runnable {
-        public ConfigurationDescriptor projectDescriptor = null;
-        private ConfigurationXMLReader reader;
-        private String relativeOffset;
-        
-        public ProjectReader(ConfigurationXMLReader reader, String relativeOffset) {
-            this.reader = reader;
-            this.relativeOffset = relativeOffset;
-        }
-        
-        public void run() {
-            try {
-                projectDescriptor = reader.read(relativeOffset);
-            } catch (java.io.IOException x) {
-                // most likely open failed
-            }
-        }
     }
     
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
@@ -268,4 +277,52 @@ public class ConfigurationDescriptorProvider {
         }
         return strSize;
     }
+
+    /**
+     * This listener will be notified about updates of files
+     * <code>nbproject/configurations.xml</code> and
+     * <code>nbproject/private/configurations.xml</code>.
+     * These files should be reloaded when changed externally.
+     * See IZ#146701: can't update project through subversion, or any other
+     */
+    private class ConfigurationXMLChangeListener implements FileChangeListener {
+
+        private void resetConfiguration() {
+            if (projectDescriptor != null && projectDescriptor.getModified()) {
+                // Don't reload if descriptor is modified in memory.
+                // This also prevents reloading when descriptor is being saved.
+                return;
+            }
+            synchronized (readLock) {
+                needReload = true;
+                hasTried = false;
+            }
+        }
+
+        public void fileFolderCreated(FileEvent fe) {
+            resetConfiguration();
+        }
+
+        public void fileDataCreated(FileEvent fe) {
+            resetConfiguration();
+        }
+
+        public void fileChanged(FileEvent fe) {
+            resetConfiguration();
+        }
+
+        public void fileDeleted(FileEvent fe) {
+            resetConfiguration();
+        }
+
+        public void fileRenamed(FileRenameEvent fe) {
+            resetConfiguration();
+        }
+
+        public void fileAttributeChanged(FileAttributeEvent fe) {
+            resetConfiguration();
+        }
+
+    }
+
 }

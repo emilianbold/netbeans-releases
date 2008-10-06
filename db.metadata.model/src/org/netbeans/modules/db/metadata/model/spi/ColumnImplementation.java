@@ -39,11 +39,26 @@
 
 package org.netbeans.modules.db.metadata.model.spi;
 
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Table;
+
 /**
  *
  * @author Andrei Badea
  */
-public interface ColumnImplementation {
+public abstract class ColumnImplementation {
 
-    String getName();
+    private Column column;
+
+    public final Column getColumn() {
+        if (column == null) {
+            column = MetadataAccessor.getDefault().createColumn(this);
+        }
+        return column;
+    }
+
+    public abstract Table getParent();
+
+    public abstract String getName();
 }

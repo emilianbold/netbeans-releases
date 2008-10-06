@@ -665,7 +665,11 @@ public class HibernateRefactoringUtil {
         }
 
         int lastDot = binaryClassName.lastIndexOf(".");
-        return binaryClassName.substring(0, lastDot);
+        if(lastDot == -1) {
+            return null;
+        } else {
+            return binaryClassName.substring(0, lastDot);
+        }
     }
     
     public static final Problem createProblem(Problem result, boolean isFatal, String message) {

@@ -46,6 +46,7 @@ import com.sun.jdi.ReferenceType;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -133,6 +134,8 @@ public class MethodChooser implements KeyListener, MouseListener,
     private boolean performAction = false;
     private int selectedIndex = -1;
     private int mousedIndex = -1;
+    private ActionListener releaseListener;
+    private boolean isInSelectMode = false;
 
     MethodChooser(JPDADebuggerImpl debugger, String url, ReferenceType clazz, int methodLine, int methodOffset) {
         this.debugger = debugger;
@@ -145,6 +148,10 @@ public class MethodChooser implements KeyListener, MouseListener,
         //Operation currOp = currentThread.getCurrentOperation();
         //List<Operation> lastOps = currentThread.getLastOperations();
         //Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
+    }
+
+    public void setReleaseListener(ActionListener releaseListener) {
+        this.releaseListener = releaseListener;
     }
 
     public static OffsetsBag getHighlightsBag(Document doc) {
@@ -210,6 +217,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
         Utilities.setStatusText(editorPane, " " + NbBundle.getMessage(
                 MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
+        isInSelectMode = true;
         return true;
     }
 
@@ -237,6 +245,18 @@ public class MethodChooser implements KeyListener, MouseListener,
             String name = operations[selectedIndex].getMethodName();
             RunIntoMethodActionProvider.doAction(debugger, name, locations[selectedIndex], true);
         }
+        releaseListener.actionPerformed(null);
+        releaseListener = null;
+        isInSelectMode = false;
+    }
+
+    boolean isInSelectMode() {
+        return isInSelectMode;
+    }
+
+    void doStepIntoCurrentSelection() {
+        performAction = true;
+        release();
     }
     
     private DataObject getDataObject(String url) {

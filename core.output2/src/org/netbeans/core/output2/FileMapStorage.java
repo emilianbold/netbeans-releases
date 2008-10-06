@@ -53,10 +53,8 @@ import org.openide.util.Exceptions;
  *
  */
 class FileMapStorage implements Storage {
-    /** A file channel for writing the mapped file */
-    private FileChannel writeChannel;
-    /** A file channel for reading the mapped file */
-    private FileChannel readChannel;
+    /** A file channel for reading/writing the mapped file */
+    private FileChannel fileChannel;
     /** The base number of bytes to allocate when a getWriteBuffer for writing is
      * needed. */
     private static final int BASE_BUFFER_SIZE = 8196;
@@ -98,6 +96,8 @@ class FileMapStorage implements Storage {
     private File outfile = null;
     
     private int outstandingBufferCount = 0;
+    
+    private boolean closed;
 
     FileMapStorage() {
         init();
@@ -108,10 +108,10 @@ class FileMapStorage implements Storage {
         mappedRange = -1;
         mappedStart = 0;
         master = ByteBuffer.allocateDirect (BASE_BUFFER_SIZE);
-        readChannel = null;
-        writeChannel = null;
+        fileChannel = null;
         buffer = null;
         bytesWritten = 0;
+        closed = true;
     }
 
     /**
@@ -155,42 +155,30 @@ class FileMapStorage implements Storage {
     public String toString() {
         return outfile == null ? "[unused or disposed FileMapStorage]" : outfile.getPath();
     }
+    
+    private FileChannel writeChannel() {
+        FileChannel channel = fileChannel();
+        closed = !channel.isOpen();
+        return channel;
+    }
 
     /**
-     * Get a FileChannel opened for writing against the output file.
+     * Get a FileChannel opened for reading/writing against the output file.
      */
-    private FileChannel writeChannel() {
+    private FileChannel fileChannel() {
         try {
-            if (writeChannel == null) {
+            if (fileChannel == null || !fileChannel.isOpen()) {
                 ensureFileExists();
-                FileOutputStream fos = new FileOutputStream(outfile, true);
-                writeChannel = fos.getChannel();
+                RandomAccessFile raf = new RandomAccessFile(outfile, "rw");
+                fileChannel = raf.getChannel();
             }
-            return writeChannel;
+            return fileChannel;
         } catch (FileNotFoundException fnfe) {
             fnfe.printStackTrace(); //XXX
         } catch (IOException ioe) {
             ioe.printStackTrace(); //XXX
         }
         return null;
-    }
-
-    /**
-     * Fetch a FileChannel for readin the file.
-     */
-    private FileChannel readChannel() {
-        //TODO may be better to use RandomAccessFile and a single bidirectional
-        //FileChannel rather than maintaining two separate ones.
-        if (readChannel == null) {
-            try {
-                ensureFileExists();
-                FileInputStream fis = new FileInputStream (outfile);
-                readChannel = fis.getChannel();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return readChannel;
     }
 
     /**
@@ -232,8 +220,9 @@ class FileMapStorage implements Storage {
         int position = size();
         int byteCount = bb.position();
         bb.flip();
-        if (writeChannel().isOpen()) { //If a thread was terminated while writing, it will be closed
-            writeChannel().write (bb);
+        FileChannel channel = writeChannel();
+        if (channel.isOpen()) { //If a thread was terminated while writing, it will be closed
+            channel.write (bb);
             synchronized (this) {
                 bytesWritten += byteCount;
                 outstandingBufferCount--;
@@ -247,18 +236,11 @@ class FileMapStorage implements Storage {
             Controller.log ("Disposing file map storage");
             Controller.logStack();
         }
-        if (writeChannel != null && writeChannel.isOpen()) {
+        if (fileChannel != null && fileChannel.isOpen()) {
             try {
-                writeChannel.close();
-                writeChannel = null;
-            } catch (Exception e) {
-                Exceptions.printStackTrace(e);
-            }
-        }
-        if (readChannel != null && readChannel.isOpen()) {
-            try {
-                readChannel.close();
-                readChannel = null;
+                fileChannel.close();
+                fileChannel = null;
+                closed = true;
             } catch (Exception e) {
                 Exceptions.printStackTrace(e);
             }
@@ -290,14 +272,16 @@ class FileMapStorage implements Storage {
             //    cause contention problems blocking repaints)
             cont = this.contents;
             if (cont == null || start + byteCount > mappedRange || start < mappedStart) {
-                FileChannel ch = readChannel();
-                long offset = start + byteCount;
+                FileChannel ch = fileChannel();
                 mappedStart = Math.max((long)0, (long)(start - (MAX_MAP_RANGE /2)));
                 long prevMappedRange = mappedRange;
                 long map = byteCount > (MAX_MAP_RANGE / 2) ? (byteCount + byteCount / 10) : (MAX_MAP_RANGE / 2);
                 mappedRange = Math.min(ch.size(), start + map);
                 try {
-                    try {
+                    cont = ch.map(FileChannel.MapMode.READ_ONLY, mappedStart, mappedRange - mappedStart);
+                    this.contents = cont;
+                    
+                    /*try {
                         cont = ch.map(FileChannel.MapMode.READ_ONLY,
                             mappedStart, mappedRange - mappedStart);
                         this.contents = cont;
@@ -312,7 +296,7 @@ class FileMapStorage implements Storage {
                         cont = ByteBuffer.allocate((int) (mappedRange - mappedStart));
                         ch.position(mappedStart).read(cont);
                         this.contents = cont;
-                    }
+                    }*/
                 } catch (IOException ioe) {
                     Logger.getAnonymousLogger().info("Failed to read output file. Start:" + start + " bytes reqd=" + //NOI18N
                         byteCount + " mapped range=" + mappedRange + //NOI18N
@@ -345,21 +329,19 @@ class FileMapStorage implements Storage {
         if (buffer != null) {
             if (Controller.LOG) Controller.log("FILEMAP STORAGE flush(): " + outstandingBufferCount);
             write (buffer);
-            writeChannel.force(false);
+            fileChannel.force(false);
             buffer = null;
         }
     }
 
     public void close() throws IOException {
-        if (writeChannel != null) {
+        if (fileChannel != null) {
             flush();
-            writeChannel.close();
-            writeChannel = null;
-            if (Controller.LOG) Controller.log("FILEMAP STORAGE CLOSE.  Outstanding buffer count: " + outstandingBufferCount);
         }
+        closed = true;
     }
 
     public boolean isClosed() {
-        return writeChannel == null || !writeChannel.isOpen();
+        return fileChannel == null || closed;
     }
 }

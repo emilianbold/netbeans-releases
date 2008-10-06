@@ -56,6 +56,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
@@ -66,6 +67,7 @@ import org.netbeans.editor.*;
 
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -133,7 +135,7 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private ImageIcon resolveIcon(String res){
-        return new ImageIcon(org.openide.util.Utilities.loadImage (res));
+        return new ImageIcon(ImageUtilities.loadImage (res));
     }
 
     private void installTitleComponent() {
@@ -217,9 +219,10 @@ public class DocumentationScrollPane extends JScrollPane {
             String text = currentDocumentation.getText();
             URL url = currentDocumentation.getURL();
             if (text != null){
+                Document document = view.getDocument();
+                document.putProperty(Document.StreamDescriptionProperty, null);
                 if (url!=null){
                     // fix of issue #58658
-                    javax.swing.text.Document document = view.getDocument();
                     if (document instanceof HTMLDocument){
                         ((HTMLDocument)document).setBase(url);
                     }

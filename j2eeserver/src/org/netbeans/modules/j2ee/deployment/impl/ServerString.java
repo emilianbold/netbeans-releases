@@ -96,6 +96,12 @@ public class ServerString implements java.io.Serializable {
         return getTargets(false);
     }
 
+    /**
+     * <i>This method can have ugly side effect of starting the server.</i>
+     * 
+     * @param concrete
+     * @return
+     */
     public String[] getTargets(boolean concrete) {
         if (!concrete || targets.length > 0) {
             return targets.clone();
@@ -137,6 +143,11 @@ public class ServerString implements java.io.Serializable {
         return buffer.toString();
     }
 
+    /**
+     * <i>This method can have ugly side effect of starting the server.</i>
+     * 
+     * @return
+     */
     public Target[] toTargets() {
         String[] targetNames = getTargets(true);
         Target[] ret = new Target[targetNames.length];

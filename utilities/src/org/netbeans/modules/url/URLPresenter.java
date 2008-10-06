@@ -60,6 +60,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -117,7 +118,7 @@ final class URLPresenter implements Presenter.Menu,
 
         if (useIcons) {
             // set the presenter's icon:
-            Image icon = Utilities.loadImage(
+            Image icon = ImageUtilities.loadImage(
                     "org/netbeans/modules/url/urlObject.png");              //NOI18N
             try {
                 FileObject file = dataObject.getPrimaryFile();

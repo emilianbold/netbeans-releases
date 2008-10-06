@@ -41,6 +41,8 @@ package org.netbeans.modules.glassfish.spi;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -60,6 +62,7 @@ public abstract class ServerCommand {
 
     protected final String command;
     protected String query = null;
+    protected boolean retry = false;
 
     public ServerCommand(String command) {
         this.command = command;
@@ -125,6 +128,19 @@ public abstract class ServerCommand {
     public InputStream getInputStream() {
         return null;
     }
+
+    /**
+     * Sometimes (e.g. during startup), the server does not accept commands.  In
+     * such cases, it will block for 20 seconds and then return with the message
+     * " V3 cannot process this command at this time, please wait".
+     *
+     * In such cases, we set a flag and have the option to reissue the command.
+     *
+     * @return true if server responded with it's "please wait" message.
+     */
+    public boolean retry() {
+        return retry;
+    }
     
     /**
      * Override for command specific failure checking.
@@ -161,6 +177,12 @@ public abstract class ServerCommand {
         } else {
             // !PW FIXME Need to pass this message back.  Need <Result> object?
             String message = m.getMainAttributes().getValue("message"); // NOI18N
+
+            // If server is not currently available for processing commands,
+            // set the retry flag.
+            if(message != null && message.contains("please wait")) {
+                retry = true;
+            }
             Logger.getLogger("glassfish").log(Level.WARNING, message);
         }
 
@@ -197,7 +219,7 @@ public abstract class ServerCommand {
      */
     @Override
     public String toString() {
-        return getCommand() + QUERY_SEPARATOR + getQuery();
+        return (query == null) ? command : command + QUERY_SEPARATOR + query;
     }
     
     /**
@@ -229,7 +251,11 @@ public abstract class ServerCommand {
             for (String key : info.getEntries().keySet()) {
                 int equalsIndex = key.indexOf('=');
                 if(equalsIndex >= 0) {
-                    propertyMap.put(key.substring(0, equalsIndex), key.substring(equalsIndex+1));
+                    try {
+                        propertyMap.put(key.substring(0, equalsIndex), URLDecoder.decode(URLDecoder.decode(key.substring(equalsIndex + 1), "UTF-8"),"UTF-8"));
+                    } catch (UnsupportedEncodingException ex) {
+                        ///Exceptions.printStackTrace(ex);
+                    }
                 } else {
                     propertyMap.put(key, "");
                 }

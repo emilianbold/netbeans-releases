@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
@@ -60,6 +61,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.DebuggerServer;
 import org.netbeans.modules.web.client.tools.common.dbgp.Feature;
 import org.netbeans.modules.web.client.tools.common.dbgp.HttpMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Message;
+import org.netbeans.modules.web.client.tools.common.dbgp.ReloadSourcesMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.SourcesMessage;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status;
 import org.netbeans.modules.web.client.tools.common.dbgp.Status.StatusResponse;
@@ -74,6 +76,7 @@ import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebuggerS
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSHttpMessage;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSURILocation;
+import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSWindow;
 import org.netbeans.modules.web.client.tools.javascript.debugger.impl.JSFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
@@ -91,6 +94,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
     protected DebuggerProxy proxy;
     protected SuspensionPointHandler suspensionPointHandler;
     protected HttpMessageHandler httpMessageHandler;
+    private AtomicBoolean finished = new AtomicBoolean();
 
     public JSAbstractExternalDebugger(URI uri, HtmlBrowser.Factory browser) {
         super(uri, browser);
@@ -206,9 +210,9 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         if (getDebuggerState() == JSDebuggerState.NOT_CONNECTED) {
             return;
         }
-        if (terminate) {
+        if (terminate && !finished.getAndSet(true)) {
             // Disable the debugger
-            setBooleanFeature(Feature.Name.ENABLE, false);
+            //setBooleanFeature(Feature.Name.ENABLE, false);
 
             if (proxy != null) {
                 proxy.stopDebugging();
@@ -340,6 +344,11 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         setWindows(JSFactory.getJSWindows(windowsMessage.getWindows()));
     }
 
+    private void handleReloadSourcesMessage(ReloadSourcesMessage reloadSourcesMessage) {
+        propertyChangeSupport.firePropertyChange(PROPERTY_RELOADSOURCES, getSources(),
+                JSFactory.getJSSources(reloadSourcesMessage.getSources()));
+    }
+    
     private void handleStreamMessage(StreamMessage streamMessage) {
         JSDebuggerConsoleEvent consoleEvent = null;
         try {
@@ -371,9 +380,13 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (!stopped && proxy.isHttpQueueActive()) {
-                Message message = getNextMessage();
-                if (message != null) {
-                    handle(message);
+                try {
+                    Message message = getNextMessage();
+                    if (message != null) {
+                        handle(message);
+                    }
+                } catch (Exception ex) {
+                    Log.getLogger().log(Level.SEVERE, "Uncaught exception in http message handler", ex);
                 }
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
@@ -394,7 +407,7 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
                     stopped = true;
                 }
             } else {
-                Logger.getLogger(this.getName()).info("Something Seems Wrong");
+                Logger.getLogger(this.getName()).info("Unexpected message in HTTP Message Handler queue");
             }
         }
 
@@ -415,9 +428,13 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
         public void run() {
             Log.getLogger().log(Level.FINEST, "Starting " + getName()); //NOI18N
             while (!stopped && proxy.isSuspensionQueueActive()) {
-                Message message = getNextMessage();
-                if (message != null) {
-                    handle(message);
+                try {
+                    Message message = getNextMessage();
+                    if (message != null) {
+                        handle(message);
+                    }
+                } catch (Exception ex) {
+                    Log.getLogger().log(Level.SEVERE, "Uncaught exception in suspension point handler", ex);
                 }
             }
             Log.getLogger().log(Level.FINEST, "Ending " + getName());   //NOI18N
@@ -429,7 +446,10 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
 
         private void handle(Message message) {
             // Spontaneous messages
-            if (message instanceof SourcesMessage) {
+            if (message instanceof ReloadSourcesMessage) {
+                handleReloadSourcesMessage((ReloadSourcesMessage) message);
+                return;
+            }else if (message instanceof SourcesMessage) {
                 handleSourcesMessage((SourcesMessage) message);
                 return;
             } else if (message instanceof WindowsMessage) {
@@ -445,7 +465,12 @@ public abstract class JSAbstractExternalDebugger extends JSAbstractDebugger {
             }
             
             // State oriented
-            JSDebuggerState messageDebuggerState = DbgpUtils.getDebuggerState(message);
+            JSDebuggerState messageDebuggerState;
+            try {
+                messageDebuggerState = DbgpUtils.getDebuggerState(message);
+            } catch (Exception ex) {
+                messageDebuggerState = null;
+            }
             if(messageDebuggerState != null) {
                 setDebuggerState(messageDebuggerState);
                 if (messageDebuggerState.getReason().equals(JSDebuggerState.Reason.INIT)) {

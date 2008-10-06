@@ -245,7 +245,7 @@ public final class EditorBridge extends KeymapManager {
         }
         if (editorKit == null) {
             if (LOG.isLoggable(Level.WARNING)) {
-                LOG.warning("EditorKit not found for: " + mimeType); //NOI18N
+                LOG.fine("EditorKit not found for: " + mimeType); //NOI18N
             }
             return;
         }
@@ -494,7 +494,13 @@ public final class EditorBridge extends KeymapManager {
 
         public String getDisplayName() {
             if (name == null) {
-                name = (String) action.getValue (Action.SHORT_DESCRIPTION);
+                try {
+                    name = (String) action.getValue (Action.SHORT_DESCRIPTION);
+                } catch (MissingResourceException mre) {
+                    Throwable t = new Throwable("The action " + action + " crashed when accessing its short description.", mre); //NOI18N
+                    LOG.log(Level.WARNING, null, t);
+                    name = null;
+                }
                 if (name == null) {
                     LOG.warning("The action " + action + " doesn't provide short description, using its name."); //NOI18N
                     name = getId();

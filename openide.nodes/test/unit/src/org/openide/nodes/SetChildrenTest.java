@@ -41,11 +41,8 @@
 
 package org.openide.nodes;
 
-import junit.framework.*;
-import junit.textui.TestRunner;
 import java.beans.*;
 import java.util.*;
-import org.openide.nodes.*;
 
 import org.netbeans.junit.*;
 
@@ -58,6 +55,10 @@ public class SetChildrenTest extends NbTestCase {
     public SetChildrenTest(String name) {
         super(name);
     }
+    
+//    public static SetChildrenTest suite() {
+//        return new SetChildrenTest("testChldrenEvents");
+//    }    
 
     /** Tests whether the nodes get Changed.
      */
@@ -325,6 +326,7 @@ public class SetChildrenTest extends NbTestCase {
             }
         }
         
+        @Override
         public String toString () {
             StringBuffer sb = new StringBuffer (getRepresentedClass ().getName ());
             sb.append ('[');

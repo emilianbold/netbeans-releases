@@ -88,6 +88,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -99,7 +100,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	
 	private GlobalRepository gameDesign;
 	
-    private static final Icon ICON_ERROR = new ImageIcon(Utilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
 	
 	private static final int DEFAULT_FRAMES = 5;
 	private static final int DEFAULT_TILE_WIDTH = 18;

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.vmd.midpnb.propertyeditors.table;
 
 import java.awt.Color;
@@ -59,6 +58,7 @@ import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
+import org.netbeans.modules.vmd.midp.propertyeditors.CleanUp;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.PropertyEditorResourceElement;
 import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
 
@@ -66,7 +66,7 @@ import org.netbeans.modules.vmd.midpnb.components.resources.SimpleTableModelCD;
  *
  * @author Anton Chechel
  */
-public class TableModelEditorElement extends PropertyEditorResourceElement implements TableModelListener {
+public class TableModelEditorElement extends PropertyEditorResourceElement implements TableModelListener, CleanUp {
 
     private boolean doNotFireEvent;
     private long componentID;
@@ -79,6 +79,26 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
         initComponents();
         renderer = new HeaderCellRenderer();
         setTableCellRenderer();
+    }
+
+    public void clean(DesignComponent component) {
+        tableModel = null;
+        renderer = null;
+        addColButton = null;
+        addRowButton = null;
+        columnsLabel = null;
+        columnsTextField = null;
+        headerCheckBox = null;
+        jPanel1 = null;
+        jScrollPane1 = null;
+        jTextField1 = null;
+        removeColButton = null;
+        removeRowButton = null;
+        rowsLabel = null;
+        rowsTextField = null;
+        table = null;
+        tableLabel = null;
+        this.removeAll();
     }
 
     public JComponent getJComponent() {
@@ -464,7 +484,7 @@ public class TableModelEditorElement extends PropertyEditorResourceElement imple
 
     private void addColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addColButtonActionPerformed
         tableModel.addColumn("", false); // NOI18N//GEN-LAST:event_addColButtonActionPerformed
-    }                                            
+    }
 
     private void removeColButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeColButtonActionPerformed
         tableModel.removeLastColumn();

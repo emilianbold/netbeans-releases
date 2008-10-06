@@ -10,11 +10,11 @@ package org.netbeans.test.subversion.main.delete;
 
 import java.io.File;
 import java.io.PrintStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.OutputOperator;
-import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JButtonOperator;
@@ -28,6 +28,7 @@ import org.netbeans.test.subversion.operators.CommitOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.VersioningOperator;
 import org.netbeans.test.subversion.operators.WorkDirStepOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -46,6 +47,7 @@ public class RefactoringTest extends JellyTestCase {
     String os_name;
     Operator.DefaultStringComparator comOperator;
     Operator.DefaultStringComparator oldOperator;
+    static Logger log;
 
     /** Creates a new instance of RefactoringTest */
     public RefactoringTest(String name) {
@@ -54,8 +56,14 @@ public class RefactoringTest extends JellyTestCase {
 
     @Override
     protected void setUp() throws Exception {
-        os_name = System.getProperty("os.name");
         System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
 
     }
 
@@ -75,7 +83,9 @@ public class RefactoringTest extends JellyTestCase {
 
     public void testRefactoring() throws Exception {
         try {
-            OutputOperator.invoke();
+            MessageHandler mh = new MessageHandler("Checking out");
+            log.addHandler(mh);
+            
             JTableOperator table;
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             VersioningOperator vo = VersioningOperator.invoke();
@@ -102,21 +112,23 @@ public class RefactoringTest extends JellyTestCase {
             wdso.checkCheckoutContentOnly(false);
             wdso.finish();
             //open project
-            OutputTabOperator oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.waitText("Checking out... finished.");
+
+            TestKit.waitText(mh);
+
             NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
             JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
             open.push();
 
             TestKit.waitForScanFinishedAndQueueEmpty();
 
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+            mh = new MessageHandler("Refreshing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
             Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
             node.performPopupAction("Subversion|Show Changes");
-            oto.waitText("Refreshing... finished.");
+
+            TestKit.waitText(mh);
+
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
             node.select();
             node.performPopupActionNoBlock("Refactor|Rename...");
@@ -145,11 +157,19 @@ public class RefactoringTest extends JellyTestCase {
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong status in Versioning View", 3, result);
 
-            oto = new OutputTabOperator("file:///tmp/repo");
-            oto.getTimeouts().setTimeout("ComponentOperator.WaitStateTimeout", 30000);
-            oto.clear();
+//            mh = new MessageHandler("Refreshing");
+//            TestKit.removeHandlers(log);
+//            log.addHandler(mh);
+
             node = new Node(new SourcePackagesNode(PROJECT_NAME), "");
             CommitOperator cmo = CommitOperator.invoke(node);
+
+//            TestKit.waitText(mh);
+
+            mh = new MessageHandler("Committing");
+            TestKit.removeHandlers(log);
+            log.addHandler(mh);
+
             expected = new String[]{"Main.java", "Main.java", "javaapp_ren"};
             actual = new String[cmo.tabFiles().getRowCount()];
             for (int i = 0; i < actual.length; i++) {
@@ -166,7 +186,8 @@ public class RefactoringTest extends JellyTestCase {
             result = TestKit.compareThem(expected, actual, false);
             assertEquals("Wrong status in Commit dialog", 3, result);
             cmo.commit();
-            oto.waitText("Committing... finished.");
+
+            TestKit.waitText(mh);
 
             Exception e = null;
             try {
@@ -185,6 +206,8 @@ public class RefactoringTest extends JellyTestCase {
                 e = ex;
             }
             assertNotNull("Unexpected behavior - File shouldn't be in explorer!!!", e);
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         }

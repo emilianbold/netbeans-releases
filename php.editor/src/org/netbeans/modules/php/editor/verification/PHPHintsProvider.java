@@ -74,17 +74,22 @@ public class PHPHintsProvider implements HintsProvider {
             startTime = Calendar.getInstance().getTimeInMillis();
         }
         
-        Map<String, List> allHints = (Map) mgr.getHints(false, context);
+        Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         CompilationInfo info = context.compilationInfo;
         
-        Collection firstPassHints = new ArrayList();
+        Collection<PHPRule> firstPassHints = new ArrayList<PHPRule>();
         
         for (Object obj : allHints.get(FIRST_PASS_HINTS)){
-            if (obj instanceof Rule.UserConfigurableRule) {
-                Rule.UserConfigurableRule userConfigurableRule = (Rule.UserConfigurableRule) obj;
+            if (obj instanceof PHPRule) {
+                PHPRule rule = (PHPRule) obj;
                 
-                if (mgr.isEnabled(userConfigurableRule)){
-                    firstPassHints.add(obj);
+                if (mgr.isEnabled(rule)){
+                    firstPassHints.add(rule);
+                    
+                    if (rule instanceof PHPRuleWithPreferences) {
+                        PHPRuleWithPreferences ruleWithPrefs = (PHPRuleWithPreferences) rule;
+                        ruleWithPrefs.setPreferences(mgr.getPreferences(rule));
+                    }
                 }
             }
         }
@@ -93,8 +98,8 @@ public class PHPHintsProvider implements HintsProvider {
         boolean maintainVarStack = false;
         
         
-        for (List list : allHints.values()){
-            for (Object obj : list){
+        for (List<? extends Rule.AstRule> list : allHints.values()) {
+            for (Rule.AstRule obj : list) {
                 if (obj instanceof VarStackReadingRule){
                     VarStackReadingRule rule = (VarStackReadingRule)obj;
                     
@@ -110,17 +115,21 @@ public class PHPHintsProvider implements HintsProvider {
 
         PHPVerificationVisitor visitor = new PHPVerificationVisitor((PHPRuleContext)context, firstPassHints, maintainVarStack);
         
-        for (PHPParseResult parseResult : ((List<PHPParseResult>) info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE))) {
-            if (parseResult.getProgram() != null) {
-                parseResult.getProgram().accept(visitor);
+        for (ParserResult parseResult : info.getEmbeddedResults(PHPLanguage.PHP_MIME_TYPE)) {
+            assert parseResult instanceof PHPParseResult;
+            @SuppressWarnings("unchecked")
+            PHPParseResult phpParseResult = (PHPParseResult) parseResult;
+
+            if (phpParseResult.getProgram() != null) {
+                phpParseResult.getProgram().accept(visitor);
             }
             
             hints.addAll(visitor.getResult());
         }
         
-        List secondPass = allHints.get(SECOND_PASS_HINTS);
+        List<? extends Rule.AstRule> secondPass = allHints.get(SECOND_PASS_HINTS);
         
-        if (secondPass.size() > 0){
+        if (secondPass.size() > 0) {
             assert secondPass.size() == 1;
             UnusedVariableRule unusedVariableRule = (UnusedVariableRule) secondPass.get(0);
             

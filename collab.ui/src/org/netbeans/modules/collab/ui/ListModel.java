@@ -178,13 +178,13 @@ public final class ListModel extends AbstractListModel {
      */
     final public Icon getIcon(Object object) {
         if (object instanceof CollabPrincipal) {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/collab/ui/resources/user_png.gif")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/collab/ui/resources/user_png.gif")); // NOI18N
         } else if (object instanceof String) // hack 
          {
-            return new ImageIcon(Utilities.loadImage("org/netbeans/modules/collab/ui/resources/conversation_png.gif")); // NOI18N
+            return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/collab/ui/resources/conversation_png.gif")); // NOI18N
         }
 
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/collab/ui/resources/empty.gif")); // NOI18N
+        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/collab/ui/resources/empty.gif")); // NOI18N
     }
     
     

@@ -42,8 +42,12 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -95,6 +99,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
@@ -139,9 +144,6 @@ import org.xml.sax.SAXException;
 public class Installer extends ModuleInstall implements Runnable {
     static final long serialVersionUID = 1L;
 
-    /**
-     *
-     */
     static final String USER_CONFIGURATION = "UI_USER_CONFIGURATION";   // NOI18N
     private static UIHandler ui = new UIHandler(false);
     private static UIHandler handler = new UIHandler(true);
@@ -165,6 +167,26 @@ public class Installer extends ModuleInstall implements Runnable {
     private static String USAGE_STATISTICS_ENABLED = "usageStatisticsEnabled"; // NOI18N
     private static String CORE_PREF_NODE = "org/netbeans/core"; // NOI18N
     private static Preferences corePref = NbPreferences.root().node (CORE_PREF_NODE);
+
+    private JButton metricsEnable = new JButton();
+    private JButton metricsCancel = new JButton();
+
+    private static final String CMD_METRICS_ENABLE = "MetricsEnable";   // NOI18N
+    private static final String CMD_METRICS_CANCEL = "MetricsCancel";   // NOI18N
+
+    /** Action listener for Usage Statistics Reminder dialog */
+    private ActionListener l = new ActionListener () {
+        public void actionPerformed (ActionEvent ev) {
+            cmd = ev.getActionCommand();
+            if (CMD_METRICS_ENABLE.equals(cmd)) {
+                corePref.putBoolean(USAGE_STATISTICS_ENABLED, true);
+            } else if (CMD_METRICS_CANCEL.equals(cmd)) {
+                corePref.putBoolean(USAGE_STATISTICS_ENABLED, false);
+            }
+        }
+    };
+
+    private String cmd;
 
     static final String METRICS_LOGGER_NAME = "org.netbeans.ui.metrics"; // NOI18N
     private static Pattern ENCODING = Pattern.compile(
@@ -211,6 +233,10 @@ public class Installer extends ModuleInstall implements Runnable {
         logMetricsUploadFailed = prefs.getBoolean("metrics.upload.failed", Boolean.FALSE); // NOI18N
         corePref.addPreferenceChangeListener(new PrefChangeListener());
 
+        if ((System.getProperty ("netbeans.full.hack") == null) && (System.getProperty ("netbeans.close") == null)) {
+            usageStatisticsReminder();
+        }
+        
         System.setProperty("nb.show.statistics.ui",USAGE_STATISTICS_ENABLED);
         logMetricsEnabled = corePref.getBoolean(USAGE_STATISTICS_ENABLED,Boolean.FALSE);
         if (logMetricsEnabled) {
@@ -231,6 +257,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
+                List<LogRecord> clusterRec = new ArrayList<LogRecord>();
+                getClusterList(log, clusterRec);
+                for (LogRecord rec : clusterRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
             } catch (IOException ex) {
                 ex.printStackTrace();
             }
@@ -246,6 +277,94 @@ public class Installer extends ModuleInstall implements Runnable {
         if (logsSize >= UIHandler.MAX_LOGS) {
             WindowManager.getDefault().invokeWhenUIReady(this);
         }
+    }
+    
+    private void usageStatisticsReminder () {
+        boolean keyExists = false;
+        String [] keys = null;
+        try {
+            keys = corePref.keys();
+            for (int i = 0; i < keys.length; i++) {
+                if (USAGE_STATISTICS_ENABLED.equals(keys[i])) {
+                    keyExists = true;
+                    break;
+                }
+            }
+        } catch (BackingStoreException exc) {
+            Exceptions.printStackTrace(exc);
+            //Not able to confirm if key exists or not
+            keyExists = true;
+        }
+
+        if (keyExists) {
+            //If key exists do not ask user
+            return;
+        }
+
+        metricsEnable.addActionListener(l);
+        metricsEnable.setActionCommand(CMD_METRICS_ENABLE);
+        //registerNow.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterNow"));
+        Mnemonics.setLocalizedText(metricsEnable, NbBundle.getMessage(
+                Installer.class, "LBL_MetricsEnable"));
+        metricsEnable.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Installer.class,"ACSN_MetricsEnable"));
+        metricsEnable.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Installer.class,"ACSD_MetricsEnable"));
+
+        metricsCancel.addActionListener(l);
+        metricsCancel.setActionCommand(CMD_METRICS_CANCEL);
+        //registerLater.setText(NbBundle.getMessage(RegisterAction.class,"LBL_RegisterLater"));
+        Mnemonics.setLocalizedText(metricsCancel, NbBundle.getMessage(
+                Installer.class, "LBL_MetricsCancel"));
+        metricsCancel.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(Installer.class,"ACSN_MetricsCancel"));
+        metricsCancel.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(Installer.class,"ACSD_MetricsCancel"));
+
+        WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+            public void run() {
+                showDialog();
+            }
+        });
+    }
+
+    private void showDialog () {
+        final JPanel panel = new ReminderPanel();
+        DialogDescriptor descriptor = new DialogDescriptor(
+            panel,
+            NbBundle.getMessage(Installer.class, "Metrics_title"),
+            true,
+                new Object[] {metricsEnable, metricsCancel},
+                null,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+        Dialog dlg = null;
+        try {
+            dlg = DialogDisplayer.getDefault().createDialog(descriptor);
+            final Dialog d = dlg;
+            dlg.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowOpened(WindowEvent e) {
+                    BufferedImage offImg;
+                    offImg = (BufferedImage) panel.createImage(1000,1000);
+                    Graphics g = offImg.createGraphics();
+                    panel.paint(g);
+                    int height = d.getPreferredSize().height;
+                    Dimension size = d.getSize();
+                    size.height = height;
+                    d.setSize(size);
+                }
+
+            });
+            dlg.setResizable(false);
+            dlg.setVisible(true);
+        } finally {
+            if (dlg != null) {
+                dlg.dispose();
+            }
+        }
+        //NbConnection.updateStatus(cmd,NbInstaller.PRODUCT_ID);
     }
 
     public void run() {
@@ -298,12 +417,36 @@ public class Installer extends ModuleInstall implements Runnable {
                     RP.post(new Auto()).waitFinished();
                 }
                 File f = logFile(0);
-                f.renameTo(new File(f.getParentFile(), f.getName() + ".1"));
+                File f1 = logFile(1);
+                if (f1.exists()) {
+                    f1.delete();
+                }
+                f.renameTo(f1);
                 logsSize = 0;
             } else {
                 logsSize++;
                 if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
                     prefs.putInt("count", logsSize);
+                }
+            }
+            if ((logsSize % 100) == 0) {
+                //This is fallback to avoid growing log file over any limit.
+                File f = logFile(0);
+                File f1 = logFile(1);
+                if (f.exists() && (f.length() > UIHandler.MAX_LOGS_SIZE)) {
+                    LOG.log(Level.INFO, "UIGesture Collector log file size is over limit. It will be deleted."); // NOI18N
+                    LOG.log(Level.INFO, "Log file:" + f + " Size:" + f.length() + " Bytes"); // NOI18N
+                    closeLogStream();
+                    logsSize = 0;
+                    if (prefs.getInt("count", 0) < logsSize && preferencesWritable) {
+                        prefs.putInt("count", logsSize);
+                    }
+                    f.delete();
+                }
+                if (f1.exists() && (f1.length() > UIHandler.MAX_LOGS_SIZE)) {
+                    LOG.log(Level.INFO, "UIGesture Collector backup log file size is over limit. It will be deleted."); // NOI18N
+                    LOG.log(Level.INFO, "Log file:" + f1 + " Size:" + f1.length() + " Bytes"); // NOI18N
+                    f1.delete();
                 }
             }
         } catch (IOException ex) {
@@ -455,6 +598,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
+    static void getClusterList (Logger logger, List<LogRecord> clusterRec) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
+        String dirs = System.getProperty("netbeans.dirs");
+        String [] k = dirs.split(File.pathSeparator);
+        String [] l = new String[k.length];
+        for (int i = 0; i < k.length; i++) {
+            File f = new File(k[i]);
+            l[i] = f.getName();
+        }
+        rec.setParameters(l);
+        rec.setLoggerName(logger.getName());
+        clusterRec.add(rec);
+    }
+    
     public static URL hintsURL() {
         return hintURL;
     }
@@ -1058,6 +1215,7 @@ public class Installer extends ModuleInstall implements Runnable {
         LOG.log(Level.FINE, "uploadLogs, flushing"); // NOI18N
         data.flush();
         gzip.finish();
+        os.println();
         os.println("----------konec<>bloku--");
         os.close();
         
@@ -1103,7 +1261,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private static String findIdentity() {
         Preferences p = NbPreferences.root().node("org/netbeans/modules/autoupdate"); // NOI18N
-        String id = p.get("ideIdentity", null);
+        String id = p.get("qualifiedId", null);
+        //Strip id prefix
+        int ind = id.indexOf("0");
+        if (ind != -1) {
+            id = id.substring(ind + 1);
+        }
         LOG.log(Level.INFO, "findIdentity: {0}", id);
         return id;
     }
@@ -1381,6 +1544,7 @@ public class Installer extends ModuleInstall implements Runnable {
                             recs.add(thrownLog);//exception selected by user
                         }
                         recs.add(TimeToFailure.logFailure());
+                        recs.add(BuildInfo.logBuildInfoRec());
                         recs.add(userData);
                         if ((report) && !(reportPanel.asAGuest())) {
                             if (!checkUserName()) {
@@ -1727,6 +1891,7 @@ public class Installer extends ModuleInstall implements Runnable {
             notifyAll();
         }
         protected void showURL(URL u) {
+            LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
         }
         protected void saveUserName() {
@@ -1753,11 +1918,6 @@ public class Installer extends ModuleInstall implements Runnable {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
                 } catch (IOException exc) {
                     LOG.log(Level.WARNING, "PASSWORD ENCRYPTION ERROR", exc);// NOI18N
-                }
-                List<String> buildInfo = BuildInfo.logBuildInfo();
-                if (buildInfo != null) {
-                    Collection<? super String> c = params;
-                    c.addAll(buildInfo);
                 }
             }
         }

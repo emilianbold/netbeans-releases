@@ -36,11 +36,12 @@ public class CGSGenerator implements CodeGenerator {
 
     private static final String NEW_LINE = System.getProperty("line.separator");    //NOI18N
     private static final String PROPERTY = "${PROPERTY}";                           //NOI18N
+    private static final String CURSOR = "${cursor}";                           //NOI18N
 
     //constructor
     private static final String PARAMS = "${PARAMS}";                               //NOI18N
     private static final String ASSIGNMENTS = "${ASSIGNMENT}";                       //NOI18N
-    private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS + NEW_LINE + "}" + NEW_LINE;    //NOI18N
+    private static final String CONSTRUCTOR_TEMPLATE = "function __construct(" + PARAMS + ") {" + ASSIGNMENTS  + CURSOR + NEW_LINE + "}" + NEW_LINE;    //NOI18N
     private static final String ASSIGNMENT_TEMPLATE = NEW_LINE + "$this->" + PROPERTY + " = $" + PROPERTY + ";";          //NOI18N
     private static final String UP_FIRST_LETTER_PROPERTY = "${UpFirstLetterProperty}";  //NOI18N
     private static final String GETTER_TEMPLATE = "public function " + START_OF_GETTER + UP_FIRST_LETTER_PROPERTY + "() {" + NEW_LINE + "return $$this->" + PROPERTY + ";" + NEW_LINE + "}" + NEW_LINE;    //NOI18N
@@ -142,6 +143,8 @@ public class CGSGenerator implements CodeGenerator {
     private String getTemplateText() {
         String text = null;
         String name;
+        String methodName;
+        ArrayList<String> createdMethods = new ArrayList<String>();
         switch (type) {
             case CONSTRUCTOR:
                 StringBuffer params = new StringBuffer();
@@ -163,7 +166,8 @@ public class CGSGenerator implements CodeGenerator {
                 for (Property property : cgsInfo.getPossibleGetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
-                        getters.append(GETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(name)));
+                        methodName = getUnusedMethodName(createdMethods, upFirstLetter(name));
+                        getters.append(GETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName));
                         getters.append(NEW_LINE);
                     }
                 }
@@ -174,7 +178,8 @@ public class CGSGenerator implements CodeGenerator {
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
-                        setters.append(SETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(name)));
+                        methodName = getUnusedMethodName(createdMethods, upFirstLetter(name));
+                        setters.append(SETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, methodName));
                         setters.append(NEW_LINE);
                     }
                 }
@@ -185,9 +190,10 @@ public class CGSGenerator implements CodeGenerator {
                 for (Property property : cgsInfo.getPossibleSetters()) {
                     if (property.isSelected()) {
                         name = property.getName();
-                        gettersAndSetters.append(GETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(name)));
+                        methodName = getUnusedMethodName(createdMethods, upFirstLetter(name));
+                        gettersAndSetters.append(GETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)));
                         gettersAndSetters.append(NEW_LINE);
-                        gettersAndSetters.append(SETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(name)));
+                        gettersAndSetters.append(SETTER_TEMPLATE.replace(PROPERTY, name).replace(UP_FIRST_LETTER_PROPERTY, upFirstLetter(methodName)));
                         gettersAndSetters.append(NEW_LINE);
                     }
                 }
@@ -197,7 +203,19 @@ public class CGSGenerator implements CodeGenerator {
         return text;
     }
 
+    private String getUnusedMethodName(List<String> usedMethods, String methodName) {
+        if (usedMethods.contains(methodName)) {
+            int counter = 1;
+            while (usedMethods.contains(methodName + "_" + counter)) {
+                counter++;
+            }
+            methodName = methodName + "_" + counter;
+        }
+        usedMethods.add(methodName);
+        return methodName;
+    }
+
     private String upFirstLetter(String name) {
-        return name.substring(0, 1).toUpperCase() + name.substring(1);
+        return name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
     }
 }

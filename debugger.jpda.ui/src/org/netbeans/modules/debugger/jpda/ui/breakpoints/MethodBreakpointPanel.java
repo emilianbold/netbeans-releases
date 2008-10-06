@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.ui.breakpoints;
 
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -69,19 +70,19 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
     private ActionsPanel                actionsPanel; 
     private MethodBreakpoint            breakpoint;
     private boolean                     createBreakpoint = false;
-    private JEditorPane                 tfClassName;
+    private JTextField                  tfClassName;
     
     
     private static MethodBreakpoint createBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
         String methodName;
         try {
-            methodName = EditorContextBridge.getContext().getCurrentMethodName();
+            methodName = EditorContextBridge.getMostRecentMethodName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             methodName = "";
         }
@@ -90,7 +91,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
             methodName
         );
         try {
-            mb.setMethodSignature(EditorContextBridge.getCurrentMethodSignature());
+            mb.setMethodSignature(EditorContextBridge.getMostRecentMethodSignature());
         } catch (java.awt.IllegalComponentStateException icsex) {}
         mb.setPrintText (
             NbBundle.getBundle (MethodBreakpointPanel.class).getString 
@@ -114,12 +115,12 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         String className = "";
         String[] cf = b.getClassFilters ();
         className = ClassBreakpointPanel.concatClassFilters(cf);
-        tfClassName = new JEditorPane("text/x-java", className);
+        tfClassName = new JTextField(className);
         tfClassName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSN_Method_Breakpoint_ClassName"));
         tfClassName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(MethodBreakpointPanel.class, "ACSD_Method_Breakpoint_ClassName"));
         jLabel3.setLabelFor(tfClassName);
         HelpCtx.setHelpIDString(tfClassName, HELP_ID);
-        panelClassName.add(java.awt.BorderLayout.CENTER, WatchPanel.createScrollableLineEditor(tfClassName));
+        panelClassName.add(java.awt.BorderLayout.CENTER, tfClassName);
         if ("".equals (b.getMethodName ())) {
             tfMethodName.setText (org.openide.util.NbBundle.getMessage(MethodBreakpointPanel.class, "Method_Breakpoint_ALL_METHODS"));
             cbAllMethods.setSelected (true);
@@ -143,6 +144,7 @@ public class MethodBreakpointPanel extends JPanel implements Controller, org.ope
         }
         
         conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(false);
         conditionsPanel.setCondition(b.getCondition());
         conditionsPanel.setHitCountFilteringStyle(b.getHitCountFilteringStyle());

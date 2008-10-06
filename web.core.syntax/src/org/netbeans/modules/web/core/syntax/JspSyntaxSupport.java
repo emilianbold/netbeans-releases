@@ -64,7 +64,11 @@ import org.netbeans.modules.web.core.syntax.deprecated.JspTagTokenContext;
 import org.netbeans.modules.web.core.syntax.spi.JspContextInfo;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI.JspOpenInfo;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.loaders.DataObject;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
@@ -76,13 +80,14 @@ import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author  Petr Jiricka, Petr Nejedly
  * @author Marek.Fukala@Sun.COM
  */
-public class JspSyntaxSupport extends ExtSyntaxSupport {
+public class JspSyntaxSupport extends ExtSyntaxSupport implements FileChangeListener {
     
     /** ErrorManager shared by whole module (package) for logging */
     static final Logger err =
@@ -162,7 +167,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         if(sup == null) {
             sup = new JspSyntaxSupport((BaseDocument)doc);
             doc.putProperty(JspSyntaxSupport.class, sup);
-        }
+            }
         return sup;
     }
     
@@ -170,10 +175,17 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         super(doc);
         fobj = null;
         if (doc != null){
-            DataObject dobj = NbEditorUtilities.getDataObject(doc);
-            fobj = (dobj != null) ? NbEditorUtilities.getDataObject(doc).getPrimaryFile(): null;
+            initFileObject();
         }
         
+    }
+    
+    private void initFileObject() {
+        DataObject dobj = NbEditorUtilities.getDataObject(getDocument());
+            if(dobj != null)  {
+                fobj = NbEditorUtilities.getDataObject(getDocument()).getPrimaryFile();
+                fobj.addFileChangeListener(WeakListeners.create(FileChangeListener.class, this, fobj));
+            }
     }
     
     public String[] getImports(){
@@ -237,11 +249,11 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return prefixMapper;
     }
     
-    private Map getTagLibraries() {
+    private Map getTagLibraries(boolean requiresFresh) {
         //refresh tag libraries mappings - this call causes the WebAppParseSupport to refresh taglibs mapping
         getTagLibraryMappings();
-        //force the parser to update the parse information for the file
-        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, true, true);
+        //if requiresFresh force the parser to update the parse information for the file
+        JspParserAPI.ParseResult result = JspUtils.getCachedParseResult(getDocument(), fobj, false, requiresFresh, requiresFresh);
         if (result != null) {
             PageInfo pi = result.getPageInfo();
             if(pi == null) {
@@ -273,12 +285,12 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
         return tinfos;
     }
     
-    private TagLibraryInfo getTagLibrary(String prefix) {
+    private TagLibraryInfo getTagLibrary(String prefix, boolean requiresFresh) {
         Map mapper = getPrefixMapper();
         if (mapper != null) {
             Object uri = mapper.get(prefix);
             if (uri != null) {
-                Map taglibs = getTagLibraries();
+                Map taglibs = getTagLibraries(requiresFresh);
                 if (taglibs != null) {
                     return (TagLibraryInfo)taglibs.get(uri);
                 }
@@ -511,7 +523,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
      * Assumes that complPrefix does not include the 'jsp prefix'.
      */
     public final List getTags(String tagPrefix, String complPrefix) {
-        return filterList(getAllTags(tagPrefix), complPrefix);
+        return filterList(getAllTags(tagPrefix, true), complPrefix);
     }
     
     /** Gets attributes for tag whose prefix + name
@@ -617,7 +629,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
     
     /**  Returns a list of strings - tag names available for a particular prefix.
      */
-    protected List getAllTags(String prefix) {
+    protected List getAllTags(String prefix, boolean requiresFresh) {
         List items = new ArrayList();
         
         // standard JSP tags (jsp:)
@@ -629,7 +641,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
-        TagLibraryInfo info = getTagLibrary(prefix);
+        TagLibraryInfo info = getTagLibrary(prefix, requiresFresh);
         TagInfo[] tags = null;
         if (info != null) {
             tags = getAllTagInfos(info);
@@ -676,7 +688,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
         }
         
-        TagLibraryInfo info = getTagLibrary(prefix);
+        TagLibraryInfo info = getTagLibrary(prefix, true);
         if (info != null) {
             TagInfo tagInfo = info.getTag(tag);
             if (tagInfo == null) {
@@ -1798,7 +1810,7 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
                 String name = image.substring(image.indexOf(':')+1);
                 TagInfo ti = null;
                 
-                TagLibraryInfo tli = getTagLibrary(prefix);
+                TagLibraryInfo tli = getTagLibrary(prefix, true);
                 if (tli != null) {
                     ti = tli.getTag(name);
                     if (ti == null) {
@@ -2210,5 +2222,25 @@ public class JspSyntaxSupport extends ExtSyntaxSupport {
             }
             return tagNameOne.compareTo(tagNameTwo);
         }
+    }
+
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    public void fileDataCreated(FileEvent fe) {
+    }
+
+    public void fileChanged(FileEvent fe) {
+    }
+
+    public void fileDeleted(FileEvent fe) {
+        //refresh fileobject
+        initFileObject();
+    }
+
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
     }
 }

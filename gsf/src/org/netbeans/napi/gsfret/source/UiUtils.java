@@ -56,6 +56,7 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.gsfret.navigation.Icons;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -85,23 +86,6 @@ import org.openide.util.Exceptions;
  */
 public final class UiUtils {
     private UiUtils() {
-    }
-
-    public static BaseDocument getDocument(FileObject fileObject, boolean openIfNecessary) {
-        try {
-            DataObject dobj = DataObject.find(fileObject);
-            
-            EditorCookie ec = dobj.getCookie(EditorCookie.class);
-            if (ec != null) {
-                return (BaseDocument)(openIfNecessary ? ec.openDocument() : ec.getDocument());
-            }
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
-        return null;
     }
 
     /** Gets correct icon for given ElementKind.
@@ -175,7 +159,7 @@ public final class UiUtils {
                         Line l = lc.getLineSet().getCurrent(line);
 
                         if (l != null) {
-                            l.show(Line.SHOW_GOTO, column);
+                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, column);
 
                             return true;
                         }
@@ -233,7 +217,7 @@ public final class UiUtils {
                             try {
                                 OffsetRange range = parser.getPositionManager().getOffsetRange(info, handle);
  
-                                if (range != OffsetRange.NONE) {
+                                if (range != OffsetRange.NONE && range != null) {
                                     result[0] = new DeclarationLocation(fileObject, range.getStart());
                                 }
                             } catch (IllegalArgumentException iae) {

@@ -75,6 +75,13 @@ public interface Controller {
     /**
      * Return <code>true</code> whether value of this customizer 
      * is valid (and OK button can be enabled).
+     * <p>
+     * Please note that if this interface is implemented by a class that extends
+     * {@link javax.swing.JComponent}, this method clashes with
+     * {@link javax.swing.JComponent#isValid()} method. Thus in case you need
+     * to provide false validity in some cases, please implement
+     * this by a different class and override {@link AttachType#getController()},
+     * resp. {@link BreakpointType#getController()}.
      *
      * @return <code>true</code> whether value of this customizer 
      * is valid

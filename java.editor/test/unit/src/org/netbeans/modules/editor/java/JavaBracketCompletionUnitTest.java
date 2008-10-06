@@ -68,10 +68,18 @@ public class JavaBracketCompletionUnitTest extends JavaBaseDocumentUnitTestCase 
 
     // ------- Tests for completion of right parenthesis ')' -------------
     
+    public void testSemicolonInForLoop() throws Exception {
+        setLoadDocumentText("for (int i = 0|)");
+        typeChar(';');
+        assertDocumentTextAndCaret ("Semicolon should be typed",
+            "for (int i = 0;|)"
+        );
+    }
+
     public void testRightParenWithinBraces() throws Exception {
         setLoadDocumentText("{(()|; }");
         typeChar(')');
-        assertDocumentTextAndCaret ("Closing ')' should be added", 
+        assertDocumentTextAndCaret ("Closing ')' should be added",
             "{(())|; }"
         );
     }

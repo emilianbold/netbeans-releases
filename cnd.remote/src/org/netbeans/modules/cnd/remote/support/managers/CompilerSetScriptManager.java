@@ -68,7 +68,7 @@ public class CompilerSetScriptManager implements ScriptManager {
         this.support = support;
     }
 
-    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0);
+    private static int emulateFailure = Integer.getInteger("cnd.remote.failure", 0); // NOI18N
 
     public void runScript() {
         if (!support.isFailedOrCancelled()) {
@@ -114,8 +114,10 @@ public class CompilerSetScriptManager implements ScriptManager {
         }
     }
 
+    public static final String SCRIPT = ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+
     public String getScript() {
-        return ".netbeans/6.5/cnd2/scripts/getCompilerSets.bash"; // NOI18N
+        return SCRIPT;
     }
     
     public String getPlatform() {

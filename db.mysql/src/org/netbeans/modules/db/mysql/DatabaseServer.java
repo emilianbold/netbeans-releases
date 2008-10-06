@@ -39,13 +39,13 @@
 
 package org.netbeans.modules.db.mysql;
 
-import java.beans.PropertyChangeEvent;
+import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.modules.db.mysql.impl.MySQLOptions;
 import org.openide.nodes.Node.Cookie;
 
 /**
@@ -54,27 +54,50 @@ import org.openide.nodes.Node.Cookie;
  */
 public interface DatabaseServer extends Cookie {
     /**
+     * Current state of the server
+     */
+    public static enum ServerState {CONFIGERR, DISCONNECTED , CONNECTED};
+
+    /**
+     * Ask the server to validate it's configuration.  If it's invalid,
+     * the state is changed to CONFIGERR and the display name, icon and
+     * short description are updated appropriately.
+     */
+    public void checkConfiguration() throws DatabaseException;
+
+    /**
+     * Get the icon for this server
+     */
+    public Image getIcon();
+
+    /**
+     * Does the server have a configuration error
+     */
+    public boolean hasConfigurationError();
+
+    /**
      * Connect to the server.  If we already have a connection, close
      * it and open a new one.  NOTE this is synchronous and can not be
      * called on the AWT thread.
+     * 
+     * This method will time out after waiting for the default connection
+     * timeout.
+     *
+     * @throws DatabaseException if an error occurs when connecting
+     * @throws TimeoutException if we timed out waiting for the connect
      */
-    public void reconnect() throws DatabaseException;
+    public void reconnect() throws DatabaseException, TimeoutException;
 
     /**
-     * Reconnect to the MySQL server asynchronously,    can be called on the
-     * AWT thread.  If an error occurs, the error is quietly logged but no
-     * dialog is displayed.
+     * Connect to the server.  If we already have a connection, close
+     * it and open a new one.
+     *
+     * @param timeToWait how long to wait, in milliseconds, before giving up the attempt
+     *
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     * @throws TimeoutException if we timed out waiting for the connect
      */
-    public void reconnectAsync();
-
-    /**
-     * Connect to the server, with the option not to display
-     * a dialog but just write to the log if an error occurs
-     * @param quiet true if you don't want this to happen without any dialogs
-     * @param async true if you want to run this asychronously
-     * being displayed in case of error or to get more information.
-     */
-    public void reconnect(final boolean quiet, boolean async);
+    public void reconnect(long timeToWait) throws DatabaseException, TimeoutException;
 
     /**
      * Create a database on the server.  This runs <b>asynchronously</b>
@@ -181,14 +204,11 @@ public interface DatabaseServer extends Cookie {
     public boolean isConnected();
 
     /**
-     * See if the server is running.  This method does network I/O and
-     * can not be called on the AWT event thread.
-     *
-     * @return true if it is running, false otherwise
-     *
-     * @throws IllegalStateException if this method is called on the AWT event thread
+     * Returns true if the server is running last time we checked.  Does not actually
+     * perform a check, so can be called on the AWT event thread.  To update this state
+     * call reconnect() or checkRunning().
      */
-    public boolean isRunning();
+    public ServerState getState();
 
     public boolean isSavePassword();
 
@@ -227,15 +247,6 @@ public interface DatabaseServer extends Cookie {
     public void addPropertyChangeListener(PropertyChangeListener listener);
 
     public void removePropertyChangeListener(PropertyChangeListener listener);
-
-    /**
-     * Determine if the given property change requires a reconnect to
-     * the server.
-     *
-     * @param evt The property change event representing the server property change
-     * @return true if a reconnect is needed, false otherwise
-     */
-    public boolean propertyChangeNeedsReconnect(PropertyChangeEvent evt);
 
     /**
      * Launch the admin tool.  If the specified admin path is a URL,

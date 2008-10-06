@@ -28,12 +28,14 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 import java.io.File;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
@@ -48,12 +50,8 @@ public class DebugLocalCommand  extends RunLocalCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        Runnable runnable = new Runnable() {
-            public void run() {
-                DebugLocalCommand.super.invokeAction(context);
-            }
-        };
         //temporary; after narrowing deps. will be changed
+        Callable<Cancellable> callable = getCallable(context);
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             if (dbgStarter.isAlreadyRunning()) {
@@ -66,8 +64,8 @@ public class DebugLocalCommand  extends RunLocalCommand {
                     invokeAction(context);
                 } 
             } else {
-                dbgStarter.start(getProject(), runnable,
-                        (context == null) ? fileForProject() : fileForContext(context), isScriptSelected());
+                dbgStarter.start(getProject(), callable,
+                        (context == null) ? fileForProject(false) : fileForContext(context), isScriptSelected());
             }
         }
     }
@@ -85,7 +83,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return ((context == null) ? fileForProject() : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
+        return ((context == null) ? fileForProject(false) : fileForContext(context)) != null && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override

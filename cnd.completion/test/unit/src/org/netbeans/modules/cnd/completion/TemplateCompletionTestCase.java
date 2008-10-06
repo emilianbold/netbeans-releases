@@ -85,5 +85,15 @@ public class TemplateCompletionTestCase extends CompletionBaseTestCase  {
     public void testTemplates8() throws Exception {
         super.performTest("template.cc", 37, 5, "T3<1, int>::");
     }
+
+    // IZ 147507 : Code completion issue with templated temporary objects
+    public void testTemplates9() throws Exception {
+        super.performTest("template.cc", 37, 5, "T4<int>().");
+    }
+
+    // IZ 147507 : Code completion issue with templated temporary objects
+    public void testTemplates10() throws Exception {
+        super.performTest("template.cc", 37, 5, "((T4<int>) 0).");
+    }
 }
 

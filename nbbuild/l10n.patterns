@@ -17,7 +17,6 @@
 **/org-netbeans-modules-uml-tomsawyer.jar:org/netbeans/modules/uml/tomsawyer/LabelBundle.properties
 **/docs/syntaxref20.zip:
 **/docs/GUIExamplesDescription.html:
-**/docs/quickstart_jump.html:
 **/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
 profiler*/**/config/Services/filtersets-default.xml:
 profiler*/**/config/Services/filters-default.xml:
@@ -30,6 +29,7 @@ exclude **/jsf-extensions-*.jar:
 exclude **/jsf-impl.jar:
 exclude **/webui-jsf.jar:
 exclude **/webui-jsf_*.jar:
+exclude **/webui-jsf-dt*.jar:
 exclude **/webui-jsf-suntheme*.jar:
 exclude **/Info/info.xml:
 exclude **/lucene-core-*.jar:

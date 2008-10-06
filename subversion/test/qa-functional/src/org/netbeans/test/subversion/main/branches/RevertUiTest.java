@@ -10,6 +10,8 @@
 package org.netbeans.test.subversion.main.branches;
 
 import java.io.File;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -21,6 +23,7 @@ import org.netbeans.test.subversion.operators.FolderToImportStepOperator;
 import org.netbeans.test.subversion.operators.ImportWizardOperator;
 import org.netbeans.test.subversion.operators.RepositoryStepOperator;
 import org.netbeans.test.subversion.operators.RevertModificationsOperator;
+import org.netbeans.test.subversion.utils.MessageHandler;
 import org.netbeans.test.subversion.utils.RepositoryMaintenance;
 import org.netbeans.test.subversion.utils.TestKit;
 
@@ -35,6 +38,7 @@ public class RevertUiTest extends JellyTestCase{
     public static final String WORK_PATH = "work";
     public static final String PROJECT_NAME = "SVNApplication";
     public File projectPath;
+    static Logger log;
     
     String os_name;
     
@@ -45,8 +49,14 @@ public class RevertUiTest extends JellyTestCase{
     
     @Override
     protected void setUp() throws Exception {        
-        os_name = System.getProperty("os.name");
-        System.out.println("### "+getName()+" ###");
+        System.out.println("### " + getName() + " ###");
+        if (log == null) {
+            log = Logger.getLogger(TestKit.LOGGER_NAME);
+            log.setLevel(Level.ALL);
+            TestKit.removeHandlers(log);
+        } else {
+            TestKit.removeHandlers(log);
+        }
         
     }
     
@@ -70,6 +80,9 @@ public class RevertUiTest extends JellyTestCase{
     
     public void testInvokeCloseRevert() throws Exception {
         try {
+            MessageHandler mh = new MessageHandler("Committing");
+            log.addHandler(mh);
+            TestKit.TIME_OUT = 25;
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -90,6 +103,8 @@ public class RevertUiTest extends JellyTestCase{
             Thread.sleep(1000);
             CommitStepOperator cso = new CommitStepOperator();
             cso.finish();
+
+            TestKit.waitText(mh);
 
             Node projNode = new Node(new ProjectsTabOperator().tree(), PROJECT_NAME);
             RevertModificationsOperator rmo = RevertModificationsOperator.invoke(projNode);
@@ -147,7 +162,10 @@ public class RevertUiTest extends JellyTestCase{
             }
             assertNotNull("Components shouldn't be accessed", tee);
 
-            rmo.cancel(); 
+            rmo.cancel();
+            TestKit.TIME_OUT = 15;
+        } catch (Exception e) {
+            throw new Exception("Test failed: " + e);
         } finally {
             TestKit.closeProject(PROJECT_NAME);
         } 

@@ -63,6 +63,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -78,10 +79,10 @@ public class TestCaseOutputNode extends FilterNode {
     private static final java.util.logging.Logger mLogger =
             java.util.logging.Logger.getLogger("org.netbeans.modules.compapp.projects.jbi.ui.TestCaseOutputNode"); // NOI18N
     
-    private static final Image OUTPUT_ICON = Utilities.loadImage(
+    private static final Image OUTPUT_ICON = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/output.png", true); // NOI18N
     
-    private static final Image WARNING_BADGE = Utilities.loadImage(
+    private static final Image WARNING_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/compapp/test/ui/resources/warningBadge.gif", true); // NOI18N
     
     private JbiProject mProject;    // FIXME probably not needed
@@ -148,7 +149,7 @@ public class TestCaseOutputNode extends FilterNode {
         Image image = OUTPUT_ICON;
         File file = FileUtil.toFile(mOutputFile);
         if (file.length() == 0) {
-            return Utilities.mergeImages(image, WARNING_BADGE, 15, 8); //7, 5);
+            return ImageUtilities.mergeImages(image, WARNING_BADGE, 15, 8); //7, 5);
         } else {
             return image;
         }

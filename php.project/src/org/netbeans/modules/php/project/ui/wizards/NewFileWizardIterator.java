@@ -93,7 +93,9 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
             } 
         }
         if (ext != null && ext.length() > 0) {
-            wizardProps.put("name", fname.substring(0, fname.length() - ext.length()-1));//NOI18N
+            String name = fname.substring(0, fname.length() - ext.length()-1);
+            name = name.replaceAll("\\W", "");//NOI18N
+            wizardProps.put("name", name);//NOI18N
         }        
         DataObject createdFile = dataTemplate.createFromTemplate(dataFolder, Templates.getTargetName(wizard), wizardProps);
 

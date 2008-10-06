@@ -11,7 +11,7 @@
     </DimensionLayout>
     <DimensionLayout dim="vertical">
       <Group type="parallel" groupAlignment="leading" attributes="0">
-          <Group type="parallel" alignment="leading" groupAlignment="baseline" attributes="0">
+          <Group type="parallel" groupAlignment="baseline" attributes="0">
               <Component id="jLabel1" alignment="baseline" min="$pref" max="$pref" attributes="0"/>
               <Component id="jTextField1" alignment="baseline" min="$pref" pref="39" max="$pref" attributes="0"/>
           </Group>

@@ -89,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public final class ColorModel {
@@ -142,7 +143,7 @@ public final class ColorModel {
             URL iconURL = annotationType.getGlyph ();
             Image image = null;
             if (iconURL.getProtocol ().equals ("nbresloc")) { // NOI18N
-                image = org.openide.util.Utilities.loadImage(iconURL.getPath().substring(1));
+                image = ImageUtilities.loadImage(iconURL.getPath().substring(1));
             } else {
                 image = Toolkit.getDefaultToolkit ().getImage (iconURL);
             }

@@ -47,6 +47,8 @@ made subject to such option by the copyright holder.
     Use this folder and subfolders in your XML layer to define
     desktop layout, modes and groups.
     -->
+
+
     <folder name="OptionsDialog">
         <folder name="Advanced">
             <file name="org-netbeans-core-windows-options-WinSysAdvancedOption.instance"/>

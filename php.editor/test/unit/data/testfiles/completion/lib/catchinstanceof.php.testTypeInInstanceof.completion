@@ -1,0 +1,4 @@
+Code completion result for source line:
+$vInstanceof->|getMessage();
+(QueryType=COMPLETION, NameKind=PREFIX)
+METHOD     getMessage()                               MyTextException

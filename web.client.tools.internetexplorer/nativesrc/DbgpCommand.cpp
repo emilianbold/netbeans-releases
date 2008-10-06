@@ -43,6 +43,7 @@
 #include <exdisp.h>
 #include "Breakpoint.h"
 #include "wininet.h"
+#include <list>
 
 map<tstring, DbgpCommand *> DbgpCommand::commandResponseMap;
 
@@ -114,6 +115,8 @@ DbgpResponse *FeatureGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_ERRORS);
     }else if(feature == _T("suspendOnDebuggerKeyword")) {
         result = pScriptDebugger->isFeatureSet(SUSPEND_ON_DEBUGGER_KEYWORD);
+    }else if(feature == _T("ignoreQueryStrings")) {
+        result = pScriptDebugger->isFeatureSet(IGNORE_QUERY_STRINGS);
     }
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(FEATURE_GET, argsMap.find('i')->second);
     pDbgpResponse->addAttribute(SUPPORTED, result ? 1 : 0);
@@ -126,30 +129,36 @@ DbgpResponse *FeatureGetCommand::process(DbgpConnection *pDbgpConnection, map<ch
 //<response command="feature_set" success=<0|1> transaction_id=xxx/>          
 DbgpResponse *FeatureSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
-    tstring feature = argsMap.find('n')->second;
-    BOOL value = argsMap.find('v')->second == _T("true") ? TRUE : FALSE;
-    if(value) {
-        if(feature == _T("showFunctions")) {
-            pScriptDebugger->setFeature(SHOW_FUNCTIONS);
-        }else if(feature == _T("showConstants")) {
-            pScriptDebugger->setFeature(SHOW_CONSTANTS);
-        }else if(feature == _T("bypassConstructors")) {
-            pScriptDebugger->setFeature(BY_PASS_CONSTRUCTORS);
-        }else if(feature == _T("stepFiltersEnabled")) {
-            pScriptDebugger->setFeature(STEP_FILTERS_ENABLED);
-        }else if(feature == _T("suspendOnFirstLine")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_FIRSTLINE);
-        }else if(feature == _T("suspendOnExceptions")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_EXCEPTIONS);
-        }else if(feature == _T("suspendOnErrors")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_ERRORS);
-        }else if(feature == _T("suspendOnDebuggerKeyword")) {
-            pScriptDebugger->setFeature(SUSPEND_ON_DEBUGGER_KEYWORD);
-        }
-    }
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(FEATURE_SET, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(SUCCESS, 1);
+    tstring feature = argsMap.find('n')->second;
+    pDbgpResponse->addAttribute(SUCCESS, 0);
     pDbgpResponse->addAttribute(FEATURE, feature);
+    if(pScriptDebugger != NULL) {
+        BOOL value = argsMap.find('v')->second == _T("true") ? TRUE : FALSE;
+        if(value) {
+            if(feature == _T("showFunctions")) {
+                pScriptDebugger->setFeature(SHOW_FUNCTIONS);
+            }else if(feature == _T("showConstants")) {
+                pScriptDebugger->setFeature(SHOW_CONSTANTS);
+            }else if(feature == _T("bypassConstructors")) {
+                pScriptDebugger->setFeature(BY_PASS_CONSTRUCTORS);
+            }else if(feature == _T("stepFiltersEnabled")) {
+                pScriptDebugger->setFeature(STEP_FILTERS_ENABLED);
+            }else if(feature == _T("suspendOnFirstLine")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_FIRSTLINE);
+            }else if(feature == _T("suspendOnExceptions")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_EXCEPTIONS);
+            }else if(feature == _T("suspendOnErrors")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_ERRORS);
+            }else if(feature == _T("suspendOnDebuggerKeyword")) {
+                pScriptDebugger->setFeature(SUSPEND_ON_DEBUGGER_KEYWORD);
+            }else if(feature == _T("ignoreQueryStrings")) {
+                pScriptDebugger->setFeature(IGNORE_QUERY_STRINGS);
+            }
+        }
+        pDbgpResponse->addAttribute(SUCCESS, 1);
+    }
+
     return pDbgpResponse;
 }
 
@@ -214,23 +223,26 @@ DbgpResponse *PauseCommand::process(DbgpConnection *pDbgpConnection, map<char, t
 //<response command="breakpoint_set" state="enabled/disabled" id=xxx transaction_id=xxx/>          
 DbgpResponse *BreakpointSetCommand::process(DbgpConnection *pDbgpConnection, map<char, tstring> argsMap) {
     ScriptDebugger *pScriptDebugger = pDbgpConnection->getScriptDebugger();
-    BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
-    tstring fileURI = argsMap.find('f')->second;
-    int lineNo = _ttoi(argsMap.find('n')->second.c_str());
-    Breakpoint *pBreakpoint = pMgr->createBreakpoint(fileURI, lineNo);
-    BreakpointUpdateCommand::setUpdatableValues(pBreakpoint, argsMap);
-    pMgr->setBreakpoint(pBreakpoint);
+    Breakpoint *pBreakpoint = NULL;
+    if(pScriptDebugger != NULL) {
+        BreakpointManager *pMgr = pScriptDebugger->getBreakpointManager();
+        tstring fileURI = argsMap.find('f')->second;
+        int lineNo = _ttoi(argsMap.find('n')->second.c_str());
+        pBreakpoint = pMgr->createBreakpoint(fileURI, lineNo);
+        BreakpointUpdateCommand::setUpdatableValues(pBreakpoint, argsMap);
+        pMgr->setBreakpoint(pBreakpoint);
 
-    //check for run to cursor request
-    map<char, tstring>::iterator iter = argsMap.find('r');
-    if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
-        pBreakpoint->setTemporary(TRUE);
-        pScriptDebugger->run();
+        //check for run to cursor request
+        map<char, tstring>::iterator iter = argsMap.find('r');
+        if(iter != argsMap.end() && (_ttoi(iter->second.c_str()) == 1)) {
+            pBreakpoint->setTemporary(TRUE);
+            pScriptDebugger->run();
+        }
     }
 
     //Generate response
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(BREAKPOINT_SET, argsMap.find('i')->second);
-    pDbgpResponse->addAttribute(_T("id"), pBreakpoint->getID());
+    pDbgpResponse->addAttribute(_T("id"), pBreakpoint != NULL ? pBreakpoint->getID() : _T(""));
     pDbgpResponse->addAttribute(_T("state"), argsMap.find('s')->second);
     return pDbgpResponse;
 }
@@ -270,9 +282,7 @@ void BreakpointUpdateCommand::setUpdatableValues(Breakpoint *pBreakpoint, map<ch
     iter = argsMap.find('h');
     if(iter != argsMap.end()) {
         int hitValue = _ttoi(iter->second.c_str());
-        if(hitValue > 0) {
-            pBreakpoint->setHitValue(hitValue);
-        }
+        pBreakpoint->setHitValue(hitValue);
     }
 
     iter = argsMap.find('o');
@@ -442,36 +452,23 @@ DbgpResponse *SourceCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     TCHAR *buffer = pScriptDebugger->getSourceText(fileURI, beginLine, endLine);
     StandardDbgpResponse *pDbgpResponse = new StandardDbgpResponse(SOURCE, argsMap.find('i')->second);
     int success = 0;
-    if(buffer == NULL) {
-        tstring domText;
-        //If document is not yet loaded, generate using DOM
-        //Check for exception status is made to avoid an issue where-in getDOMText blocks forever
-        if(pScriptDebugger->getStatus() != STATE_EXCEPTION) {
-            domText = getDOMText(pDbgpConnection, fileURI);
-        }
-        if(domText.length() != 0) {
-            pDbgpResponse->setValue(domText);
-            success = 1;
-        }else {
-            //As a last resort, get the source using WinInet APIs
-            USES_CONVERSION;
-            HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
-                                                NULL, INTERNET_INVALID_PORT_NUMBER);
-            if (hSession != NULL) {
-                HINTERNET hUrlFile = InternetOpenUrl(hSession, fileURI.c_str(), NULL, 0, 0, 0);
-                if (hUrlFile != NULL) {
-                    DWORD bufSize;
-                    if(InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0)) {
-                        char *pBytes = new char[bufSize+1];
-                        DWORD dwBytesRead = 0;
-                        BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
-                        if(read) {
-                            pBytes[dwBytesRead] = 0;
-                            pDbgpResponse->setValue(A2W(pBytes));
-                            success = 1;
-                            delete []pBytes;
-                        }
-                    }
+    if(buffer == NULL || buffer[0] == 0) {
+        //Get the source using WinInet APIs
+        USES_CONVERSION;
+        HINTERNET hSession = InternetOpen(L"Source Reader", PRE_CONFIG_INTERNET_ACCESS, L"", 
+                                            NULL, INTERNET_INVALID_PORT_NUMBER);
+        if (hSession != NULL) {
+            HINTERNET hUrlFile = InternetOpenUrl(hSession, fileURI.c_str(), NULL, 0, 0, 0);
+            DWORD bufSize;
+            if (hUrlFile != NULL && InternetQueryDataAvailable(hUrlFile, &bufSize, 0, 0)) {
+                char *pBytes = new char[bufSize+1];
+                DWORD dwBytesRead = 0;
+                BOOL read = InternetReadFile(hUrlFile, pBytes, bufSize, &dwBytesRead);
+                if(read) {
+                    pBytes[dwBytesRead] = 0;
+                    pDbgpResponse->setValue(A2W(pBytes));
+                    success = 1;
+                    delete []pBytes;
                 }
             }
         }
@@ -510,22 +507,48 @@ tstring SourceCommand::getDOMText(DbgpConnection *pDbgpConnection, tstring fileU
                 long items;
                 if(spHTMLElementCollection != NULL) {
                     spHTMLElementCollection->get_length(&items);
+                    //Track the visited elements to prevent duplication of text
+                    list<IHTMLElement *> visitedElements;
                     for (long i=0; i<items; i++) {
                         CComVariant index = i;
                         CComPtr<IDispatch> spDisp1;
                         hr = spHTMLElementCollection->item(index, index, &spDisp1);
                         CComQIPtr<IHTMLElement> spHTMLElement = spDisp1;
                         if(spHTMLElement != NULL) {
-                            CComBSTR bstr;
-                            spHTMLElement->get_outerHTML(&bstr);
-                            if(bstr != NULL) {
-                                result.append((TCHAR *)(bstr));
+                            //Ignore if element is child of an visited element for which source is 
+                            //already generated
+                            CComPtr<IHTMLElement> spParentHTMLElement;
+                            spHTMLElement->get_parentElement(&spParentHTMLElement);
+                            list<IHTMLElement *>::iterator iter = visitedElements.begin();
+                            boolean ignore = false;
+                            while(iter != visitedElements.end()) {
+                                IHTMLElement *pHTMLElementTemp = *iter;
+                                if(pHTMLElementTemp == spParentHTMLElement) {
+                                    ignore = true;
+                                }
+                                ++iter;
+                            }
+                            IHTMLElement *pHTMLElement = spHTMLElement.Detach();
+                            visitedElements.push_front(pHTMLElement);
+                            if(!ignore) {
+                                CComBSTR bstr;
+                                pHTMLElement->get_outerHTML(&bstr);
+                                if(bstr != NULL) {
+                                    result.append((TCHAR *)(bstr));
+                                }
                             }
                         }
                      }
+                    list<IHTMLElement *>::iterator iter = visitedElements.begin();
+                    while(iter != visitedElements.end()) {
+                        IHTMLElement *pHTMLElement = *iter;
+                        pHTMLElement->Release();
+                        ++iter;
+                    }
                 }
             }
         }
+        Utils::log(1, _T("Source from DOM - %s\n"), fileURI.c_str());
     }
     return result;
 }
@@ -600,6 +623,15 @@ DbgpResponse *OpenUriCommand::process(DbgpConnection *pDbgpConnection, map<char,
                                                 IID_IWebBrowser2, (void **)&spWebBrowser);
     if(hr == S_OK) {
         hr = spWebBrowser->Navigate(bstrURL, &emptyVar, &emptyVar, &emptyVar, &emptyVar);
+        if(pDbgpConnection->getScriptDebugger() == NULL) {
+            HWND hWnd;
+            spWebBrowser->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hWnd));
+            MessageBox(hWnd, _T("Netbeans JavaScript client side debugging is disabled because of not able \
+to connect to Internet Explorer Script Debugger.\n\nPlease shutdown mdm.exe by using Windows Task Manager \
+and restart the debugging session"), 
+            _T("Netbeans Internet Explorer Extension"), MB_OK);
+            pDbgpConnection->close();
+        }
     }
     return NULL;
 }

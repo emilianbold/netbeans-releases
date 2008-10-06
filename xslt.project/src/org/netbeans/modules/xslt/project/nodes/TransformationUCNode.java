@@ -23,6 +23,7 @@ import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationType;
 import org.netbeans.modules.xslt.tmap.model.xsltmap.TransformationUC;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -58,7 +59,7 @@ public class TransformationUCNode extends AbstractNode {
     }
 
     public Image getIcon(int type) {
-        return Utilities.loadImage(
+        return ImageUtilities.loadImage(
                     TransformationType.REQUEST_REPLY_SERVICE.
                                             equals(tUC.getTransformationType()) 
                     ? ICON 

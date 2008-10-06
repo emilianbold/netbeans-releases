@@ -182,15 +182,27 @@ public final class Utilities {
 
     /** Operating system is one of the Unix variants but we don't know which
      * one it is.
+     * @since 7.18
      */
-    private static final int OS_UNIX_OTHER = OS_WINVISTA << 1;
+    public static final int OS_UNIX_OTHER = OS_WINVISTA << 1;
 
-    /** A mask for Windows platforms. */
+    /** Operating system is OpenBSD.
+     * @since 7.18
+     */
+    public static final int OS_OPENBSD = OS_UNIX_OTHER << 1;
+
+    /** A mask for Windows platforms.
+     * @deprecated Use {@link #isWindows()} instead.
+     */
+    @Deprecated
     public static final int OS_WINDOWS_MASK = OS_WINNT | OS_WIN95 | OS_WIN98 | OS_WIN2000 | OS_WINVISTA | OS_WIN_OTHER;
 
-    /** A mask for Unix platforms. */
+    /** A mask for Unix platforms.
+     * @deprecated Use {@link #isUnix()} instead.
+     */
+    @Deprecated
     public static final int OS_UNIX_MASK = OS_SOLARIS | OS_LINUX | OS_HP | OS_AIX | OS_IRIX | OS_SUNOS | OS_TRU64 |
-        OS_MAC | OS_FREEBSD | OS_UNIX_OTHER;
+        OS_MAC | OS_FREEBSD | OS_OPENBSD | OS_UNIX_OTHER;
 
     /** A height of the windows's taskbar */
     public static final int TYPICAL_WINDOWS_TASKBAR_HEIGHT = 27;
@@ -337,6 +349,8 @@ public final class Utilities {
                 operatingSystem = OS_MAC;
             } else if (osName.toLowerCase(Locale.US).startsWith("freebsd")) { // NOI18N 
                 operatingSystem = OS_FREEBSD;
+            } else if ("OpenBSD".equals(osName)) { // NOI18N
+                operatingSystem = OS_OPENBSD;
             } else if (File.pathSeparatorChar == ':') { // NOI18N
                 operatingSystem = OS_UNIX_OTHER;
             } else {
@@ -2587,13 +2601,14 @@ widthcheck:  {
      * over the first one with its top-left corner at x, y. Images need not be of the same size.
      * New image will have a size of max(second image size + top-left corner, first image size).
      * Method is used mostly when second image contains transparent pixels (e.g. for badging).
-     * <p>Please use {@link ImageUtilities#mergeImages}.
      * @param image1 underlying image
      * @param image2 second image
      * @param x x position of top-left corner
      * @param y y position of top-left corner
      * @return new merged image
+     * @deprecated Use {@link ImageUtilities#mergeImages}.
      */
+    @Deprecated
     public static final Image mergeImages(Image image1, Image image2, int x, int y) {
         return ImageUtilities.mergeImages(image1, image2, x, y);
     }
@@ -2601,21 +2616,23 @@ widthcheck:  {
     /**
      * Loads an image from the specified resource ID. The image is loaded using the "system" classloader registered in
      * Lookup.
-     * <p>Please use {@link ImageUtilities#loadImage(java.lang.String)}.
      * @param resourceID resource path of the icon (no initial slash)
      * @return icon's Image, or null, if the icon cannot be loaded.
+     * @deprecated Use {@link ImageUtilities#loadImage(java.lang.String)}.
      */
+    @Deprecated
     public static final Image loadImage(String resourceID) {
         return ImageUtilities.loadImage(resourceID);
     }
 
     /**
      * Converts given icon to a {@link java.awt.Image}.
-     * <p>Please use {@link ImageUtilities#icon2Image}.
      *
      * @param icon {@link javax.swing.Icon} to be converted.
      * @since 7.3
+     * @deprecated Use {@link ImageUtilities#icon2Image}.
      */
+    @Deprecated
     public static final Image icon2Image(Icon icon) {
         return ImageUtilities.icon2Image(icon);
     }
@@ -2768,6 +2785,8 @@ widthcheck:  {
      * Presenters for context menu items should <em>not</em> use
      * this method; instead see {@link ContextAwareAction}.
      * @see ContextGlobalProvider
+     * @see ContextAwareAction
+     * @see <a href="http://wiki.netbeans.org/DevFaqActionContextSensitive">NetBeans FAQ</a>
      * @return the context for actions
      * @since 4.10
      */
@@ -2802,10 +2821,11 @@ widthcheck:  {
      * or <samp>org/netbeans/modules/foo/resources/foo_mybranding.gif</samp>.
      * 
      * <p>Caching of loaded images can be used internally to improve performance.
-     * <p>Please use {@link ImageUtilities#loadImage(java.lang.String, boolean)}.
      * 
      * @since 3.24
+     * @deprecated Use {@link ImageUtilities#loadImage(java.lang.String, boolean)}.
      */
+    @Deprecated
     public static final Image loadImage(String resource, boolean localized) {
         return ImageUtilities.loadImage(resource, localized);
     }

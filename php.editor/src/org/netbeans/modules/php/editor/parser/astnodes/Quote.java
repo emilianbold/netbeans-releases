@@ -72,7 +72,7 @@ public class Quote extends Expression {
         this.quoteType = type;
     }
 
-    public Quote(int start, int end, List expressions, Quote.Type type) {
+    public Quote(int start, int end, List<Exception> expressions, Quote.Type type) {
         this(start, end, expressions == null ? null : (Expression[]) expressions.toArray(new Expression[expressions.size()]), type);
     }
 

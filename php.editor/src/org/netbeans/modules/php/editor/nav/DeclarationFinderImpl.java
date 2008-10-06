@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.nav.SemiAttribute.AttributedElement.Kind;
 import org.netbeans.modules.php.editor.nav.SemiAttribute.ClassMemberElement;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -121,15 +122,17 @@ public class DeclarationFinderImpl implements DeclarationFinder {
 
                         Collections.reverse(path);
 
+                        Scalar where = null;
                         for (ASTNode n : path) {
                             if (n instanceof Include) {
                                 FileObject file = NavUtils.resolveInclude(parameter, (Include) n);
-
-                                if (file != null) {
-                                    result[0] = new OffsetRange(n.getStartOffset(), n.getEndOffset());
+                                if (file != null && where != null) {
+                                    result[0] = new OffsetRange(where.getStartOffset()+1, where.getEndOffset()-1);
+                                    break;
                                 }
-
-                                break;
+                            }
+                            else if (n instanceof Scalar) {
+                                where = (Scalar)n;
                             }
                         }
                     }
@@ -156,7 +159,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         }
 
         if (path.size() == 0) {
-            return null;
+            return DeclarationLocation.NONE;
         }
 
         path = new LinkedList<ASTNode>(path);
@@ -185,8 +188,21 @@ public class DeclarationFinderImpl implements DeclarationFinder {
         switch (el.getKind()) {
             case FUNC:
             case CLASS:
-            case VARIABLE:
                 n = writes.get(0);
+                break;
+            case VARIABLE:
+                int startOffest = -1;
+                n = writes.get(0);
+                for (Union2<ASTNode, IndexedElement> union2 : writes) {
+                    if (union2.hasFirst()) {
+                        ASTNode tmp = union2.first();
+                        if (tmp != null && (tmp.getStartOffset() < startOffest || startOffest == -1)) {
+                            n = union2;
+                            startOffest = tmp.getStartOffset();
+                        }
+                    }
+                }
+                
                 break;
             default:
                 n = writes.get(writes.size() - 1);
@@ -208,17 +224,24 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         fromIndex = index.getFunctions(null, el.getName(), NameKind.PREFIX);
                     }
                     break;
+                case IFACE:
+                    fromIndex = index.getInterfaces(null, el.getName(), NameKind.PREFIX);
+                    break;
                 case CLASS:
                     fromIndex = index.getClasses(null, el.getName(), NameKind.PREFIX);
                     break;
                 case VARIABLE:
                     if (el.isClassMember()) {
                         SemiAttribute.ClassMemberElement memberElement = (ClassMemberElement) el;
-                        fromIndex = index.getAllProperties(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
+                        fromIndex = index.getAllFields(null, memberElement.getClassName(), memberElement.getName(), NameKind.PREFIX, PHPIndex.ANY_ATTR);
                     } else if (n.hasSecond()) {
                         final IndexedElement indexed = n.second();
                         FileObject file = indexed.getFileObject();
-                        assert file != null;
+
+                        if (file == null){
+                            return DeclarationLocation.NONE;
+                        }
+
                         return new DeclarationLocation(file, indexed.getOffset());
                     } else {
                         fromIndex = Collections.emptyList();

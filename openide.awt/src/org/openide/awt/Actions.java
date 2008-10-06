@@ -706,13 +706,13 @@ public class Actions extends Object {
                     Image img = null;
 
                     if (!useSmallIcon) {
-                        img = Utilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
+                        img = ImageUtilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
 
                         if (img == null) {
-                            img = Utilities.loadImage(b, true);
+                            img = ImageUtilities.loadImage(b, true);
                         }
                     } else {
-                        img = Utilities.loadImage(b, true);
+                        img = ImageUtilities.loadImage(b, true);
                     }
 
                     if (img != null) {
@@ -744,13 +744,13 @@ public class Actions extends Object {
                     Image img = null;
 
                     if (!useSmallIcon) {
-                        img = Utilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
+                        img = ImageUtilities.loadImage(insertBeforeSuffix(b, "24"), true); // NOI18N
 
                         if (img == null) {
-                            img = Utilities.loadImage(b, true);
+                            img = ImageUtilities.loadImage(b, true);
                         }
                     } else {
-                        img = Utilities.loadImage(b, true);
+                        img = ImageUtilities.loadImage(b, true);
                     }
 
                     if (img != null) {
@@ -796,7 +796,7 @@ public class Actions extends Object {
 
                 if (i == null) {
                     // even for regular icon
-                    img = Utilities.loadImage(b, true);
+                    img = ImageUtilities.loadImage(b, true);
 
                     if (img != null) {
                         button.setIcon(new ImageIcon(img));
@@ -805,13 +805,13 @@ public class Actions extends Object {
                     i = img;
                 }
 
-                Image pImg = Utilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                Image pImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
 
                 if (pImg != null) {
                     button.setPressedIcon(new ImageIcon(pImg));
                 }
 
-                Image rImg = Utilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                Image rImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
 
                 if (rImg != null) {
                     button.setRolloverIcon(new ImageIcon(rImg));
@@ -1026,7 +1026,7 @@ public class Actions extends Object {
 
                 if (i == null) {
                     // even for regular icon
-                    img = Utilities.loadImage(b, true);
+                    img = ImageUtilities.loadImage(b, true);
 
                     if (img != null) {
                         button.setIcon(new ImageIcon(img));
@@ -1034,19 +1034,19 @@ public class Actions extends Object {
                     }
                 }
 
-                Image pImg = Utilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
+                Image pImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_pressed"), true); // NOI18N
 
                 if (pImg != null) {
                     button.setPressedIcon(new ImageIcon(pImg));
                 }
 
-                Image rImg = Utilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
+                Image rImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_rollover"), true); // NOI18N
 
                 if (rImg != null) {
                     button.setRolloverIcon(new ImageIcon(rImg));
                 }
 
-                Image dImg = Utilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
+                Image dImg = ImageUtilities.loadImage(insertBeforeSuffix(b, "_disabled"), true); // NOI18N
 
                 if (dImg != null) {
                     button.setDisabledIcon(new ImageIcon(dImg));
@@ -1119,7 +1119,10 @@ public class Actions extends Object {
             }
 
             if (!popup) {
-                button.setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/gap.gif", true))); // NOI18N
+                boolean jdk16orNewer = "1.6".compareTo(System.getProperty("java.version")) <= 0;
+                button.setIcon(new ImageIcon(Utilities.loadImage(
+                        jdk16orNewer ? "org/openide/resources/actions/empty.gif" // NOI18N
+                                    : "org/openide/resources/actions/gap.gif", true))); // NOI18N
             }
         }
 

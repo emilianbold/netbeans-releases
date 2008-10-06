@@ -52,6 +52,7 @@ import org.openide.actions.DeleteAction;
 import org.openide.actions.OpenAction;
 import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Children;
+import org.openide.util.ImageUtilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -104,7 +105,7 @@ public class HttpMethodNode extends AbstractNode{
     }
     
     private static final java.awt.Image METHOD_BADGE =
-            org.openide.util.Utilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
+            ImageUtilities.loadImage( "org/netbeans/modules/websvc/rest/nodes/resources/method.png" ); //NOI18N
     
     public java.awt.Image getIcon(int type) {
         return METHOD_BADGE;

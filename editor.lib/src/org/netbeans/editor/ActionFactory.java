@@ -81,6 +81,7 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
@@ -121,6 +122,7 @@ public class ActionFactory {
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
+                        Formatter.pushFormattingContextDocument(doc);
                         try {
                             if (Utilities.isSelectionShowing(caret)) { // block selected
                                 try {
@@ -151,6 +153,7 @@ public class ActionFactory {
                                 }
                             }
                         } finally {
+                            Formatter.popFormattingContextDocument(doc);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }
@@ -1155,7 +1158,7 @@ public class ActionFactory {
 
         public ToggleHighlightSearchAction() {
             super(BaseKit.toggleHighlightSearchAction, CLEAR_STATUS_TEXT);
-            putValue(Action.SMALL_ICON, new ImageIcon(org.openide.util.Utilities.loadImage(
+            putValue(Action.SMALL_ICON, new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/editor/resources/toggle_highlight.png"))); // NOI18N
         }
 
@@ -1389,6 +1392,7 @@ public class ActionFactory {
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
+                        Formatter.pushFormattingContextDocument(doc);
                         try {
                             if (Utilities.isSelectionShowing(caret)) {
                                 doc.getFormatter().changeBlockIndent(doc,
@@ -1402,6 +1406,7 @@ public class ActionFactory {
                         } catch (BadLocationException e) {
                             e.printStackTrace();
                         } finally {
+                            Formatter.popFormattingContextDocument(doc);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }
@@ -1435,51 +1440,55 @@ public class ActionFactory {
 
                 final Formatter formatter = doc.getFormatter();
                 formatter.reformatLock();
-                doc.runAtomicAsUser (new Runnable () {
-                    public void run () {
-                        try {
-                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-                            int startPos;
-                            Position endPosition;
+                Formatter.pushFormattingContextDocument(doc);
+                try {
+                    doc.runAtomicAsUser (new Runnable () {
+                        public void run () {
+                            try {
+                                int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                                int startPos;
+                                Position endPosition;
 
-                            if (Utilities.isSelectionShowing(caret)) {
-                                startPos = target.getSelectionStart();
-                                endPosition = doc.createPosition(target.getSelectionEnd());
-                            } else {
-                                startPos = Utilities.getRowStart(doc, caret.getDot());
-                                endPosition = doc.createPosition(Utilities.getRowEnd(doc, caret.getDot()));
-                            }
-
-                            int pos = startPos;
-                            if (gdoc != null) {
-                                pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-                            }
-
-                            while (pos < endPosition.getOffset()) {
-                                int stopPos = endPosition.getOffset();
-                                if (gdoc != null) { // adjust to start of the next guarded block
-                                    stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                                    if (stopPos == -1 || stopPos > endPosition.getOffset()) {
-                                        stopPos = endPosition.getOffset();
-                                    }
+                                if (Utilities.isSelectionShowing(caret)) {
+                                    startPos = target.getSelectionStart();
+                                    endPosition = doc.createPosition(target.getSelectionEnd());
+                                } else {
+                                    startPos = Utilities.getRowStart(doc, caret.getDot());
+                                    endPosition = doc.createPosition(Utilities.getRowEnd(doc, caret.getDot()));
                                 }
 
-                                int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                pos = pos + reformattedLen;
-
-                                if (gdoc != null) { // adjust to end of current block
+                                int pos = startPos;
+                                if (gdoc != null) {
                                     pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
                                 }
+
+                                while (pos < endPosition.getOffset()) {
+                                    int stopPos = endPosition.getOffset();
+                                    if (gdoc != null) { // adjust to start of the next guarded block
+                                        stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
+                                        if (stopPos == -1 || stopPos > endPosition.getOffset()) {
+                                            stopPos = endPosition.getOffset();
+                                        }
+                                    }
+
+                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
+                                    pos = pos + reformattedLen;
+
+                                    if (gdoc != null) { // adjust to end of current block
+                                        pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
+                                    }
+                                }
+                            } catch (GuardedException e) {
+                                target.getToolkit().beep();
+                            } catch (BadLocationException e) {
+                                Utilities.annotateLoggable(e);
                             }
-                        } catch (GuardedException e) {
-                            target.getToolkit().beep();
-                        } catch (BadLocationException e) {
-                            Utilities.annotateLoggable(e);
-                        } finally {
-                            formatter.reformatUnlock();
                         }
-                    }
-                });
+                    });
+                } finally {
+                    Formatter.popFormattingContextDocument(doc);
+                    formatter.reformatUnlock();
+                }
             }
         }
     }
@@ -1551,6 +1560,7 @@ public class ActionFactory {
 
                 final Formatter formatter = doc.getFormatter();
                 formatter.reformatLock();
+                Formatter.pushFormattingContextDocument(doc);
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
@@ -1602,6 +1612,7 @@ public class ActionFactory {
                         }
                     });
                 } finally {
+                    Formatter.popFormattingContextDocument(doc);
                     formatter.reformatUnlock();
                 }
             }

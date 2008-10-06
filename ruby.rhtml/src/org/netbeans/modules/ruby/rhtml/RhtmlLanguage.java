@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby.rhtml;
 
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.modules.gsf.api.IndexSearcher;
 import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
 import org.netbeans.modules.ruby.RubyLanguage;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
@@ -106,6 +107,11 @@ public class RhtmlLanguage extends RubyLanguage {
 
     @Override
     public Indexer getIndexer() {
+        return null;
+    }
+
+    @Override
+    public IndexSearcher getIndexSearcher() {
         return null;
     }
 

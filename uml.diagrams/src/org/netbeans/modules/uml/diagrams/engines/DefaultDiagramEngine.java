@@ -71,9 +71,12 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
+import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
 import org.netbeans.modules.uml.drawingarea.actions.DiagramPopupMenuProvider;
+import org.netbeans.modules.uml.drawingarea.actions.EdgeLabelIteratorAction;
 import org.netbeans.modules.uml.drawingarea.actions.MoveControlPointAction;
 import org.netbeans.modules.uml.drawingarea.actions.NavigateLinkAction;
 import org.netbeans.modules.uml.drawingarea.palette.RelationshipFactory;
@@ -99,7 +102,6 @@ public class DefaultDiagramEngine extends  DiagramEngine {
     
     private final static PopupMenuProvider CONTEXT_MENU_PROVIDER = new DiagramPopupMenuProvider();
     public final static WidgetAction POPUP_ACTION = ActionFactory.createPopupMenuAction(CONTEXT_MENU_PROVIDER);
-    //public final static MoveNodeKeyAction MOVE_NODE_KEY_ACTION = new MoveNodeKeyAction();
     
     private RelationshipDiscovery relDiscovery = null;
     
@@ -251,9 +253,15 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         selectTool.addAction(selectAction);
         selectTool.addAction(POPUP_ACTION);
         selectTool.addAction(mouseHoverAction);
-        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));
-        selectTool.addAction(new IterateSelectAction());
-        
+        selectTool.addAction(ActionFactory.createMoveAction(moveStrategy, moveProvider));        
+        if (widget instanceof CompositeNodeWidget)
+        {
+            selectTool.addAction(new NodeLabelIteratorAction());
+        }
+        else
+        {
+            selectTool.addAction(new IterateSelectAction());
+        }
         WidgetAction.Chain navigateLinkTool = widget.createActions(DesignerTools.NAVIGATE_LINK);
         navigateLinkTool.addAction(new NavigateLinkAction());
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
@@ -262,8 +270,15 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);
         readOnly.addAction(selectAction);
         readOnly.addAction(POPUP_ACTION);
-        readOnly.addAction(mouseHoverAction);
-        readOnly.addAction(new IterateSelectAction());
+        readOnly.addAction(mouseHoverAction);        
+        if (widget instanceof CompositeNodeWidget)
+        {
+            readOnly.addAction(new NodeLabelIteratorAction());
+        }
+        else
+        {
+            readOnly.addAction(new IterateSelectAction());
+        }
     }
 
     public void setActions(ConnectionWidget widget,IPresentationElement edge) {
@@ -286,11 +301,12 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(ActionFactory.createZoomAction());
         navigateLinkTool.addAction(POPUP_ACTION);
         selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
+        selectTool.addAction(new EdgeLabelIteratorAction());
         
         WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
         readOnly.addAction(sceneSelectAction);
         readOnly.addAction(POPUP_ACTION);
-        
+        readOnly.addAction(new EdgeLabelIteratorAction());
     }
     
     /**

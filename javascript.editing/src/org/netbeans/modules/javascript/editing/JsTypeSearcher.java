@@ -62,11 +62,13 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
@@ -418,7 +420,7 @@ public class JsTypeSearcher implements IndexSearcher {
                 initProjectInfo();
             }
             if (isLibrary) {
-                return new ImageIcon(org.openide.util.Utilities.loadImage(ICON_PATH));
+                return new ImageIcon(ImageUtilities.loadImage(ICON_PATH));
             }
             return projectIcon;
         }
@@ -439,7 +441,7 @@ public class JsTypeSearcher implements IndexSearcher {
                 if (lexOffset == -1) {
                     lexOffset = 0;
                 }
-                NbUtilities.open(element.getFileObject(), lexOffset, element.getName());
+                GsfUtilities.open(element.getFileObject(), lexOffset, element.getName());
                 return;
             }
             

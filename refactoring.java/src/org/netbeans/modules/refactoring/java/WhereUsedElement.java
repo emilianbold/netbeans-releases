@@ -234,7 +234,7 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
             if (Character.isWhitespace(s.charAt(x))) {
                 continue;
             } else {
-                return s.substring(0, x);
+                return s.substring(0, x + 1);
             }
         }
         return "";

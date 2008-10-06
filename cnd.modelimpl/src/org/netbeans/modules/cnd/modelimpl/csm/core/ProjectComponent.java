@@ -62,8 +62,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * @author Vladimir Kvashin
  */
 
-//package-local
-abstract class ProjectComponent implements Persistent, SelfPersistent {
+public abstract class ProjectComponent implements Persistent, SelfPersistent {
     
     private Key key;
     

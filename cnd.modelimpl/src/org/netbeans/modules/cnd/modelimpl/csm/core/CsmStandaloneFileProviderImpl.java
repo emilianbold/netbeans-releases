@@ -40,6 +40,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -66,6 +67,7 @@ import org.netbeans.modules.cnd.loaders.CDataObject;
 import org.netbeans.modules.cnd.loaders.CndDataObject;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.loaders.HDataObject;
+import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -81,7 +83,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     private static final boolean TRACE = Boolean.getBoolean("cnd.standalone.trace"); //NOI18N
 
-    CsmModelListener listener = new CsmModelListener() {
+    private final CsmModelListener listener = new CsmModelListener() {
 
         public void projectOpened(CsmProject project) {
         }
@@ -99,7 +101,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }
     };
 
-    CsmProgressListener progressListener = new CsmProgressAdapter() {
+    private final CsmProgressListener progressListener = new CsmProgressAdapter() {
 
         @Override
         public void projectLoaded(CsmProject project) {
@@ -113,6 +115,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
 
     public CsmStandaloneFileProviderImpl() {
         CsmListeners.getDefault().addModelListener(listener);
+        CsmListeners.getDefault().addProgressListener(progressListener);
     }
 
     static CsmStandaloneFileProviderImpl getDefaultImpl() {
@@ -126,29 +129,42 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return null;
         }
         String name = javaIoFile.getAbsolutePath();
-        ProjectBase project;
+        ProjectBase project = null;
         synchronized (this) {
             // findFile is expensive - don't call it twice!
-            CsmFile csmFile = ModelImpl.instance().findFile(name); 
+            CsmFile csmFile = ModelImpl.instance().findFile(name);
             if (csmFile != null) {
                 return csmFile;
             }
             NativeProject platformProject = NativeProjectImpl.getNativeProjectImpl(FileUtil.toFile(file));
-            if (TRACE) trace("adding project %s", name);            
-            project = ModelImpl.instance().addProject(platformProject, name, true);
+            if (platformProject != null) {
+                if (TRACE) trace("adding project %s", name); //NOI18N
+                project = ModelImpl.instance().addProject(platformProject, name, true);
+            }
         }
-        return project.getFile(javaIoFile);
+        if (project != null && project.isValid()) {
+            try {
+                return project.getFile(javaIoFile);
+            } catch (BufferUnderflowException ex) {
+                // FIXUP: IZ#148840
+                DiagnosticExceptoins.register(ex);
+            } catch (IllegalStateException ex) {
+                // project can be closed
+                DiagnosticExceptoins.register(ex);
+            }
+        }
+        return null;
     }
 
     private void clean(ProjectBase projectOpened) {
         if (projectOpened.getPlatformProject() instanceof NativeProjectImpl) {
             return;
         }
-        if (TRACE) trace("checking project %s", projectOpened.toString());
+        if (TRACE) trace("checking project %s", projectOpened.toString()); //NOI18N
         for (CsmProject dummy : ModelImpl.instance().projects()) {
             if (dummy.getPlatformProject() instanceof NativeProjectImpl) {
                 for (CsmFile file : dummy.getAllFiles()) {
-                    if (TRACE) trace("\nchecking file %s", file.getAbsolutePath());
+                    if (TRACE) trace("\nchecking file %s", file.getAbsolutePath()); //NOI18N
                     if (projectOpened.getFile(((FileImpl) file).getFile()) != null) {
                         scheduleProjectRemoval(dummy);
                         continue;
@@ -189,36 +205,47 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         return false;
     }
 
-    synchronized public void notifyClosed(CsmFile file) {
-        if (TRACE) trace("checking file %s", file.toString());
-        FileImpl fileImpl = (FileImpl) file;
+    synchronized public void notifyClosed(CsmFile csmFile) {
+        if (TRACE) trace("checking file %s", csmFile.toString()); //NOI18N
+        FileImpl fileImpl = (FileImpl) csmFile;
         for (CsmProject project : ModelImpl.instance().projects()) {
-            if (project.getPlatformProject() instanceof NativeProjectImpl) {
-                if (((ProjectBase)project).getFile(fileImpl.getFile()) != null) {
+            Object platformProject = project.getPlatformProject();
+            if (platformProject instanceof NativeProjectImpl) {
+                File file = fileImpl.getFile();
+                if (((ProjectBase)project).getFile(file) != null) {
+                    DataObject dao = NativeProjectImpl.getDataObject(file);
+                    if (dao instanceof CndDataObject) {
+                        CndDataObject dataObject = (CndDataObject) dao;
+                        NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
+                        if (set != null) {
+                            NativeProjectImpl impl = (NativeProjectImpl) platformProject;
+                            set.remove(impl.findFileItem(file));
+                        }
+                    }
                     scheduleProjectRemoval(project);
                 }
             }
         }
     }
-    
+
     private void scheduleProjectRemoval(final CsmProject project) {
-        if (TRACE) trace("schedulling removal %s", project.toString());
+        if (TRACE) trace("schedulling removal %s", project.toString()); //NOI18N
         ModelImpl.instance().enqueueModelTask(new Runnable() {
             public void run() {
                 if (project.isValid()) {
-                    if (TRACE) trace("removing %s", project.toString());
+                    if (TRACE) trace("removing %s", project.toString()); //NOI18N
                     ProjectBase projectBase = (ProjectBase) project;
                     ModelImpl.instance().closeProjectBase(projectBase, false);
                 }
             }
-        }, "Standalone project removal.");
+        }, "Standalone project removal."); //NOI18N
     }
 
     private static void trace(String pattern, Object... args) {
-        assert TRACE : "Should not be called if TRACE is off!";
-        System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args));
+        assert TRACE : "Should not be called if TRACE is off!"; //NOI18N
+        System.err.printf("### Standalone provider:  %s\n", String.format(pattern, args)); //NOI18N
     }
-    
+
     private static final class NativeProjectImpl implements NativeProject {
 
         private final List<String> sysIncludes;
@@ -238,30 +265,46 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             List<String> usrIncludes = new ArrayList<String>();
             List<String> sysMacros = new ArrayList<String>();
             List<String> usrMacros = new ArrayList<String>();
-            NativeFileItem.Language lang = getLanguage(file, getDataObject(file));
+            DataObject dao = getDataObject(file);
+            NativeFileItem.Language lang = getLanguage(file, dao);
             NativeProject prototype = null;
             for (CsmProject csmProject : model.projects()) {
-                NativeProject project = (NativeProject) csmProject.getPlatformProject();                
-                if (file.getAbsolutePath().startsWith(project.getProjectRoot())) {
-                    prototype = project;
-                    break;
-                }
-                for (String root : project.getSourceRoots()) {
-                    if (file.getAbsolutePath().startsWith(root)) {
+                Object p = csmProject.getPlatformProject();
+                if (p instanceof NativeProject) {
+                    NativeProject project = (NativeProject)p;
+                    if (file.getAbsolutePath().startsWith(project.getProjectRoot())) {
                         prototype = project;
                         break;
                     }
-                }
-                if (prototype != null) {
-                    break;
+                    for (String root : project.getSourceRoots()) {
+                        if (file.getAbsolutePath().startsWith(root)) {
+                            prototype = project;
+                            break;
+                        }
+                    }
+                    if (prototype != null) {
+                        break;
+                    }
                 }
             }
-            
+
             if (prototype == null) {
+                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+                if (set != null) {
+                    for(NativeFileItem item : set.getItems()){
+                        NativeProject p = item.getNativeProject();
+                        if (p != null && ModelImpl.instance().isProjectDiabled(p)){
+                            return null;
+                        }
+                    }
+                }
                 // Some default implementation should be provided.
                 sysIncludes.addAll(DefaultSystemSettings.getDefault().getSystemIncludes(lang));
                 sysMacros.addAll(DefaultSystemSettings.getDefault().getSystemMacros(lang));
             } else {
+                if (ModelImpl.instance().isProjectDiabled(prototype)){
+                    return null;
+                }
                 sysIncludes.addAll(prototype.getSystemIncludePaths());
                 sysMacros.addAll(prototype.getSystemMacroDefinitions());
                 usrIncludes.addAll(prototype.getUserIncludePaths());
@@ -269,11 +312,14 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             }
             NativeProjectImpl impl = new NativeProjectImpl(file, sysIncludes, usrIncludes, sysMacros, usrMacros);
             impl.addFile(file);
-            if (getDataObject(file) instanceof CndDataObject) {
-                CndDataObject dataObject = (CndDataObject) getDataObject(file);
-                MyNativeFileItemSet set = new MyNativeFileItemSet();
-                set.add(impl.findFileItem(file));                
-                dataObject.addCookie(set);
+            if (dao instanceof CndDataObject) {
+                CndDataObject dataObject = (CndDataObject) dao;
+                NativeFileItemSet set = dataObject.getLookup().lookup(NativeFileItemSet.class);
+                if (set == null) {
+                    set = new MyNativeFileItemSet();
+                    dataObject.addCookie(set);
+                }
+                set.add(impl.findFileItem(file));
             }
             return impl;
         }
@@ -496,10 +542,10 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
             return false;
         }
     }
-    
+
     static private class MyNativeFileItemSet implements NativeFileItemSet {
         private List<NativeFileItem> items = new ArrayList<NativeFileItem>(1);
-        
+
         public synchronized Collection<NativeFileItem> getItems() {
             return new ArrayList<NativeFileItem>(items);
         }

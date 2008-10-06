@@ -53,14 +53,13 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCMetadata implements MetadataImplementation {
+public class JDBCMetadata extends MetadataImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCMetadata.class.getName());
 
@@ -107,7 +106,7 @@ public class JDBCMetadata implements MetadataImplementation {
         return MetadataUtilities.find(name, initCatalogs());
     }
 
-    public void refresh() {
+    public final void refresh() {
         LOGGER.fine("Refreshing metadata");
         defaultCatalog = null;
         catalogs = null;
@@ -118,8 +117,8 @@ public class JDBCMetadata implements MetadataImplementation {
         return "JDBCMetadata"; // NOI18N
     }
 
-    protected JDBCCatalog createCatalog(String catalogName, boolean _default, String defaultSchemaName) {
-        return new JDBCCatalog(this, catalogName, _default, defaultSchemaName);
+    protected JDBCCatalog createJDBCCatalog(String name, boolean _default, String defaultSchemaName) {
+        return new JDBCCatalog(this, name, _default, defaultSchemaName);
     }
 
     protected void createCatalogs() {
@@ -133,11 +132,11 @@ public class JDBCMetadata implements MetadataImplementation {
                     String catalogName = rs.getString("TABLE_CAT"); // NOI18N
                     LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
                     if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
-                        defaultCatalog = MetadataFactory.createCatalog(createCatalog(catalogName, true, defaultSchemaName));
+                        defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
                         newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
                         LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
                     } else {
-                        Catalog catalog = MetadataFactory.createCatalog(createCatalog(catalogName, false, null));
+                        Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
                         newCatalogs.put(catalogName, catalog);
                         LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
                     }
@@ -149,7 +148,7 @@ public class JDBCMetadata implements MetadataImplementation {
             throw new MetadataException(e);
         }
         if (defaultCatalog == null) {
-            defaultCatalog = MetadataFactory.createCatalog(createCatalog(null, true, defaultSchemaName));
+            defaultCatalog = createJDBCCatalog(null, true, defaultSchemaName).getCatalog();
             newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
             LOGGER.log(Level.FINE, "Created fallback default catalog {0}", defaultCatalog);
         }

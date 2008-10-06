@@ -286,6 +286,21 @@ public class OrderingTest extends NbTestCase {
         assertEquals(100, dent.getAttribute("position"));
     }
 
+    /** Tests new child without position attribute is correctly ordered
+     * and others are reorderer as well (see issue #131021). */
+    public void testSetOrderNewChildAndReorder131021() throws Exception {
+        apex.setAttribute("position", 200);
+        ball.setAttribute("position", 250);
+        cone.setAttribute("position", 300);
+        dent.setAttribute("position", null);
+        Ordering.setOrder(Arrays.asList(dent, ball, apex, cone));
+        assertOrder(true, dent, ball, apex, cone);
+        assertEquals(200, apex.getAttribute("position"));
+        assertEquals(175, ball.getAttribute("position"));
+        assertEquals(300, cone.getAttribute("position"));
+        assertEquals(150, dent.getAttribute("position"));
+    }
+
     public void testSetOrderSingle() throws Exception {
         dir = FileUtil.createMemoryFileSystem().getRoot();
         FileObject f = dir.createData("f");

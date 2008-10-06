@@ -90,7 +90,7 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     
     protected WeakReference<DesignComponent> component;
     private TypeID typeID;
-    private final CustomEditor customEditor;
+    private CustomEditor customEditor;
     private PropertyValue resetToDefaultValue;
 
     private PropertyEditorJavaString(TypeID typeID) {
@@ -109,6 +109,18 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
     
     public static final PropertyEditorJavaString createInstance(TypeID typeID, PropertyValue resetTodefaultValue) {
         return new PropertyEditorJavaString(typeID, resetTodefaultValue);
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        typeID = null;
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        this.component = null;
+        resetToDefaultValue = null;
     }
 
     @Override
@@ -201,6 +213,11 @@ public final class PropertyEditorJavaString extends DesignPropertyEditor {
 
         public CustomEditor() {
             initComponents();
+        }
+
+        void cleanUp() {
+            textPane = null;
+            this.removeAll();
         }
 
         private void initComponents() {

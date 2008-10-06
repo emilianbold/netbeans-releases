@@ -81,6 +81,17 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
 
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (customEditor != null) {
+            customEditor.cleanUp();
+            customEditor = null;
+        }
+        radioButton = null;
+        label = null;
+    }
+
     public static PropertyEditorPhoneNumber createInstance(String label, String ucLabel) {
         return new PropertyEditorPhoneNumber(label, ucLabel, null);
     }
@@ -219,6 +230,14 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
         public CustomEditor() {
             radioButton.addFocusListener(this);
             initComponents();
+        }
+
+       void cleanUp() {
+            if (textField != null && textField.getDocument() != null) {
+                textField.getDocument().removeDocumentListener(this);
+            }
+            textField = null;
+            this.removeAll();
         }
 
         private void initComponents() {

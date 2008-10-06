@@ -62,6 +62,8 @@
             </fileset>
         </copy>
 	<set property="locales" value=""/>
+        <set property="enable.languages.redirect" value="0"/>
+	<set property="redirect.page.type"        value="community"/>
     </target>
 
    <target name="init-web-page-ml" if="ml.build">
@@ -81,6 +83,12 @@
                 <include name="**/*.*"/>
             </fileset>
         </copy>	
+        <!-- Enable community d/l page properties -->
+        <set property="enable.languages.redirect" value="1"/>
+	<if property="community.mlbuild" value="1">
+            <set property="enable.languages.redirect" value="1"/>
+       	    <set property="redirect.page.type"        value="main"/>
+	</if>
     </target>
 
     <target name="release-web-page">

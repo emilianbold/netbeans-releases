@@ -38,19 +38,22 @@
  */
 package org.netbeans.test.web.core.syntax.performance;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Formatter;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import java.util.logging.SimpleFormatter;
-import java.util.logging.XMLFormatter;
 import javax.swing.text.StyledDocument;
 import junit.framework.Test;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.navigator.NavigatorTC;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.EditorCookie.Observable;
 import org.openide.filesystems.FileObject;
@@ -65,10 +68,10 @@ import org.openide.util.Task;
  */
 public class PerformanceTest extends NbTestCase {
 
-    private static final int TIMEOUT = 10000;
+    private static final int TIMEOUT = 5000;
+    private final List<Failure> failures = new LinkedList<Failure>();
     private TimerHandler timerHandler = new TimerHandler();
     private RequestProcessor.Task waiter;
-    private Formatter longFormat = new XMLFormatter();
     private Formatter shortFormat = new SimpleFormatter();
 
     public PerformanceTest(String name) {
@@ -86,34 +89,38 @@ public class PerformanceTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        Thread.sleep(TIMEOUT);
+        openNavigator();
         timerHandler.flush();
-        waiter = RequestProcessor.getDefault().post(new Runnable() {
-
-            public void run() {
-            }
-        }, TIMEOUT);
+        failures.clear();
+        waitTimeout();
     }
 
     @Override
     protected void tearDown() throws Exception {
         super.tearDown();
+        if (failures.size() > 0){
+            String message = new String();
+            for (Failure failure : failures) {
+                message = message + "\n" + shortFormat.format(failure.rec) + " Reached:" + failure.time;
+            }
+            fail("some logs reached the boundary \n" + message);
+        }
     }
 
     public void testOpenHTML() throws Exception {
         StyledDocument doc = prepare("performance.html");
         doc.insertString(0, "<table></table>", null);
-        waiter.waitFinished();
+        waitTimeout();
         doc.insertString(doc.getEndPosition().getOffset() - 1, "<tab", null);
-        waiter.waitFinished();
+        waitTimeout();
         for (LogRecord log : timerHandler.logs) {
             String message = log.getMessage();
             if (message.contains("Navigator Initialization")) {
-                verify(log, 2000, 4000);
-            } else if (message.contains("Parsing (text/html)")){
-                verify(log, 500, 1000);
+                verify(log, 500, 2000);
+            } else if (message.contains("Parsing (text/html)") || message.contains("Navigator Merge")){
+                verify(log, 300, 1000);
             }else {
-                verify(log, 200, 500);
+                verify(log, 200, 800);
             }
         }
     }
@@ -121,14 +128,14 @@ public class PerformanceTest extends NbTestCase {
     public void testOpenJSP() throws Exception {
         StyledDocument doc = prepare("performance.jsp");
         doc.insertString(0, "${\"hello\"}", null);
-        waiter.waitFinished();
+        waitTimeout();
         doc.insertString(doc.getEndPosition().getOffset() - 1, "<%= \"hello\" %>", null);
-        waiter.waitFinished();
+        waitTimeout();
         for (LogRecord log : timerHandler.logs) {
             if (log.getMessage().contains("Navigator Initialization")) {
-                verify(log, 2000, 4000);   
+                verify(log, 500, 2000);
             } else {
-                verify(log, 200, 500);
+                verify(log, 200, 800);
             }
         }
     }
@@ -136,11 +143,11 @@ public class PerformanceTest extends NbTestCase {
     public void testOpenCSS() throws Exception {
         StyledDocument doc = prepare("performance.css");
         doc.insertString(0, "selector{color:green}", null);
-        waiter.waitFinished();
+        waitTimeout();
         doc.insertString(doc.getEndPosition().getOffset() - 1, "sx{c:red}", null);
-        waiter.waitFinished();
+        waitTimeout();
         for (LogRecord log : timerHandler.logs) {
-            verify(log, 200, 500);
+            verify(log, 200, 800);
         }
     }
 
@@ -151,8 +158,13 @@ public class PerformanceTest extends NbTestCase {
         EditorCookie.Observable ed = dataObj.getCookie(Observable.class);
         ed.openDocument();
         ed.open();
-        waiter.waitFinished();
+        waitTimeout();
         return ed.getDocument();
+    }
+
+    private void waitTimeout(){
+        waiter.schedule(TIMEOUT);
+        waiter.waitFinished();
     }
 
     private void verify(LogRecord log, int expected, int boundary) {
@@ -166,12 +178,21 @@ public class PerformanceTest extends NbTestCase {
         Number nTime = (Number) params[1];
         Integer time = nTime.intValue();
         if (time > expected) {
-            log(longFormat.format(log));
+            System.err.println(log.getMessage() + " Reached:" + time);
         }
         if (time > boundary) {
-            fail(shortFormat.format(log) + " Reached:" + nTime);
+            failures.add(new Failure(log, time));
         }
+    }
 
+    private class Failure{
+        LogRecord rec;
+        Integer time;
+
+        public Failure(LogRecord rec, Integer time) {
+            this.rec = rec;
+            this.time = time;
+        }
     }
 
     private class TimerHandler extends Handler {
@@ -192,6 +213,15 @@ public class PerformanceTest extends NbTestCase {
         @Override
         public void close() throws SecurityException {
         }
+    }
+
+    public static void openNavigator() throws Exception{
+        EventQueue.invokeAndWait(new Runnable() {
+
+            public void run() {
+                NavigatorTC.getInstance().open();
+            }
+        });
     }
 }
 

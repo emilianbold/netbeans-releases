@@ -75,8 +75,6 @@ public class NbServiceTagSupport {
     
     private static String NB_VERSION;
     
-    private static String GF_VERSION;
-    
     private static final String USER_HOME = System.getProperty("user.home");
 
     private static final String SUPER_IDENTITY_FILE_NAME = ".superId"; // NOI18N
@@ -127,7 +125,6 @@ public class NbServiceTagSupport {
         LOG.log(Level.FINE,"Initializing");
         NB_CLUSTER = NbBundle.getMessage(NbServiceTagSupport.class,"nb.cluster");
         NB_VERSION = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.version");    
-        GF_VERSION = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.version");
         
         //This return platfomX dir but we need install dir
         File f = new File(System.getProperty("netbeans.home"));
@@ -155,6 +152,11 @@ public class NbServiceTagSupport {
         serviceTagFileHome = new File(svcTagDirHome,ST_FILE);
         
         inited = true;
+    }
+
+    /** Returns NetBeans IDE product name. */
+    public static String getProductName () {
+        return NbBundle.getMessage(NbServiceTagSupport.class,"nb.product.name");
     }
 
     /** 
@@ -237,33 +239,30 @@ public class NbServiceTagSupport {
      * @return service tag instance for GlassFish
      * @throws java.io.IOException
      */
-    public static ServiceTag createGfServiceTag
-    (String source, String jdkHomeUsedByGlassfish, String jdkVersionUsedByGlassfish, String glassfishHome) throws IOException {
+    public static ServiceTag createGfServiceTag (String source, String jdkHomeUsedByGlassfish,
+    String jdkVersionUsedByGlassfish, String glassfishHome, String gfVersion) throws IOException {
         if (!inited) {
             init();
         }
         LOG.log(Level.FINE,"Creating GlassFish service tag");
-        
-        ServiceTag st = getGfServiceTag();
+
+        ServiceTag st = getGfServiceTag(gfVersion);
         if (st != null) {
             if ((serviceTagFileNb.exists() || serviceTagFileHome.exists())) {
                 LOG.log(Level.FINE,
                 "GlassFish service tag is already created and saved in registration.xml");
-                return st;
             } else {
                 LOG.log(Level.FINE,"GlassFish service tag is already created");
             }
-        }
-        
-        // New service tag entry if not created
-        if (st == null) {
+        } else {
+            // New service tag entry if not created
             LOG.log(Level.FINE,"Creating new GlassFish service tag");
-            st = newGfServiceTag(source, jdkHomeUsedByGlassfish, jdkVersionUsedByGlassfish, glassfishHome);
+            st = newGfServiceTag(source, jdkHomeUsedByGlassfish, jdkVersionUsedByGlassfish, glassfishHome, gfVersion);
             // Add the service tag to the registration data in NB
             getRegistrationData().addServiceTag(st);
             writeRegistrationXml();
         }
-       
+
         return st;
     }
     
@@ -274,13 +273,13 @@ public class NbServiceTagSupport {
      * @return service tag instance for GlassFish
      * @throws java.io.IOException
      */
-    public static ServiceTag createGfServiceTag (ServiceTag serviceTag) throws IOException {
+    public static ServiceTag createGfServiceTag (ServiceTag serviceTag, String gfVersion) throws IOException {
         if (!inited) {
             init();
         }
         LOG.log(Level.FINE,"Creating GlassFish service tag");
-        
-        ServiceTag st = getGfServiceTag();
+
+        ServiceTag st = getGfServiceTag(gfVersion);
         if (st != null) {
             //If GF service tag already exists replace it with passed instance
             if (!st.equals(serviceTag)) {
@@ -479,20 +478,24 @@ public class NbServiceTagSupport {
      * @return
      * @throws java.io.IOException
      */
-    private static ServiceTag newGfServiceTag
-    (String svcTagSource, String jdkHomeUsedByGlassfish, String jdkVersionUsedByGlassfish, String glassfishHome) throws IOException {
+    private static ServiceTag newGfServiceTag (String svcTagSource, String jdkHomeUsedByGlassfish,
+    String jdkVersionUsedByGlassfish, String glassfishHome, String gfVersion) throws IOException {
         // Determine the product URN and name
-        String productURN, productName, parentURN, parentName;
-
-        productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.urn");
-        productName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.name");
+        String productURN, productName, parentURN, parentName, productVersion;
+        String key = "";
+        if (!"".equals(gfVersion)) {
+            key += "." + gfVersion;
+        }
+        productURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.urn" + key);
+        productName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.name" + key);
+        productVersion = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.version" + key);
         
-        parentURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.parent.urn");
-        parentName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.parent.name");
+        parentURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.parent.urn" + key);
+        parentName = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.gf.parent.name" + key);
 
         return ServiceTag.newInstance(ServiceTag.generateInstanceURN(),
                                       productName,
-                                      GF_VERSION,
+                                      productVersion,
                                       productURN,
                                       parentName,
                                       parentURN,
@@ -544,11 +547,17 @@ public class NbServiceTagSupport {
      * 
      * @return a service tag for 
      */
-    private static ServiceTag getGfServiceTag () throws IOException {
+    private static ServiceTag getGfServiceTag (String gfVersion) throws IOException {
         RegistrationData regData = getRegistrationData();
         Collection<ServiceTag> svcTags = regData.getServiceTags();
+        String key = "";
+        if (!"".equals(gfVersion)) {
+            key += "." + gfVersion;
+        }
+        String productURN = NbBundle.getMessage(NbServiceTagSupport.class, "servicetag.gf.urn" + key);
+
         for (ServiceTag st : svcTags) {
-            if (st.getProductName().startsWith("Sun Java System Application Server")) {
+            if (st.getProductURN().equals(productURN)) {
                 return st;
             }
         }

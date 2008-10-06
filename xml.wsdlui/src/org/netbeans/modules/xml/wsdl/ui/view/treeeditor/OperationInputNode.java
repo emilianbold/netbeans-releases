@@ -51,6 +51,7 @@ import javax.swing.Action;
 
 import org.netbeans.modules.xml.wsdl.model.Input;
 import org.openide.actions.DeleteAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -67,7 +68,7 @@ public class OperationInputNode extends OperationParameterNode<Input> {
     
     public OperationInputNode(Input wsdlConstruct) {
         super(wsdlConstruct);
-        ICON  =Utilities.loadImage
+        ICON  =ImageUtilities.loadImage
         ("org/netbeans/modules/xml/wsdl/ui/view/resources/input.png");
     }
     

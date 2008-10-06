@@ -164,8 +164,8 @@ public class WSITModelSupport {
         try {
             String wsdlUrl = service.getWsdlUrl();
             if (wsdlUrl == null) { // WS from Java
-                if (implClass == null) {
-                    logger.log(Level.INFO, "Implementation class is null");
+                if ((implClass == null) || (!implClass.isValid() || implClass.isVirtual())) {
+                    logger.log(Level.INFO, "Implementation class is null or not valid, or just virtual: " + implClass + ", service: " + service);
                     return null;
                 }
                 JAXWSSupport supp = JAXWSSupport.getJAXWSSupport(implClass);
@@ -365,7 +365,7 @@ public class WSITModelSupport {
     
     private static WSDLModel getModelForServiceFromWsdl(JAXWSSupport supp, Service service) throws IOException, Exception {
         String wsdlLocation = service.getLocalWsdlFile();
-        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(File.separator + wsdlLocation);
+        FileObject wsdlFO = supp.getLocalWsdlFolderForService(service.getName(),false).getFileObject(wsdlLocation);
         return getModelFromFO(wsdlFO, true);
     }
     
@@ -385,7 +385,9 @@ public class WSITModelSupport {
                 public void run(CompilationController controller) throws java.io.IOException {
                     controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                     SourceUtils sourceUtils = SourceUtils.newInstance(controller);
-                    result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                    if (sourceUtils != null) {
+                        result[0] = sourceUtils.getTypeElement().getQualifiedName().toString();
+                    }
                 }
             }, true);
             
@@ -396,8 +398,9 @@ public class WSITModelSupport {
         }
         
         // check whether config file already exists
-        if (supp.getWsdlFolder(true) != null) {
-            FileObject wsdlFO = supp.getWsdlFolder(true).getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+        FileObject wsdlFolder = supp.getWsdlFolder(create);
+        if ((wsdlFolder != null) && (wsdlFolder.isValid())) {
+            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
             if ((wsdlFO != null) && (wsdlFO.isValid())) {   //NOI18N
                 return getModelFromFO(wsdlFO, true);
             }
@@ -405,10 +408,9 @@ public class WSITModelSupport {
         
         if (create) {
             // config file doesn't exist - generate empty file
-            FileObject wsdlFolder = supp.getWsdlFolder(true).getParent();
-            FileObject wsdlFO = wsdlFolder.getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
+            FileObject wsdlFO = wsdlFolder.getParent().getFileObject(configWsdlName, CONFIG_WSDL_EXTENSION);   //NOI18N
             if ((wsdlFO == null) || !(FileUtil.toFile(wsdlFO).exists())) {
-                wsdlFO = wsdlFolder.createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
+                wsdlFO = wsdlFolder.getParent().createData(configWsdlName, CONFIG_WSDL_EXTENSION);  //NOI18N
                 if (createdFiles != null) {
                     createdFiles.add(wsdlFO);
                 }
@@ -768,12 +770,16 @@ public class WSITModelSupport {
         for (BindingOperation bo : b.getBindingOperations()) {
             BindingInput bi = bo.getBindingInput();
             BindingOutput bout = bo.getBindingOutput();
-            PolicyModelHelper.removePolicyForElement(bo);
-            PolicyModelHelper.removePolicyForElement(bi);
-            PolicyModelHelper.removePolicyForElement(bout);
+            if (bi != null) {
+                PolicyModelHelper.removePolicyForElement(bi);
+            }
+            if (bout != null) {
+                PolicyModelHelper.removePolicyForElement(bout);
+            }
             for (BindingFault bf : bo.getBindingFaults()) {
                 PolicyModelHelper.removePolicyForElement(bf);
             }
+            PolicyModelHelper.removePolicyForElement(bo);
         }
 
         // --------------------

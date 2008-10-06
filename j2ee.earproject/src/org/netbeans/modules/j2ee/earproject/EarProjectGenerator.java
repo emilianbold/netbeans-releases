@@ -58,7 +58,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -67,6 +66,7 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -222,9 +222,7 @@ public final class EarProjectGenerator {
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
-        if (rh.getProjectLibraryManager().getLibrary("CopyLibs") == null) {
-            rh.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-        }
+        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
      }
     
     private AntProjectHelper doImportProject(final File srcPrjDir,
@@ -589,7 +587,14 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.DISPLAY_BROWSER, "true"); // NOI18N
 
         // deploy on save since nb 6.5
-        ep.setProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE, "false"); // NOI18N
+        boolean deployOnSaveEnabled = false;
+        try {
+            deployOnSaveEnabled = Deployment.getDefault().getServerInstance(serverInstanceID)
+                    .isDeployOnSaveSupported();
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        ep.setProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
 
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));

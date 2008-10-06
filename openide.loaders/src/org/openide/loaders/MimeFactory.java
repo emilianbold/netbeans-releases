@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
@@ -127,7 +128,7 @@ class MimeFactory<T extends DataObject> implements DataObject.Factory {
     
     final Image getImage(int type) {
         if (img == null && fo != null) {
-            img = Utilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
+            img = ImageUtilities.loadImage("org/openide/loaders/empty.gif", true); // NOI18N
             try {
                 img = fo.getFileSystem().getStatus().annotateIcon(img, type, Collections.singleton(fo));
             } catch (FileStateInvalidException ex) {

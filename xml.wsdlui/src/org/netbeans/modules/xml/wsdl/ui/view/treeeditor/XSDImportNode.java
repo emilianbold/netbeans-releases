@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import java.util.logging.Logger;
 import org.netbeans.modules.xml.schema.model.Schema;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.ui.nodes.SchemaNodeFactory;
@@ -54,7 +55,9 @@ import org.netbeans.modules.xml.wsdl.model.Import;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.ui.actions.ActionHelper;
 import org.openide.loaders.DataObject;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -71,11 +74,12 @@ import org.openide.util.lookup.ProxyLookup;
  */
 public class XSDImportNode extends ImportNode {
 
-    Image ICON  = Utilities.loadImage
+    Image ICON  = ImageUtilities.loadImage
             ("org/netbeans/modules/xml/wsdl/ui/view/resources/import-include-redefine.png");
+    
 
     public XSDImportNode(Import wsdlConstruct) {
-        super(new XSDImportNodeChildren(wsdlConstruct),
+        super(new XSDImportChildFactory(wsdlConstruct),
                 wsdlConstruct);
     }
 
@@ -99,6 +103,66 @@ public class XSDImportNode extends ImportNode {
     protected void updateDisplayName() {
         Import imp = getWSDLComponent();
         setDisplayName(imp.getLocation());
+    }
+    
+    public static final class XSDImportChildFactory extends ChildFactory implements Refreshable {
+        
+        private Import imp;
+        public XSDImportChildFactory(Import wsdlConstruct) {
+            super();
+            imp = wsdlConstruct;
+        }
+        
+        @Override
+        protected boolean createKeys(List keys) {
+           List list = imp.getModel().findSchemas(imp.getNamespace());
+            if (list != null && list.size() > 0) {
+                Schema schema = (Schema) list.get(0);
+                if (schema != null) {
+                    keys.add(schema);
+                }
+            }
+            keys.addAll(imp.getChildren());
+            return true;
+        }
+
+        @Override
+        protected Node createNodeForKey(Object key) {
+            if (key instanceof Schema) {
+                Schema schema = (Schema) key;
+                SchemaModel model = schema.getModel();
+                DataObject dobj = ActionHelper.getDataObject(imp.getModel());
+                Lookup lookup = Lookup.EMPTY;
+                if (dobj != null) {
+                    lookup = new ProxyLookup(new Lookup[]{
+                                Lookups.exclude(dobj.getNodeDelegate().getLookup(), new Class[]{
+                                    Node.class,
+                                    DataObject.class,
+                                })
+                            });
+                }
+                SchemaNodeFactory factory = new CategorizedSchemaNodeFactory(
+                        model, lookup);
+                Node node = factory.createRootNode();
+
+                node.setDisplayName(imp.getNamespace());
+                node = new ReadOnlyNode(node);
+                return node;
+            } else if (key instanceof WSDLComponent) {
+                Node node = NodesFactory.getInstance().create((WSDLComponent) key);
+                if (node != null) {
+                    return node;
+                }
+            }
+            return Node.EMPTY;
+        }
+
+        public void refreshChildren(boolean immediate) {
+            refresh(immediate);
+        }
+        
+        
+        
     }
 
     public static class XSDImportNodeChildren extends RefreshableChildren {

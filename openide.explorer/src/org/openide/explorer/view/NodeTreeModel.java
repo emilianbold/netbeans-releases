@@ -95,7 +95,7 @@ public class NodeTreeModel extends DefaultTreeModel {
         setNode(root, null);
     }
     
-    void setNode(final Node root, final Set<Object> set) {
+    void setNode(final Node root, final TreeView.VisualizerHolder visHolder) {
         Mutex.EVENT.readAccess(
             new Runnable() {
                 public void run() {
@@ -116,10 +116,10 @@ public class NodeTreeModel extends DefaultTreeModel {
 
                     nr.addNodeModel(listener());
                     setRoot(nr);
-                    if (set != null) {
-                        set.add(nr.getChildren());
+                    if (visHolder != null) {
+                        visHolder.add(nr.getChildren());
                         if (v != null) {
-                            set.remove(v.getChildren());
+                            visHolder.removeRecur(v.getChildren());
                         }
                     }
                 }
@@ -235,8 +235,9 @@ public class NodeTreeModel extends DefaultTreeModel {
                 return;
             }
             
-            for (TreeView tw : m.views) tw.removedNodes(ev.removed);
-            
+            for (TreeView tw : m.views) {
+                tw.removedNodes(ev.removed);
+            }
             m.nodesWereRemoved(ev.getVisualizer(), ev.getArray(), ev.removed.toArray());
         }
 

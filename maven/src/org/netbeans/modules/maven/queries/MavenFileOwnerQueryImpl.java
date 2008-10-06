@@ -163,9 +163,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     /**
      * get the list of currently opened maven projects.. kind of hack, but well..
      */
-    public Set getOpenedProjects() {
+    public Set<Project> getOpenedProjects() {
         synchronized (lock) {
-            return new HashSet(set);
+            return new HashSet<Project>(set);
         }
     }
     
@@ -218,12 +218,12 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             LOG.fine(" exiting early, not from local repository.");
             return null;
         }
-        Set currentProjects = getAllKnownProjects();
+        Set<NbMavenProjectImpl> currentProjects = getAllKnownProjects();
         
-        Iterator it = currentProjects.iterator();
+        Iterator<NbMavenProjectImpl> it = currentProjects.iterator();
         String filepath = file.getAbsolutePath().replace('\\', '/');
         while (it.hasNext()) {
-            NbMavenProjectImpl project = (NbMavenProjectImpl)it.next();
+            NbMavenProjectImpl project = it.next();
             String path = project.getArtifactRelativeRepositoryPath();
             LOG.finest("matching againts known project " + path);
             if (filepath.endsWith(path)) {
@@ -235,9 +235,9 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     }
     
      
-    private Set getAllKnownProjects() {
-        return ProjectManager.mutex().readAccess(new Action<Set>() {
-            public Set run() {
+    private Set<NbMavenProjectImpl> getAllKnownProjects() {
+        return ProjectManager.mutex().readAccess(new Action<Set<NbMavenProjectImpl>>() {
+            public Set<NbMavenProjectImpl> run() {
                 synchronized (cacheLock) {
                     Set currentProjects;
                     List iterating;
@@ -263,7 +263,7 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
                         index = index + 1;
                     }
                     cachedProjects = currentProjects;
-                    return new HashSet(cachedProjects);
+                    return new HashSet<NbMavenProjectImpl>(cachedProjects);
                 }
             }
         });

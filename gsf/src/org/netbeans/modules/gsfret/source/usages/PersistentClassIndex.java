@@ -159,7 +159,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
         for (ParserResult result: info.getEmbeddedResults(mimeType)) {
             assert result != null;
 
-            sa.analyseUnitAndStore(indexer, result);
+            if (result.isValid()) {
+                sa.analyseUnitAndStore(indexer, result);
+            }
         }
         
         long et = System.currentTimeMillis();
@@ -229,20 +231,26 @@ public class PersistentClassIndex extends ClassIndexImpl {
     public void search(final String primaryField, final String name, final NameKind kind, 
             final Set<ClassIndex.SearchScope> scope, final Set<SearchResult> result, final Set<String> terms) throws IOException {
         updateDirty();
-        try {
-            ClassIndexManager.readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException {
-                    index.search(primaryField, name, kind, scope, result, terms);
-                    return null;
-                }                    
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        ClassIndexManager.readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException {
+                index.search(primaryField, name, kind, scope, result, terms);
+                return null;
+            }
+        });
     }
     
+    @SuppressWarnings("unchecked")
     public Map<String,String> getTimeStamps() throws IOException {
-        return this.index.getTimeStamps();
+        //return this.index.getTimeStamps();
+        final Map[] mapHolder = new Map[1];
+        ClassIndexManager.readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException {
+                mapHolder[0] = index.getTimeStamps();
+                return null;
+            }
+        });
+
+        return (Map<String,String>)mapHolder[0];
     }
     
     /** For development purposes only */

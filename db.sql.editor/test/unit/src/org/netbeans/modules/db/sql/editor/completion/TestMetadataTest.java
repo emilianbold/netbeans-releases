@@ -58,39 +58,60 @@ public class TestMetadataTest extends MetadataTestBase {
 
     public void testSimple() throws Exception {
         TestMetadata metadata = new TestMetadata(new String[] {
-                "schema1*",
-                "  table2",
-                "    col3",
-                "    col4",
-                "schema5",
-                "  table6",
-                "    col7",
-                "    col8"
+                "catalog0*",
+                "  schema1*",
+                "    table2",
+                "      col3",
+                "      col4",
+                "  schema5",
+                "    table6",
+                "      col7",
+                "      col8",
+                "catalog9"
         });
+        assertNames(new HashSet<String>(Arrays.asList("catalog0", "catalog9")), metadata.getCatalogs());
         Catalog defaultCatalog = metadata.getDefaultCatalog();
+        assertEquals("catalog0", defaultCatalog.getName());
+        assertSame(defaultCatalog, metadata.getCatalog("catalog0"));
+        assertNotNull(metadata.getCatalog("catalog9"));
         assertNames(new HashSet<String>(Arrays.asList("schema1", "schema5")), defaultCatalog.getSchemas());
         Schema defaultSchema = defaultCatalog.getDefaultSchema();
         assertEquals("schema1", defaultSchema.getName());
         assertNames(Collections.singleton("table2"), defaultSchema.getTables());
         assertNames(Arrays.asList("col7", "col8"), defaultCatalog.getSchema("schema5").getTable("table6").getColumns());
+    }
 
+    public void testEnsureDefaultCatalog() {
         try {
             new TestMetadata(new String[] {
-                    "schema1"
+                    "catalog0"
             });
             fail();
         } catch (IllegalArgumentException e) {
         }
     }
 
+    public void testNullCatalog() {
+        TestMetadata metadata = new TestMetadata(new String[] {
+                "<unknown>",
+                "another"
+        });
+        assertNames(new HashSet<String>(Arrays.asList(null, "another")), metadata.getCatalogs());
+    }
+
     public void testNoSchema() throws Exception {
         TestMetadata metadata = new TestMetadata(new String[] {
-                "<no-schema>",
-                "  table1",
-                "  table2"
+                "<unknown>",
+                "  <no-schema>",
+                "    table1",
+                "    table2"
         });
-        Schema defaultSchema = metadata.getDefaultCatalog().getDefaultSchema();
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
+        Schema defaultSchema = defaultCatalog.getDefaultSchema();
         assertTrue(defaultSchema.isSynthetic());
+        assertTrue(defaultSchema.isDefault());
+        assertSame(defaultSchema, defaultCatalog.getSyntheticSchema());
+        assertEquals(0, defaultCatalog.getSchemas().size());
         assertNames(Arrays.asList("table1", "table2"), defaultSchema.getTables());
     }
 }

@@ -167,11 +167,17 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
     private void refreshView(Lookup context) {
 
         Project p = OpenProjectList.getDefault().getMainProject();
+        Lookup theContext = context;
 
-        if (p == null && context != null) {
-            Project[] projects = ActionsUtil.getProjectsFromLookup(context, command);
-            if (projects.length == 1) {
-                p = projects[0];
+        if (p == null) {
+            if (theContext == null) {
+                theContext = LastActivatedWindowLookup.INSTANCE;
+            }
+            if (theContext != null) {
+                Project[] projects = ActionsUtil.getProjectsFromLookup(theContext, command);
+                if (projects.length == 1) {
+                    p = projects[0];
+                }
             }
         }
 

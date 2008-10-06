@@ -23,6 +23,7 @@ import java.awt.BorderLayout;
 import javax.swing.JComponent;
 import org.netbeans.spi.viewmodel.Models;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
@@ -38,7 +39,7 @@ public class ProcessExecutionTopComponent extends TopComponent {
     private transient ProcessExecutionViewListener myProcessExecutionViewListener;
     
     public ProcessExecutionTopComponent() {
-        setIcon(Utilities.loadImage(
+        setIcon(ImageUtilities.loadImage(
           "org/netbeans/modules/bpel/debugger/ui/" + // NOI18N
           "resources/image/process_execution.png")); // NOI18N
         // Remember the location of the component when closed.

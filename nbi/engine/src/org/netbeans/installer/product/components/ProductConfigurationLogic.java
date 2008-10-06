@@ -38,6 +38,7 @@ package org.netbeans.installer.product.components;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.installer.utils.FileUtils;
@@ -230,7 +231,12 @@ public abstract class ProductConfigurationLogic {
     public int getLogicPercentage() {
         return 10;
     }
-    
+    /** 
+     * Get additonal information about the product that is used during system integration
+     */
+    public Map <String, Object> getAdditionalSystemIntegrationInfo() {
+        return new HashMap<String, Object>();
+    }
     // installation behavior ////////////////////////////////////////////////////////
     public RemovalMode getRemovalMode() {
         return RemovalMode.ALL;

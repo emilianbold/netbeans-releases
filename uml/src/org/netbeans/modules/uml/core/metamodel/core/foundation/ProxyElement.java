@@ -232,7 +232,16 @@ public class ProxyElement implements IProxyElement
       if(pElement != null)
       {
          m_ModelElementTopLevelXMIID = pElement.getTopLevelId();
+         if(m_ModelElementTopLevelXMIID == null)
+         {
+             m_ModelElementTopLevelXMIID = "";
+         }
+         
          m_ModelElementXMIID = pElement.getXMIID();
+         if(m_ModelElementXMIID == null)
+         {
+             m_ModelElementXMIID = "";
+         }
       }
    }
    

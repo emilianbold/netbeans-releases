@@ -242,6 +242,10 @@ public class PageFlowController {
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
+                        if (view == null) {
+                            // XXX #145074 It is destroyed already, revise that pattern.
+                            return;
+                        }
                         view.removeUserMalFormedFacesConfig(); // Does clear graph take care of this?
                         setupGraph();
                     }
@@ -250,6 +254,10 @@ public class PageFlowController {
                 EventQueue.invokeLater(new Runnable() {
 
                     public void run() {
+                        if (view == null) {
+                            // XXX #145074 It is destroyed already, revise that pattern.
+                            return;
+                        }
                         view.clearGraph();
                         view.warnUserMalFormedFacesConfig();
                     }
@@ -544,7 +552,10 @@ public class PageFlowController {
             EventQueue.invokeLater(new Runnable() {
 
                 public void run() {
-
+                    if (view == null) {
+                        // XXX #145074 It is destroyed already, revise that pattern.
+                        return;
+                    }
                     setupGraph();
                 }
             });

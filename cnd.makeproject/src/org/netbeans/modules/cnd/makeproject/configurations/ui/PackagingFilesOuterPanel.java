@@ -45,6 +45,8 @@ import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 
 /**
  *
@@ -86,13 +88,12 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         ownerTextField.setText(MakeOptions.getInstance().getDefOwner()); // NOI18N
         
         // Hide some fields:
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        if (!packager.supportsGroupAndOwner()) {
             groupLabel.setEnabled(false);
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);
             ownerTextField.setEnabled(false);
-//            groupTextField.setText(""); // NOI18N
-//            ownerTextField.setText(""); // NOI18N
         }
         
         innerPanel.setOuterPanel(this);
@@ -296,7 +297,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         defaultsPanel.add(ownerTextField, gridBagConstraints);
         ownerTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.ownerTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
-        groupLabel.setDisplayedMnemonic('u');
+        groupLabel.setDisplayedMnemonic('G');
         groupLabel.setLabelFor(groupTextField);
         groupLabel.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.groupLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -371,6 +372,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(exePermTextField, gridBagConstraints);
+        exePermTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleName")); // NOI18N
         exePermTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.exePermTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         filePermTextField.setColumns(3);
@@ -386,6 +388,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         defaultsPanel.add(filePermTextField, gridBagConstraints);
+        filePermTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermTextField.AccessibleContext.accessibleName")); // NOI18N
         filePermTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.filePermTextField.AccessibleContext.accessibleDescription")); // NOI18N
 
         rLabel1.setText(org.openide.util.NbBundle.getMessage(PackagingFilesOuterPanel.class, "PackagingFilesOuterPanel.rLabel1.text")); // NOI18N

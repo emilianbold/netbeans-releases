@@ -50,15 +50,15 @@ import org.openide.util.lookup.Lookups;
  * @author David Van Couvering
  */
 public class SampleProviderHelper {
-    private static Collection<SampleProvider> providers;
 
     static Collection<SampleProvider> getProviders() {
-        if ( providers == null ) {
-            providers = new ArrayList<SampleProvider>();
+        Collection<SampleProvider> providers = new ArrayList<SampleProvider>();
 
-            providers.addAll((Collection<SampleProvider>)
-                    Lookups.forPath(SampleProvider.SAMPLE_PROVIDER_PATH).lookupAll(SampleProvider.class));
-        }
+        @SuppressWarnings ("unchecked")
+        Collection<SampleProvider> lookedUpProviders = (Collection<SampleProvider>)
+                Lookups.forPath(SampleProvider.SAMPLE_PROVIDER_PATH).lookupAll(SampleProvider.class);
+
+        providers.addAll(lookedUpProviders);
 
         return providers;
     }

@@ -89,8 +89,9 @@ public class IncludeExcludeVisualizer {
 
     /**
      * Configure a set of root directories to which the includes and excludes apply.
-     * @param roots a set of root directories to search
-     * @throws IllegalArgumentException if roots contains a non-directory
+     * @param roots a set of valid root directories to search
+     * @throws IllegalArgumentException if roots contains a non-directory or 
+     *  directory does not exist
      */
     public synchronized void setRoots(File[] roots) throws IllegalArgumentException {
         Parameters.notNull("roots", roots);

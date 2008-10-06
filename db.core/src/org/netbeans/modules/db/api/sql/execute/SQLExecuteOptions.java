@@ -49,15 +49,16 @@ import org.netbeans.modules.db.core.SQLOptions;
  * @author David Van Couvering
  */
 public class SQLExecuteOptions {
+
     private static final SQLExecuteOptions DEFAULT = new SQLExecuteOptions();
 
-    public static final String PROP_KEEP_OLD_TABS = SQLOptions.PROP_KEEP_OLD_TABS;
+    public static final String PROP_KEEP_OLD_TABS = SQLOptions.PROP_KEEP_OLD_RESULT_TABS;
+
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public static SQLExecuteOptions getDefault() {
         return DEFAULT;
     }
-
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
         pcs.addPropertyChangeListener(listener);
@@ -67,17 +68,15 @@ public class SQLExecuteOptions {
         pcs.removePropertyChangeListener(listener);
     }
 
-    public void setKeepOldResultTabs(boolean keepOldTabs) {
-        boolean oldval = SQLOptions.getDefault().isKeepOldResultTabs();
-
-        if ( oldval != keepOldTabs ) {
-            SQLOptions.getDefault().setKeepOldResultTabs(keepOldTabs);
-            pcs.firePropertyChange(PROP_KEEP_OLD_TABS, oldval, keepOldTabs);
-        }
-    }
-
     public boolean isKeepOldResultTabs() {
         return SQLOptions.getDefault().isKeepOldResultTabs();
     }
 
+    public void setKeepOldResultTabs(boolean keepOldResultTabs) {
+        boolean oldKeepOldResultTabs = SQLOptions.getDefault().isKeepOldResultTabs();
+        if (oldKeepOldResultTabs != keepOldResultTabs) {
+            SQLOptions.getDefault().setKeepOldResultTabs(keepOldResultTabs);
+            pcs.firePropertyChange(PROP_KEEP_OLD_TABS, oldKeepOldResultTabs, keepOldResultTabs);
+        }
+    }
 }

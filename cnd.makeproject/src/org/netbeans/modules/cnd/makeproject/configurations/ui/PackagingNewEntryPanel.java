@@ -41,10 +41,13 @@
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
+import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 import org.openide.util.NbBundle;
 
 /**
@@ -59,46 +62,15 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         initComponents();
         
         this.packagingConfiguration = packagingConfiguration;
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            entryComboBox.addItem("BASEDIR"); // NOI18N
-            entryComboBox.addItem("CLASSES"); // NOI18N
-            entryComboBox.addItem("DESC"); // NOI18N
-            entryComboBox.addItem("EMAIL"); // NOI18N
-            entryComboBox.addItem("HOTLINE"); // NOI18N
-            entryComboBox.addItem("INTONLY"); // NOI18N
-            entryComboBox.addItem("ISTATES"); // NOI18N
-            entryComboBox.addItem("MAXINST"); // NOI18N
-            entryComboBox.addItem("ORDER"); // NOI18N
-            entryComboBox.addItem("PSTAMP"); // NOI18N
-            entryComboBox.addItem("RSTATES"); // NOI18N
-            entryComboBox.addItem("SUNW_ISA"); // NOI18N
-            entryComboBox.addItem("SUNW_LOC"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
-            entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
-            entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
-            entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
-            entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
-            entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
-            entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
-            entryComboBox.addItem("ULIMIT"); // NOI18N
-            entryComboBox.addItem("VENDOR"); // NOI18N
-            entryComboBox.addItem("VSTOCK"); // NOI18N
+        
+        PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
+        List<String> optionalEntries = packager.getOptionalInfoList();
+        if (optionalEntries != null) {
+            for (String entry : optionalEntries) {
+                entryComboBox.addItem(entry);
+            }
         }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_RPM_PACKAGE) {
-            entryComboBox.addItem("Patch"); // NOI18N
-            entryComboBox.addItem("%changelog"); // NOI18N
-            entryComboBox.addItem("%pre"); // NOI18N
-            entryComboBox.addItem("%post"); // NOI18N
-            entryComboBox.addItem("%preun"); // NOI18N
-            entryComboBox.addItem("%postun"); // NOI18N
-        }
-        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_DEBIAN_PACKAGE) {
-            // FIXUP
-        }
-        else
-            assert false;
+        
     }
 
     /** This method is called from within the constructor to
@@ -270,7 +242,7 @@ private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         }
 }//GEN-LAST:event_entryComboBoxActionPerformed
 
-public InfoElement getInfoElement() {
+public PackagerInfoElement getInfoElement() {
     String name = (String)entryComboBox.getSelectedItem();
     String value = entryValueTextArea.getText();
     StringBuilder sb = new StringBuilder();
@@ -281,7 +253,7 @@ public InfoElement getInfoElement() {
             sb.append("\\n"); // NOI18N
         }
     }
-    return new InfoElement(name, sb.toString());
+    return new PackagerInfoElement(packagingConfiguration.getType().getValue(), name, sb.toString());
 }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

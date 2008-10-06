@@ -49,31 +49,35 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Table;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 
 /**
  *
  * @author Andrei Badea
  */
-public class JDBCSchema implements SchemaImplementation {
+public class JDBCSchema extends SchemaImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(JDBCSchema.class.getName());
 
-    protected final JDBCCatalog catalog;
+    protected final JDBCCatalog jdbcCatalog;
     protected final String name;
     protected final boolean _default;
     protected final boolean synthetic;
 
     protected Map<String, Table> tables;
 
-    public JDBCSchema(JDBCCatalog catalog, String name, boolean _default, boolean synthetic) {
-        this.catalog = catalog;
+    public JDBCSchema(JDBCCatalog jdbcCatalog, String name, boolean _default, boolean synthetic) {
+        this.jdbcCatalog = jdbcCatalog;
         this.name = name;
         this._default = _default;
         this.synthetic = synthetic;
+    }
+
+    public final Catalog getParent() {
+        return jdbcCatalog.getCatalog();
     }
 
     public final String getName() {
@@ -101,7 +105,7 @@ public class JDBCSchema implements SchemaImplementation {
         return "JDBCSchema[name='" + name + "',default=" + _default + ",synthetic=" + synthetic + "]"; // NOI18N
     }
 
-    protected JDBCTable createTable(String name) {
+    protected JDBCTable createJDBCTable(String name) {
         return new JDBCTable(this, name);
     }
 
@@ -109,11 +113,11 @@ public class JDBCSchema implements SchemaImplementation {
         LOGGER.log(Level.FINE, "Initializing tables in {0}", this);
         Map<String, Table> newTables = new LinkedHashMap<String, Table>();
         try {
-            ResultSet rs = catalog.getMetadata().getDmd().getTables(catalog.getName(), name, "%", new String[] { "TABLE" }); // NOI18N
+            ResultSet rs = jdbcCatalog.getJDBCMetadata().getDmd().getTables(jdbcCatalog.getName(), name, "%", new String[] { "TABLE", "SYSTEM TABLE" }); // NOI18N
             try {
                 while (rs.next()) {
                     String tableName = rs.getString("TABLE_NAME"); // NOI18N
-                    Table table = MetadataFactory.createTable(createTable(tableName));
+                    Table table = createJDBCTable(tableName).getTable();
                     newTables.put(tableName, table);
                     LOGGER.log(Level.FINE, "Created table {0}", table);
                 }
@@ -134,8 +138,8 @@ public class JDBCSchema implements SchemaImplementation {
         return tables;
     }
 
-    public final JDBCCatalog getCatalog() {
-        return catalog;
+    public final JDBCCatalog getJDBCCatalog() {
+        return jdbcCatalog;
     }
 
     public final void refreshTable(String tableName) {

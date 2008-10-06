@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 public class ReferenceContextImpl implements CsmReferenceContext {
 
     private final CsmReferenceContext parent;
+    private final int parentSize; // cached value of parent.size()
     private final List stack;
     private int popCount;
 
@@ -67,6 +68,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
     public ReferenceContextImpl(CsmReferenceContext parent, boolean fullcopy) {
         if (fullcopy && parent != null) {
             this.parent = null;
+            this.parentSize = 0;
             this.stack = new ArrayList();
             for (int i = 0; i < parent.size(); ++i) {
                 stack.add(parent.getToken(i));
@@ -74,12 +76,13 @@ public class ReferenceContextImpl implements CsmReferenceContext {
             }
         } else {
             this.parent = parent;
+            this.parentSize = parent == null? 0 : parent.size();
             this.stack = new ArrayList();
         }
     }
 
     public int size() {
-        return parentSize() - popCount + stack.size() / 2;
+        return parentSize - popCount + stack.size() / 2;
     }
 
     public CsmReference getReference() {
@@ -87,10 +90,10 @@ public class ReferenceContextImpl implements CsmReferenceContext {
     }
 
     public CsmReference getReference(int i) {
-        if (0 <= i && i < parentSize() - popCount) {
+        if (0 <= i && i < parentSize - popCount) {
             return parent.getReference(i);
         } else {
-            return (CsmReference)stack.get(2 * (i - parentSize() + popCount) + 1);
+            return (CsmReference)stack.get(2 * (i - parentSize + popCount) + 1);
         }
     }
 
@@ -99,10 +102,10 @@ public class ReferenceContextImpl implements CsmReferenceContext {
     }
 
     public CppTokenId getToken(int i) {
-        if (0 <= i && i < parentSize() - popCount) {
+        if (0 <= i && i < parentSize - popCount) {
             return parent.getToken(i);
         } else {
-            return (CppTokenId)stack.get(2 * (i - parentSize() + popCount));
+            return (CppTokenId)stack.get(2 * (i - parentSize + popCount));
         }
     }
 
@@ -113,7 +116,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
 
     /*package*/ void pop() {
         if (stack.isEmpty()) {
-            if (popCount < parentSize()) {
+            if (popCount < parentSize) {
                 ++popCount;
             } else {
                 throw new IllegalStateException("Stack underflow"); // NOI18N
@@ -122,10 +125,6 @@ public class ReferenceContextImpl implements CsmReferenceContext {
             stack.remove(stack.size() - 1);
             stack.remove(stack.size() - 1);
         }
-    }
-
-    private int parentSize() {
-        return parent == null? 0 : parent.size();
     }
 
     @Override

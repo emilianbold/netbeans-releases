@@ -120,7 +120,7 @@ public class ${name} extends BodyTagSupport {
 <#if java15style??>
     @Override
 </#if>
-    public int doStartTag() throws JspException, JspException {
+    public int doStartTag() throws JspException {
         otherDoStartTagOperations();
         
         if (theBodyShouldBeEvaluated()) {
@@ -139,7 +139,7 @@ public class ${name} extends BodyTagSupport {
 <#if java15style??>
     @Override
 </#if>
-    public int doEndTag() throws JspException, JspException {
+    public int doEndTag() throws JspException {
         otherDoEndTagOperations();
         
         if (shouldEvaluateRestOfPageAfterEndTag()) {
@@ -181,7 +181,7 @@ public class ${name} extends BodyTagSupport {
      */
     private void handleBodyContentException(Exception ex) throws JspException {
         // Since the doAfterBody method is guarded, place exception handing code here.
-        throw new JspException("error in NewTag: " + ex);
+        throw new JspException("Error in ${name} tag", ex);
     }
     
     /**

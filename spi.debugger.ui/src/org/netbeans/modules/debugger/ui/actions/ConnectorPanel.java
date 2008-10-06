@@ -83,7 +83,7 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     /** Contains list of installed AttachTypes.*/
     private List                  attachTypes;
     /** Currentlydisplayed panel.*/
-    private Controller            currentPanel;
+    private Controller            controller;
     /** Current attach type, which is stored into settings for the next invocation. */
     private AttachType            currentAttachType;
 
@@ -164,7 +164,10 @@ public class ConnectorPanel extends JPanel implements ActionListener {
         c.gridwidth = 0;
         AttachType attachType = (AttachType) attachTypes.get (index);
         JComponent customizer = attachType.getCustomizer ();
-        currentPanel = (Controller) customizer;
+        controller = attachType.getController();
+        if (controller == null && (customizer instanceof Controller)) {
+            controller = (Controller) customizer;
+        }
         firePropertyChange(PROP_TYPE, null, customizer);
         this.currentAttachType = attachType;
         add (customizer, c);
@@ -187,17 +190,19 @@ public class ConnectorPanel extends JPanel implements ActionListener {
     }
     
     Controller getController() {
-        return currentPanel;
+        return controller;
     }
     
     boolean cancel () {
-        return currentPanel.cancel ();
+        if (controller == null) return true;
+        return controller.cancel ();
     }
     
     boolean ok () {
         String defaultAttachTypeName = currentAttachType.getClass().getName();
         Properties.getDefault().getProperties("debugger").setString("last_attach_type", defaultAttachTypeName);
-        boolean ok = currentPanel.ok ();
+        if (controller == null) return true;
+        boolean ok = controller.ok ();
         if (ok) {
             GestureSubmitter.logAttach(defaultAttachTypeName);
         }

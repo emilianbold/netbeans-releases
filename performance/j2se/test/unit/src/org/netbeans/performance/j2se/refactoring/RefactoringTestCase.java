@@ -226,7 +226,7 @@ public abstract class RefactoringTestCase extends LogTestCase{
         path += "../../../../../../../../../../nbextra/qa/projectized/jEdit41.zip";
         File zipFile = FileUtil.normalizeFile(new File(path));
         unzip(zipFile);
-        classPathWorkDir = new File("/tmp/", "jEdit41.src".replace('.', File.separatorChar));
+        classPathWorkDir = new File("c:/temp/", "jEdit41.src".replace('.', File.separatorChar));
     }
     
     public static void unzip(File f) {
@@ -239,13 +239,13 @@ public abstract class RefactoringTestCase extends LogTestCase{
             while ((entry = zis.getNextEntry()) != null) {
                 // System.out.println("Extracting: " + entry);
                 if (entry.isDirectory()) {
-                    File dir = new File("/tmp/" + entry.getName());
+                    File dir = new File("c:/temp/" + entry.getName());
                     dir.mkdir();
                 } else {
                     int count;
                     byte data[] = new byte[BUFFER];
                     // write the files to the disk
-                    FileOutputStream fos = new FileOutputStream("/tmp/" + entry.getName());
+                    FileOutputStream fos = new FileOutputStream("c:/temp/" + entry.getName());
                     dest = new BufferedOutputStream(fos, BUFFER);
                     while ((count = zis.read(data, 0, BUFFER)) != -1) {
                         dest.write(data, 0, count);

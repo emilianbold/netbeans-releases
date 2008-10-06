@@ -83,7 +83,7 @@ public class WsdlPort implements WSPort{
     }
 
     public String getPortGetter() {
-        return "get" + getName();
+        return "get" + camelize(getName(), false);
     }
 
     public String getSOAPVersion() {
@@ -105,6 +105,34 @@ public class WsdlPort implements WSPort{
 
     public String getAddress() {
         return port.getAddress();
+    }
+
+    private String camelize(String word, boolean flag) {
+        if (word.length() == 0) return word;
+
+        StringBuffer sb = new StringBuffer(word.length());
+        if (flag) {
+            sb.append(Character.toLowerCase(word.charAt(0)));
+        } else {
+            sb.append(Character.toUpperCase(word.charAt(0)));
+        }
+        boolean capitalize = false;
+        for (int i = 1; i < word.length(); i++) {
+            char ch = word.charAt(i);
+            if (capitalize) {
+                sb.append(Character.toUpperCase(ch));
+                capitalize = false;
+            } else if (ch == '_') {
+                capitalize = true;
+            } else if (ch == '/') {
+                capitalize = true;
+                sb.append('.');
+            } else {
+                sb.append(ch);
+            }
+        }
+        return sb.toString();
+
     }
 
 }

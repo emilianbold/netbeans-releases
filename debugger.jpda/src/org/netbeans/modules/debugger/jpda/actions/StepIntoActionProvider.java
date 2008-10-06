@@ -42,6 +42,8 @@ package org.netbeans.modules.debugger.jpda.actions;
 
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -70,6 +72,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     public static final String ACTION_SMART_STEP_INTO = "smartStepInto";
 
     private StepIntoNextMethod stepInto;
+    private MethodChooser currentMethodChooser;
 
     public StepIntoActionProvider (ContextProvider contextProvider) {
         super (
@@ -126,6 +129,12 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     // other methods ...........................................................
     
     public boolean doMethodSelection () {
+        synchronized (this) {
+            if (currentMethodChooser != null) {
+                currentMethodChooser.doStepIntoCurrentSelection();
+                return true;
+            }
+        }
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
         final int[] linePtr = new int[1];
@@ -157,7 +166,20 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         final List<ReferenceType> classes = vm.classesByName(className);
         if (!classes.isEmpty()) {
             MethodChooser chooser = new MethodChooser(debugger, url, classes.get(0), methodLine, methodOffset);
-            return chooser.run();
+            boolean success = chooser.run();
+            if (success && chooser.isInSelectMode()) {
+                synchronized (this) {
+                    currentMethodChooser = chooser;
+                    chooser.setReleaseListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                            synchronized (this) {
+                                currentMethodChooser = null;
+                            }
+                        }
+                    });
+                }
+            }
+            return success;
         } else {
             return false;
         }

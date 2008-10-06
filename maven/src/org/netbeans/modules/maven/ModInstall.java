@@ -142,7 +142,7 @@ public class ModInstall extends ModuleInstall implements ErrorHandler, EntityRes
                             LOGGER.finer("Index once a Week :" + ri.getId());//NOI18N
                             run = true;
                         }
-                        if (run && ri.getIndexUpdateUrl() != null) {
+                        if (run && ri.isRemoteDownloadable()) {
                             RepositoryIndexer.indexRepo(ri);
                         }
                     }

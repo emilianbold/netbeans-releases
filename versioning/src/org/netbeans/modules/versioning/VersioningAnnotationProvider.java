@@ -85,7 +85,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         VCSAnnotator an = null;
         long at = 0;
         try {
-            if (files.size() == 0) return icon;
+            if (files.isEmpty()) return icon;
             FileObject fo = (FileObject) files.iterator().next();
             VersioningSystem vs = getOwner(FileUtil.toFile(fo));
 
@@ -114,7 +114,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
         long at = 0;
 
         try {
-            if (files.size() == 0) return name;
+            if (files.isEmpty()) return name;
             FileObject fo = (FileObject) files.iterator().next();
             VersioningSystem vs = getOwner(FileUtil.toFile(fo));
 
@@ -137,7 +137,7 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
     }
 
     public Action[] actions(Set files) {
-        if (files.size() == 0) return new Action[0];
+        if (files.isEmpty()) return new Action[0];
         FileObject fo = (FileObject) files.iterator().next();
         File file = FileUtil.toFile(fo);
         if (file == null) return new Action[0];
@@ -313,23 +313,8 @@ public class VersioningAnnotationProvider extends AnnotationProvider {
             clearMap(filesToRefresh);
             clearMap(parentsToRefresh);            
             
-            Set<FileSystem> filesystems = new HashSet<FileSystem>(1);
-            File[] allRoots = File.listRoots();
-            for (int i = 0; i < allRoots.length; i++) {
-                File root = allRoots[i];
-                FileObject fo = FileUtil.toFileObject(root);
-                if (fo != null) {
-                    try {
-                        filesystems.add(fo.getFileSystem());
-                    } catch (FileStateInvalidException e) {
-                        // ignore invalid filesystems
-                    }
-                }
-            }
-            for (Iterator<FileSystem> i = filesystems.iterator(); i.hasNext();) {
-                FileSystem fileSystem = i.next();
-                fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));                
-            }            
+            FileSystem fileSystem = Utils.getRootFilesystem();
+            fireFileStatusChanged(new FileStatusEvent(fileSystem, true, true));
         }
     });    
     

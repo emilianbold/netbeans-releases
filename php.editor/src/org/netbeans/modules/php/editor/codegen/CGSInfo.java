@@ -104,8 +104,8 @@ public class CGSInfo {
                         boolean existGetter, existSetter;
                         for (Property property : getProperties()) {
                             propertyName = property.getName().toLowerCase();
-                            existGetter = existingGetters.remove(propertyName);
-                            existSetter = existingSetters.remove(propertyName);
+                            existGetter = existingGetters.contains(propertyName);
+                            existSetter = existingSetters.contains(propertyName);
                             if (!existGetter && !existSetter) {
                                 getPossibleGettersSetters().add(property);
                                 getPossibleGetters().add(property);

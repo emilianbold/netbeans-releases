@@ -52,9 +52,14 @@ import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.junit.NbModuleSuite;
 
+/**
+ *
+ * @author cincura, ehucka, Jiri Vagner, ppis, cyhelsky
+ */
 public class StartDebuggerTest extends JellyTestCase {
     
     public StartDebuggerTest(String name) {
@@ -67,11 +72,11 @@ public class StartDebuggerTest extends JellyTestCase {
     
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(StartDebuggerTest.class).addTest(
-                "testDebugMainProject",
                 "testDebugProject",
                 "testDebugFile",
                 "testRunDebuggerStepInto",
-                "testRunDebuggerRunToCursor"
+                "testRunDebuggerRunToCursor",
+                "testDebugMainProject"
                 ).enableModules(".*").clusters(".*"));
     }
     
@@ -83,41 +88,37 @@ public class StartDebuggerTest extends JellyTestCase {
     public void tearDown() {
         JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
         Utilities.endAllSessions();
-    }
-    
-    public void testDebugMainProject() throws Throwable {
-        try {
-            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
-            Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
-        } catch (Throwable th) {
-            Utilities.captureScreen(this);
-            throw th;
-        }
+        Utilities.deleteAllBreakpoints();
     }
     
     public void testDebugProject() throws Throwable {
         try {
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            new EventTool().waitNoEvent(1000);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
             new DebugProjectAction().perform(projectNode);
             Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+            assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
         }
     }
-    
+
     public void testDebugFile() throws Throwable {
         try {
             //open source
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
+            new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             new Action(null, null, Utilities.debugFileShortcut).performShortcut();
             Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, 0);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -126,10 +127,15 @@ public class StartDebuggerTest extends JellyTestCase {
     
     public void testRunDebuggerStepInto() throws Throwable {
         try {
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.setCaret(eo, 75);
             new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
-            Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:", 0);
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
+            assertTrue("Current PC annotation is not on line 39", Utilities.checkAnnotation(eo, 39, "CurrentPC"));
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -138,11 +144,33 @@ public class StartDebuggerTest extends JellyTestCase {
     
     public void testRunDebuggerRunToCursor() throws Throwable {
         try {
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
             Utilities.setCaret(eo, 75);
             new Action(null, null, Utilities.runToCursorShortcut).performShortcut();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:75");
+            assertTrue("Current PC annotation is not on line 75", Utilities.checkAnnotation(eo, 75, "CurrentPC"));
+        } catch (Throwable th) {
+            Utilities.captureScreen(this);
+            throw th;
+        }
+    }
+
+    public void testDebugMainProject() throws Throwable {
+        try {
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
+            new EventTool().waitNoEvent(1000);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new Action(Utilities.runMenu+"|"+Utilities.debugMainProjectItem, null).perform();
             Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitDebuggerConsole("Thread main stopped at MemoryView.java:75", 0);
+            assertTrue("The debugger toolbar did not show after start of debugging", Utilities.getDebugToolbar().isVisible());
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

@@ -43,6 +43,8 @@ package org.openide.nodes;
 import java.lang.ref.Reference;
 import java.lang.reflect.Method;
 import org.openide.nodes.Children.Entry;
+import org.openide.nodes.EntrySupport.Default;
+import org.openide.nodes.EntrySupport.Lazy;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -157,6 +159,8 @@ public class FilterNode extends Node {
 
     /** children provided or created the default ones? */
     private boolean childrenProvided;
+    
+    static final Logger LOGGER = Logger.getLogger(FilterNode.class.getName());
 
     /** Create proxy.
     * @param original the node to delegate to
@@ -194,6 +198,10 @@ public class FilterNode extends Node {
             (children == null) ? (original.isLeaf() ? org.openide.nodes.Children.LEAF : new Children(original)) : children,
             lookup
         );
+        
+        if (original == null) {
+            throw new IllegalArgumentException("Original node cannot be null.");  // NOI18N
+        }
 
         this.childrenProvided = children != null;
         this.original = original;
@@ -435,11 +443,7 @@ public class FilterNode extends Node {
                 } else if (!original.isLeaf() && (getChildren() == Children.LEAF)) {
                     setChildren(new Children(original));
                 } else if (!original.isLeaf() && (getChildren() != Children.LEAF)) {
-                    if (original.getChildren().isLazy() != getChildren().isLazy()) {
-                        setChildren(new Children(original));
-                    } else {
-                        ((FilterNode.Children) getChildren()).changeOriginal(original);
-                    }
+                    ((FilterNode.Children) getChildren()).changeOriginal(original);
                 }
             }
         } finally {
@@ -1291,9 +1295,6 @@ public class FilterNode extends Node {
         /** node listener on original */
         private ChildrenAdapter nodeL;
 
-        /** default or lazy implementation */
-        private ChildrenSupport support;
-
         /** Create children.
          * @param or original node to take children from */
         public Children(Node or) {
@@ -1303,9 +1304,51 @@ public class FilterNode extends Node {
         private Children(Node or, boolean lazy) {
             super(lazy);
             original = or;
-            support = lazy ? new LazySupport() : new DefaultSupport();            
         }
+        
+        @Override
+        EntrySupport entrySupport() {
+            FilterChildrenSupport support = null;
+            synchronized (Children.class) {
+                if (entrySupport != null && !entrySupport.isInitialized()) {
+                    // support is not initialized, it should be checked against original
+                    support = (FilterChildrenSupport) entrySupport;
+                }
+            }
 
+            if (support != null) {
+                // get original support without lock
+                EntrySupport origSupport = original.getChildren().entrySupport();
+                synchronized (Children.class) {
+                    if (entrySupport == support && support.originalSupport() != origSupport) {
+                        // original support was changed, force new support creation
+                        entrySupport = null;
+                    }
+                }
+            }
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+            }
+
+            // access without lock
+            org.openide.nodes.Children origChildren = original.getChildren();
+            EntrySupport os = origChildren.entrySupport();
+            boolean osIsLazy = origChildren.isLazy();
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+                lazySupport = osIsLazy;
+                entrySupport = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                postInitializeEntrySupport();
+                return entrySupport;
+            }
+        }
+        
         /** Sets the original children for this children. 
          * Be aware that this method aquires
          * write lock on the nodes hierarchy ({@link Children#MUTEX}). 
@@ -1317,6 +1360,16 @@ public class FilterNode extends Node {
             try {
                 PR.enterWriteAccess();
 
+                if (LOGGER.isLoggable(Level.FINER)) {
+                    LOGGER.finer("changeOriginal() " + this); // NOI18N
+                    LOGGER.finer("    old original children: " + this.original.getChildren()); // NOI18N
+                    LOGGER.finer("    old original lazy support: " + this.original.getChildren().lazySupport); // NOI18N
+                    LOGGER.finer("    new original: " + original); // NOI18N
+                    LOGGER.finer("    new original children: " + original.getChildren()); // NOI18N
+                    LOGGER.finer("    new original lazy support: " + original.getChildren().lazySupport); // NOI18N
+                    LOGGER.finer("    Children adapter: " + nodeL); // NOI18N
+                }
+
                 boolean wasAttached = nodeL != null;
 
                 // uregister from the original node
@@ -1325,14 +1378,65 @@ public class FilterNode extends Node {
                     nodeL = null;
                 }
 
-                // reset the original node
-                this.original = original;
+                if (this.original.getChildren().isLazy() || 
+                        this.original.getChildren().isLazy() != original.getChildren().isLazy()) {
+                    changeSupport(original);
+                } else {
+                    // reset the original node
+                    this.original = original;
+                }
 
                 if (wasAttached) {
                     addNotifyImpl();
                 }
             } finally {
                 PR.exitWriteAccess();
+            }
+        }
+        
+        private void changeSupport(Node newOriginal) {
+            final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+            boolean init = entrySupport().isInitialized();
+            boolean changed = false;
+
+            if (LOG_ENABLED) {
+                LOGGER.finer("changeSupport() " + this); // NOI18N
+                LOGGER.finer("    newOriginal: " + newOriginal); // NOI18N
+                LOGGER.finer("    entrySupport().isInitialized(): " + init); // NOI18N
+                LOGGER.finer("    parent: " + parent); // NOI18N
+            }
+
+            if (init && parent != null) {
+                List<Node> snapshot = entrySupport().createSnapshot();
+                if (snapshot.size() > 0) {
+                    int[] idxs = getSnapshotIdxs(snapshot);
+                    if (newOriginal != null) {
+                        this.original = newOriginal;
+                    }
+                    changed = true;
+                    entrySupport = null;
+
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("   firing node removal: " + snapshot); // NOI18N
+                    }
+                    parent.fireSubNodesChangeIdx(false, idxs, null, Collections.<Node>emptyList(), snapshot);
+                }
+            }
+            if (!changed) {
+                if (newOriginal != null) {
+                    this.original = newOriginal;
+                }
+                entrySupport = null;
+            }
+
+            if (newOriginal == null) {
+                entrySupport().notifySetEntries();
+
+                if (LOG_ENABLED) {
+                    LOGGER.log(Level.FINER, "    initializing new support"); // NOI18N
+                }
+                // force initialization
+                entrySupport().getNodesCount(false);
             }
         }
 
@@ -1365,7 +1469,7 @@ public class FilterNode extends Node {
             // add itself to reflect to changes children of original node
             nodeL = new ChildrenAdapter(this);
             original.addNodeListener(nodeL);
-            support.update();
+            filterSupport().update();
         }
 
         /** Clears current keys, because all mirrored nodes disappeared.
@@ -1398,7 +1502,7 @@ public class FilterNode extends Node {
         */
         @Override
         public Node findChild(String name) {
-            return support.findChild(name);
+            return filterSupport().findChild(name);
         }
                
 
@@ -1423,17 +1527,24 @@ public class FilterNode extends Node {
         @Override
         @Deprecated
         public boolean add(Node[] arr) {
-            if (isLazy()) {
-                changeSupportToDefault();
-            }
             return original.getChildren().add(arr);
         }
 
-        @Override
-        void changeSupportToDefault() {
-            ((Children.Keys) original.getChildren()).changeSupportToDefault();
-            support = new DefaultSupport();
-            super.changeSupportToDefault();
+        private FilterChildrenSupport filterSupport() {
+            return (FilterChildrenSupport) entrySupport();
+        }
+
+        private boolean checkSupportChanged() {
+            FilterChildrenSupport support = (FilterChildrenSupport) entrySupport();
+            EntrySupport origSupport = original.getChildren().entrySupport();
+
+            if (support.originalSupport() != origSupport) {
+                assert Children.MUTEX.isWriteAccess() : "Should be called only under write access"; // NOI18N
+                changeSupport(null);
+                return true;
+            } else {
+                return false;
+            }
         }
 
         /* Delegates to filter node.
@@ -1451,7 +1562,11 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenAdded(NodeMemberEvent ev) {
-            support.filterChildrenAdded(ev);
+            if (checkSupportChanged()) {
+                // support was changed, we should be already updated
+                return;
+            }            
+            filterSupport().filterChildrenAdded(ev);
         }
 
         /** Called when the filter node removes a child.
@@ -1459,7 +1574,11 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenRemoved(NodeMemberEvent ev) {
-            support.filterChildrenRemoved(ev);
+            if (checkSupportChanged()) {
+                // support was changed, we should be already updated
+                return;
+            }
+            filterSupport().filterChildrenRemoved(ev);
         }
 
         /** Called when the filter node reorders its children.
@@ -1467,7 +1586,7 @@ public class FilterNode extends Node {
         * @param ev info about the change
         */
         protected void filterChildrenReordered(NodeReorderEvent ev) {
-            support.filterChildrenReordered(ev);
+            filterSupport().filterChildrenReordered(ev);
         }
 
         /**
@@ -1480,41 +1599,48 @@ public class FilterNode extends Node {
          */
         @Override
         public Node[] getNodes(boolean optimalResult) {
-            return support.getNodes(optimalResult);
+            return filterSupport().callGetNodes(optimalResult);
         }
 
         @Override
         public int getNodesCount(boolean optimalResult) {
-            return support.getNodesCount(optimalResult);
+            return filterSupport().callGetNodesCount(optimalResult);
         }
         
         @Override
         Entry createEntryForKey(Node key) {
-            return support.createEntryForKey(key);
+            return filterSupport().createEntryForKey(key);
         }
-
-        abstract private class ChildrenSupport {
-            abstract protected Node[] getNodes(boolean optimalResult);
-
-            abstract protected int getNodesCount(boolean optimalResult);
+        
+        @Override
+        void switchSupport(boolean toLazy) {        
+            try {
+                Children.PR.enterWriteAccess();
+                ((Children.Keys) original.getChildren()).switchSupport(toLazy);
+                super.switchSupport(toLazy);
+            } finally {
+                Children.PR.exitWriteAccess();
+            }
+        }
+        
+        private class DefaultSupport extends EntrySupport.Default implements FilterChildrenSupport {
             
-            abstract protected Node findChild(String name);
+            EntrySupport.Default origSupport;
 
-            abstract protected void filterChildrenAdded(NodeMemberEvent ev);
-
-            abstract protected void filterChildrenRemoved(NodeMemberEvent ev);
-
-            abstract protected void filterChildrenReordered(NodeReorderEvent ev);
-
-            abstract protected void update();
-
-            abstract protected Entry createEntryForKey(Node key);
-        }
-
-        private class DefaultSupport extends ChildrenSupport {
+            public DefaultSupport(org.openide.nodes.Children ch, Default origSupport) {
+                super(ch);
+                this.origSupport = origSupport;
+            }
 
             @Override
-            protected Node[] getNodes(boolean optimalResult) {
+            protected List<Node> createSnapshot() {
+                DefaultSnapshot snapshot = (DefaultSnapshot) super.createSnapshot();
+                Object[] newHolder = new Object[]{snapshot.holder, origSupport.createSnapshot()};
+                snapshot.holder = newHolder;
+                return snapshot;
+            }
+
+            public Node[] callGetNodes(boolean optimalResult) {
                 Node[] hold;
                 if (optimalResult) {
                     hold = original.getChildren().getNodes(true);
@@ -1523,8 +1649,7 @@ public class FilterNode extends Node {
                 return hold;
             }
 
-            @Override
-            protected int getNodesCount(boolean optimalResult) {
+            public int callGetNodesCount(boolean optimalResult) {
                 Node[] hold;
                 if (optimalResult) {
                     hold = original.getChildren().getNodes(optimalResult);
@@ -1532,137 +1657,152 @@ public class FilterNode extends Node {
                 return Children.this.getNodesCount();
             }
 
-            @Override
-            protected Node findChild(String name) {
+            public Node findChild(String name) {
                 original.getChildren().findChild(name);
                 return Children.super.findChild(name);
             }
 
-            @Override
-            protected void filterChildrenAdded(NodeMemberEvent ev) {
+            public void filterChildrenAdded(NodeMemberEvent ev) {
                 updateKeys();
             }
 
-            @Override
-            protected void filterChildrenRemoved(NodeMemberEvent ev) {
+            public void filterChildrenRemoved(NodeMemberEvent ev) {
                 updateKeys();
             }
 
-            @Override
-            protected void filterChildrenReordered(NodeReorderEvent ev) {
+            public void filterChildrenReordered(NodeReorderEvent ev) {
                 updateKeys();
             }
 
-            @Override
-            protected void update() {
+            public void update() {
                 updateKeys();
             }
 
             private void updateKeys() {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateKeys() " + this); // NOI18N
+                }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    getting original nodes"); // NOI18N
+                    }
                     Node[] arr = original.getChildren().getNodes();
+
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    setKeys(), keys: " + Arrays.toString(arr)); // NOI18N
+                    }
                     setKeys(arr);
-                    if (!original.getChildren().isInitialized()) {
-                        original.getChildren().entrySupport().notifySetEntries();
+                    if (!origSupport.isInitialized()) {
+                        origSupport.notifySetEntries();
                     }
                 }
             }
 
-            @Override
-            protected Entry createEntryForKey(Node key) {
+            public Entry createEntryForKey(Node key) {
                 return new KE(key);
             }
+
+            public EntrySupport originalSupport() {
+                return origSupport;
+            }            
         }
 
-        private class LazySupport extends ChildrenSupport {
+        private class LazySupport extends EntrySupport.Lazy implements FilterChildrenSupport {
+            EntrySupport.Lazy origSupport;
+
+            public LazySupport(org.openide.nodes.Children ch, Lazy origSupport) {
+                super(ch);
+                this.origSupport = origSupport;
+            }
 
             @Override
-            protected Node[] getNodes(boolean optimalResult) {
+            protected List<Node> createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
+                LazySnapshot snapshot = (LazySnapshot) super.createSnapshot(entries, e2i, delayed);
+                snapshot.holder = origSupport.createSnapshot();
+                return snapshot;
+            }
+        
+            public Node[] callGetNodes(boolean optimalResult) {
                 return Children.this.getNodes();
             }
 
-            @Override
-            protected int getNodesCount(boolean optimalResult) {
+            public int callGetNodesCount(boolean optimalResult) {
                 return Children.this.getNodesCount();
             }
 
-            @Override
-            protected Node findChild(String name) {
+            public Node findChild(String name) {
                 original.getChildren().findChild(name);
                 return Children.super.findChild(name);
             }
 
-            @Override
-            protected void filterChildrenAdded(NodeMemberEvent ev) {
+            public void filterChildrenAdded(NodeMemberEvent ev) {
                 if (ev.sourceEntry == null) {
                     updateEntries();
                 } else {
-                    refreshEntry(ev.sourceEntry);
+                    doRefreshEntry(ev.sourceEntry);
                 }
             }
 
-            @Override
-            protected void filterChildrenRemoved(NodeMemberEvent ev) {
+            public void filterChildrenRemoved(NodeMemberEvent ev) {
                 if (ev.sourceEntry == null) {
                     updateEntries();
                 } else {
-                    refreshEntry(ev.sourceEntry);
+                    doRefreshEntry(ev.sourceEntry);
                 }
             }
 
-            @Override
-            protected void filterChildrenReordered(NodeReorderEvent ev) {
+            public void filterChildrenReordered(NodeReorderEvent ev) {
                 updateEntries();
             }
 
-            @Override
-            protected void update() {
+            public void update() {
                 updateEntries();
             }
 
             private void updateEntries() {
+                final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
+                if (LOG_ENABLED) {
+                    LOGGER.finer("updateEntries() " + this); // NOI18N
+                }
                 ChildrenAdapter cha = nodeL;
                 if (cha != null) {
-                    int count = original.getChildren().getNodesCount();
-
-                    List<Entry> entries = original.getChildren().entrySupport().getEntries();
-
-                    /*ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size() + 1);
-                    boolean b = before;
-                    if (b) {
-                        filtEntries.add(getNodesEntry());
+                    int count = origSupport.getNodesCount(false);
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    origSupport.getNodesCount(): " + count); // NOI18N
                     }
-                    for (Entry e : entries) {
+
+                    List<Entry> origEntries = origSupport.getEntries();
+                    if (LOG_ENABLED) {
+                        LOGGER.finer("    origSupport.getEntries() - size: " + origEntries.size() + " data: " + origEntries); // NOI18N
+                    }
+
+                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(origEntries.size());
+                    for (Entry e : origEntries) {
                         filtEntries.add(new FilterNodeEntry(e));
                     }
-                    if (!b) {
-                        filtEntries.add(getNodesEntry());
-                    }*/
-                    
-                    ArrayList<Entry> filtEntries = new ArrayList<Entry>(entries.size());
-                    for (Entry e : entries) {
-                        filtEntries.add(new FilterNodeEntry(e));
-                    }
-                    
-                    entrySupport().setEntries(filtEntries);
-                    
-                    if (!original.getChildren().isInitialized()) {
-                        original.getChildren().entrySupport().notifySetEntries();
+
+                    setEntries(filtEntries);
+
+                    if (!origSupport.isInitialized()) {
+                        origSupport.notifySetEntries();
                         return;
                     }
                 }
             }
 
-            private void refreshEntry(Entry entry) {
-                entrySupport().refreshEntry(new FilterNodeEntry(entry));
+            private void doRefreshEntry(Entry entry) {
+                refreshEntry(new FilterNodeEntry(entry));
             }
 
-            @Override
-            protected Entry createEntryForKey(Node key) {
-                EntrySupport.Lazy lazy = (EntrySupport.Lazy)original.getChildren().entrySupport();
-                Entry entry = lazy.entryForNode(key);
+            public Entry createEntryForKey(Node key) {
+                Entry entry = origSupport.entryForNode(key);
                 return new FilterNodeEntry(entry);
+            }
+
+            public EntrySupport originalSupport() {
+                return origSupport;
             }
 
             /** Substitution for Node to use it as key instead of Node */
@@ -1686,7 +1826,6 @@ public class FilterNode extends Node {
 
                 @Override
                 public Collection<Node> nodes() {
-                    EntrySupport.Lazy origSupport = (EntrySupport.Lazy) original.getChildren().entrySupport();
                     Node node = origSupport.getNode(origEntry);
                     key = node;
                     if (node == null) {
@@ -1713,7 +1852,27 @@ public class FilterNode extends Node {
                 public String toString() {
                     return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(hashCode(), 16);
                 }
-            }
+            }            
+        }
+        
+        interface FilterChildrenSupport {
+            Node[] callGetNodes(boolean optimalResult);
+
+            int callGetNodesCount(boolean optimalResult);
+            
+            Node findChild(String name);
+
+            void filterChildrenAdded(NodeMemberEvent ev);
+
+            void filterChildrenRemoved(NodeMemberEvent ev);
+
+            void filterChildrenReordered(NodeReorderEvent ev);
+
+            void update();
+
+            Entry createEntryForKey(Node key);
+            
+            EntrySupport originalSupport();
         }
     }
 

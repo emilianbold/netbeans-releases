@@ -115,7 +115,16 @@ public class SyntaxElement {
     public SyntaxElement getPrevious() throws BadLocationException {
         if( previous == null ) {
             previous = sup.getPreviousElement( offset );
-            if( previous != null ) previous.next = this;
+            if( previous != null ) {
+                previous.next = this;
+//                if((previous.offset + previous.length) > offset) {
+//                    throw new IllegalStateException("Overlapping syntax elements found: " + this + "; previous: " + previous);
+//                }
+                if(previous.offset >= offset) {
+                    throw new IllegalStateException("Loop detected in SyntaxElement.getPrevious(): " + this + "; previous: " + previous);
+                }
+            }
+            
         }
         return previous;
     }
@@ -123,7 +132,16 @@ public class SyntaxElement {
     public SyntaxElement getNext() throws BadLocationException {
         if( next == null ) {
             next = sup.getNextElement( offset+length );
-            if( next != null ) next.previous = this;
+            if( next != null ) {
+                next.previous = this;
+                if(next.offset <= offset) {
+                    throw new IllegalStateException("Loop detected in SyntaxElement.getNext(): " + this + "; next: " + previous);
+                }
+//                if(next.offset <  (offset + length)) {
+//                    throw new IllegalStateException("Overlapping syntax elements found: " + this + "; next: " + previous);
+//                }
+                
+            }
         }
         return next;
     }

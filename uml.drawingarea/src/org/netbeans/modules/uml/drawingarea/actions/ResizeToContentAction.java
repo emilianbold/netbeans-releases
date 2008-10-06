@@ -151,6 +151,8 @@ public class ResizeToContentAction extends SceneNodeAction
         return null;
     }
 
-    
-
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

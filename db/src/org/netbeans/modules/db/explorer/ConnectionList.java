@@ -42,18 +42,15 @@
 package org.netbeans.modules.db.explorer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.api.db.explorer.ConnectionListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 
@@ -63,27 +60,19 @@ import org.openide.util.lookup.Lookups;
  * and removed through ConnectionListener.
  *
  * This class only maintains a list of DBConnection objects. It has no links
- * to the UI (nodes representing these objects), therefore adding a DBConnection 
+ * to the UI (nodes representing these objects), therefore adding a DBConnection
  * doesn't create a node for it.
- * 
+ *
  * @author Andrei Badea
  */
 public class ConnectionList {
-    
+
     private static ConnectionList DEFAULT;
-    
+
+    private final List<ConnectionListener> listeners = new CopyOnWriteArrayList<ConnectionListener>();
+
     private Lookup.Result result = getLookupResult();
-    
-    // A write-through cache of connections, initialized when the ConnectionList
-    // singleton is constructed.  This eliminates having to always reconstruct
-    // the connection from the file each time we get it, and also eliminates
-    // false duplicates where the name is the same but the instances are different
-    // (see issue 142036 and issue 137811)
-    private HashMap<String,DatabaseConnection> connectionCache =
-            new HashMap<String,DatabaseConnection>();
-    
-    private final List/*<ConnectionListener>*/ listeners = new ArrayList(1);    
-    
+
     public static synchronized ConnectionList getDefault() {
         if (DEFAULT == null) {
             DatabaseConnectionConvertor.importOldConnections();
@@ -92,113 +81,79 @@ public class ConnectionList {
         }
         return DEFAULT;
     }
-    
+
     private ConnectionList() {
         // issue 75204: forces the DataObject's corresponding to the DatabaseConnection's
         // to be initialized and held strongly so the same DatabaseConnection is
         // returns as long as it is held strongly
         result.allInstances();
-        
+
         result.addLookupListener(new LookupListener() {
             public void resultChanged(LookupEvent e) {
                 fireListeners();
             }
         });
-
-        initializeCache();
-    }
-
-    private void initializeCache() {
-        for ( Iterator it = result.allInstances().iterator() ; it.hasNext() ; ) {
-            DatabaseConnection dbconn = (DatabaseConnection)it.next();
-            connectionCache.put(dbconn.getName(), dbconn);
-        }
-    }
-
-        
-    /**
-     * Refresh the cache.  Used for testing
-     */
-    public void refreshCache() {
-        connectionCache.clear();
-        initializeCache();
     }
 
     public DatabaseConnection[] getConnections() {
-       return connectionCache.values().toArray(new DatabaseConnection[connectionCache.size()]);
+        Collection<DatabaseConnection> dbconns = result.allInstances();
+        return dbconns.toArray(new DatabaseConnection[dbconns.size()]);
     }
-    
+
     public DatabaseConnection getConnection(DatabaseConnection impl) {
         if (impl == null) {
             throw new NullPointerException();
         }
-
-        return connectionCache.get(impl.getName());
+        DatabaseConnection[] dbconns = getConnections();
+        for (int i = 0; i < dbconns.length; i++) {
+            if (impl.equals(dbconns[i])) {
+                return dbconns[i];
+            }
+        }
+        return null;
     }
-    
+
     public void add(DatabaseConnection dbconn) throws DatabaseException {
         if (dbconn == null) {
             throw new NullPointerException();
-        }
-        if (connectionCache.containsKey(dbconn.getName())) {
-            throw new DatabaseException(NbBundle.getMessage(ConnectionList.class, "ERR_CONN_ALREADY_EXISTS", dbconn.getName()));
         }
         try {
             DatabaseConnectionConvertor.create(dbconn);
         } catch (IOException e) {
             throw new DatabaseException(e);
         }
+    }
 
-        connectionCache.put(dbconn.getName(), dbconn);
-    }
-    
     public boolean contains(DatabaseConnection dbconn) {
-        return connectionCache.containsKey(dbconn.getName());
+        return getConnection(dbconn) != null;
     }
-    
+
     public void remove(DatabaseConnection dbconn) throws DatabaseException {
         if (dbconn == null) {
             throw new NullPointerException();
         }
-        
-        assert(connectionCache.containsKey(dbconn.getName()));
-
-        connectionCache.remove(dbconn.getName());
-
         try {
             DatabaseConnectionConvertor.remove(dbconn);
         } catch (IOException e) {
             throw new DatabaseException(e);
         }
-        
     }
-    
+
     public void addConnectionListener(ConnectionListener listener) {
-        synchronized (listeners) {
-            listeners.add(listener);
-        }
+        listeners.add(listener);
     }
-    
+
     public void removeConnectionListener(ConnectionListener listener) {
-        synchronized (listeners) {
-            listeners.remove(listener);
-        }
+        listeners.remove(listener);
     }
-    
+
     private void fireListeners() {
-        List listenersCopy;
-        
-        synchronized (listeners) {
-            listenersCopy = new ArrayList(listeners);
-        }
-        
-        for (Iterator i = listenersCopy.iterator(); i.hasNext();) {
-            ConnectionListener l = (ConnectionListener)i.next();
-            l.connectionsChanged();
+        for (ConnectionListener listener : listeners) {
+            listener.connectionsChanged();
         }
     }
-    
-    private synchronized Lookup.Result getLookupResult() {
+
+    private synchronized Lookup.Result<DatabaseConnection> getLookupResult() {
         return Lookups.forPath(DatabaseConnectionConvertor.CONNECTIONS_PATH).lookupResult(DatabaseConnection.class);
     }
 }

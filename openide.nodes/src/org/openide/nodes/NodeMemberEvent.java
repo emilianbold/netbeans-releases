@@ -81,7 +81,7 @@ public class NodeMemberEvent extends NodeEvent {
         this.add = add;
         this.delta = delta;
         this.prevSnapshot = from != null ? Arrays.asList(from) : null;
-        this.currSnapshot = n.getChildren().entrySupport().createSnapshot(false);
+        this.currSnapshot = n.getChildren().entrySupport().createSnapshot();
     }
 
     /** Provides static and immmutable info about the number, and instances of
@@ -204,6 +204,10 @@ public class NodeMemberEvent extends NodeEvent {
         }
 
         sb.append("\n]"); // NOI18N
+        sb.append("\ncurr. snapshot: " + currSnapshot.getClass().getName()); // NOI18N
+        sb.append("\n" + currSnapshot); // NOI18N
+        sb.append("\nprev. snapshot: " + getPrevSnapshot().getClass().getName()); // NOI18N
+        sb.append("\n" + getPrevSnapshot()); // NOI18N
 
         return sb.toString();
     }

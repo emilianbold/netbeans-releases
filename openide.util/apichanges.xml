@@ -49,6 +49,22 @@ made subject to such option by the copyright holder.
     <apidef name="actions">Actions API</apidef>
 </apidefs>
 <changes>
+    <change id="Utilities.OS_OPENBSD">
+        <api name="util"/>
+        <summary>Added <code>OS_OPENBSD</code> and <code>OS_UNIX_OTHER</code> fields</summary>
+        <version major="7" minor="18"/>
+        <date day="16" month="9" year="2008"/>
+        <author login="jskrivanek"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a new <code>Utilities.OS_OPENBSD</code> and <code>OS_UNIX_OTHER</code>
+                fields. Deprecated <code>OS_WINDOWS_MASK</code> and <code>OS_UNIX_MASK</code>.
+            </p>
+        </description>
+        <class package="org.openide.util" name="Utilities"/>
+        <issue number="145462"/>
+    </change>
     <change id="Utilities.OS_WINVISTA">
         <api name="util"/>
         <summary>Added <code>OS_WINVISTA</code> field</summary>

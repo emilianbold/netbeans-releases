@@ -43,8 +43,6 @@ package org.netbeans.modules.bpel.core;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -73,7 +71,6 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -101,6 +98,11 @@ public class BPELDataObject extends MultiDataObject {
         Source source = DataObjectAdapters.source(this);
         cookies.add(new TransformableSupport(source));
         cookies.add(new AnnotationManagerProvider(this));
+
+        cookies.assign(SearchProvider.class, new SearchProvider(this));
+        cookies.assign(BusinessProcessHelperImpl.class, new BusinessProcessHelperImpl(this));
+        cookies.assign(XmlFileEncodingQueryImpl.class, XmlFileEncodingQueryImpl.singleton());
+
     }
  
     public HelpCtx getHelpCtx() {
@@ -161,21 +163,6 @@ public class BPELDataObject extends MultiDataObject {
     @Override
     public final Lookup getLookup() {
         if (myLookup.get() == null) {
-            
-            Lookup lookup;
-            List<Lookup> list = new LinkedList<Lookup>();
-
-            list.add(Lookups.fixed( new Object[]{
-                    super.getLookup(), 
-                    this ,
-                    getEditorSupport(),
-                    new SearchProvider(this),
-                    new BusinessProcessHelperImpl(this),
-                    XmlFileEncodingQueryImpl.singleton()
-                  }));
-
-            list.add(getCookieSet().getLookup());
-            
             // add lazy initialization
             InstanceContent.Convertor<Class, Object> conv = new InstanceContent.Convertor<Class, Object>() {
                 private AtomicReference<Controller> valControllerRef = new AtomicReference<Controller>();
@@ -189,11 +176,6 @@ public class BPELDataObject extends MultiDataObject {
                         return valControllerRef.get();
                     }
 
-                    
-                    
-                    
-                    
-                    
                     return null;
                 }
 
@@ -209,12 +191,12 @@ public class BPELDataObject extends MultiDataObject {
                     return obj.getName();
                 }
             };
-            list.add(Lookups.fixed(
-                    new Class[] { BpelModel.class,
-                    Controller.class
 
-                                               }, conv));
-            lookup = new ProxyLookup(list.toArray(new Lookup[list.size()]));
+            Lookup lookup = new ProxyLookup(
+                    Lookups.fixed(new Class[] { BpelModel.class, Controller.class }, conv),
+                    // Do not call super.getLookup(), it is deadlock-prone!
+                    getCookieSet().getLookup()
+            );
 
             myLookup.compareAndSet(null, lookup);
             isLookupInit.compareAndSet( false, true );

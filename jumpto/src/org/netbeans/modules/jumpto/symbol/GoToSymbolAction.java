@@ -93,6 +93,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -623,7 +624,7 @@ public class GoToSymbolAction extends AbstractAction implements GoToPanel.Conten
             
             jlName.setText( "Sample" ); // NOI18N
             //jlName.setIcon(UiUtils.getElementIcon(ElementKind.CLASS, null));
-            jlName.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
+            jlName.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/jumpto/type/sample.png")));
             
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);

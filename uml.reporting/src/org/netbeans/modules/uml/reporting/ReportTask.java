@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.reporting.dataobjects.DataObjectFactory;
 import org.netbeans.modules.uml.reporting.dataobjects.ElementDataObject;
@@ -222,7 +223,7 @@ public class ReportTask extends Thread implements Cancellable
                 {
                     success=false;
                     log(NbBundle.getMessage(ReportTask.class, "Log_error_generating",
-                            treeDiagram.getDiagram().getDiagram().getName()));
+                            treeDiagram.getDiagram().getName()));
                 }
             }
         }
@@ -556,7 +557,8 @@ public class ReportTask extends Thread implements Cancellable
             diagram= pItem.getData().getDiagram().getDiagram();
             if (diagram==null)
                 diagram = loadDiagram(pItem.getData().getDiagram().getFilename());
-            p = diagram.getOwningPackage();
+            if (diagram != null)
+                p = diagram.getOwningPackage();
         }
         else
         {
@@ -701,7 +703,7 @@ public class ReportTask extends Thread implements Cancellable
         {
             
             ITreeDiagram diagram = (ITreeDiagram)treeDiagrams[i];
-            pname = diagram.getDiagram().getDiagram().getName();
+            pname = diagram.getDiagram().getName();
             link = diagramFileMap.get(diagram.getDiagram().getXMIID());
             /*
                 <A HREF="diagram1.html" title="class diagram in javax.swing" target="elementFrame">Class Diagram</A>
@@ -713,7 +715,7 @@ public class ReportTask extends Thread implements Cancellable
 //                    "\" target=\"elementframe\">" + pname + "</A>\n<BR>\n"); // NOI18N
             
             String imageName = ImageUtil.instance().getDiagramTypeImageName(
-                diagram.getDiagram().getDiagram().getDiagramKind());
+                diagram.getDiagram().getDiagramKind());
             
             ReportTask.addToImageList(imageName);
             
@@ -760,7 +762,7 @@ public class ReportTask extends Thread implements Cancellable
             if (elementFileMap.containsKey(element.getXMIID()))
             {
                 link = elementFileMap.get(element.getXMIID());
-                buffer.append("<A HREF=\"" + link + "\" target=\"elementframe\">" + pname + "</A>\n<BR>\n"); // NOI18N
+                buffer.append("<A HREF=\"" + link + "\" target=\"elementframe\">" + Util.convertToHTML(pname) + "</A>\n<BR>\n"); // NOI18N
             }
             else
             {

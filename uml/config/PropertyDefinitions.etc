@@ -1083,10 +1083,10 @@
     </PropertyDefinition>
     <PropertyDefinition xmi.id="DCE.85C1CE64-1C8E-6651-183F-A7DC51E31CB8" name="InvocationNode" displayName="PSK_INVOCATIONNODE">
         <aDefinition pdref="DCE.20382DAB-94A0-BA9B-8BCF-3A4DBDE81B00"/>
-        <aDefinition name="PreConditions" displayName="PSK_PRECONDITIONS" required="false" multiplicity="*" get="getLocalPreconditions" delete="removeLocalPrecondition" controlType="custom" progID="org.netbeans.modules.uml.propertysupport.customizers.PropertyElementCustomizer">
+        <aDefinition name="PreConditions" displayName="PSK_PRECONDITIONS" required="false" multiplicity="*" get="getLocalPreconditions" delete="removeLocalPrecondition" values="#Call(getPreconditionsAsString)" controlType="custom" progID="org.netbeans.modules.uml.propertysupport.customizers.PropertyElementCustomizer">
         <aDefinition pdref="DCE.E4DBB8AC-7F6D-00B0-A166-960E4267BDF1" onDemand="true"/>
         </aDefinition>
-        <aDefinition name="PostConditions" displayName="PSK_POSTCONDITIONS" required="false" multiplicity="*" get="getLocalPostConditions" delete="removeLocalPostcondition" controlType="custom" progID="org.netbeans.modules.uml.propertysupport.customizers.PropertyElementCustomizer">
+        <aDefinition name="PostConditions" displayName="PSK_POSTCONDITIONS" required="false" multiplicity="*" get="getLocalPostConditions" delete="removeLocalPostcondition" values="#Call(getPostConditionsAsString)" controlType="custom" progID="org.netbeans.modules.uml.propertysupport.customizers.PropertyElementCustomizer">
         <aDefinition pdref="DCE.99E8E72B-47C1-0E80-24FF-4BF79340147A" onDemand="true"/>
         </aDefinition>
         <aDefinition name="MultipleInvocation" displayName="PSK_MULTIPLEINVOCATION" required="false" multiplicity="1" controlType="list" get="getIsMultipleInvocation" set="setIsMultipleInvocation" values="PSK_FALSE|PSK_TRUE"/>

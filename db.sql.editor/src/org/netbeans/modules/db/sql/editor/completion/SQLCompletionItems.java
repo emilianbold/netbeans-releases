@@ -43,11 +43,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataObject;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
@@ -67,6 +70,17 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public SQLCompletionItems(Quoter quoter, int itemOffset) {
         this.quoter = quoter;
         this.itemOffset = itemOffset;
+    }
+
+    public Set<String> addCatalogs(Metadata metadata, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
+        Set<String> result = new TreeSet<String>();
+        filterMetadata(metadata.getCatalogs(), restrict, prefix, new Handler<Catalog>() {
+            public void handle(Catalog catalog) {
+                String catalogName = catalog.getName();
+                items.add(SQLCompletionItem.catalog(catalogName, doQuote(catalogName, quote), itemOffset + substitutionOffset));
+            }
+        });
+        return result;
     }
 
     public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final boolean quote, final int substitutionOffset) {
@@ -91,51 +105,33 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         });
     }
 
-    public void addAliases(List<String> aliases, String prefix, final boolean quote, final int substitutionOffset) {
-        filterStrings(aliases, null, prefix, new Handler<String>() {
-            public void handle(String alias) {
+    public void addAliases(Map<String, QualIdent> aliases, String prefix, final boolean quote, final int substitutionOffset) {
+        filterMap(aliases, null, prefix, new ParamHandler<String, QualIdent>() {
+            public void handle(String alias, QualIdent tableName) {
                 // Issue 145173: do not quote aliases.
-                items.add(SQLCompletionItem.alias(alias, alias, itemOffset + substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, tableName, alias, itemOffset + substitutionOffset));
             }
         });
     }
 
-    public void addColumns(Schema schema, final Table table, String prefix, final boolean quote, final int substitutionOffset) {
-        final QualIdent qualTableName = schema.isDefault() ? null : new QualIdent(schema.getName(), table.getName());
+    public void addColumns(Table table, String prefix, final boolean quote, final int substitutionOffset) {
+        Schema schema = table.getParent();
+        Catalog catalog = schema.getParent();
+        List<String> parts = new ArrayList<String>(3);
+        if (!catalog.isDefault()) {
+            parts.add(catalog.getName());
+        }
+        if (!schema.isSynthetic() && !schema.isDefault()) {
+            parts.add(schema.getName());
+        }
+        parts.add(table.getName());
+        final QualIdent qualTableName = new QualIdent(parts);
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 String columnName = column.getName();
-                if (qualTableName != null) {
-                    items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
-                } else {
-                    items.add(SQLCompletionItem.column(table.getName(), columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
-                }
+                items.add(SQLCompletionItem.column(qualTableName, columnName, doQuote(columnName, quote), itemOffset + substitutionOffset));
             }
         });
-    }
-
-    public void addColumns(Catalog catalog, QualIdent tableName, String prefix, final boolean quote, final int substitutionOffset) {
-        Schema schema = null;
-        Table table = null;
-        if (tableName.isSimple()) {
-            if (!catalog.isDefault()) {
-                return;
-            }
-            schema = catalog.getDefaultSchema();
-            if (schema == null) {
-                return;
-            }
-            table = schema.getTable(tableName.getSimpleName());
-        } else if (tableName.isSingleQualified()) {
-            schema = catalog.getSchema(tableName.getFirstQualifier());
-            if (schema == null) {
-                return;
-            }
-            table = schema.getTable(tableName.getSimpleName());
-        }
-        if (table != null) {
-            addColumns(schema, table, prefix, quote, substitutionOffset);
-        }
     }
 
     public void fill(CompletionResultSet resultSet) {
@@ -162,10 +158,11 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         return prefix == null || startsWithIgnoreCase(string, prefix);
     }
 
-    private static void filterStrings(Collection<String> strings, Set<String> restrict, String prefix, Handler<String> handler) {
-        for (String string : strings) {
+    private static <P> void filterMap(Map<String, P> strings, Set<String> restrict, String prefix, ParamHandler<String, P> handler) {
+        for (Entry<String, P> entry : strings.entrySet()) {
+            String string = entry.getKey();
             if ((restrict == null || restrict.contains(string)) && filter(string, prefix)) {
-                handler.handle(string);
+                handler.handle(string, entry.getValue());
             }
         }
     }
@@ -183,5 +180,10 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     private interface Handler<T> {
 
         void handle(T object);
+    }
+
+    private interface ParamHandler<T, P> {
+
+        void handle(T object, P param);
     }
 }

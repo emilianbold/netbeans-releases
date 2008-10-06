@@ -68,31 +68,31 @@ import org.w3c.dom.Element;
  * @author Jesse Glick
  */
 final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation, AntProjectListener {
-    
+
     private AntProjectHelper helper;
     private PropertyEvaluator evaluator;
     private AuxiliaryConfiguration aux;
-    
+
     /**
      * Map from known binary roots to lists of source roots.
      */
     private Map<URL,FileObject[]> roots = null;
-    
+
     public SourceForBinaryQueryImpl(AntProjectHelper helper, PropertyEvaluator evaluator, AuxiliaryConfiguration aux) {
         this.helper = helper;
         this.evaluator = evaluator;
         this.aux = aux;
         helper.addAntProjectListener(this);
     }
-    
+
     private void refresh () {
         roots = null;
     }
-    
+
     public SourceForBinaryQuery.Result findSourceRoots(final URL binaryRoot) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<SourceForBinaryQuery.Result>() {
             public SourceForBinaryQuery.Result run() {
-                synchronized (this) {
+                synchronized (SourceForBinaryQueryImpl.this) {
         if (roots == null) {
             // Need to compute it. Easiest to compute them all at once.
             roots = new HashMap<URL,FileObject[]>();
@@ -110,7 +110,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
                         FileObject[] orig = roots.get(u);
                         //The case when sources are in the separate compilation units but
                         //the output is built into a single archive is not very common.
-                        //It is better to recreate arrays rather then to add source roots 
+                        //It is better to recreate arrays rather then to add source roots
                         //into lists which will slow down creation of Result instances.
                         if (orig != null) {
                             FileObject[] merged = new FileObject[orig.length+sources.length];
@@ -130,7 +130,7 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
             }
         });
     }
-    
+
     /**
      * Find a list of URLs of binaries which will be produced from a compilation unit.
      * Result may be empty.
@@ -160,27 +160,27 @@ final class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementati
     public void propertiesChanged(AntProjectEvent ev) {
         // ignore
     }
-    
+
     private static class Result implements SourceForBinaryQuery.Result {
-        
+
         private FileObject[] ret;
-        
+
         public Result (FileObject[] ret) {
             this.ret = ret;
         }
-        
+
         public FileObject[] getRoots () {
             return ret;
         }
-        
+
         public void addChangeListener (ChangeListener l) {
             // XXX
         }
-        
+
         public void removeChangeListener (ChangeListener l) {
             // XXX
         }
-        
+
     }
-    
+
 }

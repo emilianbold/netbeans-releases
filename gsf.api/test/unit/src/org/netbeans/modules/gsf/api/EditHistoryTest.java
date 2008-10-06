@@ -40,12 +40,7 @@
 package org.netbeans.modules.gsf.api;
 
 import java.util.Random;
-import java.util.Random;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentEvent.ElementChange;
-import javax.swing.event.DocumentEvent.EventType;
 import javax.swing.text.Document;
-import javax.swing.text.Element;
 import javax.swing.text.PlainDocument;
 import junit.framework.TestCase;
 
@@ -54,32 +49,6 @@ import junit.framework.TestCase;
  * @author Tor Norbye
  */
 public class EditHistoryTest extends TestCase {
-    private class TestDocumentEvent implements DocumentEvent {
-        private int offset;
-        private int length;
-
-        public TestDocumentEvent(int offset, int length) {
-            this.offset = offset;
-            this.length = length;
-        }
-
-        public int getOffset() {
-            return offset;
-        }
-        public int getLength() {
-            return length;
-        }
-        public Document getDocument() {
-            return null;
-        }
-        public EventType getType() {
-            return null;
-        }
-        public ElementChange getChange(Element elem) {
-            return null;
-        }
-    }
-    
     public EditHistoryTest(String testName) {
         super(testName);
     }            
@@ -397,4 +366,89 @@ public class EditHistoryTest extends TestCase {
         String modified = doc.getText(0, doc.getLength());
         validateHistory(original, modified, history);
     }
+
+    public void testCombined1() throws Exception {
+        EditHistory firstHistory = new EditHistory();
+        EditHistory history = new EditHistory();
+        firstHistory.add(history);
+        String original = "   HelloWorld";
+        Document doc = getDocument(original);
+        //012345678901234567890
+        //   HelloWorld
+        //   He__lloWorld
+        insert(doc, history, 5, "__");
+        String modified = doc.getText(0, doc.getLength());
+        assertEquals("   He__lloWorld", modified);
+        validateHistory(original, modified, history);
+        assertEquals(5, history.getStart());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(2, history.getEditedSize());
+
+        // Add some more history
+        original = modified;
+        EditHistory oldHistory = history;
+        history = new EditHistory();
+        oldHistory.add(history);
+        insert(doc, history, 10, "__");
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("   He__llo__World", modified);
+        validateHistory(original, modified, history);
+        assertEquals(10, history.getStart());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(2, history.getEditedSize());
+
+        // Now test combined
+        // Just most recent:
+        assertEquals(1, history.getVersion());
+        EditHistory h;
+
+        h = EditHistory.getCombinedEdits(oldHistory.getVersion(), history);
+        assertNotNull(h);
+        assertEquals(10, h.getStart());
+        assertEquals(0, h.getOriginalSize());
+        assertEquals(2, h.getEditedSize());
+
+        h = EditHistory.getCombinedEdits(-1, history);
+        assertNotNull(h);
+        assertEquals(5, h.getStart());
+        assertEquals(3, h.getOriginalSize());
+        assertEquals(7, h.getEditedSize());
+
+        // From the beginning:
+        assertEquals(0, oldHistory.getVersion());
+        h = EditHistory.getCombinedEdits(history.getVersion(), history);
+        assertNull(h);
+    }
+
+    public void testChoppedHistory() throws Exception {
+        EditHistory old = new EditHistory();
+        for (int i = 0; i < 50; i++) {
+            EditHistory history = new EditHistory();
+            old.add(history);
+            old = history;
+        }
+
+        assertNotNull(EditHistory.getCombinedEdits(48, old));
+        assertNotNull(EditHistory.getCombinedEdits(47, old));
+        assertNotNull(EditHistory.getCombinedEdits(46, old));
+
+        EditHistory curr = old;
+        for (int i = 0; i < 5; i++) {
+            assertTrue(curr.previous != null);
+            assertTrue(curr.previous != curr);
+            curr = curr.previous;
+        }
+
+        int i = 0;
+        for (; i < 49; i++) {
+            assertTrue(curr.previous != curr);
+            curr = curr.previous;
+            if (curr == null) {
+                break;
+            }
+        }
+        // Make sure we reached the end of the previous pointers well before the 50
+        assertTrue(i < 40);
+    }
+
 }

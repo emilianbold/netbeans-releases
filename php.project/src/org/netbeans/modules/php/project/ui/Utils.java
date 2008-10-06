@@ -396,11 +396,12 @@ public final class Utils {
     public static boolean isFolderWritable(File folder) {
         assert folder.isDirectory() : "Not a directory: " + folder;
 
-        LOGGER.fine("On Windows Vista: " + isWindowsVista());
+        boolean windowsVista = isWindowsVista();
+        LOGGER.fine("On Windows Vista: " + windowsVista);
 
         boolean canWrite = folder.canWrite();
         LOGGER.fine(String.format("Folder %s is writable: %s", folder, canWrite));
-        if (!canWrite || !isWindowsVista()) {
+        if (!canWrite || !windowsVista) {
             return canWrite;
         }
 
@@ -411,8 +412,8 @@ public final class Utils {
             LOGGER.fine(String.format("Temp file %s created", tmpFile));
             tmpFile.delete();
             LOGGER.fine(String.format("Temp file %s deleted", tmpFile));
-        } catch (IOException iOException) {
-            LOGGER.log(Level.FINE, "Temp file NOT created", iOException);
+        } catch (IOException exc) {
+            LOGGER.log(Level.FINE, "Temp file NOT created", exc);
             return false;
         }
         return true;

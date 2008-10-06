@@ -12,6 +12,7 @@
   </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
+    <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -43,14 +44,14 @@
                           <Group type="102" attributes="0">
                               <Component id="tpLocationLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="tpLocationTextField" pref="309" max="32767" attributes="0"/>
+                              <Component id="tpLocationTextField" pref="215" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="lfsSourceFileLocationTextField" pref="402" max="32767" attributes="0"/>
+                          <Component id="lfsSourceFileLocationTextField" pref="308" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="lfsBrowseButton" pref="79" max="32767" attributes="0"/>
-                          <Component id="tpLocationBrowseButton" alignment="0" pref="79" max="32767" attributes="0"/>
+                          <Component id="lfsBrowseButton" max="32767" attributes="0"/>
+                          <Component id="tpLocationBrowseButton" alignment="0" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="fromLocalFileButton" alignment="0" min="-2" max="-2" attributes="0"/>

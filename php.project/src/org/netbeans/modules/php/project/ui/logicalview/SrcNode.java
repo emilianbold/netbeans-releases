@@ -46,6 +46,7 @@ import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.CommandUtils;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
@@ -57,6 +58,7 @@ import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.actions.PasteAction;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -153,16 +155,24 @@ public class SrcNode extends FilterNode {
         return actions;
     }
 
+    static final Action[] COMMON_ACTIONS = new Action[]{
+        null,
+        ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
+        ProjectSensitiveActions.projectCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null)
+    };
+
+    public static Action createDownloadAction() {
+        return COMMON_ACTIONS[1];
+    }
+    public static Action createUploadAction() {
+        return COMMON_ACTIONS[2];
+    }
+
     /**
      * Children for node that represents folder (SrcNode or PackageNode)
      */
     private static class FolderChildren extends FilterNode.Children {
         // common actions for both PackageNode and ObjectNode (equals has to be the same)
-        static final Action[] COMMON_ACTIONS = new Action[] {
-            null,
-            ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
-            ProjectSensitiveActions.projectCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null),
-        };
         private final PhpProject project;
 
         FolderChildren(PhpProject project, final Node originalNode) {
@@ -197,13 +207,13 @@ public class SrcNode extends FilterNode {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
             int idx = actions.indexOf(SystemAction.get(PasteAction.class));
-            for (int i = 0; i < FolderChildren.COMMON_ACTIONS.length; i++) {
-                if (idx >= 0 && idx + FolderChildren.COMMON_ACTIONS.length < actions.size()) {
+            for (int i = 0; i < COMMON_ACTIONS.length; i++) {
+                if (idx >= 0 && idx + COMMON_ACTIONS.length < actions.size()) {
                     //put on the proper place after paste
-                    actions.add(idx + i + 1, FolderChildren.COMMON_ACTIONS[i]);
+                    actions.add(idx + i + 1, COMMON_ACTIONS[i]);
                 } else {
                     //else put at the tail
-                    actions.add(FolderChildren.COMMON_ACTIONS[i]);
+                    actions.add(COMMON_ACTIONS[i]);
                 }
             }
             return actions.toArray(new Action[actions.size()]);
@@ -231,9 +241,11 @@ public class SrcNode extends FilterNode {
     }
 
     private static final class ObjectNode extends FilterNode {
+        private final Node originalNode;
 
         public ObjectNode(final Node originalNode) {
             super(originalNode);
+            this.originalNode = originalNode;
         }
 
         @Override
@@ -266,18 +278,35 @@ public class SrcNode extends FilterNode {
         }
 
         private Action[] getCommonActions() {
-            // not available for multiple selected nodes => create new instance every time
-            Action[] toAdd = new Action[] {
-                null,
-                ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID, RunSingleCommand.DISPLAY_NAME, null),
-                ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID, DebugSingleCommand.DISPLAY_NAME, null),
-            };
+            Action[] toAdd = null;
+            if (CommandUtils.isPhpOrHtmlFile(getFileObject())) {
+                // not available for multiple selected nodes => create new instance every time
+                toAdd = new Action[] {
+                    null,
+                    ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID, RunSingleCommand.DISPLAY_NAME, null),
+                    ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID, DebugSingleCommand.DISPLAY_NAME, null),
+                };
+            } else {
+                toAdd = new Action[0];
+            }
 
-            List<Action> actions = new ArrayList<Action>(FolderChildren.COMMON_ACTIONS.length + toAdd.length);
+            List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.length);
             actions.addAll(Arrays.asList(toAdd));
-            actions.addAll(Arrays.asList(FolderChildren.COMMON_ACTIONS));
+            actions.addAll(Arrays.asList(COMMON_ACTIONS));
 
             return actions.toArray(new Action[actions.size()]);
+        }
+
+        private FileObject getFileObject() {
+            FileObject fileObject = originalNode.getLookup().lookup(FileObject.class);
+            if (fileObject != null) {
+                return fileObject;
+            }
+            DataObject dataObject = originalNode.getLookup().lookup(DataObject.class);
+            assert dataObject != null;
+            fileObject = dataObject.getPrimaryFile();
+            assert fileObject != null;
+            return fileObject;
         }
     }
 }

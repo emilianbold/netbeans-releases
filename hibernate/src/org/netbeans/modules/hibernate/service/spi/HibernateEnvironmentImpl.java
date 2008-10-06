@@ -56,6 +56,7 @@ import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
@@ -65,7 +66,6 @@ import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataObject
 import org.netbeans.modules.hibernate.mapping.model.MyClass;
 import org.netbeans.modules.hibernate.util.CustomClassLoader;
 import org.netbeans.modules.hibernate.util.HibernateUtil;
-import org.netbeans.modules.hibernate.wizards.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -118,10 +118,12 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         }
 
         try {
-            CustomClassLoader ccl = new CustomClassLoader(
-                    getProjectClassPath(
-                    getAllHibernateConfigFileObjects().get(0)).toArray(new URL[]{}),
-                    this.getClass().getClassLoader());
+//            CustomClassLoader ccl = new CustomClassLoader(
+//                    getProjectClassPath(
+//                    getAllHibernateConfigFileObjects().get(0)).toArray(new URL[]{}),
+//                    this.getClass().getClassLoader());
+
+            ClassLoader ccl = getProjectClassLoader(getProjectClassPath().toArray(new URL[]{}));
             ccl.loadClass(dbDriver);
             logger.info("dbDriver loaded.");
             return true;
@@ -132,8 +134,12 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         return false;
     }
 
-    public FileObject getLocation() {
-        return Util.getSourceRoot(project);
+    public FileObject getSourceLocation() {
+        SourceGroup[] sourceGroups = HibernateUtil.getSourceGroups(project);
+        if (sourceGroups != null && sourceGroups.length != 0) {
+            return sourceGroups[0].getRootFolder();
+        }
+        return null;
     }
 
     /**
@@ -269,26 +275,31 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
         try {
             LibraryManager libraryManager = LibraryManager.getDefault();
             Library hibernateLibrary = libraryManager.getLibrary("hibernate-support");  //NOI18N
-
             Library ejb3PersistenceLibrary = libraryManager.getLibrary("ejb3-persistence");  //NOI18N
 
-            ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
+            Library[] librariesToBeRegistered = null;
+
             // Bugfix: 140811
             project.getProjectDirectory().getFileSystem().refresh(true);
             // Adding ejb3-persistence.jar if project classpath doesn't contain it            
-            ClassPath cp = ClassPath.getClassPath(getAllHibernateConfigFileObjects().get(0), ClassPath.EXECUTE);
-            if (!containsClass(cp, "javax.persistence.EntityManager")) { // NOI18N                
-                addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary, ejb3PersistenceLibrary}, fileInProject, ClassPath.COMPILE);
-            } else {
-                addLibraryResult = ProjectClassPathModifier.addLibraries(new Library[]{hibernateLibrary}, fileInProject, ClassPath.COMPILE);
+            ClassPath cp = ClassPath.getClassPath(fileInProject, ClassPath.EXECUTE);
+            if (cp == null) {
+                logger.info("Cannot register libraries because cannot get the classpath for created file : " + fileInProject);
+                return false;
             }
+            if (!containsClass(cp, "javax.persistence.EntityManager")) { // NOI18N                
+                librariesToBeRegistered = new Library[]{hibernateLibrary, ejb3PersistenceLibrary};
+            } else {
+                librariesToBeRegistered = new Library[]{hibernateLibrary};
+            }
+
+            addLibraryResult = ProjectClassPathModifier.addLibraries(librariesToBeRegistered, fileInProject, ClassPath.COMPILE);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             addLibraryResult = false;
         } catch (UnsupportedOperationException ex) {
-            //TODO handle this exception gracefully.
-            // For now just report it.
-            Exceptions.printStackTrace(ex);
+            // PCPM not implemented for this project. May be a freeform project ?
+            logger.info("Library registration not possible : " + project);
         }
         return addLibraryResult;
     }
@@ -359,6 +370,16 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      */
     public List<URL> getProjectClassPath(FileObject projectFile) {
         return HibernateUtil.getProjectClassPathEntries(projectFile);
+    }
+
+    /**
+     * Returns the project classpath including project build paths.
+     * Can be used to set classpath for custom classloader.
+     * 
+     * @return List of java.io.File objects representing each entry on the classpath.
+     */
+    public List<URL> getProjectClassPath() {
+        return HibernateUtil.getProjectClassPath(project);
     }
 
     /**
@@ -454,9 +475,9 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
      * @param primaryFile a file in the project. Used to extend the classpath.
      * @return true if successfully registered the given driver or false, if there's problem with registering.
      */
-    @SuppressWarnings("static-access")
     public boolean registerDBDriver(String driver, FileObject primaryFile) {
         boolean registeredDBDriver = false;
+
         JDBCDriver[] jdbcDrivers = JDBCDriverManager.getDefault().getDrivers(driver);
         List<URL> driverURLs = new ArrayList<URL>();
         for (JDBCDriver jdbcDriver : jdbcDrivers) {
@@ -466,9 +487,10 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
                     try {
                         file = InstalledFileLocator.getDefault().locate(url.getFile().substring(1), null, false);
                         logger.info("Bundled DB Driver Jar : " + file);
-                        if(file != null) {
-                            url = file.toURL();
+                        if (file == null) {
+                            continue;
                         }
+                        url = file.toURI().toURL();
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -483,14 +505,18 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
             }
         }
 
-        ProjectClassPathModifier projectClassPathModifier = project.getLookup().lookup(ProjectClassPathModifier.class);
-
         try {
-            registeredDBDriver = projectClassPathModifier.addRoots(
+
+            registeredDBDriver = ProjectClassPathModifier.addRoots(
                     driverURLs.toArray(new URL[]{}),
                     primaryFile,
                     ClassPath.COMPILE);
-        } catch (Exception e) {
+
+        } catch (UnsupportedOperationException e) {
+            // PCPM is not defined for this project. May be freeform project ?
+            logger.info("DB Driver registration not possible : " + project);            
+            registeredDBDriver = false;
+        }catch (Exception e) {
             registeredDBDriver = false;
             logger.log(Level.INFO, "Problem in registering db driver.", e);
         }

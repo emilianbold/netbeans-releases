@@ -144,7 +144,7 @@ public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInf
             throw new IllegalStateException ();
         }
         try {
-            return ((SourceFileObject) this.jfo).getTokenHierarchy();
+            return this.jfo.getTokenHierarchy();
         } catch (IOException ioe) {
             //Should never happen
             ErrorManager.getDefault().notify(ioe);
@@ -232,6 +232,16 @@ public class CompilationInfo extends org.netbeans.modules.gsf.api.CompilationInf
         return false;
     }
     
+
+    public boolean hasInvalidResults() {
+        for (ParserResult result : embeddedResults.values()) {
+            if (!result.isValid()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public List<Error> getErrors() {
         List<Error> errors = new ArrayList<Error>();

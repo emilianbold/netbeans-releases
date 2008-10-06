@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
@@ -89,6 +90,9 @@ import org.openide.util.NbBundle;
  * @author Sandip Chitale (Sandip.Chitale@Sun.Com)
  */
 public final class JavaHierarchyModel extends DefaultTreeModel {
+    
+    private static final Logger LOG = Logger.getLogger(JavaHierarchyModel.class.getName());
+    
     static Element[] EMPTY_ELEMENTS_ARRAY = new Element[0];
     static ElementHandle[] EMPTY_ELEMENTHANDLES_ARRAY = new ElementHandle[0];
 
@@ -143,8 +147,13 @@ public final class JavaHierarchyModel extends DefaultTreeModel {
                             List<Element> elementsList = new ArrayList<Element>(elementHandles.length);
 
                             for (ElementHandle elementHandle : elementHandles) {
-                                elementsList.add(elementHandle.resolve(
-                                        compilationController));
+                                final Element element = elementHandle.resolve(compilationController);
+                                if (element != null) {
+                                    elementsList.add(element);
+                                }
+                                else {
+                                    LOG.warning(elementHandle.toString()+" cannot be resolved using: " +compilationController.getClasspathInfo());
+                                }
                             }
 
                             Element[] elements = elementsList.toArray(EMPTY_ELEMENTS_ARRAY);

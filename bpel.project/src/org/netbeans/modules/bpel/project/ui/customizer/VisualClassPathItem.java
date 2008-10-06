@@ -24,6 +24,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.*;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.netbeans.modules.compapp.projects.base.ui.customizer.IcanproProjectProperties;
 
@@ -47,10 +48,10 @@ public class VisualClassPathItem {
     private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/bpel/project/ui/resources/projectDependencies.gif"; //NOI18N
     private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/bpel/project/ui/resources/j2seProject.gif"; //NOI18N
 
-    private static Icon ICON_JAR = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_JAR ) );
-    private static Icon ICON_LIBRARY = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-    private static Icon ICON_ARTIFACT  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-    private static Icon ICON_CLASSPATH  = new ImageIcon( Utilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
+    private static Icon ICON_JAR = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAR ) );
+    private static Icon ICON_LIBRARY = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_LIBRARY ) );
+    private static Icon ICON_ARTIFACT  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
+    private static Icon ICON_CLASSPATH  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
 
 
     private int type;

@@ -47,6 +47,7 @@ import org.netbeans.modules.refactoring.java.ui.JavaRefactoringGlobalAction;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -60,7 +61,7 @@ public final class CallHierarchyAction extends JavaRefactoringGlobalAction {
 
     public CallHierarchyAction() {
         super(NbBundle.getMessage(CallHierarchyAction.class, "CTL_CallHierarchyAction"),
-                new ImageIcon(Utilities.loadImage(CallHierarchyTopComponent.ICON_PATH, true)));
+                new ImageIcon(ImageUtilities.loadImage(CallHierarchyTopComponent.ICON_PATH, true)));
     }
 
     public void performAction(Lookup context) {

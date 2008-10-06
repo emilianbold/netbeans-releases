@@ -42,6 +42,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import org.netbeans.spi.options.OptionsCategory;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 public final class MyAdvancedCategory extends OptionsCategory {
@@ -50,7 +51,7 @@ public final class MyAdvancedCategory extends OptionsCategory {
     
     @Override
     public Icon getIcon() {
-        return new ImageIcon(Utilities.loadImage("org/netbeans/modules/options/resources/advanced.png"));
+        return new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/options/resources/advanced.png"));
     }
 
     public String getCategoryName() {

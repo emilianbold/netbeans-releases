@@ -198,6 +198,9 @@ final class Importer {
         
         // create ENV variables in build.properties
         eclProject.setupEnvironmentVariables(projectImportProblems);
+        
+        // remove invalid source roots:
+        eclProject.removeInvalidSourceRoots(projectImportProblems);
     }
         
     private Project importProjectStage1(EclipseProject eclProject, List<String> importProblems, List<String> projectImportProblems) throws IOException {
@@ -240,8 +243,8 @@ final class Importer {
             }
             if (p != null) {
                 // type: java / web
-                // naked or workspace
-                // imported to separate folder
+                // naked(false) or workspace(true)
+                // imported to separate folder(false) or eclipse project folder(true)
                 // number of import issues
                 // TODO: add eg. eclipse version  (not available now)
                 Util.logUsage(Importer.class, "USG_PROJECT_ECLIPSE_IMPORT",  // NOI18N

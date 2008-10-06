@@ -6,12 +6,13 @@
 select c|
 
 --
-customers*
-  customer
-    customer_id
-  address
-    address_id
-customizations
-  customization
-    invoice_id
-    customer_id
+<unknown>
+  customers*
+    customer
+      customer_id
+    address
+      address_id
+  customizations
+    customization
+      invoice_id
+      customer_id

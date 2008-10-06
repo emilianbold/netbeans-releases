@@ -55,18 +55,26 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
+import org.netbeans.modules.php.dbgp.DebugSession.IDESessionBridge;
+import org.netbeans.modules.php.dbgp.models.ThreadsModel;
 import org.netbeans.modules.php.dbgp.packets.StatusCommand;
 import org.netbeans.spi.debugger.DebuggerEngineProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -85,10 +93,12 @@ public class StartActionProviderImpl {
     private static final int TIMEOUT        = 60000;
     
     private static final String PORT_OCCUPIED = "MSG_PortOccupied"; // NOI18N
+    private AtomicReference<Future<Cancellable>> refForFutureCancel;
     
     private StartActionProviderImpl ( ){
         mySessions = new HashSet<DebugSession>();
         myCurrentSessions = new WeakHashMap<Session, DebugSession>();
+         refForFutureCancel = new AtomicReference<Future<Cancellable>>(null);
     }
     
     public static StartActionProviderImpl getInstance(){
@@ -97,9 +107,16 @@ public class StartActionProviderImpl {
 
     
     public synchronized Semaphore start( DebugSession session) {
+        return start(session, null);
+    }
+    
+    public synchronized Semaphore start( DebugSession session, Callable<Cancellable> run) {
             int port = session.getOptions().getPort();
-            myThread = new ServerThread( port, session.getSessionId() );
+            myThread = new ServerThread( port, session.getSessionId());
             RequestProcessor.getDefault().post( myThread );
+            if (run != null) {
+                refForFutureCancel.set(Executors.newSingleThreadExecutor().submit(run));
+            }
             return myThread.getSemaphore();
     }
     
@@ -135,6 +152,18 @@ public class StartActionProviderImpl {
     }
     
     public synchronized void stop( Session session ) {
+        try {
+            Future<Cancellable> futureCancel = refForFutureCancel.get();
+            Cancellable cancel = (futureCancel != null) ? futureCancel.get() : null;
+            if (cancel != null) {
+                cancel.cancel();
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        refForFutureCancel = new AtomicReference<Future<Cancellable>>(null);
         SessionId id = session.lookupFirst(null, SessionId.class);
         List<DebugSession> list = new ArrayList<DebugSession>( mySessions);
         for( DebugSession debSess : list) {
@@ -170,19 +199,26 @@ public class StartActionProviderImpl {
             DebugSession debugSession )
     {
         myCurrentSessions.put(session, debugSession);
-        debugSession.getBridge().hideAnnotations();
-        debugSession.getBridge().setSuspended(false);
-        debugSession.getBridge().getThreadsModel().update();
+        IDESessionBridge bridge = debugSession.getBridge();
+        if (bridge != null) {
+            bridge.hideAnnotations();
+            bridge.setSuspended(false);
+            ThreadsModel threadsModel = bridge.getThreadsModel();
+            if (threadsModel != null) {
+                threadsModel.update();
+            }
+        }
     }
     
     synchronized void removeSession( DebugSession session ){
-        Session sess = (Session)
-            session.getBridge().getEngine().lookupFirst(null, Session.class );
         SessionId id = session.getSessionId();
         mySessions.remove( session );
         if ( id!= null ){
             Collection<DebugSession> collection = getSessions(id);
             if ( collection.size() >0 ){
+                IDESessionBridge bridge = session.getBridge();
+                DebuggerEngine engine = (bridge != null) ? bridge.getEngine() : null;
+                Session sess = engine != null ? ((Session) engine.lookupFirst(null, Session.class)) : null;
                 DebugSession debugSession = collection.iterator().next();
                 setCurrentSession(sess, debugSession);
                 StatusCommand command = new StatusCommand( 

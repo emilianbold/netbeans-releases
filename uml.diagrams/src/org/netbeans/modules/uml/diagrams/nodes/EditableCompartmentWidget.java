@@ -298,14 +298,37 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             
             DesignerScene scene = (DesignerScene) widget.getScene();
             
-            // Sheryl commented out below for LabelNode widget, 
-            // I first need to verify that the widget (or at least the one
-            // associated to the model element) is focused.  If it does 
-            // not have focus, it should not be editable.
             Object data = scene.findObject(widget);
             Widget assocWidget = scene.findWidget(data);
+
+            // When using the keystroke ENTER to open the inplaced editor the
+            // logic states that only the focused widget can enter into edit
+            // mode.  Without this logic the last editable field in the last
+            // editable node always enter into edit mode when the enter key is
+            // pressed.  Therefore the reason for the focus logic.
+            //
+            // However, In some case the widget can not have keyboard focus. For
+            // example subpartitions in a partition.  However we do not want to
+            // stop the user from entering into edit mode via the mouse.
+            //
+            // Therefore check if the user we are trying to enter into edit
+            // mode via a mouse press or a keyboard action.
+            boolean canEdit = assocWidget.getState().isFocused();
+            if(canEdit == false)
+            {
+                if (controller instanceof TypedEditorController)
+                {
+                    TypedEditorController typedController = (TypedEditorController) controller;
+                    EditorInvocationType type = typedController.getEditorInvocationType();
+                    if((type == EditorInvocationType.CODE) ||
+                       (type == EditorInvocationType.MOUSE))
+                    {
+                        canEdit = true;
+                    }
+                }
+            }
             
-            if((assocWidget == null) || (assocWidget.getState().isFocused() == false))
+            if((assocWidget == null) || (canEdit == false))
             {
                 return null;
             }

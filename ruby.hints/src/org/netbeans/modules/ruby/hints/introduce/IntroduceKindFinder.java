@@ -70,6 +70,7 @@ class IntroduceKindFinder implements ParseTreeVisitor {
         // Yield is okay:
         //case YIELDNODE:
             invalid = true;
+            break;
             
         case NILNODE:
         case FALSENODE:

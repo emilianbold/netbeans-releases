@@ -59,6 +59,11 @@ made subject to such option by the copyright holder.
                     <file name="org.netbeans.modules.websvc.wsstack.jaxws.tomcat.TomcatLookupProvider.instance"/>
                 </folder>
             </folder>
+            <folder name="JBoss4">
+                <folder name="Lookup">
+                    <file name="org.netbeans.modules.websvc.wsstack.jaxws.jboss.JBossLookupProvider.instance"/>
+                </folder>
+            </folder>
         </folder>
     </folder>
 </filesystem>

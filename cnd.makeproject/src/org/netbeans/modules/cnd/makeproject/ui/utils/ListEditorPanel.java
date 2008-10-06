@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.makeproject.ui.utils;
 import java.awt.Component;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JButton;
@@ -51,6 +53,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.openide.util.NbBundle;
@@ -642,18 +645,25 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	addObjectAction(addAction());
     }
     public  void addObjectAction(Object newObject) {
-	if (newObject == null)
+        ArrayList<Object> listToAdd = new ArrayList<Object>();
+        listToAdd.add(newObject);
+        addObjectsAction(listToAdd);
+    }
+    public  void addObjectsAction(List listToAdd) {
+	if (listToAdd == null || listToAdd.size() == 0)
 	    return;
 	// Update gui
         this.isChanged = true;
-	int addAtIndex = listData.size(); //getSelectedIndex();
-	listData.add(addAtIndex, newObject);
+	int addAtIndex = listData.size();
+	Vector newListData = new Vector();
+        newListData.addAll(listData);
+        newListData.addAll(listToAdd);
+	listData = newListData;
 	setData(listData);
         setSelectedIndex(addAtIndex);
-	addButton.requestFocus();
+        ensureIndexIsVisible(addAtIndex);
         checkSelection();
-        targetList.ensureIndexIsVisible(addAtIndex);
-	addButton.requestFocus();
+        addButton.requestFocus();
     }
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         // Add your handling code here:

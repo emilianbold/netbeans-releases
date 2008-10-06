@@ -65,7 +65,14 @@ public class WsimportOption {
    public void setWsimportOptionValue(String value){
        wsimportOption.setWsimportOptionValue(value);
    }
-   
+
+   public Boolean getJaxbOption(){
+       return wsimportOption.getJaxboption();
+   }
+
+   public void setJaxbOption(Boolean bool){
+       wsimportOption.setJaxboption(bool);
+   }
    public org.netbeans.modules.websvc.jaxwsmodel.project_config1_0.WsimportOption getOriginal(){
        return wsimportOption;
    }

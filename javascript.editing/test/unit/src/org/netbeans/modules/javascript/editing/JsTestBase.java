@@ -64,6 +64,12 @@ public abstract class JsTestBase extends GsfTestBase {
     }
 
     @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
+    @Override
     protected DefaultLanguageConfig getPreferredLanguage() {
         return new JsLanguage();
     }
@@ -81,6 +87,9 @@ public abstract class JsTestBase extends GsfTestBase {
 
     @Override
     protected void validateParserResult(ParserResult result) {
+        if (JsParser.runtimeException != null) {
+            JsParser.runtimeException.printStackTrace();
+        }
         JsTestBase.assertNull(JsParser.runtimeException != null ? JsParser.runtimeException.toString() : "", JsParser.runtimeException);
     }
     
@@ -105,7 +114,7 @@ public abstract class JsTestBase extends GsfTestBase {
         return formatter;
     }
     
-    // Called via reflection from NbUtilities. This is necessary because
+    // Called via reflection from GsfUtilities. This is necessary because
     // during tests, going from a FileObject to a BaseDocument only works
     // if all the correct data loaders are installed and working - and that
     // hasn't been the case; we end up with PlainDocuments instead of BaseDocuments.

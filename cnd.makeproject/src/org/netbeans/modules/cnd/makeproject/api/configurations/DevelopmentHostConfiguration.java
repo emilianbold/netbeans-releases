@@ -59,7 +59,6 @@ public class DevelopmentHostConfiguration {
     private boolean dirty = false;
     private PropertyChangeSupport pcs;
     private static ServerList serverList = null;
-    private boolean online;
 
     public DevelopmentHostConfiguration(String host) {
         names = getServerNames();
@@ -71,7 +70,6 @@ public class DevelopmentHostConfiguration {
             }
         }
         def = value;
-        online = false;
         pcs = new PropertyChangeSupport(this);
     }
 
@@ -81,20 +79,16 @@ public class DevelopmentHostConfiguration {
 
     public String getDisplayName(boolean displayIfNotFound) {
         String out = names[value];
-        if (!isLocalhost() && displayIfNotFound) {
-            CompilerSetManager csm = CompilerSetManager.getDefault(out);
-            if (csm.isUninitialized()) {
-                out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
-                online = false;
-            } else {
-                online = true;
-            }
+        if (displayIfNotFound && !isOnline()) {
+            out = NbBundle.getMessage(DevelopmentHostConfiguration.class,  "NOT_CONFIGURED", out); // NOI18N
         }
         return out;
     }
 
     public boolean isOnline() {
-        return online;
+        // localhost is always STATE_COMPLETE so isLocalhost() is assumed
+        // keeping track of online status takes more efforts and can miss sometimes
+        return !CompilerSetManager.getDefault(getName()).isUninitialized();
     }
 
     public int getValue() {
@@ -109,7 +103,6 @@ public class DevelopmentHostConfiguration {
         for (int i = 0; i < names.length; i++) {
             if (v.equals(names[i])) {
                 value = i;
-                online = v.equals(CompilerSetManager.LOCALHOST) || !CompilerSetManager.getDefault(v).isUninitialized();
                 if (firePC) {
                     pcs.firePropertyChange(PROP_DEV_HOST, null, this);
                 }
@@ -120,13 +113,14 @@ public class DevelopmentHostConfiguration {
         // The project's configuration wants a dev host not currently defined.
         // We don't want to ask user at this moment, so we create offline host and preserve compilerset name
         // User will be asked about connection after choosing action like build for this particular project
+        // or after click on brand-new "..." button!
         addDevelopmentHost(v);
         names = getServerNames();
         setValue(v, firePC);
     }
 
     private boolean addDevelopmentHost(String host) {
-        ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList list = Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
             list.addServer(host, false, false);
         }
@@ -171,7 +165,6 @@ public class DevelopmentHostConfiguration {
         DevelopmentHostConfiguration clone = new DevelopmentHostConfiguration(getName());
         // FIXUP: left setValue call to leave old logic
         clone.setValue(getName());
-        clone.online = online;
         return clone;
     }
 
@@ -193,7 +186,7 @@ public class DevelopmentHostConfiguration {
 
     private static ServerList getServerList() {
         if (serverList == null) {
-            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            serverList = Lookup.getDefault().lookup(ServerList.class);
         }
         return serverList;
     }

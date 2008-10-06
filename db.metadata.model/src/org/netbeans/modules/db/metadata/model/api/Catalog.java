@@ -54,34 +54,69 @@ public class Catalog extends MetadataObject {
         this.impl = impl;
     }
 
+    /**
+     * Returns the name of this catalog or {@code null} if the name is not known.
+     *
+     * @return the name or {@code null}.
+     */
     public String getName() {
         return impl.getName();
     }
 
+    /**
+     * Returns {@code true} if this catalog is the default one in this metadata model.
+     *
+     * @return {@code true} if this is the default catalog, {@false} otherwise.
+     */
     public boolean isDefault() {
         return impl.isDefault();
     }
 
+    // XXX this probably belongs in Metadata.
     /**
-     * @return the default schema or null.
-     * @throws MetadataException.
+     * @return the default schema or {@code null}.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Schema getDefaultSchema() {
         return impl.getDefaultSchema();
     }
 
     /**
+     * Returns the synthetic schema in this catalog. The catalog has
+     * a synthetic schema if the database doesn't support schemas. Synthetic
+     * schemas have {@code null} names.
+     *
+     * <p>If this method returns {@code null}, then the database supports schemas,
+     * and they can be retrieved by the {@link #getSchemas} method.</p>
+     *
+     * @return the synthetic schema or {@code null}.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Schema getSyntheticSchema() {
+        return impl.getSyntheticSchema();
+    }
+
+    /**
+     * Returns the schemas in this catalog.
+     *
+     * <p>If the database does not supports schemas, this method always returns
+     * an empty collection. In that case, a synthetic schema available
+     * through {@link #getSyntheticSchema} provides access to the tables and
+     * other objects in the catalog.</p>
+     *
      * @return the schemas.
-     * @throws MetadataException.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Collection<Schema> getSchemas() {
         return impl.getSchemas();
     }
 
     /**
+     * Returns the schema with the given name.
+     *
      * @param name a schema name.
-     * @return a schema named {@code name} or null.
-     * @throws MetadataException.
+     * @return a schema named {@code name} or {@code null} if there is no such schema.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public Schema getSchema(String name) {
         return impl.getSchema(name);

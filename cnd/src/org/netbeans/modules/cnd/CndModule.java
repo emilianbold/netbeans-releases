@@ -74,21 +74,25 @@ public class CndModule extends ModuleInstall {
             // TODO: why not set permissions for bin/* ?
             List<String> files = new ArrayList<String>();
             addFile(files, "bin/dorun.sh"); // NOI18N
-            addFile(files, "bin/stdouterr.sh"); // NOI18N
+            //addFile(files, "bin/stdouterr.sh"); // NOI18N
             if (Utilities.getOperatingSystem() == Utilities.OS_SOLARIS) {
                 if (System.getProperty("os.arch").equals("sparc")) { // NOI18N
-                    addFile(files, "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
+                    //addFile(files, "bin/GdbHelper-SunOS-sparc.so"); // NOI18N
                     addFile(files, "bin/unbuffer-SunOS-sparc.so"); // NOI18N
+                    addFile(files, "bin/unbuffer-SunOS-sparc_64.so"); // NOI18N
                 } else {
-                    addFile(files, "bin/GdbHelper-SunOS-x86.so"); // NOI18N
+                    //addFile(files, "bin/GdbHelper-SunOS-x86.so"); // NOI18N
                     addFile(files, "bin/unbuffer-SunOS-x86.so"); // NOI18N
+                    addFile(files, "bin/unbuffer-SunOS-x86_64.so"); // NOI18N
                 }
             } else if (Utilities.getOperatingSystem() == Utilities.OS_LINUX) {
-                addFile(files, "bin/GdbHelper-Linux-x86.so"); // NOI18N
+                //addFile(files, "bin/GdbHelper-Linux-x86.so"); // NOI18N
                 addFile(files, "bin/unbuffer-Linux-x86.so"); // NOI18N
+                addFile(files, "bin/unbuffer-Linux-x86_64.so"); // NOI18N
             } else if (Utilities.isMac()) {
-                addFile(files, "bin/GdbHelper-Mac_OS_X-x86.dylib"); // NOI18N
+                //addFile(files, "bin/GdbHelper-Mac_OS_X-x86.dylib"); // NOI18N
                 addFile(files, "bin/unbuffer-Mac_OS_X-x86.dylib"); // NOI18N
+                addFile(files, "bin/unbuffer-Mac_OS_X-x86_64.dylib"); // NOI18N
             }
             setPermissions(files);
         }

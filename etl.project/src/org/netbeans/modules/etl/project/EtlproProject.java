@@ -50,6 +50,7 @@ import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.spi.queries.FileBuiltQueryImplementation;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Utilities;
@@ -73,7 +74,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
 
     private static transient final Logger mLogger = Logger.getLogger(EtlproProject.class.getName());
     //private static transient final Localizer mLoc = Localizer.get();
-    private static final Icon PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif")); // NOI18N
+    private static final Icon PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/etl/project/ui/resources/etlproProjectIcon.gif")); // NOI18N
     public static final String SOURCES_TYPE_ICANPRO = "BIZPRO";
     public static final String MODULE_INSTALL_NAME = "modules/org-netbeans-modules-etl-project.jar";
     public static final String MODULE_INSTALL_CBN = "org.netbeans.modules.etl.project";
@@ -388,7 +389,7 @@ public final class EtlproProject implements Project, AntProjectListener, Project
             "simple-files" // NOI18N
         };
         private static final String[] PRIVILEGED_NAMES = new String[]{
-            "Templates/CAPS/ETL.etl" ,
+            "Templates/CAPS/Collaboration.etl" ,//For the right click in Project-New->should have ETL by default
         };
     
 

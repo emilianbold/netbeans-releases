@@ -816,8 +816,8 @@ public class HTMLSyntaxSupport extends ExtSyntaxSupport implements InvalidateLis
                 if(tag != null) {
                     tagName = tag.getName();
                     
-                    if(tag.isEmpty()) {
-                        continue;
+                    if(tag.isEmpty() && tag.hasOptionalEnd()) {
+                        continue; //forbidden end tag
                     }
                 }
                 

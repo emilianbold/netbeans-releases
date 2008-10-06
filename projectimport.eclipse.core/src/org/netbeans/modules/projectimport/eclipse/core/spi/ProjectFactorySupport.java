@@ -56,6 +56,9 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
@@ -91,6 +94,10 @@ public class ProjectFactorySupport {
      */
     public static void updateProjectClassPath(AntProjectHelper helper, ReferenceHelper refHelper, ProjectImportModel model, 
             List<String> importProblems) throws IOException {
+        {
+            // #147126: force recalc of source groups; otherwise project may not have claimed ownership of external roots.
+            ProjectUtils.getSources(ProjectManager.getDefault().findProject(helper.getProjectDirectory())).getSourceGroups("irrelevant"); // NOI18N
+        }
         if (model.getEclipseSourceRoots().size() == 0) {
             importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_NoSourceRootsFound"));
             return;
@@ -332,14 +339,8 @@ public class ProjectFactorySupport {
                 ProjectClassPathModifier.addRoots(new URL[]{FileUtil.urlForArchiveOrDir(f)}, sourceRoot, ClassPath.COMPILE);
                 entry.setImportSuccessful(Boolean.TRUE);
             } catch (UnsupportedOperationException x) {
-                // java.lang.UnsupportedOperationException: Project in .../JSPWiki of class org.netbeans.modules.autoproject.core.AutomaticProject has neither a ProjectClassPathModifierImplementation nor a ProjectClassPathExtender in its lookup
-                //         at org.netbeans.api.java.project.classpath.ProjectClassPathModifier.findExtensible(ProjectClassPathModifier.java:360)
-                //         at org.netbeans.api.java.project.classpath.ProjectClassPathModifier.addRoots(ProjectClassPathModifier.java:138)
-                //         at org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport.addItemToClassPath(ProjectFactorySupport.java:323)
-                //         at org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport.updateProjectClassPath(ProjectFactorySupport.java:98)
-                //         at org.netbeans.modules.projectimport.eclipse.j2se.J2SEProjectFactory.createProject(J2SEProjectFactory.java:105)
-                //         at org.netbeans.modules.projectimport.eclipse.core.Importer.importProject(Importer.java:197)
-                importProblems.add(x.getMessage()); // XXX could do better
+                // Probably should not happen any more (#147126), but handle gracefully just in case.
+                importProblems.add(x.getMessage());
                 entry.setImportSuccessful(false);
             }
             updateSourceAndJavadoc(helper, f, null, entry, false);
@@ -659,9 +660,8 @@ public class ProjectFactorySupport {
     }
 
     /**
-     * Checks whether (potentially) external source roots are already owned by another project.
-     * If they are, the import cannot proceed - the imported project would not be treated as
-     * the new owner of the source roots, and so could not work with them (e.g. to set their CP).
+     * Checks whether any of Eclipse source roots is already owned by a project.
+     * If it is then abort import and tell user to open that project instead.
      * Internal source roots beneath the project directory do not pose this problem, as
      * {@link FileOwnerQuery} should consider the new project to be the default owner of anything
      * underneath it.
@@ -678,13 +678,16 @@ public class ProjectFactorySupport {
             FileObject fo = FileUtil.toFileObject(sourceRootFile);
             Project p = FileOwnerQuery.getOwner(fo);
             if (p != null) {
-                importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
-                        model.getProjectName(), sourceRootFile.getPath(),
-                        FileUtil.getFileDisplayName(p.getProjectDirectory())));
-                return true;
+                for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    if (fo.equals(sg.getRootFolder())) {
+                        importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
+                                model.getProjectName(), sourceRootFile.getPath(),
+                                FileUtil.getFileDisplayName(p.getProjectDirectory())));
+                        return true;
+                    }
+                }
             }
         }
         return false;
     }
-    
 }

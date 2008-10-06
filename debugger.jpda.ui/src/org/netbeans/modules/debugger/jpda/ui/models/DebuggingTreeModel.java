@@ -45,6 +45,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -64,7 +65,6 @@ import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.ui.models.SourcesModel.AbstractColumn;
 import org.netbeans.spi.debugger.ContextProvider;
 
@@ -110,6 +110,8 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     private Collection<ModelListener> listeners = new HashSet<ModelListener>();
     private Map<JPDAThread, ThreadStateListener> threadStateListeners = new WeakHashMap<JPDAThread, ThreadStateListener>();
     private Preferences preferences = NbPreferences.forModule(getClass()).node("debugging"); // NOI18N
+
+    private static RequestProcessor RP = new RequestProcessor("Debugging Threads Refresh", 1);
     
     public DebuggingTreeModel(ContextProvider lookupProvider) {
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
@@ -281,7 +283,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
             return true;
         }
         if (node instanceof JPDAThread) {
-            if (!((JPDAThread) node).isSuspended()) {
+            if (!((JPDAThread) node).isSuspended() && !isMethodInvoking((JPDAThread) node)) {
                 return true;
             }
         }
@@ -370,9 +372,7 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         }
         
         private RequestProcessor.Task createTask() {
-            RequestProcessor.Task task =
-                new RequestProcessor("Debugging Threads Refresh", 1).create(
-                                new RefreshTree());
+            RequestProcessor.Task task = RP.create(new RefreshTree());
             return task;
         }
         
@@ -435,9 +435,11 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
     }
 
     
-    private void fireThreadStateChanged (Object node) {
-        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false) ||
-            !preferences.getBoolean(SHOW_SYSTEM_THREADS, false)) {
+    private void fireThreadStateChanged (JPDAThread node) {
+        if (preferences.getBoolean(SHOW_SUSPENDED_THREADS_ONLY, false)) {
+            fireNodeChanged(ROOT);
+        } else if (!preferences.getBoolean(SHOW_SYSTEM_THREADS, false)
+                   && isSystem(node)) {
 
             fireNodeChanged(ROOT);
         }
@@ -475,12 +477,13 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(JPDAThread.PROP_SUSPENDED));
             JPDAThread t = tr.get();
-            if (t != null) {
+            if (t != null && (t.isSuspended() || !isMethodInvoking(t))) {
+                boolean suspended = t.isSuspended();
                 synchronized (this) {
                     if (task == null) {
-                        task = RequestProcessor.getDefault().create(new Refresher());
+                        task = RP.create(new Refresher());
                     }
-                    task.schedule(200);
+                    task.schedule(suspended ? 200 : 1000);
                 }
             }
         }
@@ -493,6 +496,23 @@ public class DebuggingTreeModel extends CachedChildrenTreeModel {
                 }
             }
         }
+    }
+
+    public static boolean isMethodInvoking(JPDAThread t) {
+        try {
+            return (Boolean) t.getClass().getMethod("isMethodInvoking").invoke(t);
+        } catch (IllegalAccessException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (IllegalArgumentException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (NoSuchMethodException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (SecurityException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
     }
     
     

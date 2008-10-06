@@ -41,9 +41,13 @@
 
 package org.netbeans.modules.project.ant;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -54,6 +58,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.prefs.Preferences;
+import java.util.zip.CRC32;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
@@ -66,6 +74,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -164,47 +173,8 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         if (projectDiskFile == null) {
             return null;
         }
-        Document projectXml;
-        Element projectEl;
-        try {
-            projectXml = XMLUtil.parse(new InputSource(projectDiskFile.toURI().toString()), false, true, Util.defaultErrorHandler(), null);
-            projectEl = projectXml.getDocumentElement();
-            if (!"project".equals(projectEl.getLocalName()) || !PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
-                return null;
-            }
-            try {
-                ProjectXMLCatalogReader.validate(projectEl);
-            } catch (SAXException x) {
-                Element corrected = ProjectXMLCatalogReader.autocorrect(projectEl, x);
-                if (corrected != null) {
-                    projectXml.replaceChild(corrected, projectEl);
-                    projectEl = corrected;
-                    // Try to correct on disk if possible.
-                    // (If not, any changes from the IDE will write out a corrected file anyway.)
-                    if (projectDiskFile.canWrite()) {
-                        OutputStream os = new FileOutputStream(projectDiskFile);
-                        try {
-                            XMLUtil.write(projectXml, os, "UTF-8");
-                        } finally {
-                            os.close();
-                        }
-                    }
-                } else {
-                    throw x;
-                }
-            }
-        } catch (SAXException e) {
-            IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
-            String msg = e.getMessage().
-                    // org/apache/xerces/impl/msg/XMLSchemaMessages.properties validation (3.X.4)
-                    replaceFirst("^cvc-[^:]+: ", ""). // NOI18N
-                    replaceAll("http://www.netbeans.org/ns/", ".../"); // NOI18N
-            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(AntBasedProjectFactorySingleton.class,
-                                                                        "AntBasedProjectFactorySingleton.parseError",
-                                                                        projectDiskFile.getName(), msg));
-            throw ioe;
-        }
-        Element typeEl = Util.findElement(projectEl, "type", PROJECT_NS); // NOI18N
+        Document projectXml = loadProjectXml(projectDiskFile);
+        Element typeEl = Util.findElement(projectXml.getDocumentElement(), "type", PROJECT_NS); // NOI18N
         if (typeEl == null) {
             return null;
         }
@@ -233,6 +203,82 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         return project;
     }
     
+    private Document loadProjectXml(File projectDiskFile) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        InputStream is = new FileInputStream(projectDiskFile);
+        try {
+            FileUtil.copy(is, baos);
+        } finally {
+            is.close();
+        }
+        byte[] data = baos.toByteArray();
+        InputSource src = new InputSource(new ByteArrayInputStream(data));
+        src.setSystemId(projectDiskFile.toURI().toString());
+        try {
+            Document projectXml = XMLUtil.parse(src, false, true, Util.defaultErrorHandler(), null);
+            Element projectEl = projectXml.getDocumentElement();
+            if (!"project".equals(projectEl.getLocalName()) || !PROJECT_NS.equals(projectEl.getNamespaceURI())) { // NOI18N
+                return null;
+            }
+            // #142680: try to cache CRC-32s of project.xml files known to be valid, since validation can be slow.
+            Preferences prefs = NbPreferences.forModule(AntBasedProjectFactorySingleton.class);
+            String key = "knownValidProjectXmlCRC32s"; // NOI18N
+            List<Long> knownHashes = new ArrayList<Long>();
+            String knownHashesS = prefs.get(key, null);
+            if (knownHashesS != null) {
+                for (String knownHash : knownHashesS.split(",")) { // NOI18N
+                    try {
+                        knownHashes.add(Long.valueOf(knownHash, 16));
+                    } catch (NumberFormatException x) {/* forget it */}
+                }
+            }
+            CRC32 crc = new CRC32();
+            crc.update(data);
+            long hash = crc.getValue();
+            if (!knownHashes.contains(hash)) {
+                Logger.getLogger(AntBasedProjectFactorySingleton.class.getName()).log(Level.FINE, "Validating: {0}", projectDiskFile);
+                try {
+                    ProjectXMLCatalogReader.validate(projectEl);
+                    StringBuilder newKnownHashes = new StringBuilder(Long.toString(hash, 16));
+                    for (int i = 0; i < knownHashes.size() && i < /* max size */100; i++) {
+                        newKnownHashes.append(',');
+                        newKnownHashes.append(Long.toString(knownHashes.get(i), 16));
+                    }
+                    prefs.put(key, newKnownHashes.toString());
+                } catch (SAXException x) {
+                    Element corrected = ProjectXMLCatalogReader.autocorrect(projectEl, x);
+                    if (corrected != null) {
+                        projectXml.replaceChild(corrected, projectEl);
+                        projectEl = corrected;
+                        // Try to correct on disk if possible.
+                        // (If not, any changes from the IDE will write out a corrected file anyway.)
+                        if (projectDiskFile.canWrite()) {
+                            OutputStream os = new FileOutputStream(projectDiskFile);
+                            try {
+                                XMLUtil.write(projectXml, os, "UTF-8");
+                            } finally {
+                                os.close();
+                            }
+                        }
+                    } else {
+                        throw x;
+                    }
+                }
+            }
+            return projectXml;
+        } catch (SAXException e) {
+            IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
+            String msg = e.getMessage().
+                    // org/apache/xerces/impl/msg/XMLSchemaMessages.properties validation (3.X.4)
+                    replaceFirst("^cvc-[^:]+: ", ""). // NOI18N
+                    replaceAll("http://www.netbeans.org/ns/", ".../"); // NOI18N
+            Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(AntBasedProjectFactorySingleton.class,
+                                                                        "AntBasedProjectFactorySingleton.parseError",
+                                                                        projectDiskFile.getName(), msg));
+            throw ioe;
+        }
+    }
+
     public void saveProject(Project project) throws IOException, ClassCastException {
         Reference<AntProjectHelper> helperRef = project2Helper.get(project);
         if (helperRef == null) {
@@ -270,7 +316,7 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
         Reference<AntProjectHelper> helperRef = project2Helper.get(p);
         return helperRef != null ? helperRef.get() : null;
     }
-    
+
     /**
      * Callback to create and access AntProjectHelper objects from outside its package.
      */

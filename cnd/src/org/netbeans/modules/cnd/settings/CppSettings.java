@@ -437,7 +437,11 @@ public class CppSettings extends SharedClassObject {
     }
     
 
-     public boolean isFreeFormatFortran(){
+    /*
+     * use FortranCodeStyle.get(doc).isFreeFormatFortran();
+     */
+    @Deprecated
+    public boolean isFreeFormatFortran(){
         //Boolean b = (Boolean)getProperty(PROP_FREE_FORMAT_FORTRAN);
         boolean b = getPreferences().getBoolean(PROP_FREE_FORMAT_FORTRAN, true);
 //         if( b == null ){

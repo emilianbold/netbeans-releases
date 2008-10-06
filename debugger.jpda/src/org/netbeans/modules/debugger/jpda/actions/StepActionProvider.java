@@ -77,6 +77,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.openide.ErrorManager;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -152,12 +153,13 @@ implements Executor {
     }
     
     public void runAction(final Object action) {
-        synchronized (getDebuggerImpl ().LOCK) {
-            //S ystem.out.println("\nStepAction.doAction");
-            try {
+        //S ystem.out.println("\nStepAction.doAction");
+        try {
+            int suspendPolicy;
+            synchronized (getDebuggerImpl ().LOCK) {
                 // 1) init info about current state & remove old
                 //    requests in the current thread
-                int suspendPolicy = getDebuggerImpl().getSuspend();
+                suspendPolicy = getDebuggerImpl().getSuspend();
                 JPDAThreadImpl resumeThread = (JPDAThreadImpl) getDebuggerImpl().getCurrentThread();
                 synchronized (resumeThread) {
                     resumeThread.waitUntilMethodInvokeDone();
@@ -194,21 +196,21 @@ implements Executor {
                 }
                 // 3) resume JVM
                 resumeThread.setInStep(true, stepRequest);
-                if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
-                    //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
-                    getDebuggerImpl().resumeCurrentThread();
-                    //resumeThread.resume();
-                } else {
-                    getDebuggerImpl ().resume ();
-                }
-            } catch (VMDisconnectedException e) {
-                ErrorManager.getDefault().notify(ErrorManager.USER,
-                    ErrorManager.getDefault().annotate(e,
-                        NbBundle.getMessage(StepActionProvider.class,
-                            "VMDisconnected")));
-            }   
-            //S ystem.out.println("/nStepAction.doAction end");
+            }
+            if (suspendPolicy == JPDADebugger.SUSPEND_EVENT_THREAD) {
+                //stepWatch = new SingleThreadedStepWatch(getDebuggerImpl(), stepRequest);
+                getDebuggerImpl().resumeCurrentThread();
+                //resumeThread.resume();
+            } else {
+                getDebuggerImpl ().resume ();
+            }
+        } catch (VMDisconnectedException e) {
+            ErrorManager.getDefault().notify(ErrorManager.USER,
+                ErrorManager.getDefault().annotate(e,
+                    NbBundle.getMessage(StepActionProvider.class,
+                        "VMDisconnected")));
         }
+        //S ystem.out.println("/nStepAction.doAction end");
     }
     
     private void addMethodExitBP(ThreadReference tr, JPDAThread jtr) {
@@ -232,6 +234,14 @@ implements Executor {
         mb.setThreadFilters(getDebuggerImpl(), new JPDAThread[] { jtr });
         lastMethodExitBreakpointListener = new MethodExitBreakpointListener(mb);
         mb.addJPDABreakpointListener(lastMethodExitBreakpointListener);
+        // TODO: mb.setSession(debugger);
+        try {
+            java.lang.reflect.Method setSessionMethod = JPDABreakpoint.class.getDeclaredMethod("setSession", JPDADebugger.class);
+            setSessionMethod.setAccessible(true);
+            setSessionMethod.invoke(mb, debugger);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
         DebuggerManager.getDebuggerManager().addBreakpoint(mb);
     }
     

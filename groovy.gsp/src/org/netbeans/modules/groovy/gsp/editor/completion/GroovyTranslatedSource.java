@@ -40,7 +40,6 @@
 package org.netbeans.modules.groovy.gsp.editor.completion;
 
 
-import org.netbeans.modules.gsf.api.EmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 
 /**
@@ -48,12 +47,11 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class GroovyTranslatedSource implements TranslatedSource {
+public class GroovyTranslatedSource extends TranslatedSource {
     private GspModel model;
-    private GroovyEmbeddingModel embeddingModel;
 
     public GroovyTranslatedSource(GroovyEmbeddingModel embeddingModel, GspModel model) {
-        this.embeddingModel = embeddingModel;
+        super(embeddingModel);
         this.model = model;
     }
 
@@ -67,10 +65,6 @@ public class GroovyTranslatedSource implements TranslatedSource {
 
     public String getSource() {
         return model.getGroovyCode();
-    }
-
-    public EmbeddingModel getModel() {
-        return embeddingModel;
     }
 
     public int getSourceStartOffset() {

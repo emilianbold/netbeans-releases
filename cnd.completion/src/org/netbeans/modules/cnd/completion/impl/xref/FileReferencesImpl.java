@@ -90,6 +90,15 @@ public class FileReferencesImpl extends CsmFileReferences  {
     }
 
     public void accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds) {
+        FileReferencesContext fileReferencesContext = new FileReferencesContext(csmScope);
+        try {
+            _accept(csmScope, visitor, kinds, fileReferencesContext);
+        } finally {
+            fileReferencesContext.clean();
+        }
+    }
+
+    private void _accept(CsmScope csmScope, Visitor visitor, Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
         if (!CsmKindUtilities.isOffsetable(csmScope) && !CsmKindUtilities.isFile(csmScope)){
             return;
         }
@@ -121,7 +130,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
             end = ((CsmOffsetable)csmScope).getEndOffset();
         }
 
-        List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, doc, start,end, kinds);
+        List<CsmReferenceContext> refs = getIdentifierReferences(csmFile, doc, start,end, kinds, fileReferncesContext);
 
         for (CsmReferenceContext context : refs) {
             // skip 'this' if possible
@@ -142,8 +151,8 @@ public class FileReferencesImpl extends CsmFileReferences  {
     }
 
     private List<CsmReferenceContext> getIdentifierReferences(CsmFile csmFile, final BaseDocument doc,
-                                                        final int start, final int end,
-                                                        Set<CsmReferenceKind> kinds) {
+                    final int start, final int end,
+                    Set<CsmReferenceKind> kinds, FileReferencesContext fileReferncesContext) {
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
         Collection<CsmOffsetable> deadBlocks;
@@ -152,7 +161,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         } else {
             deadBlocks = Collections.<CsmOffsetable>emptyList();
         }
-        final ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
+        final ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks, fileReferncesContext);
         doc.readLock();
         try {
             CndTokenUtilities.processTokens(tp, doc, start, end);
@@ -170,18 +179,20 @@ public class FileReferencesImpl extends CsmFileReferences  {
         private final CsmFile csmFile;
         private final BaseDocument doc;
         private final ReferenceContextBuilder contextBuilder;
+        private final FileReferencesContext fileReferncesContext;
         private CppTokenId derefToken;
         private BlockConsumer blockConsumer;
         
         ReferencesProcessor(CsmFile csmFile, BaseDocument doc,
              boolean skipPreprocDirectives, boolean needAfterDereferenceUsages,
-             Collection<CsmOffsetable> deadBlocks) {
+             Collection<CsmOffsetable> deadBlocks, FileReferencesContext fileReferncesContext) {
             this.deadBlocks = deadBlocks;
             this.needAfterDereferenceUsages = needAfterDereferenceUsages;
             this.skipPreprocDirectives = skipPreprocDirectives;
             this.csmFile = csmFile;
             this.doc = doc;
             this.contextBuilder = new ReferenceContextBuilder();
+            this.fileReferncesContext = fileReferncesContext;
         }
 
         @Override
@@ -210,6 +221,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
                             csmFile, doc, tokenOffset, token, derefToken == null?
                                 null : CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
                     contextBuilder.reference(ref, derefToken);
+                    ref.setFileReferencesContext(fileReferncesContext);
                     derefToken = null;
                     if (!skip) {
                         references.add(contextBuilder.getContext());

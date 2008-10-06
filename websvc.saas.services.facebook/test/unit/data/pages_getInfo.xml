@@ -8,7 +8,9 @@
         <pic_square>http://profile.ak.facebook.com/object2/283/56/q4846711747_9511.jpg</pic_square>
         <pic_large>http://profile.ak.facebook.com/object2/283/56/4846711747_9511.jpg</pic_large>
         <type>MUSICIANS</type>
+        <!-- bug on facebook's api page?? 
         <type>page</type>
+        -->
         <website>http://www.kronosquartet.org </website>
         <location/>
         <hours/>

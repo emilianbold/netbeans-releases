@@ -30,8 +30,10 @@ import org.openide.util.NbBundle;
  *
  */
 class ObjectVariableNode extends 
-    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode 
-{
+    org.netbeans.modules.php.dbgp.models.VariablesModel.AbstractVariableNode {
+    protected static final String OBJECT_ICON =
+        "org/netbeans/modules/debugger/resources/localsView/LocalVariablesGroup";//NOI18N
+
     private static final String TYPE_OBJECT = "TYPE_Object";                 // NOI18N
     
     private static final String THIS        = "$this";                       // NOI18N
@@ -56,7 +58,7 @@ class ObjectVariableNode extends
         if ( THIS.equals(name) || SELF.equals(name)) {
             return FIELD_ICON;
         }
-        return super.getName();
+        return OBJECT_ICON;
     }
     
     protected boolean isTypeApplied( Set<FilterType> filters ) {

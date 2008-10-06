@@ -41,7 +41,7 @@ package org.netbeans.modules.db.sql.editor.completion;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +53,6 @@ import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
-import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
@@ -63,13 +62,13 @@ import org.openide.util.Utilities;
  *
  * @author Andrei Badea
  */
-public class TestMetadata implements MetadataImplementation {
+public class TestMetadata extends MetadataImplementation {
 
-    private final TestCatalog catalogImpl = new TestCatalog();
-    private final Catalog defaultCatalog = MetadataFactory.createCatalog(catalogImpl);
+    private final Map<String, Catalog> catalogs = new TreeMap<String, Catalog>(new NullStringComparator());
+    private Catalog defaultCatalog;
 
     public static Metadata create(List<String> spec) {
-        return MetadataFactory.createMetadata(new TestMetadata(spec));
+        return new TestMetadata(spec).getMetadata();
     }
 
     public TestMetadata(String[] spec) {
@@ -78,12 +77,22 @@ public class TestMetadata implements MetadataImplementation {
 
     private TestMetadata(List<String> spec) {
         parse(spec);
-        if (catalogImpl.defaultSchema == null) {
+        if (defaultCatalog == null) {
             throw new IllegalArgumentException();
+        }
+        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        if (defaultSchema != null) {
+            if (!defaultCatalog.getSchemas().contains(defaultSchema)) {
+                Schema syntheticSchema = defaultCatalog.getSyntheticSchema();
+                if (syntheticSchema != null && syntheticSchema != defaultSchema) {
+                    throw new IllegalArgumentException();
+                }
+            }
         }
     }
 
     private void parse(List<String> spec) {
+        TestCatalog catalogImpl = null;
         TestSchema schemaImpl = null;
         TestTable tableImpl = null;
         for (String line : spec) {
@@ -95,42 +104,69 @@ public class TestMetadata implements MetadataImplementation {
                 continue;
             }
             String trimmed = line.trim();
+            boolean _default = false;
+            if (trimmed.endsWith("*")) {
+                trimmed = trimmed.replace("*", "");
+                _default = true;
+            }
             switch (count) {
                 case 0:
-                    boolean defaultSchema = false;
+                    if (trimmed.equals("<unknown>")) {
+                        _default = true;
+                        trimmed = null;
+                    }
+                    catalogImpl = new TestCatalog(trimmed, _default);
+                    Catalog catalog = catalogImpl.getCatalog();
+                    if (catalogs.get(trimmed) != null) {
+                        throw new IllegalArgumentException(line);
+                    }
+                    catalogs.put(trimmed, catalog);
+                    if (_default) {
+                        if (defaultCatalog != null) {
+                            throw new IllegalArgumentException(line);
+                        }
+                        defaultCatalog = catalog;
+                    }
+                    break;
+                case 2:
                     boolean synthetic = false;
                     if (trimmed.equals("<no-schema>")) {
                         trimmed = null;
-                        defaultSchema = true;
+                        _default = true;
                         synthetic = true;
-                    } else {
-                        if (trimmed.endsWith("*")) {
-                            trimmed = trimmed.replace("*", "");
-                            defaultSchema = true;
-                        }
                     }
-                    schemaImpl = new TestSchema(trimmed, defaultSchema, synthetic);
-                    Schema schema = MetadataFactory.createSchema(schemaImpl);
-                    catalogImpl.schemas.put(trimmed, schema);
-                    if (defaultSchema) {
-                        if (catalogImpl.defaultSchema != null) {
+                    schemaImpl = new TestSchema(catalogImpl, trimmed, _default, synthetic);
+                    Schema schema = schemaImpl.getSchema();
+                    if (synthetic) {
+                        if (catalogImpl.syntheticSchema != null) {
+                            throw new IllegalArgumentException(line);
+                        }
+                        catalogImpl.syntheticSchema = schema;
+                    } else {
+                        if (catalogImpl.schemas.get(trimmed) != null) {
+                            throw new IllegalArgumentException(line);
+                        }
+                        catalogImpl.schemas.put(trimmed, schema);
+                    }
+                    if (_default) {
+                        if (defaultCatalog != catalogImpl.getCatalog() || catalogImpl.defaultSchema != null) {
                             throw new IllegalArgumentException(line);
                         }
                         catalogImpl.defaultSchema = schema;
                     }
                     break;
-                case 2:
+                case 4:
                     if (schemaImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
-                    tableImpl = new TestTable(trimmed);
-                    schemaImpl.tables.put(trimmed, MetadataFactory.createTable(tableImpl));
+                    tableImpl = new TestTable(schemaImpl, trimmed);
+                    schemaImpl.tables.put(trimmed, tableImpl.getTable());
                     break;
-                case 4:
+                case 6:
                     if (schemaImpl == null || tableImpl == null) {
                         throw new IllegalArgumentException(line);
                     }
-                    tableImpl.columns.put(trimmed, MetadataFactory.createColumn(new TestColumn(trimmed)));
+                    tableImpl.columns.put(trimmed, new TestColumn(tableImpl, trimmed).getColumn());
                     break;
                 default:
                     throw new IllegalArgumentException(line);
@@ -143,34 +179,43 @@ public class TestMetadata implements MetadataImplementation {
     }
 
     public Collection<Catalog> getCatalogs() {
-        return Collections.singleton(defaultCatalog);
+        return catalogs.values();
     }
 
     public Catalog getCatalog(String name) {
-        if (Utilities.compareObjects(name, defaultCatalog.getName())) {
-            return defaultCatalog;
-        }
-        return null;
+        return catalogs.get(name);
     }
 
     public void refresh() {
     }
 
-    static final class TestCatalog implements CatalogImplementation {
+    static final class TestCatalog extends CatalogImplementation {
 
-        Schema defaultSchema;
+        private final String name;
+        private final boolean _default;
         Map<String, Schema> schemas = new TreeMap<String, Schema>();
+        Schema defaultSchema;
+        Schema syntheticSchema;
+
+        public TestCatalog(String name, boolean _default) {
+            this.name = name;
+            this._default = _default;
+        }
 
         public String getName() {
-            return null;
+            return name;
         }
 
         public boolean isDefault() {
-            return true;
+            return _default;
         }
 
         public Schema getDefaultSchema() {
             return defaultSchema;
+        }
+
+        public Schema getSyntheticSchema() {
+            return syntheticSchema;
         }
 
         public Collection<Schema> getSchemas() {
@@ -182,17 +227,23 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    static final class TestSchema implements SchemaImplementation {
+    static final class TestSchema extends SchemaImplementation {
 
+        private final TestCatalog catalogImpl;
         private final String name;
         private final boolean _default;
         private final boolean synthetic;
         private final Map<String, Table> tables = new TreeMap<String, Table>();
 
-        public TestSchema(String name, boolean _default, boolean synthetic) {
+        public TestSchema(TestCatalog catalogImpl, String name, boolean _default, boolean synthetic) {
+            this.catalogImpl = catalogImpl;
             this.name = name;
             this._default = _default;
             this.synthetic = synthetic;
+        }
+
+        public Catalog getParent() {
+            return catalogImpl.getCatalog();
         }
 
         public String getName() {
@@ -216,13 +267,19 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    static final class TestTable implements TableImplementation {
+    static final class TestTable extends TableImplementation {
 
+        private final TestSchema schemaImpl;
         private final String name;
         private final Map<String, Column> columns = new LinkedHashMap<String, Column>();
 
-        public TestTable(String name) {
+        public TestTable(TestSchema schemaImpl, String name) {
+            this.schemaImpl = schemaImpl;
             this.name = name;
+        }
+
+        public Schema getParent() {
+            return schemaImpl.getSchema();
         }
 
         public String getName() {
@@ -238,16 +295,41 @@ public class TestMetadata implements MetadataImplementation {
         }
     }
 
-    static final class TestColumn implements ColumnImplementation {
+    static final class TestColumn extends ColumnImplementation {
 
+        private final TestTable tableImpl;
         private final String name;
 
-        private TestColumn(String name) {
+        private TestColumn(TestTable tableImpl, String name) {
+            this.tableImpl = tableImpl;
             this.name = name;
+        }
+
+        public Table getParent() {
+            return tableImpl.getTable();
         }
 
         public String getName() {
             return name;
+        }
+    }
+
+    private static final class NullStringComparator implements Comparator<String> {
+
+        public int compare(String string1, String string2) {
+            if (string1 == null) {
+                if (string2 == null) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } else {
+                if (string2 == null) {
+                    return 1;
+                } else {
+                    return string1.compareTo(string2);
+                }
+            }
         }
     }
 }

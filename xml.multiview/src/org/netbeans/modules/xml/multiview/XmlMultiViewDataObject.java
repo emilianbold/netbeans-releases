@@ -51,6 +51,7 @@ import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.MultiFileLoader;
 import org.openide.nodes.CookieSet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.ErrorManager;
@@ -167,7 +168,7 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
     
     /** Icon for XML View */
     protected java.awt.Image getXmlViewIcon() {
-        return org.openide.util.Utilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/xml/multiview/resources/xmlObject.gif"); //NOI18N
     }
     
     /** MultiViewDesc for MultiView editor
@@ -442,16 +443,22 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
                 XmlMultiViewEditorSupport editorSupport = getEditorSupport();
                 if (editorSupport.getDocument() == null) {
                     XmlMultiViewEditorSupport.XmlEnv xmlEnv = editorSupport.getXmlEnv();
-                    FileLock lock = xmlEnv.takeLock();
-                    OutputStream outputStream = getPrimaryFile().getOutputStream(lock);
-                    Writer writer = new OutputStreamWriter(outputStream, encodingHelper.getEncoding());
+                    FileLock lock = null;
                     try {
-                        writer.write(buffer);
+                        lock = xmlEnv.takeLock();
+                        OutputStream outputStream = getPrimaryFile().getOutputStream(lock);
+                        Writer writer = new OutputStreamWriter(outputStream, encodingHelper.getEncoding());
+                        try {
+                            writer.write(buffer);
+                        } finally {
+                            writer.close();
+                            xmlEnv.unmarkModified();
+                            resetFileTime();
+                        }
                     } finally {
-                        writer.close();
-                        lock.releaseLock();
-                        xmlEnv.unmarkModified();
-                        resetFileTime();
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
                     }
                 } else {
                     editorSupport.saveDocument(dataLock);

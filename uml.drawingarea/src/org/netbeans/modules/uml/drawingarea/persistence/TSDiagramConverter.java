@@ -122,6 +122,8 @@ import org.openide.util.Exceptions;
 public class TSDiagramConverter
 {
     public static final String ELEMENT = "ELEMENT";
+    private static final String BENDSPROPERTY = "BENDS61";
+    private static final String ORIENTATION = "Orientation";
     private static final String PRESENTATIONELEMENT = "PRESENTATION";
     private static final String SHOWMESSAGETYPE = "ShowMessageType";
     private static final String TSLABELTYPE = "TYPE";
@@ -210,6 +212,7 @@ public class TSDiagramConverter
         createNodesPresentationElements();
         findEdgesElements();
         handleLabelsInfo(peidToEdgeLabelMap);
+        handleBendPointsInfo();
         if(diagramDetails.getDiagramType() == IDiagramKind.DK_SEQUENCE_DIAGRAM)
         {
             normalizeSQDDiagram();
@@ -429,6 +432,18 @@ public class TSDiagramConverter
             String path=etldFO.getPath();
             String path2=etlpFO.getPath();
             String parpath=parent.getPath();
+            //if it's reconverting just override previous 6.1 backup
+             FileObject destFO1 = backupFO.getFileObject(etldFO.getName(), etldFO.getExt());
+             if (destFO1 != null)
+             {
+                destFO1.delete();
+             }             
+             FileObject destFO2 = backupFO.getFileObject(etlpFO.getName(), etlpFO.getExt());
+             if (destFO2 != null)
+             {
+                destFO2.delete();
+             }             
+            //
             FileUtil.moveFile(etldFO, backupFO, etldFO.getName());
             FileUtil.moveFile(etlpFO, backupFO, etlpFO.getName());
             IDrawingAreaEventDispatcher dispatcher = getDispatcher();
@@ -491,25 +506,17 @@ public class TSDiagramConverter
                     if (widget!=null && widget instanceof UMLNodeWidget)
                     {
                         if(nodeInfo.getModelElement() instanceof IState)
-                        {//workaround for reverted composite state
-                            if(SeparatorWidget.Orientation.VERTICAL.toString().equals(nodeInfo.getProperty("Orientation")))
-                            {
-                                nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.HORIZONTAL.toString());
-                            }
-                            else if(SeparatorWidget.Orientation.HORIZONTAL.toString().equals(nodeInfo.getProperty("Orientation")))
-                            {
-                                nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
-                            }
-                            else
+                        {
+                            if(nodeInfo.getProperty(ORIENTATION)==null)
                             {
                                 //default (null) 
-                                nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.HORIZONTAL.toString());
+                                nodeInfo.setProperty(ORIENTATION,SeparatorWidget.Orientation.HORIZONTAL.toString());
                             }
                             if(nodeInfo.getProperty("ShowTransitions")==null)nodeInfo.setProperty("ShowTransitions", Boolean.FALSE);
                         }
                         else if(nodeInfo.getModelElement() instanceof IActivityPartition)
                         {
-                            if(nodeInfo.getProperty("Orientation")==null)nodeInfo.setProperty("Orientation",SeparatorWidget.Orientation.VERTICAL.toString());
+                            if(nodeInfo.getProperty(ORIENTATION)==null)nodeInfo.setProperty(ORIENTATION,SeparatorWidget.Orientation.VERTICAL.toString());
                         }
                         ((UMLNodeWidget) widget).load(nodeInfo);
                         if(nodeInfo.getModelElement() instanceof ICombinedFragment)
@@ -522,7 +529,7 @@ public class TSDiagramConverter
                         {
                             IActivityPartition ap=(IActivityPartition)nodeInfo.getModelElement();
                             {
-                                new AfterValidationExecutor(new LoadSubPartitionsProvider((UMLNodeWidget) widget,ap, SeparatorWidget.Orientation.valueOf(nodeInfo.getProperty("Orientation").toString()), nodeInfo.getDevidersOffests()), scene);
+                                new AfterValidationExecutor(new LoadSubPartitionsProvider((UMLNodeWidget) widget,ap, SeparatorWidget.Orientation.valueOf(nodeInfo.getProperty(ORIENTATION).toString()), nodeInfo.getDevidersOffests()), scene);
                             }
                         }
                         else if(nodeInfo.getModelElement() instanceof IState)
@@ -530,7 +537,7 @@ public class TSDiagramConverter
                             IState state=(IState) nodeInfo.getModelElement();
                             {
                                 //composite state
-                                new AfterValidationExecutor(new LoadRegionsProvider((UMLNodeWidget) widget,state, SeparatorWidget.Orientation.valueOf(nodeInfo.getProperty("Orientation").toString()), nodeInfo.getDevidersOffests()), scene);
+                                new AfterValidationExecutor(new LoadRegionsProvider((UMLNodeWidget) widget,state, SeparatorWidget.Orientation.valueOf(nodeInfo.getProperty(ORIENTATION).toString()), nodeInfo.getDevidersOffests()), scene);
                             }
                         }
                     }
@@ -908,6 +915,18 @@ public class TSDiagramConverter
                 Object object = retVal.get(i);
                 if (object instanceof DiagramEdgeReader)
                 {
+                    //workaround for issue with number on message which do not have associated operation, will show name label instead of operation label
+                    if(ShowMessageNumbers)
+                    {
+                        if(message.getOperationInvoked()==null)//no operation - no operation label in 6.5
+                        {
+                            if(edgeInfo.getLabels()!=null && edgeInfo.getLabels().size()>0 && edgeInfo.getLabels().get(0).getLabel().equalsIgnoreCase(AbstractLabelManager.OPERATION))//atempt to load operation
+                            {
+                                edgeInfo.getLabels().get(0).setLabel(AbstractLabelManager.NAME);//change o show name
+                            }
+                        }
+                    }
+                    //
                     if (object instanceof UMLEdgeWidget && 
                             (((UMLEdgeWidget)object).getWidgetID()).equalsIgnoreCase(UMLWidgetIDString.RESULTMESSAGECONNECTIONWIDGET.toString())) {
                         ((DiagramEdgeReader)object).load(resultInfo);
@@ -949,6 +968,48 @@ public class TSDiagramConverter
             loc.x-=minX-margin;
             loc.y=maxY+margin-loc.y;
             ninfo.setPosition(loc);
+        }
+    }
+    
+    private void handleBendPointsInfo()
+    {
+        Collection<EdgeInfo> einfos = presIdEdgeInfoMap.values();
+        int margin=60;
+        for (EdgeInfo einfo : einfos)
+        {
+                ArrayList<Point> points=new ArrayList<Point>();
+                Point point0=new Point(0,0);
+                if(einfo.getSourcePE()!=null && presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID())!=null)
+                {
+                    point0=presIdNodeInfoMap.get(einfo.getSourcePE().getXMIID()).getPosition();
+                }
+                points.add(point0);
+                if(einfo.getProperty(BENDSPROPERTY)!=null)
+                {
+                    ArrayList<Point> tmp=(ArrayList<Point>) einfo.getProperty(BENDSPROPERTY);
+                    for(int i=0;i<tmp.size();i++)
+                    {
+                        Point p=tmp.get(i);
+                        Point loc=new Point(p);
+                        loc.x-=minX-margin;
+                        loc.y=maxY+margin-loc.y;
+                        points.add(loc);
+                    }
+                }
+                
+                Point pointN=new Point(0,0);
+                if(einfo.getTargetPE()!=null && presIdNodeInfoMap.get(einfo.getTargetPE().getXMIID())!=null)
+                {
+                    pointN=presIdNodeInfoMap.get(einfo.getTargetPE().getXMIID()).getPosition();
+                }
+                points.add(pointN);
+                //
+                if(NESTEDLINKENGINE.equals(einfo.getProperty(ENGINE)))
+                {//nested link need reverse order in new diagram
+                    Collections.reverse(points);
+                }
+                //
+                einfo.setWayPoints(points);
         }
     }
     
@@ -1211,15 +1272,15 @@ public class TSDiagramConverter
                             String value=readerPres.getAttributeValue(null, "value");
                             if(orientation!=null && orientation.length()>0)
                             {
-                                if("0".equals(orientation))
+                                if("1".equals(orientation))
                                 {
-                                    //horizontal
-                                    ninfo.setProperty("Orientation", SeparatorWidget.Orientation.HORIZONTAL.toString());
+                                    //
+                                    ninfo.setProperty(ORIENTATION, SeparatorWidget.Orientation.HORIZONTAL.toString());
                                 }
-                                else if("1".equals(orientation))
+                                else if("0".equals(orientation))
                                 {
-                                    //vertical
-                                     ninfo.setProperty("Orientation", SeparatorWidget.Orientation.VERTICAL.toString());
+                                    //
+                                     ninfo.setProperty(ORIENTATION, SeparatorWidget.Orientation.VERTICAL.toString());
                                 }
                                 else
                                 {
@@ -1690,6 +1751,11 @@ public class TSDiagramConverter
                         //edges goes after nodes, so info should be availabel
                         einfo.setProperty("TARGETCONNECTOR", connectors.get(readerData.getAttributeValue(null, "value")));
                     }
+                    else if(readerData.getName().getLocalPart()
+                        .equalsIgnoreCase("bends"))
+                    {
+                        handleEdgeBends(einfo);
+                    }
                 }
                 
                 else if (readerData.isEndElement() && 
@@ -1799,6 +1865,30 @@ public class TSDiagramConverter
         {
             Exceptions.printStackTrace(ex);
         }
+    }
+    private void handleEdgeBends(EdgeInfo einfo)
+    {
+        try {
+            while (readerData.hasNext()) {
+                if (XMLStreamConstants.START_ELEMENT == readerData.next()) {
+                    if (readerData.getName().getLocalPart().equals("point")) {
+                        int x = (int) Double.parseDouble(readerData.getAttributeValue(null, "x"));
+                        int y = (int) Double.parseDouble(readerData.getAttributeValue(null, "y"));
+                        if (einfo.getProperty(BENDSPROPERTY) == null) {
+                            einfo.setProperty(BENDSPROPERTY, new ArrayList());
+                        }
+                        ((ArrayList) einfo.getProperty(BENDSPROPERTY)).add(new Point(x, y));
+                    }
+                }
+                else if (readerData.isEndElement() && readerData.getName().getLocalPart().equalsIgnoreCase("bends"))
+                {
+                   break; 
+                }
+            }
+        } catch (XMLStreamException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
     }
     
     private class ConnectorData

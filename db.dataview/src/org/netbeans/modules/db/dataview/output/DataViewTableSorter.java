@@ -64,6 +64,7 @@ import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.openide.util.ImageUtilities;
 
 /**
  * DataViewTableSorter is a decorator for TableModels; adding sorting
@@ -131,9 +132,9 @@ final class DataViewTableSorter extends AbstractTableModel {
             return o1.toString().compareTo(o2.toString());
         }
     };
-    private final Icon ICON_ASCENDING = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/db/dataview/images/columnsSortedAsc.gif", true)); // NOI18N
+    private final Icon ICON_ASCENDING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/dataview/images/columnsSortedAsc.gif", true)); // NOI18N
 
-    private final Icon ICON_DESCENDING = new ImageIcon(org.openide.util.Utilities.loadImage("org/netbeans/modules/db/dataview/images/columnsSortedDesc.gif", true)); // NOI18N
+    private final Icon ICON_DESCENDING = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/db/dataview/images/columnsSortedDesc.gif", true)); // NOI18N
 
     private Row[] viewToModel;
     private int[] modelToView;

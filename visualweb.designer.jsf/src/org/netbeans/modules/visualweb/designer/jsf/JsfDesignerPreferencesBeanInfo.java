@@ -47,6 +47,7 @@ import java.beans.PropertyDescriptor;
 import java.beans.SimpleBeanInfo;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -112,7 +113,7 @@ public class JsfDesignerPreferencesBeanInfo extends SimpleBeanInfo {
     /** Returns the designer icon */
     @Override
     public Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/visualweb/designer/jsf/resources/preferences.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/jsf/resources/preferences.gif"); // NOI18N
     }
     
     private static void log(Exception exception) {

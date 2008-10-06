@@ -93,8 +93,9 @@ public class ExternalModificationTest extends ModelImplBaseTestCase {
         
         writeFile(sourceFile, "void " + newName + "() {};");
         
+        sleep(1000);
         FileUtil.refreshAll();
-        sleep(10000);
+        sleep(2000);
         
         project.waitParse();
         assertNotNull(newName + " should be found", findDeclaration(newName, project));

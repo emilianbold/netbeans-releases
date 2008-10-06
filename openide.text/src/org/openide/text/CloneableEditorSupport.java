@@ -154,6 +154,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     /** document we work with */
     private StrongRef doc;
 
+    /** State of doc reference, it is set to true in prepareDocument when StrongRef is created
+     * and set to false when document loading is finished. It helps to reset doc reference to weak just once. */
+    private boolean isStrongSet = false;
+
+    private int counterGetDocument = 0;
+    private int counterOpenDocument = 0;
+    private int counterPrepareDocument = 0;
+
     /** Non default MIME type used to editing */
     private String mimeType;
 
@@ -226,12 +234,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      */
     private Map<Line,Reference<Line>> lineSetWHM;
     private boolean annotationsLoaded;
-
-    /* Whether the file was externally modified or not.
-     * This flag is used only in saveDocument to prevent
-     * overriding of externally modified file. See issue #32777.
-     */
-    private boolean externallyModified;
 
     /** Creates new CloneableEditorSupport attached to given environment.
     *
@@ -499,6 +501,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         return propertyChangeSupport;
     }
 
+    private boolean canReleaseDoc () {
+        if ((counterGetDocument == 0) && (counterOpenDocument == 0) && (counterPrepareDocument == 0)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     //
     // EditorCookie implementation
     // 
@@ -520,8 +530,30 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             switch (documentStatus) {
             case DOCUMENT_NO:
                 documentStatus = DOCUMENT_LOADING;
-                
-                return prepareDocument(false);
+                counterPrepareDocument++;
+                Task t = prepareDocument(false);
+                //Check for null is workaround for issue #144722
+                if (t != null) {
+                    t.addTaskListener(new TaskListener() {
+                        public void taskFinished(Task task) {
+                            counterPrepareDocument--;
+                            if (isStrongSet && canReleaseDoc()) {
+                                isStrongSet = false;
+                                CloneableEditorSupport.this.doc.setStrong(false);
+                            }
+                            task.removeTaskListener(this);
+                        }
+                    });
+                } else {
+                    counterPrepareDocument--;
+                    if (isStrongSet && canReleaseDoc()) {
+                        isStrongSet = false;
+                        if (this.doc != null) {
+                            this.doc.setStrong(false);
+                        }
+                    }
+                }
+                return t;
 
             default:
 
@@ -558,7 +590,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             final StyledDocument[] docToLoad = { getDoc() };
             if (docToLoad[0] == null) {
                 docToLoad[0] = createStyledDocument(kit);
-                setDoc(docToLoad[0], false);
+                setDoc(docToLoad[0], true);
+                isStrongSet = true;
 
                 // here would be the testability hook for issue 56413
                 // (Deadlock56413Test), but I use the reflection in the test
@@ -717,7 +750,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return redirect.openDocument();
         }
         synchronized (getLock()) {
-            return openDocumentCheckIOE();
+            try {
+                counterOpenDocument++;
+                StyledDocument doc = openDocumentCheckIOE();
+                return doc;
+            } finally {
+                counterOpenDocument--;
+                if (isStrongSet && canReleaseDoc()) {
+                    isStrongSet = false;
+                    this.doc.setStrong(false);
+                }
+            }
         }
     }
 
@@ -801,9 +844,17 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                     }
 
                     try {
-                        return openDocumentCheckIOE();
+                        counterGetDocument++;
+                        StyledDocument doc = openDocumentCheckIOE();
+                        return doc;
                     } catch (IOException e) {
                         return null;
+                    } finally {
+                        counterGetDocument--;
+                        if (isStrongSet && canReleaseDoc()) {
+                            isStrongSet = false;
+                            this.doc.setStrong(false);
+                        }
                     }
                 }
             }
@@ -836,28 +887,32 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (!cesEnv().isModified()) {
             return;
         }
-
-        //#32777: check that file was not modified externally.
-        // If it was then cancel saving operation. It is not absolutely
-        // correct, but there is no other way.
-        if (lastSaveTime != -1) {
-            externallyModified = false;
-
-            // asking for time should if necessary refresh the underlaying object
-            // (eg. FileObject) and this change can result in document reload task
-            // which will set externallyModified to true
-            cesEnv().getTime();
-
-            if (externallyModified) {
-                // save operation must be cancelled now. The user get message box
-                // asking user to reload externally modified file. 
-                return;
-            }
-        }
-
         final StyledDocument myDoc = getDocument();
         if (myDoc == null) {
             return;
+        }
+
+        long prevLST = lastSaveTime;
+        if (prevLST != -1) {
+            final long externalMod = cesEnv().getTime().getTime();
+            if (externalMod > prevLST) {
+                throw new UserQuestionException(mimeType) {
+                    @Override
+                    public String getLocalizedMessage() {
+                        return NbBundle.getMessage(
+                            CloneableEditorSupport.class,
+                            "FMT_External_change_write",
+                            myDoc.getProperty(Document.TitleProperty)
+                        );
+                    }
+
+                    @Override
+                    public void confirmed() throws IOException {
+                        lastSaveTime = externalMod;
+                        saveDocument();
+                    }
+                };
+            }
         }
 
         // save the document as a reader
@@ -1959,7 +2014,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
 
         notifyClosed();
-
+        
         return true;
     }
 
@@ -2002,11 +2057,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
         if (positionManager != null) {
             positionManager.documentClosed();
-
+            
             documentStatus = DOCUMENT_NO;
             fireDocumentChange(getDoc(), true);
         }
-
+        
         documentStatus = DOCUMENT_NO;
         setDoc(null, false);
         kit = null;
@@ -2612,16 +2667,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
                 
-                ERR.fine("PROP_TIME new value: " + time);
-                ERR.fine("       lastSaveTime: " + lastSaveTime);
+                ERR.fine("PROP_TIME new value: " + time + ", " + (time != null ? time.getTime() : -1));
+                ERR.fine("       lastSaveTime: " + new Date(lastSaveTime) + ", " + lastSaveTime);
                 
                 boolean reload = (lastSaveTime != -1) && ((time == null) || (time.getTime() > lastSaveTime));
                 ERR.fine("             reload: " + reload);
 
                 if (reload) {
-                    //#32777 - set externallyModified to true because file was externally modified
-                    externallyModified = true;
-
                     // - post in AWT event thread because of possible dialog popup
                     // - acquire the write access before checking, so there is no
                     //   clash in-between and we're safe for potential reload.
@@ -2646,12 +2698,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                                     return;
                                 }
-
-                                checkReload((time == null) || !isModified());
+                                ERR.fine("checkReload starting"); // NOI18N
+                                boolean noAsk = time == null || !isModified();
+                                ERR.fine("checkReload noAsk: " + noAsk);
+                                checkReload(noAsk);
                             }
                         }
-                    
                     );
+                    ERR.fine("reload task posted"); // NOI18N
                 }
             }
 

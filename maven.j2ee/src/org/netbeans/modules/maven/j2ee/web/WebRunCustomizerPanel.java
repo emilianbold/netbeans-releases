@@ -45,6 +45,7 @@ import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.event.DocumentListener;
@@ -54,6 +55,8 @@ import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -72,8 +75,6 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private WebModule module;
     private WebModuleProviderImpl moduleProvider;
 
-    private ArrayList listeners;
-
     private NetbeansActionMapping run;
 
     private NetbeansActionMapping debug;
@@ -83,6 +84,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     private boolean isDebugCompatible;
 
     private String oldUrl;
+    private ComboBoxUpdater<Wrapper> listener;
     
     /** Creates new form WebRunCustomizerPanel */
     public WebRunCustomizerPanel(ModelHandle handle, Project project) {
@@ -108,8 +110,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
     }
     
     private void initValues() {
-        listeners = new ArrayList();
-        listeners.add(new ComboBoxUpdater<Wrapper>(comServer, lblServer) {
+        listener = new ComboBoxUpdater<Wrapper>(comServer, lblServer) {
             public Wrapper getDefaultValue() {
                 Wrapper wr = null;
                 String id = handle.getProject().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
@@ -189,14 +190,15 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                     handle.markAsModified(handle.getProfileModel());
                 }
             }
-        });
+        };
         
         run = ModelHandle.getActiveMapping(ActionProvider.COMMAND_RUN, project);
         debug = ModelHandle.getActiveMapping(ActionProvider.COMMAND_DEBUG, project);
         isRunCompatible = checkMapping(run);
         isDebugCompatible = checkMapping(debug);
         oldUrl = isRunCompatible ? run.getProperties().getProperty(PROP_CLIENT_URL_PART) : //NOI18N
-                                      debug.getProperties().getProperty(PROP_CLIENT_URL_PART); //NOI18N
+                                   debug.getProperties().getProperty(PROP_CLIENT_URL_PART); //NOI18N
+        
         if (oldUrl != null) {
             txtRelativeUrl.setText(oldUrl);
         } else {
@@ -366,9 +368,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         Iterator it = map.getGoals().iterator();
         while (it.hasNext()) {
             String goal = (String) it.next();
-            if (goal.indexOf("org.codehaus.mevenide:netbeans-deploy-plugin") > -1) { //NOI18N
+            if (goal.indexOf("netbeans-deploy-plugin") > -1) { //NOI18N
                 return true;
             }
+        }
+        if (map.getProperties().containsKey(Constants.ACTION_PROPERTY_DEPLOY)) {
+            return true;
         }
         return false;
     }
@@ -377,12 +382,12 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
         String newUrl = txtRelativeUrl.getText().trim();
         if (!newUrl.equals(oldUrl)) {
             if (isRunCompatible) {
-                run.getProperties().setProperty( PROP_CLIENT_URL_PART,newUrl); //NOI18N
+                run.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(run, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
             if (isDebugCompatible) {
-                debug.getProperties().setProperty( PROP_CLIENT_URL_PART,newUrl); //NOI18N
+                debug.getProperties().setProperty( PROP_CLIENT_URL_PART, newUrl); //NOI18N
                 ModelHandle.setUserActionMapping(debug, handle.getActionMappings());
                 handle.markAsModified(handle.getActionMappings());
             }
@@ -437,7 +442,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             if (ExecutionChecker.DEV_NULL.equals(id)) {
                 return ExecutionChecker.DEV_NULL;
             }
-            return Deployment.getDefault().getServerID(id);
+            return POHImpl.privateGetServerId(id);
         }
         
         @Override
@@ -445,7 +450,15 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             if (ExecutionChecker.DEV_NULL.equals(id)) {
                 return org.openide.util.NbBundle.getMessage(WebRunCustomizerPanel.class, "MSG_No_Server");
             }
-            return Deployment.getDefault().getServerInstanceDisplayName(id);
+            ServerInstance si = Deployment.getDefault().getServerInstance(id);
+            if (si != null) {
+                try {
+                    return si.getServerDisplayName();
+                } catch (InstanceRemovedException ex) {
+                    Logger.getLogger(WebRunCustomizerPanel.class.getName()).log(Level.FINE, "", ex);
+                }
+            }
+            return "";
         }
                 
     }

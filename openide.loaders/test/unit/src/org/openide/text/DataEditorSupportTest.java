@@ -51,7 +51,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
-import javax.swing.text.StyledDocument;
 
 
 import junit.framework.AssertionFailedError;
@@ -172,6 +171,7 @@ public class DataEditorSupportTest extends NbTestCase {
     public void testGetOpenedPanesWorksAfterDeserialization () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (-1);
     }
+    @RandomlyFails // NB-Core-Build #1434
     public void testGetOpenedPanesWorksAfterDeserializationIfTheFileGetsBig () throws Exception {
         doGetOpenedPanesWorksAfterDeserialization (1024 * 1024 * 10);
     }

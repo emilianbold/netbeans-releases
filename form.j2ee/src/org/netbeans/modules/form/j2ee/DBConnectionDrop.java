@@ -56,6 +56,7 @@ import org.netbeans.modules.form.palette.PaletteItem;
 import org.netbeans.modules.form.project.ClassSource;
 import org.netbeans.modules.j2ee.persistence.dd.persistence.model_1_0.PersistenceUnit;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -97,7 +98,7 @@ public class DBConnectionDrop implements NewComponentDrop {
                 new ClassSource.LibraryEntry(LibraryManager.getDefault().getLibrary("toplink"))), // NOI18N
                 null);
         pItem.setIcon(new ImageIcon(
-            Utilities.loadImage("org/netbeans/modules/form/j2ee/resources/EntityManager.png")).getImage()); // NOI18N
+            ImageUtilities.loadImage("org/netbeans/modules/form/j2ee/resources/EntityManager.png")).getImage()); // NOI18N
         return pItem;
     }
 

@@ -45,6 +45,7 @@ import java.util.ResourceBundle;
 import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 
+import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -71,12 +72,12 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     private ActionsPanel                actionsPanel; 
     private ExceptionBreakpoint         breakpoint;
     private boolean                     createBreakpoint = false;
-    private JEditorPane                 epExceptionClassName;
+    private JTextField                  tfExceptionClassName;
     
     private static ExceptionBreakpoint creteBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
@@ -106,12 +107,12 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         String className = b.getExceptionClassName ();
         ResourceBundle bundle = NbBundle.getBundle(ExceptionBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Field_Breakpoint_Class_Name");
-        epExceptionClassName = ClassBreakpointPanel.addClassNameEditor(pSettings, className, tooltipText);
-        epExceptionClassName.setToolTipText(tooltipText); // NOI18N
-        epExceptionClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
-        epExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Exception_Breakpoint_ClassName"));
-        HelpCtx.setHelpIDString(epExceptionClassName, HELP_ID);
-        jLabel3.setLabelFor(epExceptionClassName);
+        tfExceptionClassName = ClassBreakpointPanel.addClassNameEditor(pSettings, className, tooltipText);
+        tfExceptionClassName.setToolTipText(tooltipText); // NOI18N
+        tfExceptionClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
+        tfExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Exception_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(tfExceptionClassName, HELP_ID);
+        jLabel3.setLabelFor(tfExceptionClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Exception_Breakpoint_Type_Catched"));
         cbBreakpointType.addItem (bundle.getString("LBL_Exception_Breakpoint_Type_Uncatched"));
@@ -129,6 +130,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         }
         
         conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         conditionsPanel.showClassFilter(true);
         conditionsPanel.showCondition(true);
         conditionsPanel.setClassMatchFilter(b.getClassFilters());
@@ -257,7 +259,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
             return false;
         }
         actionsPanel.ok ();
-        String className = epExceptionClassName.getText ().trim ();
+        String className = tfExceptionClassName.getText ().trim ();
         breakpoint.setExceptionClassName (className);
         
         switch (cbBreakpointType.getSelectedIndex ()) {
@@ -303,7 +305,7 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
     }
     
     private String valiadateMsg () {
-        if (epExceptionClassName.getText().trim ().length() == 0) {
+        if (tfExceptionClassName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(ExceptionBreakpointPanel.class, "MSG_No_Exception_Class_Name_Spec");
         }
         return null;

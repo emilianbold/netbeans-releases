@@ -52,6 +52,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConstraint;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IDependency;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
@@ -122,6 +123,7 @@ public class ElementDataObject implements Report
     public static String Property_Default = NbBundle.getMessage(ElementDataObject.class, "Property_Default"); // NOI18N
     public static String Property_Primary_Key = NbBundle.getMessage(ElementDataObject.class, "Property_Primary_Key"); // NOI18N
     public static String Property_Redefined = NbBundle.getMessage(ElementDataObject.class, "Property_Redefined"); // NOI18N
+    public static String Property_Documentation = NbBundle.getMessage(ElementDataObject.class, "Property_Documentation"); // NOI18N
     public static String navBar1;
     public static String navBar2;
     public static String navBar3;
@@ -429,7 +431,7 @@ public class ElementDataObject implements Report
                 IStereotype stype = (IStereotype)stypes.get(i);
                 buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                 buff.append("<TD ALIGN=\"left\" VALIGN=\"top\" WIDTH=\"15%\">\r\n"); // NOI18N
-                buff.append(stype.getName() + "\r\n"); // NOI18N
+                buff.append(Util.convertToHTML(stype.getName()) + "\r\n"); // NOI18N
                 buff.append("</TD>\r\n</TR>\r\n"); // NOI18N
             }
             buff.append("</TABLE>\r\n&nbsp;\r\n"); // NOI18N
@@ -883,7 +885,7 @@ public class ElementDataObject implements Report
             out.write("<FONT SIZE=\"-1\">" + getOwningPackageName() + "</FONT>\r\n"); // NOI18N
             out.write("<BR>\r\n"); // NOI18N
             if (getElement() instanceof INamedElement)
-                out.write(getElementType() + " " + ((INamedElement)getElement()).getName() + "</H2>\r\n"); // NOI18N
+                out.write(getElementType() + " " + Util.convertToHTML(((INamedElement)getElement()).getName()) + "</H2>\r\n"); // NOI18N
             else
                 out.write(getElementType() + "</H2>\r\n"); // NOI18N
             

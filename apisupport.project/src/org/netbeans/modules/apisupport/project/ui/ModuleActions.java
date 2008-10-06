@@ -44,8 +44,11 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,7 +60,7 @@ import javax.swing.Action;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.runner.ProjectRunner;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
@@ -88,6 +91,8 @@ import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 public final class ModuleActions implements ActionProvider {
+    static final String TEST_USERDIR_LOCK_PROP_NAME = "run.args.extra";    // NOI18N
+    static final String TEST_USERDIR_LOCK_PROP_VALUE = "--test-userdir-lock-with-invalid-arg";    // NOI18N
     
     static Action[] getProjectActions(NbModuleProject project) {
         List<Action> actions = new ArrayList<Action>();
@@ -373,13 +378,12 @@ public final class ModuleActions implements ActionProvider {
             promptForPublicPackagesToDocument();
             return;
         } else {
-            if (command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) { // #63652
-                if (project.getTestUserDirLockFile().isFile()) {
-                    notifyCannotReRun();
-                    // XXX would be nice to offer to delete the lock file and continue
-                    return;
-                }
+            if ((command.equals(ActionProvider.COMMAND_RUN) || command.equals(ActionProvider.COMMAND_DEBUG)) // #63652
+                    && project.getTestUserDirLockFile().isFile()) {
+                // #141069: lock file exists, run with bogus option
+                p.setProperty(TEST_USERDIR_LOCK_PROP_NAME,TEST_USERDIR_LOCK_PROP_VALUE);
             }
+            
             targetNames = globalCommands.get(command);
             if (targetNames == null) {
                 throw new IllegalArgumentException(command);
@@ -411,9 +415,8 @@ public final class ModuleActions implements ActionProvider {
     }
     
     private static final String SYSTEM_PROPERTY_PREFIX = "test-unit-sys-prop.";
-    private static final String SYSTEM_PROPERTY_TARGET_PREFIX = "test-sys-prop.";
     
-    private void prepareSystemProperties(Properties properties) {
+    private void prepareSystemProperties(Map<String, Object> properties) {
         Map<String, String> evaluated = project.evaluator().getProperties();
 
         if (evaluated == null) {
@@ -422,7 +425,14 @@ public final class ModuleActions implements ActionProvider {
         
         for (Entry<String, String> e : evaluated.entrySet()) {
             if (e.getKey().startsWith(SYSTEM_PROPERTY_PREFIX) && e.getValue() != null) {
-                properties.setProperty(SYSTEM_PROPERTY_TARGET_PREFIX + e.getKey().substring(SYSTEM_PROPERTY_PREFIX.length()), e.getValue());
+                @SuppressWarnings("unchecked")
+                Collection<String> systemProperties = (Collection<String>) properties.get(JavaRunner.PROP_RUN_JVMARGS);
+
+                if (systemProperties == null) {
+                    properties.put(JavaRunner.PROP_RUN_JVMARGS, systemProperties = new LinkedList<String>());
+                }
+
+                systemProperties.add("-D" + e.getKey().substring(SYSTEM_PROPERTY_PREFIX.length()) + "=" + e.getValue());
             }
         }
     }
@@ -465,15 +475,18 @@ public final class ModuleActions implements ActionProvider {
         }
         
         if (toRun != null) {
-            String commandToExecute = COMMAND_RUN_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG;
-            if (!ProjectRunner.isSupported(commandToExecute, toRun)) {
+            String commandToExecute = COMMAND_RUN_SINGLE.equals(command) ? JavaRunner.QUICK_TEST : JavaRunner.QUICK_TEST_DEBUG;
+            if (!JavaRunner.isSupported(commandToExecute, Collections.singletonMap(JavaRunner.PROP_EXECUTE_FILE, toRun))) {
                 return false;
             }
             try {
-                Properties properties = new Properties();
+                Map<String, Object> properties = new HashMap<String, Object>();
 
                 prepareSystemProperties(properties);
-                ProjectRunner.execute(commandToExecute, properties, toRun);
+
+                properties.put(JavaRunner.PROP_EXECUTE_FILE, toRun);
+
+                JavaRunner.execute(commandToExecute, properties);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -632,10 +645,6 @@ public final class ModuleActions implements ActionProvider {
                 }
             }
         };
-    }
-
-    static void notifyCannotReRun() {
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(ModuleActions.class, "LBL_cannot_rerun"), NotifyDescriptor.WARNING_MESSAGE));
     }
     
 }

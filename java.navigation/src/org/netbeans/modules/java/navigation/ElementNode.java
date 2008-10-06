@@ -66,6 +66,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -93,7 +94,7 @@ public class ElementNode extends AbstractNode {
     
     @Override
     public Image getIcon(int type) {
-         return description.kind == null ? super.getIcon(type) : Utilities.icon2Image(ElementIcons.getElementIcon(description.kind, description.modifiers));
+         return description.kind == null ? super.getIcon(type) : ImageUtilities.icon2Image(ElementIcons.getElementIcon(description.kind, description.modifiers));
     }
 
     @Override
@@ -454,7 +455,7 @@ public class ElementNode extends AbstractNode {
         
     private static class WaitNode extends AbstractNode {
         
-        private Image waitIcon = Utilities.loadImage("org/netbeans/modules/java/navigation/resources/wait.gif"); // NOI18N
+        private Image waitIcon = ImageUtilities.loadImage("org/netbeans/modules/java/navigation/resources/wait.gif"); // NOI18N
         
         WaitNode( ) {
             super( Children.LEAF );

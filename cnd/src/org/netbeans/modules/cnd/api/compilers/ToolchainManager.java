@@ -41,16 +41,19 @@ package org.netbeans.modules.cnd.api.compilers;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.parsers.SAXParser;
@@ -78,12 +81,17 @@ public final class ToolchainManager {
     private static final boolean CREATE_SHADOW = Boolean.getBoolean("cnd.toolchain.personality.create_shadow"); // NOI18N
     private static final ToolchainManager instance = new ToolchainManager();
     private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
+    private Logger log = Logger.getLogger("cnd.toolchain.logger"); // NOI18N
     
     static final ToolchainManager getInstance(){
         return instance;
     }
     
     private ToolchainManager(){
+        initToolchainManager();
+    }
+    
+    private void initToolchainManager(){
         try {
             Map<Integer,CompilerVendor> vendors = new TreeMap<Integer,CompilerVendor>();
             FileSystem fs = Repository.getDefault().getDefaultFileSystem();
@@ -115,6 +123,14 @@ public final class ToolchainManager {
         }
     }
 
+    /**
+     * available in package for testing only
+     */
+    /*package-local*/ void reinitToolchainManager(){
+        descriptors.clear();
+        initToolchainManager();
+    }
+
     ToolchainDescriptor getToolchain(String name, int platform){
         ToolchainDescriptor nonePlatform = null;
         for (ToolchainDescriptor d : descriptors){
@@ -134,7 +150,7 @@ public final class ToolchainManager {
         return new ArrayList<ToolchainDescriptor>(descriptors);
     }
 
-    List<ToolchainDescriptor> getToolchains(int platform){
+        List<ToolchainDescriptor> getToolchains(int platform){
         List<ToolchainDescriptor> res = new ArrayList<ToolchainDescriptor>();
         for(ToolchainDescriptor d : descriptors){
             if (isPlatforSupported(platform, d)) {
@@ -145,6 +161,9 @@ public final class ToolchainManager {
     }
 
     boolean isPlatforSupported(int platform, ToolchainDescriptor d) {
+        if (!releaseFileMatch(d)) {
+            return false;
+        }
         switch (platform) {
             case PlatformTypes.PLATFORM_SOLARIS_SPARC:
                 for(String p : d.getPlatforms()){
@@ -197,6 +216,41 @@ public final class ToolchainManager {
                 break;
         }
         return false;
+    }
+
+    /**
+     * Check a file for a file for a specified pattern. This is typically used to search /etc/release on
+     * Unix systems (many Unix' have an /etc/release* file). This lets us fine tune a toolchain for a
+     * specific version of a Unix distribution.
+     *
+     * This method was written specifically to ensure that /opt/SunStudioExpress is <b>only</b> used on
+     * OpenSolaris systems.
+     */
+    private boolean releaseFileMatch(ToolchainDescriptor d) {
+        String releaseFile = d.getReleaseFile();
+        String releasePattern = d.getReleasePattern();
+        String line;
+
+        if (releaseFile != null && releasePattern != null) {
+            File file = new File(releaseFile);
+            if (file.exists()) {
+                Pattern pattern = Pattern.compile(releasePattern);
+                try {
+                    BufferedReader in = new BufferedReader(new FileReader(releaseFile));
+
+                    while ((line = in.readLine()) != null) {
+                        if (pattern.matcher(line).find()) {
+                            return true;
+                        }
+                    }
+                    in.close();
+                } catch (Exception ex) {
+                    log.warning("Excetpiont reading releae file [" + releaseFile + "] for " + d.getName());
+                }
+            }
+            return false;
+        }
+        return true;
     }
     
     boolean isMyFolder(String path, ToolchainDescriptor d, int platform){
@@ -263,7 +317,7 @@ public final class ToolchainManager {
         }
         String base = readRegestry(key, pattern);
         if (base != null && d.getBaseFolderSuffix() != null){
-            base += "/"+d.getBaseFolderSuffix();
+            base += "/"+d.getBaseFolderSuffix(); // NOI18N
         }
         return base;
     }
@@ -448,7 +502,10 @@ public final class ToolchainManager {
         return buf.toString();
     }
 
-    private void writeToolchains(){
+    /**
+     * available in package for testing only
+     */
+    /*package-local for testing*/ void writeToolchains(){
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
         FileObject folder = fs.findResource("Services/CndToolChain"); //NOI18N
         if (folder != null && folder.isFolder()) {
@@ -457,7 +514,7 @@ public final class ToolchainManager {
                 String name = file.getNameExt();
                 for(ToolchainDescriptor descriptor : descriptors){
                     if (name.equals(descriptor.getFileName())){
-                        System.out.println("Found file " + file.getNameExt()); // NOI18N
+                        //System.out.println("Found file " + file.getNameExt()); // NOI18N
                         Document doc = XMLUtil.createDocument("toolchaindefinition", "http://www.netbeans.org/ns/cnd-toolchain-definition/1", null, null); // NOI18N
                         Element root = doc.getDocumentElement();
                         Element element;
@@ -469,6 +526,12 @@ public final class ToolchainManager {
 
                         element = doc.createElement("platforms"); // NOI18N
                         element.setAttribute("stringvalue", unsplit(descriptor.getPlatforms())); // NOI18N
+                        if (descriptor.getReleaseFile() != null) {
+                            element.setAttribute("release_file", descriptor.getReleaseFile()); // NOI18N
+                        }
+                        if (descriptor.getReleasePattern() != null) {
+                            element.setAttribute("release_pattern", descriptor.getReleasePattern()); // NOI18N
+                        }
                         root.appendChild(element);
 
                         if (descriptor.getDriveLetterPrefix() != null) {
@@ -516,7 +579,16 @@ public final class ToolchainManager {
                             }
                             root.appendChild(element);
                         }
-
+                        if (descriptor.getDefaultLocations() != null){
+                            element = doc.createElement("default_locations"); // NOI18N
+                            root.appendChild(element);
+                            for(Map.Entry<String,String> e : descriptor.getDefaultLocations().entrySet()) {
+                                Element p = doc.createElement("platform"); // NOI18N
+                                p.setAttribute("os", e.getKey()); // NOI18N
+                                p.setAttribute("directory", e.getValue()); // NOI18N
+                                element.appendChild(p);
+                            }
+                        }
                         CompilerDescriptor compiler;
                         compiler = descriptor.getC();
                         if (compiler != null) {
@@ -981,6 +1053,8 @@ public final class ToolchainManager {
         String getFileName();
         String getName();
         String getDisplayName();
+        String getReleaseFile();
+        String getReleasePattern();
         String[] getFamily();
         String[] getPlatforms();
         String getDriveLetterPrefix();
@@ -998,6 +1072,7 @@ public final class ToolchainManager {
         ScannerDescriptor getScanner();
         LinkerDescriptor getLinker();
         MakeDescriptor getMake();
+        Map<String, String> getDefaultLocations();
         DebuggerDescriptor getDebugger();
     }
 
@@ -1064,29 +1139,35 @@ public final class ToolchainManager {
         String getSeverity();
         String getLanguage();
     }
-   
-    private static final class CompilerVendor {
-        private final String toolChainFileName;
-        private String toolChainName;
-        private String toolChainDisplay;
-        private String family;
-        private String platforms;
-        private String driveLetterPrefix;
-        private String baseFolderKey;
-        private String baseFolderPattern;
-        private String baseFolderSuffix;
-        private String baseFolderPathPattern;
-        private String commandFolderKey;
-        private String commandFolderPattern;
-        private String commandFolderSuffix;
-        private String commandFolderPathPattern;
-        private Compiler c = new Compiler();
-        private Compiler cpp = new Compiler();
-        private Compiler fortran = new Compiler();
-        private Scanner scanner = new Scanner();
-        private Linker linker = new Linker();
-        private Make make = new Make();
-        private Debugger debugger = new Debugger();
+
+    /**
+     * class package-local for testin only
+     */
+    static final class CompilerVendor {
+        final String toolChainFileName;
+        String toolChainName;
+        String toolChainDisplay;
+        Map<String, String> default_locations;
+        String family;
+        String platforms;
+        String release_file;
+        String release_pattern;
+        String driveLetterPrefix;
+        String baseFolderKey;
+        String baseFolderPattern;
+        String baseFolderSuffix;
+        String baseFolderPathPattern;
+        String commandFolderKey;
+        String commandFolderPattern;
+        String commandFolderSuffix;
+        String commandFolderPathPattern;
+        Compiler c = new Compiler();
+        Compiler cpp = new Compiler();
+        Compiler fortran = new Compiler();
+        Scanner scanner = new Scanner();
+        Linker linker = new Linker();
+        Make make = new Make();
+        Debugger debugger = new Debugger();
 
         private CompilerVendor(String fileName){
             toolChainFileName = fileName;
@@ -1103,13 +1184,13 @@ public final class ToolchainManager {
             buf.append("Toolchain ["+toolChainName+"/"+family+"] "+toolChainDisplay+"\n"); // NOI18N
             buf.append("\tPlatforms ["+platforms+"]\n"); // NOI18N
             buf.append("\tDrive Letter Prefix ["+driveLetterPrefix+"]\n"); // NOI18N
-            buf.append("\tBase Folder Key ["+baseFolderKey+"] Pattern ["+baseFolderPattern+
+            buf.append("\tBase Folder Key ["+baseFolderKey+"] Pattern ["+baseFolderPattern+ // NOI18N
                        "] Suffix ["+baseFolderSuffix+"] Path Pattern["+baseFolderPattern+"] \n"); // NOI18N
-            buf.append("\tCommand Folder Key ["+commandFolderKey+"] Pattern ["+commandFolderPattern+
+            buf.append("\tCommand Folder Key ["+commandFolderKey+"] Pattern ["+commandFolderPattern+ // NOI18N
                        "] Suffix ["+commandFolderSuffix+"] Path Pattern["+commandFolderPattern+"] \n"); // NOI18N
-            buf.append("C compiler ["+c.name+"] Recognize path ["+c.pathPattern+
+            buf.append("C compiler ["+c.name+"] Recognize path ["+c.pathPattern+ // NOI18N
                        "] Version ["+c.versionFlags+";"+c.versionPattern+"]\n"); // NOI18N
-            buf.append("\tInclude flags ["+c.includeFlags+"] parser ["+c.includeOutputParser+
+            buf.append("\tInclude flags ["+c.includeFlags+"] parser ["+c.includeOutputParser+ // NOI18N
                        "] remove from path["+c.removeIncludePathPrefix+"] remove from output ["+c.removeIncludeOutputPrefix+"]\n"); // NOI18N
             buf.append("\tMacros flags ["+c.macrosFlags+"] parser ["+c.macrosOutputParser+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+c.developmentMode+"\n"); // NOI18N
@@ -1120,9 +1201,9 @@ public final class ToolchainManager {
             if (c.standard.isValid()) buf.append("\tStandard ["+c.standard+"]\n"); // NOI18N
             if (c.languageExtension.isValid()) buf.append("\tLanguage ["+c.languageExtension+"]\n"); // NOI18N
             if (c.library.isValid()) buf.append("\tLibrary ["+c.library+"]\n"); // NOI18N
-            buf.append("C++ compiler ["+cpp.name+"] Recognize path ["+cpp.pathPattern+
+            buf.append("C++ compiler ["+cpp.name+"] Recognize path ["+cpp.pathPattern+ // NOI18N
                        "] Version ["+cpp.versionFlags+";"+cpp.versionPattern+"]\n"); // NOI18N
-            buf.append("\tInclude flags ["+cpp.includeFlags+"] parser ["+cpp.includeOutputParser+
+            buf.append("\tInclude flags ["+cpp.includeFlags+"] parser ["+cpp.includeOutputParser+ // NOI18N
                        "] remove from path["+cpp.removeIncludePathPrefix+"] remove from output ["+cpp.removeIncludeOutputPrefix+"]\n"); // NOI18N
             buf.append("\tMacros flags ["+cpp.macrosFlags+"] parser ["+cpp.macrosOutputParser+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+cpp.developmentMode+"\n"); // NOI18N
@@ -1135,7 +1216,7 @@ public final class ToolchainManager {
             if (cpp.languageExtension.isValid()) buf.append("\tLanguage "+cpp.languageExtension+"\n"); // NOI18N
             if (cpp.library.isValid()) buf.append("\tLibrary "+cpp.library+"\n"); // NOI18N
             if (fortran.isValid()) {
-            buf.append("Fortran compiler ["+fortran.name+"] Recognize path ["+fortran.pathPattern+
+            buf.append("Fortran compiler ["+fortran.name+"] Recognize path ["+fortran.pathPattern+ // NOI18N
                        "] Version ["+fortran.versionFlags+";"+fortran.versionPattern+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+fortran.developmentMode+"\n"); // NOI18N
             buf.append("\tWarning Level "+fortran.warningLevel+"\n"); // NOI18N
@@ -1167,84 +1248,107 @@ public final class ToolchainManager {
         }
     }
 
-    private static class Tool {
-        protected String name;
-        protected String versionFlags;
-        protected String versionPattern;
+    /**
+     * class package-local for testing only
+     */
+    static class Tool {
+        String name;
+        String versionFlags;
+        String versionPattern;
     }
 
-    private static final class Compiler extends Tool {
-        private String pathPattern;
-        private String existFolder;
-        private String includeFlags;
-        private String includeOutputParser;
-        private String removeIncludePathPrefix;
-        private String removeIncludeOutputPrefix;
-        private String userIncludeFlag;
-        private String macrosFlags;
-        private String macrosOutputParser;
-        private String userMacroFlag;
-        private String dependencyGenerationFlags;
-        private String precompiledHeaderFlags;
-        private String precompiledHeaderSuffix;
-        private boolean precompiledHeaderSuffixAppend;
-        private DevelopmentMode developmentMode = new DevelopmentMode();
-        private WarningLevel warningLevel = new WarningLevel();
-        private Architecture architecture = new Architecture();
-        private String strip;
-        private MultiThreading multithreading = new MultiThreading();
-        private Standard standard = new Standard();
-        private LanguageExtension languageExtension = new LanguageExtension();
-        private Library library = new Library();
+    /**
+     * class package-local for testing only
+     */
+    static final class Compiler extends Tool {
+        String pathPattern;
+        String existFolder;
+        String includeFlags;
+        String includeOutputParser;
+        String removeIncludePathPrefix;
+        String removeIncludeOutputPrefix;
+        String userIncludeFlag;
+        String macrosFlags;
+        String macrosOutputParser;
+        String userMacroFlag;
+        String dependencyGenerationFlags;
+        String precompiledHeaderFlags;
+        String precompiledHeaderSuffix;
+        boolean precompiledHeaderSuffixAppend;
+        DevelopmentMode developmentMode = new DevelopmentMode();
+        WarningLevel warningLevel = new WarningLevel();
+        Architecture architecture = new Architecture();
+        String strip;
+        MultiThreading multithreading = new MultiThreading();
+        Standard standard = new Standard();
+        LanguageExtension languageExtension = new LanguageExtension();
+        Library library = new Library();
         
         public boolean isValid(){
             return name != null && name.length() > 0;
         }
     }
     
-    private static final class Scanner {
-        private List<ErrorPattern> patterns = new ArrayList<ErrorPattern>();
-        private String changeDirectoryPattern;
-        private String enterDirectoryPattern;
-        private String leaveDirectoryPattern;
-        private String stackHeaderPattern;
-        private String stackNextPattern;
-        
+    /**
+     * class package-local for testing only
+     */
+    static final class Scanner {
+        List<ErrorPattern> patterns = new ArrayList<ErrorPattern>();
+        String changeDirectoryPattern;
+        String enterDirectoryPattern;
+        String leaveDirectoryPattern;
+        String stackHeaderPattern;
+        String stackNextPattern;
     }
     
-    private static final class ErrorPattern {
-        private String pattern;
-        private String severity;
-        private String language;
+    /**
+     * class package-local for testing only
+     */
+    static final class ErrorPattern {
+        String pattern;
+        String severity;
+        String language;
     }
             
-    private static final class Linker {
-        private String library_prefix;
-        private String librarySearchFlag;
-        private String dynamicLibrarySearchFlag;
-        private String libraryFlag;
-        private String PICFlag;
-        private String staticLibraryFlag;
-        private String dynamicLibraryFlag;
-        private String dynamicLibraryBasicFlag;
+    /**
+     * class package-local for testing only
+     */
+    static final class Linker {
+        String library_prefix;
+        String librarySearchFlag;
+        String dynamicLibrarySearchFlag;
+        String libraryFlag;
+        String PICFlag;
+        String staticLibraryFlag;
+        String dynamicLibraryFlag;
+        String dynamicLibraryBasicFlag;
     }
     
-    private static final class Make extends Tool {
-        private String dependencySupportCode;
+    /**
+     * class package-local for testing only
+     */
+    static final class Make extends Tool {
+        String dependencySupportCode;
     }
 
-    private static final class Debugger extends Tool {
+    /**
+     * class package-local for testing only
+     */
+    static final class Debugger extends Tool {
     }
 
-    private static final class DevelopmentMode {
-        private String fast_build;
-        private String debug;
-        private String performance_debug;
-        private String test_coverage;
-        private String diagnosable_release;
-        private String release;
-        private String performance_release;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class DevelopmentMode {
+        String fast_build;
+        String debug;
+        String performance_debug;
+        String test_coverage;
+        String diagnosable_release;
+        String release;
+        String performance_release;
+        int default_selection = 0;
 
         @Override
         public String toString() {
@@ -1266,12 +1370,15 @@ public final class ToolchainManager {
         }
     }
 
-    private static final class WarningLevel {
-        private String no_warnings;
-        private String default_level;
-        private String more_warnings;
-        private String warning2error;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class WarningLevel {
+        String no_warnings;
+        String default_level;
+        String more_warnings;
+        String warning2error;
+        int default_selection = 0;
         
         @Override
         public String toString() {
@@ -1290,11 +1397,14 @@ public final class ToolchainManager {
         }
     }
 
-    private static final class Architecture {
-        private String default_architecture;
-        private String bits_32;
-        private String bits_64;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class Architecture {
+        String default_architecture;
+        String bits_32;
+        String bits_64;
+        int default_selection = 0;
 
         @Override
         public String toString() {
@@ -1313,12 +1423,15 @@ public final class ToolchainManager {
         }
     }
 
-    private static final class MultiThreading {
-        private String none;
-        private String safe;
-        private String automatic;
-        private String open_mp;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class MultiThreading {
+        String none;
+        String safe;
+        String automatic;
+        String open_mp;
+        int default_selection = 0;
 
         @Override
         public String toString() {
@@ -1337,12 +1450,15 @@ public final class ToolchainManager {
         }
     }
     
-    private static final class Standard {
-        private String old;
-        private String legacy;
-        private String default_standard;
-        private String modern;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class Standard {
+        String old;
+        String legacy;
+        String default_standard;
+        String modern;
+        int default_selection = 0;
 
         @Override
         public String toString() {
@@ -1361,11 +1477,14 @@ public final class ToolchainManager {
         }
     }
     
-    private static final class LanguageExtension {
-        private String none;
-        private String default_extension;
-        private String all;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class LanguageExtension {
+        String none;
+        String default_extension;
+        String all;
+        int default_selection = 0;
 
         @Override
         public String toString() {
@@ -1384,13 +1503,16 @@ public final class ToolchainManager {
         }
     }
 
-    private static final class Library {
-        private String none;
-        private String runtime;
-        private String classic;
-        private String binary_standard;
-        private String conforming_standard;
-        private int default_selection = 0;
+    /**
+     * class package-local for testing only
+     */
+    static final class Library {
+        String none;
+        String runtime;
+        String classic;
+        String binary_standard;
+        String conforming_standard;
+        int default_selection = 0;
 
         @Override
         public String toString() {
@@ -1464,6 +1586,8 @@ public final class ToolchainManager {
                 return;
             } else if (path.endsWith(".platforms")) { // NOI18N
                 v.platforms = attributes.getValue("stringvalue"); // NOI18N
+                v.release_file = attributes.getValue("release_file"); // NOI18N
+                v.release_pattern = attributes.getValue("release_pattern"); // NOI18N
                 return;
             } else if (path.endsWith(".drive_letter_prefix")) { // NOI18N
                 v.driveLetterPrefix = attributes.getValue("stringvalue"); // NOI18N
@@ -1479,6 +1603,18 @@ public final class ToolchainManager {
                 v.commandFolderPattern = attributes.getValue("pattern"); // NOI18N
                 v.commandFolderSuffix = attributes.getValue("suffix"); // NOI18N
                 v.commandFolderPathPattern = attributes.getValue("path_patern"); // NOI18N
+                return;
+            } else if (path.indexOf(".default_locations.") > 0) { // NOI18N
+                if (path.endsWith(".platform")) { // NOI18N
+                    String os_attr = attributes.getValue("os"); // NOI18N
+                    String dir_attr = attributes.getValue("directory"); // NOI18N
+                    if (os_attr != null && dir_attr != null) {
+                        if (v.default_locations == null) {
+                            v.default_locations = new HashMap<String, String>();
+                        }
+                        v.default_locations.put(os_attr, dir_attr);
+                    }
+                }
                 return;
             }
             if (path.indexOf(".linker.")>0) { // NOI18N
@@ -1722,8 +1858,11 @@ public final class ToolchainManager {
         }
     }
 
-    private static final class ToolchainDescriptorImpl implements ToolchainDescriptor {
-        private CompilerVendor v;
+    /**
+     * class package-local for testing only
+     */
+    static final class ToolchainDescriptorImpl implements ToolchainDescriptor {
+        CompilerVendor v;
         private CompilerDescriptor c;
         private CompilerDescriptor cpp;
         private CompilerDescriptor fortran;
@@ -1737,6 +1876,8 @@ public final class ToolchainManager {
         public String getFileName() { return v.toolChainFileName; }
         public String getName() { return v.toolChainName; }
         public String getDisplayName() { return v.toolChainDisplay; }
+        public String getReleaseFile() { return v.release_file; }
+        public String getReleasePattern() { return v.release_pattern; }
         public String[] getFamily() {
             if (v.family != null && v.family.length() > 0) {
                 return v.family.split(","); // NOI18N
@@ -1794,6 +1935,9 @@ public final class ToolchainManager {
             }
             return make;
         }
+        public Map<String, String> getDefaultLocations() {
+            return v.default_locations;
+        }
         public DebuggerDescriptor getDebugger() {
             if (debugger == null) {
                 debugger = new DebuggerDescriptorImpl(v.debugger);
@@ -1802,7 +1946,7 @@ public final class ToolchainManager {
         }
         @Override
         public String toString() {
-            return v.toolChainName+"/"+v.family+"/"+v.platforms;
+            return v.toolChainName+"/"+v.family+"/"+v.platforms; // NOI18N
         }
     }
 

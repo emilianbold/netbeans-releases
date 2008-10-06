@@ -1,11 +1,13 @@
 select from |
 
 --
-customers*
-  customer
-    customer_id
-accounting
-  invoice
-    invoice_id
-  purchase_order
-    order_id
+myapp*
+  customers*
+    customer
+      customer_id
+  accounting
+    invoice
+      invoice_id
+    purchase_order
+      order_id
+anotherapp

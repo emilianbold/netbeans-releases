@@ -139,6 +139,7 @@
         suspendOnErrors: false,
         suspendOnDebuggerKeyword: true,
         suspendOnAssert: false,
+        ignoreQueryStrings: true,
         http_monitor:false
     };
 
@@ -154,6 +155,8 @@
     var debugState = {};
     var stepping = false;
     var debugging = false;
+    var suspendNextLine = false;
+    var currentFrameFileName;
 
     var port;
     var sessionId;
@@ -240,6 +243,13 @@
                 return;
             }
             loadedSources[sourceKey] = true;
+            if (features.ignoreQueryStrings == true) {
+                var sourceWithoutQuery = getURLWithoutQuery(sourceKey);
+                if (sourceWithoutQuery != sourceKey && breakpoints[sourceWithoutQuery]) {
+                    copyBreakpoints(sourceKey, sourceWithoutQuery);
+                }
+            }
+
             sendSourcesMessage(loadedSources);
         },
 
@@ -249,6 +259,11 @@
     firebugDebugger.wrappedJSObject = firebugDebugger;
 
     this.initDebugger = function(_port, _sessionId) {
+        if (!this.nbDebuggerInitialized) {
+            this.nbDebuggerInitialized = true;
+        } else {
+            return;
+        }
         port = _port;
         sessionId = _sessionId;
 
@@ -257,20 +272,41 @@
         NetBeans.Utils.CI("jsdIDebuggerService"));
 
         firebugDebuggerService = NetBeans.Utils.CC(NetBeans.Constants.FirebugCID).getService().wrappedJSObject;
-
+        
         const socketListener = {
             onDBGPCommand: function(command) {
                 handleCommand(command);
             },
             onDBGPClose: function() {
-                window.NetBeans.Debugger.shutdown();
+                if (window && window.NetBeans) {
+                  window.NetBeans.Debugger.shutdown();
+                } else {
+                    if (firebugDebuggerService) {
+                        fbsUnregisterDebugger(firebugDebugger);
+                    }
+
+                    if (socket) {
+                        socket.close();
+                        socket = null;
+                    }
+                }
             }
         };
 
         // create DBGP socket
         socket = NetBeans.SocketUtils.createSocket("127.0.0.1", port, socketListener);
 
-        fbsRegisterDebugger(firebugDebugger);
+        try {
+            var prefs =
+                NetBeans.Utils.CCSV("@mozilla.org/preferences-service;1",
+                Components.interfaces.nsIPrefBranch2);
+            
+            prefs.setBoolPref("extensions.firebug-service.trackThrowCatch", true);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Could not set trackThrowCatch")
+            NetBeans.Logger.logException(exc);
+        }
+        firebugDebuggerService.trackThrowCatch = true;
 
         initialize(this);
         sendInitMessage();
@@ -284,10 +320,14 @@
             // #1 Accept Context / Decline Context
             acceptContext: function(win,uri)
             {
+                if (this.terminated) {
+                    return;
+                }
+
                 if ( !topWindow ) {
                     topWindow = win;
                     browser = NetBeans.Utils.getBrowserByWindow(win);
-                    wrapBrowserDestroy();
+                    wrapBrowserDestroy(browser);
                     currentUrl = uri.prePath+uri.path;
                     return true;
                 } else if ( topWindow == win && browser == NetBeans.Utils.getBrowserByWindow(win) ) {
@@ -301,6 +341,9 @@
 
             declineContext: function(win,uri)
             {
+                if (this.terminated) {
+                    return false;
+                }
                 if ( topWindow ) {
                     return true;
                 }
@@ -310,6 +353,9 @@
             // #2 Unwatch Window ( For Reset )
             unwatchWindow: function(context, win)
             {
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.detachFromWindow(win);
                     if (features["http_monitor"]  ) {
@@ -323,6 +369,9 @@
             // #3 Destroy Context ( For Reset )
             destroyContext: function(context)
             {
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     releaseFirebugContext = true;
                     netBeansDebugger.onDestroy(netBeansDebugger);
@@ -334,6 +383,10 @@
             // #4 Init Context
             initContext: function(context)
             {
+                if (this.terminated) {
+                    return;
+                }
+
                 if ( topWindow && context.window == topWindow ) {
                     currentFirebugContext = context;
                     releaseFirebugContext = false;
@@ -342,19 +395,38 @@
                     if (features.suspendOnFirstLine) {
                         features.suspendOnFirstLine = false;
                         suspend("firstline");
+                    } else if (suspendNextLine == true) {
+                        suspendNextLine = false;
+                        suspend("suspend");
+                    }
+                    
+                    if (currentUrl) {
+                        var url = currentUrl;
+                        if (features.ignoreQueryStrings == true) {
+                            var urlWithoutQuery = getURLWithoutQuery(url);
+                            if (urlWithoutQuery != url && breakpoints[urlWithoutQuery]) {
+                                copyBreakpoints(url, urlWithoutQuery);
+                            }
+                        }
                     }
                 }
             },
 
             // #5 Show Current Context - we didn't need this.'
-            showContext: function(browser, context) {
+            showContext: function(currentBrowser, context) {
+                if (this.terminated) {
+                    return;
+                }
 
+                wrapBrowserDestroy(currentBrowser);
             },
 
             // #6 Watch Window ( attachToWindow )
             watchWindow: function(context, win)
             {
-
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.attachToWindow(win);
                     // We would be better off using the Firefox preferences so we can observe and turn on and off
@@ -371,6 +443,9 @@
             // #7 Loaded Context
             loadedContext: function(context)
             {
+                if (this.terminated) {
+                    return;
+                }
                 if ( context == currentFirebugContext && currentFirebugContext ) {
                     netBeansDebugger.onLoaded(currentUrl);
                     delete currentUrl;
@@ -446,8 +521,12 @@
         );
 
         // Make sure we our shutdown when the browser is destroyed.
-        function wrapBrowserDestroy()
+        function wrapBrowserDestroy(browser)
         {
+            if (browser._destroy) {
+                return;
+            }
+
             browser._destroy = browser.destroy;
             browser.destroy = function() {
                 netBeansDebugger.shutdown();
@@ -458,12 +537,16 @@
             }
         }
 
+        fbsRegisterDebugger(firebugDebugger);
+
         Firebug.registerExtension(NetBeansDebuggerExtension);
+
+        netBeansDebugger.netbeansDebuggerExtension = NetBeansDebuggerExtension;
+        netBeansDebugger.old_isHostEnabled = Firebug.Debugger.isHostEnabled;
 
         Firebug.Debugger.isHostEnabled = function(context) {
             return topWindow && context.window == topWindow;
         }
-
     }
 
 
@@ -478,13 +561,9 @@
 
     function disableFirebugDebugger()
     {
-        Firebug.Debugger.removeListener(DebuggerListener);
-        if ( topWindow && currentFirebugContext && !releaseFirebugContext ) {
+        if ( TabWatcher && topWindow && currentFirebugContext && !releaseFirebugContext ) {
             TabWatcher.unwatchTopWindow(topWindow);
         }
-        topWindow = null;
-        unwrapBrowserDestroy();
-        browser = null;
     }
 
     function abortFirebugDebugger()
@@ -529,13 +608,18 @@
 
     this.shutdown = function()
     {
-
         this.shutdownInProgress = true;
-        if ( !jsDebuggerService )
+
+        if ( !jsDebuggerService ) {
             return;
-        if ( !((currentFirebugContext == null) || releaseFirebugContext) )
-            return;
-        disable();
+        }
+        if ( !((currentFirebugContext == null) || releaseFirebugContext) ) {
+            disable(true);
+        } else {
+            disable(false);
+        }
+
+        NetBeans.NetMonitor.destroyAllMonitors(browser);
 
         if ( socket ) {
             socket.close();
@@ -579,7 +663,7 @@
             window.NetBeans.Logger.logException(e);
             excMsg = e.message;
         } finally {
-            if (transactionId && !socket.sentFlag && wantsAcknowledgment(cmd)) {
+            if (transactionId && socket && !socket.sentFlag && wantsAcknowledgment(cmd)) {
                 var errorResponse =
                     <response command="runtime_error"
                     transaction_id={
@@ -721,6 +805,19 @@
             } else {
                 NetBeans.NetMonitor.destroyMonitor(currentFirebugContext, browser);
             }
+        } else {
+            var context = {};
+            var cBrowser;
+            if (browser) {
+                cBrowser = browser;
+            } else {
+                cBrowser = getBrowser();
+            }
+            if ( isEnabled == 'true' ){  //looking for the string "true"
+                NetBeans.NetMonitor.initMonitor(context, cBrowser, socket);
+            } else {
+                NetBeans.NetMonitor.destroyMonitor(context, cBrowser);
+            }
         }
     }
 
@@ -742,7 +839,7 @@
         var hitCondition = matches[7];
         var condition = matches[8];
 
-        if (!isTemporary) {
+        if (!isTemporary && !(features.ignoreQueryStrings && getQueryStringPart(href))) {
             if (setBreakpoint(href, line,
             {
                 disabled: disabled,
@@ -755,7 +852,7 @@
                     hitCondition:hitCondition,
                     hits:0
                 };
-                breakpointHitConditions[""+href +":"+line] = breakpointHitCondition;
+                setBreakpointHitCondition(href, line, breakpointHitCondition);
             }
         }      
 
@@ -773,7 +870,11 @@
         socket.send(breakpointSetResponse);
 
         if (isTemporary) {
-            runUntil(href, line);
+            if (!debugging) {
+                NetBeans.Logger.logMessage("Run to Cursor command processed when debugger is not suspended");
+                return;
+            }
+            runUntil(currentFrameFileName, line);
         }
     }
 
@@ -805,6 +906,11 @@
         var href = matches[1];
         var line = matches[2];
 
+        if (features.ignoreQueryStrings && getQueryStringPart(href)) {
+            socket.send(breakpointUpdateResponse);
+            return;
+        }
+
         matches = breakpoint_updateSubCommandRegularExpression.exec(subcommand);
         if (!matches) {
             throw new Error("Can't get a breakpoint_update sub command arguments out of [" + subcommand + "]");
@@ -815,7 +921,7 @@
         var hitCondition = matches[4];
         var condition = matches[5];
 
-        var breakpointHitCondition = breakpointHitConditions[""+href+":"+line];
+        var breakpointHitCondition = getBreakpointHitCondition(href, line);
         // Remove and add with new properties
         removeBreakpointId(breakpointId);
         if (setBreakpoint(href, line,
@@ -825,6 +931,7 @@
             condition: condition,
             onTrue: true
         })) {
+            breakpointHitCondition = getBreakpointHitCondition(href, line);
             if (breakpointHitCondition) {
                 if (breakpointHitCondition.hitCount != hitValue
                     || breakpointHitCondition.hitCondition != hitCondition) {
@@ -838,7 +945,7 @@
                     hitCondition:hitCondition,
                     hits:0
                 };
-                breakpointHitConditions[""+href+":"+line] = breakpointHitCondition;
+                setBreakpointHitCondition(href, line, breakpointHitCondition);
             }
         };
         socket.send(breakpointUpdateResponse);
@@ -859,9 +966,7 @@
         }
 
         var breakpointId = matches[1];
-        if (removeBreakpointId(breakpointId)) {
-            delete breakpointHitConditions[""+breakpointId];
-        }
+        removeBreakpointId(breakpointId);
 
         socket.send(breakpointRemoveResponse);
     }
@@ -875,71 +980,142 @@
 
         var href = matches[1];
         var line = matches[2];
+
+        if (features.ignoreQueryStrings && getQueryStringPart(href)) {
+            return true;
+        }
         clearBreakpoint(href, line);
+        setBreakpointHitCondition(href, line);
 
         return true;
-    }
-
-    function enableDisableBreakpointId(breakpointId, enable)
-    {
-        var matches = breakpointIdRegularExpression.exec(breakpointId);
-        if (!matches) {
-            throw new Error("Can't split breakpointId " + breakpointId);
-        }
-
-        var href = matches[1];
-        var line = matches[2];
-
-        if (hasBreakpoint(href, line)) {
-            if (enable) {
-                fbsEnableBreakpoint(href, line);
-            } else {
-                fbsDisableBreakpoint(href, line);
-            }
-            return true;
-        }
-        return false;
-    }
-
-    function setConditionOfBreakpointId(breakpointId, condition)
-    {
-        var matches = breakpointIdRegularExpression.exec(breakpointId);
-        if (!matches) {
-            throw new Error("Can't split breakpointId " + breakpointId);
-        }
-
-        var href = matches[1];
-        var line = matches[2];
-
-        if (hasBreakpoint(href, line)) {
-            fbsSetBreakpointCondition(href, line, condition);
-            return true;
-        }
-        return false;
     }
 
     var breakpoints = {};
     var breakpointHitConditions = {};
 
-    function hasBreakpoint(href,line)
-    {
-        if ( href in breakpoints ) {
-            var list = breakpoints[href];
-            for( var i = 0; i < list.length; ++i ) {
-                if ( list[i] == line )
-                    return true;
+    function getBreakpointHitCondition(href, line) {
+        href = "" + href;
+        line = "" + line;
+
+        var conditionsForHref = breakpointHitConditions[href];
+        if (conditionsForHref) {
+            return conditionsForHref[line];
+        }
+
+        return undefined;
+    }
+
+    function setBreakpointHitCondition(href, line, condition) {
+        href = "" + href;
+        line = "" + line;
+        
+        var conditionsForHref = breakpointHitConditions[href];
+        if (!conditionsForHref && condition) {
+            conditionsForHref = {};
+            conditionsForHref.numElements = 0;
+            breakpointHitConditions[href] = conditionsForHref;
+        } else if (!condition && conditionsForHref) {
+            delete conditionsForHref[line];
+            conditionsForHref.numElements--;
+            if (conditionsForHref.numElements <= 0) {
+                delete breakpointHitConditions[href];
             }
         }
-        return false;
+
+        if (condition && conditionsForHref) {
+            conditionsForHref[line] = condition;
+            conditionsForHref.numElements++;
+        }
+    }
+    
+    function removeBreakpointHitCondition(href) {
+        href = "" + href;
+        if (breakpointHitConditions[href]) {
+            delete breakpointHitConditions[href];
+        }
+    }
+    
+    function getQueryStringPart(href) {
+        var index = href.lastIndexOf('?');
+        if (index != -1) {
+            return href.substring(index);
+        } else {
+            return undefined;
+        }
+    }
+    
+    function getURLWithoutQuery(href) {
+        var index = href.lastIndexOf('?');
+        if (index > 0) {
+            return href.substring(0, index);
+        } else {
+            return href;
+        }
     }
 
     function clearBreakpoint(href,line)
     {
-        if ( removeBreakpoint(href,line) ) {
+        if (features.ignoreQueryStrings) {
+            // href should not have a query string here
+            if (breakpoints[href]) {
+                var parentLinks = breakpoints[href].associatedHrefs;
+                if (parentLinks) {
+                    for (var linkedHref in breakpoints[href].associatedHrefs) {
+                        clearSingleBreakpoint(linkedHref, line);
+                    }
+                }
+            }
+        }
+
+        return clearSingleBreakpoint(href,line);
+    }
+
+    function setBreakpoint(href,line,props)
+    {
+        if (features.ignoreQueryStrings) {
+            var result = setSingleBreakpoint(href,line,props);
+            if (result == false) {
+                return false;
+            }
+
+            for (var loadedHref in loadedSources) {
+                if (getURLWithoutQuery(loadedHref) == href && loadedHref != href) {
+                    setSingleBreakpoint(loadedHref,line,props,href);
+                }
+            }
+
+            return true;
+        } else {
+            return setSingleBreakpoint(href,line,props);
+        }
+    }
+
+    function clearSingleBreakpoint(href, line) {
+        if ( removeBreakpointRecord(href,line) ) {
             fbsClearBreakpoint(href,line);
             return true;
         }
         return false;
+    }
+
+    function setSingleBreakpoint(href,line,props,parentHref) {
+        if ( fbsSetBreakpoint(href,line,props) ) {
+            recordBreakpoint(href,line,props,parentHref);
+            return true;
+        }
+        return false;
+    }
+
+    function copyBreakpoints(href, parentHref) {
+        var parentList = breakpoints[parentHref];
+        if (!parentList) {
+            return;
+        }
+
+        for (var i = 0; i < parentList.length; i++) {
+            var lineRecord = parentList[i];
+            setSingleBreakpoint(href, lineRecord.lineNo, lineRecord.properties, parentHref);
+        }
     }
 
     function clearAllBreakpoints()
@@ -951,40 +1127,57 @@
         }
         fbsClearAllBreakpoints(hrefs);
     }
-
-    function setBreakpoint(href,line,props)
+    
+    function hasBreakpointRecord(href,line)
     {
-        if ( fbsSetBreakpoint(href,line,props) ) {
-            addBreakpoint(href,line);
-            return true;
+        if ( href in breakpoints ) {
+            var list = breakpoints[href];
+            for( var i = 0; i < list.length; ++i ) {
+                if ( list[i].lineNo == line )
+                    return true;
+            }
         }
         return false;
     }
 
-    function addBreakpoint(href,line)
+    function recordBreakpoint(href,line,props,parentHref)
     {
-        if ( hasBreakpoint(href,line)){
+        if ( hasBreakpointRecord(href,line) ||
+             (parentHref && hasBreakpointRecord(parentHref,line) == false)){
             return false;
         }
+
+        var lineRecord = { lineNo : line, properties : props };
         if ( href in breakpoints ) {
-            breakpoints[href].push(line);
+            breakpoints[href].push(lineRecord);
+        } else if (parentHref) {
+            breakpoints[href] = [lineRecord];
+            var parentLinks = breakpoints[parentHref].associatedHrefs;
+            if (!parentLinks) {
+                breakpoints[parentHref].associatedHrefs = {};
+                parentLinks = breakpoints[parentHref].associatedHrefs;
+            }
+
+            if (!parentLinks[href]) {
+                parentLinks[href] = true;
+            }
         } else {
-            breakpoints[href] = [line];
+            breakpoints[href] = [lineRecord];
         }
         return true;
     }
-
-    function removeBreakpoint(href,line)
+    
+    function removeBreakpointRecord(href,line)
     {
-        if ( !hasBreakpoint(href,line)){
+        if ( !hasBreakpointRecord(href,line)){
             return false;
         }
         if ( href in breakpoints ) {
             var list = breakpoints[href];
             for( var i = 0; i < list.length; ++i ) {
-                if ( list[i] == line ) {
+                if ( list[i].lineNo == line ) {
                     if ( list.length > 1 ) {
-                        list.slice(i,1);
+                        list.splice(i,1);
                     } else {
                         delete breakpoints[href];
                     }
@@ -994,7 +1187,6 @@
         }
         return false;
     }
-
 
     // 3. enable/disable
     function enable()
@@ -1006,16 +1198,42 @@
         Firebug.Debugger.addListener(DebuggerListener);
     }
 
-    function disable()
+    function disable(keepFirebugDebugger)
     {
         if (!enabled)
             return;
+        
         enabled = false;
 
+        cleanupHooks();
+        unregisterExtension();
         clearAllBreakpoints();
-        disableFirebugDebugger();
+        if (!keepFirebugDebugger) {
+          disableFirebugDebugger();
+        }
     }
 
+    function cleanupHooks() {
+        Firebug.Debugger.removeListener(DebuggerListener);
+        if (NetBeans.Debugger.old_isHostEnabled) {
+          Firebug.Debugger.isHostEnabled = NetBeans.Debugger.old_isHostEnabled;
+          delete NetBeans.Debugger.old_isHostEnabled;
+        }
+        topWindow = null;
+        unwrapBrowserDestroy();
+        browser = null;
+    }
+    
+    function unregisterExtension() {
+        if (NetBeans.Debugger.netbeansDebuggerExtension) {
+            NetBeans.Debugger.netbeansDebuggerExtension.terminated = true;
+            if (TabWatcher && TabWatcher.removeListener) {
+                TabWatcher.removeListener(NetBeans.Debugger.netbeansDebuggerExtension);
+            }
+            delete NetBeans.Debugger.netbeansDebuggerExtension;
+        }
+    }
+    
     // 4. open_uri
     const open_uriCommandRegularExpression = /^-f\s*(\S+)\s*$/;
     function open_uri(command) {
@@ -1061,6 +1279,11 @@
 
     function suspend(reason)
     {
+        if (!currentFirebugContext || currentFirebugContext == null) {
+            suspendNextLine = true;
+            return;
+        }
+        
         if ( reason )
             debugState.suspendReason = reason;
         stepping = true;
@@ -1307,7 +1530,7 @@
 
         socket.send(initMessage);
     }
-
+    
     // TODO: Do we need this?
     function sendOnloadMessage(uri)
     {
@@ -1519,6 +1742,31 @@
         
         return 'anonymous';
     }
+
+    // Format of the message is:
+    //  <reloadsources>
+    //   <window fileuri="http://..." />
+    //   <window fileuri="http://..." />
+    //   :
+    // </reloadsources>
+    function sendReloadSourcesMessage(windows) {
+        if (!socket) {
+            return;
+        }
+        try {
+            var sourcesMessage =
+            <reloadsources encoding="base64"></reloadsources>;
+            for each (var aWindow in windows) {
+                if (aWindow.top == aWindow) {
+                    buildSourcesFromWindowsMessage([aWindow], sourcesMessage);
+                }
+            }
+            socket.send(sourcesMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }        
+    }
     
     // Format of the message is:
     // <windows>
@@ -1528,14 +1776,23 @@
     // </windows>
     function sendWindowsMessage(windows)
     {
+        if (!socket) {
+            return;
+        }
+        try {
         var windowsMessage =
         <windows encoding="base64"></windows>;
+
         for each (var aWindow in windows) {
             if (aWindow.top == aWindow) {
                 buildWindowsMessage([aWindow], windowsMessage);
             }
         }
         socket.send(windowsMessage);
+        } catch (exc) {
+            NetBeans.Logger.logMessage("Failed to send message in port: " + port + " sessionId: " + sessionId);
+            NetBeans.Logger.logException(exc);
+        }
     }
 
     function buildWindowsMessage(windows, windowsMessage)
@@ -1558,6 +1815,23 @@
         }
     }
 
+    function buildSourcesFromWindowsMessage(windows, sourcesMessage) {
+        if (windows.length == 0) {
+            return;
+        }
+        for each (var aWindow in windows) {
+            var sourceMessage = <source fileuri={
+            window.btoa(aWindow.document.location.href)
+            } />;
+
+            sourcesMessage.source += sourceMessage;
+            var frameWindows = aWindow.frames;
+            if (frameWindows) {
+                buildSourcesFromWindowsMessage(frameWindows, sourcesMessage);
+            }
+        }
+    }
+    
     // Format of the message is:
     // <sources>
     //   <source fileuri="http://..." />
@@ -1582,15 +1856,15 @@
     function terminate()
     {
         const delayShutdownIfDebugging = function() {
-            disable();
             NetBeans.Debugger.shutdown();
             // XXX not closing the browser window causes strange problems so subsequent
             // debug sessions do not work correctly - should be fixed some other way if possible
-            window.close();
+            //window.close();
         };
 
         if (debugging) {
             debugState.shutdownHook = delayShutdownIfDebugging;
+            clearAllBreakpoints();
             abortFirebugDebugger();
         } else {
             delayShutdownIfDebugging();
@@ -1600,6 +1874,8 @@
     // Stepping
     this.onStop = function(frame, type, rv)
     {
+        currentFrameFileName = "" + frame.script.fileName;
+
         if (debugging)
             return RETURN_CONTINUE;
 
@@ -1612,7 +1888,14 @@
                 }
                 break;
             case TYPE_BREAKPOINT:
-                var breakpointHitCondition = breakpointHitConditions[frame.script.fileName+":"+frame.line];
+                var currentHref;
+                if (features.ignoreQueryStrings) {
+                    currentHref = getURLWithoutQuery(frame.script.fileName);
+                } else {
+                    currentHref = frame.script.fileName;
+                }
+
+                var breakpointHitCondition = getBreakpointHitCondition(currentHref, frame.line);
                 if (breakpointHitCondition) {
                     breakpointHitCondition.hits++;
                     if (breakpointHitCondition.hitCount > 0) {
@@ -1761,14 +2044,20 @@
         } else {
             NetBeans.Logger.log(message + " fileName: " + error.fileName + " lineNumber: + " + error.line, logType);
         }
-        if ( features.suspendOnErrors )
+        if ( features.suspendOnErrors ) {
+            this.ignoreNextThrow = true;
             return -1;
+        }
         return RETURN_CONTINUE;
     }
 
     this.onThrow = function(frame, rv)
     {
         var needSuspend = features.suspendOnExceptions;
+        if (this.ignoreNextThrow) {
+            delete this.ignoreNextThrow;
+            return false;
+        }
         return needSuspend;
     }
 
@@ -1790,9 +2079,9 @@
 
     this.onInit = function(debuggr)
     {
-        if ( this == debuggr ) {
-    // TODO socket.send(...);
-    }
+        if ( this == debuggr) {
+            this.reloadSources = true;
+        }
     }
 
     this.onLoaded = function(url)
@@ -1817,6 +2106,11 @@
             self.detachFromWindow(win);
         }
         win.addEventListener("unload", onUnload, true);
+        
+        if (this.reloadSources) {
+            delete this.reloadSources;
+            sendReloadSourcesMessage(attachedWindows);
+        }
         sendWindowsMessage(attachedWindows);
     }
 
@@ -2383,16 +2677,6 @@
         firebugDebuggerService.unregisterDebugger(debuggr);
     }
 
-    function fbsEnableBreakpoint(href, line) {
-        line = parseInt(line);
-        firebugDebuggerService.enableBreakpoint(href, line);
-    }
-
-    function fbsDisableBreakpoint(href, line) {
-        line = parseInt(line);
-        firebugDebuggerService.disableBreakpoint(href, line);
-    }
-
     function fbsClearBreakpoint(href, line) {
         line = parseInt(line);
         firebugDebuggerService.clearBreakpoint(href, line);
@@ -2401,37 +2685,21 @@
     function fbsClearAllBreakpoints(hrefs) {
         var sourceFiles = [];
         var sourceFile;
-
+        
         for (var i = 0; i < hrefs.length; i++) {
-            sourceFile = currentFirebugContext.sourceFileMap[hrefs[i]];
+            if (currentFirebugContext && currentFirebugContext.sourceFileMap) {
+                sourceFile = currentFirebugContext.sourceFileMap[hrefs[i]];
+            }
             if (sourceFile) {
                 sourceFiles.push(sourceFile);
             } else {
-                NetBeans.Logger.logMessage("clearAllBreakpoints() - Could not find source: " + hrefs[i]);
                 sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, hrefs[i]);
                 sourceFiles.push(sourceFile);
             }
+            sourceFile = undefined;
         }
 
         firebugDebuggerService.clearAllBreakpoints(sourceFiles);
-    }
-
-    function fbsSetBreakpointCondition(href, line, condition) {
-        line = parseInt(line);
-
-        var sourceFile;
-        if (currentFirebugContext) {
-            sourceFile = currentFirebugContext.sourceFileMap[href];
-        }
-        if (!sourceFile) {
-            sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
-        }
-
-        if (sourceFile) {
-            firebugDebuggerService.setBreakpointCondition(sourceFile, line, condition, Firebug.Debugger);
-        } else {
-            NetBeans.Logger.logMessage("setBreakpointCondition() - No source file found for: " + href);
-        }
     }
 
     function fbsSetBreakpoint(href, line, props) {

@@ -19,11 +19,11 @@ import com.sun.jersey.api.core.ResourceContext;
 import javax.ws.rs.WebApplicationException;
 import javax.persistence.NoResultException;
 import javax.persistence.EntityManager;
-import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.Product;
-import o.n.m.ws.qaf.rest.crud.ProductCode;
 import o.n.m.ws.qaf.rest.crud.PurchaseOrder;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
+import o.n.m.ws.qaf.rest.crud.ProductCode;
+import java.util.Collection;
 import o.n.m.ws.qaf.rest.crud.converter.ProductConverter;
 
 /**
@@ -57,7 +57,9 @@ public class ProductResource {
     public ProductConverter get(@QueryParam("expandLevel")
     @DefaultValue("1")
     int expandLevel) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
+            persistenceSvc.beginTx();
             return new ProductConverter(getEntity(), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();

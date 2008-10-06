@@ -93,6 +93,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /* A comprehensive test of EditablePropertyDisplayer */
@@ -434,7 +435,7 @@ public class EditableDisplayerTest extends NbTestCase {
         typeKey(custRen, KeyEvent.VK_L);
         
         //The property marking image
-        Image i = Utilities.loadImage("org/openide/resources/propertysheet/invalid.gif");
+        Image i = ImageUtilities.loadImage("org/openide/resources/propertysheet/invalid.gif");
         ImageIcon icon = new ImageIcon(i);
         int yOffset = (custRen.getHeight() / 2) - (icon.getIconHeight()/2);
         

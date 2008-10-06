@@ -63,9 +63,9 @@ made subject to such option by the copyright holder.
     <fontcolor name="jsp-whitespace" foreColor="black" default="default">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor name="scriptlet" bgColor="ffd0e8ca" default="default"/>
-    <fontcolor name="scriptlet-delimiter" bgColor="ffd0e8ca" default="default"/>
-    <fontcolor name="expression-language" foreColor="black" bgColor="ffd0e8ca" default="default"/>
+    <fontcolor name="scriptlet" bgColor="ffe3f2e1" default="default"/>
+    <fontcolor name="scriptlet-delimiter" bgColor="ffe3f2e1" default="default"/>
+    <fontcolor name="expression-language" foreColor="black" bgColor="ffe3f2e1" default="default"/>
     
      <!--"semantic" highlighting:-->
     <fontcolor name="mod-unused" waveUnderlined="999999"/>

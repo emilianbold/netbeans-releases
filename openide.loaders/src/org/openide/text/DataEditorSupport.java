@@ -76,8 +76,10 @@ import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem.AtomicAction;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
@@ -407,24 +409,12 @@ public class DataEditorSupport extends CloneableEditorSupport {
      * for read-only property of saving file and warns user in that case. */
     @Override
     public void saveDocument() throws IOException {
-        if(desEnv().isModified() && isEnvReadOnly()) {
-            IOException e = new IOException("File is read-only: " + ((Env)env).getFileImpl()); // NOI18N
-            UIException.annotateUser(e, null,
-                                     org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class,
-                                                                          "MSG_FileReadOnlySaving",
-                                                                          new java.lang.Object[]{((org.openide.text.DataEditorSupport.Env) env).getFileImpl().getNameExt()}),
-                                     null, null);
-            throw e;
-        }
+        FileSystem.AtomicAction aa = new SaveImpl(this);
+        FileUtil.runAtomicAction(aa);
+    }
 
-        DataObject tmpObj = this.getDataObject();
-        Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
-        try {
-            charsets.put(obj, c);
-            super.saveDocument();
-        } finally {
-            charsets.remove(obj);
-        }
+    final void superSaveDoc() throws IOException {
+        super.saveDocument();
     }
 
     /** Indicates whether the <code>Env</code> is read only. */
@@ -904,6 +894,10 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         @Override
         public void fileChanged(FileEvent fe) {
+            if (fe.firedFrom(SaveImpl.DEFAULT)) {
+                return;
+            }
+
             Env myEnv = this.env.get ();
             if (myEnv == null || myEnv.getFileImpl () != fe.getFile ()) {
                 // the Env change its file and we are not used
@@ -988,6 +982,41 @@ public class DataEditorSupport extends CloneableEditorSupport {
             if (propName == null || propName.equals(DataObject.PROP_PRIMARY_FILE)) {
                 updateLookup();
             }
+        }
+    }
+
+    private static class SaveImpl implements AtomicAction {
+        private static final SaveImpl DEFAULT = new SaveImpl(null);
+        private final DataEditorSupport des;
+
+        public SaveImpl(DataEditorSupport des) {
+            this.des = des;
+        }
+
+        public void run() throws IOException {
+            if (des.desEnv().isModified() && des.isEnvReadOnly()) {
+                IOException e = new IOException("File is read-only: " + ((Env) des.env).getFileImpl()); // NOI18N
+                UIException.annotateUser(e, null, org.openide.util.NbBundle.getMessage(org.openide.loaders.DataObject.class, "MSG_FileReadOnlySaving", new java.lang.Object[]{((org.openide.text.DataEditorSupport.Env) des.env).getFileImpl().getNameExt()}), null, null);
+                throw e;
+            }
+            DataObject tmpObj = des.getDataObject();
+            Charset c = FileEncodingQuery.getEncoding(tmpObj.getPrimaryFile());
+            try {
+                charsets.put(tmpObj, c);
+                des.superSaveDoc();
+            } finally {
+                charsets.remove(tmpObj);
+            }
+        }
+
+        @Override
+        public int hashCode() {
+            return getClass().hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return getClass() == obj.getClass();
         }
     }
     

@@ -40,19 +40,35 @@
 	<meta http-equiv="content-type" content="text/html; charset=utf-8">
         <meta name="robots" content="noindex, nofollow">
 	<!-- Do not change the order of the scripts-->
-	<script type="text/javascript" src="js/common.js"></script>
-        <script type="text/javascript" src="js/languages.js"></script>
+	<script type="text/javascript">
 
-	<script type="text/javascript">load_js_locale("js/common_strings",".js")</script>
-        <script type="text/javascript">load_js_locale("js/start_strings",".js")</script>
-        <script type="text/javascript" src="js/build_info.js"></script>
-	<script type="text/javascript" src="js/start.js"></script>
-	<script type="text/javascript" src="js/files.js"></script>
-        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
-        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+		var PAGE_ARTIFACTS_LOCATION = "";
+
+	</script>
+
+	<script type="text/javascript">
+		var JS_LOCATION  = PAGE_ARTIFACTS_LOCATION + "js/";
+		var IMG_LOCATION = PAGE_ARTIFACTS_LOCATION + "img/";
+		var CSS_LOCATION = PAGE_ARTIFACTS_LOCATION + "css/";
+
+		function load_page_js(script_filename) {
+		    document.write('<' + 'script ' + 'language="javascript" type="text/javascript" src="' + JS_LOCATION + script_filename + '"><' + '/' + 'script' + '>');
+		}
+	</script>
+
+
+	<script type="text/javascript">load_page_js("common.js")</script>
+        <script type="text/javascript">load_page_js("languages.js")</script>
+	<script type="text/javascript">load_page_js_locale("common_strings",".js")</script>
+        <script type="text/javascript">load_page_js_locale("start_strings",".js")</script>
+        <script type="text/javascript">load_page_js("build_info.js")</script>
+	<script type="text/javascript">load_page_js("start.js")</script>
+	<script type="text/javascript">load_page_js("files.js")</script>
+        <script type="text/javascript">set_page_title(NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE.replace('{0}',BUILD_DISPLAY_VERSION))</script>
+        <script type="text/javascript">set_page_description(NETBEANS_DOWNLOAD_STARTED_PAGE_DESCRIPTION.replace('{0}',BUILD_DISPLAY_VERSION))</script>
 
         <link rel="stylesheet" type="text/css" href="http://www.netbeans.org/netbeans.css" media="screen"/>
-        <link rel="stylesheet" type="text/css" href="css/start.css" media="screen"/>
+        <script type="text/javascript">load_page_css("start.css")</script>
         <link rel="shortcut icon" href="http://www.netbeans.org/favicon.ico" type="image/x-icon"/>
     </head>
     
@@ -110,7 +126,7 @@
                             </table>
                             <div class="bg-white f-page-cell" style="padding-left: 15px">
                                 <div>
-                                    <img src="img/download-arrow.gif" class="float-left"/>
+                                    <script type="text/javascript">load_page_img("download-arrow.gif", 'class="float-left"')</script>
                                     <div class="bold black font-13 download_info">	
                                         <script type="text/javascript">write_download_header();</script>
                         	        <script type="text/javascript">write_download_info();</script>
@@ -128,7 +144,7 @@
                         <table class="full-width colapse">
                             <tr>
                                 <td class="f-page-cell" style="width:25%;padding-bottom:0px;padding-top:0px;padding-left:20px;">					
-                                    <img src="img/plugins_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
+                                    <script type="text/javascript">load_page_img("plugins_small.gif", 'class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"')</script>
                                     <a href="http://plugins.netbeans.org/PluginPortal/"><script type="text/javascript">message(PLUGINS_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
                                         <script type="text/javascript">message(PLUGINS_DESCRIPTION)</script>
@@ -136,14 +152,14 @@
                                     
                                 </td>
                                 <td class="f-page-cell b-left b-right"  style="width:26%;padding-bottom:0px;padding-top:0px;padding-right:5px;">
-                                    <img src="img/tutorials_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
+                                    <script type="text/javascript">load_page_img("tutorials_small.gif", 'class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"')</script>
                                     <a href="http://www.netbeans.org/kb/"><script type="text/javascript">message(TUTORIALS_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
                                         <script type="text/javascript">message(TUTORIALS_DESCRIPTION)</script>
                                     </span>		
                                 </td>
                                 <td class="f-page-cell b-right" style="width:25%;padding-bottom:0px;padding-top:0px;">                        
-                                    <img src="img/training_small.gif" class="valign-top float-left" style="padding-right:12px;"/>
+                                    <script type="text/javascript">load_page_img("training_small.gif", 'class="valign-top float-left" style="padding-right:12px;"')</script>
                                     <a href="http://www.netbeans.org/kb/training.html"><script type="text/javascript">message(TRAINING_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
                                         <script type="text/javascript">message(TRAINING_DESCRIPTION)</script>
@@ -151,7 +167,7 @@
                                 </td>
                                 
                                 <td class="f-page-cell" style="width:25%;padding-bottom:0px;padding-top:0px;padding-right:15px;">
-                                    <img src="img/support_small.gif" class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"/>
+                                    <script type="text/javascript">load_page_img("support_small.gif", 'class="valign-top float-left" style="padding-right:12px;padding-bottom:30px;"')</script>
                                     <a href="http://www.netbeans.org/kb/support.html"><script type="text/javascript">message(SUPPORT_LABEL)</script></a><br><br>
                                     <span style="height:45px;padding-bottom:7px;">
                                         <script type="text/javascript">message(SUPPORT_DESCRIPTION)</script>
@@ -238,6 +254,10 @@
 	<script type="text/javascript">
 		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
 			load_js(GOOGLE_ANALYTICS_JS);
+		}
+	</script>
+	<script type="text/javascript">
+		if(LOAD_GOOGLE_ANALYTICS_CODE==1) {
 			var pageTracker = _gat._getTracker("UA-2149007-1");
 			pageTracker._setDomainName("netbeans.org");
 			pageTracker._initData();

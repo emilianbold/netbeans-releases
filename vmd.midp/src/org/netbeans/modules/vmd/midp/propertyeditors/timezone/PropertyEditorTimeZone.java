@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.vmd.midp.propertyeditors.timezone;
 
+import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorElement;
@@ -70,6 +71,15 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
     
     public static PropertyEditorTimeZone createInstance() {
         return new PropertyEditorTimeZone();
+    }
+
+    @Override
+    public void cleanUp(DesignComponent component) {
+        super.cleanUp(component);
+        if (timeZoneEditor != null) {
+            timeZoneEditor.cleanUp();
+            timeZoneEditor = null;
+        }
     }
     
     @Override
@@ -108,6 +118,15 @@ public class PropertyEditorTimeZone extends PropertyEditorUserCode {
             combobox = new JComboBox(model);
             combobox.setEditable (true);
             combobox.addActionListener(this);
+        }
+
+        void cleanUp() {
+            radioButton = null;
+            model = null;
+            if (combobox != null) {
+                combobox.removeActionListener(this);
+                combobox = null;
+            }
         }
         
         public void updateState(PropertyValue value) {

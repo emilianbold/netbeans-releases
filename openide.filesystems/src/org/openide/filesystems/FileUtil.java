@@ -642,6 +642,7 @@ public final class FileUtil extends Object {
      * @since 4.29
      */
     public static FileObject toFileObject(File file) {
+        Parameters.notNull("file", file);  //NOI18N
         // return null for UNC root
         if(file.getPath().equals("\\\\")) {
             return null;
@@ -1134,7 +1135,9 @@ public final class FileUtil extends Object {
      * {@link MIMEResolver#getMIMETypes} contain one or more of the requested
      * MIME types will be asked if they recognize the file. It is possible for
      * the resulting MIME type to not be a member of this list.
-     * @return the MIME type for the FileObject, or <code>null</code> if the FileObject is unrecognized
+     * @return the MIME type for the FileObject, or <code>null</code> if 
+     * the FileObject is unrecognized. It is possible for the resulting MIME type
+     * to not be a member of given list.
      * @since 7.13
      */
     public static String getMIMEType(FileObject fo, String... withinMIMETypes) {
@@ -1361,6 +1364,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static File normalizeFile(final File file) {
+        Parameters.notNull("file", file);  //NOI18N
         File retFile;
 
         if ((Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2))) {
@@ -1851,12 +1855,6 @@ public final class FileUtil extends Object {
      */
     public static boolean affectsOrder(FileAttributeEvent event) {
         return Ordering.affectsOrder(event);
-    }
-
-    static boolean assertDeprecatedMethod() {
-        Thread.dumpStack();
-
-        return true;
     }
 
     private static File wrapFileNoCanonicalize(File f) {

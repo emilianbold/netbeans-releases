@@ -40,7 +40,6 @@
  */
 
 package org.netbeans.modules.db.explorer.dlg;
-import java.awt.Font;
 import java.awt.Window;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -51,12 +50,15 @@ import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 
 import org.netbeans.modules.db.explorer.DatabaseConnection;
@@ -68,7 +70,7 @@ import org.netbeans.modules.db.util.DatabaseExplorerInternalUIs;
 import org.netbeans.modules.db.util.JdbcUrl;
 import org.openide.util.NbBundle;
 
-public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implements DocumentListener, ListDataListener {
+public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
 
     private ConnectionDialogMediator mediator;
     // private Vector templates;
@@ -79,6 +81,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     private boolean updatingUrl = false;
     private boolean updatingFields = false;
 
+    private boolean fieldEntryMode = true;
+    
     // keeps track of the user's last selection of whether or not to
     // show the jdbc url.  
     private boolean userSpecifiedShowUrl = false;
@@ -119,6 +123,9 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         initComponents();
         initAccessibility();
         initFieldMap();
+
+        // sets up colors and icons
+        errorInfoPanel.setup();
 
         DatabaseExplorerInternalUIs.connect(templateComboBox, JDBCDriverManager.getDefault(), driverClass);
 
@@ -162,11 +169,13 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         }
 
         for (Entry<String,UrlField> entry : urlFields.entrySet()) {
-            entry.getValue().getField().getDocument().addDocumentListener(this);
+            new InputAdapter(entry.getValue().getField());
         }
 
-        templateComboBox.getModel().addListDataListener(this);
+        new InputAdapter(templateComboBox);
 
+        new InputAdapter(directUrlField);
+        
         urlField.addFocusListener(new FocusListener() {
             public void focusGained(FocusEvent e) {
             }
@@ -181,6 +190,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         urlField.setVisible(false);
         showUrlCheckBox.setSelected(false);
 
+        fieldEntryMode = true;
+        fieldInputCheckBox.setSelected(true);
 
         setUrlField();
         updateFieldsFromUrl();
@@ -255,8 +266,8 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        inputModeButtonGroup = new javax.swing.ButtonGroup();
         showUrlCheckBox = new javax.swing.JCheckBox();
-        errorLabel = new javax.swing.JLabel();
         templateComboBox = new javax.swing.JComboBox();
         hostField = new javax.swing.JTextField();
         templateLabel = new javax.swing.JLabel();
@@ -285,16 +296,22 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         additionalPropsField = new javax.swing.JTextField();
         urlField = new javax.swing.JTextField();
         passwordCheckBox = new javax.swing.JCheckBox();
+        errorInfoPanel = new org.netbeans.modules.db.util.ErrorInfoPanel();
+        inputModelLabel = new javax.swing.JLabel();
+        fieldInputCheckBox = new javax.swing.JRadioButton();
+        directInputCheckBox = new javax.swing.JRadioButton();
+        directUrlLabel = new javax.swing.JLabel();
+        directUrlScroll = new javax.swing.JScrollPane();
+        directUrlField = new javax.swing.JTextArea();
+        jPanel1 = new javax.swing.JPanel();
 
         FormListener formListener = new FormListener();
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/db/resources/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(showUrlCheckBox, bundle.getString("NewConnectionShowJDBCURL")); // NOI18N
-        showUrlCheckBox.setToolTipText("Check this to show or hide the JDBC URL");
+        showUrlCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionShowJDBCURLAllyDesc")); // NOI18N
+        showUrlCheckBox.setMargin(new java.awt.Insets(3, 0, 1, 1));
         showUrlCheckBox.addActionListener(formListener);
-
-        errorLabel.setForeground(new java.awt.Color(255, 0, 0));
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "Error label");
 
         templateComboBox.setToolTipText(bundle.getString("ACS_NewConnectionDriverClassComboBoxA11yDesc")); // NOI18N
         templateComboBox.addItemListener(formListener);
@@ -370,6 +387,40 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
 
         org.openide.awt.Mnemonics.setLocalizedText(passwordCheckBox, bundle.getString("NewConnectionRememberPassword")); // NOI18N
         passwordCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionRememberPasswordA11yDesc")); // NOI18N
+        passwordCheckBox.setMargin(new java.awt.Insets(3, 0, 1, 1));
+
+        inputModelLabel.setLabelFor(fieldInputCheckBox);
+        org.openide.awt.Mnemonics.setLocalizedText(inputModelLabel, bundle.getString("NewCOnnectionInputMode")); // NOI18N
+
+        inputModeButtonGroup.add(fieldInputCheckBox);
+        org.openide.awt.Mnemonics.setLocalizedText(fieldInputCheckBox, bundle.getString("NewConnectionFieldEntryMode")); // NOI18N
+        fieldInputCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionFieldEntryModeA11yDesc")); // NOI18N
+        fieldInputCheckBox.addActionListener(formListener);
+
+        inputModeButtonGroup.add(directInputCheckBox);
+        org.openide.awt.Mnemonics.setLocalizedText(directInputCheckBox, bundle.getString("NewConnectionDirectUrlEntryMode")); // NOI18N
+        directInputCheckBox.setToolTipText(bundle.getString("ACS_NewConnectionDirectUrlEntryModeA11yDesc")); // NOI18N
+        directInputCheckBox.addActionListener(formListener);
+
+        directUrlLabel.setLabelFor(directUrlField);
+        org.openide.awt.Mnemonics.setLocalizedText(directUrlLabel, bundle.getString("NewConnectionDirectURL")); // NOI18N
+
+        directUrlField.setColumns(20);
+        directUrlField.setLineWrap(true);
+        directUrlField.setRows(5);
+        directUrlField.setToolTipText(bundle.getString("ACS_NewConnectionJDBCURLA11yDesc")); // NOI18N
+        directUrlScroll.setViewportView(directUrlField);
+
+        org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 674, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 19, Short.MAX_VALUE)
+        );
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -378,50 +429,63 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
-                            .add(showUrlCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(additionalPropsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, templateLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, hostLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, databaseLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, passwordLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, userLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, instanceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, dsnLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, tnsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, serviceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, sidLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(inputModelLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(templateLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(hostLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(portLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(databaseLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(passwordLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(userLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(instanceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(serverNameLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(dsnLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(tnsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(serviceLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(sidLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 119, Short.MAX_VALUE))
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                                .add(org.jdesktop.layout.GroupLayout.TRAILING, additionalPropsLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(showUrlCheckBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 125, Short.MAX_VALUE)
+                                .add(directUrlLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(urlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(additionalPropsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(templateComboBox, 0, 525, Short.MAX_VALUE)
-                            .add(hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(databaseField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(sidField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(serviceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(tnsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(dsnField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(serverNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(instanceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(userField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 525, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(21, 21, 21)
-                                .add(passwordCheckBox)))
-                        .addContainerGap())
-                    .add(layout.createSequentialGroup()
-                        .add(errorLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 651, Short.MAX_VALUE)
-                        .add(23, 23, 23))))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(directUrlScroll, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(urlField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, additionalPropsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(layout.createSequentialGroup()
+                                .add(fieldInputCheckBox)
+                                .add(18, 18, 18)
+                                .add(directInputCheckBox))
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, templateComboBox, 0, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, hostField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, portField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, databaseField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, sidField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serviceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, tnsField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, dsnField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverNameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, instanceField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, userField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, passwordField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 539, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
+                                .add(passwordCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+                                .add(139, 139, 139))))
+                    .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 674, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(inputModelLabel)
+                    .add(fieldInputCheckBox)
+                    .add(directInputCheckBox))
+                .add(13, 13, 13)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(templateLabel)
                     .add(templateComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
@@ -471,17 +535,23 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
                     .add(passwordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(5, 5, 5)
                 .add(passwordCheckBox)
-                .add(18, 18, 18)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(additionalPropsLabel)
                     .add(additionalPropsField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .add(32, 32, 32)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(showUrlCheckBox)
                     .add(urlField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(errorLabel)
-                .addContainerGap(39, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(directUrlScroll, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 84, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(directUrlLabel))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(jPanel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(errorInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(161, Short.MAX_VALUE))
         );
     }
 
@@ -498,6 +568,12 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
             }
             else if (evt.getSource() == urlField) {
                 NewConnectionPanel.this.urlFieldActionPerformed(evt);
+            }
+            else if (evt.getSource() == fieldInputCheckBox) {
+                NewConnectionPanel.this.fieldInputCheckBoxActionPerformed(evt);
+            }
+            else if (evt.getSource() == directInputCheckBox) {
+                NewConnectionPanel.this.directInputCheckBoxActionPerformed(evt);
             }
         }
 
@@ -549,9 +625,18 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel implemen
         if (evt.getStateChange() == evt.SELECTED)
         {
             setUpFields();
-            changedUpdate(null);
+            updateUrlFromFields();
+            fireChange();
         }
     }//GEN-LAST:event_templateComboBoxItemStateChanged
+
+    private void fieldInputCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldInputCheckBoxActionPerformed
+        updateInputMode();
+    }//GEN-LAST:event_fieldInputCheckBoxActionPerformed
+
+    private void directInputCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directInputCheckBoxActionPerformed
+        updateInputMode();
+    }//GEN-LAST:event_directInputCheckBoxActionPerformed
 
 private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
     showUrl();
@@ -574,13 +659,21 @@ private void showUrl() {
     private javax.swing.JLabel additionalPropsLabel;
     private javax.swing.JTextField databaseField;
     private javax.swing.JLabel databaseLabel;
+    private javax.swing.JRadioButton directInputCheckBox;
+    private javax.swing.JTextArea directUrlField;
+    private javax.swing.JLabel directUrlLabel;
+    private javax.swing.JScrollPane directUrlScroll;
     private javax.swing.JTextField dsnField;
     private javax.swing.JLabel dsnLabel;
-    private javax.swing.JLabel errorLabel;
+    private org.netbeans.modules.db.util.ErrorInfoPanel errorInfoPanel;
+    private javax.swing.JRadioButton fieldInputCheckBox;
     private javax.swing.JTextField hostField;
     private javax.swing.JLabel hostLabel;
+    private javax.swing.ButtonGroup inputModeButtonGroup;
+    private javax.swing.JLabel inputModelLabel;
     private javax.swing.JTextField instanceField;
     private javax.swing.JLabel instanceLabel;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JCheckBox passwordCheckBox;
     private javax.swing.JPasswordField passwordField;
     private javax.swing.JLabel passwordLabel;
@@ -610,7 +703,13 @@ private void showUrl() {
             connection.setDriverName(driver.getName());
            connection.setDriver(driver.getClassName());
         }
-        connection.setDatabase(urlField.getText());
+        
+        if (fieldEntryMode) {
+            connection.setDatabase(urlField.getText());
+        } else {
+            connection.setDatabase(directUrlField.getText());
+        }
+
         connection.setUser(userField.getText());
         connection.setPassword(getPassword());
         connection.setRememberPassword(passwordCheckBox.isSelected());
@@ -623,11 +722,17 @@ private void showUrl() {
         }
     }
 
+    private void updateInputMode() {
+        fieldEntryMode = fieldInputCheckBox.isSelected();
+        setUpFields();
+    }
+    
     /**
      * Set up which fields are enabled based on the URL template for the
      * selected driver
      */
     private void setUpFields() {
+        
         Object item = templateComboBox.getSelectedItem();
         if ( item != null && !(item instanceof JdbcUrl)) {
             // This is an item indicating "Create a New Driver", and if
@@ -660,28 +765,42 @@ private void showUrl() {
 
         passwordCheckBox.setVisible(true);
 
-        // This assumes that all labels have the same font. Seems reasonable.
-        // We use the bold font for required fields.
-        Font regularFont = getFont();
-        Font boldFont = regularFont.deriveFont(Font.BOLD);
+        if (fieldEntryMode) {
+            directUrlLabel.setVisible(false);
+            directUrlScroll.setVisible(false);
+            
+            showUrlCheckBox.setVisible(true);
+            urlField.setVisible(showUrlCheckBox.isSelected());
+            
+            for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+                entry.getValue().getField().setVisible(jdbcurl.supportsToken(entry.getKey()));
+                entry.getValue().getLabel().setVisible(jdbcurl.supportsToken(entry.getKey()));
+            }
 
-        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
-            entry.getValue().getField().setVisible(jdbcurl.supportsToken(entry.getKey()));
-            entry.getValue().getLabel().setVisible(jdbcurl.supportsToken(entry.getKey()));
-            entry.getValue().getLabel().setFont(jdbcurl.requiresToken(entry.getKey()) ? boldFont : regularFont);
+            if (! jdbcurl.isParseUrl()) {
+                showUrlCheckBox.setEnabled(false);
+                showUrlCheckBox.setSelected(true);
+                urlField.setVisible(true);
+                setUrlField();
+            } else {
+                showUrlCheckBox.setEnabled(true);
+                showUrlCheckBox.setSelected(userSpecifiedShowUrl);
+                showUrl();
+            }
         }
+        else {
+            directUrlLabel.setVisible(true);
+            directUrlScroll.setVisible(true);
+            
+            showUrlCheckBox.setVisible(false);
+            urlField.setVisible(false);
 
-        if (! jdbcurl.urlIsParsed()) {
-            showUrlCheckBox.setEnabled(false);
-            showUrlCheckBox.setSelected(true);
-            urlField.setVisible(true);
-            setUrlField();
-        } else {
-            showUrlCheckBox.setEnabled(true);
-            showUrlCheckBox.setSelected(userSpecifiedShowUrl);
-            showUrl();
+            for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+                entry.getValue().getField().setVisible(false);
+                entry.getValue().getLabel().setVisible(false);
+            }
         }
-
+        
         setFocus();
         checkValid();
         resize();
@@ -724,7 +843,7 @@ private void showUrl() {
             return;
         }
 
-        if (jdbcurl.urlIsParsed()) {
+        if (jdbcurl.isParseUrl()) {
             updateUrlFromFields();
         } else {
             urlField.setText(jdbcurl.getUrlTemplate());
@@ -790,34 +909,6 @@ private void showUrl() {
         }
     }
 
-    public void changedUpdate(javax.swing.event.DocumentEvent e) {
-        updateUrlFromFields();
-        fireChange();
-    }
-
-    public void insertUpdate(javax.swing.event.DocumentEvent e) {
-        updateUrlFromFields();
-        fireChange();
-    }
-
-    public void removeUpdate(javax.swing.event.DocumentEvent e) {
-        updateUrlFromFields();
-        fireChange();
-    }
-
-    public void contentsChanged(javax.swing.event.ListDataEvent e) {
-        updateUrlFromFields();
-        fireChange();
-    }
-
-    public void intervalAdded(javax.swing.event.ListDataEvent e) {
-        fireChange();
-    }
-
-    public void intervalRemoved(javax.swing.event.ListDataEvent e) {
-        fireChange();
-    }
-
     private void fireChange() {
 
         // the user has changed some parameter, so if there's a connection it's
@@ -831,7 +922,7 @@ private void showUrl() {
     private void updateUrlFromFields() {
         
         JdbcUrl url = getSelectedJdbcUrl();
-        if (url == null || !url.urlIsParsed()) {
+        if (url == null || !url.isParseUrl()) {
             return;
         }
 
@@ -853,27 +944,35 @@ private void showUrl() {
     }
 
     private void checkValid() {
-        JdbcUrl url = getSelectedJdbcUrl();
+        if (fieldEntryMode) {
+            JdbcUrl url = getSelectedJdbcUrl();
 
-        boolean requiredFieldMissing = false;
-        if (url == null) {
-            displayError(getMessage("NewConnection.MSG_SelectADriver"));
-        } else if (url != null && url.urlIsParsed()) {
-            for (Entry<String,UrlField> entry : urlFields.entrySet()) {
-                if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
-                    requiredFieldMissing = true;
-                    displayError(getMessage("NewConnection.ERR_FieldRequired",
-                            entry.getValue().getLabel().getText()));
+            boolean requiredFieldMissing = false;
+            if (url == null) {
+                displayError(getMessage("NewConnection.MSG_SelectADriver"), false);
+            } else if (url != null && url.isParseUrl()) {
+                for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+                    if (url.requiresToken(entry.getKey()) && isEmpty(entry.getValue().getField().getText())) {
+                        requiredFieldMissing = true;
+                        displayError(getMessage("NewConnection.ERR_FieldRequired",
+                                entry.getValue().getLabel().getText()), false);
+                    }
                 }
-            }
 
-            if (! requiredFieldMissing) {
+                if (! requiredFieldMissing) {
+                    clearError();
+                }
+            } else if (isEmpty(urlField.getText())) {
+                displayError(getMessage("NewConnection.MSG_SpecifyURL"), false);
+            } else {
                 clearError();
             }
-        } else if (isEmpty(urlField.getText())) {
-            displayError(getMessage("NewConnection.MSG_SpecifyURL"));
         } else {
-            clearError();
+            if (this.directUrlField.getText().trim().length() > 0) {
+                clearError();
+            } else {
+                displayError(getMessage("NewConnection.MSG_SpecifyURL"), false);
+            }
         }
     }
 
@@ -899,11 +998,11 @@ private void showUrl() {
             clearError();
         } catch ( MalformedURLException e ) {
             LOGGER.log(Level.FINE, null, e);
-            displayError(e.getMessage());
+            displayError(e.getMessage(), true);
             return;
         }
 
-        if (url.urlIsParsed()) {
+        if (url.isParseUrl()) {
             // Setting this flag prevents the docment listener for the fields
             // from trying to update the URL, thus causing a circular even loop.
             updatingUrl = true;
@@ -917,15 +1016,13 @@ private void showUrl() {
     }
 
     private void clearError() {
-        errorLabel.setText(" ");
+        errorInfoPanel.clear();
         mediator.setValid(true);
-        resize();
     }
 
-    private void displayError(String message) {
-        errorLabel.setText(message);
+    private void displayError(String message, boolean isError) {
+        errorInfoPanel.set(message, isError);
         mediator.setValid(false);
-        resize();
     }
 
     private class UrlField {
@@ -946,4 +1043,61 @@ private void showUrl() {
         }
 
     }
+    
+    /**
+     * This class is used to track user input for an associated input field.
+     */
+    private class InputAdapter implements DocumentListener, ListDataListener
+    {
+        public InputAdapter(JTextField source)
+        {
+            source.getDocument().addDocumentListener(this);
+        }
+
+        public InputAdapter(JComboBox source)
+        {
+            source.getModel().addListDataListener(this);
+        }
+        
+        public InputAdapter(JTextArea source)
+        {
+            source.getDocument().addDocumentListener(this);
+        }
+        
+        public void insertUpdate(DocumentEvent evt) 
+        {
+            updateUrlFromFields();
+            fireChange();
+        }
+
+        public void removeUpdate(DocumentEvent evt) 
+        {
+            updateUrlFromFields();
+            fireChange();
+        }
+
+        public void changedUpdate(DocumentEvent evt) 
+        {
+            updateUrlFromFields();
+            fireChange();
+        }
+
+        public void intervalAdded(ListDataEvent evt) 
+        {
+            fireChange();
+        }
+
+        public void intervalRemoved(ListDataEvent evt) 
+        {
+            fireChange();
+        }
+
+        public void contentsChanged(ListDataEvent evt) 
+        {
+            updateUrlFromFields();
+            fireChange();
+        }
+        
+    }
+            
 }

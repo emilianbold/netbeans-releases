@@ -39,6 +39,8 @@
 package org.netbeans.modules.db.mysql.actions;
 
 import org.netbeans.modules.db.mysql.DatabaseServer;
+import org.netbeans.modules.db.mysql.DatabaseServer.ServerState;
+import org.netbeans.modules.db.mysql.impl.ConnectManager;
 import org.netbeans.modules.db.mysql.util.Utils;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
@@ -78,16 +80,17 @@ public class ConnectServerAction extends CookieAction {
         
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
         
-        return server != null && !server.isConnected();
+        if (server == null) {
+            return false;
+        }
+        return server.getState() == ServerState.DISCONNECTED;
     }
 
     @Override
     protected void performAction(Node[] activatedNodes) {
         DatabaseServer server = activatedNodes[0].getCookie(DatabaseServer.class);
 
-        // Run this on a separate thread so that we don't hang up the AWT 
-        // thread if the database server is not responding
-        server.reconnect(false, true); // quiet, async
+        ConnectManager.getDefault().reconnect(server);
     }
     
     @Override

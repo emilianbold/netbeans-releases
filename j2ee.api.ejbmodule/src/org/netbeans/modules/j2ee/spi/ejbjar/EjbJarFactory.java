@@ -64,7 +64,7 @@ public final class EjbJarFactory {
      * @return instance of API webmodule
      */
     public static EjbJar createEjbJar(EjbJarImplementation spiWebmodule) {
-        return EjbJarAccessor.DEFAULT.createEjbJar (spiWebmodule);
+        return EjbJarAccessor.getDefault().createEjbJar (spiWebmodule);
     }
 
     /**

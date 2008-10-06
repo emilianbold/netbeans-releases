@@ -603,6 +603,10 @@ public class TableRowGroupDesignState {
                 tblColDesignState.setTableColumnBean(tableColumnBean);
             }
             tblColDesignState.setSourceVariable(sourceVarName);
+            if (tblColDesignState.getTableColumnBean() == null) {
+                // XXX #134444 It was probably deleted.
+                continue;
+            }
             tblColDesignState.saveState();
             fcontext.moveBean(tblColDesignState.getTableColumnBean(), tableRowGroupBean, new Position(i));
         }

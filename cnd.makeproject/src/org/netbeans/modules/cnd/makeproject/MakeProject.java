@@ -60,6 +60,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.ToolchainProject;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.loaders.CCDataLoader;
@@ -96,10 +99,10 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.ExtensionList;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openidex.search.SearchInfo;
 import org.w3c.dom.Element;
@@ -112,7 +115,7 @@ import org.w3c.dom.Text;
  */
 public final class MakeProject implements Project, AntProjectListener {
 
-    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(Utilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
+    private static final Icon MAKE_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/cnd/makeproject/ui/resources/makeProject.gif")); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N
     private static final String C_EXTENSIONS = "c-extensions"; // NOI18N
     private static final String CPP_EXTENSIONS = "cpp-extensions"; // NOI18N
@@ -129,6 +132,7 @@ public final class MakeProject implements Project, AntProjectListener {
     private Set<String> headerExtensions = MakeProject.createExtensionSet();
     private Set<String> cExtensions = MakeProject.createExtensionSet();
     private Set<String> cppExtensions = MakeProject.createExtensionSet();
+    private String sourceEncoding = null;
 
     MakeProject(AntProjectHelper helper) throws IOException {
         this.helper = helper;
@@ -153,6 +157,7 @@ public final class MakeProject implements Project, AntProjectListener {
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
+        sourceEncoding = getSourceEncodingFromProjectXml();
 
         if (templateListener == null) {
             DataLoaderPool.getDefault().addOperationListener(templateListener = new MakeTemplateListener());
@@ -226,8 +231,9 @@ public final class MakeProject implements Project, AntProjectListener {
             new MakeProjectOperations(this),
             new FolderSearchInfo(projectDescriptorProvider),
             new MakeProjectType(),
-            new MakeProjectEncodingQueryImpl(projectDescriptorProvider),
-            new RemoteProjectImpl()
+            new MakeProjectEncodingQueryImpl(this),
+            new RemoteProjectImpl(),
+            new ToolchainProjectImpl()
         });
     }
 
@@ -508,6 +514,40 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         });
     }
+    
+    
+    /*
+     * Return source encoding if in project.xml (only project version >= 50)
+     */
+    public String getSourceEncodingFromProjectXml() {
+        Element data = helper.getPrimaryConfigurationData(true);
+
+        NodeList nodeList = data.getElementsByTagName(MakeProjectType.SOURCE_ENCODING_TAG);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                return node.getTextContent();
+            }
+        }
+        
+        return null;
+    }
+    
+    public String getSourceEncoding() {
+        if (sourceEncoding == null) {
+            // Read configurations.xml. That's where encoding is stored for project version < 50)
+            projectDescriptorProvider.getConfigurationDescriptor();
+        }
+        if (sourceEncoding == null) {
+            sourceEncoding = FileEncodingQuery.getDefaultEncoding().name();
+        }
+        return sourceEncoding;
+    }
+    
+    public void setSourceEncoding(String sourceEncoding) {
+        this.sourceEncoding = sourceEncoding;
+    }
+    
     // Private innerclasses ----------------------------------------------------
 
 /*
@@ -800,5 +840,17 @@ public final class MakeProject implements Project, AntProjectListener {
             return conf.getDevelopmentHost().getName();
         }
 
+    }
+
+    class ToolchainProjectImpl implements ToolchainProject {
+
+        public CompilerSet getCompilerSet() {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            if (conf != null) {
+                return conf.getCompilerSet().getCompilerSet();
+            }
+            return null;
+        }
     }
 }

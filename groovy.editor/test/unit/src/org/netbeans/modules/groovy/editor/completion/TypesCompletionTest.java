@@ -112,7 +112,7 @@ public class TypesCompletionTest extends GroovyTestBase {
     // testing the various default imports
 
     public void testDefaultImport1() throws Exception {
-        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "FileSys^", false);
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "FileRea^", false);
     }
 
     public void testDefaultImport2() throws Exception {
@@ -185,6 +185,10 @@ public class TypesCompletionTest extends GroovyTestBase {
     public void testInterfaceCompletion5() throws Exception {
         checkCompletion(TYPES_BASE + "" + "InterfaceCompletion1.groovy", "class SpecialGroovyClass implements Runnable, Se^rializable {", false);
     }
-    
 
+    // FIXME this works in the IDE, but due to some isPackageValid magic
+    // and perhaps due to index stuff this does not work in tests
+//    public void testFqnTypeCompletion1() throws Exception {
+//        checkCompletion(TYPES_BASE + "" + "FqnTypeCompletion1.groovy", "groovy.xml.^", false);
+//    }
 }

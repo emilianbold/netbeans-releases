@@ -70,18 +70,18 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationValid()) {
+            // property not set yet
+            return;
+        }
         if (isScriptSelected()) {
-            // we don't need to check anything here, because if the customizer show, then scriptSelected == false
             debugLocalCommand.invokeAction(context);
         } else {
-            if (!isUrlSet()) {
-                return;
-            }
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
             final FileObject startFile = fileForContext(context);
             final URL[] url = new URL[1];
             try {
-                url[0] = getURLForDebug(context);
+                url[0] = getURLForDebug(context, true);
             } catch (MalformedURLException ex) {
                 //TODO improve error handling
                 Exceptions.printStackTrace(ex);
@@ -113,7 +113,7 @@ public class DebugSingleCommand extends DebugCommand {
                             invokeAction(context);
                         }
                     } else {
-                        dbgStarter.start(getProject(), runnable, startFile, isScriptSelected());
+                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
                     }
                 }
             } else {
@@ -124,7 +124,12 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return fileForContext(context) != null && XDebugStarterFactory.getInstance() != null;
+        FileObject file = fileForContext(context);
+        boolean enabled = file != null;
+        if (isScriptSelected()) {
+            enabled = isPhpFileSelected(file);
+        }
+        return enabled && XDebugStarterFactory.getInstance() != null;
     }
 
     @Override

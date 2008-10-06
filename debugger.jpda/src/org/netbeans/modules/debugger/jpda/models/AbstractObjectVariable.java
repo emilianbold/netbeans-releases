@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ArrayReference;
 import com.sun.jdi.ArrayType;
 import com.sun.jdi.CharValue;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.IntegerValue;
 import com.sun.jdi.Method;
@@ -224,7 +225,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         if (to != 0) {
             to = Math.min(staticFields.length, to);
             from = Math.min(staticFields.length, from);
-            FieldVariable[] fv = new FieldVariable [to - from];
+            Field[] fv = new Field[to - from];
             System.arraycopy (staticFields, from, fv, 0, to - from);
             return fv;
         }
@@ -247,7 +248,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         if (to != 0) {
             to = Math.min(inheritedFields.length, to);
             from = Math.min(inheritedFields.length, from);
-            FieldVariable[] fv = new FieldVariable [to - from];
+            Field[] fv = new Field[to - from];
             System.arraycopy (inheritedFields, from, fv, 0, to - from);
             return fv;
         }
@@ -307,7 +308,16 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             boolean addQuotation = false;
             boolean addDots = false;
             StringReference sr;
-            if (v instanceof StringReference) {
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
+                Method toStringMethod = ((ClassType) v.type ()).
+                    concreteMethodByName ("toString", "()Ljava/lang/String;");  // NOI18N
+                sr = (StringReference) debugger.invokeMethod (
+                    (ObjectReference) v,
+                    toStringMethod,
+                    new Value [0],
+                    maxLength + 1
+                );
+            } else if (v instanceof StringReference) {
                 sr = (StringReference) v;
                 addQuotation = true;
             } else {
@@ -321,34 +331,10 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             }
             if (sr == null) {
                 return null;
-            } else {
-                if (maxLength > 0 && maxLength < Integer.MAX_VALUE) {
-                    Method stringLengthMethod = ((ClassType) sr.type ()).
-                        concreteMethodByName ("length", "()I");  // NOI18N
-                    IntegerValue lengthValue = (IntegerValue) debugger.invokeMethod (
-                        sr,
-                        stringLengthMethod,
-                        new Value [0]
-                    );
-                    if (lengthValue.value() > maxLength) {
-                        Method subStringMethod = ((ClassType) sr.type ()).
-                            concreteMethodByName ("substring", "(II)Ljava/lang/String;");  // NOI18N
-                        if (subStringMethod != null) {
-                            sr = (StringReference) debugger.invokeMethod (
-                                sr,
-                                subStringMethod,
-                                new Value [] { v.virtualMachine().mirrorOf(0),
-                                               v.virtualMachine().mirrorOf(maxLength) }
-                            );
-                            addDots = true;
-                        }
-                    }
-                    
-                }
             }
             String str = sr.value();
-            if (addDots) {
-                str = str + "..."; // NOI18N
+            if (maxLength > 0 && maxLength < Integer.MAX_VALUE && str.length() > maxLength) {
+                str = str.substring(0, maxLength) + "..."; // NOI18N
             }
             if (addQuotation) {
                 str = "\"" + str + "\""; // NOI18N
@@ -583,14 +569,14 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         Type type;
         if (value != null) {
             try {
-                type = getInnerValue ().type ();
+                type = value.type ();
             } catch (ObjectCollectedException ocex) {
                 type = null;
             }
         } else {
             type = null;
         }
-        if ( !(getInnerValue() instanceof ObjectReference) || 
+        if ( !(value instanceof ObjectReference) ||
              !(type instanceof ReferenceType)
         ) {
             this.fields = new Field [0];
@@ -598,7 +584,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             this.inheritedFields = new Field [0];
         } else {
             try {
-                ObjectReference or = (ObjectReference) this.getInnerValue();
+                ObjectReference or = (ObjectReference) value;
                 ReferenceType rt = (ReferenceType) type;
                 if (or instanceof ArrayReference) {
                     this.fields = getFieldsOfArray (
@@ -737,7 +723,12 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 return new AbstractList<ObjectVariable>() {
                     public ObjectVariable get(int i) {
                         ObjectReference obj = referrers.get(i);
-                        return new AbstractObjectVariable(getDebugger(), obj, name+" referrer "+i);
+                        if (obj instanceof ClassObjectReference) {
+                            ClassObjectReference clobj = (ClassObjectReference) obj;
+                            return new ClassVariableImpl(getDebugger(), clobj, name+" referrer "+i);
+                        } else {
+                            return new AbstractObjectVariable(getDebugger(), obj, name+" referrer "+i);
+                        }
                     }
 
                     public int size() {

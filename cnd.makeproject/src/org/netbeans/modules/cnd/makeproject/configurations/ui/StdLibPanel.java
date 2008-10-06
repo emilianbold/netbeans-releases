@@ -47,6 +47,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -72,7 +73,7 @@ public class StdLibPanel extends javax.swing.JPanel {
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 	    JLabel label = (JLabel)super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
 	    LibraryItem libraryItem = (LibraryItem)value;
-	    label.setIcon(new ImageIcon(Utilities.loadImage(libraryItem.getIconName())));
+	    label.setIcon(new ImageIcon(ImageUtilities.loadImage(libraryItem.getIconName())));
 	    label.setToolTipText(libraryItem.getToolTip());
             return label;
         }

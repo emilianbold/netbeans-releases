@@ -40,6 +40,9 @@ var PRODUCT_NAME      = "NetBeans {0}";
 var INSTALLER_MESSAGE = "Installer for {0}";
 var NOFILE_MESSAGE    = "No file requested" ;
 
+var NETBEANS_DOWNLOAD_STARTED_PAGE_TITLE       = "NetBeans IDE Download Started";
+var NETBEANS_DOWNLOAD_STARTER_PAGE_DESCRIPTION = "NetBeans IDE Download Started";
+
 var NETBEANS_DOWNLOAD_STARTED_HEADER = "NetBeans IDE {0} Download Started";
 var RELEASE_NOTES_LABEL = "Release Notes";
 var INSTALL_NOTES_LABEL = "Installation Instructions";
@@ -55,6 +58,7 @@ var SUPPORT_DESCRIPTION  = "Flexible support options to help you stay focused on
 
 // $PRODUCT_NAME $TYPE (Installer for $PLATFORM/Zip)/$Language ($Language_ID) $filename ($SIZE) MD5: $MD5
 var INFO_MESSAGE = "{0}{1} {2}/{3} ({4})<br>{5} ({6} MB)<br>MD5: {7}";
+var INFO_MESSAGE_OTHER = "{0} ({1} MB)<br>MD5: {2}";
 
 //DO NOT TRANSLATE
 var SUBSCRIPTION_PHP_URL = "http://services.netbeans.org/sub.php";

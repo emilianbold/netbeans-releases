@@ -311,6 +311,181 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
+            <method id="events_cancel" name="GET">
+                <doc xml:lang="en">
+                    Cancels an event. The application must be an 
+                    admin of the event. An application is the admin of an event if the 
+                    application created the event on behalf of a user (with that user's active session) 
+                    or if it is the creator of the event itself (that is, the event was created without 
+                    an active user session). This method does not require a session key. 
+                    However if you call this method without an active user session, 
+                    then your application can cancel an event only if it is the event creator. 
+                    </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
+                        <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="eid" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The event ID.</doc>
+                    </param>
+                    <param name="cancel_message" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">The message sent explaining why the event was canceled. You can pass an empty string if you don't want to provide an explanation.</doc>
+                    </param>
+                    <param name="callback" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of a function to call. This is primarily to enable cross-domain JavaScript requests using the &lt;script&gt; tag, also known as JSONP, and works with both the XML and JSON formats. The function will be called with the response passed as the parameter.</doc>
+                    </param>
+                    <param fixed="facebook.events.cancel" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:events_cancel_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="events_create" name="GET">
+                <doc xml:lang="en">Creates an event on behalf of the user if the application has an active session key for that user; otherwise it creates an event on behalf of the application. Applications can create events for a user if the user grants the application the create_event extended permission.
+
+If you are creating an event on behalf of a user, then your application is an admin for the event, while the user is the creator.
+
+This method does not require a session key. However if you call this method without an active user session, then your application is both the creator and admin for the event.                 </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
+                        <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="event_info" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The event information, passed as a JSON-encoded array. See the Notes below for information on what parameters to include in the array.</doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="callback" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of a function to call. This is primarily to enable cross-domain JavaScript requests using the &lt;script&gt; tag, also known as JSONP, and works with both the XML and JSON formats. The function will be called with the response passed as the parameter.</doc>
+                    </param>
+                    <param fixed="facebook.events.create" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:events_create_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="events_edit" name="GET">
+                <doc xml:lang="en">Edits the details of an existing event. The application must be an admin of the event. An application is the admin of an event if the application created the event on behalf of a user (with that user's active session) or if it is the creator of the event itself (that is, the event was created without an active user session).
+
+This method does not require a session key. However if you call this method without an active user session, then your application can edit an event only if it is the event creator.                 </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
+                        <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="eid" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The event ID.</doc>
+                    </param>
+                    <param name="event_info" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The event information, passed as a JSON-encoded array. See the Notes below for information on what parameters to include in the array.</doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="callback" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of a function to call. This is primarily to enable cross-domain JavaScript requests using the &lt;script&gt; tag, also known as JSONP, and works with both the XML and JSON formats. The function will be called with the response passed as the parameter.</doc>
+                    </param>
+                    <param fixed="facebook.events.edit" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:events_edit_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="events_rsvp" name="GET">
+                <doc xml:lang="en">Sets a user's RSVP status for an event. An application can set a user's RSVP status only if the following are all true:
+
+    * The application is an admin for the event.
+    * The application has an active session for the user.
+    * The active user has granted the application the rsvp_event extended permission.                 </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
+                        <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="eid" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The event ID.</doc>
+                    </param>
+                    <param name="rsvp_status" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The user's RSVP status. Specify attending, unsure, or declined.</doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="callback" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of a function to call. This is primarily to enable cross-domain JavaScript requests using the &lt;script&gt; tag, also known as JSONP, and works with both the XML and JSON formats. The function will be called with the response passed as the parameter.</doc>
+                    </param>
+                    <param fixed="facebook.events.rsvp" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:events_rsvp_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
             <method id="events_getMembers" name="GET">
                 <doc xml:lang="en">Returns membership list data associated with an event.
                 </doc>
@@ -459,6 +634,38 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
+            <method id="fbml_uploadNativeStrings" name="GET">
+                <doc xml:lang="en">Lets you insert text strings in their native language into the Facebook Translations database so they can be translated. See Translating Platform Applications for more information about translating your applications.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="native_strings" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">A JSON-encoded array of strings to translate. Each element of the string array is another array, with text storing the actual string, description storing the description of the text.
+                        </doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="callback" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of a function to call. This is primarily to enable cross-domain JavaScript requests using the &lt;script&gt; tag, also known as JSONP, and works with both the XML and JSON formats. The function will be called with the response passed as the parameter.
+                        </doc>
+                    </param>
+                    <param fixed="facebook.fbml.uploadNativeStrings" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:integer"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
             <method id="feed_publishActionOfUser" name="GET">
                 <doc xml:lang="en">Publishes a Mini-Feed story to the user corresponding to the session_key parameter, and publishes News Feed stories to the friends of that user who have added the application.
                 </doc>
@@ -528,6 +735,166 @@ start_time and end_time parameters specify a (possibly open-ended) window in whi
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="f:boolean"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="feed_deactivateTemplateBundleByID" name="GET">
+                <doc xml:lang="en">Deactivates a previously registered template bundle. Once a template bundle has been deactivated, it can no longer be used to publish stories via feed.publishUserAction. Stories published against the template bundle prior to its deactivation are still valid and will show up in Mini-Feed and News Feed. The response is true if and only if the template bundle, identified by template_bundle_id, is an active template bundle owned by the requesting application, and false otherwise.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="template_bundle_id" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
+                        </doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param fixed="facebook.feed.deactivateTemplateBundleByID" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:feed_deactivateTemplateBundleByID_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="feed_getRegisteredTemplateBundleByID" name="GET">
+                <doc xml:lang="en">Retrieves information about a specified template bundle previously registered by the requesting application. 
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="template_bundle_id" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
+                        </doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param fixed="facebook.feed.getRegisteredTemplateBundleByID" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:feed_getRegisteredTemplateBundleByID_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="feed_getRegisteredTemplateBundles" name="GET">
+                <doc xml:lang="en">Retrieves the full list of all the template bundles registered by the requesting application. The list does not include any of the template bundles previously deactivated via calls to feed.deactivateTemplateBundleByID.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param fixed="facebook.feed.getRegisteredTemplateBundles" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:feed_getRegisteredTemplateBundles_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="feed_publishUserAction" name="GET">
+                <doc xml:lang="en">Publishes a story on behalf of the user owning the session, using the specified template bundle. This method requires an active session key in order to be called. The API call returns true if all succeeds, and false if the user never authorized the application to publish to his or her Wall. All other errors are communicated via an error code, as outlined below.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="template_bundle_id" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
+                        </doc>
+                    </param>
+                    <param name="template_data" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">A JSON-encoded associative array of the values that should be substituted into the templates held by the specified template bundle.
+                        </doc>
+                    </param>
+                    <param name="target_ids" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">A comma-delimited list of IDs of friends of the actor, used for stories about a direct action between the actor and the targets of his or her action.
+                        </doc>
+                    </param>
+                    <param name="body_general" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Additional markup that extends the body of a short story. If two or more short stories are aggregated into one story, the markup in the body_general from any one of those stories may be displayed. 
+                        </doc>
+                    </param>
+                    <param name="story_size" required="false" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The size of the Feed story. You can specify 1 (one line), 2 (short), or 4 (full). 
+                        </doc>
+                    </param>
+                    <param fixed="facebook.feed.publishUserAction" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:string"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="feed_registerTemplateBundle" name="GET">
+                <doc xml:lang="en">Deactivates a previously registered template bundle. Once a template bundle has been deactivated, it can no longer be used to publish stories via feed.publishUserAction. Stories published against the template bundle prior to its deactivation are still valid and will show up in Mini-Feed and News Feed. The response is true if and only if the template bundle, identified by template_bundle_id, is an active template bundle owned by the requesting application, and false otherwise.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="one_line_story_templates" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">A JSON-encoded array of FBML templates that can be used to render one line Mini-Feed and News Feed stories.
+                        </doc>
+                    </param>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="short_story_templates" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">A JSON-encoded array of dictionaries, where each dictionary represents a short story template. 
+                        </doc>
+                    </param>
+                    <param name="full_story_template" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">A string that spells out a JSON-encoded dictionary with two fields: template_title, which should be mapped to the FBML template used to render a full story’s title, and template_body, which should map to the FBML template used to render a full story’s body. 
+                        </doc>
+                    </param>
+                    <param fixed="facebook.feed.registerTemplateBundle" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:feed_registerTemplateBundle_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -698,6 +1065,46 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="f:string"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="liveMessage_send" name="GET">
+                <doc xml:lang="en">Sends a live message to a particular user's browser, which should be handled in FBJS. Messages can only be sent and received by users who have accepted your application's Terms of Service. 
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
+                        <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="recipient" required="true" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The template bundle ID used to identify a previously registered template bundle. The ID is the one returned by a previous call to feed.registerTemplateBundle. 
+                        </doc>
+                    </param>
+                    <param name="event_name" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of the "event" for which messages will be sent and received (max length: 128 bytes). A LiveMessage FBJS object must be initialized with this event name to receive the message. 
+                        </doc>
+                    </param>
+                    <param name="message" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">A JSON-encoded string of the message to send (max length: 1024 bytes).
+                        </doc>
+                    </param>
+                    <param fixed="facebook.liveMessage.send" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:liveMessage_send_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1732,6 +2139,130 @@ The values returned from this call are '''cannot''' be stored.
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
+            <method id="profile_getInfo" name="GET">
+                <doc xml:lang="en">Returns the specified user's application info section for the calling application. The content returned is specified within info_fields.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="uid" required="false" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The user ID of the user who added the application info section. 
+                        </doc>
+                    </param>
+                    <param fixed="facebook.profile.getInfo" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:profile_getInfo_response"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="profile_setInfo" name="GET">
+                <doc xml:lang="en">Gets the FBML that is currently set for a user's profile. See the FBML documentation for a description of the markup and its role in various contexts.
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="title" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">The title or header of the application info section.  
+                        </doc>
+                    </param>
+                    <param name="type" required="false" style="query" type="xsd:integer">
+                        <doc xml:lang="en">Specify 1 for a text-only field-item configuration or 5 for a thumbnail configuration.  
+                        </doc>
+                    </param>
+                    <param name="info_fields" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">A JSON-encoded array of elements comprising an application info section, including the field (the title of the field) and an array of info_item objects (each object has a label and a link, and optionally contains image, description, and sublabel fields.
+                        </doc>
+                    </param>
+                    <param name="uid" required="false" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The user ID of the user who added the application info section. 
+                        </doc>
+                    </param>
+                    <param fixed="facebook.profile.setInfo" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:string"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="profile_getInfoOptions" name="GET">
+                <doc xml:lang="en">Returns the options associated with the specified field for an application info section. 
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="field" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">The title of the field. 
+                        </doc>
+                    </param>
+                    <param fixed="facebook.profile.getInfoOptions" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:string"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="profile_setInfoOptions" name="GET">
+                <doc xml:lang="en">Specifies the objects for a field for an application info section. These options populate the typeahead for a thumbnail. 
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="options" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The user whose profile FBML is to be fetched, or the page ID in case of a Page. If not specified, defaults to the logged-in user. Not allowed for desktop applications, since the application secret is essentially public.
+                        </doc>
+                    </param>
+                    <param fixed="facebook.profile.setInfoOptions" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:string"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
             <method id="profile_setFBML" name="GET">
                 <doc xml:lang="en">Sets the FBML for a user's profile, including the content for both the profile box and the profile actions. See the FBML documentation for a description of the markup and its role in various contexts. Note that this method can also be used to set fb:profile-actions for users.
 
@@ -1923,6 +2454,47 @@ The FBML is cached on Facebook's server for that particular user and that partic
                 </request>
                 <response>
                     <representation mediaType="text/xml" element="f:boolean"/>
+                    <fault mediaType="text/xml" element="f:error_response"/>
+                </response>
+            </method>
+            <method id="users_isAppUser" name="GET">
+                <doc xml:lang="en">Returns whether the user (either the session user or user specified by uid) has authorized the calling application.
+                For Web applications, you must pass either the ID of the user on whose behalf you're making this call or the session key for that user, but not both. If you don't specify a user with the uid parameter, then that user whose session it is will be the target of the call. 
+                </doc>
+                <request>
+                    <param name="api_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The application key associated with the calling application.
+                        </doc>
+                    </param>
+                    <param name="session_key" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">The session key of the logged in user.
+                        </doc>
+                    </param>
+                    <param fixed="" name="call_id" required="true" style="query" type="xsd:decimal">
+                        <doc xml:lang="en">The request's sequence number. Each successive call for any session must use a sequence number greater than the last. We suggest using the current time in milliseconds.
+                        </doc>
+                    </param>
+                    <param name="sig" required="true" style="query" type="xsd:string">
+                        <doc xml:lang="en">An MD5 hash of the current request and your secret key, as described in the authentication guide.
+                        </doc>
+                    </param>
+                    <param fixed="1.0" name="v" required="true" style="query" type="xsd:string"/>
+                    <param name="format" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Desired response format. Either XML (default) or JSON.
+                        </doc>
+                    </param>
+                    <param name="callback" required="false" style="query" type="xsd:string">
+                        <doc xml:lang="en">Name of a function to call.
+                        </doc>
+                    </param>
+                    <param name="uid" required="false" style="query" type="xsd:integer">
+                        <doc xml:lang="en">The user ID of the user who may have authorized the application. If this parameter is not specified, then it defaults to the session user. 
+                        </doc>
+                    </param>
+                    <param fixed="facebook.users.isAppUser" name="method" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="f:users_isAppUser_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>

@@ -60,20 +60,28 @@ import org.openide.util.NbPreferences;
  */
 public class RemotePathMap implements PathMap {
 
-    private static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
-
-    private final HashMap<String, String> map = new HashMap<String, String>();
-    private final String hkey;
+    private final static Map<String, RemotePathMap> pmtable = new HashMap<String, RemotePathMap>();
 
     public static RemotePathMap getMapper(String hkey) {
         RemotePathMap pathmap = pmtable.get(hkey);
 
         if (pathmap == null) {
-            pathmap = new RemotePathMap(hkey);
-            pmtable.put(hkey, pathmap);
+            synchronized (pmtable) {
+                pathmap = new RemotePathMap(hkey);
+                pmtable.put(hkey, pathmap);
+            }
         }
         return pathmap;
     }
+
+    public static boolean isReady(String hkey) {
+            return pmtable.get(hkey) != null;
+    }
+
+    //
+
+    private final HashMap<String, String> map = new HashMap<String, String>();
+    private final String hkey;
 
     private RemotePathMap(String hkey) {
         this.hkey = hkey;
@@ -187,7 +195,7 @@ public class RemotePathMap implements PathMap {
                     out.write(validationLine);
                     out.close();
                     // check existance
-                    if ( 0 == RemoteCommandSupport.run(hkey, "cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) {
+                    if ( 0 == RemoteCommandSupport.run(hkey, "cat " + validationFile.getAbsolutePath() + " | grep " + validationLine)) { // NOI18N
                         synchronized(map) {
                             map.put(lpath, lpath);
                         }

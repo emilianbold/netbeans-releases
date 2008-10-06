@@ -264,6 +264,9 @@ public class BrokenReferencesModel extends AbstractListModel {
             String key = entry.getKey();
             String value = entry.getValue();
             if (key.startsWith("project.")) { // NOI18N
+                if ("project.license".equals(key)) {    //NOI18N
+                    continue;
+                }
                 File f = getFile(helper, evaluator, value);
                 if (f.exists()) {
                     continue;

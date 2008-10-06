@@ -81,7 +81,7 @@ abstract class OffsetableKey extends ProjectFileNameBasedKey implements Comparab
     }
 
     /*package-local*/ CharSequence getName(){
-        if (name != null && name.length() >= 0 && isDigit(name.charAt(0))) {
+        if (name != null && 0 < name.length() && isDigit(name.charAt(0))) {
             return CharSequenceKey.empty();
         }
         return name;

@@ -310,6 +310,13 @@ public class GsfFoldManager implements FoldManager {
             
             long startTime = System.currentTimeMillis();
 
+            // Don't update folds, if there is an invalid result
+            // It should be solved per lenguages, but then there has to be remembered
+            // lates folds and transformed to the new possition.
+            if (info.hasInvalidResults()) {
+                return;
+            }
+
             TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
             boolean success = gsfFoldScan(fm, info, folds);
             if (!success || isCancelled()) {
@@ -431,26 +438,30 @@ public class GsfFoldManager implements FoldManager {
                 }
                 List<OffsetRange> ranges = folds.get("codeblocks"); //NOI18N
                 if (ranges != null) {
+                    boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_METHOD);
                     for (OffsetRange range : ranges) {
-                        addFold(range, result, doc, manager.getSetting(CODE_FOLDING_COLLAPSE_METHOD), CODE_BLOCK_FOLD_TEMPLATE); //foldCodeBlocksPreset
+                        addFold(range, result, doc, collapseByDefault,CODE_BLOCK_FOLD_TEMPLATE); //foldCodeBlocksPreset
                     }
                 }
                 ranges = folds.get("comments"); //NOI18N
                 if (ranges != null) {
+                    boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_JAVADOC);
                     for (OffsetRange range : ranges) {
-                        addFold(range, result, doc, manager.getSetting(CODE_FOLDING_COLLAPSE_JAVADOC), JAVADOC_FOLD_TEMPLATE);
+                        addFold(range, result, doc, collapseByDefault,JAVADOC_FOLD_TEMPLATE);
                     }
                 }
                 ranges = folds.get("initial-comment"); //NOI18N
                 if (ranges != null) {
                     for (OffsetRange range : ranges) {
-                        addFold(range, result, doc, manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT), INITIAL_COMMENT_FOLD_TEMPLATE); //foldInitialCommentsPreset
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT);
+                        addFold(range, result, doc, collapseByDefault,INITIAL_COMMENT_FOLD_TEMPLATE); //foldInitialCommentsPreset
                     }
                 }
                 ranges = folds.get("imports"); //NOI18N
                 if (ranges != null) {
                     for (OffsetRange range : ranges) {
-                        addFold(range, result, doc, manager.getSetting(CODE_FOLDING_COLLAPSE_IMPORT), IMPORTS_FOLD_TEMPLATE);
+                        boolean collapseByDefault = manager.getSetting(CODE_FOLDING_COLLAPSE_IMPORT);
+                        addFold(range, result, doc, collapseByDefault,IMPORTS_FOLD_TEMPLATE);
                     }
                 }
             }

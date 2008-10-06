@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.ui;
 
+import java.awt.Font;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,7 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbContext;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -68,7 +70,8 @@ final class MemoryViewTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(MemoryViewTopComponent.class, "CTL_MemoryViewTopComponent"));
         setToolTipText(NbBundle.getMessage(MemoryViewTopComponent.class, "HINT_MemoryViewTopComponent"));
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
+        taResult.setFont(new Font("Monospaced", Font.PLAIN, taResult.getFont().getSize())); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -88,7 +91,6 @@ final class MemoryViewTopComponent extends TopComponent {
         tfLength = new javax.swing.JTextField();
 
         taResult.setEditable(false);
-        taResult.setFont(new java.awt.Font("Monospaced", 0, 16)); // NOI18N
         jScrollPane1.setViewportView(taResult);
 
         org.jdesktop.layout.GroupLayout fakePanelLayout = new org.jdesktop.layout.GroupLayout(fakePanel);

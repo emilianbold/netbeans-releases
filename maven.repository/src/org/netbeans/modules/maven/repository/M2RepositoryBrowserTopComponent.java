@@ -61,6 +61,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -84,7 +85,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         initComponents();
         setName(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "CTL_M2RepositoryBrowserTopComponent")); //NOI18N
         setToolTipText(NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "HINT_M2RepositoryBrowserTopComponent")); //NOI18N
-        setIcon(Utilities.loadImage(ICON_PATH, true));
+        setIcon(ImageUtilities.loadImage(ICON_PATH, true));
         btv = new BeanTreeView();
         btv.setRootVisible(false);
         manager = new ExplorerManager();
@@ -92,12 +93,12 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
         map.put(DefaultEditorKit.copyAction, ExplorerUtils.actionCopy(manager));
         map.put(DefaultEditorKit.cutAction, ExplorerUtils.actionCut(manager));
         map.put(DefaultEditorKit.pasteAction, ExplorerUtils.actionPaste(manager));
-        map.put("delete", ExplorerUtils.actionDelete(manager, true));
+        map.put("delete", ExplorerUtils.actionDelete(manager, true)); //NOI18N
         associateLookup(ExplorerUtils.createLookup(manager, map));
         pnlBrowse.add(btv, BorderLayout.CENTER);
-        btnIndex.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/repository/refreshRepo.png"))); //NOI18N
-        btnAddRepo.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/repository/AddRepo.png"))); //NOI18N
-        btnFind.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/maven/repository/FindInRepo.png"))); //NOI18N
+        btnIndex.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/refreshRepo.png"))); //NOI18N
+        btnAddRepo.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/AddRepo.png"))); //NOI18N
+        btnFind.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/repository/FindInRepo.png"))); //NOI18N
         btnIndex.setText(null);
         btnAddRepo.setText(null);
         btnFind.setText(null);
@@ -227,7 +228,7 @@ public final class M2RepositoryBrowserTopComponent extends TopComponent implemen
 
 private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddRepoActionPerformed
     final RepositoryRegisterUI rrui = new RepositoryRegisterUI();
-    DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(RepositoryRegisterUI.class, "LBL_Repo_ADD"));
+    DialogDescriptor dd = new DialogDescriptor(rrui, NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "LBL_Add_Repo"));
     dd.setClosingOptions(new Object[]{
                 rrui.getButton(),
                 DialogDescriptor.CANCEL_OPTION
@@ -253,7 +254,7 @@ private void btnAddRepoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindActionPerformed
     hideFind();
     final FindInRepoPanel pnl = new FindInRepoPanel();
-    final DialogDescriptor dd = new DialogDescriptor(pnl, "Find In Repositories");
+    final DialogDescriptor dd = new DialogDescriptor(pnl, org.openide.util.NbBundle.getMessage(M2RepositoryBrowserTopComponent.class, "TIT_Find_In_Repositories"));
     Object ret = DialogDisplayer.getDefault().notify(dd);
     if (ret == DialogDescriptor.OK_OPTION) {
         showFind(pnl.getQuery(), dd);
@@ -330,14 +331,14 @@ private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
 
 
     @Override
+    @SuppressWarnings("deprecation")
     public boolean requestFocusInWindow() {
-
         return btv.requestFocusInWindow();
     }
 
     @Override
+    @SuppressWarnings("deprecation")
     public void requestFocus() {
-
         btv.requestFocus();
     }
 

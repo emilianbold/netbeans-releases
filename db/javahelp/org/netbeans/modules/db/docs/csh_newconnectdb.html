@@ -60,9 +60,15 @@ made subject to such option by the copyright holder.
             <li>Right-click a driver node under the Databases node in the Services window and choose Connect Using.</li>
         </ul>
 
+        <p><b>Basic setting tab</b></p>
         <p>When you create a database connection, you supply the details needed to connect to a specific database.
         Depending on the database driver you are using, you need to supply some or all of the following database connection details. </p>
-<p><b>Basic setting tab</b></p>
+        <p><strong>Data Input Mode</strong></p>
+        <p>There are two ways in which you can enter the URL of the database:</p>
+        <ul>
+          <li><b>Field Entry.</b> When this radio button is selected, enter the information requested in each text field. </li>
+        
+     
 <ul>
                 <li><b>Name.</b> Choose the registered JDBC driver from the drop-down list.
                 The drop-down list only contains drivers registered with the IDE. 
@@ -90,13 +96,18 @@ made subject to such option by the copyright holder.
                 <param name="textFontSize" value="medium">
                 <param name="textColor" value="blue">
                 </object>
-            </li>
-        </ul></li>
+            </li></ul>
             <li><b>Show JDBC URL.</b> When you select this checkbox, the IDE displays the JDBC URL in the text field. This can be useful for identifying the database connection. Ths URL resembles ths following URL:
-              <p><pre>jdbc:mysql://localhost:3306/mydatabase</pre></p>
-              </li>
+          <p><pre>jdbc:mysql://localhost:3306/mydatabase</pre></p>
+          </li>
             </ul>
-            </li>
+    <li><b>Direct URL Entry.</b> When this radio button is selected, you enter the URL of the database directly. 
+    <ul><li><b>Name:</b> Select the name of the driver from the drop down list.</li>
+    <li><b>User Name:</b> Type user name for the database.</li>
+    <li><b>Password:</b> Type the password for the database.</li>
+    <li><b>JDBC URL.</b> Type the JDBC URL for the connection in this text field.</li>  
+    </ul>
+    </li></ul>
 <p><b>Advanced tab</b></p>                 
 In the Advanced tab of the New Database Connection dialog box, you select the database schema you want to use for your connection. The Database Explorer displays only tables that use the selected schema. 
 <ul class="note">

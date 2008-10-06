@@ -46,6 +46,7 @@
 
 package org.netbeans.swing.tabcontrol.plaf;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
@@ -57,6 +58,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.UIManager;
 import org.netbeans.swing.tabcontrol.TabDisplayer;
 
 import javax.swing.plaf.ComponentUI;
@@ -106,6 +108,31 @@ public final class GtkEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI 
     }
     
     protected void paintAfterTabs(Graphics g) {
+        Rectangle bounds = displayer.getBounds();
+
+        int lineY = bounds.y + bounds.height - 1;
+        int sel = displayer.getSelectionModel().getSelectedIndex();
+
+        Color shadowC = UIManager.getColor("controlShadow");
+        shadowC = shadowC != null ? shadowC : Color.DARK_GRAY;
+
+        if (sel != -1) {
+            Color controlC = UIManager.getColor("control");
+            controlC = controlC != null ? controlC : Color.GRAY;
+
+            Rectangle tabRect = new Rectangle();
+            displayer.getTabRect(sel, tabRect);
+            g.setColor(shadowC);
+            g.drawLine(bounds.x, lineY, bounds.x + tabRect.x - 1, lineY);
+            g.drawLine(bounds.x + tabRect.x + tabRect.width, lineY,
+                    bounds.x + bounds.width - 1, lineY);
+            g.setColor(controlC);
+            g.drawLine(bounds.x + tabRect.x, lineY,
+                    bounds.x + tabRect.x + tabRect.width - 1, lineY);
+        } else {
+            g.setColor(shadowC);
+            g.drawLine(bounds.x, lineY, bounds.x + bounds.width - 1, lineY);
+        }
     }
 
     protected TabCellRenderer createDefaultRenderer() {
@@ -119,38 +146,38 @@ public final class GtkEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI 
             //left button
             String[] iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollleft_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollleft_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_DEFAULT];
             buttonIconPaths.put( TabControlButton.ID_SCROLL_LEFT_BUTTON, iconPaths );
-            
+
             //right button
             iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollright_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_scrollright_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_DEFAULT];
             buttonIconPaths.put( TabControlButton.ID_SCROLL_RIGHT_BUTTON, iconPaths );
-            
+
             //drop down button
             iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_popup_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_popup_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_DEFAULT];
             buttonIconPaths.put( TabControlButton.ID_DROP_DOWN_BUTTON, iconPaths );
-            
+
             //maximize/restore button
             iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_maximize_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_maximize_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_DEFAULT];
             buttonIconPaths.put( TabControlButton.ID_MAXIMIZE_BUTTON, iconPaths );
-            
+
             iconPaths = new String[4];
             iconPaths[TabControlButton.STATE_DEFAULT] = "org/netbeans/swing/tabcontrol/resources/gtk_restore_enabled.png"; // NOI18N
-            iconPaths[TabControlButton.STATE_DISABLED] = "org/netbeans/swing/tabcontrol/resources/gtk_restore_disabled.png"; // NOI18N
+            iconPaths[TabControlButton.STATE_DISABLED] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_ROLLOVER] = iconPaths[TabControlButton.STATE_DEFAULT];
             iconPaths[TabControlButton.STATE_PRESSED] = iconPaths[TabControlButton.STATE_DEFAULT];
             buttonIconPaths.put( TabControlButton.ID_RESTORE_BUTTON, iconPaths );
@@ -175,6 +202,7 @@ public final class GtkEditorTabDisplayerUI extends BasicScrollingTabDisplayerUI 
     public Insets getTabAreaInsets() {
         Insets retValue = super.getTabAreaInsets();
         retValue.right += 4;
+        retValue.bottom += 1;
         return retValue;
     }
 }

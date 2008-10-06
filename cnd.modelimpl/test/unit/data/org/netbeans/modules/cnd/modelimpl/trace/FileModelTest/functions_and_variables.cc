@@ -52,6 +52,33 @@ private:
 int NewClass::AAA = 10;
 int NewClass::BBB(AAA);
 
+
+
+// IZ 139425 : Wrong rendering of declarations with const qualifier
+class C1{
+public:
+    C1(int i){
+        
+    }
+};
+
+int t = 1;
+
+C1 c1(t);
+const C1 c2(t);
+int foo() {
+    C1 c3(t);
+    const C1 c4(t);
+}
+
+
+// IZ 146030 : set of problems for declarations in Loki (usecase 4)
+static void write_five() {
+    global_int = 5;
+}
+function<void() > static_func2(write_five);
+
+
 //
 // Functions
 //

@@ -369,6 +369,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveToolTip(final CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, false);
+            if (env == null)
+                return;
             Tree lastTree = null;
             int offset = env.getOffset();
             TreePath path = env.getPath();
@@ -499,7 +501,14 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveDocumentation(CompilationController controller) throws IOException {            
             controller.toPhase(Phase.RESOLVED);
-            Element el = element != null ? element.resolve(controller) : controller.getTrees().getElement(getCompletionEnvironment(controller, false).getPath());
+            Element el = null;
+            if (element != null) {
+                el = element.resolve(controller);
+            } else {
+                Env e = getCompletionEnvironment(controller, false);
+                if (e != null)
+                    el = controller.getTrees().getElement(e.getPath());
+            }
             if (el != null) {
                 switch (el.getKind()) {
                 case ANNOTATION_TYPE:
@@ -519,6 +528,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void resolveCompletion(CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, true);
+            if (env == null)
+                return;
             results = new ArrayList<JavaCompletionItem>();
             anchorOffset = controller.getPositionConverter().getOriginalPosition(env.getOffset());
             TreePath path = env.getPath();
@@ -1084,7 +1095,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (e.getKind() == METHOD) {
                         String name = e.getSimpleName().toString();
                         if (hasOnlyValue < 2)
-                            hasOnlyValue += "value".equals(name) ? 1 : 2; //NOI18N
+                            hasOnlyValue += "value".equals(name) ? 1 : ((ExecutableElement)e).getDefaultValue() == null ? 2 : 0; //NOI18N
                         if (!names.contains(name) && startsWith(env, name, prefix) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(e)))
                             results.add(JavaCompletionItem.createAttributeItem((ExecutableElement)e, (ExecutableType)e.asType(), anchorOffset, elements.isDeprecated(e)));
                     }
@@ -3614,7 +3625,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         ret = new HashSet<TypeMirror>();
                         Types types = controller.getTypes();
                         ret.add(controller.getTypes().getPrimitiveType(TypeKind.INT));
-                        ret.add(types.getDeclaredType(controller.getElements().getTypeElement("java.lang.Enum")));
+                        TypeElement te = controller.getElements().getTypeElement("java.lang.Enum"); //NOI18N
+                        if (te != null)
+                            ret.add(types.getDeclaredType(te));
                         return ret;
                     case METHOD_INVOCATION:
                         MethodInvocationTree mi = (MethodInvocationTree)tree;
@@ -3692,7 +3705,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
-                        if (idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
+                        if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
                         if (argTypes != null) {
@@ -3776,18 +3789,20 @@ public class JavaCompletionProvider implements CompletionProvider {
                         text = controller.getText().substring(pos, offset).trim();
                         if ("(".equals(text) || text.endsWith("{") || text.endsWith(",")) { //NOI18N
                             TypeElement el = (TypeElement)controller.getTrees().getElement(new TreePath(path, ann.getAnnotationType()));
-                            for (Element ee : el.getEnclosedElements()) {
-                                if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
-                                    type = ((ExecutableElement)ee).getReturnType();
-                                    while(dim-- > 0) {
+                            if (el != null) {
+                                for (Element ee : el.getEnclosedElements()) {
+                                    if (ee.getKind() == METHOD && "value".contentEquals(ee.getSimpleName())) {
+                                        type = ((ExecutableElement)ee).getReturnType();
+                                        while(dim-- > 0) {
+                                            if (type.getKind() == TypeKind.ARRAY)
+                                                type = ((ArrayType)type).getComponentType();
+                                            else
+                                                return null;
+                                        }
                                         if (type.getKind() == TypeKind.ARRAY)
                                             type = ((ArrayType)type).getComponentType();
-                                        else
-                                            return null;
+                                        return type != null ? Collections.singleton(type) : null;
                                     }
-                                    if (type.getKind() == TypeKind.ARRAY)
-                                        type = ((ArrayType)type).getComponentType();
-                                    return type != null ? Collections.singleton(type) : null;
                                 }
                             }
                         }
@@ -4088,10 +4103,29 @@ public class JavaCompletionProvider implements CompletionProvider {
                         if (i == argTypes.length) {
                             if (typeArgTypes != null && param.getKind() == TypeKind.DECLARED && typeArgTypes.length == meth.getTypeVariables().size())
                                 param = tu.substitute(param, meth.getTypeVariables(), Arrays.asList(typeArgTypes));
+                            TypeMirror toAdd = null;
                             if (i < parSize)
-                                ret.add(param);
+                                toAdd = param;
                             if (varArgs && !parIt.hasNext() && param.getKind() == TypeKind.ARRAY)
-                                ret.add(((ArrayType)param).getComponentType());
+                                toAdd = ((ArrayType)param).getComponentType();
+                            if (toAdd != null && ret.add(toAdd)) {
+                                TypeMirror toRemove = null;
+                                for (TypeMirror tm : ret) {
+                                    if (tm != toAdd) {
+                                        TypeMirror tmErasure = types.erasure(tm);
+                                        TypeMirror toAddErasure = types.erasure(toAdd);
+                                        if (types.isSubtype(toAddErasure, tmErasure)) {
+                                            toRemove = toAdd;
+                                            break;
+                                        } else if (types.isSubtype(tmErasure, toAddErasure)) {
+                                            toRemove = tm;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if (toRemove != null)
+                                    ret.remove(toRemove);
+                            }
                             break;
                         }
                         if (argTypes[i] == null)
@@ -4170,6 +4204,8 @@ public class JavaCompletionProvider implements CompletionProvider {
         private Env getCompletionEnvironment(CompilationController controller, boolean upToOffset) throws IOException {
             controller.toPhase(Phase.PARSED);
             int offset = controller.getPositionConverter().getJavaSourcePosition(caretOffset);
+            if (offset < 0)
+                return null;
             String prefix = null;
             if (upToOffset && offset > 0) {
                 TokenSequence<JavaTokenId> ts = controller.getTokenHierarchy().tokenSequence(JavaTokenId.language());

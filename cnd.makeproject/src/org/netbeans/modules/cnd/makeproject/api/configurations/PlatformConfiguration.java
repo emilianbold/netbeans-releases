@@ -58,8 +58,10 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
         this.dhconf = dhconf;
     }
 
-    public PlatformConfiguration(PlatformConfiguration conf) {
+    private PlatformConfiguration(PlatformConfiguration conf) {
         super(null, conf.getDefault(), conf.getNames(), null);
+        setValue(conf.getValue());
+        setModified(conf.getModified());
         pnp = conf.pnp;
         dhconf = conf.dhconf;
     }

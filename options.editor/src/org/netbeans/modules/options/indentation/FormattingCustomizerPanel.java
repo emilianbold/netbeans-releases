@@ -47,8 +47,10 @@ import java.awt.Container;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.HashMap;
+import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -56,7 +58,6 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
 import javax.swing.JSpinner;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.options.OptionsDisplayer;
@@ -64,11 +65,18 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
+import org.netbeans.modules.editor.settings.storage.api.EditorSettingsStorage;
+import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,9 +89,38 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
     // ProjectCustomizer.CompositeCategoryProvider implementation
     // ------------------------------------------------------------------------
 
+    /**
+     * Creates an instance of the 'Formatting' category in the project properties dialog.
+     * This method is meant to be used from XML layers by modules that wish to add
+     * the 'Formatting' category to their project type's properties dialog.
+     *
+     * <p>The method recognizes 'allowedMimeTypes' XML layer attribute, which should
+     * contain the comma separated list of mime types, which formatting settings
+     * customizers should be made available for the project. If the attribute is
+     * not specified all registered customizers are shown. If the attribute specifies
+     * an empty list only the 'All Languages' customizer is shown.
+     *
+     * @param attrs The map of <code>FileObject</code> attributes
+     *
+     * @return A new 'Formatting' category provider.
+     * @since 1.10
+     */
+    public static ProjectCustomizer.CompositeCategoryProvider createCategoryProvider(Map attrs) {
+        return new Factory((String)attrs.get("allowedMimeTypes")); //NOI18N
+    }
+
     public static class Factory implements ProjectCustomizer.CompositeCategoryProvider {
  
         private static final String CATEGORY_FORMATTING = "Formatting"; // NOI18N
+        private final String allowedMimeTypes;
+
+        public Factory() {
+            this(null);
+        }
+
+        public Factory(String allowedMimeTypes) {
+            this.allowedMimeTypes = allowedMimeTypes;
+        }
 
         public ProjectCustomizer.Category createCategory(Lookup context) {
             return context.lookup(Project.class) == null ? null : ProjectCustomizer.Category.create(
@@ -93,7 +130,7 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
         }
 
         public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
-            FormattingCustomizerPanel customizerPanel = new FormattingCustomizerPanel(context);
+            FormattingCustomizerPanel customizerPanel = new FormattingCustomizerPanel(context, allowedMimeTypes);
             category.setStoreListener(customizerPanel);
             return customizerPanel;
         }
@@ -106,6 +143,20 @@ public final class FormattingCustomizerPanel extends javax.swing.JPanel implemen
     // this is called when OK button is clicked to store the controlled preferences
     public void actionPerformed(ActionEvent e) {
         pf.applyChanges();
+
+        // Find mimeTypes that do not have a customizer
+        Set<String> mimeTypes = new HashSet(EditorSettings.getDefault().getAllMimeTypes());
+        mimeTypes.removeAll(selector.getMimeTypes());
+
+        // and make sure that they do NOT override basic settings from All Languages
+        Preferences p = ProjectUtils.getPreferences(pf.getProject(), IndentUtils.class, true);
+        for(String mimeType : mimeTypes) {
+            try {
+                p.node(mimeType).removeNode();
+            } catch (BackingStoreException bse) {
+                LOG.log(Level.WARNING, null, bse);
+            }
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -209,8 +260,16 @@ private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         copyOnFork = false;
 
         // copy global settings
+        EditorSettingsStorage<String, TypedValue> storage = EditorSettingsStorage.<String, TypedValue>get("Preferences"); //NOI18N
         for(String mimeType : selector.getMimeTypes()) {
-            Preferences globalPrefs = MimeLookup.getLookup(MimePath.parse(mimeType)).lookup(Preferences.class);
+            Map<String, TypedValue> mimePathLocalPrefs;
+            try {
+                mimePathLocalPrefs = storage.load(MimePath.parse(mimeType), null, false);
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
+                continue;
+            }
+
             Preferences projectPrefs = pf.getPreferences(mimeType);
             
             // XXX: we should somehow be able to determine __all__ the formatting settings
@@ -221,11 +280,11 @@ private void projectButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN
             // does not support subnodes.
             // So, we at least copy the basic setting
             boolean copied = false;
-            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.EXPAND_TABS);
-            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.INDENT_SHIFT_WIDTH);
-            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.SPACES_PER_TAB);
-            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.TAB_SIZE);
-            copied |= copyValueIfExists(globalPrefs, projectPrefs, SimpleValueNames.TEXT_LIMIT_WIDTH);
+            copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.EXPAND_TABS);
+            copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.INDENT_SHIFT_WIDTH);
+            copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.SPACES_PER_TAB);
+            copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.TAB_SIZE);
+            copied |= copyValueIfExists(mimePathLocalPrefs, projectPrefs, SimpleValueNames.TEXT_LIMIT_WIDTH);
 
             if (mimeType.length() > 0 && copied) {
                 projectPrefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, true);
@@ -240,13 +299,92 @@ private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         File f = chooser.getSelectedFile();
         FileObject fo = FileUtil.toFileObject(f);
         if (fo != null) {
+            Object ret;
+            
             try {
-                Project p = ProjectManager.getDefault().findProject(fo);
-//                controller.loadFrom(FmtOptions.getProjectPreferences(p));
-            } catch (Exception e) {}
+                final Project prjFrom = ProjectManager.getDefault().findProject(fo);
+                if (prjFrom == pf.getProject()) {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                        NbBundle.getMessage(FormattingCustomizerPanel.class, "MSG_CodeStyle_Import_Forbidden_From_The_Same_Project"), //NOI18N
+                        NotifyDescriptor.Message.PLAIN_MESSAGE));
+
+                    return;
+                }
+
+                ret = ProjectManager.mutex().readAccess(new ExceptionAction<Object>() {
+                    public Object run() throws Exception {
+                        Preferences fromPrjPrefs = ProjectUtils.getPreferences(prjFrom, IndentUtils.class, true);
+
+                        if (!fromPrjPrefs.nodeExists(CODE_STYLE_PROFILE) ||
+                            fromPrjPrefs.node(CODE_STYLE_PROFILE).get(USED_PROFILE, null) == null
+                        ) {
+                            return NbBundle.getMessage(FormattingCustomizerPanel.class, "MSG_No_CodeStyle_Info_To_Import"); //NOI18N
+                        }
+
+                        ProjectPreferencesFactory newPrefsFactory = new ProjectPreferencesFactory(pf.getProject());
+                        Preferences toPrjPrefs = newPrefsFactory.projectPrefs;
+
+                        removeAllKidsAndKeys(toPrjPrefs);
+                        deepCopy(fromPrjPrefs, toPrjPrefs);
+
+                        // XXX: detect somehow if the basic options are overriden in fromPrjPrefs
+                        // and set the flag accordingly in toPrjPrefs
+                        
+                        //dump(fromPrjPrefs, "fromPrjPrefs");
+                        //dump(toPrjPrefs, "toPrjPrefs");
+
+                        return newPrefsFactory;
+                    }
+                });
+
+            } catch (Exception e) {
+                LOG.log(Level.INFO, null, e);
+                ret = e;
+            }
+
+            if (ret instanceof ProjectPreferencesFactory) {
+                String selectedMimeType = selector.getSelectedMimeType();
+                PreferencesCustomizer c = selector.getSelectedCustomizer();
+                String selectedCustomizerId = c != null ? c.getId() : null;
+
+                pf.destroy();
+                pf = (ProjectPreferencesFactory) ret;
+                selector = new CustomizerSelector(pf, false, allowedMimeTypes);
+                panel.setSelector(selector);
+
+                if (selectedMimeType != null) {
+                    selector.setSelectedMimeType(selectedMimeType);
+                }
+                if (selectedCustomizerId != null) {
+                    selector.setSelectedCustomizer(selectedCustomizerId);
+                }
+
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(FormattingCustomizerPanel.class, "MSG_CodeStyle_Import_Successful"), //NOI18N
+                    NotifyDescriptor.Message.PLAIN_MESSAGE));
+
+            } else if (ret instanceof Exception) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    NbBundle.getMessage(FormattingCustomizerPanel.class, "MSG_CodeStyle_Import_Failed"), //NOI18N
+                    NotifyDescriptor.Message.WARNING_MESSAGE));
+                
+            } else {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                    (String) ret,
+                    NotifyDescriptor.Message.PLAIN_MESSAGE));
+            }
         }
     }
 }//GEN-LAST:event_loadButtonActionPerformed
+
+    private void dump(Preferences prefs, String prefsId) throws BackingStoreException {
+        for(String key : prefs.keys()) {
+            System.out.println(prefsId + ", " + prefs.absolutePath() + "/" + key + "=" + prefs.get(key, null));
+        }
+        for(String child : prefs.childrenNames()) {
+            dump(prefs.node(child), prefsId);
+        }
+    }
 
 private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editGlobalButtonActionPerformed
     OptionsDisplayer.getDefault().open(GLOBAL_OPTIONS_CATEGORY);
@@ -268,16 +406,18 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N
     private static final String USED_PROFILE = "usedProfile"; // NOI18N
-    
-    private final ProjectPreferencesFactory pf;
-    private final CustomizerSelector selector;
+
+    private final String allowedMimeTypes;
+    private ProjectPreferencesFactory pf;
+    private CustomizerSelector selector;
     private final FormattingPanel panel;
     private boolean copyOnFork;
     
     /** Creates new form CodeStyleCustomizerPanel */
-    private FormattingCustomizerPanel(Lookup context) {
+    private FormattingCustomizerPanel(Lookup context, String allowedMimeTypes) {
+        this.allowedMimeTypes = allowedMimeTypes;
         this.pf = new ProjectPreferencesFactory(context.lookup(Project.class));
-        this.selector = new CustomizerSelector(pf, false);
+        this.selector = new CustomizerSelector(pf, false, allowedMimeTypes);
         this.panel = new FormattingPanel();
         this.panel.setSelector(selector);
 
@@ -303,81 +443,146 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         }
     }
 
-    private static boolean copyValueIfExists(Preferences src, Preferences trg, String key) {
-        String value = src.get(key, null);
+    private static boolean copyValueIfExists(Map<String, TypedValue> src, Preferences trg, String key) {
+        TypedValue value = src.get(key);
         if (value != null) {
-            trg.put(key, value);
+            // since project Preferences do not support javaType we can just use simple put
+            trg.put(key, value.getValue());
             return true;
         } else {
             return false;
         }
     }
 
+    private static void removeAllKidsAndKeys(Preferences prefs) throws BackingStoreException {
+        for(String kid : prefs.childrenNames()) {
+            prefs.node(kid).removeNode();
+        }
+        for(String key : prefs.keys()) {
+            prefs.remove(key);
+        }
+    }
+
+    private static void deepCopy(Preferences from, Preferences to) throws BackingStoreException {
+        for(String kid : from.childrenNames()) {
+            Preferences fromKid = from.node(kid);
+            Preferences toKid = to.node(kid);
+            deepCopy(fromKid, toKid);
+        }
+        for(String key : from.keys()) {
+            String value = from.get(key, null);
+            assert value != null : "Preferences should never have value == null."; //NOI18N
+
+            Class type = guessType(value);
+            if (Integer.class == type) {
+                to.putInt(key, from.getInt(key, -1));
+            } else if (Long.class == type) {
+                to.putLong(key, from.getLong(key, -1L));
+            } else if (Float.class == type) {
+                to.putFloat(key, from.getFloat(key, -1f));
+            } else if (Double.class == type) {
+                to.putDouble(key, from.getDouble(key, -1D));
+            } else if (Boolean.class == type) {
+                to.putBoolean(key, from.getBoolean(key, false));
+            } else if (String.class == type) {
+                to.put(key, value);
+            } else /* byte [] */ {
+                to.putByteArray(key, from.getByteArray(key, new byte [0]));
+            }
+        }
+    }
+
+    // XXX: this is here only to supprt deprecated Settings.class, when we are sure,
+    // that no code uses Settings.class we will be able to remove this
+    private static Class guessType(String value) {
+        if (value.equalsIgnoreCase("true") || value.equalsIgnoreCase("false")) { //NOI18N
+            return Boolean.class;
+        }
+
+        try {
+            Integer.parseInt(value);
+            return Integer.class;
+        } catch (NumberFormatException nfe) { /* ignore */ }
+
+        try {
+            Long.parseLong(value);
+            return Long.class;
+        } catch (NumberFormatException nfe) { /* ignore */ }
+
+        try {
+            Float.parseFloat(value);
+            return Float.class;
+        } catch (NumberFormatException nfe) { /* ignore */ }
+
+        try {
+            Double.parseDouble(value);
+            return Double.class;
+        } catch (NumberFormatException nfe) { /* ignore */ }
+
+        // XXX: ignoring byte []
+        return String.class;
+    }
+    
     private static final class ProjectPreferencesFactory implements CustomizerSelector.PreferencesFactory {
 
         public ProjectPreferencesFactory(Project project) {
             this.project = project;
             Preferences p = ProjectUtils.getPreferences(project, IndentUtils.class, true);
-            projectPrefs = ProxyPreferences.get(p);
+            projectPrefs = ProxyPreferences.getProxyPreferences(this, p);
         }
 
+        public Project getProject() {
+            return project;
+        }
+
+        public void destroy() {
+            accessedMimeTypes.clear();
+            projectPrefs.destroy();
+            projectPrefs = null;
+        }
+
+        // --------------------------------------------------------------------
+        // CustomizerSelector.PreferencesFactory implementation
+        // --------------------------------------------------------------------
+
         public synchronized Preferences getPreferences(String mimeType) {
-            ProxyPreferences prefs = mimeTypePreferences.get(mimeType);
-
-            if (prefs == null) {
-                assert projectPrefs != null;
-                prefs = (ProxyPreferences) projectPrefs.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
-                mimeTypePreferences.put(mimeType, prefs);
-            }
-
-            return prefs;
+            assert projectPrefs != null;
+            accessedMimeTypes.add(mimeType);
+            return projectPrefs.node(mimeType).node(CODE_STYLE_PROFILE).node(PROJECT_PROFILE);
         }
 
         public synchronized void applyChanges() {
-            for(String mimeType : mimeTypePreferences.keySet()) {
+            for(String mimeType : accessedMimeTypes) {
                 if (mimeType.length() == 0) {
                     continue;
                 }
 
-                ProxyPreferences pp = mimeTypePreferences.get(mimeType);
-                pp.silence();
-
-                assert pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) != null;
-                if (!pp.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
-                    // remove the basic settings if a language is not overriding the 'all languages' values
-                    pp.remove(SimpleValueNames.EXPAND_TABS);
-                    pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
-                    pp.remove(SimpleValueNames.SPACES_PER_TAB);
-                    pp.remove(SimpleValueNames.TAB_SIZE);
-                    pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
-                }
-                pp.remove(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
-                
-                try {
-                    LOG.fine("Flushing pp for '" + mimeType + "'"); //NOI18N
-                    pp.flush();
-                } catch (BackingStoreException ex) {
-                    LOG.log(Level.WARNING, "Can't flush preferences for '" + mimeType + "'", ex); //NOI18N
+                ProxyPreferences pp = (ProxyPreferences) getPreferences(mimeType);
+                if (null != pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null)) {
+                    // tabs-and-indents has been used and the basic options might have been changed
+                    pp.silence();
+                    if (!pp.getBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, false)) {
+                        // remove the basic settings if a language is not overriding the 'all languages' values
+                        pp.remove(SimpleValueNames.EXPAND_TABS);
+                        pp.remove(SimpleValueNames.INDENT_SHIFT_WIDTH);
+                        pp.remove(SimpleValueNames.SPACES_PER_TAB);
+                        pp.remove(SimpleValueNames.TAB_SIZE);
+                        pp.remove(SimpleValueNames.TEXT_LIMIT_WIDTH);
+                    }
+                    pp.remove(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS);
                 }
             }
 
             // flush the root prefs
-            ProxyPreferences pp = mimeTypePreferences.get("");
-            if (pp != null) {
-                assert pp.get(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, null) == null;
-                pp.silence();
-
-                try {
-                    LOG.fine("Flushing root pp"); //NOI18N
-                    pp.parent().flush();
-                } catch (BackingStoreException ex) {
-                    LOG.log(Level.WARNING, "Can't flush project codestyle root preferences", ex); //NOI18N
-                }
+            projectPrefs.silence();
+            try {
+                LOG.fine("Flushing root pp"); //NOI18N
+                projectPrefs.flush();
+            } catch (BackingStoreException ex) {
+                LOG.log(Level.WARNING, "Can't flush project codestyle root preferences", ex); //NOI18N
             }
 
-            mimeTypePreferences.clear();
-            projectPrefs.destroy();
-            projectPrefs = null;
+            destroy();
         }
 
         public boolean isKeyOverridenForMimeType(String key, String mimeType) {
@@ -391,7 +596,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
         // --------------------------------------------------------------------
 
         private final Project project;
-        private final Map<String, ProxyPreferences> mimeTypePreferences = new HashMap<String, ProxyPreferences>();
+        private final Set<String> accessedMimeTypes = new HashSet<String>();
         private ProxyPreferences projectPrefs;
 
     } // End of ProjectPreferencesFactory class

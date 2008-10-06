@@ -82,6 +82,7 @@ import org.netbeans.modules.css.parser.SimpleNodeUtil;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -756,12 +757,12 @@ public class CSSCompletion implements CodeCompletionHandler {
         public ImageIcon getIcon() {
             if (kind == CompletionItemKind.PROPERTY) {
                 if (propertyIcon == null) {
-                    propertyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(CSS_PROPERTY));
+                    propertyIcon = new ImageIcon(ImageUtilities.loadImage(CSS_PROPERTY));
                 }
                 return propertyIcon;
             } else if (kind == CompletionItemKind.VALUE) {
                 if (valueIcon == null) {
-                    valueIcon = new ImageIcon(org.openide.util.Utilities.loadImage(CSS_VALUE));
+                    valueIcon = new ImageIcon(ImageUtilities.loadImage(CSS_VALUE));
                 }
                 return valueIcon;
             }
@@ -790,20 +791,16 @@ public class CSSCompletion implements CodeCompletionHandler {
             return false;
         }
 
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return new String[]{"(", ")"}; // NOI18N
-        }
-
         public String getCustomInsertTemplate() {
             return null;
         }
 
         public ElementHandle getElement() {
             return element;
+        }
+
+        public int getSortPrioOverride() {
+            return 0;
         }
     }
 }

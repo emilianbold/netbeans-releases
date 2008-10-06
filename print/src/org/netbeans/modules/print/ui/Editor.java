@@ -52,20 +52,20 @@ import org.openide.DialogDisplayer;
  */
 final class Editor {
 
-  Editor(Class clazz, String title, Object value) {
-    myEditor = PropertyEditorManager.findEditor(clazz);
-    myEditor.setValue(value);
-    myDescriptor = new DialogDescriptor(myEditor.getCustomEditor(), title);
-    DialogDisplayer.getDefault().createDialog(myDescriptor).setVisible(true);
-  }
-
-  Object getValue() {
-    if (myDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-      return myEditor.getValue();
+    Editor(Class clazz, String title, Object value) {
+        myEditor = PropertyEditorManager.findEditor(clazz);
+        myEditor.setValue(value);
+        myDescriptor = new DialogDescriptor(myEditor.getCustomEditor(), title);
+        DialogDisplayer.getDefault().createDialog(myDescriptor).setVisible(true);
     }
-    return null;
-  }
 
-  private PropertyEditor myEditor;
-  private DialogDescriptor myDescriptor;
+    Object getValue() {
+        if (myDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
+            return myEditor.getValue();
+        }
+        return null;
+    }
+
+    private PropertyEditor myEditor;
+    private DialogDescriptor myDescriptor;
 }

@@ -65,6 +65,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -180,7 +181,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
             @Override
             public Image getIcon(int arg0) {
-                return Utilities.loadImage("org/netbeans/modules/maven/repository/empty.png");
+                return ImageUtilities.loadImage("org/netbeans/modules/maven/repository/empty.png"); //NOI18N
             }
 
             @Override
@@ -199,7 +200,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         Map<String, List<NBVersionInfo>> map = new HashMap<String, List<NBVersionInfo>>();
 
         for (NBVersionInfo nbvi : infos) {
-            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId();
+            String key = nbvi.getGroupId() + " : " + nbvi.getArtifactId(); //NOI18n
             List<NBVersionInfo> get = map.get(key);
             if (get == null) {
                 get = new ArrayList<NBVersionInfo>();
@@ -256,7 +257,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
 
         @Override
         public Image getIcon(int arg0) {
-            Image badge = Utilities.loadImage("org/netbeans/modules/maven/repository/ArtifactBadge.png", true); //NOI18N
+            Image badge = ImageUtilities.loadImage("org/netbeans/modules/maven/repository/ArtifactBadge.png", true); //NOI18N
 
             return badge;
         }
@@ -286,7 +287,7 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             this.nbvi = versionInfo;
 
             setName(versionInfo.getVersion());
-            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ] " + " - " + versionInfo.getRepoId());
+            setDisplayName(versionInfo.getVersion() + " [ " + versionInfo.getType() + (versionInfo.getClassifier() != null ? ("," + versionInfo.getClassifier()) : "") + " ] " + " - " + versionInfo.getRepoId()); //NOI18N
 
             setIconBaseWithExtension("org/netbeans/modules/maven/repository/DependencyJar.gif"); //NOI18N
 
@@ -328,13 +329,13 @@ private void btnModifyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         public java.awt.Image getIcon(int param) {
             java.awt.Image retValue = super.getIcon(param);
             if (hasJavadoc) {
-                retValue = Utilities.mergeImages(retValue,
-                        Utilities.loadImage("org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"),//NOI18N
+                retValue = ImageUtilities.mergeImages(retValue,
+                        ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencyJavadocIncluded.png"),//NOI18N
                         12, 12);
             }
             if (hasSources) {
-                retValue = Utilities.mergeImages(retValue,
-                        Utilities.loadImage("org/netbeans/modules/maven/repository/DependencySrcIncluded.png"),//NOI18N
+                retValue = ImageUtilities.mergeImages(retValue,
+                        ImageUtilities.loadImage("org/netbeans/modules/maven/repository/DependencySrcIncluded.png"),//NOI18N
                         12, 8);
             }
             return retValue;

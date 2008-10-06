@@ -122,11 +122,11 @@ public class ThreadBreakpointsTest extends JellyTestCase {
      *
      */
     public void testThreadBreakpointCreation() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
             setBreakpointType(dialog, "Thread");
@@ -151,11 +151,11 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", 0);
+            Utilities.waitStatusText("Thread breakpoint hit by thread ");
             new ContinueAction().perform();
-            lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", lines + 1);
+            Utilities.waitStatusText("Thread breakpoint hit by thread ");
             new ContinueAction().perform();
-            Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -173,11 +173,10 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            int lines = Utilities.waitDebuggerConsole("Thread breakpoint hit by thread ", 0);
+            Utilities.waitStatusText("Thread breakpoint hit by thread ");
             new ContinueAction().perform();
-            int backline = lines;
-            lines = Utilities.waitDebuggerConsole(Utilities.runningStatusBarText, lines + 1);
-            assertEquals("There were more than one hit of the breakpoint", backline, lines - 2);
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            assertEquals("There were more than one hit of the breakpoint", Utilities.checkConsoleForNumberOfOccurrences(Utilities.runningStatusBarText, 0), 2);
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

@@ -76,7 +76,9 @@ final class ProcessList implements Runnable {
         pb = new ProcessBuilder(args);
         pb.redirectErrorStream(true);
         proclist = new ArrayList<String>();
-        RequestProcessor.getDefault().post(this);
+        if (args != null && args.size()>0) {
+            RequestProcessor.getDefault().post(this);
+        }
     }
     
     public void run() {

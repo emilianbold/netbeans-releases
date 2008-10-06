@@ -49,11 +49,12 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.modules.ruby.lexer.RubyTokenId;
 import org.netbeans.spi.lexer.LanguageEmbedding;
 import org.netbeans.spi.lexer.LanguageHierarchy;
+import org.netbeans.spi.lexer.LanguageProvider;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerRestartInfo;
+import org.openide.util.Lookup;
 
 /**
  * Token type definitions for YAML
@@ -113,7 +114,21 @@ public enum YamlTokenId implements TokenId {
                     switch(token.id()) {
                         case RUBY_EXPR:
                         case RUBY:
-                            return LanguageEmbedding.create(RubyTokenId.language(), 0, 0, false);
+                            // No dependency on the Ruby module:
+                            //Language rubyLanguage = RubyTokenId.language();
+                            Language<? extends TokenId> rubyLanguage = null;
+
+                            @SuppressWarnings("unchecked")
+                            Collection<LanguageProvider> providers = (Collection<LanguageProvider>) Lookup.getDefault().lookupAll(LanguageProvider.class);
+                            for (LanguageProvider provider : providers) {
+                                rubyLanguage = (Language<? extends TokenId>)provider.findLanguage(RubyEmbeddingModel.RUBY_MIME_TYPE);
+                                if (rubyLanguage != null) {
+                                    break;
+                                }
+                            }
+
+                            return rubyLanguage != null ? LanguageEmbedding.create(rubyLanguage, 0, 0, false) : null;
+
                         default:
                             return null;
                     }

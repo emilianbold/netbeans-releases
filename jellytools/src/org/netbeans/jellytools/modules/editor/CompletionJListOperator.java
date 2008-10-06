@@ -44,6 +44,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JList;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
@@ -76,6 +77,7 @@ import org.netbeans.modules.editor.completion.CompletionJList;
  */
 public class CompletionJListOperator extends JListOperator {
     public static final String INSTANT_SUBSTITUTION = "InstantSubstitution";
+    private static final Logger LOG = Logger.getLogger(CompletionJListOperator.class.getName());
     
     /**
      * This constructor is intended to use just for your own risk.
@@ -159,7 +161,7 @@ public class CompletionJListOperator extends JListOperator {
                     List list = getCompletionItems(compJList);
                     // check if it is no a 'Please Wait' item
                     if (list.size() > 0 && !(list.contains(PLEASE_WAIT))) {
-                        System.out.println(list);
+                        LOG.fine(list.toString());
                         return compJList;
                     } else {
                         return null;

@@ -39,8 +39,6 @@
 package org.netbeans.modules.php.project.ui.customizer;
 
 import java.awt.Component;
-import java.awt.Container;
-import java.awt.FocusTraversalPolicy;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -114,7 +112,6 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         }
 
         // php cli
-        initPhpInterpreterFields();
         defaultInterpreterCheckBox.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 boolean selected = defaultInterpreterCheckBox.isSelected();
@@ -122,7 +119,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                 interpreterTextField.setEditable(!selected);
                 String newValue = null;
                 if (selected) {
-                    newValue = PhpOptions.getInstance().getPhpInterpreter();
+                    newValue = getDefaultPhpInterpreter();
                 } else {
                     newValue = interpreterTextField.getText();
                 }
@@ -137,7 +134,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                         // #143315
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
-                                interpreterTextField.setText(PhpOptions.getInstance().getPhpInterpreter());
+                                interpreterTextField.setText(getDefaultPhpInterpreter());
                                 composeHint();
                             }
                         });
@@ -150,12 +147,21 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         composeHint();
     }
 
-    private void initPhpInterpreterFields() {
+    private String getDefaultPhpInterpreter() {
+        String phpInterpreter = PhpOptions.getInstance().getPhpInterpreter();
+        return phpInterpreter != null ? phpInterpreter : ""; //NOI18N
+    }
+
+    private String initPhpInterpreterFields() {
         String phpInterpreter = getValue(PhpProjectProperties.INTERPRETER);
         boolean def = phpInterpreter == null || phpInterpreter.length() == 0;
         defaultInterpreterCheckBox.setSelected(def);
         interpreterBrowseButton.setEnabled(!def);
         interpreterTextField.setEditable(!def);
+        if (def) {
+            return getDefaultPhpInterpreter();
+        }
+        return phpInterpreter;
     }
 
     @Override
@@ -182,7 +188,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         for (int i = 0; i < textFields.length; i++) {
             String val = getValue(propertyNames[i]);
             if (PhpProjectProperties.INTERPRETER.equals(propertyNames[i])) {
-                val = ProjectPropertiesSupport.getPhpInterpreter(project).getFullCommand();
+                val = initPhpInterpreterFields();
             }
             textFields[i].setText(val);
         }
@@ -193,9 +199,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText().trim();
 
-        String err = RunAsValidator.validateScriptFields(phpInterpreter, FileUtil.toFile(project.getProjectDirectory()), indexFile, args);
+        String err = RunAsValidator.validateScriptFields(phpInterpreter,
+                FileUtil.toFile(ProjectPropertiesSupport.getSourcesDirectory(project)), indexFile, args);
         category.setErrorMessage(err);
-        category.setValid(err == null);
+        // #148957 always allow to save customizer
+        category.setValid(true);
     }
 
     void composeHint() {
@@ -254,70 +262,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         indexFileBrowseButton = new JButton();
         hintLabel = new JLabel();
 
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return argsTextField;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return argsTextField;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return argsTextField;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  indexFileTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  indexFileBrowseButton){
-                    return argsTextField;
-                }
-                if(aComponent ==  runAsCombo){
-                    return interpreterTextField;
-                }
-                if(aComponent ==  interpreterTextField){
-                    return interpreterBrowseButton;
-                }
-                if(aComponent ==  interpreterBrowseButton){
-                    return defaultInterpreterCheckBox;
-                }
-                if(aComponent ==  defaultInterpreterCheckBox){
-                    return configureButton;
-                }
-                if(aComponent ==  configureButton){
-                    return indexFileTextField;
-                }
-                return argsTextField;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                if(aComponent ==  indexFileBrowseButton){
-                    return indexFileTextField;
-                }
-                if(aComponent ==  argsTextField){
-                    return indexFileBrowseButton;
-                }
-                if(aComponent ==  interpreterTextField){
-                    return runAsCombo;
-                }
-                if(aComponent ==  interpreterBrowseButton){
-                    return interpreterTextField;
-                }
-                if(aComponent ==  defaultInterpreterCheckBox){
-                    return interpreterBrowseButton;
-                }
-                if(aComponent ==  configureButton){
-                    return defaultInterpreterCheckBox;
-                }
-                if(aComponent ==  indexFileTextField){
-                    return configureButton;
-                }
-                return argsTextField;//end getComponentBefore
-
-            }}
-        
-        );
+        setFocusTraversalPolicy(null);
 
         interpreterLabel.setLabelFor(interpreterTextField);
 
@@ -417,7 +362,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .add(configureButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, 19, GroupLayout.PREFERRED_SIZE)
+                    .add(indexFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(indexFileLabel)
                     .add(indexFileBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)

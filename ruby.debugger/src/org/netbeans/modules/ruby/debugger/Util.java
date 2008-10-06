@@ -50,10 +50,13 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.DebuggerPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.Message;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult.*;
 
 public final class Util {
     
@@ -61,6 +64,11 @@ public final class Util {
     
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     public static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
+
+    enum FastDebugInstallationResult {
+        INSTALLED, CANCELLED, FAILED, USE_SLOW
+
+    }
     
     private Util() { /* do not allow instances */ }
     
@@ -136,21 +144,21 @@ public final class Util {
      * @return <tt>true</tt> if the debugger is either installed or was
      * successfully installed; <tt>false</tt> otherwise
      */
-    static boolean offerToInstallFastDebugger(final RubyPlatform platform) {
+    static FastDebugInstallationResult offerToInstallFastDebugger(final RubyPlatform platform) {
         return Util.ensureRubyDebuggerIsPresent(platform, false, "RubyDebugger.askMessage");
     }
     
-    static boolean ensureRubyDebuggerIsPresent(final RubyPlatform platform,
+    static FastDebugInstallationResult ensureRubyDebuggerIsPresent(final RubyPlatform platform,
             final boolean strict, final String messageKey) {
         if (!platform.hasRubyGemsInstalled()) {
-            return false;
+            return FAILED;
         }
         String problems = platform.getFastDebuggerProblemsInHTML();
         if (problems == null) {
-            return true;
+            return INSTALLED;
         }
         if (!strict && DebuggerPreferences.getInstance().isDoNotAskAgain()) {
-            return false;
+            return USE_SLOW;
         }
         String message = NbBundle.getMessage(Util.class, messageKey, problems);
         RubyDebugInstallPanel rubyDebugPanel = new RubyDebugInstallPanel(strict, message);
@@ -158,22 +166,34 @@ public final class Util {
                 NbBundle.getMessage(Util.class, "Util.installation.panel.title"));
 
         JButton installButton = new JButton();
-        Mnemonics.setLocalizedText(installButton, getMessage("Util.installation.panel.installbutton")); // NOI18N
-        JButton nonInstallButton = new JButton();
-        if (strict) {
-            Mnemonics.setLocalizedText(nonInstallButton, getMessage("Util.installation.panel.cancelbutton")); // NOI18N
-        } else {
-            Mnemonics.setLocalizedText(nonInstallButton, getMessage("Util.installation.panel.continuebutton")); // NOI18N
-        }
-        Object[] options = new Object[] { installButton, nonInstallButton };
+        Mnemonics.setLocalizedText(installButton, getMessage("Util.installation.panel.installButton")); // NOI18N
+        JButton useSlowButton = new JButton();
+        Mnemonics.setLocalizedText(useSlowButton, getMessage("Util.installation.panel.useSlowButton")); // NOI18N
+        JButton cancelButton = new JButton();
+        Mnemonics.setLocalizedText(cancelButton, getMessage("Util.installation.panel.cancelButton")); // NOI18N
+        Object[] options = strict
+                ? new Object[]{ installButton, cancelButton }
+                : new Object[]{ installButton, useSlowButton, cancelButton };
         descriptor.setOptions(options);
-        if (DialogDisplayer.getDefault().notify(descriptor) == installButton && !platform.installFastDebugger()) {
-            Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
+        Object button = DialogDisplayer.getDefault().notify(descriptor);
+        if (button == installButton) {
+            if (!platform.installFastDebugger()) {
+                Util.showWarning(getMessage("Util.fast.debugger.install.failed"));
+                return FAILED;
+            } else {
+                return INSTALLED;
+            }
+        } else { // 'Cancel' or 'Use Slow' button
+            if (!strict) {
+                DebuggerPreferences.getInstance().setDoNotAskAgain(rubyDebugPanel.isDoNotAskAgain());
+            }
+            if (button == cancelButton || button == NotifyDescriptor.CLOSED_OPTION) {
+                return CANCELLED;
+            }
+            // else 'Use Slow' button
+            assert button == useSlowButton : "is slow button";
+            return USE_SLOW;
         }
-        if (!strict) {
-            DebuggerPreferences.getInstance().setDoNotAskAgain(rubyDebugPanel.isDoNotAskAgain());
-        }
-        return platform.hasFastDebuggerInstalled();
     }
     
     private static String getMessage(final String key) {

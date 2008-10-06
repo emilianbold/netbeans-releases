@@ -123,7 +123,11 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
         
         Set<Modifier> modifiers = Collections.emptySet();
         if (tree.getElement() != null) {
-            modifiers = tree.getElement().getModifiers();
+            if (tree.getElement().getName() == null) {
+                modifiers = Collections.emptySet();
+            } else {
+                modifiers = tree.getElement().getModifiers();
+            }
         }
         Icon icon = UiUtils.getElementIcon(tree.getKind(), modifiers);
         return create(info, tree.getName(), range, icon);

@@ -580,14 +580,6 @@ Microsystems, Inc. All Rights Reserved.
 -->
  <answer id="exec-property">
   <p>
-      <api name="nb.backup.javax.xml.parsers.SAXParserFactory" category="private" group="property" type="export">
-          Holds on a private copy of the name of original parser factory, before it
-          was replaced by NetBeans own one.
-      </api>
-      <api name="nb.backup.javax.xml.parsers.DocumentBuilderFactory" category="private" group="property" type="export">
-          Holds on a private copy of the name of original parser factory, before it
-          was replaced by NetBeans own one.
-      </api>
       <api name="org.netbeans.log.startup" category="friend" group="property" type="export">
           <p>
           If started with <code>-J-Dorg.netbeans.log.startup=print</code> parameter, then

@@ -41,7 +41,7 @@
 package org.netbeans.modules.uml.diagrams.nodes;
 
 import java.awt.Color;
-import java.awt.Font;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import javax.swing.UIManager;
@@ -119,8 +119,10 @@ public abstract class FeatureWidget extends CustomizableWidget
             WidgetAction.Chain readonly = createActions(DesignerTools.READ_ONLY);
             readonly.addAction(objScene.createSelectAction());
             readonly.addAction(DefaultDiagramEngine.POPUP_ACTION);
-            
-            addToLookup(new ObjectSelectable());
+            if (canSelect())
+            {
+                addToLookup(new ObjectSelectable());
+            }
         }
     }
     
@@ -146,6 +148,11 @@ public abstract class FeatureWidget extends CustomizableWidget
     public void setAlignment(Alignment alignment)
     {
         this.myAlignment = alignment;
+    }
+    
+    protected boolean canSelect()
+    {
+        return true;
     }
     
     @Override
@@ -302,9 +309,6 @@ public abstract class FeatureWidget extends CustomizableWidget
         IElement element = getElement();
         if (element != null)   
         { 
-            ObjectScene scene = (ObjectScene) getScene();
-            //Widget parentWidget = Util.getParentNodeWidget(this);
-            
             Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
             if (parentWidget != null)
             {
@@ -318,12 +322,55 @@ public abstract class FeatureWidget extends CustomizableWidget
         }
     }
     
+    private ObjectState getParentSelectedState()
+    {
+         Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
+         return getParentSelectedState(parentWidget);
+    }
+    
+    private ObjectState getParentSelectedState(Widget parentWidget)
+    {
+        ObjectState state = null;
+        if (parentWidget != null)
+        {
+            state = parentWidget.getState();
+        }
+        return state;
+    }
+    
+    
     public void remove()
     {
-        super.removeFromParent();
-        IPresentationElement pe = getObject();
-        if (pe != null)
+        // before remove
+        ObjectScene scene = (DesignerScene) getScene();
+        Object  focusedObj =  scene.getFocusedObject();
+        IPresentationElement pe = getObject();  
+        
+        if ( pe != null && pe.equals(focusedObj))
+        {
+            ObjectState parentState = null;
+            Object parentObj =  null;
+            
+            Widget parentWidget = (UMLNodeWidget) Util.getParentWidgetByClass(this, UMLNodeWidget.class);
+            if ( parentWidget != null)
+            {
+                parentObj = scene.findObject(parentWidget);
+                parentState = getParentSelectedState(parentWidget);
+            }
+            
+            if ( parentState != null && parentState.isSelected())
+            {
+                scene.setFocusedObject(parentObj);
+                scene.userSelectionSuggested (Collections.singleton(parentObj), false);
+            }
+            else 
+            {
+                scene.setFocusedObject(null);
+                scene.userSelectionSuggested (Collections.EMPTY_SET, false);
+            }
+            super.removeFromParent();
             pe.delete();
+        }
     }
 
     public void refresh(boolean resizetocontent) 

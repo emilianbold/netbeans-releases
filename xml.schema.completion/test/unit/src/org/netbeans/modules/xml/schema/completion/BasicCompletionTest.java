@@ -246,7 +246,7 @@ public class BasicCompletionTest extends AbstractTestCase {
     public void testEmptyTag2() throws Exception {
         setupCompletion("resources/EmptyTag.xml", null);
         List<CompletionResultItem> items = query(223);
-        String[] expectedResult = {"A:A31"};
+        String[] expectedResult = {"A:A31", "A:A32"};
         assertResult(items, expectedResult);
     }
     

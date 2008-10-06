@@ -1,6 +1,5 @@
 Code completion result for source line:
-self::|testMe();
+self::|BBB;
 (QueryType=COMPLETION, NameKind=PREFIX)
-METHOD     testMe()                                   B135618
-VARIABLE   ? AAA                           [STATIC]   A135618
-VARIABLE   ? BBB                                      B135618
+CONSTANT   ? AAA                                      A135618
+CONSTANT   ? BBB                                      B135618

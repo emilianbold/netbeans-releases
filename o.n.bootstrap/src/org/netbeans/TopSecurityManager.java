@@ -58,9 +58,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Lookup;
@@ -69,8 +67,8 @@ import org.openide.util.Lookup;
 * @author Ales Novak, Jesse Glick
 */
 public class TopSecurityManager extends SecurityManager {
-
-    private static boolean check = !Boolean.getBoolean("netbeans.security.nocheck"); // NOI18N
+    private static final boolean check = !Boolean.getBoolean("netbeans.security.nocheck"); // NOI18N
+    private static final Logger LOG = Logger.getLogger(TopSecurityManager.class.getName());
 
     private Permission allPermission;
     
@@ -268,35 +266,7 @@ public class TopSecurityManager extends SecurityManager {
                 }
             }
         }
-        
-        if ("javax.xml.parsers.SAXParserFactory".equals(x)) {
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            synchronized (hasSax) {
-                Boolean b = hasSax.get(l);
-                if (b == null) {
-                    // #141110: cache it; otherwise System.getProperty wastes resources
-                    hasSax.put(l, b = l.getResource("org/netbeans/core/startup/SAXFactoryImpl.class") != null);
-                }
-                if (!b) {
-                    throw new SecurityException("");
-                }
-            }
-        }
-        if ("javax.xml.parsers.DocumentBuilderFactory".equals(x)) {
-            ClassLoader l = Thread.currentThread().getContextClassLoader();
-            synchronized (hasDom) {
-                Boolean b = hasDom.get(l);
-                if (b == null) {
-                    hasDom.put(l, b = l.getResource("org/netbeans/core/startup/DOMFactoryImpl.class") != null);
-                }
-                if (!b) {
-                    throw new SecurityException("");
-                }
-            }
-        }
     }
-    private static final Map<ClassLoader,Boolean> hasSax = new WeakHashMap<ClassLoader,Boolean>();
-    private static final Map<ClassLoader,Boolean> hasDom = new WeakHashMap<ClassLoader,Boolean>();
     private final Set<String> warnedClassesNDE = new HashSet<String>(25);
     private static final Set<String> warnedClassesNH = new HashSet<String>(25);
     static {
@@ -427,8 +397,8 @@ public class TopSecurityManager extends SecurityManager {
         try {
             System.setSecurityManager(new TopSecurityManager());
         } catch (SecurityException ex) {
-            Logger.getLogger("global").log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
-            Logger.getLogger("global").log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
+            LOG.log(Level.WARNING, "Cannot associated own security manager"); // NOI18N
+            LOG.log(Level.INFO, "Cannot associated own security manager", ex); // NOI18N
         }
     }
     static void uninstall() {

@@ -39,6 +39,8 @@
 package org.netbeans.jellytools.modules.j2ee;
 
 import java.io.File;
+import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.Test;
@@ -61,7 +63,7 @@ import static org.netbeans.junit.NbModuleSuite.Configuration;
  * @author Jindrich Sedek
  */
 public class J2eeTestCase extends JellyTestCase {
-
+    private static final String PID_FILE_PREFIX = "J2EE_TEST_CASE_PID_FILE";
     private static final String GLASSFISH_PATH = "com.sun.aas.installRoot";
     private static final String TOMCAT_PATH = "org.netbeans.modules.tomcat.autoregister.catalinaHome";
     private static final String JBOSS_PATH = "org.netbeans.modules.j2ee.jboss4.installRoot";
@@ -75,6 +77,32 @@ public class J2eeTestCase extends JellyTestCase {
         super(name);
     }
 
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        createPid();
+    }
+
+    /**
+     * Create a temp file starting with J2EE_TEST_CASE_PID_FILE and ending with 
+     * the pid of the test process. The pid is used by hudson to print stacktrace
+     * before aborting build because of timeout.
+     * 
+     * @throws java.io.IOException
+     */
+    private void createPid() throws IOException{
+        String pid = ManagementFactory.getRuntimeMXBean().getName();
+        pid = pid.substring(0, pid.indexOf('@'));
+        String tmpDirPath = System.getProperty("java.io.tmpdir");
+        File tmpDir = new File(tmpDirPath);
+        for (String file : tmpDir.list()) {
+            if (file.startsWith(PID_FILE_PREFIX)){
+                new File(tmpDir, file).delete();
+            }
+        }
+        new File(tmpDir, PID_FILE_PREFIX + pid).createNewFile();
+    }
+    
     private static void registerGlassfish() {
         String glassfishPath = getServerHome(GLASSFISH);
         if (isValidPath(glassfishPath) && isValidPath(glassfishPath + "/domains/domain1")) {

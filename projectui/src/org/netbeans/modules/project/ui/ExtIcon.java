@@ -74,7 +74,7 @@ public class ExtIcon {
                 setIcon((Icon)obj);
             }
         } catch (Exception ex) {
-            setIcon(new ImageIcon(Utilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
+            setIcon(new ImageIcon(ImageUtilities.loadImage("org/openide/resources/actions/empty.gif"))); //NOI18N
         } finally {
             try {
                 if (objin != null) {

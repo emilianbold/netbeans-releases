@@ -1019,8 +1019,17 @@ final class PropUtils {
 
         boolean aqua = "Aqua".equals(UIManager.getLookAndFeel().getID());
 
+        boolean nimbus = "Nimbus".equals(UIManager.getLookAndFeel().getID());
+
+        boolean gtk = "GTK".equals(UIManager.getLookAndFeel().getID());
+
         setRendererColor = UIManager.getColor(KEY_SETBG); //NOI18N
         selectedSetRendererColor = UIManager.getColor(KEY_SELSETBG); //NOI18N
+
+        if( nimbus || gtk ) {
+            setRendererColor = UIManager.getColor( "Menu.background" );//NOI18N
+            selectedSetRendererColor = UIManager.getColor("Tree.selectionBackground"); //NOI18N
+        }
 
         if (setRendererColor == null) {
             if (aqua) {
@@ -1060,6 +1069,9 @@ final class PropUtils {
         }
 
         setForegroundColor = UIManager.getColor(KEY_SETFG);
+
+        if( nimbus || gtk )
+            setForegroundColor = new Color( UIManager.getColor( "Menu.foreground" ).getRGB() ); //NOI18N
 
         if (setForegroundColor == null) {
             setForegroundColor = UIManager.getColor("Table.foreground"); //NOI18N

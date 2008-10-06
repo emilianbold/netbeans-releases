@@ -42,6 +42,7 @@ package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -220,6 +221,7 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         if (mToolbar != null) mToolbar.removeAll();
         mToolbar = null;
         removeAll();
+        ExplorerUtils.activateActions(manager, false);
         manager = null;
         multiViewObserver = null;
         setActivatedNodes(new Node[0]);
@@ -230,15 +232,29 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
         if (WSDLModel.STATE_PROPERTY.equals(evt.getPropertyName())) {
             WSDLModel.State state = (WSDLModel.State) evt.getNewValue();
             if (state != null) {
-                initUI();
+                //IZ 148214 Call initui in event queue
+                initUIInAWTThread();
             }
+        }
+    }
+    
+    private void initUIInAWTThread() {
+        if (!EventQueue.isDispatchThread()) {
+            EventQueue.invokeLater(new Runnable() {
+
+                public void run() {
+                    initUI();
+                }
+            });
+        } else {
+            initUI();
         }
     }
     
     public ExplorerManager getExplorerManager() {
         return manager;
     }
-
+    
     @Override
     public int getPersistenceType() {
         return PERSISTENCE_NEVER;
@@ -302,8 +318,10 @@ public class WSDLTreeViewMultiViewElement extends TopComponent
     
     @Override
     public void componentDeactivated() {
-        ExplorerUtils.activateActions(manager, false);
         super.componentDeactivated();
+        if (manager != null) {
+            ExplorerUtils.activateActions(manager, false);
+        }
         WSDLMultiViewFactory.updateGroupVisibility(WSDLTreeViewMultiViewDesc.PREFERRED_ID);
     }
     

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.uml.diagrams.edges;
 
+import java.util.Collections;
 import org.netbeans.api.visual.action.ConnectorState;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
@@ -186,6 +187,9 @@ public class CommentLinkConnectProvider extends SceneConnectProvider
                                 manager.createInitialLabels();
                             }
                         }
+                        // fixed iz #146256
+                        scene.setFocusedObject(edge);
+                        scene.userSelectionSuggested(Collections.singleton(edge), false); 
                     }
                 }
             }

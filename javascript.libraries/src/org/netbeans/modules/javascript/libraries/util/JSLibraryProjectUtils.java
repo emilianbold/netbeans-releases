@@ -410,16 +410,28 @@ public final class JSLibraryProjectUtils {
             return getDefaultSourcePath(project);
         }
     }
+    public static String getProjectClassName(Project project) {
+        Project p = project.getLookup().lookup(Project.class);
+        if (p == null) {
+            p = project;
+        }       
+        return p.getClass().getName();        
+    }
     
     public static String getDefaultRelativeLibraryPath(Project project, Library library) {
+        String projectClassName = getProjectClassName(project);        
+        String  resourceDir = "resources"; // NOI18N
+        if (projectClassName.equals(RUBY_PROJECT)) {
+            resourceDir = "";
+        }
         String defaultLocation = getLibraryDefaultDir(library);
         String location;
         if (defaultLocation == null) {
             location = "";
         } else if (defaultLocation.length() == 0) {
-            location = "resources" + File.separator + library.getName(); // NOI18N
+            location = resourceDir + File.separator + library.getName(); // NOI18N
         } else {
-            location = "resources" + File.separator + defaultLocation;
+            location = resourceDir + File.separator + defaultLocation;
         }
         
         return getJSLibrarySourcePath(project) + File.separator + location;

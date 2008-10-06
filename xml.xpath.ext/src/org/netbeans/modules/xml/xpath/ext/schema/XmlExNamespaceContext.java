@@ -97,10 +97,10 @@ public class XmlExNamespaceContext implements ExNamespaceContext {
         AbstractDocumentComponent entity = mXPathOwner;
         while (entity != null) {
             Map<String, String> map = entity.getPrefixes();
-            for( String prefix : map.keySet()) {
-                if (!prefixSet.contains(prefix)) {
-                    prefixSet.add(prefix);
-                }
+            for(String prefix : map.keySet()) {
+                if ((prefix == null) || (prefix.length() < 1)) continue;
+                
+                prefixSet.add(prefix);
             }
             entity = (AbstractDocumentComponent)entity.getParent();
         }
@@ -112,27 +112,24 @@ public class XmlExNamespaceContext implements ExNamespaceContext {
         AbstractDocumentComponent root = (AbstractDocumentComponent)mXPathOwner.
                 getModel().getRootComponent();
         if (root != null) {
-            String prefix = calculateUniqureNsPrefix();
+            String prefix = calculateUniqueNsPrefix();
             root.addPrefix(prefix, uri);
             return prefix;
         }
         return null;
     }
     
-    private String calculateUniqureNsPrefix() {
+    private String calculateUniqueNsPrefix() {
         HashSet<String> prefixes = getPrefixesSet();
-        int counter = 0;
+        int counter = -1;
         String prefixCandidate = null;
         while (true) {
-            if (counter > 0) {
-                prefixCandidate = DEFAULT_PREFIX_NAME;
-            } else {
-                prefixCandidate = DEFAULT_PREFIX_NAME + counter;
-            }
+            prefixCandidate = (counter < 0 ? DEFAULT_PREFIX_NAME : 
+                DEFAULT_PREFIX_NAME + counter);
             //
-            if (!prefixes.contains(prefixCandidate)) {
-                break;
-            }
+            if (! prefixes.contains(prefixCandidate)) break;
+
+            ++counter;
         }
         //
         return prefixCandidate;

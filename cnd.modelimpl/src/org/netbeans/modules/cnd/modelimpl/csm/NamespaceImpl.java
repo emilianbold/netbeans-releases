@@ -44,6 +44,8 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -63,6 +65,7 @@ import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.repository.spi.Key;
 
 /**
  * CsmNamespace implementation
@@ -73,7 +76,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     private static final CharSequence GLOBAL = CharSequenceKey.create("$Global$"); // NOI18N
     // only one of project/projectUID must be used (based on USE_UID_TO_CONTAINER)
-    private /*final*/ ProjectBase projectRef;// can be set in onDispose or contstructor only
+    private Object projectRef;// can be set in onDispose or contstructor only
     private final CsmUID<CsmProject> projectUID;
     
     // only one of parent/parentUID must be used (based on USE_UID_TO_CONTAINER)
@@ -86,11 +89,10 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     /** maps namespaces FQN to namespaces */
     private Map<CharSequence, CsmUID<CsmNamespace>> nestedNamespaces = new ConcurrentHashMap<CharSequence, CsmUID<CsmNamespace>>();
     
-    private TreeMap<CharSequence,CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<CharSequence,CsmUID<CsmOffsetableDeclaration>>();
-    private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
+    private final Key declarationsSorageKey;
+
     private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
     
-//    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
     private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
     private ReadWriteLock nsDefinitionsLock = new ReentrantReadWriteLock();
     private final ReentrantReadWriteLock projectLock = new ReentrantReadWriteLock();
@@ -109,7 +111,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
             
-        this.projectRef = null;
+        this.projectRef = new WeakReference(project); 
+        declarationsSorageKey = new DeclarationContainer(this).getKey();
+
         project.registerNamespace(this);
     }
     
@@ -123,7 +127,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.projectUID = UIDCsmConverter.projectToUID(project);
         assert this.projectUID != null;
 
-        this.projectRef = null;
+        this.projectRef = new WeakReference(project); 
         this.qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
         // TODO: rethink once more
         // now all classes do have namespaces
@@ -138,6 +142,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         assert parentUID != null || parent == null;
 
         this.parentRef = null;
+        declarationsSorageKey = new DeclarationContainer(this).getKey();
         
         project.registerNamespace(this);
         if( parent != null ) {
@@ -208,16 +213,18 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         Collection<CsmNamespace> out = UIDCsmConverter.UIDsToNamespaces(new ArrayList(nestedNamespaces.values()));
         return out;
     }
+
+    private DeclarationContainer getDeclarationsSorage() {
+        DeclarationContainer dc = (DeclarationContainer) RepositoryUtils.get(declarationsSorageKey);
+        if (dc == null) {
+            DiagnosticExceptoins.register(new IllegalStateException("Failed to get DeclarationsSorage by key " + declarationsSorageKey)); // NOI18N
+        }
+        return dc;
+    }
     
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids;
-        try {
-            declarationsLock.readLock().lock();
-            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getDeclarationsSorage().getDeclarationsUIDs();
         // add all unnamed declarations
         synchronized (unnamedDeclarations) {
             uids.addAll(unnamedDeclarations);
@@ -229,13 +236,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         // add all declarations
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids;
-        try {
-            declarationsLock.readLock().lock();
-            uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>(declarations.values());
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+        Collection<CsmUID<CsmOffsetableDeclaration>> uids = getDeclarationsSorage().getDeclarationsUIDs();
         // add all unnamed declarations
         synchronized (unnamedDeclarations) {
             uids.addAll(unnamedDeclarations);
@@ -244,18 +245,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> findUidsByPrefix(String prefix) {
-        Collection<CsmUID<CsmOffsetableDeclaration>> uids = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
-        CharSequence from = CharSequenceKey.create(prefix);
-        CharSequence to = CharSequenceKey.create(prefix+Character.MAX_VALUE); // NOI18N)
-        try {
-            declarationsLock.readLock().lock();
-            for (Map.Entry<CharSequence, CsmUID<CsmOffsetableDeclaration>> entry : declarations.subMap(from, to).entrySet()){
-                uids.add(entry.getValue());
-            }
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
-        return uids;
+        // To improve performance use char(255) instead real Character.MAX_VALUE
+        char maxChar = 255; //Character.MAX_VALUE;
+        return getDeclarationsSorage().getUIDsRange(prefix, prefix+maxChar);
     }
 
     public Collection<CsmUID<CsmOffsetableDeclaration>> getUnnamedUids() {
@@ -392,65 +384,17 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             }
         }
 
-        CharSequence uniqueName = declaration.getUniqueName();
-        CsmOffsetableDeclaration oldDecl;
-        
-        CsmUID<CsmOffsetableDeclaration> oldDeclarationUid;
-        try {
-            declarationsLock.readLock().lock();
-             oldDeclarationUid = declarations.get(uniqueName);
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
-        oldDecl = UIDCsmConverter.UIDtoDeclaration(oldDeclarationUid);
-        // use TraceFlags.SAFE_UID_ACCESS as workaround
-        // see IZ#101952
-        if (!TraceFlags.SAFE_UID_ACCESS ) {
-            assert (oldDecl != null || oldDeclarationUid == null): "no object for UID " + oldDeclarationUid;
-        }
-        
-//	// replace declaration with new one unless
-//	// 1) it's a function 2) old one contains body 3) new one does not
-//	if( oldDecl instanceof CsmFunctionDefinition ) {
-//	    if( ! (declaration instanceof CsmFunctionDefinition) ) {
-//		return;
-//	    }
-//	}
-        // TODO: replace this hack with proper processing
-        if( oldDecl != null && oldDecl.getKind() == CsmDeclaration.Kind.FUNCTION &&  declaration.getKind() == CsmDeclaration.Kind.FUNCTION_DEFINITION ) {
-            //CsmFunction func = (CsmFunction) oldDecl;
-            //CsmFunctionDefinition fdef = (CsmFunctionDefinition) declaration;
-            //if( ! func.getContainingFile().getName().equals(declaration.getContainingFile().getName()) ) {
-            return;
-            //}
-        }
-        
-        CsmUID<CsmOffsetableDeclaration> newDeclarationUID = UIDCsmConverter.declarationToUID(declaration);
+
         if (unnamed) {
-            unnamedDeclarations.add(newDeclarationUID);
+            unnamedDeclarations.add(UIDCsmConverter.declarationToUID(declaration));
         } else {
-            try {
-                declarationsLock.writeLock().lock();
-                declarations.put(uniqueName, newDeclarationUID);
-            } finally {
-                declarationsLock.writeLock().unlock();
-            }
+            getDeclarationsSorage().putDeclaration(declaration);
         }
         
-//        if( "Cursor".equals(declaration.getName()) ) {
-//            System.err.println("Cursor");
-//        }
         // update repository
         RepositoryUtils.put(this);
         
-        if( oldDecl != null ) { //&& oldDecl.getKind() == declaration.getKind() ) {
-            //Notificator.instance().registerChangedDeclaration(oldDecl,declaration);
-            // It's notificator responsibility of detecting change event.
-            Notificator.instance().registerRemovedDeclaration(oldDecl);
-            Notificator.instance().registerNewDeclaration(declaration);
-        } else {
-            Notificator.instance().registerNewDeclaration(declaration);
-        }
+        Notificator.instance().registerNewDeclaration(declaration);
     }
     
     @SuppressWarnings("unchecked")
@@ -460,12 +404,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             declarationUid = declaration.getUID();
             unnamedDeclarations.remove(declarationUid);
         } else {
-            try {
-                declarationsLock.writeLock().lock();
-                declarationUid = declarations.remove(declaration.getUniqueName());
-            } finally {
-                declarationsLock.writeLock().unlock();
-            }
+            getDeclarationsSorage().removeDeclaration(declaration);
         }
         // do not clean repository, it must be done from physical container of declaration
         if (false) RepositoryUtils.remove(declarationUid);
@@ -525,7 +464,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
                 parent.removeNestedNamespace(this);
             }
             projectRef = _getProject();
-            projectRef.unregisterNamesace(this);
+            ((ProjectBase)projectRef).unregisterNamesace(this);
             dispose();            
         }
     }
@@ -567,10 +506,16 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     private ProjectBase _getProject() {
         projectLock.readLock().lock();
         try {
-            ProjectBase prj = this.projectRef;
+            ProjectBase prj = null;
+            if (projectRef instanceof ProjectBase) {
+                prj = (ProjectBase)projectRef;
+            } else if (projectRef instanceof Reference) {
+                prj = ((Reference<ProjectBase>)projectRef).get();
+            }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
                 assert (prj != null || this.projectUID == null) : "empty project for UID " + this.projectUID;
+                projectRef = new WeakReference<ProjectBase>(prj);
             }
             return prj;
         } finally {
@@ -615,13 +560,9 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         output.writeUTF(this.name.toString());
         assert this.qualifiedName != null;
         output.writeUTF(this.qualifiedName.toString());
+
         theFactory.writeStringToUIDMap(this.nestedNamespaces, output, true);
-        try {
-            declarationsLock.readLock().lock();
-            theFactory.writeStringToUIDMap(this.declarations, output, true);
-        } finally {
-            declarationsLock.readLock().unlock();
-        }
+        ProjectComponent.writeKey(this.declarationsSorageKey, output);
         try {
             nsDefinitionsLock.readLock().lock();
             theFactory.writeStringToUIDMap(this.nsDefinitions, output, false);
@@ -651,7 +592,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.qualifiedName != null;
         theFactory.readStringToUIDMap(this.nestedNamespaces, input, QualifiedNameCache.getManager());
-        theFactory.readStringToUIDMap(this.declarations, input, QualifiedNameCache.getManager());
+        declarationsSorageKey = ProjectComponent.readKey(input);
+        assert declarationsSorageKey != null : "declarationsSorageKey can not be null";
         theFactory.readStringToUIDMap(this.nsDefinitions, input, QualifiedNameCache.getManager());
         theFactory.readUIDCollection(this.unnamedDeclarations, input);
     }

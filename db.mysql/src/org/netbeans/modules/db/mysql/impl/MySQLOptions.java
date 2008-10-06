@@ -61,30 +61,30 @@ public class MySQLOptions {
 
     private static final MySQLOptions DEFAULT = new MySQLOptions();
 
-    static final String PROP_MYSQL_LOCATION = "location"; // NOI18N
-    static final String PROP_HOST = "host"; // NO18N
-    static final String PROP_PORT = "port"; // NO18N
-    static final String PROP_ADMINUSER = "adminuser"; // NO18N
-    static final String PROP_ADMINPWD = "adminpwd"; // NO18N
-    static final String PROP_SAVEPWD = "savepwd"; // NO18N
-    static final String PROP_DBDIR = "dbdir"; // NO18N
-    static final String PROP_CONN_REGISTERED = "conn-registered"; // NOI18N
-    static final String PROP_PROVIDER_REGISTERED = "provider-registered"; // NOI18N
-    static final String PROP_PROVIDER_REMOVED = "provider-removed"; // NO18N
-    static final String PROP_ADMIN_PATH = "admin-path"; // NOI18N
-    static final String PROP_START_PATH = "start-path"; // NOI18N
-    static final String PROP_STOP_PATH = "stop-path"; // NOI18N
-    static final String PROP_ADMIN_ARGS = "admin-args"; // NOI18N
-    static final String PROP_START_ARGS = "start-args"; // NOI18N
-    static final String PROP_STOP_ARGS = "stop-args"; // NOI18N
+    public static final String PROP_MYSQL_LOCATION = "location"; // NOI18N
+    public static final String PROP_HOST = "host"; // NO18N
+    public static final String PROP_PORT = "port"; // NO18N
+    public static final String PROP_ADMINUSER = "adminuser"; // NO18N
+    public static final String PROP_ADMINPWD = "adminpwd"; // NO18N
+    public static final String PROP_SAVEPWD = "savepwd"; // NO18N
+    public static final String PROP_DBDIR = "dbdir"; // NO18N
+    public static final String PROP_CONN_REGISTERED = "conn-registered"; // NOI18N
+    public static final String PROP_PROVIDER_REGISTERED = "provider-registered"; // NOI18N
+    public static final String PROP_PROVIDER_REMOVED = "provider-removed"; // NO18N
+    public static final String PROP_ADMIN_PATH = "admin-path"; // NOI18N
+    public static final String PROP_START_PATH = "start-path"; // NOI18N
+    public static final String PROP_STOP_PATH = "stop-path"; // NOI18N
+    public static final String PROP_ADMIN_ARGS = "admin-args"; // NOI18N
+    public static final String PROP_START_ARGS = "start-args"; // NOI18N
+    public static final String PROP_STOP_ARGS = "stop-args"; // NOI18N
     
     // These options are not currently visible in the properties dialog, but
     // can be set by users through direct editing of the preferences file
     
     // How long to wait on the network before giving up on an attempt to
     // connect, in milliseconds
-    static final String PROP_CONNECT_TIMEOUT = "connect-timeout"; // NOII18N
-    static final String PROP_REFRESH_THREAD_SLEEP_INTERVAL = 
+    public static final String PROP_CONNECT_TIMEOUT = "connect-timeout"; // NOII18N
+    public static final String PROP_REFRESH_THREAD_SLEEP_INTERVAL =
             "refresh-thread-sleep-interval"; // NOI18N
     
     // Currently not modifiable...
@@ -94,9 +94,7 @@ public class MySQLOptions {
     private static final String DEFAULT_ADMIN_USER = "root";
     private static final String DEFAULT_ADMIN_PASSWORD = "";
     // In milliseconds
-    private static final String DEFAULT_CONNECT_TIMEOUT = "15000";
-    // In milliseconds
-    private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 5000;
+    private static final String DEFAULT_CONNECT_TIMEOUT = "5000";
     
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     

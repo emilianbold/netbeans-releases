@@ -79,7 +79,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.util.logging.Level;
 import org.netbeans.modules.clearcase.util.ProgressSupport;
-import org.openide.util.Cancellable;
 
 /**
  *
@@ -240,7 +239,11 @@ class MultiDiffPanel extends javax.swing.JPanel implements ActionListener, Versi
         };
         nextButton.setAction(nextAction);
         prevButton.setAction(prevAction);
-        updateButton.setEnabled(new UpdateAction("", context).isEnabled());
+        if(context != null) {
+            updateButton.setEnabled(new UpdateAction("", context).isEnabled());
+        } else {
+            updateButton.setEnabled(false);
+        }
         
         allToggle.setVisible(false);
         localToggle.setVisible(false);

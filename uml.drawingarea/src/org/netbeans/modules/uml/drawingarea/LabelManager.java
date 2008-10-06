@@ -112,6 +112,11 @@ public interface LabelManager extends PropertyChangeListener
     public void selectLabel(final String name, final LabelType type);
     
     /**
+     * Returns true if the label is currently selected
+     */
+    public boolean isLabelSelected(final String name, final LabelType type);
+    
+    /**
      * Hides the label with the specified name.  The label will have the 
      * type of LabelType.EDGE
      * @param name the name of the label.

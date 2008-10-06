@@ -58,9 +58,9 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
@@ -257,6 +257,73 @@ public class JSFELExpression extends ELExpression{
 
         public List<CompletionItem> getCompletionItems(){
             return completionItems;
+        }
+    }
+
+    @Override
+    public boolean gotoPropertyDeclaration(String beanType){
+        GoToSourceTask task = new GoToSourceTask(beanType);
+        runTask(task);
+        return task.wasSuccessful();
+    }
+
+    /**
+     * Go to the java source code of expression
+     * - a getter in case of
+     */
+    private class GoToSourceTask extends BaseELTaskClass implements CancellableTask<CompilationController>{
+        private boolean success = false;
+
+        GoToSourceTask(String beanType){
+            super(beanType);
+        }
+
+        public void run(CompilationController parameter) throws Exception {
+            parameter.toPhase(Phase.ELEMENTS_RESOLVED);
+            TypeElement bean = getTypePreceedingCaret(parameter);
+
+            if (bean != null){
+                String suffix = getPropertyBeingTypedName();
+
+                for (ExecutableElement method : ElementFilter.methodsIn(bean.getEnclosedElements())){
+                    String propertyName = getExpressionSuffix(method);
+
+                    if (propertyName != null && propertyName.equals(suffix)){
+                        success = UiUtils.open(parameter.getClasspathInfo(), method);
+                        break;
+                    }
+                }
+            }
+        }
+
+        public boolean wasSuccessful(){
+            return success;
+        }
+
+        /**
+         * @return property name is <code>accessorMethod<code> is property accessor, otherwise null
+         */
+        @Override
+        protected String getExpressionSuffix(ExecutableElement method){
+
+            if (method.getModifiers().contains(Modifier.PUBLIC)){
+                String methodName = method.getSimpleName().toString();
+
+                if (methodName.startsWith("get")){ //NOI18N
+                    return Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4);
+                }
+
+                if (methodName.startsWith("is")){ //NOI18N
+                    return Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3);
+                }
+
+                if (isDefferedExecution()){
+                    //  also return values for method expressions
+                    return methodName;
+                }
+            }
+
+            return null; // not a property accessor
         }
     }
 }

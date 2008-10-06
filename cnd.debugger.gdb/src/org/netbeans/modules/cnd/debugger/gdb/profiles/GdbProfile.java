@@ -129,7 +129,7 @@ public class GdbProfile implements ConfigurationAuxObject {
         }
     }
     
-    public String getGdbPath(MakeConfiguration conf) {
+    public String getGdbPath(MakeConfiguration conf, boolean canAskUser) {
         CompilerSet2Configuration csconf = conf.getCompilerSet();
         CompilerSet cs;
         String csname;
@@ -144,9 +144,10 @@ public class GdbProfile implements ConfigurationAuxObject {
             csconf.setValid();
         }
         Tool debuggerTool = cs.getTool(Tool.DebuggerTool);
+        String hkey = null;
         if (debuggerTool != null) {
             String gdbPath = debuggerTool.getPath();
-            String hkey = conf.getDevelopmentHost().getName();
+            hkey = conf.getDevelopmentHost().getName();
             if (hkey.equals(CompilerSetManager.LOCALHOST)) {
                 File gdbFile = new File(gdbPath);
                 if (gdbFile.exists() && !gdbFile.isDirectory()) {
@@ -160,39 +161,41 @@ public class GdbProfile implements ConfigurationAuxObject {
                 }
             } else {
                 // Remote gdb...
-                ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+                ServerList serverList = Lookup.getDefault().lookup(ServerList.class);
                 if (serverList != null && serverList.isValidExecutable(hkey, gdbPath)) {
                     return gdbPath;
                 }
             }
         }
-        
-        // No debugger in cs and non-absolute name in project. So post a Build Tools window and
-        // force the user to add a directory with gdb or cancel
-        ToolsPanelModel model = new LocalToolsPanelModel();
-//        model.setGdbName(name);
-//        model.setGdbEnabled(true);
-        model.setCRequired(false);
-        model.setCppRequired(false);
-        model.setFortranRequired(false);
-        model.setMakeRequired(false);
-        model.setGdbRequired(true);
-        model.setShowRequiredBuildTools(false);
-        model.setShowRequiredDebugTools(true);
-        model.setCompilerSetName(null); // means don't change
-        model.setSelectedCompilerSetName(csname);
-        BuildToolsAction bt = (BuildToolsAction) SystemAction.get(BuildToolsAction.class);
-        bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
-        if (bt.initBuildTools(model, new ArrayList())) {
-//            if (!name.equals(model.getGdbName())) {
-//                setGdbCommand(model.getGdbName());
-//            }
-            conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
-            cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(model.getSelectedCompilerSetName());
-            return cs.getTool(Tool.DebuggerTool).getPath();
-        } else {
-            return null;
+        if (canAskUser) {
+            // No debugger in cs and non-absolute name in project. So post a Build Tools window and
+            // force the user to add a directory with gdb or cancel
+            ToolsPanelModel model = new LocalToolsPanelModel();
+//            model.setGdbName(name);
+//            model.setGdbEnabled(true);
+            model.setCRequired(false);
+            model.setCppRequired(false);
+            model.setFortranRequired(false);
+            model.setMakeRequired(false);
+            model.setGdbRequired(true);
+            model.setShowRequiredBuildTools(false);
+            model.setShowRequiredDebugTools(true);
+            model.setCompilerSetName(null); // means don't change
+            model.setSelectedCompilerSetName(csname);
+            model.setSelectedDevelopmentHost(hkey);
+            model.setEnableDevelopmentHostChange(false);
+            BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
+            bt.setTitle(NbBundle.getMessage(GdbProfile.class, "LBL_ResolveMissingGdb_Title")); // NOI18N
+            if (bt.initBuildTools(model, new ArrayList<String>())) {
+//                if (!name.equals(model.getGdbName())) {
+//                    setGdbCommand(model.getGdbName());
+//                }
+                conf.getCompilerSet().setValue(model.getSelectedCompilerSetName());
+                cs = CompilerSetManager.getDefault(conf.getDevelopmentHost().getName()).getCompilerSet(model.getSelectedCompilerSetName());
+                return cs.getTool(Tool.DebuggerTool).getPath();
+            }
         }
+        return null;
     }
     
 //    /**

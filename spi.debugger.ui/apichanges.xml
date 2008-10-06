@@ -111,6 +111,26 @@ made subject to such option by the copyright holder.
         <issue number="137005"/>
     </change>
 
+    <change id="controller">
+        <api name="DebuggerCoreSPI"/>
+        <summary><code>AttachType.getController()</code> and
+                 <code>BreakpointType.getController()</code> methods added.</summary>
+        <version major="2" minor="14"/>
+        <date day="17" month="9" year="2008"/>
+        <author login="mentlicher"/>
+        <compatibility binary="compatible" source="compatible" modification="yes" semantic="compatible"/>
+        <description>
+            <p>
+                <code>AttachType.getController()</code> and <code>BreakpointType.getController()</code>
+                methods added, because of the clash of Controller.isValid() and
+		javax.swing.JComponent.isValid() methods.
+                This cause problems when using false validity in some cases,
+                therefore a separate implementation of <code>Controller</code> interface is necessary.
+            </p>
+        </description>
+        <issue number="138717"/>
+    </change>
+
 
 </changes>
 

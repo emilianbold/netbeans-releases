@@ -39,9 +39,13 @@
 package org.netbeans.modules.maven.j2ee;
 
 import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.Constants;
@@ -98,7 +102,12 @@ public class ExecutionChecker implements ExecutionResultChecker {
             //TODO - click here to setup..
             return;
         }
-        out.println("NetBeans: Deploying on " + Deployment.getDefault().getServerInstanceDisplayName(serverInstanceID));//NOI18N - no localization in maven build now.
+        ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
+        try {
+            out.println("NetBeans: Deploying on " + (si != null ? si.getDisplayName() : serverInstanceID)); //NOI18N - no localization in maven build now.
+        } catch (InstanceRemovedException ex) {
+            out.println("NetBeans: Deploying on " + serverInstanceID); //NOI18N - no localization in maven build now.
+        }
         try {
                 out.println("    debug mode: " + debugmode);//NOI18N - no localization in maven build now.
 //                log.info("    clientModuleUri: " + clientModuleUri);//NOI18N - no localization in maven build now.
@@ -138,7 +147,7 @@ public class ExecutionChecker implements ExecutionResultChecker {
                 }
             }
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex);
         }
     }
 

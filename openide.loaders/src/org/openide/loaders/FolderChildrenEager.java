@@ -56,7 +56,7 @@ import org.openide.util.RequestProcessor;
 *
 * @author Jaroslav Tulach
 */
-final class FolderChildrenEager extends Children.Keys<FolderChildrenEager.Pair>
+final class FolderChildrenEager extends Children.Keys<FolderChildrenPair>
 implements PropertyChangeListener, ChangeListener {
     /** the folder */
     private DataFolder folder;
@@ -159,7 +159,7 @@ implements PropertyChangeListener, ChangeListener {
     /** Create a node for one data object.
     * @param key DataObject
     */
-    protected Node[] createNodes(Pair key) {
+    protected Node[] createNodes(FolderChildrenPair key) {
         err.fine("createNodes: " + key);
         FileObject fo = key.primaryFile;
         DataObject obj;
@@ -247,7 +247,7 @@ implements PropertyChangeListener, ChangeListener {
         }
         
         // we need to clear the children now
-        setKeys(Collections.<Pair>emptySet());
+        setKeys(Collections.<FolderChildrenPair>emptySet());
         err.fine("removeNotify end");
     }
 
@@ -278,15 +278,15 @@ implements PropertyChangeListener, ChangeListener {
             
             ch = folder.getChildren();
             err.fine("Children computed");
-            Pair[] keys = new Pair[ch.length];
+            FolderChildrenPair[] keys = new FolderChildrenPair[ch.length];
             for (int i = 0; i < keys.length; i++) {
-                keys[i] = new Pair(ch[i].getPrimaryFile());
+                keys[i] = new FolderChildrenPair(ch[i].getPrimaryFile());
             }
             setKeys(Arrays.asList(keys));
             
             if ( refresh ) {
                 refresh = false;
-                for (Pair key : keys) {
+                for (FolderChildrenPair key : keys) {
                     refreshKey(key);
                 }
             }
@@ -304,38 +304,6 @@ implements PropertyChangeListener, ChangeListener {
             assert refRP.isRequestProcessorThread();
             err.fine("Clearing the reference to children"); // NOI18N
             ch = null;
-        }
-    }
-    
-    /** Pair of dataobject invalidation sequence # and primary file.
-     * It serves as a key for the given data object.
-     * It is here to create something different then data object,
-     * because the data object should be finalized when not needed and
-     * that is why it should not be used as a key.
-     */
-    static final class Pair extends Object {
-        public FileObject primaryFile;
-        public int seq;
-
-        public Pair (FileObject primaryFile) {
-            this.primaryFile = primaryFile;
-            this.seq = DataObjectPool.getPOOL().registrationCount(primaryFile);
-        }
-
-        public int hashCode () {
-            return primaryFile.hashCode () ^ seq;
-        }
-
-        public boolean equals (Object o) {
-            if (o instanceof Pair) {
-                Pair p = (Pair)o;
-                return primaryFile.equals (p.primaryFile) && seq == p.seq;
-            }
-            return false;
-        }
-        
-        public String toString() {
-            return "FolderChildren.Pair[" + primaryFile + "," + seq + "]"; // NOI18N
         }
     }
 }

@@ -26,6 +26,7 @@ import org.netbeans.modules.xslt.model.CopyOf;
 import org.netbeans.modules.xslt.model.ForEach;
 import org.netbeans.modules.xslt.model.If;
 import org.netbeans.modules.xslt.model.Instruction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -43,7 +44,7 @@ public enum SupportedRuleTypes {
     private static final String COMMON_RULE_IMAGE_NAME =
             "org/netbeans/modules/xslt/mapper/model/nodes/actions/Instruction.png"; // NOI18N
     private static final Image COMMON_IMAGE =
-            Utilities.loadImage(COMMON_RULE_IMAGE_NAME);
+            ImageUtilities.loadImage(COMMON_RULE_IMAGE_NAME);
     
     private Class<? extends Instruction> myInterface = null;
     private String myDisplayName;

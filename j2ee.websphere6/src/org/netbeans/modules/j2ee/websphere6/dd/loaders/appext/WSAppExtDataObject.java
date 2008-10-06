@@ -52,6 +52,7 @@ import org.openide.loaders.MultiDataObject;
 import org.openide.nodes.CookieSet;
 import org.openide.nodes.Node;
 import org.openide.text.DataEditorSupport;
+import org.openide.util.ImageUtilities;
 
 public class WSAppExtDataObject extends WSMultiViewDataObject {
     
@@ -105,7 +106,7 @@ public class WSAppExtDataObject extends WSMultiViewDataObject {
             
         }
         public java.awt.Image getIcon() {
-            return org.openide.util.Utilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws2.gif"); //NOI18N
+            return ImageUtilities.loadImage("org/netbeans/modules/j2ee/websphere6/dd/resources/ws2.gif"); //NOI18N
         }
     }
     

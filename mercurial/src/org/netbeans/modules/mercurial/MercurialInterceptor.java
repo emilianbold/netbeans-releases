@@ -94,7 +94,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("doDelete " + file);
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
-        File root = hg.getTopmostManagedParent(file);
+        File root = hg.getRepositoryRoot(file);
         try {
             file.delete();
             HgCommand.doRemove(root, file, null);
@@ -107,7 +107,7 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("afterDelete " + file);
         if (file == null) return;
         Mercurial hg = Mercurial.getInstance();
-        final File root = hg.getTopmostManagedParent(file);
+        final File root = hg.getRepositoryRoot(file);
         rp.post(new Runnable() {
             public void run() {
                 if (file.isDirectory()) {
@@ -176,8 +176,8 @@ public class MercurialInterceptor extends VCSInterceptor {
 
     private void hgMoveImplementation(final File srcFile, final File dstFile) throws IOException {
         final Mercurial hg = Mercurial.getInstance();
-        final File root = hg.getTopmostManagedParent(srcFile);
-        final File dstRoot = hg.getTopmostManagedParent(dstFile);
+        final File root = hg.getRepositoryRoot(srcFile);
+        final File dstRoot = hg.getRepositoryRoot(dstFile);
         if (root == null) return;
 
         RequestProcessor rp = hg.getRequestProcessor(root.getAbsolutePath());
@@ -223,11 +223,11 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.fine("beforeCreate " + file + " " + isDirectory);
         if (HgUtils.isPartOfMercurialMetadata(file)) return false;
         if (!isDirectory && !file.exists()) {
-            FileInformation info = cache.getCachedStatus(file, false);
+            FileInformation info = cache.getCachedStatus(file);
             if (info != null && info.getStatus() == FileInformation.STATUS_VERSIONED_REMOVEDLOCALLY) {
                 Mercurial.LOG.log(Level.FINE, "beforeCreate(): LocallyDeleted: {0}", file); // NOI18N
                 Mercurial hg = Mercurial.getInstance();
-                final File root = hg.getTopmostManagedParent(file);
+                final File root = hg.getRepositoryRoot(file);
                 if (root == null) return false;
                 final OutputLogger logger = Mercurial.getInstance().getLogger(root.getAbsolutePath());
                 final Throwable innerT[] = new Throwable[1];

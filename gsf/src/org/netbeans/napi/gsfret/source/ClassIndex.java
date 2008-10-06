@@ -114,7 +114,14 @@ public final class ClassIndex extends Index {
         assert kind != null;
         final Iterable<? extends ClassIndexImpl> queries = this.getQueries(scope);        
         for (ClassIndexImpl query : queries) {
-            query.search(primaryField, name, kind, scope, result, terms);
+            try {
+                query.search(primaryField, name, kind, scope, result, terms);
+            } catch (ClassIndexImpl.IndexAlreadyClosedException e) {
+                logClosedIndex (query);
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+
         }
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.fine(String.format("ClassIndex.search returned %d elements\n", result.size()));
@@ -132,6 +139,11 @@ public final class ClassIndex extends Index {
 	    return new ClassIndex(language, bootPath, classPath, sourcePath);
         }
 	
+    }
+
+    private static void logClosedIndex (final ClassIndexImpl query) {
+        assert query != null;
+        LOGGER.info("Ignoring closed index: " + query.toString());  //NOI18N
     }
     
     private synchronized Iterable<? extends ClassIndexImpl> getQueries (final Set<SearchScope> scope) {        
@@ -170,8 +182,13 @@ public final class ClassIndex extends Index {
                 Indexer indexer = language.getIndexer();
                 if (indexer != null) {
                     for (ClassIndexImpl ci : bootIndices) {
-                        if (indexer.acceptQueryPath(ci.getRoot().toExternalForm())) {
-                            indeces.add(ci);
+                        if (ci != null) {
+                            URL root = ci.getRoot();
+                            if (root != null) {
+                                if (indexer.acceptQueryPath(root.toExternalForm())) {
+                                    indeces.add(ci);
+                                }
+                            }
                         }
                     }
                 }

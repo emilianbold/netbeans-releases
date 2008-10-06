@@ -39,6 +39,7 @@
  */
 #include "stdafx.h"
 #include "ScriptDebugger.h"
+#include "DebugDocument.h"
 #include "Utils.h"
 #include <tlhelp32.h>
 
@@ -86,9 +87,18 @@ void ScriptDebugger::cleanup() {
     //}
     unregisterForDebugAppNodeEvents();
     m_pBreakpointMgr->removeAllBreakpoints();
-    map<tstring, DWORD>::iterator iter = debugDocumentsMap.begin();
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.begin();
     while(iter != debugDocumentsMap.end()) {
-        Utils::revokeInterfaceFromGlobal(iter->second);
+        DebugDocument *pDebugDoc = iter->second;
+        DWORD cookie = pDebugDoc->getCookie();
+        CComPtr<IDebugDocument> spDebugDocument;
+        Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
+        if(spDebugDocument != NULL) {
+            CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
+            unregisterForDebugDocTextEvents(spDebugDocText, pDebugDoc->getEventCookie());
+        }
+        Utils::revokeInterfaceFromGlobal(cookie);
+        pDebugDoc->Release();
         ++iter;
     }
     debugDocumentsMap.clear();
@@ -326,27 +336,28 @@ BOOL ScriptDebugger::getStackFrameDescriptor(int stackDepth, DebugStackFrameDesc
 }
 
 TCHAR *ScriptDebugger::getSourceText(tstring fileURI, int beginLine, int endLine) {
-    map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(fileURI);
+    TCHAR *buffer = NULL;
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
-        DWORD cookie = iter->second;
+        DebugDocument *pDebugDoc = iter->second;
+        DWORD cookie = pDebugDoc->getCookie();
         CComPtr<IDebugDocument> spDebugDocument;
         Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
-        if(spDebugDocument != NULL && isDocumentReady(spDebugDocument)) {
+        if(spDebugDocument != NULL) {
             CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
             ULONG lines, numChars;
             spDebugDocText->GetSize(&lines, &numChars);
             SOURCE_TEXT_ATTR *attrs = new SOURCE_TEXT_ATTR[numChars+1];
-            TCHAR *buffer = new TCHAR[numChars+1];
+            buffer = new TCHAR[numChars+1];
             ULONG actualSize = 0;
             HRESULT hr = spDebugDocText->GetText(0, buffer, attrs, &actualSize, numChars);
-            if(hr == S_OK && actualSize > 0) {
+            if(hr == S_OK && actualSize >= 0) {
                 buffer[actualSize] = 0;
                 delete[] attrs;
-                return buffer;
             }
         }
     }
-    return NULL;
+    return buffer;
 }
 
 Property *ScriptDebugger::eval(tstring expression, int stackDepth) {
@@ -518,34 +529,35 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring na
     pProp->type = (TCHAR *)(propertyInfo.m_bstrType);
     if(pProp->type == TYPE_ERROR) {
         return NULL;
-    }else if(pProp->type == TYPE_OBJECT) {
-        pProp->childrenCount = -1;
-    }
-    if(pProp->type == TYPE_USER_DEFINED) {
+    }else if(pProp->type == TYPE_USER_DEFINED) {
         pProp->type = TYPE_VOID;
-    }else if(pProp->type == TYPE_SINGLE || pProp->type == TYPE_VARIANT) {
-        pProp->type = TYPE_OBJECT;
-    }else if(pProp->type == TYPE_LONG || pProp->type == TYPE_INTEGER) {
+    }else if(pProp->type == TYPE_LONG || pProp->type == TYPE_INTEGER || pProp->type == TYPE_NUMBER) {
         pProp->type = TYPE_INT;
-    }
-
-	if(pProp->fullName.length() > 1) {
-        if(pProp->type == TYPE_OBJECT) {
-			tstring fullName = pProp->fullName;
-			if(fullName.substr(0, 1) == DOT) {
-				fullName = fullName.substr(1);
-			}
-            pProp->classname = getObjectType(fullName, stackDepth);
-            tstring toString = fullName;
-            if(pProp->classname == TYPE_FUNCTION) {
-                if(!(featureSet & SHOW_FUNCTIONS)) {
-                    return NULL;
+    }else if(pProp->type == TYPE_STRING) {
+        pProp->type = TYPE_STRING;
+    }else {
+        pProp->type = TYPE_OBJECT;
+        pProp->childrenCount = -1;
+	    if(pProp->fullName.length() > 1) {
+            if(propertyInfo.m_bstrType == TYPE_OBJECT) {
+			    tstring fullName = pProp->fullName;
+			    if(fullName.substr(0, 1) == DOT) {
+				    fullName = fullName.substr(1);
+			    }
+                pProp->classname = getObjectType(fullName, stackDepth);
+                tstring toString = fullName;
+                if(pProp->classname == TYPE_FUNCTION) {
+                    if(!(featureSet & SHOW_FUNCTIONS)) {
+                        return NULL;
+                    }
+                    toString.append(TO_STRING);
+                    tstring value = evalToString(toString, stackDepth);
+                    pProp->value = value.substr(1, value.length()-2);
+                    pProp->classname = value.find(NATIVE_CODE) != tstring::npos ? NATIVE_FUNCTION : SCRIPT_FUNCTION;
+                    pProp->type = TYPE_FUNCTION;
                 }
-                toString.append(TO_STRING);
-                tstring value = evalToString(toString, stackDepth);
-                pProp->value = value.substr(1, value.length()-2);
-                pProp->classname = value.find(NATIVE_CODE) != tstring::npos ? NATIVE_FUNCTION : SCRIPT_FUNCTION;
-                pProp->type = TYPE_FUNCTION;
+            }else {
+                pProp->classname = propertyInfo.m_bstrType;
             }
         }
     }
@@ -635,10 +647,20 @@ STDMETHODIMP ScriptDebugger::onAddChild(IDebugApplicationNode __RPC_FAR *prddpCh
         CComBSTR name;
         hr = spDebugDocument->GetName(DOCUMENTNAMETYPE_URL, &name);
         if(name != NULL) {
-            Utils::log(4, _T("Loaded document: %s\n"), (TCHAR *)name);
+            TCHAR *docName = (TCHAR *)name;
+            Utils::log(4, _T("Loaded document: %s\n"), docName);
             DWORD cookie;
             Utils::registerInterfaceInGlobal(spDebugDocument, IID_IDebugDocument, &cookie);
-            debugDocumentsMap.insert(pair<tstring, DWORD>((TCHAR *)(name), cookie));
+            CComObject<DebugDocument> *pComDebugDoc;
+            CComObject<DebugDocument>::CreateInstance(&pComDebugDoc);
+            DebugDocument *pDebugDoc = (DebugDocument *)pComDebugDoc;
+            pDebugDoc->setDocumentName(docName);
+            pDebugDoc->setScriptDebugger(this);
+            pDebugDoc->setCookie(cookie);
+            CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
+            cookie = registerForDebugDocTextEvents(spDebugDocText, pComDebugDoc);
+            pDebugDoc->setEventCookie(cookie);
+            debugDocumentsMap.insert(pair<tstring, DebugDocument *>(docName, pDebugDoc));
             documentLoaded = TRUE;
             pauseImpl();
         }
@@ -655,9 +677,12 @@ STDMETHODIMP ScriptDebugger::onRemoveChild(IDebugApplicationNode __RPC_FAR *prdd
         if(name != NULL) {
             TCHAR *docName = (TCHAR *)name;
             Utils::log(4, _T("Removing document: %s\n"), docName);
-            map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(docName);
+            map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(docName);
             if(iter != debugDocumentsMap.end()) {
-                Utils::revokeInterfaceFromGlobal(iter->second);
+                DebugDocument *pDebugDoc = iter->second;
+                Utils::revokeInterfaceFromGlobal(pDebugDoc->getCookie());
+                CComQIPtr<IDebugDocumentText> spDebugDocText = spDebugDocument;
+                unregisterForDebugDocTextEvents(spDebugDocText, pDebugDoc->getEventCookie());
                 debugDocumentsMap.erase(iter);
             }
         }
@@ -721,10 +746,29 @@ BOOL ScriptDebugger::setBreakpoint(IDebugDocument *pDebugDocument, Breakpoint *p
 }
 
 BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, BOOL remove) {
+    BOOL result = false;
     tstring fileURI = pBreakpoint->getFileURI();
-    map<tstring, DWORD>::iterator iter = debugDocumentsMap.find(fileURI);
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
+    if (iter == debugDocumentsMap.end()) {
+        if(isFeatureSet(IGNORE_QUERY_STRINGS)) {
+            for (iter = debugDocumentsMap.begin(); iter != debugDocumentsMap.end();++iter) {
+                size_t pos = iter->first.find(fileURI);
+                if (pos != std::string::npos) {
+                    result = setBreakpoint(pBreakpoint, iter->first, remove);
+                }
+            }
+        }
+        return result;
+    }else {
+        return setBreakpoint(pBreakpoint, fileURI, remove);
+    }
+}
+
+BOOL ScriptDebugger::setBreakpoint(Breakpoint *pBreakpoint, tstring fileURI, BOOL remove) {
+    map<tstring, DebugDocument *>::iterator iter = debugDocumentsMap.find(fileURI);
     if(iter != debugDocumentsMap.end()) {
-        DWORD cookie = iter->second;
+        DebugDocument *pDebugDoc = iter->second;
+        DWORD cookie = pDebugDoc->getCookie();
         CComPtr<IDebugDocument> spDebugDocument;
         Utils::getInterfaceFromGlobal(cookie, IID_IDebugDocument, (void **)&spDebugDocument);
         if(spDebugDocument != NULL && isDocumentReady(spDebugDocument)) {
@@ -800,41 +844,41 @@ void ScriptDebugger::setDebugApplication(IRemoteDebugApplication *pRemoteDebugAp
 }
 
 ScriptDebugger *ScriptDebugger::createScriptDebugger() {
-	HRESULT hr = E_FAIL;
-	CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
+    HRESULT hr = E_FAIL;
+    CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     CComPtr<IMachineDebugManager> spMachineDebugManager;
-	hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
+    hr = spMachineDebugManager.CoCreateInstance(CLSID_MachineDebugManager, NULL, CLSCTX_ALL); 
     CComPtr<IEnumRemoteDebugApplications> spEnumDebugApps;
     ULONG count = 0;
-	hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
+    hr = spMachineDebugManager->EnumApplications(&spEnumDebugApps);
     if(hr == S_OK) {
         do {
             CComPtr<IRemoteDebugApplication> spCurrentRemoteDebugApp;
             //Enumerate debuggable applications and select the one corresponding
             //to the current process
-   	        hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
-	        if(hr == S_OK && count > 0) {
+            hr = spEnumDebugApps->Next(1, &spCurrentRemoteDebugApp, &count);
+            spRemoteDebugApp = spCurrentRemoteDebugApp;
+            if(hr == S_OK && count > 0) {
                 CComBSTR name;
                 spCurrentRemoteDebugApp->GetName(&name);
                 Utils::log(1, _T("Debuggable application - %s\n"), (TCHAR *)name);
                 if(name != NULL) {
-                    spRemoteDebugApp = spCurrentRemoteDebugApp;
                     CComPtr<IEnumRemoteDebugApplicationThreads> spThreads;
                     hr = spRemoteDebugApp->EnumThreads(&spThreads);
-				    if(spThreads != NULL) {
-					    CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
-					    ULONG threadCount;
-					    hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
-					    if(hr == S_OK && threadCount > 0) {
+                    if(spThreads != NULL) {
+                        CComPtr<IRemoteDebugApplicationThread> spRemoteDebugAppThreads;
+                        ULONG threadCount;
+                        hr = spThreads->Next(1, &spRemoteDebugAppThreads, &threadCount);
+                        if(hr == S_OK && threadCount > 0) {
                             DWORD dwThreadID;
-						    hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
+                            hr = spRemoteDebugAppThreads->GetSystemThreadId(&dwThreadID);
                             Utils::log(1, _T("Debuggable application thread - %d\n"), dwThreadID);
-						    if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
-							    break;
-						    }
-					    }else if(hr == S_FALSE) {
- 						    break;
-					    }
+                            if(hr == S_OK && isCurrentprocessThread(dwThreadID)) {
+                                break;
+                            }
+                        }else if(hr == S_FALSE) {
+                            break;
+                        }
                     }else {
                         Utils::log(1, _T("Threads enumeration completed, error code - %x\n"), hr);
                     }
@@ -872,6 +916,7 @@ HRESULT ScriptDebugger::startSession() {
         registerForDebugAppNodeEvents();
 
         hr = spRemoteDebugApp->ConnectDebugger(this);
+        Utils::log(1, _T("Attempting to connect to debugger, error code - %x\n"), hr);
     }
     return hr;
 }
@@ -920,6 +965,14 @@ void ScriptDebugger::registerForDebugAppNodeEvents() {
     }
 }
 
+DWORD ScriptDebugger::registerForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, CComObject<DebugDocument> *pDebugDoc) {
+    CComPtr<IDebugDocumentTextEvents> spDebugDocTextEvents;
+    DWORD cookie;
+    HRESULT hr = pDebugDoc->QueryInterface(IID_IDebugDocumentTextEvents, (void **)&spDebugDocTextEvents);
+    AtlAdvise(pDebugDocText, spDebugDocTextEvents, IID_IDebugDocumentTextEvents, &cookie);
+    return cookie;
+}
+
 void ScriptDebugger::unregisterForDebugAppNodeEvents() {
     CComPtr<IRemoteDebugApplication> spRemoteDebugApp;
     HRESULT hr = getRemoteDebugApplication(&spRemoteDebugApp);
@@ -930,6 +983,10 @@ void ScriptDebugger::unregisterForDebugAppNodeEvents() {
             hr = AtlUnadvise(spDebugAppNode, IID_IDebugApplicationNodeEvents, m_dwDebugAppNodeEventsCookie);
         }
     }
+}
+
+void ScriptDebugger::unregisterForDebugDocTextEvents(IDebugDocumentText *pDebugDocText, DWORD cookie) {
+    AtlUnadvise(pDebugDocText, IID_IDebugDocumentTextEvents, cookie);
 }
 
 HRESULT ScriptDebugger::getRemoteDebugApplication(IRemoteDebugApplication **ppRemoteDebugApp) {

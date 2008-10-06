@@ -40,21 +40,34 @@
 package org.netbeans.modules.db.metadata.model.spi;
 
 import java.util.Collection;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
+import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
  * @author Andrei Badea
  */
-public interface CatalogImplementation {
+public abstract class CatalogImplementation {
 
-    String getName();
+    private Catalog catalog;
 
-    boolean isDefault();
+    public final Catalog getCatalog() {
+        if (catalog == null) {
+            catalog = MetadataAccessor.getDefault().createCatalog(this);
+        }
+        return catalog;
+    }
 
-    Schema getDefaultSchema();
+    public abstract String getName();
 
-    Collection<Schema> getSchemas();
+    public abstract boolean isDefault();
 
-    Schema getSchema(String name);
+    public abstract Schema getDefaultSchema();
+
+    public abstract Schema getSyntheticSchema();
+
+    public abstract Collection<Schema> getSchemas();
+
+    public abstract Schema getSchema(String name);
 }

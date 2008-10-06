@@ -50,9 +50,9 @@ import java.awt.Graphics;
  */
 public interface PrintPage {
 
-  /**
-   * Prints content of the page to the graphics.
-   * @param g graphics for printing
-   */
-  void print(Graphics g);
+    /**
+     * Prints content of the page to the graphics.
+     * @param g graphics for printing
+     */
+    void print(Graphics g);
 }

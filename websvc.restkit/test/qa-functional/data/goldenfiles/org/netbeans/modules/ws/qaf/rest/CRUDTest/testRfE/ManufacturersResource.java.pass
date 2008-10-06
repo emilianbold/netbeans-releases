@@ -56,10 +56,13 @@ public class ManufacturersResource {
     int expandLevel, @QueryParam("query")
     @DefaultValue("SELECT e FROM Manufacturer e")
     String query) {
+        PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
+            persistenceSvc.beginTx();
             return new ManufacturersConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
-            PersistenceService.getInstance().close();
+            persistenceSvc.commitTx();
+            persistenceSvc.close();
         }
     }
 

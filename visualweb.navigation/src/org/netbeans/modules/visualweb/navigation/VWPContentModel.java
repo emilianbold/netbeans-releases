@@ -93,6 +93,7 @@ import org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModel
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.ImageUtilities;
 import org.w3c.dom.Element;
 
 
@@ -312,7 +313,7 @@ public class VWPContentModel extends PageContentModel {
         return false;
     }
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.visualweb.navigation");
-    private static final Image commandIcon = org.openide.util.Utilities.loadImage("com/sun/rave/navigation/command.gif"); // NOI18N
+    private static final Image commandIcon = ImageUtilities.loadImage("com/sun/rave/navigation/command.gif"); // NOI18N
 
     //     private boolean updateBeans() {
     private boolean updatePageContentItems() {

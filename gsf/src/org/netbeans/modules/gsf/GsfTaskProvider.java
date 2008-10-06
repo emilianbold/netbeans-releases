@@ -50,19 +50,17 @@ import org.netbeans.modules.gsf.api.CancellableTask;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.HintsProvider;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -101,7 +99,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
     private static final Set<RequestProcessor.Task> TASKS = new HashSet<RequestProcessor.Task>();
     private static boolean clearing;
     private static final RequestProcessor WORKER = new RequestProcessor("GSF Task Provider");
-    
+
     //private static final GsfTaskProvider INSTANCE = new GsfTaskProvider(LanguageRegistry.getInstance().getLanguagesDisplayName());
     //public static GsfTaskProvider getInstance() {
     //    return INSTANCE;
@@ -253,13 +251,18 @@ public class GsfTaskProvider extends PushTaskScanner  {
             if (!file.isValid()) {
                 return;
             }
-
             if (file.isFolder()) {
-                // HACK Bypass all the libraries in Rails projects
-                // TODO FIXME The hints providers need to pass in relevant directories
-                if (file.getName().equals("vendor") && file.getParent().getFileObject("nbproject") != null) { // NOI18N
+                if (!VisibilityQuery.getDefault().isVisible(file)) {
                     return;
                 }
+                final String name = file.getName();
+                if (name.equals("vendor")) { // NOI18N
+                    if (file.getParent().getFileObject("nbproject") != null) { // NOI18N
+                        return;
+                    }
+                }
+
+                // TODO FIXME The hints providers need to pass in relevant directories
                 for (FileObject child : file.getChildren()) {
                     refreshFile(child);
                 }
@@ -272,9 +275,11 @@ public class GsfTaskProvider extends PushTaskScanner  {
                 HintsProvider provider = language.getHintsProvider();
                 if (provider != null) {
                     applicable = true;
+                    break;
                 }
                 if (language.getParser() != null) {
                     applicable = true;
+                    break;
                 }
             }
             if (!applicable) {
@@ -310,7 +315,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
                 public void run(CompilationController info) throws Exception {
                     // Ensure document is forced open
-                    UiUtils.getDocument(info.getFileObject(), true);
+                    GsfUtilities.getDocument(info.getFileObject(), true);
 
                     info.toPhase(Phase.RESOLVED);
 

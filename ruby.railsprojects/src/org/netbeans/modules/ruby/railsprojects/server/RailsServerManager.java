@@ -228,6 +228,7 @@ public final class RailsServerManager {
 
         projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
+        String jvmArgs = project.evaluator().getProperty(RailsProjectProperties.JVM_ARGS);
         String serverId = project.evaluator().getProperty(RailsProjectProperties.RAILS_SERVERTYPE);
         RubyPlatform platform = RubyPlatform.platformFor(project);
         RubyInstance candidateInstance = ServerRegistry.getDefault().getServer(serverId, platform);
@@ -302,6 +303,7 @@ public final class RailsServerManager {
         desc.scriptPrefix(server.getScriptPrefix());
         desc.additionalArgs(buildStartupArgs());
         desc.postBuild(getFinishAction());
+        desc.jvmArguments(jvmArgs);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
         desc.addOutputRecognizer(new RailsServerRecognizer(server));

@@ -55,6 +55,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectType;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
@@ -285,7 +286,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
 
         configureSources(helper, projectProperties, privateProperties);
         configureEncoding(projectProperties, privateProperties);
+        configureTags(projectProperties, privateProperties);
         configureIncludePath(projectProperties, privateProperties);
+        // #146882
+        configureUrl(projectProperties, privateProperties);
 
         if (getRunAsType() != null) {
             // run configuration panel shown
@@ -343,8 +347,23 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         FileEncodingQuery.setDefaultEncoding(charset);
     }
 
+    private void configureTags(EditableProperties projectPoperties, EditableProperties privateProperties) {
+        projectPoperties.setProperty(PhpProjectProperties.SHORT_TAGS, String.valueOf(PhpLanguageOptions.SHORT_TAGS_ENABLED));
+        projectPoperties.setProperty(PhpProjectProperties.ASP_TAGS, String.valueOf(PhpLanguageOptions.ASP_TAGS_ENABLED));
+    }
+
     private void configureIncludePath(EditableProperties projectProperties, EditableProperties privateProperties) {
         projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"); // NOI18N
+    }
+
+    private void configureUrl(EditableProperties projectProperties, EditableProperties privateProperties) {
+        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
+        if (url == null) {
+            // #146882
+            url = RunConfigurationPanel.getUrlForSources(wizardType, descriptor);
+        }
+
+        privateProperties.put(PhpProjectProperties.URL, url);
     }
 
     private void configureRunConfiguration(EditableProperties projectProperties, EditableProperties privateProperties) {
@@ -352,13 +371,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         privateProperties.put(PhpProjectProperties.RUN_AS, runAs.name());
         switch (runAs) {
             case LOCAL:
-                configureRunAsLocalWeb(projectProperties, privateProperties);
+            case SCRIPT:
+                // nothing to store
                 break;
             case REMOTE:
                 configureRunAsRemoteWeb(projectProperties, privateProperties);
-                break;
-            case SCRIPT:
-                // nothing to store
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + runAs;
@@ -370,19 +387,11 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return (RunAsType) descriptor.getProperty(RunConfigurationPanel.RUN_AS);
     }
 
-    private void configureRunAsLocalWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
-        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
-
-        privateProperties.put(PhpProjectProperties.URL, url);
-    }
-
     private void configureRunAsRemoteWeb(EditableProperties projectProperties, EditableProperties privateProperties) {
-        String url = (String) descriptor.getProperty(RunConfigurationPanel.URL);
         RemoteConfiguration remoteConfiguration = (RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION);
         String remoteDirectory = (String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY);
         PhpProjectProperties.UploadFiles uploadFiles = (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD);
 
-        privateProperties.put(PhpProjectProperties.URL, url);
         privateProperties.put(PhpProjectProperties.REMOTE_CONNECTION, remoteConfiguration.getName());
         privateProperties.put(PhpProjectProperties.REMOTE_DIRECTORY, remoteDirectory);
         privateProperties.put(PhpProjectProperties.REMOTE_UPLOAD, uploadFiles.name());
@@ -444,10 +453,10 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         logRecord.setResourceBundle(NbBundle.getBundle(NewPhpProjectWizardIterator.class));
         logRecord.setResourceBundleName(NewPhpProjectWizardIterator.class.getPackage().getName() + ".Bundle"); // NOI18N
         logRecord.setParameters(new Object[] {
-            FileUtil.isParentOf(projectDir, sourceDir),
+            FileUtil.isParentOf(projectDir, sourceDir) ?  "EXTRA_SRC_DIR_NO" : "EXTRA_SRC_DIR_YES", // NOI18N
             runAs != null ? runAs.name() : "", // NOI18N
             "1", // NOI18N
-            copyFiles != null ? copyFiles : "" // NOI18N
+            (copyFiles != null && copyFiles == Boolean.TRUE) ? "COPY_FILES_YES" : "COPY_FILES_NO" // NOI18N
         });
         Logger.getLogger(PhpProject.USG_LOGGER_NAME).log(logRecord);
     }

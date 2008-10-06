@@ -45,7 +45,10 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.diagrams.nodes.activity.ControlNodeWidget;
+import org.netbeans.modules.uml.diagrams.nodes.activity.DecisionNodeWidget;
 import org.netbeans.modules.uml.drawingarea.actions.SceneNodeAction;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -70,9 +73,9 @@ public class ResizeToDimensionAction extends SceneNodeAction
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext)
-    {
+    {        
         scene = actionContext.lookup(DesignerScene.class);
-        return this;
+        return this;        
     }
 
     @Override
@@ -108,6 +111,7 @@ public class ResizeToDimensionAction extends SceneNodeAction
                 int width = panel.getResizeWidth();
                 if (height > 5 && width > 5)
                 {
+                    w.setPreferredBounds(null);
                     w.setPreferredSize(new Dimension(width, height));
                     w.revalidate();
                 }                
@@ -124,10 +128,38 @@ public class ResizeToDimensionAction extends SceneNodeAction
     {
         boolean retVal = false;
 
-        if (super.enable(activatedNodes) == true) {
-            retVal = activatedNodes.length == 1;
+        if (super.enable(activatedNodes) == true) 
+        {
+            if (!(activatedNodes.length == 1)) 
+            {
+                retVal = false;
+            }
+            else 
+            {
+                Set selectedObjs = scene.getSelectedObjects();
+                if (selectedObjs != null && selectedObjs.size() == 1) 
+                {
+                    Object obj = selectedObjs.toArray()[0];
+                    if (obj != null && obj instanceof IPresentationElement) 
+                    {
+                        Widget widget = scene.findWidget((IPresentationElement) obj);
+                        if (widget instanceof UMLNodeWidget)
+                        {
+                            retVal = true;
+                            if (widget instanceof ControlNodeWidget) 
+                            {
+                                retVal = false;
+                            }
+                            //now an exception is Decision widget which is a controlnodewidget but still resizable
+                            if (widget instanceof DecisionNodeWidget)
+                            {
+                                retVal = true;
+                            }
+                        }
+                    }
+                }
+            }
         }
-
         return retVal;
     }
 

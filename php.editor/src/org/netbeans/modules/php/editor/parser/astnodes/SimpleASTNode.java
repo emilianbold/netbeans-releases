@@ -55,14 +55,14 @@ public class SimpleASTNode  {
     public SimpleASTNode (int start, int end, String kind){
         this.startOffset = start;
         this.endOffset = end;
-        children = new ArrayList();
+        children = new ArrayList<SimpleASTNode>();
         this.kind = kind;
     }
     
     public SimpleASTNode (int start, int end, List<SimpleASTNode> children, String kind){
         this.startOffset = start;
         this.endOffset = end;
-        this.children = new ArrayList();
+        this.children = new ArrayList<SimpleASTNode>();
         this.children.addAll(children);
         this.kind = kind;
     }

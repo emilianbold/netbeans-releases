@@ -62,14 +62,13 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -298,18 +297,7 @@ public class JsIndexer implements Indexer {
             if (result.getInfo() != null) {
                 this.doc = LexUtilities.getDocument(result.getInfo(), true);
             } else {
-                // openide.loaders/src/org/openide/text/DataEditorSupport.java
-                // has an Env#inputStream method which posts a warning to the user
-                // if the file is greater than 1Mb...
-                //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
-                //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
-                // I don't want to try indexing these files... (you get an interactive
-                // warning during indexing
-                if (fo.getSize () > 1024 * 1024) {
-                    return;
-                }
-                
-                this.doc = NbUtilities.getBaseDocument(fo, true);
+                this.doc = GsfUtilities.getDocument(fo, true, true);
             }
 
             try {
@@ -605,6 +593,7 @@ public class JsIndexer implements Indexer {
                         String superClz = null;
                         String nameSpace = null;
                         String fullName = null;
+                        String compatibility = "";
                         StringBuilder argList = new StringBuilder();
                         cts.moveStart();
                         while (cts.moveNext()) {
@@ -661,6 +650,8 @@ public class JsIndexer implements Indexer {
                                     clz = JsCommentLexer.nextIdentGroup(cts);
                                 } else if (TokenUtilities.textEquals("@memberOf", text)) { // NOI18N
                                     clz = JsCommentLexer.nextIdentGroup(cts);
+                                } else if (TokenUtilities.textEquals("@compat", text)) { // NOI18N
+                                    compatibility = JsCommentLexer.getCompat(cts);
                                 } else if (TokenUtilities.textEquals("@method", text)) { // NOI18N
                                     flags = flags | IndexedElement.FUNCTION;
                                     name = JsCommentLexer.nextIdentGroup(cts);
@@ -759,7 +750,6 @@ public class JsIndexer implements Indexer {
                             sb.append(';');
                             index++;
                             assert index == IndexedElement.BROWSER_INDEX;
-                            String compatibility = "";
                             sb.append(compatibility);
 
                             // Types
@@ -878,7 +868,7 @@ public class JsIndexer implements Indexer {
             }
             
             if (fo.getExt().equals("sdoc")) { // NOI18N
-                BaseDocument urlDoc = NbUtilities.getBaseDocument(fo, true);
+                BaseDocument urlDoc = GsfUtilities.getDocument(fo, true);
                 indexScriptDoc(urlDoc, url);
             }
         }
@@ -924,7 +914,7 @@ public class JsIndexer implements Indexer {
                         if (recurse) {
                             indexScriptDocRecursively(fo, urlString);
                         } else {
-                            BaseDocument urlDoc = NbUtilities.getBaseDocument(fo, true);
+                            BaseDocument urlDoc = GsfUtilities.getDocument(fo, true);
                             indexScriptDoc(urlDoc, urlString);
                         }
                     }

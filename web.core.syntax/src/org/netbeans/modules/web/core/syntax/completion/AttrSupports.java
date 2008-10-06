@@ -43,6 +43,9 @@ package org.netbeans.modules.web.core.syntax.completion;
 
 import java.util.*;
 import java.beans.*;
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import javax.swing.ImageIcon;
@@ -56,6 +59,7 @@ import org.netbeans.modules.web.core.syntax.completion.JavaJSPCompletionProvider
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
+import org.openide.util.ImageUtilities;
 
 
 /** Support for code completion of default JSP tags.
@@ -187,7 +191,7 @@ public class AttrSupports {
             delegate.create(component.getDocument(), fakedClassBody);
             List<? extends CompletionItem> items =  delegate.getCompletionItems();
             result.addAllItems(items);
-            result.setAnchorOffset(offset + (valuePart.lastIndexOf('.') + 1));
+            result.setAnchorOffset(offset - (valuePart.length() - valuePart.lastIndexOf('.')) + 1);
         }
    
     }
@@ -256,9 +260,10 @@ public class AttrSupports {
                 }
                 
                 if (className != null) {
+                    ClassLoader cld = null;
                     try {
                         FileObject fileObject = NbEditorUtilities.getDataObject( sup.getDocument()).getPrimaryFile();
-                        ClassLoader cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
+                        cld = JspUtils.getModuleClassLoader( sup.getDocument(), fileObject);
                         Class beanClass = Class.forName(className, false, cld);
                         Introspector.flushFromCaches(beanClass);
                         BeanInfo benInfo = Introspector.getBeanInfo(beanClass);
@@ -273,6 +278,15 @@ public class AttrSupports {
                         //do nothing
                     } catch (IntrospectionException e) {
                         //do nothing
+                    } finally {
+                        // avoids JAR locking
+                        if (cld != null && (cld instanceof Closeable)) {
+                            try {
+                                ((Closeable) cld).close();
+                            } catch (IOException ex) {
+                                Logger.getLogger(AttrSupports.class.getName()).log(Level.INFO, null, ex);
+                            }
+                        }
                     }
                 }
             }
@@ -376,7 +390,7 @@ public class AttrSupports {
     /** Support for code completing of package and class. */
     public static class FilenameSupport extends AttributeValueSupport.Default {
         static final ImageIcon PACKAGE_ICON =
-                new ImageIcon(org.openide.util.Utilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
+                new ImageIcon(ImageUtilities.loadImage("org/openide/loaders/defaultFolder.gif")); // NOI18N
       
         public FilenameSupport(boolean tag, String longName, String attrName) {
             super(tag, longName, attrName);

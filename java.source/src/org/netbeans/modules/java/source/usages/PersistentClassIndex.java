@@ -110,13 +110,8 @@ public class PersistentClassIndex extends ClassIndexImpl {
         return rootFos;
     }
     
-    public String getSourceName (final String binaryName) {
-        try {
-            return index.getSourceName(binaryName);
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-            return null;
-        }
+    public String getSourceName (final String binaryName) throws IOException {
+        return index.getSourceName(binaryName);        
     }
     
 
@@ -128,67 +123,52 @@ public class PersistentClassIndex extends ClassIndexImpl {
     }
     
     // Implementation of UsagesQueryImpl ---------------------------------------    
-    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException {
+    public <T> void search (final String binaryName, final Set<UsageType> usageType, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
         if (BinaryAnalyser.OBJECT.equals(binaryName)) {
             this.getDeclaredTypes("", ClassIndex.NameKind.PREFIX, convertor, result);
             return;
         }
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException, InterruptedException {
-                    usages(binaryName, usageType, convertor, result);
-                    return null;
-                }
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException, InterruptedException {
+                usages(binaryName, usageType, convertor, result);
+                return null;
+            }
+        });        
     }
     
     
                
     
-    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException {
+    public <T> void getDeclaredTypes (final String simpleName, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Set<? super T> result) throws InterruptedException, IOException {
         updateDirty();
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
-                public Void run () throws IOException, InterruptedException {
-                    index.getDeclaredTypes (simpleName,kind, convertor, result);
-                    return null;
-                }                    
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void> () {
+            public Void run () throws IOException, InterruptedException {
+                index.getDeclaredTypes (simpleName,kind, convertor, result);
+                return null;
+            }                    
+        });
     }
     
-    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException {
+    public <T> void getDeclaredElements (final String ident, final ClassIndex.NameKind kind, final ResultConvertor<T> convertor, final Map<T,Set<String>> result) throws InterruptedException, IOException {
         updateDirty();
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
-                public Void run () throws IOException, InterruptedException {
-                    index.getDeclaredElements(ident, kind, convertor, result);
-                    return null;
-                }
-            });                    
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run () throws IOException, InterruptedException {
+                index.getDeclaredElements(ident, kind, convertor, result);
+                return null;
+            }
+        });                            
     }
     
     
-    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException {
-        try {
-            ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
-                public Void run () throws IOException, InterruptedException {
-                    index.getPackageNames(prefix, directOnly, result);
-                    return null;
-                }
-            });
-        } catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+    public void getPackageNames (final String prefix, final boolean directOnly, final Set<String> result) throws InterruptedException, IOException {
+        ClassIndexManager.getDefault().readLock(new ClassIndexManager.ExceptionAction<Void>() {
+            public Void run () throws IOException, InterruptedException {
+                index.getPackageNames(prefix, directOnly, result);
+                return null;
+            }
+        });        
     }
     
     public synchronized void setDirty (final JavaSource js) {        
@@ -246,7 +226,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                             }
                                         return null;
                                     }
-                            });                                        
+                            });
+                        } catch (IndexAlreadyClosedException e) {
+                            //A try to  store to closed index, safe to ignore.
+                            //Data will be scanned when project is reopened.
+                            LOGGER.info("Ignoring store into closed index");
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
@@ -258,31 +242,31 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     else {
                         try {
                             js.runUserActionTask(new Task<CompilationController>() {
-                                public void run (final CompilationController controller) {
-                                    try {                            
-                                        ClassIndexManager.getDefault().writeLock(
-                                            new ClassIndexManager.ExceptionAction<Void>() {
-                                                public Void run () throws IOException {
-                                                    controller.toPhase(Phase.RESOLVED);
-                                                    final SourceAnalyser sa = getSourceAnalyser();
-                                                    long st = System.currentTimeMillis();
-                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
-                                                    long et = System.currentTimeMillis();
-                                                    return null;
-                                                }
-                                        });
-                                    } catch (IOException ioe) {
-                                        Exceptions.printStackTrace(ioe);
-                                    }
-                                    catch (InterruptedException e) {
-                                        //Should never happen
-                                        Exceptions.printStackTrace(e);
-                                    }
+                                public void run (final CompilationController controller) throws Exception {
+                                    ClassIndexManager.getDefault().writeLock(
+                                        new ClassIndexManager.ExceptionAction<Void>() {
+                                            public Void run () throws IOException {
+                                                controller.toPhase(Phase.RESOLVED);
+                                                final SourceAnalyser sa = getSourceAnalyser();
+                                                long st = System.currentTimeMillis();
+                                                sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                long et = System.currentTimeMillis();
+                                                return null;
+                                            }
+                                    });
                                 }
                             }, true);
                         } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
+                            final Throwable rootCause = ioe.getCause();
+                            if (rootCause instanceof IndexAlreadyClosedException) {
+                                //A try to  store to closed index, safe to ignore.
+                                //Data will be scanned when project is reopened.
+                                LOGGER.info("Ignoring store into closed index");
+                            }
+                            else {
+                                Exceptions.printStackTrace(ioe);
+                            }
                         }
                     }
                 }
@@ -295,7 +279,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException {               
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {               
         final List<String> classInternalNames = this.getUsagesFQN(binaryName,usageType, Index.BooleanOperator.OR);
         for (String classInternalName : classInternalNames) {
             T value = convertor.convert(ElementKind.OTHER, classInternalName);
@@ -305,16 +289,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }    
     
-    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException {
-        List<String> result = null;
-        try {
-            result = this.index.getUsagesFQN(binaryName, mask, operator);          
-        }  catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException, IOException {
+        List<String> result = this.index.getUsagesFQN(binaryName, mask, operator);          
         if (result == null) {
             result = Collections.emptyList();
         }
         return result;
-    }        
+    }
 }

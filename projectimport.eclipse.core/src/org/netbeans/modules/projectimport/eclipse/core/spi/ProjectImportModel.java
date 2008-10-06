@@ -223,7 +223,9 @@ public final class ProjectImportModel {
             while (null != (line = input.readLine()) && maxLines > 0) {
                 maxLines--;
                 if (line.contains("junit.framework.Test") || // NOI18N
-                    line.contains("org.junit.Test")) { // NOI18N
+                    line.contains("org.junit.Test") || // NOI18N
+                    line.contains("junit.framework.*") || // NOI18N
+                    line.contains("org.junit.*")) { // NOI18N
                     return true;
                 }
                     

@@ -1,0 +1,11 @@
+<!-- 
+From issue 124916
+http://www.netbeans.org/issues/show_bug.cgi?id=124916
+-->
+<script>
+  jQuery(document).ready(function(){ 
+    jQuery('#manhours').displayPeriod({periods: "<%=@collaborator.manhours%>"});
+    jQuery('#manweeks').displayPeriod({periods: 'DOM;SEG-SEX;SAB', working: false});
+  });
+</script>
+

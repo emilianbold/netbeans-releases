@@ -67,7 +67,13 @@ public class HttpMonitorUtility {
     }
 
     public static Session getCurrentSession () {
-        Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+        DebuggerManager manager = DebuggerManager.getDebuggerManager();
+        Session currentSession = manager.getCurrentSession();
+        if (currentSession != null && isJSDebuggerSession(currentSession)) {
+            return currentSession;
+        }
+
+        Session[] sessions = manager.getSessions();
         if( sessions.length > 0 ){
             for( Session session : sessions) {
                 if ( isJSDebuggerSession(session)) {
@@ -83,7 +89,10 @@ public class HttpMonitorUtility {
         if (e == null) {
             return false;
         }
-        return e.lookupFirst(null, NbJSDebugger.class) != null;
+
+        NbJSDebugger debugger = e.lookupFirst(null, NbJSDebugger.class);
+
+        return debugger != null && debugger.supportsHttpMonitor();
     }
 
     public static HttpActivitiesModel getCurrentHttpMonitorModel () {

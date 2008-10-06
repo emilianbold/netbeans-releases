@@ -620,7 +620,7 @@ public class SolarisLogReader {
         HashMap<String,List<String>> map = new HashMap<String,List<String>>();
         for (Iterator it = set.iterator(); it.hasNext();){
             File d = new File((String)it.next());
-            if (d.isDirectory()){
+            if (d.exists() && d.isDirectory() && d.canRead()){
                 File[] ff = d.listFiles();
                 for (int i = 0; i < ff.length; i++) {
                     if (ff[i].isFile()) {
@@ -638,7 +638,7 @@ public class SolarisLogReader {
     }
     
     private void gatherSubFolders(File d, HashSet<String> set){
-        if (d.isDirectory()){
+        if (d.exists() && d.isDirectory() && d.canRead()){
             if (DiscoveryUtils.ignoreFolder(d)){
                 return;
             }

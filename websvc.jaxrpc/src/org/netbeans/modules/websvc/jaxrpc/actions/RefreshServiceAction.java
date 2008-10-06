@@ -44,6 +44,10 @@ package org.netbeans.modules.websvc.jaxrpc.actions;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.websvc.api.registry.WebServicesRegistryView;
 
 import org.openide.NotifyDescriptor;
@@ -92,13 +96,31 @@ public class RefreshServiceAction extends NodeAction {
         // Invoked on ClientRootNode to refresh the list of webservice clients
         // in this project.
         WebServicesClientSupport support = null;
-        FileObject fo = null;
 
-        // Find WebServicesClientSupport from activated node.
-        DataObject dobj = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
-        if(dobj != null) {
-            fo = dobj.getPrimaryFile();
+        FileObject fo = null;
+        String wsdlUrl = (String)activatedNodes[0].getValue("wsdl-url");
+        if (wsdlUrl != null) {
+            try {
+                // get WSDL File or create one if missing
+                fo = getWsdlFile(new URL(wsdlUrl));
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
+        }
+        DataObject dobj = null;
+        if (fo != null) {
             support = WebServicesClientSupport.getWebServicesClientSupport(fo);
+            try {
+                dobj = DataObject.find(fo);
+            } catch (IOException ex) {}
+        }
+        if (dobj == null) {
+            // Find WebServicesClientSupport from activated node.
+            dobj = (DataObject) activatedNodes[0].getLookup().lookup(DataObject.class);
+            if(dobj != null) {
+                fo = dobj.getPrimaryFile();
+                support = WebServicesClientSupport.getWebServicesClientSupport(fo);
+            }
         }
         
         final WebServicesClientSupport clientSupport = support;
@@ -145,6 +167,7 @@ public class RefreshServiceAction extends NodeAction {
         });
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -232,5 +255,25 @@ public class RefreshServiceAction extends NodeAction {
             // !PW Should we beautify this sort of error?
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, ex);
         }
+    }
+    
+    private FileObject getWsdlFile(URL url) throws IOException {
+        FileObject fo = null;
+        try {
+            File f = new File(url.toURI());
+            if (f.exists()) {
+                fo = FileUtil.toFileObject(f);
+            } else {
+                Logger.getLogger(RefreshServiceAction.class.getName()).log(Level.FINE, "Missing WSDL File");
+                File parent = f.getParentFile();
+                if (parent != null && parent.exists()) {
+                    FileObject parentFO = FileUtil.toFileObject(parent);
+                    fo = parentFO.createData(f.getName());
+                }
+            }
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(RefreshServiceAction.class.getName()).log(Level.FINE, "URI Syntax Error",ex);
+        }
+        return fo;
     }
 }

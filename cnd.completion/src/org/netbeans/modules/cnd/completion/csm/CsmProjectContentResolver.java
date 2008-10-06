@@ -61,6 +61,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -83,6 +84,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
+import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 
 /**
@@ -357,6 +359,7 @@ public final class CsmProjectContentResolver {
         }
         Set handledLibs = new HashSet();
         Map<String, CsmObject> res = new HashMap<String, CsmObject>();
+        Collection<CsmObject> libElements = new LinkedHashSet();
         // add libararies elements
         for (Iterator it = project.getLibraries().iterator(); it.hasNext();) {
             CsmProject lib = (CsmProject) it.next();
@@ -364,10 +367,20 @@ public final class CsmProjectContentResolver {
                 handledLibs.add(lib);
                 CsmProjectContentResolver libResolver = new CsmProjectContentResolver(lib, isCaseSensitive(), isSortNeeded(), isNaturalSort());
                 // TODO: now only direct lib is handled and not libraries of libraries of ...
-                res = mergeByFQN(res, filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested));
+                Collection results = filter.getResults(libResolver, lib.getGlobalNamespace(), strPrefix, match, searchNested);
+                if (match) {
+                    libElements.addAll(results);
+                } else {
+                    res = mergeByFQN(res, results);
+                }
             }
         }
-        Collection<CsmObject> out = res.values();
+        Collection<CsmObject> out;
+        if (match) {
+            out = libElements;
+        } else {
+            out = res.values();
+        }
         if (res != null && sort) {
             List<CsmObject> sorted = new ArrayList<CsmObject>(out);
             CsmSortUtilities.sortMembers(sorted, isNaturalSort(), isCaseSensitive());
@@ -440,7 +453,7 @@ public final class CsmProjectContentResolver {
         return res;
     }
     
-    public List<CsmVariable> getFileLocalVariables(CsmContext context, String strPrefix, boolean match, boolean needFileLocalOrDeclFromUnnamedNS) {
+    public List<CsmVariable> getFileLocalVariables(CsmContext context, FileReferencesContext fileReferncesContext, String strPrefix, boolean match, boolean needFileLocalOrDeclFromUnnamedNS) {
         List<CsmVariable> out = new ArrayList<CsmVariable>();
         if (!context.isEmpty()) {
             for (Iterator it = context.iterator(); it.hasNext();) {
@@ -449,7 +462,15 @@ public final class CsmProjectContentResolver {
                     CsmFile currentFile = (CsmFile) elem.getScope();
                     fillFileLocalVariables(strPrefix, match, currentFile, needFileLocalOrDeclFromUnnamedNS, false, out);
                     if (!needFileLocalOrDeclFromUnnamedNS) {
-                        fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
+                        List<CsmVariable> cached = null;
+                        if (fileReferncesContext != null  && !fileReferncesContext.isCleaned() && match) {
+                            cached = fileReferncesContext.getFileLocalIncludeVariables(strPrefix);
+                        }
+                        if (cached != null) {
+                            out.addAll(cached);
+                        } else {
+                            fillFileLocalIncludeVariables(strPrefix, match, currentFile, out);
+                        }
                     }
                     for (Iterator it2 = context.iterator(); it2.hasNext();) {
                         CsmContext.CsmContextEntry elem2 = (CsmContext.CsmContextEntry) it2.next();

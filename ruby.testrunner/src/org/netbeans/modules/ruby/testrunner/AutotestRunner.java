@@ -53,6 +53,7 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -121,10 +122,13 @@ public class AutotestRunner implements TestRunner {
         desc.addStandardRecognizers();
         desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
 
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+        TestSession session = new TestSession(displayName,
                 locator,
-                AutotestHandlerFactory.getHandlers(),
                 debug ? SessionType.DEBUG : SessionType.TEST);
+        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
+                AutotestHandlerFactory.getHandlers(),
+                session,
+                true);
         TestExecutionManager.getInstance().start(desc, recognizer);
     }
     

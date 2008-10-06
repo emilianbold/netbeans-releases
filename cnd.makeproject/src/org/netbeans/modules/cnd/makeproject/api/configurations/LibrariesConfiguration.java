@@ -58,7 +58,7 @@ public class LibrariesConfiguration extends VectorConfiguration {
 	
 	LibraryItem[] items = getLibraryItemsAsArray();
 	for (int i = 0; i < items.length; i++) {
-	    options.append(items[i].getOption(conf));
+            options.append(items[i].getOption(conf));
             options.append(" "); // NOI18N
 	}
 

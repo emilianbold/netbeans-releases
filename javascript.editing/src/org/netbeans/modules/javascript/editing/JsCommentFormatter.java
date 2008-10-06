@@ -317,6 +317,7 @@ public class JsCommentFormatter {
             // like @private, @config, etc.
             if (!tag.startsWith("@id ") && !tag.startsWith("@name ") && // NOI18N
                     !tag.startsWith("@attribute") && // NOI18N
+                    !tag.startsWith("@compat") && // NOI18N
                     !tag.startsWith("@method") && !tag.startsWith("@property")) { // NOI18N
                 rest.append(tag);
                 rest.append("<br>"); // NOI18N

@@ -43,13 +43,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.logging.Level;
 import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -64,13 +67,16 @@ import org.openide.util.NbBundle;
 public class URLFileObject extends FileObject {
     private static final long serialVersionUID = -129282139186842072L;
     private static final String EXC_STRING = "FileObject is read-only"; // NOI18N
-    
+
+    private URL actualURL;
     private final URL sourceURL;
     private final String name;
     private final String ext;
     private final URLFileSystem filesystem;
     private final URLFileObject parent;
     private transient URLContent cachedContent;
+    private final Lock cacheLock = new Lock();
+    private boolean cacheInvalid = false;
 
     private final String relativePath;
     private Hashtable<String,Object> attributes;
@@ -85,6 +91,7 @@ public class URLFileObject extends FileObject {
         this.filesystem = filesystem;
         this.parent = null;
         this.sourceURL = null;
+        this.actualURL = null;
         this.relativePath = "";
     }
 
@@ -95,6 +102,7 @@ public class URLFileObject extends FileObject {
         this.parent = parent;
 
         this.sourceURL = sourceURL;
+        this.actualURL = sourceURL;
 
         String path = this.sourceURL.toExternalForm();
         
@@ -120,6 +128,36 @@ public class URLFileObject extends FileObject {
     
     URL getSourceURL() {
         return sourceURL;
+    }
+
+    // For ignore-query-string support
+    public URL getActualURL() {
+        synchronized (cacheLock) {
+            return actualURL;
+        }
+    }
+
+    public String getDisplayName() {
+        return getActualURL().toExternalForm();
+    }
+
+    public void setActualURL(URL url) {
+        boolean changed = false;
+        synchronized (cacheLock) {
+            if (!actualURL.toExternalForm().equals(url.toExternalForm())) {
+                actualURL = url;
+                changed = true;
+            }
+        }
+
+        if (changed) {
+            invalidate();
+            try {
+                ((URLFileSystem) getFileSystem()).fireStatusChange(this);
+            } catch (Exception ex) {
+                Log.getLogger().log(Level.INFO, "Unexpected exception while changing URLFileObject URL", ex);
+            }
+        }
     }
 
     @Override
@@ -185,7 +223,7 @@ public class URLFileObject extends FileObject {
     }
 
     @Override
-    public void addFileChangeListener(FileChangeListener fcl) {
+    public synchronized void addFileChangeListener(FileChangeListener fcl) {
         if (listeners == null) {
             listeners = new ArrayList<FileChangeListener>();
         }
@@ -194,7 +232,7 @@ public class URLFileObject extends FileObject {
     }
 
     @Override
-    public void removeFileChangeListener(FileChangeListener fcl) {
+    public synchronized void removeFileChangeListener(FileChangeListener fcl) {
         if (listeners != null) {
             listeners.remove(fcl);
         }
@@ -219,17 +257,33 @@ public class URLFileObject extends FileObject {
     public InputStream getInputStream() throws FileNotFoundException {
         if (isData()) {
             URLContentProvider provider = filesystem.getContentProvider();
-            if (cachedContent == null && provider != null) {
-                cachedContent = new BufferedURLContent(provider.getContent(sourceURL));
-            }else if (provider == null) {
-                String defaultMsg = NbBundle.getMessage(URLFileObject.class, "NO_CONTENT_MSG");
-                return new ByteArrayInputStream(defaultMsg.getBytes());                
+            synchronized (cacheLock) {
+                if ( (cacheInvalid || cachedContent == null) && provider != null) {
+                    if (cachedContent != null) {
+                        URLContent content = provider.getContent(actualURL);
+                        InputStream is = null;
+                        try {
+                            is = content.getInputStream();
+                        } catch (IOException ex) {
+                            is = null;
+                        }
+                        
+                        if (is != null) {
+                            cacheInvalid = false;
+                            cachedContent = new BufferedURLContent(is);
+                        }
+                    } else {
+                        cachedContent = new BufferedURLContent(provider.getContent(actualURL));
+                    }
+                } else if (provider == null && cachedContent == null) {
+                    String defaultMsg = NbBundle.getMessage(URLFileObject.class, "NO_CONTENT_MSG");
+                    return new ByteArrayInputStream(defaultMsg.getBytes());
+                }
             }
-            
             try {
                 return cachedContent.getInputStream();
             } catch (IOException ex) {
-                throw new FileNotFoundException("Could not open InputStream for URL: " + sourceURL.toExternalForm());
+                throw new FileNotFoundException("Could not open InputStream for URL: " + actualURL.toExternalForm());
             }
         } else {
             return null;
@@ -308,5 +362,31 @@ public class URLFileObject extends FileObject {
     @Override
     public FileObject createData(String name, String ext) throws IOException {
         throw new IOException(EXC_STRING);
+    }
+
+    public void invalidate() {
+        synchronized (cacheLock) {
+            cacheInvalid = true;
+        }
+        
+        FileChangeListener[] listenersArr = null;
+        synchronized (this) {
+            if (listeners == null) {
+                return;
+            }
+            listenersArr = listeners.toArray(new FileChangeListener[listeners.size()]);
+        }
+        
+        FileEvent event = new FileEvent(this, this, true);
+        for (FileChangeListener listener : listenersArr) {
+            listener.fileChanged(event);
+        }
+    }
+
+    private static class Lock implements Serializable {
+        private static final long serialVersionUID = -109202138186342019L;
+
+        public Lock() {
+        }
     }
 }

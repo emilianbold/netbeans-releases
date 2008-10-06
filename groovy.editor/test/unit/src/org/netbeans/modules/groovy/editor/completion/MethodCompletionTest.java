@@ -90,6 +90,50 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods1.groovy", "        new URL(\"http://google.com\").^getPr", false);
     }
 
+    public void testCompletionInMethodCall1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods4.groovy", "        new File(\"something\").ea^", false);
+    }
+    
+    public void testCompletionInMethodCall2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods5.groovy", "        new File(\"something\").c^", false);
+    }
+    
+    public void testCompletionInMethodCall3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods6.groovy", "if (new File(\"/\").is^) {", false);
+    }    
+    
+    public void testCompletionInArgument1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods7.groovy", "println new URL(\"http://google.com\").getT^", false);
+    }                
+    
+    public void testCompletionForLiteral1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods8.groovy", "1.d^", false);
+    }
+    
+    public void testCompletionForLiteral2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods8.groovy", "1.0.d^", false);
+    }
+    
+    public void testCompletionForLiteral3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods8.groovy", "\"\".c^", false);
+    }
+
+    public void testCompletionInsideConstructor1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "new File(\"/\").equals(new Date().a^", false);
+    }
+    
+    public void testCompletionInsideConstructor2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "new File(new Date().get^", false);
+    }
+
+    public void testCompletionInsideConstructor3() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "if (new File(new Date().get^", false);
+    }
+    
+    public void testCompletionInsideFor1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for(new Date().get^", false);
+    }
+    
 //    Disabled for now, since this tests undetermingly oscillates between pass and fail. 
 //    public void testMethods5() throws Exception {
 //        checkCompletion(TEST_BASE + "" + "Methods2.groovy", "        new Byte().^", false);

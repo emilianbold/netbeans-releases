@@ -59,20 +59,26 @@ public class BracketCompleterTest extends GroovyTestBase {
         super(testName);
     }
 
+    @Override
+    protected boolean runInEQ() {
+        // Must run in AWT thread (BaseKit.install() checks for that)
+        return true;
+    }
+
     private void match(String original) throws BadLocationException {
         super.assertMatches(original);
     }
 
-    private void insertChar(String original, char insertText, String expected) throws BadLocationException {
+    private void insertChar(String original, char insertText, String expected) throws Exception {
         insertChar(original, insertText, expected, null);
     }
 
-    private void insertChar(String original, char insertText, String expected, String selection) throws BadLocationException {
+    private void insertChar(String original, char insertText, String expected, String selection) throws Exception {
         insertChar(original, insertText, expected, selection, false);
     }
 
     @Override
-    public void deleteWord(String original, String expected) throws BadLocationException {
+    public void deleteWord(String original, String expected) throws Exception {
         // Try deleting the word not just using the testcase but also surrounded by strings
         // to make sure there's no problem with lexer token directions
         super.deleteWord(original, expected);

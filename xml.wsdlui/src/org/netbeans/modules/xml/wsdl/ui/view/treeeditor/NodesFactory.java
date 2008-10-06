@@ -189,14 +189,14 @@ public class NodesFactory {
                         if (models != null && ! models.isEmpty()) {
                             
                         } else {
-                            result = new ImportNode(Children.LEAF, imp);
+                            result = new ImportNode(new WSDLChildFactory(NodesFactory.getInstance(), imp), imp);
                         }
                     }
                 }
                 
                 
             } else {
-                result = new ImportNode(Children.LEAF, imp);
+                result = new ImportNode(new WSDLChildFactory(NodesFactory.getInstance(), imp), imp);
             }
         }
 

@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.io.DesignDocumentAwareness;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.openide.awt.UndoRedo;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -132,7 +133,7 @@ public class AnalyzerEditorView implements DataEditorView, DesignDocumentAwarene
         refreshButton.setBorderPainted (false);
         refreshButton.setRolloverEnabled (true);
         refreshButton.setSize (14, 14);
-        refreshButton.setIcon (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/analyzer/resources/refresh.png"))); // NOI18N
+        refreshButton.setIcon (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/vmd/analyzer/resources/refresh.png"))); // NOI18N
         refreshButton.addActionListener (new ActionListener() {
             public void actionPerformed (ActionEvent e) {
                 updateAnalyzers ();

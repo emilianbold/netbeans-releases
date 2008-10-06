@@ -76,7 +76,7 @@ public class JsParserTest extends JsTestBase {
         }
 
         Node root = AstUtilities.getRoot(info);
-        assertNotNull("Parsing broken input failed for " + file, root);
+        assertNotNull("Parsing broken input failed for " + file + "; " + info.getErrors(), root);
         
         // Ensure that we find the node we're looking for
         if (nodeType != -1) {
@@ -166,5 +166,21 @@ public class JsParserTest extends JsTestBase {
         // Variation of
         // http://www.netbeans.org/issues/show_bug.cgi?id=133173
         checkParseTree("testfiles/broken15.js", "__UNK^NOWN__", Token.FUNCTION);
+    }
+
+    public void test136495a() throws Exception {
+        checkParseTree("testfiles/lbracketlist.js", "__UNK^NOWN__", Token.NAME);
+    }
+
+    public void test136495b() throws Exception {
+        checkParseTree("testfiles/embedding/issue136495.erb.js", "__UNK^NOWN__", Token.NAME);
+    }
+
+    public void test120499() throws Exception {
+        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.NAME);
+    }
+
+    public void test148423() throws Exception {
+        checkParseTree("testfiles/issue148423.js", "__UNK^NOWN__", Token.STRING);
     }
 }

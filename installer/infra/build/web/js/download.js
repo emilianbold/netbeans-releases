@@ -43,19 +43,23 @@ var PROPERTY_CND       = 32;
 var PROPERTY_PHP       = 64;
 var PROPERTY_HIDDEN    = 128;
 
-var INFO_ICON   = "img/info_icon.gif";
-var INFO_ICON_H = "img/info_icon_h.gif";
+var INFO_ICON   = IMG_LOCATION + "info_icon.gif";
+var INFO_ICON_H = IMG_LOCATION + "info_icon_h.gif";
 
-var CHECKED_WHITE_SRC = "img/checked_badge_white.gif";
-var CHECKED_BEIGE_SRC = "img/checked_badge_beige.gif";
-var WARNING_WHITE_SRC = "img/warning_badge_white.gif";
-var WARNING_BEIGE_SRC = "img/warning_badge_beige.gif";
-var CHECKED_WHITE_NA_SRC = "img/checked_badge_notavailable.gif";
+var CHECKED_WHITE_SRC = IMG_LOCATION + "checked_badge_white.gif";
+var CHECKED_BEIGE_SRC = IMG_LOCATION + "checked_badge_beige.gif";
+var WARNING_WHITE_SRC = IMG_LOCATION + "warning_badge_white.gif";
+var WARNING_BEIGE_SRC = IMG_LOCATION + "warning_badge_beige.gif";
+var CHECKED_WHITE_NA_SRC = IMG_LOCATION + "checked_badge_notavailable.gif";
 
 var IMAGE_CHECKED_WHITE_NOT_AVAILABLE = '<img src="' + CHECKED_WHITE_NA_SRC + '"/>';
 
-var DOWNLOAD_IMG = '<img onmouseover="this.src=&quot;' + DOWNLOAD_BUTTON_HIGHLIGHT + '&quot;" onmouseout="this.src=&quot;' + DOWNLOAD_BUTTON_NORMAL + '&quot;" src="' + DOWNLOAD_BUTTON_NORMAL + '" style="cursor: pointer; border: 0;"/>';
-var DOWNLOAD_IMG_DISABLED = '<img src="' + DOWNLOAD_BUTTON_DISABLED + '" style="border: 0;"/>';
+var DOWNLOAD_BUTTON_NORMAL_SRC    = IMG_LOCATION + DOWNLOAD_BUTTON_NORMAL;
+var DOWNLOAD_BUTTON_DISABLED_SRC  = IMG_LOCATION + DOWNLOAD_BUTTON_DISABLED;
+var DOWNLOAD_BUTTON_HIGHLIGHT_SRC = IMG_LOCATION + DOWNLOAD_BUTTON_HIGHLIGHT;
+
+var DOWNLOAD_IMG = '<img onmouseover="this.src=&quot;' + DOWNLOAD_BUTTON_HIGHLIGHT_SRC + '&quot;" onmouseout="this.src=&quot;' + DOWNLOAD_BUTTON_NORMAL_SRC + '&quot;" src="' + DOWNLOAD_BUTTON_NORMAL_SRC + '" style="cursor: pointer; border: 0;"/>';
+var DOWNLOAD_IMG_DISABLED = '<img src="' + DOWNLOAD_BUTTON_DISABLED_SRC + '" style="border: 0;"/>';
 
     
 var IMAGE_CHECKED_WHITE = '<img src="' + CHECKED_WHITE_SRC + '"/>';
@@ -63,7 +67,11 @@ var IMAGE_WARNING_WHITE = '<img src="' + WARNING_WHITE_SRC + '"/>';
 var IMAGE_CHECKED_BEIGE = '<img src="' + CHECKED_BEIGE_SRC + '"/>';
 var IMAGE_WARNING_BEIGE = '<img src="' + WARNING_BEIGE_SRC + '"/>';
 
+var NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG_NUMBER = "1";
+
 var download_tabs_number = 0;
+var last_selected_lang = 0;
+var MORE_LANG_ID = "more";
 
 function handle_keyup(event) {
     //if (event.keyCode == 13) {
@@ -74,13 +82,11 @@ function handle_keyup(event) {
 function initialize() {
  if (document.images) {
      download_on = new Image();
-     download_on.src  = DOWNLOAD_BUTTON_NORMAL; 
+     download_on.src  = DOWNLOAD_BUTTON_NORMAL_SRC; 
      download_off= new Image();
-     download_off.src = DOWNLOAD_BUTTON_DISABLED;
+     download_off.src = DOWNLOAD_BUTTON_DISABLED_SRC;
      download_hl = new Image();
-     download_hl.src  = DOWNLOAD_BUTTON_HIGHLIGHT;
-     download_hl = new Image();
-     download_hl.src  = DOWNLOAD_BUTTON_HIGHLIGHT; 
+     download_hl.src  = DOWNLOAD_BUTTON_HIGHLIGHT_SRC;
      info = new Image();
      info.src  = INFO_ICON;
      info_h = new Image();
@@ -101,6 +107,9 @@ function initialize() {
 function write_languages() {
    for(var i=0; i < LANGUAGE_IDS.length; i++ ) {
    	document.write('<option value="' + LANGUAGE_IDS[i] + '">' + LANGUAGE_NAMES[i] + '</option>');
+   }
+   if(ADD_MORE_REDIRECT_VALUE == 1) {
+       document.write('<option value="' + MORE_LANG_ID + '">' + MORE_LANGUAGES + '</option>');
    }
 }
 
@@ -163,7 +172,7 @@ function write_table_header() {
     document.write('<td class="no_border no_padding" colspan="6">');    
     document.write('<table class="components_table">');
     document.write('<tr class="no_hover">');
-    document.write('	<td class="no_hover header" colspan="6">' + NETBEANS_DOWNLOAD_BUNDLES_MSG + '</td>');
+    document.write('	<td class="no_hover header" colspan="6">' + (COMMUNITY_BUILD == 1 ? (NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG + '<span class="community_note_number">' + NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG_NUMBER + '</span>') : NETBEANS_DOWNLOAD_BUNDLES_MSG) + '</td>');
     document.write('</tr></table>');
     document.write('</td>');
     document.write('</tr>');
@@ -342,9 +351,17 @@ function select_language() {
     for(var i=0;i<languageOptions.length;i++) {
         if(languageOptions[i].value == language) select.selectedIndex = i;
     }
+    last_selected_lang = select.selectedIndex;
 }
 
 function update() {
+    var langselect = document.getElementById("language_select");
+    if(langselect.options[langselect.selectedIndex].value == MORE_LANG_ID) {
+        langselect.selectedIndex = last_selected_lang;
+        window.location = MORE_LANGUAGES_REDIRECT_URL;
+    }
+    last_selected_lang = langselect.selectedIndex;
+
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
     var platform_display_name = select.options[select.selectedIndex].text;
@@ -567,6 +584,15 @@ function update() {
     else {
         document.getElementById("jdk_note").innerHTML = JDK_NOTE_ALL.replace('{0}',JAVA_COM_LINK).replace('{1}',JDK_DOWNLOAD_LINK).replace('{2}',NBJDK_DOWNLOAD_LINK);
     }
+
+    if (COMMUNITY_BUILD == 1) {
+	document.getElementById("community_number").innerHTML  = "<a class=\"special_message_number\">" + NETBEANS_DOWNLOAD_BUNDLES_COMMUNITY_MSG_NUMBER + "</a>";
+	document.getElementById("community_message").innerHTML = "<a class=\"special_message_text\">" + COMMUNITY_MESSAGE + "</a>";
+    }
+    else {
+	document.getElementById("community_message").innerHTML = "";
+	document.getElementById("community_number").innerHTML  = "";
+    }
 }
 
 function is_compatible(index, platform) {
@@ -612,55 +638,44 @@ function add_download_tab(name, url) {
    download_tabs_number++;
 }
 
-function get_file_name(platform, option) {
-    var file_name = "";
-    if(platform=="zip") {
-        file_name += ZIP_FILES_PREFIX;
-    } else {
-        file_name += BUNDLE_FILES_PREFIX;
+function write_files_list(title,directory) {
+    document.write('<h1>' + title + '</h1>');
+    document.write('<ul>');
+    var lst = get_file_list(directory);
+    for(var i=0;i<lst.length;i++) {
+        var item_display_name = lst[i];
+        var item_link = "javascript: download_file(\'" + directory + lst[i] + "\')";
+        document.write('<li><a href="' + item_link  + '">' + item_display_name + '</a></li>');
     }
-    if (option != "all") {
-    	file_name += "-" + option;
-    }
-
-    if ( platform != "zip" ) {
-   	file_name += "-" + platform;
-    }
-    if (platform == "windows") {
-        file_name += ".exe";
-    } else if ((platform == "macosx-x86") || (platform == "macosx-ppc")) {
-        file_name += ".tgz";
-    } else if (platform == "macosx") {
-	file_name += ".dmg";
-    } else if(platform == "zip"){
-	file_name += ".zip"        
-    } else {
-        file_name += ".sh";
-    }
-    return file_name;
+    document.write('</ul><br>');
 }
 
-function get_file_url(platform, option) {
-    var basename  = "";
-	
-    if(platform=="zip") {
-        basename += "zip/";
-    } else {
-        basename += "bundles/";
-    }    
-    basename += get_file_name(platform, option);    
-    return basename;
+function open_zip_link() {
+    var overriden_language=get_overridden_language();
+    var zip_url = ZIP_PAGE;
+    if(overriden_language!=DEFAULT_LANGUAGE) {
+        zip_url += "?" + PAGELANG_SEP + overriden_language;
+    }
+    window.location = zip_url; 
+}
+
+function download_file(filename) {
+    var download_url = START_PAGE;
+    download_url += "?filename=" + filename;
+
+    var overriden_language=get_overridden_language();
+    if(overriden_language!=DEFAULT_LANGUAGE) {
+        download_url += "&" + PAGELANG_SEP + overriden_language;
+    }
+    window.location = download_url;
 }
 
 function download(option) {
     var select = document.getElementById("platform_select");
     var platform = select.options[select.selectedIndex].value;
 
-    var file_url = get_file_url(platform, option);
-
-    var download_url = START_PAGE + "?" + file_url;
-
-    download_url += "&platform=" + platform;
+    var download_url = START_PAGE;
+    download_url += "?platform=" + platform;
 
     var language_select = document.getElementById("language_select");
     var language = language_select.options[language_select.selectedIndex].value;

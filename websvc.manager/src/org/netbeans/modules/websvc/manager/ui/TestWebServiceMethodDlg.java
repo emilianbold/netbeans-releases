@@ -3,19 +3,19 @@
  *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
- * The contents of this file are subject to the terms of either the GNU
+ * The contents of this wsdlFile are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
- * "License"). You may not use this file except in compliance with the
+ * "License"). You may not use this wsdlFile except in compliance with the
  * License. You can obtain a copy of the License at
  * http://www.netbeans.org/cddl-gplv2.html
  * or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
  * specific language governing permissions and limitations under the
  * License.  When distributing the software, include this License Header
- * Notice in each file and include the License file at
+ * Notice in each wsdlFile and include the License wsdlFile at
  * nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
- * particular file as subject to the "Classpath" exception as provided
- * by Sun in the GPL Version 2 section of the License file that
+ * particular wsdlFile as subject to the "Classpath" exception as provided
+ * by Sun in the GPL Version 2 section of the License wsdlFile that
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
@@ -27,19 +27,17 @@
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
- * If you wish your version of this file to be governed by only the CDDL
+ * If you wish your version of this wsdlFile to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
  * under the [CDDL or GPL Version 2] license." If you do not indicate a
  * single choice of license, a recipient has the option to distribute
- * your version of this file under either the CDDL, the GPL Version 2 or
+ * your version of this wsdlFile under either the CDDL, the GPL Version 2 or
  * to extend the choice of license to its licensees as provided above.
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.websvc.manager.ui;
 
 //import com.sun.tools.ws.processor.model.java.JavaMethod;
@@ -71,32 +69,35 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.TableModel;
 import javax.swing.event.TableModelEvent;
+import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaType;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
+import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlServiceProxyDescriptor;
 import org.netbeans.modules.websvc.saas.util.TypeUtil;
-import org.netbeans.swing.outline.DefaultOutlineModel;
-import org.netbeans.swing.outline.Outline;
-import org.netbeans.swing.outline.OutlineModel;
+import org.netbeans.modules.websvc.manager.swing.outline.DefaultOutlineModel;
+import org.netbeans.modules.websvc.manager.swing.outline.Outline;
+import org.netbeans.modules.websvc.manager.swing.outline.OutlineModel;
 
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-
 /**
  * Dialog that tests JAX-WS client methods
- * 
+ *
  * @author  David Botterill
  */
 public class TestWebServiceMethodDlg extends JPanel implements ActionListener, MethodTaskListener {
+
     private Dialog dialog;
     private DialogDescriptor dlg = null;
     private String okString = NbBundle.getMessage(this.getClass(), "CLOSE");
@@ -108,80 +109,101 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
      * -David Botterill 4/21/2004
      */
     private URLClassLoader runtimeClassLoader;
-    
     private DefaultMutableTreeNode parameterRootNode = new DefaultMutableTreeNode();
     private DefaultMutableTreeNode resultRootNode = new DefaultMutableTreeNode();
     private final WsdlSaas wsData;
     private final WSPort port;
     private final JavaMethod method;
     private MethodTask methodTask;
-    
+
     /** Creates new form TestWebServiceMethodDlg */
     public TestWebServiceMethodDlg(WsdlSaasMethod saasMethod) {
         method = saasMethod.getJavaMethod();
         wsData = saasMethod.getSaas();
         port = saasMethod.getWsdlPort();
         assert wsData.getWsdlData().getJaxWsDescriptor() != null;
-        
+
         initComponents();
         myInitComponents();
-        
+
         this.lblTitle.setText(NbBundle.getMessage(this.getClass(), "TEST_WEBSVC_LABEL") + " " /*+ method.getName()*/);
     }
-    
-    
+
+    private boolean isRPCEncoded(WsdlData wsdlData) {
+        File wsdlFile = new File(wsdlData.getWsdlFile());
+        if (wsdlFile != null) {
+            try {
+                wsdlFile = wsdlFile.getCanonicalFile();
+                return wsdlFile != null && JaxWsUtils.isRPCEncoded(wsdlFile.toURI());
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return false;
+    }
+
     /**
-     * This method returns the classloader of the Jar file containing the web service for which we are testing the methods.
+     * This method returns the classloader of the Jar wsdlFile containing the web service for which we are testing the methods.
      * This class loader should be used for the runtime environment when invoking a web service.
      * TODO: determine if the tree components should get the class loader here, store the classloader in the tree nodes, or pass
      * to the tree component constructors.
-     *@returns URLClassLoader - the class loader of the Jar file for the web service with the methods to test.
+     *@returns URLClassLoader - the class loader of the Jar wsdlFile for the web service with the methods to test.
      */
     private URLClassLoader getRuntimeClassLoader() {
-        if(null == runtimeClassLoader) {
-            
+        if (null == runtimeClassLoader) {
+
             /**
-             * First add the URL to the jar file for this web service.
+             * First add the URL to the jar wsdlFile for this web service.
              */
             try {
                 List<URL> urlList = null;
-                
-                urlList = TypeUtil.buildClasspath(null, true); // NOI18N
-                
-                WsdlServiceProxyDescriptor descriptor = wsData.getWsdlData().getJaxWsDescriptor();
+                WsdlData wsdlData = wsData.getWsdlData();
+
+                boolean isRPCEncoded = isRPCEncoded(wsdlData);
+
+                urlList = TypeUtil.buildClasspath(null, isRPCEncoded ? false : true); // NOI18N
+
+                WsdlServiceProxyDescriptor descriptor = null;
+
+
+                if (isRPCEncoded) {
+                    descriptor = wsdlData.getJaxRpcDescriptor();
+                } else {
+                    descriptor = wsdlData.getJaxWsDescriptor();
+                }
+
                 for (WsdlServiceProxyDescriptor.JarEntry entry : descriptor.getJars()) {
                     if (entry.getType().equals(WsdlServiceProxyDescriptor.JarEntry.PROXY_JAR_TYPE)) {
                         File jarFile = new File(descriptor.getXmlDescriptorFile().getParent(), entry.getName());
                         File tmpJarFile = createTempCopy(jarFile);
-                        
+
                         urlList.add(tmpJarFile.toURI().toURL());
                     }
                 }
-                
-                URL [] urls = (URL [])urlList.toArray(new URL[0]);
+
+                URL[] urls = (URL[]) urlList.toArray(new URL[0]);
                 /**
                  * Delegate to the module's classloader since core/startup/NbInstaller
                  * overrides the JAX-WS 2.0 jars present in JDK 6
                  */
-                
                 runtimeClassLoader = new URLClassLoader(urls, this.getClass().getClassLoader());
-            } catch(IOException mfu) {
+            } catch (IOException mfu) {
                 ErrorManager.getDefault().notify(mfu);
                 ErrorManager.getDefault().log(this.getClass().getName() + ":IOException=" + mfu);
                 return null;
-            }            
+            }
         }
-        
+
         return runtimeClassLoader;
     }
-    
+
     private File createTempCopy(File src) {
         try {
             java.io.File tempFile = java.io.File.createTempFile("proxyjar", "jar");
             java.nio.channels.FileChannel inChannel = new java.io.FileInputStream(src).getChannel();
             java.nio.channels.FileChannel outChannel = new java.io.FileOutputStream(tempFile).getChannel();
             inChannel.transferTo(0, inChannel.size(), outChannel);
-            
+
             inChannel.close();
             outChannel.close();
             return tempFile;
@@ -190,31 +212,32 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             return null;
         }
     }
-    
-    public void displayDialog(){
-        
+
+    public void displayDialog() {
+
         dlg = new DialogDescriptor(this, NbBundle.getMessage(this.getClass(), "TEST_WEB_SERVICE_METHOD"),
                 false, NotifyDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                 DialogDescriptor.DEFAULT_ALIGN, this.getHelpCtx(), this);
-        dlg.setOptions(new Object[] { okButton });
+        dlg.setOptions(new Object[]{okButton});
         dialog = DialogDisplayer.getDefault().createDialog(dlg);
         /**
          * After the window is opened, set the focus to the Get information button.
          */
-        
         final JPanel thisPanel = this;
-        dialog.addWindowListener( new WindowAdapter(){
-            public void windowOpened( WindowEvent e ){
+        dialog.addWindowListener(new WindowAdapter() {
+
+            public void windowOpened(WindowEvent e) {
                 SwingUtilities.invokeLater(
                         new Runnable() {
-                    public void run() {
-                        btnSubmit.requestFocus();
-                        thisPanel.getRootPane().setDefaultButton(btnSubmit);
-                    }
-                });
+
+                            public void run() {
+                                btnSubmit.requestFocus();
+                                thisPanel.getRootPane().setDefaultButton(btnSubmit);
+                            }
+                        });
             }
         });
-        
+
         /**
          * Fix for Bug: 6217545
          * Need to know what the normal cursor is so we can reset it when
@@ -222,7 +245,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          * - David Botterill 1/14/2005
          *
          */
-        normalCursor=dialog.getCursor();
+        normalCursor = dialog.getCursor();
         /**
          * Fix for Bug: 6217545
          * Set the MouseListener for the OK button to a special adapter that will
@@ -231,14 +254,15 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          */
         BusyMouseAdapter mouseAdapter = new BusyMouseAdapter(normalCursor);
         okButton.addMouseListener(mouseAdapter);
-        
-        
+
+
         dialog.show();
     }
+
     public HelpCtx getHelpCtx() {
         return new HelpCtx("projrave_ui_elements_server_nav_test_websvcdb");
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -332,7 +356,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TestWebServiceMethodDlg.class, "TestWebServiceMethodDlg.main.ACC_name")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-    
+
     private void btnSubmitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSubmitActionPerformed
         dialog.setCursor(new Cursor(Cursor.WAIT_CURSOR));
         invokeMethod();
@@ -346,13 +370,13 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          *  4. call the Method with the parameter values
          *  5. Display the return value.
          */
-        
+
         /**
          * Get the parameter values from the tree.  The parameters will be the children of the root node only. Any children
          * of the parameter nodes are values used to derive the parameter values.  This means only the first children of the root
          * node will be used a parameters.  The logic to "roll-up" a parameter value is left to the TypeCellEditor class.
          */
-        
+
         /**
          * Use a LinkedList because we care about the order of the parameters.
          */
@@ -364,12 +388,17 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
 
             paramList.add(parameterValue);
         }
-        
+
         /**
          * specify the wrapper client class name for this method.
          */
-        String clientClassName = wsData.getWsdlModel().getJavaName();
-        
+        String clientClassName = null;
+        if(isRPCEncoded(wsData.getWsdlData())){
+            clientClassName = wsData.getWsdlModel().getJavaName() + "_Impl";
+        }else{
+           clientClassName = wsData.getWsdlModel().getJavaName();
+        }
+
         /**
          * Fix for Bug: 6217545
          * We need to run the method in a separate thread so the user can cancel if the method call
@@ -379,26 +408,26 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          * -David Botterill 1/14/2005
          */
         methodTask = new MethodTask(clientClassName,paramList,this.method,this.getRuntimeClassLoader());
-        
+
         methodTask.registerListener(this);
-        
+
         Thread methodThread = new Thread(methodTask);
-        
+
         methodThread.start();
     }
-    
+
     public void methodFinished(Object inReturnedObject,LinkedList inParamList) {
         dialog.setCursor(normalCursor);
-        
+
         showResults(inReturnedObject);
-        
+
         /**
          * Fix for Bug#: 5059732
          * Now we need to also set the parameter values in the tree nodes since they may have changed due
          * to the support for pass by reference ("Holders").
          * - David Botterill 8/12/2004
          */
-        
+
         for(int ii=0; null != this.getParamterRootNode() && ii < this.getParamterRootNode().getChildCount(); ii++) {
             DefaultMutableTreeNode childNode = (DefaultMutableTreeNode) this.getParamterRootNode().getChildAt(ii);
             TypeNodeData nodeData = (TypeNodeData)childNode.getUserObject();
@@ -416,9 +445,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          * Update the table since we may have changed some tree node values.
          */
         parameterOutline.tableChanged(new TableModelEvent((TableModel)parameterOutline.getOutlineModel().getRowNodeModel()));
-        
+
     }
-    
+
     private void showResults(Object inResultObject) {
         /**
          * Create a tree of the result object types.
@@ -439,21 +468,21 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             ErrorManager.getDefault().log(this.getClass().getName() + ": WebServiceReflectionException=" + cause);
         }
     }
-    
-    
+
+
     private void myInitComponents() {
         okButton.setText(okString);
-        
+
         /**
          * Now set up the Nodes for the TreeTableView
          */
         if(null == this.method) {
             return;
         }
-        
+
         try {
             NodeHelper.createInstance(getRuntimeClassLoader());
-            
+
             parameterOutline = loadParameterTreeTable(this.method);
 
             // Turn off the reordering
@@ -482,7 +511,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             ErrorManager.getDefault().log(this.getClass().getName() + ": WebServiceReflectionException=" + cause);
         }
     }
-    
+
     private void addFocusListener(final JTable table) {
         // fixes tab cycle when the table is empty
         table.addFocusListener(new FocusListener() {
@@ -509,22 +538,22 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             }
         });
     }
-    
+
     private DefaultMutableTreeNode getParamterRootNode() {
         return parameterRootNode;
     }
-    
+
     private void setParameterRootNode(DefaultMutableTreeNode inNode) {
         parameterRootNode = inNode;
     }
     private DefaultMutableTreeNode getResultRootNode() {
         return resultRootNode;
     }
-    
+
     private void setResultRootNode(DefaultMutableTreeNode inNode) {
         resultRootNode = inNode;
     }
-    
+
     private Outline loadResultTreeTable(JavaMethod inMethod, Object inResultObject) throws WebServiceReflectionException {
         if(null == inMethod) {
             return null;
@@ -532,9 +561,9 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         JavaType currentType = inMethod.getReturnType();
         String typeName = currentType.getRealName();
         TypeNodeData data = ReflectionHelper.createTypeData(typeName, inResultObject);
-        
+
         DefaultMutableTreeNode node = NodeHelper.getInstance().createResultNodeFromData(data);
-        
+
         /**
          * Make sure to create a new result root each time since the user can change the parameters and submit many
          * times.
@@ -544,7 +573,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          *  Add it to the root.
          */
         this.getResultRootNode().add(node);
-        
+
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getResultRootNode());
         ResultRowModel rowModel = new ResultRowModel();
         OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
@@ -553,31 +582,31 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         ResultCellEditor cellEditor = new ResultCellEditor(runtimeClassLoader);
         returnOutline.setDefaultEditor(Object.class,cellEditor);
         returnOutline.setRootVisible(false);
-        
+
         returnOutline.setRenderDataProvider(new TypeDataProvider());
-        
+
         return returnOutline;
     }
-    
+
     private Outline loadParameterTreeTable(JavaMethod inMethod) throws WebServiceReflectionException {
         if(null == inMethod) {
             return null;
         }
-        
+
         List<JavaParameter> parameters = inMethod.getParametersList();
         for (JavaParameter currentParameter : parameters) {
             /**
              * Add all Parameter's to the root tree node.
              */
             JavaType currentType = currentParameter.getType();
-            
+
             String typeName = currentType.getRealName();
             String typeParamName = currentParameter.getName();
-            
+
             if (currentParameter.isHolder()) {
                 typeName = "javax.xml.ws.Holder<" + typeName + ">"; // NOI18N
             }
-            
+
             TypeNodeData data = ReflectionHelper.createTypeData(typeName, typeParamName);
             data.setTypeValue(NodeHelper.getInstance().getParameterDefaultValue(data));
             if (currentParameter.isHolder()) {
@@ -585,15 +614,15 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 if (currentParameter.isOUT()) data.setHolderType(TypeNodeData.OUT);
                 if (currentParameter.isINOUT()) data.setHolderType(TypeNodeData.IN_OUT);
             }
-            
+
             DefaultMutableTreeNode node = NodeHelper.getInstance().createNodeFromData(data);
-            
+
             /**
              *  Add it to the root.
              */
-            this.getParamterRootNode().add(node);            
+            this.getParamterRootNode().add(node);
         }
-        
+
         DefaultTreeModel treeModel = new DefaultTreeModel(this.getParamterRootNode());
         rowModel = new TypeRowModel(this.getRuntimeClassLoader());
         OutlineModel outlineModel = DefaultOutlineModel.createOutlineModel(treeModel,rowModel, false);
@@ -609,18 +638,18 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
          * entering a value in a cell to get the value to take affect.
          */
         returnOutline.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE); // NOI18N
-        
+
         return returnOutline;
     }
-    
-    
+
+
     public void actionPerformed(ActionEvent evt) {
         String actionCommand = evt.getActionCommand();
         if(actionCommand.equalsIgnoreCase(okString)) {
             okButtonAction(evt);
         }
     }
-    
+
     private void okButtonAction(ActionEvent evt) {
         /**
          * If the MethodTask is not null, the MethodTask
@@ -633,8 +662,8 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
         dialog.setCursor(normalCursor);
         dialog.dispose();
     }
-    
-    
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel btnPanel;
     private javax.swing.JButton btnSubmit;
@@ -648,15 +677,15 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
     private javax.swing.JScrollPane scrollPaneParameter;
     private javax.swing.JScrollPane scrollPaneResults;
     // End of variables declaration//GEN-END:variables
-    
+
     private JButton okButton = new JButton();
     private Outline parameterOutline;
     private Outline resultOutline;
     private TypeRowModel rowModel;
     private Cursor normalCursor;
-    
+
     class MethodTask implements Runnable {
-        
+
         private String clientClassName;
         private LinkedList paramList;
         private JavaMethod javaMethod;
@@ -672,13 +701,13 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
             javaMethod = inJavaMethod;
             urlClassLoader = inURLClassLoader;
         }
-        
+
         public void registerListener(MethodTaskListener inListener) {
             if(!listeners.contains(inListener)) {
                 listeners.add(inListener);
             }
         }
-        
+
         private void notifyListeners(Object returnedObject) {
             Iterator listenerIterator = listeners.iterator();
             MethodTaskListener currentListener = null;
@@ -687,7 +716,7 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 currentListener.methodFinished(returnedObject, paramList);
             }
         }
-        
+
         public void run() {
             /**
              * Now invoke the method using the ReflectionHelper.
@@ -710,26 +739,26 @@ public class TestWebServiceMethodDlg extends JPanel implements ActionListener, M
                 }
                 return;
             }
-            
+
             notifyListeners(returnObject);
         }
-        
+
         public void cancel() {
             cancelled=true;
         }
     }
-    
+
     private static class BusyMouseAdapter extends MouseAdapter {
         private Cursor normalCursor;
-        
+
         public BusyMouseAdapter(Cursor inNormalCursor) {
             normalCursor = inNormalCursor;
         }
-        
+
         public void mouseEntered(MouseEvent e) {
             e.getComponent().setCursor(normalCursor);
         }
-        
+
         public void mouseExited(MouseEvent e) {
         }
     }

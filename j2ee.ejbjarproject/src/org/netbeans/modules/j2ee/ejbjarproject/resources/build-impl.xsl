@@ -243,13 +243,10 @@ is divided into following sections:
             <!-- COS feature - used in run-deploy -->
             <target name="-init-cos">
                 <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="unless">deploy.on.save</xsl:attribute>
                 <condition>
-                    <xsl:attribute name="property">ensure.built.source.roots</xsl:attribute>
-                    <xsl:attribute name="value">
-                        <xsl:call-template name="createPath">
-                            <xsl:with-param name="roots" select="/p:project/p:configuration/ejbjarproject3:data/ejbjarproject3:source-roots"/>
-                        </xsl:call-template>
-                    </xsl:attribute>
+                    <xsl:attribute name="property">deploy.on.save</xsl:attribute>
+                    <xsl:attribute name="value">true</xsl:attribute>
                     <isfalse value="${{disable.deploy.on.save}}"/>
                 </condition>         
             </target>
@@ -1318,8 +1315,15 @@ exists or setup the property manually. For example like this:
                 <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
             </target>
             
+            <target name="undeploy-clean">
+                <xsl:attribute name="depends">init</xsl:attribute>
+                <xsl:attribute name="if">netbeans.home</xsl:attribute>
+                
+                <nbundeploy failOnError="false" startServer="false"/>
+            </target>
+
             <target name="clean">
-                <xsl:attribute name="depends">init,deps-clean,-do-clean,-post-clean</xsl:attribute>
+                <xsl:attribute name="depends">init,undeploy-clean,deps-clean,-do-clean,-post-clean</xsl:attribute>
                 <xsl:attribute name="description">Clean build products.</xsl:attribute>
             </target>
             

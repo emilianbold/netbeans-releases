@@ -76,8 +76,19 @@ public class SequenceElementTest extends TestCase {
         assertTrue(s1.compareTo(s2) < 0);
         assertTrue(s2.compareTo(s1) > 0);
 
+        // s1 below s2
         s2 = new SequenceElement(null, new OffsetRange(2,5),null);
         assertTrue(s1.compareTo(s2) < 0);
         assertTrue(s2.compareTo(s1) > 0);
+
+        // s1 inside s2
+        s1 = new SequenceElement.ComparisonItem(3);
+        assertTrue(s1.compareTo(s2) == 0);
+        assertTrue(s2.compareTo(s1) == 0);
+
+        // s1 above s2
+        s1 = new SequenceElement.ComparisonItem(6);
+        assertTrue(s1.compareTo(s2) > 0);
+        assertTrue(s2.compareTo(s1) < 0);
     }
 }

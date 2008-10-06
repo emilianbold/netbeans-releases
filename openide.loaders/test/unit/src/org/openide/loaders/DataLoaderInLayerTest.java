@@ -57,6 +57,7 @@ import javax.swing.Action;
 import junit.framework.Test;
 import org.openide.actions.EditAction;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
@@ -251,7 +252,7 @@ public class DataLoaderInLayerTest extends NbTestCase {
         instance.setAttribute("SystemFileSystem.icon", u);
         
         
-        Image img = Utilities.loadImage("org/openide/loaders/saveAll.gif");
+        Image img = ImageUtilities.loadImage("org/openide/loaders/saveAll.gif");
         
         DataObject.Factory f = DataLoaderPool.factory(instance);
         

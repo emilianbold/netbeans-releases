@@ -88,6 +88,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.text.DataEditorSupport.Env;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.text.NbDocument;
@@ -598,7 +599,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage(ICON_PATH_JSF_JSP);
+            return ImageUtilities.loadImage(ICON_PATH_JSF_JSP);
         }
         
         public String getDisplayName() {
@@ -664,7 +665,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage(ICON_PATH_JSF_JSP);
+            return ImageUtilities.loadImage(ICON_PATH_JSF_JSP);
         }
         
         public String getDisplayName() {
@@ -732,7 +733,7 @@ public final class JsfJavaEditorSupport extends DataEditorSupport implements Edi
         }
         
         public java.awt.Image getIcon() {
-            return Utilities.loadImage(ICON_PATH_JSF_JSP);
+            return ImageUtilities.loadImage(ICON_PATH_JSF_JSP);
         }
         
         public String getDisplayName() {

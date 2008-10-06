@@ -400,7 +400,10 @@ public class DesignerScene extends GraphScene<IPresentationElement, IPresentatio
     private void setSelfLinkRouter(ConnectionWidget connection)
     {
         if (selfLinkRouter == null)
-            selfLinkRouter = RouterFactory.createOrthogonalSearchRouter(connectionLayer);
+        {
+            //selfLinkRouter = RouterFactory.createOrthogonalSearchRouter(connectionLayer);
+            selfLinkRouter = new SelfLinkRouter();
+        }
         connection.setRouter(selfLinkRouter);
         connection.setRoutingPolicy(ConnectionWidget.RoutingPolicy.ALWAYS_ROUTE);
         WidgetAction.Chain chain = connection.getActions(DesignerTools.SELECT);

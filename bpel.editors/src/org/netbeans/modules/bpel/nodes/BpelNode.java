@@ -133,6 +133,7 @@ import org.openide.nodes.Node.Property;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
@@ -1661,14 +1662,14 @@ public abstract class BpelNode<T>
             private static final String WARNING_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_warning.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(WARNING_BADGE);
+                    ImageUtilities.loadImage(WARNING_BADGE);
         }
         
         public static final class ERROR {
             private static final String ERROR_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_error.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(ERROR_BADGE);
+                    ImageUtilities.loadImage(ERROR_BADGE);
         }
         
         
@@ -1676,35 +1677,35 @@ public abstract class BpelNode<T>
             private static final String BREAKPOINT_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_breakpoint.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(BREAKPOINT_BADGE);
+                    ImageUtilities.loadImage(BREAKPOINT_BADGE);
         }
         
         public static final class CURRENT_POSITION {
             private static final String CURRENT_POSITION_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_current_position.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(CURRENT_POSITION_BADGE);
+                    ImageUtilities.loadImage(CURRENT_POSITION_BADGE);
         }
         
         public static final class CURRENT_DISABLED_BREAKPOINT {
             private static final String CURRENT_DISABLED_BREAKPOINT_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_current_disabled_breakpoint.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(CURRENT_DISABLED_BREAKPOINT_BADGE);
+                    ImageUtilities.loadImage(CURRENT_DISABLED_BREAKPOINT_BADGE);
         }
         
         public static final class DISABLED_BREAKPOINT {
             private static final String DISABLED_BREAKPOINT_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_disabled_breakpoint.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(DISABLED_BREAKPOINT_BADGE);
+                    ImageUtilities.loadImage(DISABLED_BREAKPOINT_BADGE);
         }
         
         public static final class CURRENT_BREAKPOINT {
             private static final String CURRENT_BREAKPOINT_BADGE =
                     "org/netbeans/modules/bpel/editors/resources/badge_current_breakpoint.png"; //NOI18N
             public static final Image IMAGE =
-                    Utilities.loadImage(CURRENT_BREAKPOINT_BADGE);
+                    ImageUtilities.loadImage(CURRENT_BREAKPOINT_BADGE);
         }
     }
 }

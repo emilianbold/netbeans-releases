@@ -43,6 +43,7 @@ package  org.netbeans.modules.web.taglib;
 
 import java.awt.Image;
 import java.beans.SimpleBeanInfo;
+import org.openide.util.ImageUtilities;
 
 /** TLD Loader bean info.
 *
@@ -55,7 +56,7 @@ public class TLDLoaderBeanInfo extends SimpleBeanInfo {
      */
     @Override
     public Image getIcon(int type) {
-        return org.openide.util.Utilities.loadImage("org/netbeans/modules/web/taglib/resources/tags.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/web/taglib/resources/tags.gif"); // NOI18N
     }
 }
 

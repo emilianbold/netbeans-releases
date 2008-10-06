@@ -82,6 +82,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import javax.swing.JOptionPane;
 import org.openide.cookies.EditorCookie;
@@ -355,7 +356,7 @@ public class HgUtils {
     public static boolean isIgnored(File file, boolean checkSharability){
         if (file == null) return false;
         String path = file.getPath();
-        File topFile = Mercurial.getInstance().getTopmostManagedParent(file);
+        File topFile = Mercurial.getInstance().getRepositoryRoot(file);
         
         // We assume that the toplevel directory should not be ignored.
         if (topFile == null || topFile.equals(file)) {
@@ -397,7 +398,7 @@ public class HgUtils {
         if( path == null) return;
         BufferedWriter fileWriter = null;
         Mercurial hg = Mercurial.getInstance();
-        File root = hg.getTopmostManagedParent(path);
+        File root = hg.getRepositoryRoot(path);
         if( root == null) return;
         File ignore = new File(root, FILENAME_HGIGNORE);
         
@@ -769,7 +770,7 @@ itor tabs #66700).
         File [] files = context.getRootFiles().toArray(new File[context.getRootFiles().size()]);
         if (files == null || files.length == 0) return null;
         
-        File root = hg.getTopmostManagedParent(files[0]);
+        File root = hg.getRepositoryRoot(files[0]);
         return root;
     }
     
@@ -848,7 +849,7 @@ itor tabs #66700).
             FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
 
             cache.refreshCached(file);
-            File repository = Mercurial.getInstance().getTopmostManagedParent(file);
+            File repository = Mercurial.getInstance().getRepositoryRoot(file);
             if (repository == null) {
                 return;
             }
@@ -927,7 +928,7 @@ itor tabs #66700).
             }
             
             Mercurial mercurial = Mercurial.getInstance();
-            File rootManagedFolder = mercurial.getTopmostManagedParent(file);
+            File rootManagedFolder = mercurial.getRepositoryRoot(file);
             if ( rootManagedFolder == null){
                 return NbBundle.getMessage(SyncFileNode.class, "LBL_Location_NotInRepository"); // NOI18N
             }
@@ -1135,6 +1136,12 @@ itor tabs #66700).
      * This utility class should not be instantiated anywhere.
      */
     private HgUtils() {
+    }
+
+    private static Logger TY9_LOG = null;
+    public static void logT9Y(String msg) {
+        if(TY9_LOG == null) TY9_LOG = Logger.getLogger("org.netbeans.modules.mercurial.t9y");
+        TY9_LOG.log(Level.FINEST, msg);
     }
     
 }

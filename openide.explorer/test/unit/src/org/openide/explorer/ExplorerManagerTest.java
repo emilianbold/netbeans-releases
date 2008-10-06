@@ -64,6 +64,10 @@ public class ExplorerManagerTest extends NbTestCase
     private Keys keys;
     private Node root;
     private LinkedList<PropertyChangeEvent> events;
+
+    static {
+        ExplorerManager.SCHEDULE_REMOVE_ASYNCH = false;
+    }
     
     public ExplorerManagerTest(String testName) {
         super(testName);
@@ -153,13 +157,8 @@ public class ExplorerManagerTest extends NbTestCase
     
     public void testCannotSetNodesNotUnderTheRoot() throws Exception {
         final Node a = new AbstractNode(Children.LEAF);
-        
-        try {
-            em.setSelectedNodes(new Node[] { a });
-            fail("Should throw IllegalArgumentException as the node is not under root");
-        } catch (IllegalArgumentException ex) {
-            // ok, a is not under root
-        }
+        em.setSelectedNodes(new Node[]{a});
+        assertEquals(0, em.getSelectedNodes().length);
     }
     
     

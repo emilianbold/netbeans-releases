@@ -85,13 +85,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         if (key == Action.NAME) {
             return NbBundle.getMessage (ToggleMethodFieldBreakpointAction.class, "CTL_ToggleMethodFieldBreakpointAction");
         }
-        Object value = super.getValue(key);
-        if (key == Action.SMALL_ICON) {
-            if (value instanceof String) {
-                value = new ImageIcon (Utilities.loadImage (value+".gif"));// Utils.getIcon ((String) value);
-            }
-        }
-        return value;
+        return super.getValue(key);
     }
     
     /*

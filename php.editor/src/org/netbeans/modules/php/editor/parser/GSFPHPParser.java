@@ -49,8 +49,11 @@ import java.util.logging.Logger;
 import java_cup.runtime.Symbol;
 import org.netbeans.modules.gsf.api.*;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
+import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions;
+import org.netbeans.modules.php.project.api.PhpLanguageOptions.Properties;
 
 
 /**
@@ -62,7 +65,10 @@ public class GSFPHPParser implements Parser {
     private PositionManager positionManager = null;
     
     private static final Logger LOGGER = Logger.getLogger(GSFPHPParser.class.getName());
-    
+
+    private boolean shortTags = true;
+    private boolean aspTags = false;
+
     public void parseFiles(Job request) {
         LOGGER.fine("parseFiles " + request.toString());
         ParseListener listener = request.listener;
@@ -72,6 +78,9 @@ public class GSFPHPParser implements Parser {
             ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
             request.listener.started(beginEvent);
             ParserResult result = null;
+            Properties languageProperties = PhpLanguageOptions.getProperties(file.getFileObject());
+            shortTags = languageProperties.areShortTagsEnabled();
+            aspTags = languageProperties.areAspTagsEnabled();
             try {
                 CharSequence buffer = reader.read(file);
                 String source = asString(buffer);
@@ -117,7 +126,7 @@ public class GSFPHPParser implements Parser {
 
         PHPParseResult result;
         // calling the php ast parser itself
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags,  aspTags);
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
 
         if (!sanitizedSource) {
@@ -136,7 +145,7 @@ public class GSFPHPParser implements Parser {
 //                System.out.println(context.sanitizedSource);
 //                System.out.println("-----------------------");
                 source = context.source;
-                scanner = new ASTPHP5Scanner(new StringReader(source), false);
+                scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
                 parser = new ASTPHP5Parser(scanner);
                 rootSymbol = parser.parse();
             }
@@ -153,7 +162,7 @@ public class GSFPHPParser implements Parser {
                         // if there is an errot, try to sanitize only if there 
                         // is a class or function inside the error
                         String errorCode = "<?" + source.substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
-                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), false);
+                        ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
                         Symbol token = fcScanner.next_token();
                         while (token.sym != ASTPHP5Symbols.EOF) {
                             if (token.sym == ASTPHP5Symbols.T_CLASS || token.sym == ASTPHP5Symbols.T_FUNCTION) {
@@ -168,7 +177,7 @@ public class GSFPHPParser implements Parser {
                     }
                 }
                 if (ok) {
-                    result = new PHPParseResult(this, context.getFile(), program);
+                    result = new PHPParseResult(this, context.getFile(), program, true);
                 }
                 else {
                     result = sanitize(context, sanitizing, errorHandler);
@@ -277,14 +286,21 @@ public class GSFPHPParser implements Parser {
             }
         }
         if (sanitizing == Sanitize.MISSING_CURLY) {
-            sanitizeCurly (context);
+            return sanitizeCurly (context);
+        }
+        if (sanitizing == Sanitize.SYNTAX_ERROR_BLOCK) {
+            List<PHP5ErrorHandler.SyntaxError> syntaxErrors = errorHandler.getSyntaxErrors();
+            if (syntaxErrors.size() > 0) {
+                PHP5ErrorHandler.SyntaxError error =  syntaxErrors.get(0);
+                return sanitizeRemoveBlock(context, error.getCurrentToken().left);
+            }
         }
         return false;
     }
 
     protected boolean sanitizeCurly (Context context) {
         String source = context.getSource();
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), false);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
         //keep index of last ?>
         Symbol lastPHPToken = null;
         Symbol token = null;
@@ -392,6 +408,35 @@ public class GSFPHPParser implements Parser {
         return false;
     }
 
+    private boolean sanitizeRemoveBlock(Context context, int index) {
+        String source = context.getSource();
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(source), shortTags, aspTags);
+        Symbol token = null;
+        int start = -1;
+        int end = -1;
+        try {
+            token = scanner.next_token();
+            while (token.sym != ASTPHP5Symbols.EOF && end == -1) {
+                if (token.sym == ASTPHP5Symbols.T_CURLY_OPEN && token.left < index) {
+                    start = token.right;
+                }
+                if (token.sym == ASTPHP5Symbols.T_CURLY_CLOSE && token.left >= index ) {
+                    end = token.right - 1;
+                }
+                token = scanner.next_token();
+            }
+        }
+        catch (IOException exception) {
+            LOGGER.log(Level.INFO, "Exception during removing block", exception);   //NOI18N
+        }
+        if (start < end) {
+            context.sanitizedSource = source.substring(0, start) + Utils.getSpaces(end-start) + source.substring(end);
+            context.sanitizedRange = new OffsetRange(start, end);
+            return true;
+        }
+        return false;
+    }
+
     private PHPParseResult sanitize(final Context context, final Sanitize sanitizing, PHP5ErrorHandler errorHandler) throws Exception {
         switch(sanitizing) {
             case NONE:
@@ -402,8 +447,10 @@ public class GSFPHPParser implements Parser {
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS, errorHandler);
             case SYNTAX_ERROR_PREVIOUS:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
-           case SYNTAX_ERROR_PREVIOUS_LINE:
+            case SYNTAX_ERROR_PREVIOUS_LINE:
                 return parseBuffer(context, Sanitize.EDITED_LINE, errorHandler);
+            case EDITED_LINE:
+                return parseBuffer(context, Sanitize.SYNTAX_ERROR_BLOCK, errorHandler);
             default:
                 int end = context.getSource().length();
                 // add the ast error, some features can recognized that there is something wrong.
@@ -411,9 +458,9 @@ public class GSFPHPParser implements Parser {
                 ASTError error = new ASTError(0, end);
                 List<Statement> statements = new ArrayList<Statement>();
                 statements.add(error);
-                Program emptyProgram = new Program(0, end, statements, Collections.EMPTY_LIST);
+                Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
 
-                return new PHPParseResult(this, context.getFile(), emptyProgram);
+                return new PHPParseResult(this, context.getFile(), emptyProgram, false);
         }
         
     }
@@ -445,6 +492,8 @@ public class GSFPHPParser implements Parser {
         SYNTAX_ERROR_PREVIOUS,
         /** remove line with error */
         SYNTAX_ERROR_PREVIOUS_LINE,
+        /** try to delete the whole block, where is the error*/
+        SYNTAX_ERROR_BLOCK,
         /** Try to remove the trailing . or :: at the caret line */
         EDITED_DOT, 
         /** Try to remove the trailing . or :: at the error position, or the prior

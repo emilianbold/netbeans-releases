@@ -52,6 +52,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 
 import org.netbeans.modules.form.FormLoaderSettings;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -76,7 +77,7 @@ public class AssistantView extends JPanel {
 
         // Message label
         messageLabel = new JLabel();
-        messageLabel.setIcon(new ImageIcon(Utilities.loadImage("org/netbeans/modules/form/resources/lightbulb.gif"))); // NOI18N
+        messageLabel.setIcon(new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/form/resources/lightbulb.gif"))); // NOI18N
 
         // Close button
         JButton closeButton = new JButton("x"); // NOI18N

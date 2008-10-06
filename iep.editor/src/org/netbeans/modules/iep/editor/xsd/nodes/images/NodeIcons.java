@@ -13,6 +13,7 @@ import java.awt.Image;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 
 /**
@@ -54,7 +55,7 @@ public enum NodeIcons {
      */
     private static Image getImageImpl(Object name) {
         String fileName = IMAGE_FOLDER_NAME + name + ".png"; // NOI18N
-        return Utilities.loadImage(fileName);
+        return ImageUtilities.loadImage(fileName);
     }
             
 }

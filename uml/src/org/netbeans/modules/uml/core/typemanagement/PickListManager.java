@@ -1237,6 +1237,7 @@ public class PickListManager implements IPickListManager, IQueryUpdater,
     {
         addTypeIndex( "Class" );
         addTypeIndex( "Interface" );
+        addTypeIndex( "DerivationClassifier" );
         addTypeIndex( "Package" );
         addTypeIndex( "DataType" );
         addTypeIndex( "Enumeration" );

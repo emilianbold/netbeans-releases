@@ -30,8 +30,8 @@
               </Group>
               <EmptySpace max="$pref" attributes="16"/>
               <Group type="parallel" groupAlignment="baseline" attributes="16">
-                  <Component id="jTextField2" alignment="baseline" min="$pref" max="$pref" attributes="0"/>
                   <Component id="jLabel2" alignment="baseline" min="$pref" pref="54" max="$pref" attributes="0"/>
+                  <Component id="jTextField2" alignment="baseline" min="$pref" max="$pref" attributes="0"/>
               </Group>
               <EmptySpace pref="174" max="Short.MAX_VALUE" attributes="12"/>
           </Group>

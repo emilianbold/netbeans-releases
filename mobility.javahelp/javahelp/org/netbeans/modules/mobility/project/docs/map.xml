@@ -4,8 +4,8 @@
 
 <map version="1.0">
 	<mapID target="me.welcome" url="getstarted/welcome.html"/>
-	<mapID target="netbeans.optionsDialog.advanced.svg=" url="ui/dialog_miscoptions_svg.html"/>
-        <mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="ui/wizard_importexisting_specifysource.html"/>
+	<mapID target="org.netbeans.optionsDialog.advanced.svg=" url="ui/dialog_miscoptions_svg.html"/>
+    <mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="ui/wizard_importexisting_specifysource.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkPanel" url="ui/wizard_importwtk_specifysource.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel" url="ui/wizard_newproject_installplatform.html"/>
 	<mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="ui/wizard_addplatform_choosefolder.html"/>
@@ -37,12 +37,13 @@
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" url="ui/projectprop_running.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="ui/node_project.html"/>
 	<mapID target="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" url="ui/dialog_addconfiguration.html"/>
-       	<mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="ui/dialog_projectconfigs.html"/>
+     	<mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="ui/dialog_projectconfigs.html"/>
         <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSequenceDialog" url="games/games_about.html"/>
         <mapID target="org.netbeans.modules.vmd.analyzer.AnalyzerEditorView" url="mvd/mvd_about.html"/>
         <mapID target="org.netbeans.modules.vmd.flow.FlowEditorView" url="mvd/mvd_about.html"/>
         <mapID target="org.netbeans.modules.vmd.screen.ScreenEditorView" url="mvd/mvd_about.html"/> 
-<mapID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
+        <mapID target="org.netbeans.modules.vmd.game.GameEditorView" url="games/games_about.html"/>
+    ID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog" url="games/games_about.html"/>
@@ -54,15 +55,15 @@
 <mapID target="org.netbeans.modules.vmd.game.nbdialog.SpriteDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.NewAnimatedTileDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSceneDialog" url="games/games_about.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.BasicModuleConfWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.JavaMELibsWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.DescriptorsWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.SelectLibraryWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.NameAndLocationWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentDescriptorWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentProducerWizardPanel" url="ui/wizard_newcustom_component.html"/>
-<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentFinalWizardPanel" url="ui/wizard_newcustom_component.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.CustomComponentWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.BasicModuleConfWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.JavaMELibsWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.DescriptorsWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.SelectLibraryWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.NameAndLocationWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentDescriptorWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentProducerWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
+<mapID target="org.netbeans.modules.vmd.componentssupport.ui.wizard.ComponentFinalWizardPanel" url="mvd/mvd_addcustomcomponent.html"/>
 <mapID target="org.netbeans.modules.vmd.componentssupport.options.ComponentssupportOptionsPanelController" url="ui/mvd_debugview.html"/>
 	<mapID target="me.gloss_cldc" url="glossary/gloss_cldc.html"/>
 	<mapID target="me.gloss_attributes" url="glossary/gloss_attributes.html"/>

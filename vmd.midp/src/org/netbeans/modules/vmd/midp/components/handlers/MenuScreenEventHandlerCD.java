@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.api.model.presenters.InfoPresenter;
 import org.netbeans.modules.vmd.midp.components.MidpVersionDescriptor;
 import org.netbeans.modules.vmd.midp.flow.FlowEventHandlerPinBadgePresenter;
 import org.netbeans.modules.vmd.midp.palette.MidpPaletteProvider;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -83,7 +84,7 @@ public class MenuScreenEventHandlerCD extends ComponentDescriptor {
             // info
             InfoPresenter.createStatic (NbBundle.getMessage(MenuScreenEventHandlerCD.class, "NAME_MenuScreenEventHandler"), NbBundle.getMessage(MenuScreenEventHandlerCD.class, "TYPE_Action"), ICON_PATH), // NOI18N
             // flow
-            new FlowEventHandlerPinBadgePresenter (Utilities.loadImage (ICON_PATH), 0)
+            new FlowEventHandlerPinBadgePresenter (ImageUtilities.loadImage (ICON_PATH), 0)
         );
     }
 

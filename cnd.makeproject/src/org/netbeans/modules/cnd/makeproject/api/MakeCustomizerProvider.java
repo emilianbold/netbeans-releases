@@ -211,7 +211,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
 
         customizerPerProject.put (project, dialog);
         dialog.setVisible(true);
-        
+        clonedProjectdescriptor.closed();
     }    
     
 
@@ -251,6 +251,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 }
                 
 		//projectDescriptor.copyFromProjectDescriptor(clonedProjectdescriptor);
+                makeCustomizer.save();
 		projectDescriptor.assign(clonedProjectdescriptor);
 		projectDescriptor.setModified();
                 projectDescriptor.save(); // IZ 133606

@@ -25,5 +25,10 @@
 			<type>2</type>
 			<locationURI>SOME_ROOT/JavaApplication2/src</locationURI>
 		</link>
+		<link>
+			<name>my_jars</name>
+			<type>2</type>
+			<locationURI>SOME_ROOT/libs</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

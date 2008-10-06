@@ -91,6 +91,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -167,14 +168,18 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     }
 
     private static Lookup createLookup(Project project) {
-        DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
-        // XXX Remove root folder after FindAction rewrite
-        return Lookups.fixed(new Object[]{project, rootFolder});
+        if (project.getProjectDirectory().isValid()) {
+            DataFolder rootFolder = DataFolder.findFolder(project.getProjectDirectory());
+            // XXX Remove root folder after FindAction rewrite
+            return Lookups.fixed(new Object[]{project, rootFolder});
+        } else {
+            return Lookups.fixed(new Object[0]);
+        }
     }
 
     private static final class ConfFilesNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
-        private static final Image CONFIGURATION_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
+        private static final Image CONFIGURATION_FILES_BADGE = ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
 
         // icon badging >>>
         private Set files;
@@ -209,7 +214,7 @@ public final class ConfFilesNodeFactory implements NodeFactory {
             Image image;
 
             image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
-            image = Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
+            image = ImageUtilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
 
             return image;        
         }

@@ -44,9 +44,10 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -59,7 +60,6 @@ import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.OperationStateListener;
 import org.netbeans.modules.glassfish.spi.Recognizer;
-import org.netbeans.modules.glassfish.spi.RecognizerCookie;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.openide.DialogDisplayer;
@@ -79,26 +79,34 @@ import org.xml.sax.SAXException;
  */
 public class StartTask extends BasicTask<OperationState> {
 
+    private final CommonServerSupport support;
     private List<Recognizer> recognizers;
     private FileObject jdkHome = null;
     private List<String> jvmArgs = null;
 
     /**
      * 
-     * @param dm 
-     * @param startServer 
+     * @param support common support object for the server instance being started
+     * @param recognizers output recognizers to pass to log processors, if any
+     * @param stateListener state monitor to track start progress
      */
-    public StartTask(Map<String, String> properties, List<Recognizer> recognizers,
+    public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
             OperationStateListener... stateListener) {
-        this(properties, recognizers, null, null, stateListener);
+        this(support, recognizers, null, null, stateListener);
     }
     
     /**
-     * 
+     *
+     * @param support common support object for the server instance being started
+     * @param recognizers output recognizers to pass to log processors, if any
+     * @param jdkRoot used for starting in profile mode
+     * @param jvmArgs used for starting in profile mode
+     * @param stateListener state monitor to track start progress
      */
-    public StartTask(Map<String, String> properties, List<Recognizer> recognizers,
+    public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
             FileObject jdkRoot, String[] jvmArgs, OperationStateListener... stateListener) {
-        super(properties, stateListener);
+        super(support.getInstanceProperties(), stateListener);
+        this.support = support;
         this.recognizers = recognizers;
         this.jdkHome = jdkRoot;
         this.jvmArgs = (jvmArgs != null) ? Arrays.asList(jvmArgs) : null;
@@ -134,7 +142,13 @@ public class StartTask extends BasicTask<OperationState> {
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
         }
         
-        Process serverProcess = createProcess();
+        Process serverProcess = null;
+        try {
+            serverProcess = createProcess();
+        } catch (IOException ex) {
+            fireOperationStateChanged(OperationState.FAILED, 
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N
+        }
         if (serverProcess == null) {
             // failed event already sent...
             return OperationState.FAILED;
@@ -151,24 +165,29 @@ public class StartTask extends BasicTask<OperationState> {
         // Waiting for server to start
         while(System.currentTimeMillis() - start < START_TIMEOUT) {
             // Send the 'completed' event and return when the server is running
-            if(CommonServerSupport.isRunning(host, port)) {
-                // !PW FIXME V3 as of March 12 is starting Grizzly & listening
-                // for connections before the server is ready to take asadmin
-                // commands.  Until this is fixed, wait 1 second before assuming
-                // it's really ok.  Otherwise, domain.xml can get corrupted.
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException ex) {
-                }
-                return fireOperationStateChanged(OperationState.COMPLETED, 
-                        "MSG_SERVER_STARTED", instanceName); // NOI18N
-            }
-            
+            boolean httpLive = CommonServerSupport.isRunning(host, port);
+
             // Sleep for a little so that we do not make our checks too often
+            //
+            // Doing this before we check httpAlive also prevents us from
+            // pinging the server too quickly after the ports go live.
+            //
             try {
                 Thread.sleep(DELAY);
             } catch (InterruptedException e) {
                 // no op
+            }
+
+            if(httpLive) {
+                Logger.getLogger("glassfish").log(Level.FINE, "Server HTTP is live.");
+                OperationState state = OperationState.COMPLETED;
+                String messageKey = "MSG_SERVER_STARTED";
+                if (!support.isReady(true)) {
+                    state = OperationState.FAILED;
+                    messageKey = "MSG_START_SERVER_FAILED";
+                }
+                return fireOperationStateChanged(state,
+                        messageKey, instanceName); // NOI18N
             }
             
             // if we are profiling, we need to lie about the status?
@@ -187,7 +206,7 @@ public class StartTask extends BasicTask<OperationState> {
                 "MSG_START_SERVER_FAILED", instanceName);
         return OperationState.FAILED;
     }
-    
+
     private String[] createEnvironment() {
         List<String> envp = new ArrayList<String>();
         String localJdkHome = getJdkHome();
@@ -229,7 +248,7 @@ public class StartTask extends BasicTask<OperationState> {
         return result;
     }
     
-    private NbProcessDescriptor createProcessDescriptor() {
+    private NbProcessDescriptor createProcessDescriptor() throws IOException {
         String startScript;
         if (null == jdkHome) {
            startScript = System.getProperty("java.home") +        
@@ -239,7 +258,7 @@ public class StartTask extends BasicTask<OperationState> {
                 File.separatorChar + "bin" + File.separatorChar + "java";
         }
         String serverHome = ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_PREFIX_JAR_NAME);
+        File jar = ServerUtilities.getJarName(serverHome, ServerUtilities.GFV3_JAR_MATCHER);
         if(jar == null) {
             fireOperationStateChanged(OperationState.FAILED, "MSG_START_SERVER_FAILED_FNF"); // NOI18N
             return null;
@@ -274,7 +293,7 @@ public class StartTask extends BasicTask<OperationState> {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
     
-    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) {
+    private StringBuilder appendJavaOpts(List<String> optList, StringBuilder argumentBuf) throws IOException {
         for(String option: optList) {
             argumentBuf.append(' ');
             argumentBuf.append(option);
@@ -282,9 +301,22 @@ public class StartTask extends BasicTask<OperationState> {
 
         if(GlassfishModule.DEBUG_MODE.equals(ip.get(GlassfishModule.JVM_MODE))) {
 //            javaOpts.append(" -classic -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,address="). // NOI18N
-            argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=");
-            argumentBuf.append(ip.get(GlassfishModule.DEBUG_PORT));
-            argumentBuf.append(",server=y,suspend=n"); // NOI18N
+            try {
+                int debugPort = 8787;
+                // calculate the port and save it.
+                ServerSocket t = new ServerSocket(0);
+                debugPort = t.getLocalPort();
+                String debugPortString = Integer.toString(debugPort);
+                support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, debugPortString, true);
+                argumentBuf.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address="); // NOI18N
+                argumentBuf.append(debugPortString);
+                argumentBuf.append(",server=y,suspend=n"); // NOI18N
+                t.close();
+            } catch (IOException ioe) {
+                Logger.getLogger("glassfish").log(Level.FINE, "Could not get a socket for debugging",ioe);
+                fireOperationStateChanged(OperationState.FAILED,
+                    "MSG_START_SERVER_FAILED_BADPORT", instanceName); //NOI18N                throw ioe;
+            }
         }
         return argumentBuf;
     }
@@ -315,7 +347,7 @@ public class StartTask extends BasicTask<OperationState> {
         return argumentBuf;
     }
     
-    private Process createProcess() {
+    private Process createProcess() throws IOException {
         Process process = null;
         NbProcessDescriptor pd = createProcessDescriptor();
         if(pd != null) {
@@ -342,7 +374,7 @@ public class StartTask extends BasicTask<OperationState> {
     
     private void readJvmArgs(File domainRoot, List<String> optList, Map<String, String> argMap) {
         Map<String, String> varMap = new HashMap<String, String>();
-        
+
         varMap.put("com.sun.aas.installRoot", fixPath(ip.get(GlassfishModule.GLASSFISH_FOLDER_ATTR)));
         varMap.put("com.sun.aas.instanceRoot", fixPath(domainRoot.getAbsolutePath()));
         varMap.put("com.sun.aas.javaRoot", fixPath(System.getProperty("java.home")));

@@ -64,7 +64,7 @@ public class ArrayCreation extends Expression {
         }
     }
 
-    public ArrayCreation(int start, int end, List elements) {
+    public ArrayCreation(int start, int end, List<ArrayElement> elements) {
         this(start, end, elements == null ? null : (ArrayElement[]) elements.toArray(new ArrayElement[elements.size()]));
     }
 

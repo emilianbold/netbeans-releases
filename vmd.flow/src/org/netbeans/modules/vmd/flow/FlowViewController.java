@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.flow.visual.FlowScene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.api.visual.vmd.VMDMinimizeAbility;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
@@ -130,7 +131,7 @@ public class FlowViewController implements DesignDocumentAwareness {
     }
 
     private JButton addToolbarButton (String imageResourceName, String toolTipText, ActionListener listener) {
-        final JButton button = new JButton (new ImageIcon (Utilities.loadImage ("org/netbeans/modules/vmd/flow/resources/" + imageResourceName + ".png"))); // NOI18N
+        final JButton button = new JButton (new ImageIcon (ImageUtilities.loadImage ("org/netbeans/modules/vmd/flow/resources/" + imageResourceName + ".png"))); // NOI18N
         button.setOpaque (false);
         button.setToolTipText (toolTipText);
         button.setBorderPainted (false);

@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.apisupport.project.ui.wizard.updatecenter;
 
-import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 import java.util.jar.Manifest;
@@ -50,6 +49,7 @@ import org.netbeans.modules.apisupport.project.ManifestManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
+import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.ui.wizard.BasicWizardIterator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -83,7 +83,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
         if (cmf == null) {
             cmf = new CreatedModifiedFiles (getProject ());
         }
-        boolean newAPI = ((NbModuleProject) getProject()).getPlatform(true).getModule(AUTOUPDATE_MODULE_NEW) != null;
+
+        boolean newAPI = LayerUtils.getPlatformForProject(getProject()).getModule(AUTOUPDATE_MODULE_NEW) != null;
         String extension = (newAPI) ? AUTOUPDATE_INSTANCE_TYPE_EXT : AUTOUPDATE_SETTINGS_TYPE_EXT;
         FileObject template = newAPI ? null : CreatedModifiedFiles.getTemplate("update_center.xml"); // NOI18N
         String serviceTypeName = getModuleInfo().getCodeNameBase ().replace ('.', '_') + AUTOUPDATE_SERVICE_TYPE; // NOI18N
@@ -101,7 +102,8 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             } while (f != null);
         }
         String codename = null;
-        Manifest mani = ((NbModuleProject) getProject()).getManifest();
+        NbModuleProvider mp = getProject().getLookup().lookup(NbModuleProvider.class);
+        Manifest mani = Util.getManifest(mp.getManifestFile());
         if (mani != null) {
             codename = mani.getMainAttributes().getValue("OpenIDE-Module"); // NOI18N
         }

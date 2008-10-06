@@ -45,6 +45,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JTabbedPane;
 import org.openide.awt.TabbedPaneFactory;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -64,7 +65,7 @@ public final class BuildPlanTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(BuildPlanTopComponent.class, "CTL_BuildPlanTopComponent"));
 
-        setIcon(Utilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/buildplangoals.png", true));
+        setIcon(ImageUtilities.loadImage("org/netbeans/modules/maven/buildplan/nodes/buildplangoals.png", true));
         tabpane.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
 
             public void propertyChange(PropertyChangeEvent evt) {

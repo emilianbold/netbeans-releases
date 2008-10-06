@@ -47,6 +47,7 @@ import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -73,12 +74,12 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
     private ActionsPanel                actionsPanel; 
     private ClassLoadUnloadBreakpoint   breakpoint;
     private boolean                     createBreakpoint = false;
-    private JEditorPane                 epClassName;
+    private JTextField                  tfClassName;
     
     private static ClassLoadUnloadBreakpoint creteBreakpoint () {
         String className;
         try {
-            className = EditorContextBridge.getContext().getCurrentClassName();
+            className = EditorContextBridge.getMostRecentClassName();
         } catch (java.awt.IllegalComponentStateException icsex) {
             className = "";
         }
@@ -113,11 +114,11 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         ResourceBundle bundle = NbBundle.getBundle(ClassBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Class_Breakpoint_Class_Name");
 
-        epClassName = addClassNameEditor(pSettings, className, tooltipText);
-        epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
-        epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
-        HelpCtx.setHelpIDString(epClassName, HELP_ID);
-        jLabel3.setLabelFor(epClassName);
+        tfClassName = addClassNameEditor(pSettings, className, tooltipText);
+        tfClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
+        tfClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
+        HelpCtx.setHelpIDString(tfClassName, HELP_ID);
+        jLabel3.setLabelFor(tfClassName);
         
         cbBreakpointType.addItem (bundle.getString("LBL_Class_Breakpoint_Type_Prepare"));
         cbBreakpointType.addItem (bundle.getString("LBL_Class_Breakpoint_Type_Unload"));
@@ -135,6 +136,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         }
         
         conditionsPanel = new ConditionsPanel(HELP_ID);
+        conditionsPanel.setupConditionPaneContext();
         cPanel.add(conditionsPanel, "Center");
         conditionsPanel.showExclusionClassFilter(true);
         conditionsPanel.showCondition(false);
@@ -257,7 +259,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         }
         actionsPanel.ok ();
         
-        String className = epClassName.getText ().trim ();
+        String className = tfClassName.getText ().trim ();
         breakpoint.setClassFilters(ConditionsPanel.getFilter(className));
         breakpoint.setClassExclusionFilters(conditionsPanel.getClassExcludeFilter());//parseClassFilters(className));
         
@@ -300,7 +302,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
     }
     
     private String valiadateMsg () {
-        if (epClassName.getText().trim ().length() == 0) {
+        if (tfClassName.getText().trim ().length() == 0) {
             return NbBundle.getMessage(ClassBreakpointPanel.class, "MSG_No_Class_Name_Spec");
         }
         return null;
@@ -319,8 +321,8 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         }
     }
 
-    static JEditorPane addClassNameEditor(JComponent comp, String className, String tooltipText) {
-        JEditorPane editorPane = new JEditorPane("text/x-java", className); // NOI18N
+    static JTextField addClassNameEditor(JComponent comp, String className, String tooltipText) {
+        JTextField textField = new JTextField(className); // NOI18N
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -328,10 +330,9 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
-        JScrollPane scrollableLineEditor = WatchPanel.createScrollableLineEditor(editorPane);
-        comp.add(scrollableLineEditor, gridBagConstraints);
-        editorPane.setToolTipText(tooltipText);
-        return editorPane;
+        comp.add(textField, gridBagConstraints);
+        textField.setToolTipText(tooltipText);
+        return textField;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

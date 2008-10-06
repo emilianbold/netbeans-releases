@@ -74,6 +74,7 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyStructureAnalyzer.AnalysisResult;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.ClassElement;
@@ -338,18 +339,7 @@ public class RubyIndexer implements Indexer {
             FileObject fo = file.getFileObject();
 
             if (fo != null) {
-                // openide.loaders/src/org/openide/text/DataEditorSupport.java
-                // has an Env#inputStream method which posts a warning to the user
-                // if the file is greater than 1Mb...
-                //SG_ObjectIsTooBig=The file {1} seems to be too large ({2,choice,0#{2}b|1024#{3} Kb|1100000#{4} Mb|1100000000#{5} Gb}) to safely open. \n\
-                //  Opening the file could cause OutOfMemoryError, which would make the IDE unusable. Do you really want to open it?
-                // I don't want to try indexing these files... (you get an interactive
-                // warning during indexing
-                if (fo.getSize () > 1024 * 1024) {
-                    return;
-                }
-                
-                this.doc = NbUtilities.getBaseDocument(fo, true);
+                this.doc = GsfUtilities.getDocument(fo, true, true);
             } else {
                 this.doc = null;
             }

@@ -46,6 +46,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
@@ -313,7 +314,16 @@ public final class JsfForm implements ActiveEditorDrop {
         String name = methodName.substring(3);
         String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
         TypeMirror t = method.getReturnType();
-        TypeMirror tstripped = JpaControllerUtil.stripCollection(t, controller.getTypes());
+        Types types = controller.getTypes();
+        TypeMirror tstripped = JpaControllerUtil.stripCollection(t, types);
+        
+        boolean isCollection = t != tstripped;
+        boolean isCollectionTypeAssignableToSet = false;
+        if (isCollection) {
+            TypeElement tAsElement = (TypeElement) types.asElement(t);
+            isCollectionTypeAssignableToSet = isCollectionTypeAssignableToSet(tAsElement);
+        }
+        
         String relType = tstripped.toString();
         if (relType.endsWith("[]")) {
             relType = relType.substring(0, relType.length() - 2);
@@ -388,7 +398,7 @@ public final class JsfForm implements ActiveEditorDrop {
             //non editable
             String temporal = ( isRelationship == JpaControllerUtil.REL_NONE && controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ) ? getTemporal(controller, method, fieldAccess) : null;
             String template = "<h:outputText value=\"{0}:\"/>\n <h:outputText value=\"" + (isRelationship == JpaControllerUtil.REL_NONE ? "" : " ") + "#'{'{1}.{2}'}'\" title=\"{0}\" ";
-            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:outputText>\n";
+            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:outputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal)};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == JpaControllerUtil.REL_NONE && (formType == FORM_TYPE_NEW || formType == FORM_TYPE_EDIT) ) {
@@ -400,7 +410,7 @@ public final class JsfForm implements ActiveEditorDrop {
             template += isLob ? "<h:inputTextarea rows=\"4\" cols=\"30\"" : "<h:inputText";
             template += " id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
-            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
+            template += temporal == null ? "/>\n" : ">\n<f:convertDateTime pattern=\"{4}\" />\n</h:inputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};
             stringBuffer.append(MessageFormat.format(template, args));
         } else if ( isRelationship == JpaControllerUtil.REL_TO_ONE && (formType == FORM_TYPE_EDIT || formType == FORM_TYPE_NEW) ) {
@@ -418,7 +428,8 @@ public final class JsfForm implements ActiveEditorDrop {
             }
             else {
                 //listbox for editing toMany relationships
-                String template = "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{3}.jsfcrud_transform[jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method.collectionToArray][jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method.arrayToCollection].{2}'}'\" title=\"{0}\" size=\"6\" converter=\"#'{'{4}.converter'}'\" ";
+                String arrayToCollection = isCollectionTypeAssignableToSet ? "arrayToSet" : "arrayToList";
+                String template = "<h:outputText value=\"{0}:\"/>\n <h:selectManyListbox id=\"{2}\" value=\"#'{'{3}.{3}.jsfcrud_transform[jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method.collectionToArray][jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method." + arrayToCollection + "].{2}'}'\" title=\"{0}\" size=\"6\" converter=\"#'{'{4}.converter'}'\" ";
                 template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
                 template += ">\n <f:selectItems value=\"#'{'{4}.{4}ItemsAvailableSelectMany'}'\"/>\n </h:selectManyListbox>\n";
                 Object[] args = new Object [] {name, simpleEntityName, propName, variable.substring(0, variable.lastIndexOf('.')), relatedController, requiredMessage};
@@ -427,9 +438,21 @@ public final class JsfForm implements ActiveEditorDrop {
         }
     }
     
+    private static boolean isCollectionTypeAssignableToSet(TypeElement tAsElement) {
+        String collectionTypeClass = tAsElement.getQualifiedName().toString();   //java.util.Collection, java.util.List, java.util.Set
 
-    
-
+        Class collectionTypeAsClass = null;
+        try {
+            collectionTypeAsClass = Class.forName(collectionTypeClass);
+        } catch (ClassNotFoundException cfne) {
+            //let collectionTypeAsClass be null
+        }
+        if (collectionTypeAsClass != null && Set.class.isAssignableFrom(collectionTypeAsClass)) {
+            return true;
+        }
+        
+        return false;
+    }
     
     public static String getFreeTableVarName(String name, List<String> entities) {
         //return a permutation of name that is not a managed bean name among the entities
@@ -471,17 +494,21 @@ public final class JsfForm implements ActiveEditorDrop {
                     String name = methodName.substring(3);
                     String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
                     if (isRelationship == JpaControllerUtil.REL_TO_MANY) {
-                        Types types = controller.getTypes();                        
-                        TypeMirror typeArgMirror = JpaControllerUtil.stripCollection(method.getReturnType(), types);
+                        Types types = controller.getTypes(); 
+                        TypeMirror t = method.getReturnType();
+                        TypeMirror typeArgMirror = JpaControllerUtil.stripCollection(t, types);
                         TypeElement typeElement = (TypeElement)types.asElement(typeArgMirror);
                         if (typeElement != null) {
+                            TypeElement tAsElement = (TypeElement) types.asElement(t);
+                            boolean isCollectionTypeAssignableToSet = isCollectionTypeAssignableToSet(tAsElement);
                             String relatedClass = typeElement.getSimpleName().toString();
                             String relatedManagedBean = JSFClientGenerator.getManagedBeanName(relatedClass);
                             String tableVarName = getFreeTableVarName("item", entities); //NOI18N
                             stringBuffer.append("<h:outputText value=\"" + name + ":\" />\n");
                             stringBuffer.append("<h:panelGroup>\n");
                             stringBuffer.append("<h:outputText rendered=\"#{empty " + variable + "." + propName + "}\" value=\"(No Items)\"/>\n");
-                            stringBuffer.append("<h:dataTable value=\"#{" + variable + "." + propName + "}\" var=\"" + tableVarName + "\" \n");
+                            String valueAttribute = isCollectionTypeAssignableToSet ? variable + ".jsfcrud_transform[jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method.setToList][jsfcrud_null]." + propName : variable + "." + propName;
+                            stringBuffer.append("<h:dataTable value=\"#{" + valueAttribute + "}\" var=\"" + tableVarName + "\" \n");
                             stringBuffer.append("border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\" \n rendered=\"#{not empty " + variable + "." + propName + "}\">\n"); //NOI18N
                             
                             String commands = "<h:column>\n"

@@ -98,11 +98,11 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     public Point locationSuggested (Widget widget, Point originalLocation, Point suggestedLocation) {
         
         
-        if(movingWidgets == null)
-        {
-            if(originalLocation.equals(suggestedLocation))return suggestedLocation;//do not move if no real movement started
-            initializeMovingWidgets(widget.getScene(), widget);
-        }
+//        if(movingWidgets == null)
+//        {
+//            if(originalLocation.equals(suggestedLocation))return suggestedLocation;//do not move if no real movement started
+//            initializeMovingWidgets(widget.getScene(), widget);
+//        }
         
         if(movingWidgets.size() > 1)
         {
@@ -122,8 +122,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         
         Widget parent = widget.getParentWidget();
         
-        Point scenePoint = parent.convertLocalToScene(suggestedLocation);
-        Point point = super.locationSuggested (widget, bounds, scenePoint, true, true, true, true);
+        Point point = super.locationSuggested (widget, bounds, suggestedLocation, true, true, true, true);
         if (! outerBounds) {
             point.x -= insets.left;
             point.y -= insets.top;
@@ -205,6 +204,8 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     public Point getOriginalLocation (Widget widget) {
         
         original = widget.getPreferredLocation();
+        initializeMovingWidgets(widget.getScene(), widget);
+        
         lastPoint = original;
         return original;
     }
@@ -228,11 +229,28 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
     Point lastPoint = null;
     public void setNewLocation (Widget widget, Point location) {
         
-        if(location != null)
+        if(location != null && original != null)
         {
-            int dx = location.x - original.x;
-            int dy = location.y - original.y;
-            if(dx!=0 || dy!=0)
+            //int dx = location.x - original.x;
+            //int dy = location.y - original.y;
+
+            // Determine if the new location of the widget has actually moved.
+            //
+            // Originally we used the dx and dy variables to determine if the
+            // node moved.  However, the dx and dy values are based off the
+            // original position of the widget.  In this case the "original"
+            // position of the widget is defined as the location before the move
+            // started.  Therefore if the widget is moved back to the exact
+            // coordinate as the origional location the widget will not be
+            // moved.  This is not that big of a deal when using the mouse to
+            // move because it is not very likely that the exact coordinate will
+            // occur in a single move.  However when using the keyboard to move
+            // nodes this is very likey to happen, especially on the SQD where
+            // the lifeline node can only be moved left and right.
+
+            int dx = location.x - widget.getPreferredLocation().x;
+            int dy = location.y - widget.getPreferredLocation().y;
+            if(dx != 0 || dy != 0)
             {
                 if(movingWidgets == null)
                 {
@@ -246,13 +264,16 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                 // 
                 // Therefore use the reference widget to determine the dx.
 
-                int edgeDx = location.x - lastPoint.x;
-                int edgeDy = location.y - lastPoint.y;
                 lastPoint = location;
-                adjustControlPoints(getMovingWidgetList(), edgeDx, edgeDy);
+                adjustControlPoints(getMovingWidgetList(), dx, dy);
                 for(MovingWidgetDetails details : movingWidgets)
                 {
-                    Point point = details.getOriginalLocation();
+                    Point point = details.getWidget().getPreferredLocation();
+                    if(point == null)
+                    {
+                        point = details.getWidget().getLocation();
+                    }
+                    
                     Point newPt = new Point(point.x + dx, point.y + dy);
                     if (details.getWidget() instanceof ConnectionWidget)
                     {

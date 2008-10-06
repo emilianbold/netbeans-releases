@@ -42,6 +42,7 @@ package org.netbeans.modules.db.metadata.model.api;
 import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 
 /**
+ * Encapsulates a table column.
  *
  * @author Andrei Badea
  */
@@ -51,6 +52,10 @@ public class Column extends MetadataObject {
 
     Column(ColumnImplementation impl) {
         this.impl = impl;
+    }
+
+    public Table getParent() {
+        return impl.getParent();
     }
 
     public String getName() {

@@ -71,9 +71,11 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                 SemanticHighlightsLayer layer = weakReference.get ();
                 if (layer == null) continue;
                 remove = false;
-                if (layer.offsetsBag1 == null)
-                    layer.offsetsBag1 = new OffsetsBag (document);
-                layer.offsetsBag1.addHighlight (startOffset, endOffset, attributeSet);
+                synchronized (layer) {
+                    if (layer.offsetsBag1 == null)
+                        layer.offsetsBag1 = new OffsetsBag (document);
+                    layer.offsetsBag1.addHighlight (startOffset, endOffset, attributeSet);
+                }
                 newLayers.add (weakReference);
             }
         }
@@ -97,10 +99,12 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
                 SemanticHighlightsLayer layer = weakReference.get ();
                 if (layer == null) continue;
                 remove = false;
-                layer.offsetsBag = layer.offsetsBag1;
-                layer.offsetsBag1 = null;
-                if (layer.offsetsBag == null)
-                    layer.offsetsBag = new OffsetsBag (document);
+                synchronized (layer) {
+                    layer.offsetsBag = layer.offsetsBag1;
+                    layer.offsetsBag1 = null;
+                    if (layer.offsetsBag == null)
+                        layer.offsetsBag = new OffsetsBag (document);
+                }
                 layer.fireHighlightsChange (0, document.getLength ());
             }
         }

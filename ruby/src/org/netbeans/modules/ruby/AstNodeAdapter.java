@@ -82,7 +82,7 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
             addChildren(childList, node);
             children = childList.toArray(new AstNodeAdapter[childList.size()]);
         } else {
-            List<Node> subnodes = (List<Node>)node.childNodes();
+            List<Node> subnodes = node.childNodes();
             children = new AstNodeAdapter[subnodes.size()];
 
             int index = 0;
@@ -94,7 +94,7 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     private void addChildren(List<AstNodeAdapter> children, Node node) {
-        List<Node> subnodes = (List<Node>)node.childNodes();
+        List<Node> subnodes = node.childNodes();
 
         for (Node child : subnodes) {
             if (child instanceof NewlineNode) {

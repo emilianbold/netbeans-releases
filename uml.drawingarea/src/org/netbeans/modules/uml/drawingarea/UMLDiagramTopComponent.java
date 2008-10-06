@@ -146,6 +146,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -247,7 +248,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             });
         }
     }
-
 
     public UMLDiagramTopComponent(String filename) throws DataObjectNotFoundException {
         this();
@@ -382,22 +382,6 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         map.put(DefaultEditorKit.pasteAction, pasteActionPerformer);
         map.put("delete", deleteActionPerformer); // NOI18N
         return map;
-    }
-
-    
-    public void fitToZoom()
-    {
-        Rectangle rectangle = new Rectangle (0, 0, 1, 1);
-        
-        for (Widget widget : scene.getChildren ())
-        {
-            rectangle = rectangle.union(widget.convertLocalToScene(widget.getBounds()));
-        }
-        
-        Dimension dim = rectangle.getSize ();
-        Dimension viewDim = jScrollPane1.getViewportBorderBounds ().getSize ();
-        
-        scene.setZoomFactor (Math.min ((float) viewDim.width / dim.width, (float) viewDim.height / dim.height));
     }
     
     ///////////////////////////////////////////////////////////////////////////
@@ -670,14 +654,14 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         final String details = resource.getIconDetailsForElementType(kind);
         if (java.awt.EventQueue.isDispatchThread())
         {
-            setIcon(Utilities.loadImage(details, true));
+            setIcon(ImageUtilities.loadImage(details, true));
         } else
         {
             java.awt.EventQueue.invokeLater(new Runnable()
             {
                 public void run()
                 {
-                    setIcon(Utilities.loadImage(details, true));
+                    setIcon(ImageUtilities.loadImage(details, true));
                 }
             });
         }
@@ -698,6 +682,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
         if(diagramView != null)
         {
             diagramView.putClientProperty("print.name", diagram.getNameWithAlias()); // NOI18N
+            diagramView.getAccessibleContext().setAccessibleName(diagram.getNameWithAlias());
+            diagramView.getAccessibleContext().setAccessibleDescription(getToolTipText());
         }
     }
 
@@ -934,6 +920,8 @@ public class UMLDiagramTopComponent extends TopComponent implements MouseListene
             diagramView.addMouseListener(this);
 
             jScrollPane1.setViewportView(view);
+            jScrollPane1.getVerticalScrollBar().setUnitIncrement(20);
+            jScrollPane1.getHorizontalScrollBar().setUnitIncrement(20);
             SceneChangeListener scListener = new SceneChangeListener(getDiagramDO(), scene);
             scene.addObjectSceneListener(scListener, 
                                          ObjectSceneEventType.OBJECT_ADDED,

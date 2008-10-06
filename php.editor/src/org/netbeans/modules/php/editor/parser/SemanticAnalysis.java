@@ -49,8 +49,8 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.php.editor.PHPLanguage;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
@@ -107,7 +107,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
 
         if (result.getProgram() != null) {
-            result.getProgram().accept(new SemanticHighlightVisitor(highlights));
+            result.getProgram().accept(new SemanticHighlightVisitor(highlights, result.getTranslatedSource()));
 
             if (highlights.size() > 0) {
                 semanticHighlights = highlights;
@@ -154,16 +154,28 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         // for unsed private method: name, identifier
         private final Map<String, IdentifierColoring> privateMethod;
         // this is holder of blocks, which has to be scanned for usages in the class.
-        private List<Block> needToScan;
+        private List<Block> needToScan = new ArrayList<Block>();
 
-        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights) {
+        private final TranslatedSource translatedSource;
+
+        public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, TranslatedSource translatedSource) {
             this.highlights = highlights;
             privateFieldsUsed = new HashMap<String, IdentifierColoring>();
             privateMethod = new HashMap<String, IdentifierColoring>();
+            this.translatedSource = translatedSource;
         }
 
-        private OffsetRange createOffsetRange(ASTNode node) {
-            return new OffsetRange(node.getStartOffset(), node.getEndOffset());
+        private void addOffsetRange(ASTNode node, Set<ColoringAttributes> coloring) {
+            if (translatedSource == null) {
+                highlights.put(new OffsetRange(node.getStartOffset(), node.getEndOffset()), coloring);
+            }
+            else {
+                int start = translatedSource.getLexicalOffset(node.getStartOffset());
+                if (start > -1) {
+                    int end = start + node.getEndOffset() - node.getStartOffset();
+                    highlights.put(new OffsetRange(start, end), coloring);
+                }
+            }
         }
 
         @Override
@@ -172,8 +184,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 return;
             }
             Identifier name = cldec.getName();
-            OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
-            highlights.put(or, ColoringAttributes.CLASS_SET);
+            addOffsetRange(name, ColoringAttributes.CLASS_SET);
             needToScan = new ArrayList<Block>();
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
@@ -184,24 +195,22 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 }
                 // are there unused private fields?
                 for (IdentifierColoring item : privateFieldsUsed.values()) {
-                    or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                        highlights.put(or, UNUSED_STATIC_FIELD_SET);
+                        addOffsetRange(item.identifier, UNUSED_STATIC_FIELD_SET);
                     }
                     else {
-                        highlights.put(or, UNUSED_FIELD_SET);
+                        addOffsetRange(item.identifier, UNUSED_FIELD_SET);
                     }
 
                 }
 
                 // are there unused private methods?
                 for(IdentifierColoring item : privateMethod.values()) {
-                    or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
                     if (item.coloring.contains(ColoringAttributes.STATIC)) {
-                        highlights.put(or, UNUSED_STATIC_METHOD_SET);
+                        addOffsetRange(item.identifier, UNUSED_STATIC_METHOD_SET);
                     }
                     else {
-                        highlights.put(or, UNUSED_METHOD_SET);
+                        addOffsetRange(item.identifier, UNUSED_METHOD_SET);
                     }
                 }
             }
@@ -217,18 +226,21 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             }
 
             Identifier identifier = md.getFunction().getFunctionName();
-            if (isPrivate) {
+            String name = identifier.getName();
+            // don't color private magic private method. methods which start __
+            if (isPrivate && name != null && !name.startsWith("__")) {
                 privateMethod.put(identifier.getName(), new IdentifierColoring(identifier, coloring));
             }
             else {
                 // color now only non private method
-                highlights.put(createOffsetRange(identifier), coloring);
+                addOffsetRange(identifier, coloring);
             }
             if (!Modifier.isAbstract(md.getModifier())) {
                 // don't scan the body now. It should be scanned after all declarations
                 // are known
-                if (md.getFunction().getBody() != null) {
-                    needToScan.add(md.getFunction().getBody());
+                Block body = md.getFunction().getBody();
+                if (body != null) {
+                    needToScan.add(body);
                 }
             }
         }
@@ -249,8 +261,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             if (identifier != null) {
                 IdentifierColoring item = privateMethod.remove(identifier.getName());
                 if (item != null) {
-                    OffsetRange or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
-                    highlights.put(or, item.coloring);
+                    addOffsetRange(item.identifier, item.coloring);
                 }
             }
             super.visit(node);
@@ -263,8 +274,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 return;
             }
             Identifier name = node.getName();
-            OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
-            highlights.put(or, ColoringAttributes.CLASS_SET);
+            addOffsetRange(name, ColoringAttributes.CLASS_SET);
             node.getBody().accept(this);
         }
 
@@ -285,8 +295,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             for (int i = 0; i < variables.length; i++) {
                 Variable variable = variables[i];
                 if (!isPrivate) {
-                    OffsetRange or = new OffsetRange(variable.getName().getStartOffset(), variable.getName().getEndOffset());
-                    highlights.put(or, ColoringAttributes.FIELD_SET);
+                    addOffsetRange(variable.getName(), ColoringAttributes.FIELD_SET);
                 } else {
                     if (variable.getName() instanceof Identifier) {
                         Identifier identifier =  (Identifier) variable.getName();
@@ -305,6 +314,7 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 Expression expr = node.getField().getName();
                 (new FieldAccessVisitor(ColoringAttributes.FIELD_SET)).scan(expr);
             }
+            super.scan(node.getDispatcher());
         }
 
         @Override
@@ -317,13 +327,11 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 String name = ((Identifier) fnName.getName()).getName();
                 IdentifierColoring item = privateMethod.remove(name);
                 if (item != null) {
-                    OffsetRange or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
-                    highlights.put(or, item.coloring);
+                    addOffsetRange(item.identifier, item.coloring);
                     return;
                 }
             }
-            OffsetRange or = new OffsetRange(fnName.getStartOffset(), fnName.getEndOffset());
-            highlights.put(or, ColoringAttributes.STATIC_SET);
+            addOffsetRange(fnName, ColoringAttributes.STATIC_SET);
         }
 
         @Override
@@ -345,11 +353,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 IdentifierColoring removed = privateFieldsUsed.remove(identifier.getName());
                 if (removed != null) {
                     // if it was removed, marked as normal field
-                    OffsetRange or = new OffsetRange(removed.identifier.getStartOffset(), removed.identifier.getEndOffset());
-                    highlights.put(or, removed.coloring);
+                    addOffsetRange(removed.identifier, removed.coloring);
                 }
-                OffsetRange or = new OffsetRange(identifier.getStartOffset(), identifier.getEndOffset());
-                highlights.put(or, coloring);
+                addOffsetRange(identifier, coloring);
             }
         }
     }

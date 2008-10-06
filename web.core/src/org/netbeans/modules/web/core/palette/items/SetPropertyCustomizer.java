@@ -65,7 +65,6 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
     private Dialog dialog = null;
     private DialogDescriptor descriptor = null;
     private boolean dialogOK = false;
-
     SetProperty setProperty;
     JTextComponent target;
     
@@ -79,20 +78,18 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
         beanNameCb.setSelectedIndex(setProperty.getBeanIndex());
         addDocumentListener(beanNameCb);
     }
-    
-   
             
     public boolean showDialog() {
         dialogOK = false;
         
-        String displayName = "";
+        String displayName = "";  // NOI18N
         try {
             displayName = NbBundle.getBundle("org.netbeans.modules.web.core.palette.items.resources.Bundle").getString("NAME_jsp-SetProperty"); // NOI18N
         }
         catch (Exception e) {}
         
         descriptor = new DialogDescriptor
-                (this, NbBundle.getMessage(SetPropertyCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,
+                (this, NbBundle.getMessage(SetPropertyCustomizer.class, "LBL_Customizer_InsertPrefix") + " " + displayName, true,  // NOI18N
                  DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION,
                  new ActionListener() {
                      public void actionPerformed(ActionEvent e) {
@@ -118,11 +115,9 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
             public void insertUpdate(DocumentEvent arg0) {
                 updateProperties();
             }
-
             public void removeUpdate(DocumentEvent arg0) {
                 updateProperties();
             }
-
             public void changedUpdate(DocumentEvent arg0) {
                 updateProperties();
             }
@@ -144,7 +139,7 @@ public class SetPropertyCustomizer extends javax.swing.JPanel {
         if (currentBean == null) {
             propertyNameCb.setModel(new DefaultComboBoxModel());
         } else {
-            String[] pref = {"set"};
+            String[] pref = {"set"};  // NOI18N
             propertyNameCb.setModel(new DefaultComboBoxModel(JSPPaletteUtilities.getTypeProperties(target, currentBean.getFqcn(), pref).toArray()));
         }
     }

@@ -176,6 +176,10 @@ public class XMLSyntaxParser {
                             } else {
                                 currentNode = new Element();
                                 Node parent = stack.peek();
+                                if(parent instanceof Document &&
+                                   ((Document)parent).getDocumentElement() != null)
+                                    throw new IOException("Invalid XML document: " +
+                                            "Cannot have multiple root elements.");
                                 parent.appendChild(currentNode);
                                 stack.push(currentNode);
                                 currentTokens.add(Token.create(image,tokenType));
@@ -320,7 +324,7 @@ public class XMLSyntaxParser {
                 }
             }
             Node result = stack.pop();
-            if(result instanceof Document) {           
+            if(result instanceof Document) {
                 return (Document)result;
             } else {
                 throw new IOException("Document not well formed/Invalid: " +
@@ -330,7 +334,7 @@ public class XMLSyntaxParser {
             ((AbstractDocument)basedoc).readUnlock();
         }        
     }
-        
+    
     private String combineString(List<Token> tokens) {
         StringBuilder sb = new StringBuilder();
         for (Token t: tokens) {

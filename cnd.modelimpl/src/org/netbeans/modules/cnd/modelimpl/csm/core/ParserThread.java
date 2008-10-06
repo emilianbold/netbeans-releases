@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
@@ -78,7 +79,8 @@ public class ParserThread implements Runnable {
         while( !stopped ) {
             if( TraceFlags.TRACE_PARSER_QUEUE ) trace("polling queue"); // NOI18N
             try {
-                ParserQueue.Entry entry = queue.poll();
+                AtomicReference<FileImpl.State> fileState = new AtomicReference<FileImpl.State>();
+                ParserQueue.Entry entry = queue.poll(fileState);
                 if( entry == null ) {
                     if( TraceFlags.TRACE_PARSER_QUEUE ) trace("waiting"); // NOI18N
                     isStoped = true;
@@ -111,7 +113,7 @@ public class ParserThread implements Runnable {
                             }
                         }
                         if( ! file.getProjectImpl(true).isDisposing() ) {
-                            file.ensureParsed(preprocHandlers);
+                            file.ensureParsed(preprocHandlers, fileState);
                         }
                     }
                     catch( Throwable thr ) {

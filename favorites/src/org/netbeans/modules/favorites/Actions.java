@@ -67,8 +67,8 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.actions.NodeAction;
@@ -108,7 +108,7 @@ public final class Actions extends Object {
         public View() {
             putValue(NAME, NbBundle.getMessage(Actions.class,
                     "ACT_View"));
-            Image image = Utilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
+            Image image = ImageUtilities.loadImage("org/netbeans/modules/favorites/resources/actionView.png"); // NOI18N
             putValue(SMALL_ICON, image != null ? new ImageIcon(image) : null);
         }
         
@@ -413,7 +413,8 @@ public final class Actions extends Object {
                     }
                 }
                 //#50482: Check if selected file exists eg. user can enter any file name to text box.
-                if (!selectedFile.exists()) {
+                //#144985: Create new File because of inconsistence in File.exists (JDK bug 6751997)
+                if (!new File(selectedFile, "").exists()) {
                     String message = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExist",selectedFile.getPath());
                     String title = NbBundle.getMessage(Actions.class,"ERR_FileDoesNotExistDlgTitle");
                     DialogDisplayer.getDefault().notify

@@ -48,15 +48,19 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.execution.OutputWindowWriter;
+import org.netbeans.modules.cnd.execution.Unbuffer;
 import org.openide.ErrorManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -190,6 +194,31 @@ public class NativeExecutor implements Runnable {
     public void setExitValueOverride(String rcfile) {
         this.rcfile = rcfile;
     }
+
+    private final String[] prepareEnvironment() {
+        List<String> envpList = new ArrayList<String>();
+        if (envp != null) {
+            envpList.addAll(Arrays.asList(envp));
+        }
+        envpList.add("SPRO_EXPAND_ERRORS="); // NOI18N
+
+        if (unbuffer) {
+            try {
+                // TODO: resolve remote path correctly!
+                File exeFile = new File(runDir, executable);
+                if (!exeFile.exists()) {
+                    //try to resolve from the root
+                    exeFile = new File(executable);
+                }
+                for (String envEntry : Unbuffer.getUnbufferEnvironment(hkey, exeFile.getAbsolutePath())) {
+                    envpList.add(envEntry);
+                }
+            } catch (Exception ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return envpList.toArray(new String[envpList.size()]);
+    }
     
     /**
      *  Call execute(), not this method directly!
@@ -213,12 +242,11 @@ public class NativeExecutor implements Runnable {
         try {
             // Execute the selected command
             nativeExecution = NativeExecution.getDefault(hkey).getNativeExecution();
-            String[] preparedEnvp = nativeExecution.prepareEnvironment(envp, unbuffer);
             rc = nativeExecution.executeCommand(
                     runDirFile,
                     executable,
                     arguments,
-                    preparedEnvp,
+                    prepareEnvironment(),
                     out,
 		    showInput ? io.getIn() : null,
                     unbuffer);

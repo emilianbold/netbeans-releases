@@ -119,6 +119,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
    static final JTextComponent.KeyBinding[] defaultBindings =
    {
       new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_MASK), DefaultEditorKit.copyAction),
+      new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, InputEvent.CTRL_MASK), DefaultEditorKit.copyAction),
       //new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_V, InputEvent.CTRL_MASK), DefaultEditorKit.pasteAction),
       //new JTextComponent.KeyBinding(KeyStroke.getKeyStroke(KeyEvent.VK_X, InputEvent.CTRL_MASK), DefaultEditorKit.cutAction)
    };
@@ -267,6 +268,7 @@ public class EditControlImpl extends JPanel implements IEditControl, InputMethod
       {
          KeyStroke keyStroke = KeyStroke.getKeyStroke( KeyEvent.VK_V, InputEvent.CTRL_MASK );
          map.addActionForKeyStroke( keyStroke, new PasteAction());
+         map.addActionForKeyStroke( KeyStroke.getKeyStroke( KeyEvent.VK_INSERT, InputEvent.SHIFT_MASK ), new PasteAction());
          keyStroke = KeyStroke.getKeyStroke( KeyEvent.VK_X, InputEvent.CTRL_MASK );
          map.addActionForKeyStroke( keyStroke, new CutAction() );
          

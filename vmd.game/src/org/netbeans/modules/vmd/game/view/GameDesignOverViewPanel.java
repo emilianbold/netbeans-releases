@@ -166,7 +166,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
         
         //add scenes label
         labelScenes = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelScenes.txt"));
-        labelScenes.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        labelScenes.setFont(new java.awt.Font("Dialog", 1, labelScenes.getFont().getSize()+7)); // NOI18N
         labelScenes.setForeground(ColorConstants.COLOR_TEXT_PLAIN);
         labelScenes.setHorizontalAlignment(SwingConstants.LEFT);
         this.add(labelScenes);      
@@ -175,7 +175,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
         
         //add tiled layers label
         labelTiledLayers = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelTiledLayers.txt"));
-        labelTiledLayers.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        labelTiledLayers.setFont(new java.awt.Font("Dialog", 1, labelTiledLayers.getFont().getSize()+7)); // NOI18N
         labelTiledLayers.setForeground(new java.awt.Color(163, 184, 215));
         labelTiledLayers.setHorizontalAlignment(SwingConstants.LEFT);
         this.add(labelTiledLayers);
@@ -184,7 +184,7 @@ public class GameDesignOverViewPanel extends ScrollableFlowPanel implements Comp
         
         //add sprites label
         labelSprites = new JLabel(NbBundle.getMessage(GameDesignOverViewPanel.class, "GameDesignOverViewPanel.labelSprites.txt"));
-        labelSprites.setFont(new java.awt.Font("Dialog", 1, 18)); // NOI18N
+        labelSprites.setFont(new java.awt.Font("Dialog", 1, labelSprites.getFont().getSize()+7)); // NOI18N
         labelSprites.setForeground(ColorConstants.COLOR_TEXT_PLAIN);
         labelSprites.setHorizontalAlignment(SwingConstants.LEFT);
         this.add(labelSprites);

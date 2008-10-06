@@ -73,6 +73,10 @@ public class ClassVariableImpl extends AbstractObjectVariable implements ClassVa
         return getDebugger().getClassType(clazz.referenceType());
     }
 
+    public JPDAClassType getReflectedType() {
+        return getDebugger().getClassType(clazz.reflectedType());
+    }
+
     public ClassVariableImpl clone() {
         ClassVariableImpl clon = new ClassVariableImpl(getDebugger(), clazz,
                 getID().substring(0, getID().length() - ".class".length()));

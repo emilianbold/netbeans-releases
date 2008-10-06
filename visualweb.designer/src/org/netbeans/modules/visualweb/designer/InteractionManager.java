@@ -83,6 +83,7 @@ import org.netbeans.spi.palette.PaletteController;
 import org.openide.awt.MouseUtils;
 import org.openide.nodes.Node;
 import org.openide.util.ContextAwareAction;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -1040,7 +1041,7 @@ public class InteractionManager {
                 p = new Point(9,9);
             } else {
             */
-            image = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/insert-cursor.gif"); //NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/resources/insert-cursor.gif"); //NOI18N
             p = new Point(9, 9);
 
             /* This doesn't work well - want to set our own hotspot
@@ -1075,7 +1076,7 @@ public class InteractionManager {
                 p = new Point(9,9);
             } else {
             */
-            image = org.openide.util.Utilities.loadImage("org/netbeans/modules/visualweb/designer/resources/linked-cursor.gif"); //NOI18N
+            image = ImageUtilities.loadImage("org/netbeans/modules/visualweb/designer/resources/linked-cursor.gif"); //NOI18N
             p = new Point(9, 9);
 
             /* This doesn't work well - want to set our own hotspot

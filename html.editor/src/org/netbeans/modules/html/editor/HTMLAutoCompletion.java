@@ -53,6 +53,7 @@ import org.netbeans.api.lexer.TokenSequence;
 
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.editor.ext.html.HTMLSyntaxSupport;
 
 /**
  * This static class groups the whole aspect of bracket
@@ -61,7 +62,7 @@ import org.netbeans.editor.ext.ExtSyntaxSupport;
  * The methods of the class are called from different actions as
  * KeyTyped, DeletePreviousChar.
  */
-class HTMLAutoCompletion {
+public class HTMLAutoCompletion {
     
     //an index of lastly completed equals sign
     private static int  equalsSignInsertedOffset = -1;
@@ -78,12 +79,10 @@ class HTMLAutoCompletion {
      * @param ch the character that was inserted
      * @throws BadLocationException
      */
-    static void charInserted(BaseDocument doc,
+    public static void charInserted(BaseDocument doc,
             int dotPos,
             Caret caret,
             char ch) throws BadLocationException {
-        String mimeType = (String)doc.getProperty("mimeType"); //NOI18N
-        if ("text/html".equals(mimeType)) { //NOI18N
             if (ch == '=') {
                 completeQuotes(doc, dotPos, caret);
             } else if(ch == '"') {
@@ -93,7 +92,6 @@ class HTMLAutoCompletion {
                 //user has pressed a key so I need to cancel the "quotation consuming mode"
                 equalsSignInsertedOffset = -1;
             }
-        }
     }
     
     //called when user deleted something in the document
@@ -116,9 +114,13 @@ class HTMLAutoCompletion {
             //test whether the user typed an ending quotation in the attribute value
             doc.readLock();
             try {
-                TokenHierarchy hi = TokenHierarchy.get(doc);
-                TokenSequence ts = hi.tokenSequence();
+//                TokenHierarchy hi = TokenHierarchy.get(doc);
+//                TokenSequence ts = hi.tokenSequence();
                 
+                TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
+                if (ts == null) {
+                    return; //no html ts at the caret position
+                }
                 ts.move(dotPos);
                 if(!ts.moveNext()) {
                     return ; //no token
@@ -147,9 +149,13 @@ class HTMLAutoCompletion {
     private static void completeQuotes(BaseDocument doc, int dotPos, Caret caret) throws BadLocationException{
         doc.readLock();
         try {
-            TokenHierarchy hi = TokenHierarchy.get(doc);
-            TokenSequence ts = hi.tokenSequence();
+//            TokenHierarchy hi = TokenHierarchy.get(doc);
+//            TokenSequence ts = hi.tokenSequence();
             
+            TokenSequence ts = HTMLSyntaxSupport.getJoinedHtmlSequence(doc);
+            if(ts == null) {
+                return ; //no html ts at the caret position
+            }
             ts.move(dotPos);
             if(!ts.moveNext()) {
                 return ; //no token

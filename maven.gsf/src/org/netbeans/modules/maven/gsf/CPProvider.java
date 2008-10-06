@@ -119,14 +119,13 @@ public class CPProvider implements ClassPathProvider {
     }
 
     private URI[] getJavaDirectories(boolean test) {
+        @SuppressWarnings("unchecked")
         List<String> srcs = test ? mavenProject.getMavenProject().getTestCompileSourceRoots()
                                  : mavenProject.getMavenProject().getCompileSourceRoots();
         URI[] generated = mavenProject.getGeneratedSourceRoots();
         URI[] uris = new URI[srcs.size() + generated.length];
-        Iterator it = srcs.iterator();
         int count = 0;
-        while (it.hasNext()) {
-            String str = (String) it.next();
+        for (String str : srcs) {
             File fil = FileUtil.normalizeFile(new File(str));
             uris[count] = fil.toURI();
             count = count + 1;
@@ -138,7 +137,7 @@ public class CPProvider implements ClassPathProvider {
         return uris;
     }
 
-    private ClassPath getSourcepath(int type) {
+    private synchronized ClassPath getSourcepath(int type) {
         ClassPath cp = cache[type];
         if (cp == null) {
             if (type == TYPE_SRC) {

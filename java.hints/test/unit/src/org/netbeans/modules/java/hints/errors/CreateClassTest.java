@@ -215,7 +215,16 @@ public class CreateClassTest extends ErrorHintsTestBase {
 		       84 - 25, 
 		       "CreateClass:test.FooException:[]:CLASS");
     }
-    
+
+    /**
+     * Test if more than one exception is offered
+     */
+    public void testCreateException130810() throws Exception {
+        performAnalysisTest("test/Test.java", "package test; public class Test {public void g() throws FooException0, FooException1, FooExc|eption2 {}}",
+                "CreateClass:test.FooException2:[]:CLASS");
+    }
+
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

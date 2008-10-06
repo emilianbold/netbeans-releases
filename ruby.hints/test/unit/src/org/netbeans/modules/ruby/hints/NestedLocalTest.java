@@ -62,6 +62,21 @@ public class NestedLocalTest extends HintTestBase {
         checkHints(this, createRule(), "testfiles/empty.rb", "^");
     }
     
+    public void testFix1() throws Exception {
+        String caretLine = "for fo^o in 1..20";
+        applyHint(this, createRule(), "testfiles/nestedlocals.rb", caretLine, "Rename the inner variable");
+    }
+
+    public void testFix2() throws Exception {
+        String caretLine = "for fo^o in 1..20";
+        applyHint(this, createRule(), "testfiles/nestedlocals.rb", caretLine, "Rename the outer variable");
+    }
+
+    public void testFix3() throws Exception {
+        String caretLine = "for fo^o in 1..20";
+        applyHint(this, createRule(), "testfiles/nestedlocals2.rb", caretLine, "Rename the outer variable");
+    }
+
     public void testNestedLocals() throws Exception {
         List<FileObject> files = getBigSourceFiles();
         for (FileObject f : files) {

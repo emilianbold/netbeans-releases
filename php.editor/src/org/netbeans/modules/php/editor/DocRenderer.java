@@ -113,10 +113,7 @@ class DocRenderer {
         } else {
             FileObject fobj = indexedElement.getFile().getFileObject();
 
-            if (fobj == null) {
-                LOGGER.warning(String.format("%s .getFile().getFileObject() returned null for element %s defined in %s", 
-                        indexedElement.getClass().getSimpleName(), indexedElement.getName(), indexedElement.getFilenameUrl()));
-            } else {
+            if (fobj != null) {
                 Project project = FileOwnerQuery.getOwner(fobj);
 
                 if (project != null) {
@@ -248,29 +245,9 @@ class DocRenderer {
 
                 switch (tag.getKind()) {
                     case PARAM:
-                        String parts[] = tag.getValue().split("\\s+", 3); //NOI18N
-                        String paramName,
-                         paramType,
-                         paramDesc;
-                        paramName = paramType = paramDesc = ""; //NOI18N
-
-                        if (parts.length > 0) {
-                            paramName = parts[0];
-                            if (parts.length > 1) {
-                                paramType = parts[1];
-                                if (parts.length > 2) {
-                                    paramDesc = parts[2];
-                                }
-                            }
-                        }
-
-                        String optionalStr = "[optional]"; //NOI18N
-                        if (paramType.endsWith(optionalStr)) {
-                            paramType = paramType.substring(0, paramType.length() - optionalStr.length());
-                        }
-
-                        String pline = String.format("<tr><td valign=\"top\" %s>%s</td><td valign=\"top\" %s><b>$%s</b></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
-                                TD_STYLE, paramType, TD_STYLE, paramName, TD_STYLE, paramDesc);
+                        PHPDocParamTagData tagData = new PHPDocParamTagData(tag.getValue());
+                        String pline = String.format("<tr><td valign=\"top\" %s>%s</td><td valign=\"top\" %s><b>%s</b></td><td valign=\"top\" %s>%s</td></tr>\n", //NOI18N
+                                TD_STYLE, tagData.type, TD_STYLE, tagData.name, TD_STYLE, tagData.description);
 
                         params.append(pline);
                         break;
@@ -380,6 +357,12 @@ class DocRenderer {
 
             if (program != null) {
                 ASTNode node = Utils.getNodeAtOffset(program, indexedElement.getOffset());
+
+                if (node == null){ // issue #118222
+                    LOGGER.warning("Could not find AST node for element "
+                            + indexedElement.getName() + " defined in " + indexedElement.getFilenameUrl());
+                    return;
+                }
                 //header.appendHtml("<br/>"); //NOI18N
 
                 if (node instanceof FunctionDeclaration) {

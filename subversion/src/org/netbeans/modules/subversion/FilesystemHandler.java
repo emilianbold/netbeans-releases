@@ -53,6 +53,8 @@ import org.netbeans.modules.subversion.client.SvnClientExceptionHandler;
 import org.netbeans.modules.subversion.client.SvnClientFactory;
 import org.netbeans.modules.versioning.spi.VCSInterceptor;
 import org.netbeans.modules.versioning.util.Utils;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.tigris.subversion.svnclientadapter.*;
 
 /**
@@ -107,7 +109,10 @@ class FilesystemHandler extends VCSInterceptor {
                 // with the cache refresh we rely on afterDelete
             } catch (SVNClientException e) {
                 SvnClientExceptionHandler.notifyException(e, false, false); // log this
-                return;
+                IOException ex = new IOException(); // NOI18N
+                Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_DeleteFailed", new Object[] {file, e.getLocalizedMessage()}));
+                ex.initCause(e);
+                throw ex;
             } finally {
                 internalyDeletedFiles.add(file);
             }
@@ -441,10 +446,11 @@ class FilesystemHandler extends VCSInterceptor {
                             continue;
                         }
 
-                        IOException ex = new IOException("Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath()); // NOI18N
+                        SvnClientExceptionHandler.notifyException(e, false, false); // log this
+                        IOException ex = new IOException(); // NOI18N
+                        Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(FilesystemHandler.class, "MSG_RenameFailed", new Object[] {from, to, e.getLocalizedMessage()}));
                         ex.initCause(e);
                         throw ex;
-
                     }
                 }
             } finally {
@@ -453,7 +459,9 @@ class FilesystemHandler extends VCSInterceptor {
                 }
             }
         } catch (SVNClientException e) {
-            IOException ex = new IOException("Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath()); // NOI18N
+            SvnClientExceptionHandler.notifyException(e, false, false); // log this
+            IOException ex = new IOException(); // NOI18N
+            Exceptions.attachLocalizedMessage(e, "Subversion failed to rename " + from.getAbsolutePath() + " to: " + to.getAbsolutePath() + "\n" + e.getLocalizedMessage());
             ex.initCause(e);
             throw ex;
         }

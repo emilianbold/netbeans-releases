@@ -44,6 +44,7 @@ import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
+import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -105,8 +106,8 @@ public class CssPhpModel extends CssModel {
     /** @DocumenLock(type=READ) */
     private void extractCssFromPHP(Document doc, StringBuilder buffer) {
         HashMap<String, Object> state = new HashMap<String, Object>(6);
-        TokenHierarchy th = TokenHierarchy.get(doc);
-        TokenSequence<PHPTokenId> ts = th.tokenSequence();
+        TokenHierarchy<?> th = TokenHierarchy.get(doc);
+        TokenSequence<PHPTokenId> ts = th.tokenSequence(PHPTokenId.language());
         if(ts == null) {
             //token hierarchy inactive???
             return ;
@@ -115,7 +116,8 @@ public class CssPhpModel extends CssModel {
         while (ts.moveNext()) {
             Token<PHPTokenId> token = ts.token();
             if (token.id() == PHPTokenId.T_INLINE_HTML) {
-                TokenSequence htmlTs = ts.embedded();
+                TokenSequence<HTMLTokenId> htmlTs = ts.embedded(HTMLTokenId.language());
+                assert htmlTs != null;
                 htmlTs.moveStart();
                 extractCssFromHTML(htmlTs, buffer, state);
             } else {

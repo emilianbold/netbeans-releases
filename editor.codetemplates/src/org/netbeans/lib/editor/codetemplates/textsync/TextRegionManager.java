@@ -215,7 +215,12 @@ public final class TextRegionManager {
                         if (offset <= masterRegionEndOffset) { // Within master region
                             TextRegion<?> master = activeTextSync.validMasterRegion();
                             int relOffset = offset - master.startOffset();
-                            assert (relOffset > 0); // Should be > 0
+                            if (relOffset <= 0) {
+                                // See #146105 - the undo will cause the master's start position
+                                // to be above the insertion point => offset < 0
+                                outsideModified(evt);
+                                return;
+                            }
                             beforeDocumentModification();
                             try {
                                 for (TextRegion<?> region : activeTextSync.regions()) {

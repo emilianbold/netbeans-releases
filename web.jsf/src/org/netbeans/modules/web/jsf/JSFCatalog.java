@@ -45,6 +45,7 @@ package org.netbeans.modules.web.jsf;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.xml.catalog.spi.*;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.w3c.dom.Document;
@@ -139,7 +140,7 @@ public class JSFCatalog implements CatalogReader, CatalogDescriptor, org.xml.sax
      * @return icon representing current state or null
      */
     public java.awt.Image getIcon(int type) {
-        return Utilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFCatalog.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/web/jsf/resources/JSFCatalog.png"); // NOI18N
     }
     
     /**

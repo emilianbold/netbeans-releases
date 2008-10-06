@@ -139,5 +139,9 @@ public class ShowExtensionPointsAction extends SceneNodeAction
         }
         return null;
     }
-    
+
+    @Override
+    protected boolean asynchronous() {
+        return false;
+    }
 }

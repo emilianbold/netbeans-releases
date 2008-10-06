@@ -43,6 +43,7 @@ public class ManufacturerConverter {
         this.entity = entity;
         this.uri = (isUriExtendable) ? UriBuilder.fromUri(uri).path(entity.getManufacturerId() + "/").build() : uri;
         this.expandLevel = expandLevel;
+        getProductCollection();
     }
 
     /**

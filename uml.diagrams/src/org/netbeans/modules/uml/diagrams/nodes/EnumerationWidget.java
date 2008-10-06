@@ -82,7 +82,7 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import org.openide.util.NbBundle;
 
 
-public class EnumerationWidget extends SwitchableWidget
+public class EnumerationWidget extends SwitchableWidget implements ICommonFeature
 {
     private UMLNameWidget nameWidget = null;
     
@@ -92,6 +92,8 @@ public class EnumerationWidget extends SwitchableWidget
     private TemplateWidget parameterWidget = null;
     private Widget classView = null;
     private Widget attributeSection = null;
+    private IAttribute attributeToSelect;
+    private IOperation operationToSelect;
     
     private HashMap <String, ElementListWidget > operationRedefinedMap = 
             new HashMap <String, ElementListWidget >();
@@ -461,11 +463,12 @@ public class EnumerationWidget extends SwitchableWidget
         return retVal;
     }
     
-    protected void addOperation(IOperation op)
+    protected OperationWidget addOperation(IOperation op)
     {
+        OperationWidget widget = null;
         if(op.getIsRedefined() == false)
         {
-            OperationWidget widget = new OperationWidget(getScene());
+            widget = new OperationWidget(getScene());
             widget.initialize(op);
             operations.addChild(widget);
             
@@ -483,7 +486,7 @@ public class EnumerationWidget extends SwitchableWidget
         {
            addRedefinedOperation(op);
         }
-        
+        return widget;
     }
     
     protected void removeOperation(IOperation op)
@@ -496,12 +499,12 @@ public class EnumerationWidget extends SwitchableWidget
         }
     }
     
-    protected void addAttribute(IAttribute attr)
+    protected AttributeWidget addAttribute(IAttribute attr)
     {
-        
+        AttributeWidget widget = null;
         if(attr.getIsRedefined() == false)
         {
-            AttributeWidget widget = new AttributeWidget(getScene());
+            widget = new AttributeWidget(getScene());
             ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
             widget.initialize(attr);
             members.addChild(widget);
@@ -520,17 +523,17 @@ public class EnumerationWidget extends SwitchableWidget
         {
             members.getParentWidget().setVisible(true);
         }
+        
+        return widget;
     }
     
-    protected void addLiteral(IEnumerationLiteral literal)
+    protected EnumerationLiteralWidget addLiteral(IEnumerationLiteral literal)
     {
-        
         EnumerationLiteralWidget widget = new EnumerationLiteralWidget(getScene());
         ResourceValue.initResources(getWidgetID() + "." + DEFAULT, widget);
         widget.initialize(literal);
         literals.addChild(widget);
-        
-        
+        return widget;
     }
     
     protected void removeAttribute(IAttribute attr)
@@ -603,49 +606,68 @@ public class EnumerationWidget extends SwitchableWidget
     public void propertyChange(PropertyChangeEvent event)
     {
         super.propertyChange(event);
-        
+        Object eventSrc = event.getSource();
         if(classView != null)
         {
-            if((isParameter((IElement)event.getSource()) == true) && 
+            if((isParameter((IElement)eventSrc) == true) && 
                (parameterWidget != null))
             {
                 parameterWidget.propertyChange(event);
                 return;
                 
             }
-            else if(!(event.getSource() instanceof IClassifier))
+            else if(!(eventSrc instanceof IClassifier))
             {
                 return;
             }
 
             String propName = event.getPropertyName();
+            Object newVal = event.getNewValue();
+            Object oldVal = event.getOldValue();
             nameWidget.propertyChange(event);
             if(propName.equals(ModelElementChangedKind.FEATUREADDED.toString()))
             {
-                if(event.getNewValue() instanceof IOperation)
+                if(newVal instanceof IOperation)
                 {
-                    addOperation((IOperation)event.getNewValue());
+                    IOperation op = (IOperation)newVal;
+                    OperationWidget operW = addOperation(op);
+                    if(operW != null && op == getSelectedOperation())
+                    {
+                        operW.select();
+                        setSelectedOperation(null);
+                    }
                 }
-                else if(event.getNewValue() instanceof IAttribute)
+                else if(newVal instanceof IAttribute)
                 {
-                    addAttribute((IAttribute)event.getNewValue());
+                    IAttribute attr = (IAttribute)newVal;
+                    AttributeWidget attrW = addAttribute(attr);
+                    if(attrW != null && attr == getSelectedAttribute())
+                    {
+                        attrW.select();
+                        setSelectedAttribute(null);
+                    }
                 }
-                else if(event.getNewValue() instanceof IEnumerationLiteral)
+                else if(newVal instanceof IEnumerationLiteral)
                 {
-                    addLiteral((IEnumerationLiteral)event.getNewValue());
+                    IEnumerationLiteral enumeration = (IEnumerationLiteral)newVal;
+                    EnumerationLiteralWidget literalW = addLiteral(enumeration);
+                    if ( literalW != null) 
+                    {
+                        literalW.select();
+                    }
                 }
             }
             else if(propName.equals(ModelElementChangedKind.FEATUREMOVED.toString()) ||
                     propName.equals(ModelElementChangedKind.DELETE.toString()) ||
                     propName.equals(ModelElementChangedKind.PRE_DELETE.toString()))
             {
-                if(event.getOldValue() instanceof IOperation)
+                if(oldVal instanceof IOperation)
                 {
-                    removeOperation((IOperation)event.getOldValue());
+                    removeOperation((IOperation)oldVal);
                 }
-                else if(event.getOldValue() instanceof IAttribute)
+                else if(oldVal instanceof IAttribute)
                 {
-                    removeAttribute((IAttribute)event.getOldValue());
+                    removeAttribute((IAttribute)oldVal);
                 }
             }
             else if(propName.equals(ModelElementChangedKind.TEMPLATE_PARAMETER.toString()))
@@ -835,5 +857,24 @@ public class EnumerationWidget extends SwitchableWidget
         revalidate();
     }
 
+    public void setSelectedAttribute(IAttribute attr)
+    {
+        this.attributeToSelect = attr;
+    }
+
+    public void setSelectedOperation(IOperation op)
+    {
+        this.operationToSelect = op;
+    }
+
+    public IAttribute getSelectedAttribute()
+    {
+        return this.attributeToSelect;
+    }
+
+    public IOperation getSelectedOperation()
+    {
+        return this.operationToSelect;
+    }
 }
-    
+

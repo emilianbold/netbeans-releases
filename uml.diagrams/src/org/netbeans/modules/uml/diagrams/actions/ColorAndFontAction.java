@@ -239,7 +239,14 @@ public class ColorAndFontAction extends SceneNodeAction
 
     private void setBackground()
     {
-        Color color = JColorChooser.showDialog(scene.getView(), NbBundle.getMessage(ColorAndFontAction.class, "COLOR_CHOOSER_TITLE"), Color.WHITE);
+        IPresentationElement[] elements = getSelectedElements();
+        Widget w1 = scene.findWidget(elements[0]);
+        Color oldColor = Color.WHITE;
+        if (w1 instanceof UMLNodeWidget)
+        {
+            oldColor = (Color) ((UMLNodeWidget)w1).getNodeBackground();
+        }
+        Color color = JColorChooser.showDialog(scene.getView(), NbBundle.getMessage(ColorAndFontAction.class, "COLOR_CHOOSER_TITLE"), oldColor);
         for (IPresentationElement p : getSelectedElements())
         {
             Widget w = scene.findWidget(p);
