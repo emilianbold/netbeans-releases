@@ -198,27 +198,7 @@ class CompletionContextFinder {
         Token<PHPTokenId> token = tokenSequence.token();
         PHPTokenId tokenId =token.id();
         int tokenIdOffset = tokenSequence.token().offset(th);
-
-        switch (tokenId){
-            case T_INLINE_HTML:
-                return CompletionContext.HTML;
-            case PHP_CONSTANT_ENCAPSED_STRING:
-                char encChar = tokenSequence.token().text().charAt(0);
-                if (encChar == '"') {//NOI18N
-                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
-                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
-                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
-                    }
-                    return CompletionContext.STRING;
-                } else if (encChar == '\'') {//NOI18N
-                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
-                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
-                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
-                    }
-                }
-                return CompletionContext.NONE;
-            default:
-        }
+        
         CompletionContext clsIfaceDeclContext = getClsIfaceDeclContext(token,
                 (caretOffset-tokenIdOffset), tokenSequence);
         if (clsIfaceDeclContext != null) {
@@ -245,6 +225,28 @@ class CompletionContextFinder {
             }
             return CompletionContext.NONE;
         }
+        
+        switch (tokenId){
+            case T_INLINE_HTML:
+                return CompletionContext.HTML;
+            case PHP_CONSTANT_ENCAPSED_STRING:
+                char encChar = tokenSequence.token().text().charAt(0);
+                if (encChar == '"') {//NOI18N
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
+                    }
+                    return CompletionContext.STRING;
+                } else if (encChar == '\'') {//NOI18N
+                    if (acceptTokenChains(tokenSequence, SERVER_ARRAY_TOKENCHAINS)
+                            && acceptTokenChainTexts(tokenSequence, SERVER_ARRAY_TOKENTEXTS)) {
+                        return CompletionContext.SERVER_ENTRY_CONSTANTS;
+                    }
+                }
+                return CompletionContext.NONE;
+            default:
+        }
+        
         return CompletionContext.EXPRESSION;
     }
 

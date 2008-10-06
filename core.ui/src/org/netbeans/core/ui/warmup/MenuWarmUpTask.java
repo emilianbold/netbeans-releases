@@ -47,18 +47,16 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.util.Set;
-import java.util.LinkedHashSet;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.SwingUtilities;
 import org.openide.windows.WindowManager;
 import org.openide.util.RequestProcessor;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.FileStateInvalidException;
+import org.openide.util.NbBundle;
 
 /**
  * A menu preheating task. It is referenced from the layer and may be performed
@@ -119,7 +117,9 @@ public final class MenuWarmUpTask implements Runnable {
     private static class NbWindowsAdapter extends WindowAdapter implements Runnable{
         private static final RequestProcessor rp = new RequestProcessor ("Refresh-After-WindowActivated");//NOI18N        
         private RequestProcessor.Task task = null;
-        
+        private static final Logger LOG = Logger.getLogger("org.netbeans.ui.focus"); // NOI18N
+
+        @Override
         public void windowActivated(WindowEvent e) {
             synchronized (rp) {
                 if (task != null) {
@@ -131,19 +131,34 @@ public final class MenuWarmUpTask implements Runnable {
             }
         }
 
+        @Override
         public void windowDeactivated(WindowEvent e) {
             synchronized (rp) {
                 if (task != null) {
                     task.cancel();
                 }
             }
+            LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
+            r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+            r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+            r.setLoggerName(LOG.getName());
+            LOG.log(r);
         }
 
-        public void run() {         
+        public void run() {
+            long now = System.currentTimeMillis();
             FileUtil.refreshAll();
             synchronized (rp) {
                 task = null;
             }
+            long took = System.currentTimeMillis() - now;
+            LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_ACTIVATED"); // NOI18N
+            r.setParameters(new Object[] { took });
+            r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+            r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+            r.setLoggerName(LOG.getName());
+            LOG.log(r);
+
         }        
     }
     

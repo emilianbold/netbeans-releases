@@ -44,6 +44,7 @@ import java.util.List;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
+import org.netbeans.modules.uml.core.metamodel.core.foundation.TaggedValue;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IConnectableElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IFeature;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
@@ -84,9 +85,11 @@ public class DrawingAreaChangeHandler implements DrawingAreaChangeListener
             secondaryElement = changedElement;
             changedElement = changedElement.getOwner();
             elementToNotify = changedElement;
-        } // fixed issues 139540, 138859, 135078
+        } 
+        // fixed issues 139540, 138859, 135078, 149000
         else if (changedElement instanceof IParameter &&
-                (changeType == ModelElementChangedKind.TYPEMODIFIED ||
+                (changeType == ModelElementChangedKind.NAME_MODIFIED ||
+                 changeType == ModelElementChangedKind.TYPEMODIFIED ||
                  changeType == ModelElementChangedKind.MULTIPLICITYMODIFIED))
         {
             IElement owner = changedElement.getOwner();
@@ -95,6 +98,12 @@ public class DrawingAreaChangeHandler implements DrawingAreaChangeListener
                 changedElement = owner;
                 elementToNotify = changedElement;
             }
+        }
+        else if ( changedElement instanceof TaggedValue &&
+                changeType == ModelElementChangedKind.ELEMENTMODIFIED)
+        {
+            changedElement = changedElement.getOwner();
+            elementToNotify = changedElement;
         }
         // A secondary element is a child element of the chagned element.
         // For example, an attribute would be a secondary element.

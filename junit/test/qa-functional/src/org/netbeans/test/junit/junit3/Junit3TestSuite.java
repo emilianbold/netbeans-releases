@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,30 +31,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.testcase.ts;
+package org.netbeans.test.junit.junit3;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.junit.testcreation.CreateTestTest;
-import org.netbeans.test.junit.testcreation.GotoTest;
 
 /**
  *
  * @author peter
  */
-public class TestCreationTestSuite extends JellyTestCase {
+public class Junit3TestSuite extends JellyTestCase {
     
-    public TestCreationTestSuite(String name) {
+    public Junit3TestSuite(String name) {
         super(name);
     }
-    
+
     @Override
     protected void setUp() throws Exception {
         System.out.println("### " + getName() + " ###");
@@ -62,19 +60,14 @@ public class TestCreationTestSuite extends JellyTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(GotoTest.class, 
-                        "testSelectTestFromMainMenu",
-                        "testSelectTestFromExplorer")
-                .addTest(CreateTestTest.class, "testCreateTestByPopup",
-                        "testCreateTestByPopup2",
-                        "testCreateTestByPopup3",
-                        "testCreateTestByPopup4",
-                        "testCreateTestByWizard",
-                        "testCreateWODefMethodBodies",
-                        "testCreateWOHints",
-                        "testCreateWOJavadoc",
-                        "testCreateWOsetUp",
-                        "testCreateWOtearDown")
+                .addTest(CreateProjectTest.class,
+                        "testCreateJUnit3Project",
+                        "testAddLibrary",
+                        "testGeneratedProjectSuiteFile",
+                        "testGeneratedMainTestFile",
+                        "testCreateTestWithoutInitializerAndFinalizer",
+                        "testGeneratedMainTestFile2",
+                        "testDeteleJUnit3Project")
                 .enableModules(".*").clusters(".*"));
-    } 
+    }
 }

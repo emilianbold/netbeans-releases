@@ -29,11 +29,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
+import org.netbeans.modules.bpel.design.actions.DesignModeAction;
 import org.netbeans.modules.bpel.design.actions.PasteModeAction;
 import org.netbeans.modules.bpel.design.geometry.FPoint;
 import org.netbeans.modules.bpel.design.model.patterns.Pattern;
+import org.netbeans.modules.bpel.design.selection.DiagramSelectionListener;
 import org.netbeans.modules.bpel.design.selection.PlaceHolderManager;
 import org.netbeans.modules.bpel.design.selection.PlaceHolder;
 import org.netbeans.modules.bpel.editors.api.nodes.actions.ActionType;
@@ -172,6 +175,8 @@ public class CopyPasteHandler implements MouseListener {
     private void fireUpdateActionEnabled() {
 
         actionPaste.fireUpdateActionEnabled();
+        actionCopy.fireUpdateActionEnabled();
+        actionCut.fireUpdateActionEnabled();
 
 
     }
@@ -204,10 +209,7 @@ public class CopyPasteHandler implements MouseListener {
 
         }
 
-        private void fireUpdateActionEnabled() {
-            
-            
-            
+        protected void fireUpdateActionEnabled() {
             firePropertyChange(NodeAction.PROP_ENABLED, 
                     new Boolean(!isEnabled()), 
                     new Boolean(isEnabled()));
@@ -228,54 +230,42 @@ public class CopyPasteHandler implements MouseListener {
         
     }
     
-    protected class CopyCutAction extends BpelNodeAction {
+    protected class CopyCutAction 
+            extends DesignModeAction 
+            implements DiagramSelectionListener{
 
         private boolean copy;
 
         public CopyCutAction(boolean copy) {
-            super(true);
+            super(designView);
             
             this.copy = copy;
+            
+            designView.getSelectionModel().addSelectionListener(this);
             
             putValue(ACCELERATOR_KEY, 
                     KeyStroke.getKeyStroke(
                         copy ? KeyEvent.VK_C : KeyEvent.VK_X, 
                         KeyEvent.CTRL_DOWN_MASK));
-        }
-
-        protected boolean enable(BpelEntity[] bpelEntities) {
-            if (!super.enable(bpelEntities)) {
-                return false;
-            }
-
-            if (bpelEntities.length != 1) {
-                return false;
-            }
-
-            return !(bpelEntities[0] instanceof org.netbeans.modules.bpel.model.api.Process);
-        }
-
-        public ActionType getType() {
-            return copy ? ActionType.CLIPBOARD_COPY : ActionType.CLIPBOARD_CUT;
+            putValue(AbstractAction.NAME,
+                        NbBundle.getMessage(CopyPasteHandler.class, 
+                        copy ? "ACT_ClipboardCopy" : "ACT_ClipboardCut")
+                    );
         }
 
         @Override
-        protected String getBundleName() {
-            return NbBundle.getMessage(CopyPasteHandler.class,
-                    copy ? "ACT_ClipboardCopy" : "ACT_ClipboardCut"); //NOI18N
-        }
+        public boolean isEnabled() {
 
-        @Override
-        protected void performAction(BpelEntity[] bpelEntities) {
-            exitPasteMode();
-            if (!enable(bpelEntities)) {
-                return;
+            if (!super.isEnabled()) {
+                return false;
             }
-            Pattern pattern = getPatternCopy(bpelEntities[0]);
+            BpelEntity selected = designView.getSelectionModel().getSelected();
+            if (selected == null) {
+                return false;
+            }
 
-            enterPasteMode(pattern);
+            return !(selected instanceof org.netbeans.modules.bpel.model.api.Process);
         }
-
 
 
         private Pattern getPatternCopy(BpelEntity entity) {
@@ -287,6 +277,29 @@ public class CopyPasteHandler implements MouseListener {
             BpelEntity new_entity = copy ? entity.copy(new HashMap<UniqueId, UniqueId>()) : entity.cut();
 
             return designView.getModel().createPattern(new_entity);
+
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            exitPasteMode();
+            if (!isEnabled()) {
+                return;
+            }
+            BpelEntity selected = designView.getSelectionModel().getSelected();
+            
+            Pattern pattern = getPatternCopy(selected);
+
+            enterPasteMode(pattern);
+        }
+
+        public void selectionChanged(BpelEntity oldSelection, BpelEntity newSelection) {
+            fireUpdateActionEnabled();
+
+        }
+        protected void fireUpdateActionEnabled() {
+            firePropertyChange(NodeAction.PROP_ENABLED, 
+                    new Boolean(!isEnabled()), 
+                    new Boolean(isEnabled()));
 
         }
     }

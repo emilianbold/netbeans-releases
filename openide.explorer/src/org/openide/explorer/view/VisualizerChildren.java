@@ -127,7 +127,7 @@ final class VisualizerChildren extends Object {
         return visNodes.size();
     }
 
-    public java.util.Enumeration children() {
+    public java.util.Enumeration children(final boolean create) {
         return new java.util.Enumeration() {
 
             private int index;
@@ -137,7 +137,7 @@ final class VisualizerChildren extends Object {
             }
 
             public Object nextElement() {
-                return getChildAt(index++);
+                return create ? getChildAt(index++) : visNodes.get(index++);
             }
         };
     }

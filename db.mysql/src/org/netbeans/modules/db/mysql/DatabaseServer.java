@@ -43,6 +43,7 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.nodes.Node.Cookie;
@@ -52,6 +53,18 @@ import org.openide.nodes.Node.Cookie;
  * @author David
  */
 public interface DatabaseServer extends Cookie {
+    /**
+     * Current state of the server
+     */
+    public static enum ServerState {CONFIGERR, DISCONNECTED , CONNECTED};
+
+    /**
+     * Ask the server to validate it's configuration.  If it's invalid,
+     * the state is changed to CONFIGERR and the display name, icon and
+     * short description are updated appropriately.
+     */
+    public void checkConfiguration() throws DatabaseException;
+
     /**
      * Get the icon for this server
      */
@@ -66,8 +79,25 @@ public interface DatabaseServer extends Cookie {
      * Connect to the server.  If we already have a connection, close
      * it and open a new one.  NOTE this is synchronous and can not be
      * called on the AWT thread.
+     * 
+     * This method will time out after waiting for the default connection
+     * timeout.
+     *
+     * @throws DatabaseException if an error occurs when connecting
+     * @throws TimeoutException if we timed out waiting for the connect
      */
-    public void reconnect() throws DatabaseException;
+    public void reconnect() throws DatabaseException, TimeoutException;
+
+    /**
+     * Connect to the server.  If we already have a connection, close
+     * it and open a new one.
+     *
+     * @param timeToWait how long to wait, in milliseconds, before giving up the attempt
+     *
+     * @throws org.netbeans.api.db.explorer.DatabaseException
+     * @throws TimeoutException if we timed out waiting for the connect
+     */
+    public void reconnect(long timeToWait) throws DatabaseException, TimeoutException;
 
     /**
      * Create a database on the server.  This runs <b>asynchronously</b>
@@ -174,31 +204,11 @@ public interface DatabaseServer extends Cookie {
     public boolean isConnected();
 
     /**
-     * Check to see if the server is running.  This method waits for three
-     * seconds and returns false if there is no response after this time.
-     *
-     * @return true if it appears to be running, false otherwise
-     *
-     */
-    public boolean checkRunning();
-
-    /**
-     * Check to see if the server is running.
-     *
-     * @param waitTime the number of milliseconds to wait before giving up and
-     * returning false.  0 means indefinite timeout.
-     *
-     * @return true if the server appears to be running, false otherwise
-     */
-    public boolean checkRunning(long waitTime);
-
-    /**
      * Returns true if the server is running last time we checked.  Does not actually
-     * perform a check, so can be called on the AWT event thread.
-     *
-     * Run status is updated when the server is initialized and whenever a property is changed.
+     * perform a check, so can be called on the AWT event thread.  To update this state
+     * call reconnect() or checkRunning().
      */
-    public boolean isRunning();
+    public ServerState getState();
 
     public boolean isSavePassword();
 

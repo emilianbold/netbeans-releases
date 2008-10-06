@@ -5,13 +5,13 @@
  *
  */
 
-package org.netbeans.test.junit.testresults;
+package org.netbeans.test.junit.results;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.junit.testcase.JunitTestCase;
+import org.netbeans.jellytools.modules.junit.testcases.JunitTestCase;
 import org.netbeans.test.junit.utils.ResultWindowOperator;
 import org.netbeans.test.junit.utils.Utilities;
 

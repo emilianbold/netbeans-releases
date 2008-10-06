@@ -136,6 +136,8 @@ ant -f mobility.project/build.xml -Dtest.config=uicommit -Dtest-qa-functional-sy
 # ant -f xtest/instance/build.xml -Djdkhome=$JDK_TESTS -Dxtest.config=commit-validation-ruby -Dxtest.instance.name="Ruby tests" -Dxtest.no.cleanresults=true runtests
 # Ruby UI, Profiler UI and CND UI validation tests
 ant -f ide.kit/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true -Dtest-qa-functional-sys-prop.com.sun.aas.installRoot=/hudson/workdir/jobs/trunk/testappsrv/glassfish test
+# PHP UI validation tests
+ant -f php.editor/build.xml -Dtest.config=uicommit -Dbuild.test.qa-functional.results.dir=$TESTS_RESULT_DIR -Dcontinue.after.failing.tests=true test
 echo TESTS STARTED: $TESTS_STARTED
 echo TESTS FINISHED: `date`
 

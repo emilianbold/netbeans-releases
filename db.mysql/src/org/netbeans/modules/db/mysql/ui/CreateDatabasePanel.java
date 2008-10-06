@@ -15,6 +15,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
@@ -226,21 +227,23 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
     }
 
     private boolean ensureConnected() throws DatabaseException {
-        if (! server.checkRunning()) {
-            return false;
-        }
-        
         try {
             server.validateConnection();
         } catch (DatabaseException dbe) {
-            LOGGER.log(Level.FINE, null, dbe);
+            LOGGER.log(Level.INFO, null, dbe);
+            Utils.displayError(dbe.getMessage(), dbe);
         }
         
         if (server.isConnected()) {
             return true;
         }
-        
-        server.reconnect();
+
+        try {
+            server.reconnect();
+        } catch (TimeoutException te) {
+            Utils.displayError(te.getMessage(), te);
+            LOGGER.log(Level.INFO, null, te);
+        }
 
         return server.isConnected();
     }

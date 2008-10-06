@@ -497,7 +497,8 @@ public final class EditorBridge extends KeymapManager {
                 try {
                     name = (String) action.getValue (Action.SHORT_DESCRIPTION);
                 } catch (MissingResourceException mre) {
-                    LOG.log(Level.WARNING, null, mre);
+                    Throwable t = new Throwable("The action " + action + " crashed when accessing its short description.", mre); //NOI18N
+                    LOG.log(Level.WARNING, null, t);
                     name = null;
                 }
                 if (name == null) {

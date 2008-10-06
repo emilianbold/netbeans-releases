@@ -67,7 +67,7 @@ public class RunCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationSet()) {
+        if (!isRunConfigurationValid()) {
             // property not set yet
             return;
         }

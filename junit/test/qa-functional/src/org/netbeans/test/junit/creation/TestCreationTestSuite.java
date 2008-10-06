@@ -37,20 +37,19 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.testcase.ts;
+package org.netbeans.test.junit.creation;
 
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.junit4.CreateProjectTest;
 
 /**
  *
  * @author peter
  */
-public class Junit4TestSuite extends JellyTestCase {
+public class TestCreationTestSuite extends JellyTestCase {
     
-    public Junit4TestSuite(String name) {
+    public TestCreationTestSuite(String name) {
         super(name);
     }
     
@@ -61,11 +60,19 @@ public class Junit4TestSuite extends JellyTestCase {
 
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(CreateProjectTest.class, 
-                        "testCreateJUnit4Project",
-                        "testAddLibrary",
-                        "testGeneratedProjectSuiteFile",
-                        "testGeneratedMainTestFile")
+                .addTest(GotoTest.class, 
+                        "testSelectTestFromMainMenu",
+                        "testSelectTestFromExplorer")
+                .addTest(CreateTestTest.class, "testCreateTestByPopup",
+                        "testCreateTestByPopup2",
+                        "testCreateTestByPopup3",
+                        "testCreateTestByPopup4",
+                        "testCreateTestByWizard",
+                        "testCreateWODefMethodBodies",
+                        "testCreateWOHints",
+                        "testCreateWOJavadoc",
+                        "testCreateWOsetUp",
+                        "testCreateWOtearDown")
                 .enableModules(".*").clusters(".*"));
     } 
 }

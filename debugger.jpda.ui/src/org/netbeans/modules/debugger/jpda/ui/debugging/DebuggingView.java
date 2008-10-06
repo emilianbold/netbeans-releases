@@ -69,7 +69,6 @@ import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
-import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -99,6 +98,8 @@ import org.netbeans.api.debugger.jpda.DeadlockDetector.Deadlock;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
+import org.netbeans.api.debugger.jpda.ThreadsCollector;
+import org.netbeans.modules.debugger.jpda.ui.models.DebuggingTreeModel;
 import org.netbeans.modules.debugger.jpda.ui.views.ViewModelListener;
 
 import org.netbeans.spi.viewmodel.Models;
@@ -156,6 +157,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     private JPDADebugger debugger;
     private Session session;
     private JPDADebugger previousDebugger;
+    private Reference<JPDAThread> threadMadeCurrentRef;
+    private Reference<JPDAThread> threadToScrollRef;
 
     private ViewRefresher viewRefresher = new ViewRefresher();
     private BarsPanel leftPanel;
@@ -207,7 +210,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         tapPanel.setOrientation(TapPanel.DOWN);
         tapPanel.setExpanded(true);
         
-        infoPanel = new InfoPanel(tapPanel);
+        infoPanel = new InfoPanel(tapPanel, this);
         tapPanel.add(infoPanel);
         GridBagConstraints gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -378,7 +381,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                     // Clean up the UI from memory leaks:
                     setActivatedNodes (new Node[] {});
                     treeView.resetSelection();
-                    treeView.updateUI();
+                    //treeView.updateUI(); -- corrupts the UI!
                 }
             }
         });
@@ -530,6 +533,16 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 ExplorerManager.PROP_NODE_CHANGE.equals(propertyName)) {
             refreshView();
         } else if (JPDADebugger.PROP_CURRENT_THREAD.equals(propertyName)) {
+            JPDAThread currentThread;
+            synchronized (this) {
+                currentThread = (debugger != null) ? debugger.getCurrentThread() : null;
+            }
+            if (currentThread != null) {
+                JPDAThread thread = threadMadeCurrentRef != null ? threadMadeCurrentRef.get() : null;
+                if (thread == currentThread) {
+                    threadToScrollRef = new WeakReference(thread);
+                }
+            }
             refreshView();
         } else if (propertyName.equals (ExplorerManager.PROP_SELECTED_NODES)) {
             setActivatedNodes ((Node[]) evt.getNewValue ());
@@ -566,7 +579,12 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             }
         });
     }
-    
+
+    void makeThreadCurrent(JPDAThread thread) {
+        threadMadeCurrentRef = new WeakReference(thread);
+        thread.makeCurrent();
+    }
+
     // **************************************************************************
     // implementation of TreeExpansion and TreeModel listener
     // **************************************************************************
@@ -720,9 +738,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             int sx = (rightPanel.getWidth() - ClickableIcon.CLICKABLE_ICON_WIDTH) / 2;
             int sy = 0;
 
-            JPDAThread currentThread = debugger != null ? debugger.getCurrentThread() : null;
+            JPDAThread currentThread;
+            ThreadsCollector tc;
+            synchronized (DebuggingView.this) {
+                currentThread = debugger != null ? debugger.getCurrentThread() : null;
+                tc = debugger != null ? debugger.getThreadsCollector() : null;
+            }
             // collect all deadlocked threads
-            Set<Deadlock> deadlocks = debugger != null ? debugger.getThreadsCollector().getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
+            Set<Deadlock> deadlocks = tc != null ? tc.getDeadlockDetector().getDeadlocks() : Collections.EMPTY_SET;
             if (deadlocks == null) {
                 deadlocks = Collections.EMPTY_SET;
             }
@@ -730,6 +753,11 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             for (Deadlock deadlock : deadlocks) {
                 deadlockedThreads.addAll(deadlock.getThreads());
             }
+
+            JPDAThread threadToScroll = threadToScrollRef != null ? threadToScrollRef.get() : null;
+            threadToScrollRef = null;
+            int scrollStart = -1, scrollEnd = -1;
+            boolean pathToScrollSearching = false;
 
             int mainPanelHeight = 0;
             int treeViewWidth = 0;
@@ -751,13 +779,18 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 height = rect != null ? (int) Math.round(rect.getHeight()) : 0;
                 
                 if (jpdaThread != null || jpdaThreadGroup != null) {
+                    pathToScrollSearching = jpdaThread == threadToScroll;
+                    if (pathToScrollSearching) {
+                        scrollStart = mainPanelHeight;
+                    }
                     if (currentObject != null) {
                         addPanels(currentObject, isCurrent, isAtBreakpoint, isInDeadlock,
                                 leftBarHeight, sx, currentSY, height);
                     }
                     leftBarHeight = 0;
                     if (jpdaThread != null) {
-                        isCurrent = jpdaThread == currentThread && jpdaThread.isSuspended();
+                        isCurrent = jpdaThread == currentThread && (jpdaThread.isSuspended() ||
+                                DebuggingTreeModel.isMethodInvoking(jpdaThread));
                         isAtBreakpoint = threadsListener.isBreakpointHit(jpdaThread);
                         isInDeadlock = deadlockedThreads.contains(jpdaThread);
                     } else {
@@ -773,6 +806,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
                 treeViewWidth = rect != null ? Math.max(treeViewWidth, (int) Math.round(rect.getX() + rect.getWidth())) : treeViewWidth;
                 leftBarHeight += height;
                 sy += height;
+
+                if (pathToScrollSearching) {
+                    scrollEnd = mainPanelHeight;
+                }
             } // for
             if (currentObject != null) {
                 addPanels(currentObject, isCurrent, isAtBreakpoint, isInDeadlock,
@@ -790,6 +827,14 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
             treeView.repaint();
 
             adjustTreeScrollBar(treeViewWidth);
+            if (scrollStart > -1) {
+                JViewport viewport = mainScrollPane.getViewport();
+                int aRectHeight = Math.min(scrollEnd - scrollStart + 1, viewport.getHeight());
+                Rectangle aRect = new Rectangle(0, scrollStart, 1, aRectHeight);
+                if (!aRect.isEmpty()) {
+                    ((JComponent)viewport.getView()).scrollRectToVisible(aRect);
+                }
+            }
         }
 
         private void addPanels(Object jpdaObject, boolean current, boolean atBreakpoint,

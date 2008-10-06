@@ -126,13 +126,6 @@ public class ToolbarRow {
                 index++;
             }
         }
-        //make sure alwaysRigt toolbar stays always the last element
-        if( index == toolbars.size() 
-                && !newTC.isAlwaysRight() 
-                && toolbars.size() > 0 
-                && toolbars.lastElement().isAlwaysRight() ) {
-            index--;
-        }
         addToolbar2 (newTC, index);
     }
 
@@ -141,6 +134,14 @@ public class ToolbarRow {
      * @param index specified index of new toolbar
      */
     private void addToolbar2 (ToolbarConstraints tc, int index) {
+        //make sure alwaysRigt toolbar stays always the last element
+        if( index == toolbars.size()
+                && !tc.isAlwaysRight()
+                && toolbars.size() > 0
+                && toolbars.lastElement().isAlwaysRight() ) {
+            index--;
+        }
+
         if (toolbars.contains (tc))
             return;
         ToolbarConstraints prev = null;

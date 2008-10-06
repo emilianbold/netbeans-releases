@@ -51,6 +51,9 @@ public class FoldingSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(JavaFoldsNavigationTest.class).addTest(JavaFoldsNavigationTest.class).addTest(JavaFoldsTest.class));
+                NbModuleSuite
+                .createConfiguration(JavaFoldsNavigationTest.class)
+                .addTest(JavaFoldsNavigationTest.class,"testJavaFoldsNavigation")
+                .addTest(JavaFoldsTest.class,"testJavaFolds"));
     }
 }

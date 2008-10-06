@@ -56,7 +56,7 @@ Microsystems, Inc. All Rights Reserved.
            value="org.netbeans.installer.mac.ant.VerifyFile"/>
         <property
            name="VerifyFile.classpath" 
-           value="${basedir}/tools/classes/org/netbeans/installer/mac/ant"/>
+           value="${basedir}/tools/classes"/>
     </target>        
 
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
@@ -257,7 +257,7 @@ Microsystems, Inc. All Rights Reserved.
         <!-- temp workaround with productid for NB in NBFX bundles: replace "NB" with "NBFX" in postflight for baseide.pkg-->     
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBMYSQL&quot;/'
+            <arg value="sed -i '' 's/addproduct_id.sh &quot;NB&quot;/addproduct_id.sh &quot;NBFX&quot;/'
                             ${basedir}/build/baseide.pkg/Contents/Resources/postflight"/>            
         </exec>
                  

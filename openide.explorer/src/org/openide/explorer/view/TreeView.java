@@ -42,7 +42,6 @@ package org.openide.explorer.view;
 
 import java.awt.AWTEvent;
 import java.awt.Component;
-import javax.swing.plaf.TreeUI;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -87,6 +86,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
@@ -222,8 +222,8 @@ public abstract class TreeView extends JScrollPane {
      */
     transient private boolean quickSearchUsingSubstring = false;
     
-    /** Holds VisualizerChildren and Visualizers for all visible nodes */
-    private final Set<Object> visHolder = new HashSet<Object>();
+    /** Holds VisualizerChildren for all visible nodes */
+    private final VisualizerHolder visHolder = new VisualizerHolder();
 
     /** Constructor.
     */
@@ -274,7 +274,7 @@ public abstract class TreeView extends JScrollPane {
 
     @Override
     public void updateUI() {
-        Set<Object> tmp = visHolder;
+        Set<VisualizerChildren> tmp = visHolder;
         if (tmp != null) {
             tmp.clear();
         }
@@ -1104,7 +1104,7 @@ public abstract class TreeView extends JScrollPane {
         
         List<TreePath> remSel = null;
         for (VisualizerNode vn : removed) {
-            visHolder.remove(vn.getChildren(false));
+            visHolder.removeRecur(vn.getChildren(false));
             TreePath path = new TreePath(vn.getPathToRoot());
 	    for(TreePath tp : selPaths) {
                 if (path.isDescendant(tp)) {
@@ -1307,7 +1307,7 @@ public abstract class TreeView extends JScrollPane {
                     } finally {
                         if (!expanded) {
                             VisualizerNode vn = (VisualizerNode) path.getLastPathComponent();
-                            visHolder.remove(vn.getChildren(false)); 
+                            visHolder.removeRecur(vn.getChildren(false));
                         }
                         this.path = null;
                     }
@@ -2249,6 +2249,21 @@ public abstract class TreeView extends JScrollPane {
         @Override
         public int getSourceActions(JComponent c) {
             return COPY_OR_MOVE;
+        }
+    }
+
+    static class VisualizerHolder extends HashSet<VisualizerChildren> {
+
+        /** removes recursively VisualizerChildren */
+        void removeRecur(VisualizerChildren visChildren) {
+            Enumeration<VisualizerNode> vnodes = visChildren.children(false);
+            while (vnodes.hasMoreElements()) {
+                VisualizerNode vn = vnodes.nextElement();
+                if (vn != null) {
+                    removeRecur(vn.getChildren(false));
+                }
+            }
+            remove(visChildren);
         }
     }
 }

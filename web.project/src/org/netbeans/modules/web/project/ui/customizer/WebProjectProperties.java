@@ -107,6 +107,8 @@ import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
 
 /** Helper class. Defines constants for properties. Knows the proper
  *  place where to store the properties.
@@ -263,7 +265,7 @@ final public class WebProjectProperties {
     
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
-    private List<String> currentFrameworkNames;
+    private List<WebFrameworkProvider> currentFrameworks;
 
     // Private fields ----------------------------------------------------------
     private WebProject project;
@@ -286,8 +288,9 @@ final public class WebProjectProperties {
     private String includes, excludes;
     
     private static String logServInstID = null;
-
     
+    Task loadingFrameworksTask = null;
+
     WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
         this.project = project;
         this.updateHelper = updateHelper;
@@ -408,18 +411,35 @@ final public class WebProjectProperties {
         } catch (BadLocationException exc) {
             //ignore
         }
-        
+        loadingFrameworksTask = RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    loadCurrentFrameworks();
+                }
+            });
+    }
+
+    // #148786 - load frameworks in background thread
+    private void loadCurrentFrameworks() {
         List frameworks = WebFrameworks.getFrameworks();
         WebModule webModule = project.getAPIWebModule();
-        currentFrameworkNames = new LinkedList<String>();
+        List<WebFrameworkProvider> list = new LinkedList<WebFrameworkProvider>();
         if (frameworks != null & webModule != null) {
             for (int i = 0; i < frameworks.size(); i++) {
                 WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
                 if (framework.isInWebModule(webModule)) {
-                    currentFrameworkNames.add(framework.getName());
+                    list.add(framework);
                 }
             }
         }
+        currentFrameworks = list;
+    }
+
+    Task getLoadingFrameworksTask() {
+        return loadingFrameworksTask;
+    }
+
+    List<WebFrameworkProvider> getCurrentFrameworks() {
+        return currentFrameworks;
     }
 
     public void save() {
@@ -467,24 +487,26 @@ final public class WebProjectProperties {
                 // ignore
             }
             
-            StringBuffer sb = new StringBuffer(50);
-            if (currentFrameworkNames != null && currentFrameworkNames.size() > 0) {
-                for (int i = 0; i < currentFrameworkNames.size(); i++) {
-                    if (sb.length() > 0) {
-                        sb.append("|"); // NOI18N
+            if (loadingFrameworksTask != null && loadingFrameworksTask.isFinished()) {
+                StringBuffer sb = new StringBuffer(50);
+                if (currentFrameworks != null && currentFrameworks.size() > 0) {
+                    for (int i = 0; i < currentFrameworks.size(); i++) {
+                        if (sb.length() > 0) {
+                            sb.append("|"); // NOI18N
+                        }
+                        sb.append(currentFrameworks.get(i).getName());
                     }
-                    sb.append(currentFrameworkNames.get(i));
                 }
-            }
-            if (addedFrameworkNames != null && addedFrameworkNames.size() > 0) {
-                for (int i = 0; i < addedFrameworkNames.size(); i++) {
-                    if (sb.length() > 0) {
-                        sb.append("|"); // NOI18N
+                if (addedFrameworkNames != null && addedFrameworkNames.size() > 0) {
+                    for (int i = 0; i < addedFrameworkNames.size(); i++) {
+                        if (sb.length() > 0) {
+                            sb.append("|"); // NOI18N
+                        }
+                        sb.append(addedFrameworkNames.get(i));
                     }
-                    sb.append(addedFrameworkNames.get(i));
                 }
+                Utils.logUsage(WebProjectProperties.class, "USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
             }
-            Utils.logUsage(WebProjectProperties.class, "USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
             
             //prevent deadlock reported in the issue #54643
             //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code

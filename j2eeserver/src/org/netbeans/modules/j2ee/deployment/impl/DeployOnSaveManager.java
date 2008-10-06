@@ -92,6 +92,8 @@ public final class DeployOnSaveManager {
 
     private static final int DELAY = 300;
 
+    private static final int PROGRESS_DELAY = 200;
+
     private static DeployOnSaveManager instance;
 
     private final WeakHashMap<J2eeModuleProvider, CompileOnSaveListener> compileListeners = new WeakHashMap<J2eeModuleProvider, CompileOnSaveListener>();
@@ -367,7 +369,7 @@ public final class DeployOnSaveManager {
 
                 ProgressUI ui = new ProgressUI(NbBundle.getMessage(TargetServer.class,
                         "MSG_DeployOnSave", provider.getDeploymentName()), false);
-                ui.start(Integer.valueOf(0));
+                ui.start(Integer.valueOf(PROGRESS_DELAY));
                 try {
                     TargetModule[] modules = server.deploy(ui, true);
                     if (modules == null || modules.length <= 0) {

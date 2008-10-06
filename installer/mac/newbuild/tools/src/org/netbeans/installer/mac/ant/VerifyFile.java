@@ -34,7 +34,7 @@
  * copyright holder.
  */
 
-package org.netbeans.installer.infra.mac.ant;
+package org.netbeans.installer.mac.ant;
 
 import java.io.File;
 import java.net.URL;

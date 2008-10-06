@@ -59,6 +59,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.quicksearch.ProviderModel.Category;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 
 /**
@@ -206,7 +207,7 @@ public class QuickSearchComboBar extends javax.swing.JPanel implements ActionLis
 
 private void formFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_formFocusLost
     displayer.setVisible(false);//GEN-HEADEREND:event_formFocusLost
-}                              
+}
 
 private void commandKeyPressed(java.awt.event.KeyEvent evt) {//GEN-LAST:event_formFocusLost
     if (evt.getKeyCode()==KeyEvent.VK_DOWN) {//GEN-FIRST:event_commandKeyPressed
@@ -235,7 +236,7 @@ private void jLabel2MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:eve
     public void invokeSelectedItem () {
         JList list = displayer.getList();
         ResultsModel.ItemResult ir = (ItemResult) list.getSelectedValue();
-        
+
         // special handling of invocation of "more results item" (three dots)
         if (ir != null) {
             Runnable action = ir.getAction();
@@ -402,8 +403,9 @@ private void commandFocusGained(java.awt.event.FocusEvent evt) {//GEN-FIRST:even
     }
 
     static Color getComboBorderColor () {
-        Color shadow = UIManager.getColor("TextField.shadow");
-        return shadow != null ? shadow : Color.GRAY;
+        Color shadow = UIManager.getColor(
+                Utilities.isWindows() ? "Nb.ScrollPane.Border.color" : "TextField.shadow");
+        return shadow != null ? shadow : getPopupBorderColor();
     }
 
     static Color getPopupBorderColor () {

@@ -817,6 +817,9 @@ implements ChangeListener {
                 notifyAll();
             }
             return;
+        } else {
+            // make all previous FolderChildrenPairs invalid
+            countRegistration(fo);
         }
 
         // refresh of parent folder

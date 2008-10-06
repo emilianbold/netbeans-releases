@@ -102,6 +102,7 @@ public class JsElementCtx {
                 case Token.BINDNAME:
                 case Token.PARAMETER:
                 case Token.CALL:
+                case Token.NEW:
                     break FindNode;
             }
             if (!it.hasNext()) {
@@ -165,6 +166,7 @@ public class JsElementCtx {
                     ElementKind.CONSTRUCTOR : ElementKind.METHOD;
                 break;
             case Token.CALL:
+            case Token.NEW:
                 kind = ElementKind.METHOD;
                 break;
             case Token.PARAMETER:
@@ -176,6 +178,9 @@ public class JsElementCtx {
                 // TODO - look up scope and see if it's a global or a local var
                 //kind = ElementKind.GLOBAL;
                 kind = ElementKind.VARIABLE;
+                if (name != null && name.length() > 0 && Character.isUpperCase(name.charAt(0))) {
+                    kind = ElementKind.CLASS;
+                }
                 break;
             case Token.CONST:
             case Token.SETCONST:

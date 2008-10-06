@@ -876,7 +876,11 @@ public abstract class J2eeModuleProvider {
         public void addArtifactListener(ArtifactListener listner);
         
         public void removeArtifactListener(ArtifactListener listener);
-        
+
+        /**
+         * @since 1.54
+         */
+        public boolean containsIdeArtifacts();
     }
     
     private static class WarningInstanceProperties extends InstanceProperties {

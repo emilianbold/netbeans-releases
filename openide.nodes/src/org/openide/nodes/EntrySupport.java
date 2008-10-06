@@ -539,7 +539,7 @@ abstract class EntrySupport {
             }
 
             Collection<Node> oldNodes = info.nodes();
-            Collection<Node> newNodes = info.entry.nodes();
+            Collection<Node> newNodes = info.entry.nodes(null);
 
             if (oldNodes.equals(newNodes)) {
                 // nodes are the same =>
@@ -641,7 +641,9 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                children.parent.fireSubNodesChange(false, arr, current);
+                if (children.entrySupport == this) {
+                    children.parent.fireSubNodesChange(false, arr, current);
+                }
 
                 // fire change of parent
                 Iterator it = nodes.iterator();
@@ -677,7 +679,7 @@ abstract class EntrySupport {
 
             Node n = children.parent;
 
-            if (n != null) {
+            if (n != null && children.entrySupport == this) {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
@@ -1225,7 +1227,7 @@ abstract class EntrySupport {
             }
 
             Node oldNode = info.currentNode();
-            Node newNode = info.getNode(true);
+            Node newNode = info.getNode(true, null);
 
             boolean newIsDummy = isDummyNode(newNode);
             if (newIsDummy && info.isHidden()) {
@@ -1443,7 +1445,7 @@ abstract class EntrySupport {
          *  @param indices list of integers with indexes that changed
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
-            if (children.parent != null) {
+            if (children.parent != null && children.entrySupport == this) {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
             }
         }
@@ -1478,11 +1480,11 @@ abstract class EntrySupport {
              * so they can get garbage collected.
              */
             public final Node getNode() {
-                return getNode(false);
+                return getNode(false, null);
             }
             
             private boolean creatingNode = false;
-            public final Node getNode(boolean refresh) {
+            public final Node getNode(boolean refresh, Object source) {
                 while (true) {
                     Node node = null;
                     boolean creating = false;
@@ -1508,7 +1510,7 @@ abstract class EntrySupport {
                     Collection<Node> nodes = Collections.emptyList();
                     if (creating) {
                         try {
-                            nodes = entry.nodes();
+                            nodes = entry.nodes(source);
                         } catch (RuntimeException ex) {
                             NodeOp.warning(ex);
                         }
@@ -1596,7 +1598,7 @@ abstract class EntrySupport {
             }
         }     
 
-        private void hideEmpty(final Set<Entry> entries, final Entry entry, final Node oldNode) {
+        void hideEmpty(final Set<Entry> entries, final Entry entry, final Node oldNode) {
             Children.MUTEX.postWriteRequest(new Runnable() {
 
                 public void run() {
@@ -1722,9 +1724,8 @@ abstract class EntrySupport {
         
 
         class LazySnapshot extends AbstractList<Node> {
-            private final List<Entry> entries;
-            private final Map<Entry, EntryInfo> entryToInfo;
-            Object holder;      // little hack for FilterNode (to have possibility to hold original snapshot)
+            final List<Entry> entries;
+            final Map<Entry, EntryInfo> entryToInfo;
             
             public LazySnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i) {
                 snapshotCount++;
@@ -1734,6 +1735,10 @@ abstract class EntrySupport {
 
             public Node get(int index) {
                 Entry entry = entries.get(index);
+                return get(entry);
+            }
+
+            Node get(Entry entry) {
                 EntryInfo info = entryToInfo.get(entry);
                 Node node = info.getNode();
                 if (isDummyNode(node)) {

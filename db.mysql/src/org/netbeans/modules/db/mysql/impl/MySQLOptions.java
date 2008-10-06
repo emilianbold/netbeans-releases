@@ -94,9 +94,7 @@ public class MySQLOptions {
     private static final String DEFAULT_ADMIN_USER = "root";
     private static final String DEFAULT_ADMIN_PASSWORD = "";
     // In milliseconds
-    private static final String DEFAULT_CONNECT_TIMEOUT = "15000";
-    // In milliseconds
-    private static final long DEFAULT_REFRESH_THREAD_SLEEP_INTERVAL = 5000;
+    private static final String DEFAULT_CONNECT_TIMEOUT = "5000";
     
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     

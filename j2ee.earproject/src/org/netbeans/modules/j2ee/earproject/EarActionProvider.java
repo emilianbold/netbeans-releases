@@ -153,7 +153,9 @@ public class EarActionProvider implements ActionProvider {
         }
 
         String realCommand = command;
-        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+        J2eeModuleProvider.DeployOnSaveSupport support = project.getAppModule().getDeployOnSaveSupport();
+        if (COMMAND_BUILD.equals(realCommand)
+                && isCosEnabled() && support != null && support.containsIdeArtifacts()) {
             boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
                     new DeployOnSaveUtils.CustomizerPresenter() {
 
@@ -284,7 +286,8 @@ public class EarActionProvider implements ActionProvider {
             return false;
         }
 
-        if (isCosEnabled() && COMMAND_COMPILE_SINGLE.equals(command)) {
+        J2eeModuleProvider.DeployOnSaveSupport support = project.getAppModule().getDeployOnSaveSupport();
+        if (isCosEnabled() && support != null && support.containsIdeArtifacts() && COMMAND_COMPILE_SINGLE.equals(command)) {
             return false;
         }
 

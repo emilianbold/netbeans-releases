@@ -64,8 +64,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
+import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
@@ -118,11 +120,16 @@ class EjbJarActionProvider implements ActionProvider {
     // Ant project helper of the project
     private final AntProjectHelper antProjectHelper;
     private ReferenceHelper refHelper;
-    
+
+    private final PropertyEvaluator evaluator;
+
+    private final UpdateHelper updateHelper;
+
     /** Map from commands to ant targets */
     Map<String,String[]> commands;
     
-    public EjbJarActionProvider(EjbJarProject project, AntProjectHelper antProjectHelper, ReferenceHelper refHelper) {
+    public EjbJarActionProvider(EjbJarProject project, AntProjectHelper antProjectHelper,
+            ReferenceHelper refHelper, UpdateHelper updateHelper, PropertyEvaluator evaluator) {
         commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"dist"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"clean"}); // NOI18N
@@ -143,6 +150,8 @@ class EjbJarActionProvider implements ActionProvider {
         this.antProjectHelper = antProjectHelper;
         this.project = project;
         this.refHelper = refHelper;
+        this.updateHelper = updateHelper;
+        this.evaluator = evaluator;
     }
     
     private FileObject findBuildXml() {
@@ -175,7 +184,8 @@ class EjbJarActionProvider implements ActionProvider {
         }
 
         String realCommand = command;
-        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()
+                && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")) {
             boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
                     new DeployOnSaveUtils.CustomizerPresenter() {
 
@@ -401,7 +411,8 @@ class EjbJarActionProvider implements ActionProvider {
             return false;
         }
 
-        if (isCosEnabled() && COMMAND_COMPILE_SINGLE.equals(command)) {
+        if (isCosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
+                && COMMAND_COMPILE_SINGLE.equals(command)) {
             return false;
         }
 

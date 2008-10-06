@@ -117,7 +117,6 @@ public class LocalHistoryViewTest extends JellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(LocalHistoryViewTest.class).addTest(
                 "testLocalHistoryInvoke",
                 "testLocalHistoryRevertFromHistory",
-                "testLocalHistoryDeleteFromHistory",
                 "testLocalHistoryRevisionCountAfterModification",
                 "testLocalHistoryNewFileInNewPackage",
                 "testLocalHistoryRevertDeleted",
@@ -160,6 +159,14 @@ public class LocalHistoryViewTest extends JellyTestCase {
     public void testLocalHistoryDeleteFromHistory() {
         slho.performPopupAction(2, "Delete from History");
         sleep(1500);
+        //nodes are collapsed after deletion - new invocation has to called
+        EditorOperator.closeDiscardAll();
+        node.performPopupAction("Open");
+        eo = new EditorOperator("Main.java");
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+        slho = ShowLocalHistoryOperator.invoke(node);
+        //
+        sleep(1500);
         int versions = slho.getVersionCount();
         assertEquals("2. Wrong number of versions!", 1, versions);
     }
@@ -169,7 +176,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         eo.save();
         sleep(1500);
         int versions = slho.getVersionCount();
-        assertEquals("3. Wrong number of versions!", 2, versions);
+        assertEquals("3. Wrong number of versions!", 3, versions);
         slho.close();
     }
 
