@@ -1218,7 +1218,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Item item;
 
         public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject) {
-            super(dataObject.getNodeDelegate());
+            super(dataObject.getNodeDelegate(), Children.LEAF, Lookups.fixed(item));
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
@@ -1373,10 +1373,6 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             fireIconChange();
             fireOpenedIconChange();
         }
-
-        public boolean isOkToChange() {
-            return gotMakeConfigurationDescriptor() && getMakeConfigurationDescriptor().okToChange();
-        }
     }
     
     private static class ViewItemTransferable extends ExTransferable.Single {
@@ -1507,7 +1503,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     // this class should be static, because successors are shared classes
-    // and accesssing MakeLogicalViewProvider.this would use wrong one!
+    // and accessing MakeLogicalViewProvider.this would use wrong one!
     private static class StandardNodeAction extends NodeAction {
         SystemAction systemAction;
         
@@ -1518,14 +1514,21 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         @Override
         protected void performAction(Node[] activatedNodes) {
             if (activatedNodes.length > 0) {
-                ViewItemNode vin = activatedNodes[0].getLookup().lookup(ViewItemNode.class);
-                if (vin != null && !vin.isOkToChange()) {
-                    return;
+                Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);
+                if (folder == null) {
+                    Item item = activatedNodes[0].getLookup().lookup(Item.class);
+                    if (item != null) {
+                        folder = item.getFolder();
+                    }
+                }
+
+                if (folder != null) {
+                    MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor)folder.getConfigurationDescriptor();
+                    if (mcd != null && !mcd.okToChange()) {
+                        return;
+                    }
                 }
             }
-//            if (!gotMakeConfigurationDescriptor() || !(getMakeConfigurationDescriptor().okToChange())) {
-//                return;
-//            }
             InstanceContent ic = new InstanceContent();
             for (int i = 0; i < activatedNodes.length; i++) {
                 ic.add(activatedNodes[i]);
