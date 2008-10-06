@@ -151,13 +151,11 @@ class DebugProjectPanel extends JPanel {
 
                     WebClientToolsProjectUtils.setProjectProperties(project, true, clientDebugEnabled, browser);
 
-                    Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
-                    globalPrefs.putBoolean(WebClientToolsProjectUtils.DIALOG_DISPLAY_CONFIG, showDialog);
-                    globalPrefs.putBoolean(WebClientToolsProjectUtils.DIALOG_CLIENT_DEBUG, clientDebugEnabled);
-                    globalPrefs.put(WebClientToolsProjectUtils.DIALOG_BROWSER, browser.name());
+                    Preferences projectPrefs = WebClientToolsProjectUtils.getPreferencesForProject(project);
+                    projectPrefs.putBoolean(WebClientToolsProjectUtils.DIALOG_DISPLAY_CONFIG, showDialog);
                     
                     try {
-                        globalPrefs.sync();
+                        projectPrefs.flush();
                     } catch (BackingStoreException ex) {
                         Log.getLogger().log(Level.WARNING, "Could not save preferences", ex);
                     }

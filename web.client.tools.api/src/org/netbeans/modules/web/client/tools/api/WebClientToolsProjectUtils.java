@@ -69,10 +69,6 @@ import org.openide.util.Utilities;
 public final class WebClientToolsProjectUtils {
     // Do not show again state
     static final String DIALOG_DISPLAY_CONFIG = "dialogShowDebugPanel"; // NOI18N
-    // server/client selection state
-    static final String DIALOG_CLIENT_DEBUG = "dialogClientDebug"; // NOI18N
-    // browser selection state
-    static final String DIALOG_BROWSER = "dialogDebugConfigBrowser"; // NOI18N
 
     static final String CLIENT_DEBUG_PROP = "clientdebug"; // NOI18N
     static final String SERVER_DEBUG_PROP = "serverdebug"; // NOI18N
@@ -97,8 +93,8 @@ public final class WebClientToolsProjectUtils {
      * @return true if the user pressed the Debug button, false if the user cancels
      */
     public static boolean showDebugDialog(Project project) {
-        Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
-        boolean showDialog = globalPrefs.getBoolean(DIALOG_DISPLAY_CONFIG, true);
+        Preferences projectPrefs = getPreferencesForProject(project);
+        boolean showDialog = projectPrefs.getBoolean(DIALOG_DISPLAY_CONFIG, true);
         boolean serverDebugEnabled = WebClientToolsProjectUtils.getServerDebugProperty(project);
 
         if (!showDialog || !serverDebugEnabled) {
@@ -131,17 +127,6 @@ public final class WebClientToolsProjectUtils {
     }
 
     public static Browser getDefaultBrowser() {
-        Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
-        String browserName = globalPrefs.get(DIALOG_BROWSER, null);
-
-        if (browserName != null) {
-            try {
-                return Browser.valueOf(browserName);
-            } catch (IllegalArgumentException ex) {
-                // value is somehow invalid
-                }
-        }
-
         if (isFirefoxSupported()) {
             return Browser.FIREFOX;
         } else if (isInternetExplorerSupported()) {
@@ -152,8 +137,7 @@ public final class WebClientToolsProjectUtils {
     }
 
     public static boolean getClientDebugDefault() {
-        Preferences globalPrefs = NbPreferences.forModule(WebClientToolsProjectUtils.class);
-        return globalPrefs.getBoolean(DIALOG_CLIENT_DEBUG, CLIENT_DEBUG_DEFAULT);
+        return CLIENT_DEBUG_DEFAULT;
     }
 
     public static boolean getServerDebugDefault() {
