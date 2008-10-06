@@ -60,7 +60,6 @@ import org.openide.nodes.Sheet;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
