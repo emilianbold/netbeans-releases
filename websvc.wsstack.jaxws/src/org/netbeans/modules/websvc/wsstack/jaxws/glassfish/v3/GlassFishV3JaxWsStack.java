@@ -59,6 +59,9 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  * @author mkuchtiak
  */
 public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
+    private static final String[] METRO_LIBRARIES = 
+        new String[] {"webservices", "javax.javaee", "jaxb", "jsr109-impl"}; //NOI18N
+    private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     
     private String gfRootStr;
     private JaxWs jaxWs;
@@ -87,12 +90,12 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.TESTER_PAGE || feature == JaxWs.Feature.WSIT ||
-            feature == JaxWs.Feature.JSR109) {
+        if (feature == JaxWs.Feature.WSIT) return true;
+        if (feature == JaxWs.Feature.JSR109 && isMetroInstalled()) {
             return true;
-        } else {
-            return false;
-        }    
+        }
+        if (feature == JaxWs.Feature.TESTER_PAGE) return true;
+        return false;   
     }
     
     private JaxWs.UriDescriptor getUriDescriptor() {
@@ -118,7 +121,6 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     private class JaxWsTool implements WSToolImplementation {
-        private static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
         JaxWs.Tool tool;
         JaxWsTool(JaxWs.Tool tool) {
             this.tool = tool;
@@ -129,41 +131,27 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         }
 
         public URL[] getLibraries() {
-            String[] entries = new String[] {"javax.javaee", //NOI
-                                             "webservices", 
-                                             "jaxb", 
-                                             "jsr109-impl"};
             List<URL> cPath = new ArrayList<URL>();
-            for (String entry : entries) {
-                File f = getJarName(gfRootStr, entry);
-                if ((f != null) && (f.exists())) {
-                    try {
-                        cPath.add(f.toURI().toURL());
-                    } catch (MalformedURLException ex) {
-                        
+            if (isMetroInstalled()) {
+                for (String entry : METRO_LIBRARIES) {
+                    File f = getJarName(gfRootStr, entry);
+                    if ((f != null) && (f.exists())) {
+                        try {
+                            cPath.add(f.toURI().toURL());
+                        } catch (MalformedURLException ex) {
+
+                        }
                     }
                 }
             }
             return cPath.toArray(new URL[cPath.size()]);
         }
-        
-        public File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
-            File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
-            int subindex = jarNamePrefix.lastIndexOf("/");
-            if(subindex != -1) {
-                String subdir = jarNamePrefix.substring(0, subindex);
-                jarNamePrefix = jarNamePrefix.substring(subindex+1);
-                modulesDir = new File(modulesDir, subdir);
-            }
-            File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
-
-            if(candidates != null && candidates.length > 0) {
-                return candidates[0]; // the first one
-            } else {
-                return null;
-            }
-        }
-        
+      
+    }
+    
+    private boolean isMetroInstalled() {
+        File f = getJarName(gfRootStr, METRO_LIBRARIES[0]);
+        return f!=null & f.exists();
     }
     
     private static class VersionFilter implements FileFilter {
@@ -179,5 +167,22 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
         }
         
     }
+    
+    private File getJarName(String glassfishInstallRoot, String jarNamePrefix) {
+        File modulesDir = new File(glassfishInstallRoot + File.separatorChar + GFV3_MODULES_DIR_NAME);
+        int subindex = jarNamePrefix.lastIndexOf("/");
+        if(subindex != -1) {
+            String subdir = jarNamePrefix.substring(0, subindex);
+            jarNamePrefix = jarNamePrefix.substring(subindex+1);
+            modulesDir = new File(modulesDir, subdir);
+        }
+        File candidates[] = modulesDir.listFiles(new VersionFilter(jarNamePrefix));
+
+        if(candidates != null && candidates.length > 0) {
+            return candidates[0]; // the first one
+        } else {
+            return null;
+        }
+    } 
 
 }
