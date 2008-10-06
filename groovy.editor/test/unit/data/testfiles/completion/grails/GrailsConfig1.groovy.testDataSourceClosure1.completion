@@ -34,7 +34,6 @@ METHOD     getDelegate()                              Object
 METHOD     getDirective()                             int
 METHOD     getMaximumNumberOfParameters()             int
 METHOD     getMetaClass()                             MetaClass
-METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getOwner()                                 Object
 METHOD     getParameterTypes()                        Class
@@ -48,9 +47,7 @@ METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
 METHOD     invokeMethod(String, Object)               Object
-METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
-METHOD     isCase(Object)                             boolean
 METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
 METHOD     notify()                                   void

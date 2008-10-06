@@ -61,8 +61,9 @@ import org.netbeans.api.java.source.SourceUtils;
 public final class Utilities {
 
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
-    private static final String UNKNOWN = "<unknown>"; //NOI18N
     
+    private static final String UNKNOWN = "<unknown>"; //NOI18N
+      
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
         return getTypeName(type, fqn, false);
     }
@@ -72,7 +73,7 @@ public final class Utilities {
             return ""; //NOI18N
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
-    
+
     private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
         
         private boolean varArg;

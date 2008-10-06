@@ -2602,7 +2602,7 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // FIXME return types subtype
             if (listMethod.getName().equals(methodToStore.getName())
-                    && listMethod.getSignature().equals(methodToStore.getSignature())) {
+                    && listMethod.isSame(methodToStore)) {
 
                 if (listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
                     LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
