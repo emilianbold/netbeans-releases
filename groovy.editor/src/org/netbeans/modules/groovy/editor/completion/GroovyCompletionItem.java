@@ -54,12 +54,14 @@ import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.modules.groovy.editor.NbUtilities;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 import org.openide.util.ImageUtilities;
@@ -126,7 +128,7 @@ import org.openide.util.ImageUtilities;
             return ret;
         }
         
-    @Override
+        @Override
         public String getName() {
             return element.getName();
         }
@@ -157,26 +159,20 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    
-
-
-
-
-/**
-     * 
-     */
     class JavaMethodItem extends GroovyCompletionItem {
 
         private final String simpleName;
         private final String parameterString;
-        private final String returnType;
-        
+        private final TypeMirror returnType;
+        private final Set<javax.lang.model.element.Modifier> modifiers;
 
-        JavaMethodItem(String simpleName, String parameterString, String returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
+        JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType,
+                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, CodeCompleter.CompletionRequest request) {
             super(null, anchorOffset, request);
             this.simpleName = simpleName;
             this.parameterString = parameterString;
             this.returnType = returnType;
+            this.modifiers = modifiers;
         }
 
         @Override
@@ -197,7 +193,10 @@ import org.openide.util.ImageUtilities;
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             // FIXME
-            String retType = NbUtilities.stripPackage(returnType);
+            String retType = "";
+            if (returnType != null) {
+                retType = Utilities.getTypeName(returnType, false).toString();
+            }
 
             formatter.appendText(retType);
 
@@ -207,11 +206,13 @@ import org.openide.util.ImageUtilities;
         
         @Override
         public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD, null);
+            return (ImageIcon) ElementIcons.getElementIcon(
+                    javax.lang.model.element.ElementKind.METHOD, modifiers);
         }
 
         @Override
         public Set<Modifier> getModifiers() {
+            // FIXME update
             return Collections.emptySet();
         }
 
@@ -224,9 +225,11 @@ import org.openide.util.ImageUtilities;
     }
     class MethodItem extends GroovyCompletionItem {
 
-        MetaMethod method;
-        boolean isGDK;
-        AstMethodElement methodElement;
+        private final MetaMethod method;
+
+        private final boolean isGDK;
+        
+        private final AstMethodElement methodElement;
 
         MethodItem(Class clz, MetaMethod method, int anchorOffset, CodeCompleter.CompletionRequest request, boolean isGDK) {
             super(null, anchorOffset, request);
@@ -494,9 +497,9 @@ import org.openide.util.ImageUtilities;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
         private boolean expand; // should this item expand to a constructor body?
         private final String paramListString;
-        private final List<CodeCompleter.ParamDesc> paramList;
+        private final List<CodeCompleter.ParameterDescriptor> paramList;
 
-        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParamDesc> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
+        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParameterDescriptor> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
             super(null, anchorOffset, request);
             this.name = name;
             this.expand = expand;
@@ -573,12 +576,12 @@ import org.openide.util.ImageUtilities;
             
             // sb.append("${cursor}"); // NOI18N
 
-            for (CodeCompleter.ParamDesc paramDesc : paramList) {
+            for (CodeCompleter.ParameterDescriptor paramDesc : paramList) {
                 
                 LOG.log(Level.FINEST, "-------------------------------------------------------------------");
-                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
-                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.typeName);
-                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.name);
+                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
+                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
+                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
                 
                 sb.append("${"); //NOI18N
 
@@ -586,7 +589,7 @@ import org.openide.util.ImageUtilities;
                 sb.append(Integer.toString(id));
                 
                 sb.append(" default=\""); // NOI18N
-                sb.append(paramDesc.name);
+                sb.append(paramDesc.getName());
                 sb.append("\""); // NOI18N
 
                 sb.append("}"); //NOI18N
@@ -610,21 +613,19 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-
-    /**
-     * 
-     */
     class FieldItem extends GroovyCompletionItem {
 
         private final String name;
-        private final javax.lang.model.element.ElementKind ek;
+        
         private final String typeName;
 
-        FieldItem(String name, int anchorOffset, CodeCompleter.CompletionRequest request, javax.lang.model.element.ElementKind ek, String typeName) {
+        private final int modifiers;
+
+        FieldItem(String name, int modifiers, int anchorOffset, CodeCompleter.CompletionRequest request, String typeName) {
             super(null, anchorOffset, request);
             this.name = name;
-            this.ek = ek;
             this.typeName = typeName;
+            this.modifiers = modifiers;
         }
 
         @Override
@@ -645,7 +646,8 @@ import org.openide.util.ImageUtilities;
         @Override
         public ImageIcon getIcon() {
             // todo: what happens, if i get a CCE here?
-            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD,
+                    toModel(modifiers));
         }
 
         @Override
@@ -660,9 +662,6 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    /**
-     * 
-     */
     class LocalVarItem extends GroovyCompletionItem {
 
         private final Variable var;
@@ -704,9 +703,6 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    /**
-     *
-     */
     class NewVarItem extends GroovyCompletionItem {
 
         private final String var;
