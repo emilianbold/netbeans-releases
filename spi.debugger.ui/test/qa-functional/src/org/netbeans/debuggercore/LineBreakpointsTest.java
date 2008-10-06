@@ -327,8 +327,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             new JTextFieldOperator(dialog, 4).setText(breakpointHitText);
             dialog.ok();
             Utilities.toggleBreakpoint(eo, 104);
-            Utilities.startDebugger();
-            Utilities.waitStatusText("Line breakpoint hit on examples.advanced.MemoryView:102");
+            Utilities.startDebugger();            
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -342,7 +341,7 @@ public class LineBreakpointsTest extends JellyTestCase {
             EditorOperator eo = new EditorOperator("MemoryView.java");
             //start debugging
             Utilities.startDebugger();
-            Utilities.waitStatusText("User program running");
+            Utilities.waitStatusText(Utilities.runningStatusBarText);
             //toggle breakpoints
             for (int i = 0; i < prelines.length; i++) {
                 Utilities.toggleBreakpoint(eo, prelines[i]);
