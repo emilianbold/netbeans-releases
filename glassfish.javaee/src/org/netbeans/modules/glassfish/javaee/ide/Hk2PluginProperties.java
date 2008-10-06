@@ -154,9 +154,6 @@ public class Hk2PluginProperties {
      */
     public List<URL> getClasses() {
         List<String> jars = new ArrayList<String>();
-        jars.add("webservices-api");
-        jars.add("webservices-tools");
-        jars.add("webservices-rt");
 
         List<URL> list = new ArrayList<URL>();
         File serverDir = new File(getGlassfishRoot());
@@ -195,6 +192,9 @@ public class Hk2PluginProperties {
                 File modulesDir = new File(serverDir.getAbsolutePath() + File.separatorChar + ServerUtilities.GFV3_MODULES_DIR_NAME);
                 jars = ServerUtilities.filterByManifest(jars, modulesDir, 0, true);
             }
+            
+            // add webservices.jar if exists
+            jars.add("webservices"+ServerUtilities.GFV3_VERSION_MATCHER); //NOI18N
 
             for (String jarStr : jars) {
                 File jar = ServerUtilities.getJarName(serverDir.getAbsolutePath(), jarStr);

@@ -74,7 +74,7 @@ import org.openide.filesystems.FileUtil;
  * @since 1.32
  */
 public abstract class ArtifactCopyOnSaveSupport implements FileChangeSupportListener,
-            PropertyChangeListener, AntProjectListener, DeployOnSaveSupport {
+            PropertyChangeListener, AntProjectListener {
 
     private static final Logger LOGGER = Logger.getLogger(ArtifactCopyOnSaveSupport.class.getName());
 
