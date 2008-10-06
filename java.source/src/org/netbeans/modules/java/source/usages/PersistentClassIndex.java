@@ -226,7 +226,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                             }
                                         return null;
                                     }
-                            });                                        
+                            });
+                        } catch (IndexAlreadyClosedException e) {
+                            //A try to  store to closed index, safe to ignore.
+                            //Data will be scanned when project is reopened.
+                            LOGGER.info("Ignoring store into closed index");
                         } catch (IOException ioe) {
                             Exceptions.printStackTrace(ioe);
                         }
@@ -238,31 +242,31 @@ public class PersistentClassIndex extends ClassIndexImpl {
                     else {
                         try {
                             js.runUserActionTask(new Task<CompilationController>() {
-                                public void run (final CompilationController controller) {
-                                    try {                            
-                                        ClassIndexManager.getDefault().writeLock(
-                                            new ClassIndexManager.ExceptionAction<Void>() {
-                                                public Void run () throws IOException {
-                                                    controller.toPhase(Phase.RESOLVED);
-                                                    final SourceAnalyser sa = getSourceAnalyser();
-                                                    long st = System.currentTimeMillis();
-                                                    sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
-                                                    ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
-                                                    long et = System.currentTimeMillis();
-                                                    return null;
-                                                }
-                                        });
-                                    } catch (IOException ioe) {
-                                        Exceptions.printStackTrace(ioe);
-                                    }
-                                    catch (InterruptedException e) {
-                                        //Should never happen
-                                        Exceptions.printStackTrace(e);
-                                    }
+                                public void run (final CompilationController controller) throws Exception {
+                                    ClassIndexManager.getDefault().writeLock(
+                                        new ClassIndexManager.ExceptionAction<Void>() {
+                                            public Void run () throws IOException {
+                                                controller.toPhase(Phase.RESOLVED);
+                                                final SourceAnalyser sa = getSourceAnalyser();
+                                                long st = System.currentTimeMillis();
+                                                sa.analyseUnitAndStore(controller.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(controller),
+                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(controller.getClasspathInfo()));
+                                                long et = System.currentTimeMillis();
+                                                return null;
+                                            }
+                                    });
                                 }
                             }, true);
                         } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
+                            final Throwable rootCause = ioe.getCause();
+                            if (rootCause instanceof IndexAlreadyClosedException) {
+                                //A try to  store to closed index, safe to ignore.
+                                //Data will be scanned when project is reopened.
+                                LOGGER.info("Ignoring store into closed index");
+                            }
+                            else {
+                                Exceptions.printStackTrace(ioe);
+                            }
                         }
                     }
                 }
@@ -275,7 +279,7 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }
     
-    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException {               
+    private <T> void usages (final String binaryName, final Set<UsageType> usageType, ResultConvertor<T> convertor, Set<? super T> result) throws InterruptedException, IOException {               
         final List<String> classInternalNames = this.getUsagesFQN(binaryName,usageType, Index.BooleanOperator.OR);
         for (String classInternalName : classInternalNames) {
             T value = convertor.convert(ElementKind.OTHER, classInternalName);
@@ -285,16 +289,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
         }
     }    
     
-    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException {
-        List<String> result = null;
-        try {
-            result = this.index.getUsagesFQN(binaryName, mask, operator);          
-        }  catch (IOException ioe) {
-            Exceptions.printStackTrace(ioe);
-        }
+    private List<String> getUsagesFQN (final String binaryName, final Set<UsageType> mask, final Index.BooleanOperator operator) throws InterruptedException, IOException {
+        List<String> result = this.index.getUsagesFQN(binaryName, mask, operator);          
         if (result == null) {
             result = Collections.emptyList();
         }
         return result;
-    }        
+    }
 }
