@@ -63,4 +63,10 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
             // it's ok: it won't find: it just shouldn't hang
         }
     }
+    
+    public void testGccVector() throws Exception {
+        // IZ144869 : fixed instantiation of class forward declaration
+        performTest("iz146697.cc", 41, 20, "iz146697.cc", 34, 5);
+    }
+    
 }

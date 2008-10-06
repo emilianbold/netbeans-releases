@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
+import java.io.File;
 import java.text.MessageFormat;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -63,6 +64,29 @@ public final class DeployOnSaveUtils {
 
     private DeployOnSaveUtils() {
         super();
+    }
+
+    /**
+     *
+     * @return <code>true</code> if it is safe to perform build
+     * @since 1.33
+     */
+    public static boolean containsIdeArtifacts(PropertyEvaluator evaluator, UpdateHelper updateHelper,
+            String classesPropertyName) {
+
+        FileObject mark = null;
+        String propertyValue = (classesPropertyName != null)
+                ? evaluator.getProperty(classesPropertyName)
+                : null;
+
+        if (propertyValue != null) {
+            FileObject buildClasses = updateHelper.getAntProjectHelper().resolveFileObject(propertyValue);
+            if (buildClasses != null) {
+                mark = buildClasses.getFileObject(COS_MARK);
+            }
+        }
+
+        return mark != null;
     }
 
     public static boolean showBuildActionWarning(Project project, CustomizerPresenter presenter) {

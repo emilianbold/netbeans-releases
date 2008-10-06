@@ -714,7 +714,8 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 //                type = instantiatedType;
             }
         }
-        if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
+        if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType ||
+                type instanceof NestedType) {
             return new NestedType(type, instantiation);
         }
         return new Type(type, instantiation);
@@ -771,6 +772,13 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         public CharSequence getText() {
             if (originalType instanceof TypeImpl) {
                 return ((TypeImpl)originalType).decorateText(getClassifierText(), this, false, null);
+            }
+            return originalType.getText();
+        }
+
+        public CharSequence getOwnText() {
+            if (originalType instanceof TypeImpl) {
+                return ((TypeImpl) originalType).getOwnText();
             }
             return originalType.getText();
         }
@@ -869,7 +877,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
                 } else {
                     resolved = instantiatedType.getClassifier();
                 }
-
+                
                 if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
                     CsmMember tdMember = (CsmMember)resolved;
                     if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
@@ -916,8 +924,15 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
 
             if (type instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
                 org.netbeans.modules.cnd.modelimpl.csm.NestedType t = (org.netbeans.modules.cnd.modelimpl.csm.NestedType) type;
-
                 CsmType parent = t.getParent();
+                if (parent != null) {
+                    parentType = createType(parent, instantiation);
+                } else {
+                    parentType = null;
+                }
+            } else if (type instanceof NestedType) {
+                NestedType t = (NestedType) type;
+                CsmType parent = t.parentType;
                 if (parent != null) {
                     parentType = createType(parent, instantiation);
                 } else {
@@ -945,6 +960,11 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
                             if (iter.hasNext()) {
                                 resolved = iter.next();
                             }
+                        } else if (instantiatedType instanceof NestedType) {
+                            Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, (((NestedType) instantiatedType)).getOwnText());
+                            if (iter.hasNext()) {
+                                resolved = iter.next();
+                            }
                         }
                     }
                 }
@@ -953,6 +973,16 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
                         resolved = ((Resolver.SafeClassifierProvider) instantiatedType).getClassifier(resolver);
                     } else {
                         resolved = instantiatedType.getClassifier();
+                    }
+                }
+                if (isInstantiation() && CsmKindUtilities.isTemplate(resolved) && !((CsmTemplate) resolved).getTemplateParameters().isEmpty()) {
+                    resolved = (CsmClassifier) Instantiation.create((CsmTemplate) resolved, this);
+                }
+                if (CsmKindUtilities.isTypedef(resolved) && CsmKindUtilities.isClassMember(resolved)) {
+                    CsmMember tdMember = (CsmMember) resolved;
+                    if (CsmKindUtilities.isTemplate(tdMember.getContainingClass())) {
+                        resolved = new Typedef((CsmTypedef) resolved, instantiation);
+                        return resolved;
                     }
                 }
             }
