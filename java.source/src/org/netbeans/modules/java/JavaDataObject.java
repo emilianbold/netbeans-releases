@@ -161,6 +161,7 @@ public final class JavaDataObject extends MultiDataObject {
                     javaData.getCookieSet().add(this.saveCookie);
                     javaData.setModified(true);
                 }
+                ActivatedDocumentListener.addToModified(getDataObject().getPrimaryFile());
             }
             
             public void removeSaveCookie() {
@@ -224,7 +225,7 @@ public final class JavaDataObject extends MultiDataObject {
 
                     FileObject file = source.getPrimaryFile();
 
-                    if (file != null) {
+                    if (file != null && DataObject.getRegistry().getModifiedSet().contains(source)) {
                         ActivatedDocumentListener.addToModified(file);
                     }
                 }
