@@ -291,24 +291,28 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      * Returns array of all classpaths of the given type in the project.
      * The result is used for example for GlobalPathRegistry registrations.
      */
-    public ClassPath[] getProjectClassPaths(String type) {
-        if (ClassPath.BOOT.equals(type)) {
-            return new ClassPath[]{getBootClassPath()};
-        }
-        if (ClassPath.COMPILE.equals(type)) {
-            ClassPath[] l = new ClassPath[2];
-            l[0] = getCompileTimeClasspath(0);            
-            l[1] = getCompileTimeClasspath(1);
-            return l;
-        }
-        if (ClassPath.SOURCE.equals(type)) {
-            ClassPath[] l = new ClassPath[2];
-            l[0] = getSourcepath(0);
-            l[1] = getSourcepath(1);
-            return l;
-        }
-        assert false;
-        return null;
+    public ClassPath[] getProjectClassPaths(final String type) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<ClassPath[]>() {
+            public ClassPath[] run() {
+                if (ClassPath.BOOT.equals(type)) {
+                    return new ClassPath[]{getBootClassPath()};
+                }
+                if (ClassPath.COMPILE.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getCompileTimeClasspath(0);            
+                    l[1] = getCompileTimeClasspath(1);
+                    return l;
+                }
+                if (ClassPath.SOURCE.equals(type)) {
+                    ClassPath[] l = new ClassPath[2];
+                    l[0] = getSourcepath(0);
+                    l[1] = getSourcepath(1);
+                    return l;
+                }
+                assert false;
+                return null;
+            }
+        });
     }
 
     /**
