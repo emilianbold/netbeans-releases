@@ -60,6 +60,7 @@ import org.netbeans.jemmy.operators.Operator;
 
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -247,6 +248,7 @@ public class OpenJ2EEFiles extends PerformanceTestCase {
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
         Logger.getLogger("TIMER").addHandler(phaseHandler);
         JTreeOperator tree = new ProjectsTabOperator().tree();
         tree.setComparator(new Operator.DefaultStringComparator(true, true));
