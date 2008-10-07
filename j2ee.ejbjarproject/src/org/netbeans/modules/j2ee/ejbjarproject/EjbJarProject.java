@@ -85,6 +85,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
 import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
@@ -436,7 +437,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
                 new EjbJarEMGenStrategyResolver(),
                 new EjbJarJPASupport(this),
-                new EjbJarServerStatusProvider(this),
+                Util.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
