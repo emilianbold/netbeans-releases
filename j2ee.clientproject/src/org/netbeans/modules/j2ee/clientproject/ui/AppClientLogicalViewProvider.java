@@ -74,7 +74,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
-import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
+import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries;
@@ -245,7 +245,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
         }
         
         final String platformId = this.evaluator.getProperty(AppClientProjectProperties.JAVA_PLATFORM);  //NOI18N
-        final JavaPlatform activePlatform = AppClientProjectUtil.getActivePlatform(platformId);
+        final JavaPlatform activePlatform = Utils.getActivePlatform(platformId);
         if (activePlatform == null) {
             return true;
         }

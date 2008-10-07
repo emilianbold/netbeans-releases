@@ -41,7 +41,6 @@
 package org.netbeans.modules.j2ee.clientproject.classpath;
 
 import java.beans.PropertyChangeEvent;
-import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -54,6 +53,7 @@ import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
+import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
@@ -125,7 +125,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             this.platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, this.platformManager));
         }                
         this.activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        final JavaPlatform activePlatform = AppClientProjectUtil.getActivePlatform (this.activePlatformName);
+        final JavaPlatform activePlatform = Utils.getActivePlatform (this.activePlatformName);
         this.isActivePlatformValid = activePlatform != null;
         return activePlatform;
     }
@@ -140,12 +140,12 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
                 && activePlatformName != null) {
             //Platform definitions were changed, check if the platform was not resolved or deleted
             if (this.isActivePlatformValid) {
-                if (AppClientProjectUtil.getActivePlatform (this.activePlatformName) == null) {
+                if (Utils.getActivePlatform (this.activePlatformName) == null) {
                     //the platform was not removed
                     this.resetCache();
                 }
             } else {
-                if (AppClientProjectUtil.getActivePlatform (this.activePlatformName) != null) {
+                if (Utils.getActivePlatform (this.activePlatformName) != null) {
                     this.resetCache();
                 }
             }

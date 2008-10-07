@@ -73,7 +73,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.AppClientProjectType;
-import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
 import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
@@ -632,7 +631,7 @@ final public class AppClientProjectProperties {
         String []rootLabels = new String[data.size()];
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
-            rootURLs[i] = AppClientProjectUtil.getRootURL(f,null);            
+            rootURLs[i] = Utils.getRootURL(f,null);            
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);
