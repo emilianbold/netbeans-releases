@@ -202,7 +202,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private EjbProjectJAXWSClientSupport jaxWsClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
-    private PropertyHelper propertyHelper;
     private final ClassPathExtender classPathExtender; 
     private final ClassPathModifier classPathModifier; 
     private PropertyChangeListener j2eePlatformListener;
@@ -517,13 +516,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     /*public EjbJarProjectProperties getEjbJarProjectProperties() {
         return new EjbJarProjectProperties (this, helper, refHelper);
     }*/
-    
-    public PropertyHelper getPropertyHelper() {
-        if (propertyHelper == null) {
-            this.propertyHelper = new PropertyHelper(this, this.updateHelper);
-        }
-        return this.propertyHelper;
-    }
     
     public EjbJarProvider getEjbModule() {
         return ejbModule;

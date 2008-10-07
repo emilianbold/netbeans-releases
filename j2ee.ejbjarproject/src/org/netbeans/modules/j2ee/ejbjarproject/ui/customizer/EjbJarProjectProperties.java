@@ -92,7 +92,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -584,7 +583,7 @@ final public class EjbJarProjectProperties {
         String []rootLabels = new String[data.size()];
         for (int i=0; i<data.size();i++) {
             File f = ((File)((Vector)data.elementAt(i)).elementAt(0));
-            rootURLs[i] = EjbJarProjectUtil.getRootURL(f,null);
+            rootURLs[i] = Utils.getRootURL(f,null);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);
