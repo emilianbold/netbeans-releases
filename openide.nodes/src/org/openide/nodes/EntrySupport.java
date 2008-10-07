@@ -1483,7 +1483,7 @@ abstract class EntrySupport {
                 return getNode(false, null);
             }
             
-            private boolean creatingNode = false;
+            private Thread creatingNodeThread = null;
             public final Node getNode(boolean refresh, Object source) {
                 while (true) {
                     Node node = null;
@@ -1498,13 +1498,17 @@ abstract class EntrySupport {
                                 return node;
                             }
                         }
-                        if (creatingNode) {
+                        if (creatingNodeThread != null) {
+                            if (creatingNodeThread == Thread.currentThread()) {
+                                return new DummyNode();
+                            }
                             try {
                                 LOCK.wait();
                             } catch (InterruptedException ex) {
                             }
                         } else {
-                            creatingNode = creating = true;
+                            creatingNodeThread = Thread.currentThread();
+                            creating = true;
                         }
                     }
                     Collection<Node> nodes = Collections.emptyList();
@@ -1536,7 +1540,7 @@ abstract class EntrySupport {
                         }
                         refNode = new NodeRef(node, this);
                         if (creating) {
-                            creatingNode = false;
+                            creatingNodeThread = null;
                             LOCK.notifyAll();
                         }
                     }
