@@ -66,4 +66,17 @@
     nbproject/build-impl.xml file. 
 
     -->
+    <target name="-post-jar">
+        <!-- Compilation of additional task needed for backward compatibility -->
+        <javac srcdir="${src.dir}" classpath="${javac.classpath}"
+            destdir="${build.classes.dir}">
+            <exclude name="**/anttasks/**"/>
+        </javac>
+        <copy file="${src.dir}/org/netbeans/modules/javawebstart/antlib.xml"
+              tofile="${build.classes.dir}/org/netbeans/modules/javawebstart/antlib.xml"/>
+        <jar destfile="${dist.dir}/org-netbeans-modules-javawebstart.jar" 
+             basedir="${build.classes.dir}">
+             <exclude name="**/anttasks/**"/>
+        </jar>
+    </target>
 </project>
