@@ -39,91 +39,90 @@
 
 package org.netbeans.modules.uml.diagrams.actions;
 
+import java.awt.event.KeyEvent;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.visual.widget.LabelWidget;
+import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.action.WidgetAction.WidgetKeyEvent;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.api.visual.widget.Widget.Dependency;
-import org.netbeans.modules.uml.diagrams.nodes.MovableLabelWidget;
-import org.netbeans.modules.uml.diagrams.nodes.sqd.CombinedFragmentWidget;
-import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
+import org.netbeans.modules.uml.diagrams.edges.AssociationConnector;
+import org.netbeans.modules.uml.diagrams.nodes.AttributeWidget;
+import org.netbeans.modules.uml.drawingarea.LabelManager;
 import org.netbeans.modules.uml.drawingarea.actions.Selectable;
-import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
-import org.openide.util.Lookup;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
 /**
  *
  * @author jyothi
  */
-public class NodeLabelIteratorAction extends IterateSelectAction {
+public class AssociationConnectorIteratorAction extends WidgetAction.Adapter 
+{
+    DesignerScene scene;
+    LabelManager mgr = null;
+    private String name;
 
+    
     @Override
-    protected Widget getTargetWidget(Widget widget)
+    public State keyPressed(Widget widget, WidgetKeyEvent event)
     {
-        Widget retVal = null;
-        if (widget instanceof UMLNodeWidget)
-            retVal = widget;
-        else
+        State retVal = State.REJECTED;
+        scene = (DesignerScene) widget.getScene();
+        boolean status = false;
+        
+        if(event.isShiftDown() == true) 
         {
-            //is it a nodeLabel?
-            if (widget instanceof MovableLabelWidget)
+            if(event.getKeyCode() == KeyEvent.VK_LEFT || event.getKeyCode() == KeyEvent.VK_RIGHT)
             {
-                Widget attWid = ((MovableLabelWidget)widget).getAttachedNodeWidget();
-                if (attWid instanceof UMLNodeWidget)
+                status = selectNextQualifier(widget);
+                if (status) 
                 {
-                    retVal = attWid;
-                }
-                else
-                {
-                    //get the parent UMLNodeWidget of attWid
-                    retVal = PersistenceUtil.getParentUMLNodeWidget(attWid);
-                }
-            }          
-        }
+                    //we successfully selected a label..
+                    retVal = State.CONSUMED;
+                }    
+            }
+        }        
         return retVal;
     }
-
-    @Override
-    public List<Widget> getAllSelectableWidgets(Widget widget)
+    
+    private boolean selectNextQualifier(Widget widget)
     {
-        ArrayList < Widget > retVal = new ArrayList < Widget >();
-        Lookup lookup = widget.getLookup();
-        if(lookup != null && lookup.lookup(Selectable.class) != null)
+        boolean retVal = false;
+        if (widget != null && widget instanceof AssociationConnector)
         {
-            if (widget.isVisible())
+            List <Widget> children = getAllChildren(widget, new ArrayList<Widget>());
+            for (Widget child : children)
             {
-                retVal.add(widget);
-            }
-        }
-        
-        for (Widget child : widget.getChildren())
-        {
-            if (child instanceof UMLNodeWidget)
-            {
-                break;
-            }
-            List<Widget> selectables = getAllSelectableWidgets(child);
-            if (selectables.size() > 0)
-            {
-                retVal.addAll(selectables);
-            }
-            //now get all node labels 
-            for (Dependency dep : widget.getDependencies())
-            {
-                if (dep instanceof LabelWidget)
-                {
-                    List<Widget> nodeLabels = getAllSelectableWidgets((Widget) dep);
-                    if (nodeLabels.size() > 0)
+                if (child instanceof AttributeWidget)
+                {                                       
+                    if (child.getState().isSelected() == false)
                     {
-                        retVal.addAll(nodeLabels);
+                        Selectable selectable = child.getLookup().lookup(Selectable.class); 
+                       if (selectable != null)
+                        {
+                            selectable.select(child);
+                        }
+                        retVal = true;
+                        break;
                     }
                 }
             }
         }
         
         return retVal;
-
+        
     }
     
+    private List getAllChildren(Widget widget, List<Widget> children)
+    {
+        if (widget != null && children != null)
+        {
+            for (Widget child : widget.getChildren())
+            {
+                children.add(child);
+                getAllChildren(child, children);
+            }
+        }  
+        return children;
+    }
 }
