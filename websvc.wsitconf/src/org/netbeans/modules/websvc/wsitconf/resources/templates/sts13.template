@@ -53,8 +53,12 @@ made subject to such option by the copyright holder.
                                               xmlns:tns="http://tempuri.org/"
                                               xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
                                               xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
-                                              xmlns:wsa10="http://www.w3.org/2005/08/addressing">
-	<wsp:Policy wsu:Id="I__SERVICENAME___policy">
+                                              xmlns:q1="http://schemas.message.com/Message"
+                                              xmlns:q2="http://schemas.message.com/Message"
+                                              xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+                                              xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns="http://schemas.xmlsoap.org/wsdl/">
+
+    <wsp:Policy wsu:Id="I__SERVICENAME___policy">
 		<wsp:ExactlyOne>
 			<wsp:All>
 				<sp:SymmetricBinding xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
@@ -63,7 +67,7 @@ made subject to such option by the copyright holder.
 							<wsp:Policy>
 								<sp:X509Token sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/Never">
 									<wsp:Policy>
-                                                                                <sp:RequireDerivedKeys />
+                                        <sp:RequireDerivedKeys />
 										<sp:RequireThumbprintReference/>
 										<sp:WssX509V3Token10/>
 									</wsp:Policy>
@@ -81,19 +85,19 @@ made subject to such option by the copyright holder.
 							</wsp:Policy>
 						</sp:Layout>
 						<sp:IncludeTimestamp/>
-                                                <sp:EncryptSignature />
+                        <sp:EncryptSignature />
 						<sp:OnlySignEntireHeadersAndBody/>
 					</wsp:Policy>
 				</sp:SymmetricBinding>
 				<sp:SignedSupportingTokens xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
-                                    <wsp:Policy>
-                                        <sp:UsernameToken sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
-                                            <wsp:Policy>
-                                                <sp:WssUsernameToken10/>
-                                            </wsp:Policy>
-                                        </sp:UsernameToken>
-                                    </wsp:Policy>
-                                </sp:SignedSupportingTokens>
+                    <wsp:Policy>
+                        <sp:UsernameToken sp:IncludeToken="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702/IncludeToken/AlwaysToRecipient">
+                            <wsp:Policy>
+                                <sp:WssUsernameToken10/>
+                            </wsp:Policy>
+                        </sp:UsernameToken>
+                    </wsp:Policy>
+                </sp:SignedSupportingTokens>
 				<sp:Wss11 xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
 					<wsp:Policy>
 						<sp:MustSupportRefKeyIdentifier/>
@@ -110,24 +114,24 @@ made subject to such option by the copyright holder.
 					</wsp:Policy>
 				</sp:Trust10>
 
-                                <sc:ValidatorConfiguration xmlns:sc="http://schemas.sun.com/2006/03/wss/server">
-                                </sc:ValidatorConfiguration>
-                                <tc:STSConfiguration xmlns:tc="http://schemas.sun.com/ws/2006/05/trust/server" encryptIssuedKey="true" encryptIssuedToken="false">
-                                     <tc:LifeTime>36000</tc:LifeTime>
-                                     <tc:Contract>com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl</tc:Contract>
-                                     <tc:Issuer>SunSTS</tc:Issuer>
-                                     <tc:ServiceProviders>
+                <sc:ValidatorConfiguration xmlns:sc="http://schemas.sun.com/2006/03/wss/server">
+                </sc:ValidatorConfiguration>
+                <tc:STSConfiguration xmlns:tc="http://schemas.sun.com/ws/2006/05/trust/server" encryptIssuedKey="true" encryptIssuedToken="false">
+                     <tc:LifeTime>36000</tc:LifeTime>
+                     <tc:Contract>com.sun.xml.ws.security.trust.impl.IssueSamlTokenContractImpl</tc:Contract>
+                     <tc:Issuer>SunSTS</tc:Issuer>
+                     <tc:ServiceProviders>
                         <tc:ServiceProvider endpoint="default" >
                                                   <tc:CertAlias>xws-security-server</tc:CertAlias>
-                                                  <tc:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</tc:TokenType>
-                                            </tc:ServiceProvider>
-                                      </tc:ServiceProviders>
-                                </tc:STSConfiguration>
+                                  <tc:TokenType>http://docs.oasis-open.org/wss/oasis-wss-saml-token-profile-1.1#SAMLV1.1</tc:TokenType>
+                            </tc:ServiceProvider>
+                      </tc:ServiceProviders>
+                </tc:STSConfiguration>
 				<wsam:Addressing>
-                                    <wsp:Policy>
-                                        <wsam:AnonymousResponses />
-                                    </wsp:Policy>
-                                </wsam:Addressing>
+                    <wsp:Policy>
+                        <wsam:AnonymousResponses />
+                    </wsp:Policy>
+                </wsam:Addressing>
 			</wsp:All>
 		</wsp:ExactlyOne>
 	</wsp:Policy>
@@ -190,7 +194,7 @@ made subject to such option by the copyright holder.
 		<wsp:PolicyReference URI="#I__SERVICENAME___policy"/>
 		<soap:binding transport="http://schemas.xmlsoap.org/soap/http"/>
 		<wsdl:operation name="IssueToken">
-			<soap12:operation soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue" style="document"/>
+			<soap:operation soapAction="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue" style="document"/>
 			<wsdl:input>
 				<wsp:PolicyReference URI="#I__SERVICENAME___IssueToken_Input_policy"/>
 				<soap:body use="literal"/>
