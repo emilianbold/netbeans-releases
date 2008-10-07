@@ -84,6 +84,9 @@ import javax.swing.event.CaretListener;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
@@ -247,6 +250,7 @@ public final class Source {
 
     //Preprocessor support
     private Object/*FilterListener*/ filterListener;
+    private boolean possiblyIncremental;
 
     static {
         Executors.newSingleThreadExecutor(factory).submit (new CompilationJob());
@@ -371,6 +375,7 @@ public final class Source {
             try {
                 //TimesCollector.getDefault().reportReference( file, Source.class.toString(), "[M] Source", this );       //NOI18N
                 if (!multipleSources) {
+                    this.possiblyIncremental = LanguageRegistry.getInstance().isIncremental(file.getMIMEType());
                     file.addFileChangeListener(FileUtil.weakFileChangeListener(this.fileChangeListener,file));
                     this.assignDocumentListener(file);
                     this.dataObjectListener = DataLoadersBridge.getDefault().getDataObjectListener(file, new FileChangeAdapter() {
@@ -413,8 +418,8 @@ public final class Source {
             this.rootFo = null;
         }
         this.classpathInfo.addChangeListener(WeakListeners.change(this.listener, this.classpathInfo));
-        
-        
+
+
     }
 
     /** Runs a task which permits for controlling phases of the parsing process.
@@ -925,7 +930,7 @@ long vsStart = System.currentTimeMillis();
                                 if (translations.size() > 0) {
                                     history = EditHistory.getCombinedEdits(translations.iterator().next().getEditVersion(), source.editHistory);
                                 }
-                                if (history != null) {
+                                if (history != null && history.isValid()) {
                                     IncrementalEmbeddingModel.UpdateState updated = incrementalModel.update(history, translations);
                                     if (updated == IncrementalEmbeddingModel.UpdateState.COMPLETED) {
                                         // No need to parse - nothing else to be done for this mime type
@@ -989,7 +994,7 @@ long parseStart = System.currentTimeMillis();
                                 ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                                 if (previousResult != null) {
                                     EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
-                                    if (history != null) {
+                                    if (history != null && history.isValid()) {
                                         ParserResult ir = incrementalParser.parse(file, reader, translatedSource, history, previousResult);
                                         if (ir != null) {
                                             ParserResult.UpdateState state = ir.getUpdateState();
@@ -1034,7 +1039,7 @@ long parseStart = System.currentTimeMillis();
                             ParserResult previousResult = source.recentParseResult.get(language.getMimeType());
                             if (previousResult != null) {
                                 EditHistory history = EditHistory.getCombinedEdits(previousResult.getEditVersion(), source.editHistory);
-                                if (history != null) {
+                                if (history != null && history.isValid()) {
                                     result = incrementalParser.parse(file, reader, null, history, previousResult);
                                     if (result != null) {
                                         ParserResult.UpdateState state = result.getUpdateState();
@@ -1079,9 +1084,12 @@ if(parseTime > 0) {
 // </editor-fold>
             }
                 currentPhase = Phase.PARSED;
-                EditHistory oldHistory = source.editHistory;
-                source.editHistory = new EditHistory();
-                oldHistory.add(source.editHistory);
+
+                if (source.possiblyIncremental) {
+                    EditHistory oldHistory = source.editHistory;
+                    source.editHistory = new EditHistory();
+                    oldHistory.add(source.editHistory);
+                }
 
 //                long end = System.currentTimeMillis();
 //                FileObject file = currentInfo.getFileObject();
@@ -1467,18 +1475,23 @@ if(parseTime > 0) {
         }
     }
 
-    private class DocListener implements DocumentListener, PropertyChangeListener, ChangeListener {
+    private class DocListener implements DocumentListener, PropertyChangeListener, ChangeListener, TokenHierarchyListener {
 
         private EditorCookie.Observable ec;
         private DocumentListener docListener;
+        private TokenHierarchyListener lexListener;
 
         public DocListener (EditorCookie.Observable ec) {
             assert ec != null;
             this.ec = ec;
-            this.ec.addPropertyChangeListener((PropertyChangeListener)WeakListeners.propertyChange(this, this.ec));
+            this.ec.addPropertyChangeListener(WeakListeners.propertyChange(this, this.ec));
             Document doc = ec.getDocument();
             if (doc != null) {
                 doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
+                if (possiblyIncremental) {
+                    TokenHierarchy th = TokenHierarchy.get(doc);
+                    th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+                }
             }
         }
 
@@ -1487,7 +1500,9 @@ if(parseTime > 0) {
             //the callback cannot be in synchronized section
             //since NbDocument.runAtomic fires under lock
             Source.this.resetState(true, true);
-            editHistory.insertUpdate(e);
+            if (possiblyIncremental) {
+                editHistory.insertUpdate(e);
+            }
         }
 
         public void removeUpdate(DocumentEvent e) {
@@ -1495,7 +1510,9 @@ if(parseTime > 0) {
             //the callback cannot be in synchronized section
             //since NbDocument.runAtomic fires under lock
             Source.this.resetState(true, true);
-            editHistory.removeUpdate(e);
+            if (possiblyIncremental) {
+                editHistory.removeUpdate(e);
+            }
         }
 
         public void changedUpdate(DocumentEvent e) {
@@ -1504,16 +1521,27 @@ if(parseTime > 0) {
         public void propertyChange(PropertyChangeEvent evt) {
             if (EditorCookie.Observable.PROP_DOCUMENT.equals(evt.getPropertyName())) {
                 Object old = evt.getOldValue();
-                if (old instanceof Document && docListener != null) {
-                    ((Document) old).removeDocumentListener(docListener);
-                    docListener = null;
-                    // Document closed - don't hang on to parse results
-                    recentParseResult.clear();
-                    recentEmbeddingTranslations.clear();
+                if (old instanceof Document) {
+                    if (lexListener != null) {
+                        TokenHierarchy th = TokenHierarchy.get((Document) old);
+                        th.removeTokenHierarchyListener(lexListener);
+                        lexListener = null;
+                    }
+                    if (docListener != null) {
+                        ((Document) old).removeDocumentListener(docListener);
+                        docListener = null;
+                        // Document closed - don't hang on to parse results
+                        recentParseResult.clear();
+                        recentEmbeddingTranslations.clear();
+                    }
                 }
                 Document doc = ec.getDocument();
                 if (doc != null) {
                     doc.addDocumentListener(docListener = WeakListeners.create(DocumentListener.class, this, doc));
+                    if (possiblyIncremental) {
+                        TokenHierarchy th = TokenHierarchy.get(doc);
+                        th.addTokenHierarchyListener(lexListener = WeakListeners.create(TokenHierarchyListener.class, this,th));
+                    }
                     resetState(true, false);
                 }
             }
@@ -1523,6 +1551,10 @@ if(parseTime > 0) {
             Source.this.resetState(true, false);
         }
 
+        public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+            assert possiblyIncremental;
+            editHistory.tokenHierarchyChanged(evt);
+        }
     }
 
     private static class EditorRegistryListener implements CaretListener/*, PropertyChangeListener*/ {

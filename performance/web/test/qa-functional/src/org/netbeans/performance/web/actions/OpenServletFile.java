@@ -51,6 +51,7 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 
@@ -155,6 +156,7 @@ public class OpenServletFile extends PerformanceTestCase {
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
         Logger.getLogger("TIMER").addHandler(phaseHandler);
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),"Source Packages" + '|' +  filePackage + '|' + fileName);
         

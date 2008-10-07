@@ -544,7 +544,6 @@ public class ResourceUtils implements WizardConstants{
     
     public static void saveConnPoolDatatoXml(ResourceConfigData data, Resources res) {
         try{
-            Vector vec = data.getProperties();
             JdbcConnectionPool connPool = res.newJdbcConnectionPool();
             
             String[] keys = data.getFieldNames();
@@ -799,7 +798,6 @@ public class ResourceUtils implements WizardConstants{
         if (targetName == null || targetName.length() == 0) 
             targetName = defName;
         
-        targetName = makeLegalFilename(targetName);
         List resources = getProjectResources(fo, defName);
         if(resources.contains(targetName)){
             targetName = getUniqueResourceName(targetName, resources);

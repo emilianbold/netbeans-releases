@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.websvc.core.jaxws.actions;
 
+import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -53,6 +54,18 @@ public class ConvertToRestAction extends CookieAction {
     @Override
     protected int mode() {
         return MODE_EXACTLY_ONE;
+    }
+
+    @Override
+    protected boolean enable(Node[] activatedNodes) {
+        if(activatedNodes.length == 1){
+            Node node = activatedNodes[0];
+            Service service = node.getLookup().lookup(Service.class);
+            if(service != null){
+                return !service.isUseProvider();
+            }
+        }
+        return super.enable(activatedNodes);
     }
 
     @Override
