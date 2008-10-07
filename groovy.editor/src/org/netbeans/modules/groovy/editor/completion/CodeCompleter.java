@@ -2602,9 +2602,10 @@ public class CodeCompleter implements CodeCompletionHandler {
 
             // FIXME return types subtype
             if (listMethod.getName().equals(methodToStore.getName())
-                    && listMethod.isSame(methodToStore)) {
+                    /*&& listMethod.isSame(methodToStore)*/ && isSame(listMethod, methodToStore)) {
 
-                if (listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
+                if (listMethod.getReturnType().isAssignableFrom(methodToStore.getReturnType())
+                        && listMethod.getDeclaringClass().getSuperClassDistance() <= toStoreDistance) {
                     LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
                     methodItemList.remove(methodItem);
                     break; // it's unlikely that we have more then one Method with a smaller distance
@@ -2617,7 +2618,35 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         methodItemList.add(itemToStore);
     }
+    
+    private static boolean isSame(MetaMethod listMethod, MetaMethod methodToStore) {
+        if (!listMethod.getName().equals(methodToStore.getName())) {
+            return false;
+        }
+        int mask = java.lang.reflect.Modifier.PRIVATE | java.lang.reflect.Modifier.PROTECTED
+                | java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC;
+        if ((listMethod.getModifiers() & mask) != (methodToStore.getModifiers() & mask)) {
+            return false;
+        }
+        if (!isSame(listMethod.getParameterTypes(), methodToStore.getParameterTypes())) {
+            return false;
+        }
 
+        return true;
+    }
+
+    private static boolean isSame(CachedClass[] parameters1, CachedClass[] parameters2) {
+        if (parameters1.length == parameters2.length) {
+            for (int i = 0, size = parameters1.length; i < size; i++) {
+                if (parameters1[i] != parameters2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * This should complete CamelCaseTypes. Simply type SB for StringBuilder.
      * a) New Constructors for exising classes
