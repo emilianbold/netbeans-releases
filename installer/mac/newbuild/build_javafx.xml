@@ -75,9 +75,9 @@ Microsystems, Inc. All Rights Reserved.
         <delete file="${common.name}-javafx.zip"/>
         <delete file="${common.name}-javafx-sdk.zip"/>
 
-        <exec executable="sh" failonerror="yes">
+        <exec executable="sh" failonerror="yes" dir="${basedir}/javafxtmpdir">
             <arg value="-c"/>
-            <arg value="zip -r -9 ${common.name}-javafx.zip ${basedir}/javafxtmpdir/*"/>
+            <arg value="zip -r -9 ${common.name}-javafx.zip *"/>
         </exec>      
         <delete dir="${basedir}/javafxtmpdir"/>
 
