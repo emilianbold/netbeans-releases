@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,14 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.clientproject;
+package org.netbeans.modules.j2ee.earproject;
 
 import org.netbeans.modules.j2ee.common.project.AbstractProjectAntLogger;
 
-public final class AppClientAntLogger extends AbstractProjectAntLogger {
+public final class EarProjectAntLogger extends AbstractProjectAntLogger {
     
     /** Default constructor for lookup. */
-    public AppClientAntLogger() {
-        super(AppClientProject.class, new String[0]);
+    public EarProjectAntLogger() {
+        super(EarProject.class, new String[0]);
     }
 }
