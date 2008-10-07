@@ -60,12 +60,13 @@ public class Utils {
     private static Logger LOGGER = Logger.getLogger(Utils.class.getName());
     
     public static RuntimeException launderThrowable(Throwable t) {
+        assert (t != null);
         if (t instanceof RuntimeException)
             return (RuntimeException)t;
         else if (t instanceof Error)
             throw (Error)t;
         else
-            throw new IllegalStateException("Unexpected checked exception", t);
+            throw new RuntimeException("Unexpected exception: " + t.getClass().getName() + ": " + t.getMessage(), t);
     }
 
     public static void displayError(String msg, Exception ex) {
