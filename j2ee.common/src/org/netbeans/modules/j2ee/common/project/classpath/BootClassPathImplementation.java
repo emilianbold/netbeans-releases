@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.clientproject.classpath;
+package org.netbeans.modules.j2ee.common.project.classpath;
 
 import java.beans.PropertyChangeEvent;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
@@ -46,29 +46,31 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.java.classpath.ClassPath;
-
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Collections;
-import org.netbeans.modules.j2ee.clientproject.Utils;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.WeakListeners;
 
-final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
-    private static final String PLATFORM_ACTIVE = AppClientProjectProperties.JAVA_PLATFORM;        //NOI18N
-    private static final String ANT_NAME = "platform.ant.name";             //NOI18N
-    private static final String J2SE = "j2se";                              //NOI18N
+/**
+ * Represent a boot class path. It is possible to listen to the changes of
+ * {@link ClassPathImplementation#PROP_RESOURCES}.
+ * @author Tomas Zezula
+ */
+public final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+
+    private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
 
     private final PropertyEvaluator evaluator;
     private JavaPlatformManager platformManager;
-    //name of project active platform
+    // name of project active platform
     private String activePlatformName;
-    //active platform is valid (not broken reference)
+    // active platform is valid (not broken reference)
     private boolean isActivePlatformValid;
     private List<PathResourceImplementation> resourcesCache;
     private long eventId;
@@ -76,91 +78,101 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
 
     public BootClassPathImplementation(PropertyEvaluator evaluator) {
         assert evaluator != null;
+
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
+    /**
+     * @see ClassPathImplementation#getResources()
+     */
     public List<PathResourceImplementation> getResources() {
         long currentId;
         synchronized (this) {
-            if (this.resourcesCache != null) {
-                return this.resourcesCache;
+            if (resourcesCache != null) {
+                return resourcesCache;
             }
             currentId = eventId;
         }
-        
+
         JavaPlatform jp = findActivePlatform();
         final List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
         if (jp != null) {
-            //TODO: May also listen on CP, but from Platform it should be fixed.
+            // TODO: may also listen on CP, but from Platform it should be fixed
             final ClassPath cp = jp.getBootstrapLibraries();
             assert cp != null : jp;
             for (ClassPath.Entry entry : cp.entries()) {
                 result.add(ClassPathSupport.createResource(entry.getURL()));
             }
         }
-        
+
         synchronized (this) {
             if (currentId == eventId) {
-                if (this.resourcesCache == null) {
-                    this.resourcesCache = Collections.unmodifiableList(result);
+                if (resourcesCache == null) {
+                    resourcesCache = Collections.unmodifiableList(result);
                 }
-                return this.resourcesCache;
+                return resourcesCache;
             }
-            return Collections.unmodifiableList (result);
+            return Collections.unmodifiableList(result);
         }
     }
 
+    /**
+     * Add {@link PropertyChangeListener}, see class description for more information.
+     * @param listener a listener to add.
+     */
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        this.support.addPropertyChangeListener (listener);
+        support.addPropertyChangeListener(listener);
     }
 
+    /**
+     * Remove {@link PropertyChangeListener}, see class description for more information.
+     * @param listener a listener to remove.
+     */
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        this.support.removePropertyChangeListener (listener);
+        support.removePropertyChangeListener(listener);
     }
 
-    private JavaPlatform findActivePlatform () {
-        if (this.platformManager == null) {
-            this.platformManager = JavaPlatformManager.getDefault();
-            this.platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, this.platformManager));
-        }                
-        this.activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
-        final JavaPlatform activePlatform = Utils.getActivePlatform (this.activePlatformName);
-        this.isActivePlatformValid = activePlatform != null;
-        return activePlatform;
-    }
-    
+    /**
+     * @see PropertyChangeListener#propertyChange()
+     */
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getSource() == this.evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
-            //Active platform was changed
-            resetCache ();
-        }
-        else if (evt.getSource() == this.platformManager
+        if (evt.getSource() == evaluator && evt.getPropertyName().equals(PLATFORM_ACTIVE)) {
+            // active platform was changed
+            resetCache();
+        } else if (evt.getSource() == platformManager
                 && JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName())
                 && activePlatformName != null) {
-            //Platform definitions were changed, check if the platform was not resolved or deleted
-            if (this.isActivePlatformValid) {
-                if (Utils.getActivePlatform (this.activePlatformName) == null) {
-                    //the platform was not removed
-                    this.resetCache();
+            // platform definitions were changed, check if the platform was not resolved or deleted
+            if (isActivePlatformValid) {
+                if (CommonProjectUtils.getActivePlatform(activePlatformName) == null) {
+                    // the platform was not removed
+                    resetCache();
                 }
             } else {
-                if (Utils.getActivePlatform (this.activePlatformName) != null) {
-                    this.resetCache();
+                if (CommonProjectUtils.getActivePlatform(activePlatformName) != null) {
+                    resetCache();
                 }
             }
         }
     }
-    
-    /**
-     * Resets the cache and firesPropertyChange
-     */
-    private void resetCache () {
+
+    private JavaPlatform findActivePlatform() {
+        if (platformManager == null) {
+            platformManager = JavaPlatformManager.getDefault();
+            platformManager.addPropertyChangeListener(WeakListeners.propertyChange(this, platformManager));
+        }
+        activePlatformName = evaluator.getProperty(PLATFORM_ACTIVE);
+        final JavaPlatform activePlatform = CommonProjectUtils.getActivePlatform(activePlatformName);
+        isActivePlatformValid = activePlatform != null;
+        return activePlatform;
+    }
+
+    private void resetCache() {
         synchronized (this) {
             resourcesCache = null;
             eventId++;
         }
         support.firePropertyChange(PROP_RESOURCES, null, null);
     }
-    
 }

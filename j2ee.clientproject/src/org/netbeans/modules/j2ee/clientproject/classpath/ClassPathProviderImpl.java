@@ -56,6 +56,7 @@ import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.j2ee.common.project.classpath.BootClassPathImplementation;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.filesystems.FileObject;

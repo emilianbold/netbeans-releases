@@ -48,6 +48,7 @@ import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.project.classpath.BootClassPathImplementation;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
