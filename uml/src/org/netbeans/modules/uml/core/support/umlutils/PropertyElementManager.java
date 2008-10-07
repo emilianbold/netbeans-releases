@@ -49,7 +49,6 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.HashMap;
 
-//import org.apache.xpath.XPathAPI;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Node;
@@ -65,7 +64,6 @@ import org.netbeans.modules.uml.core.generativeframework.ITemplateManager;
 import org.netbeans.modules.uml.core.generativeframework.IVariableExpander;
 import org.netbeans.modules.uml.core.generativeframework.IVariableFactory;
 import org.netbeans.modules.uml.core.generativeframework.VariableExpander;
-import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
@@ -259,11 +257,13 @@ public class PropertyElementManager implements IPropertyElementManager
                            {
                               converted = false;
                            }
+                           boolean found = false;
                            while (tokenizer.hasMoreTokens())
                            {
                               if ((firstToken).equals(val)
                               || (converted && (convertedVal == i)))
                               {
+                                 found = true;
                                  break;
                               }
                               else
@@ -271,7 +271,28 @@ public class PropertyElementManager implements IPropertyElementManager
                                  firstToken = tokenizer.nextToken();
                                  i++;
                               }
+                           }    
+                       
+                           if (!found) 
+                           {
+                               validVals = pDef.getValidValues();
+                               if (validVals != null )
+                               {
+                                   tokenizer = new StringTokenizer(validVals, "|");
+                                   int j = 0;
+                                   while(tokenizer.hasMoreTokens()) 
+                                   {
+                                       String token = tokenizer.nextToken();
+                                       if (token != null && token.equals(val)) 
+                                       {
+                                           i = j;
+                                           break;
+                                       }
+                                       j++;
+                                   }
+                               }
                            }
+                           
                            String enumVals = pDef.getFromAttrMap("enumValues");
                            if (enumVals != null)
                            {
@@ -333,6 +354,9 @@ public class PropertyElementManager implements IPropertyElementManager
                      {
                         processResult(retObjGet, pDef, pEle);
                      }
+                     IPropertyElementManager manager = pEle.getPropertyElementManager();
+                     manager.interpretElementValue(pEle);
+                     
                      pEle.setModified(false);
                   }
                }
@@ -485,6 +509,12 @@ public class PropertyElementManager implements IPropertyElementManager
     */
    private void populateSubElementsAfterCreate(IPropertyElement pEle, Object obj)
    {
+       Class clazz = null;
+       if (obj != null)
+       {
+            clazz = obj.getClass();
+       }
+        
       pEle.setElement(obj);
       Vector elems = pEle.getSubElements();
       if (elems != null && !elems.isEmpty())
@@ -492,13 +522,39 @@ public class PropertyElementManager implements IPropertyElementManager
          for (int i=0; i<elems.size(); i++)
          {
             Object elemObj = elems.get(i);
-            if (elemObj instanceof IPropertyElement)
-            {
-               IPropertyElement ele = (IPropertyElement)elemObj;
-               ele.setElement(obj);
-               IPropertyDefinition def = ele.getPropertyDefinition();
-               processCollectionWithSet(obj, def, ele);
-            }
+             if (elemObj instanceof IPropertyElement)
+             {
+                 IPropertyElement ele = (IPropertyElement) elemObj;
+                 ele.setElement(obj);
+                 
+                 if (clazz != null)
+                 {  
+                     IPropertyDefinition pDef = ele.getPropertyDefinition();
+                     // check if the property definition is marked as a collection
+                     long mult = pDef.getMultiplicity();
+                     if (mult <= 1)
+                     {
+                         String getMethStr = pDef.getGetMethod();
+                         try
+                         {
+                             java.lang.reflect.Method method =
+                                     clazz.getMethod(getMethStr, (Class[]) null);
+                             Object result = method.invoke(obj, (Object[]) null);
+                             processResult(result, pDef, ele);
+
+                         } catch (NoSuchMethodException ex)
+                         {
+                         // do nothing
+                         } catch (Exception e)
+                         {
+                             e.printStackTrace();
+                         }
+                     } else
+                     {
+                         processCollectionWithSet(obj, pDef, ele);
+                     }
+                 }
+             }
          }
          pEle.setModified(false);
       }
@@ -1246,7 +1302,7 @@ public class PropertyElementManager implements IPropertyElementManager
                  interpretElementValue(newElement);
                  pEle.setValue(newElement.getValue());
              }
-         }
+         } 
       }
       return 0;
    }
@@ -1566,6 +1622,14 @@ public class PropertyElementManager implements IPropertyElementManager
                   processEnumeration(pEle);
                }
             }
+         }
+         Vector<IPropertyElement> subElems = pEle.getSubElements();
+         if (subElems != null) 
+         {
+             for(IPropertyElement sub : subElems) 
+             {
+                 interpretElementValue(sub);
+             }
          }
       }
    }

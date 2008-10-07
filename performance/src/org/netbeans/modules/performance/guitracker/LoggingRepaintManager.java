@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.performance.guitracker;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.util.LinkedList;
 
 import javax.swing.JButton;
@@ -55,6 +57,8 @@ import javax.swing.RepaintManager;
 public class LoggingRepaintManager extends RepaintManager {
     
     private static final long MAX_TIMEOUT = 60*1000L;
+
+    private static final boolean DEBUG_MODE = false;
     
     private ActionTracker tr;
     
@@ -125,7 +129,8 @@ public class LoggingRepaintManager extends RepaintManager {
     @Override
     public void addDirtyRegion(JComponent c, int x, int y, int w, int h) {
         synchronized (this) {
-            String log = c.getClass().getName() + ", "+ x + "," + y + "," + w + "," + h;
+            String log = logContainerAndItsParents(c) + ", " + x + "," + y
+                    + "," + w + "," + h + ", " + Thread.currentThread().getName();
 
             // fix for issue 73361, It looks like the biggest cursor is on Sol 10 (11,19) in textfields
             // of some dialogs
@@ -138,8 +143,31 @@ public class LoggingRepaintManager extends RepaintManager {
                 }
             }
         }
-        //System.out.println(log);
         super.addDirtyRegion(c, x, y, w, h);
+    }
+
+    public static String logComponent(Component c) {
+        return c.getClass().getName() + "/" + c.getName();
+    }
+
+    public static String logContainerAndItsParents(Container c) {
+        if (DEBUG_MODE) {
+            return logComponent(c) + getContainersChain(c);
+        } else {
+            return logComponent(c);
+        }
+    }
+
+    public static String getContainersChain(Container container) {
+        StringBuffer ret = new StringBuffer();
+        do {
+            container = container.getParent();
+            if (container == null) {
+                break;
+            }
+            ret.append(" <- ").append(logComponent(container));
+        } while (true);
+        return ret.toString();
     }
     
     /**
@@ -219,6 +247,73 @@ public class LoggingRepaintManager extends RepaintManager {
         }
     };
     
+    /**
+     * Ignores paints from Status Line
+     */
+    public static final RegionFilter IGNORE_STATUS_LINE_FILTER =
+            new RegionFilter() {
+
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            Container cont = c;
+            do {
+                cn = cont.getName();
+                if ("StatusLine".equalsIgnoreCase(cn)) {
+                    return false;
+                }
+                cont = cont.getParent();
+            } while (cont != null);
+            return true;
+        }
+
+        public String getFilterName() {
+            return "Ignores StatusLine content";
+        }
+        
+    };
+
+    /**
+     * Ignores paints from ExplorerTree
+     */
+    public static final RegionFilter IGNORE_EXPLORER_TREE_FILTER =
+            new RegionFilter() {
+
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            if ("org.openide.explorer.view.TreeView$ExplorerTree".equals(cn)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        public String getFilterName() {
+            return "Ignores TreeView$ExplorerTree";
+        }
+
+    };
+
+    /**
+     * Ignores paints from DiffSidebar
+     */
+    public static final RegionFilter IGNORE_DIFF_SIDEBAR_FILTER =
+            new RegionFilter() {
+
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        public String getFilterName() {
+            return "Ignores versioning.diff.DiffSidebar";
+        }
+
+    };
+
     /**
      * Accept paints only from Explorer :
      *  - org.openide.explorer.view

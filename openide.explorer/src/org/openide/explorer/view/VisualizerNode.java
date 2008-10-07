@@ -328,7 +328,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public java.util.Enumeration<VisualizerNode> children() {
-        return getChildren().children();
+        return getChildren().children(true);
     }
 
     public boolean isLeaf() {

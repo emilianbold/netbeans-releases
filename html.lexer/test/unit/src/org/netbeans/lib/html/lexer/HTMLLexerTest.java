@@ -89,5 +89,11 @@ public class HTMLLexerTest extends NbTestCase {
         
         assertFalse(ts.moveNext());
     }
+
+    public void test149018() throws Exception { //JSP editor not recognizing valid end-of-html comment
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testInput.html.txt",
+                HTMLTokenId.language());
+    }
+
     
 }

@@ -49,16 +49,30 @@ import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation;
  */
 public abstract class EjbJarAccessor {
 
-    public static EjbJarAccessor DEFAULT;
+    private static volatile EjbJarAccessor DEFAULT;
 
-    // force loading of EjbJar class. That will set DEFAULT variable.
-    static {
+    public static void setDefault(EjbJarAccessor accessor) {
+        if (DEFAULT != null) {
+            throw new IllegalStateException("Already initialized accessor");
+        }
+        DEFAULT = accessor;
+    }
+
+    public static EjbJarAccessor getDefault() {
+        if (DEFAULT != null) {
+            return DEFAULT;
+        }
+
+        // invokes static initializer of EjbJar.class
         Class c = EjbJar.class;
         try {
             Class.forName(c.getName(), true, c.getClassLoader());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
+
+        assert DEFAULT != null : "The DEFAULT field must be initialized";
+        return DEFAULT;
     }
     
     public abstract EjbJar createEjbJar(EjbJarImplementation spiWebmodule);

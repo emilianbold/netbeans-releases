@@ -154,6 +154,11 @@ public class NbServiceTagSupport {
         inited = true;
     }
 
+    /** Returns NetBeans IDE product name. */
+    public static String getProductName () {
+        return NbBundle.getMessage(NbServiceTagSupport.class,"nb.product.name");
+    }
+
     /** 
      * First look in registration data if CND service tag exists.
      * If not then create new service tag.

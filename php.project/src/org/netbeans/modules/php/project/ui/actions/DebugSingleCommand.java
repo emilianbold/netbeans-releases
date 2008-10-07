@@ -70,7 +70,7 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationSet()) {
+        if (!isRunConfigurationValid()) {
             // property not set yet
             return;
         }
@@ -113,7 +113,7 @@ public class DebugSingleCommand extends DebugCommand {
                             invokeAction(context);
                         }
                     } else {
-                        dbgStarter.start(getProject(), runnable, startFile, isScriptSelected());
+                        startDebugger(dbgStarter, runnable, startFile, isScriptSelected());
                     }
                 }
             } else {

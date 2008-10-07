@@ -42,6 +42,7 @@
 package org.openide.text;
 
 import java.io.PrintStream;
+import java.util.logging.Level;
 import org.netbeans.junit.*;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
@@ -65,7 +66,13 @@ public final class SimpleDESTest extends NbTestCase {
     public SimpleDESTest(String name) {
         super(name);
     }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
     
+    @Override
     protected void setUp() throws java.lang.Exception {
         clearWorkDir ();
         

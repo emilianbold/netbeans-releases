@@ -54,13 +54,13 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.gsf.api.Hint;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.RuleContext;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.gsfret.hints.infrastructure.GsfHintsManager;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.Phase;
 import org.netbeans.napi.gsfret.source.Source;
-import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -315,7 +315,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
                 public void run(CompilationController info) throws Exception {
                     // Ensure document is forced open
-                    UiUtils.getDocument(info.getFileObject(), true);
+                    GsfUtilities.getDocument(info.getFileObject(), true);
 
                     info.toPhase(Phase.RESOLVED);
 

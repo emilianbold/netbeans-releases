@@ -76,7 +76,7 @@ Microsystems, Inc. All Rights Reserved.
            value="org.netbeans.installer.mac.ant.VerifyFile"/>
         <property
            name="VerifyFile.classpath" 
-           classpath="${basedir}/tools/classes/org/netbeans/installer/mac/ant"/>           
+           value="${basedir}/tools/classes"/>           
     </target>        
 
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  

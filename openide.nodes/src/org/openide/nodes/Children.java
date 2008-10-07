@@ -140,29 +140,18 @@ public abstract class Children extends Object {
     /**
      * Initializes entry support.
      */
-    final EntrySupport entrySupport() {
+    EntrySupport entrySupport() {
         synchronized (Children.class) {
-            checkSupportValidity();
             if (entrySupport == null) {
-                entrySupport = createEntrySource();
+                entrySupport = lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
                 postInitializeEntrySupport();
             }
             return entrySupport;
         }
     }
-    
-    void checkSupportValidity() {
-    }
-    
+
     boolean lazySupport;
-    /**
-     * Creates appropriate entry support for this children.
-     * Overriden in Children.Keys to sometimes make lazy support.
-     */
-    EntrySupport createEntrySource() {
-        return lazySupport ? new EntrySupport.Lazy(this) : new EntrySupport.Default(this);
-    }
-    
+
     boolean isLazy() {
         return lazySupport;
     }
@@ -584,7 +573,7 @@ public abstract class Children extends Object {
     static interface Entry {
         /** Set of nodes associated with this entry.
         */
-        public Collection<Node> nodes();
+        public Collection<Node> nodes(Object source);
     }
 
     /** Empty list of children. Does not allow anybody to insert a node.
@@ -814,7 +803,7 @@ public abstract class Children extends Object {
 
             /** List of elements.
             */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 Collection<Node> c = getCollection();
 
                 if (c.isEmpty()) {
@@ -1052,7 +1041,7 @@ public abstract class Children extends Object {
             }
 
             /** Nodes */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 return Collections.singleton(node);
             }
 
@@ -1147,7 +1136,7 @@ public abstract class Children extends Object {
 
             /** List of elements.
             */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 List<Node> al = new ArrayList<Node>(getCollection());
                 Collections.sort(al, comp);
 
@@ -1608,7 +1597,7 @@ public abstract class Children extends Object {
 
             /** Nodes are taken from the create nodes.
             */
-            public Collection<Node> nodes() {
+            public Collection<Node> nodes(Object source) {
                 Node[] arr = createNodes(getKey());
 
                 if (arr == null) {

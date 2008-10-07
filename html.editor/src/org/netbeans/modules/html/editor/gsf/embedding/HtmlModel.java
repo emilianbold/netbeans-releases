@@ -340,7 +340,7 @@ public class HtmlModel {
         // Clear cache
         // prevLexOffset = prevAstOffset = 0;
         prevLexOffset = history.convertOriginalToEdited(prevLexOffset);
-        
+
         int offset = history.getStart();
         int limit = history.getOriginalEnd();
         int delta = history.getSizeDelta();
@@ -365,6 +365,10 @@ public class HtmlModel {
         }
 
         return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
+
+        // TODO - do something about token hierarchy changes?
+        // Not sure if anything needs to be done here -- check extractHtml and figure
+        // out which tokens it depends on
     }
 
     private class CodeBlockData {

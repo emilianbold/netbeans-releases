@@ -73,6 +73,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.LanguageManager;
 import org.netbeans.modules.editor.indent.spi.Context;
@@ -134,12 +135,16 @@ import javax.swing.JEditorPane;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentEvent.ElementChange;
 import javax.swing.event.DocumentEvent.EventType;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
@@ -460,8 +465,13 @@ public abstract class GsfTestBase extends NbTestCase {
 
     protected void assertDescriptionMatches(String relFilePath,
             String description, boolean includeTestName, String ext) throws Exception {
+        assertDescriptionMatches(relFilePath, description, includeTestName, ext, true);
+    }
+
+    protected void assertDescriptionMatches(String relFilePath,
+            String description, boolean includeTestName, String ext, boolean checkFileExistence) throws Exception {
         File rubyFile = getDataFile(relFilePath);
-        if (!rubyFile.exists()) {
+        if (checkFileExistence && !rubyFile.exists()) {
             NbTestCase.fail("File " + rubyFile + " not found.");
         }
 
@@ -689,7 +699,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".errors");
     }
 
-    private String annotateErrors(String text, List<Error> errors) {
+    protected String annotateErrors(String text, List<Error> errors) {
         List<String> descs = new ArrayList<String>();
         for (Error error : errors) {
             StringBuilder desc = new StringBuilder();
@@ -1760,13 +1770,13 @@ public abstract class GsfTestBase extends NbTestCase {
         }
     }
 
+    @SuppressWarnings("deprecation") // For document.getFormatter() -- but annotation only seems to work at the method level
     protected void format(final BaseDocument document, final Formatter formatter,
             final CompilationInfo compilationInfo, int startPos, int endPos, boolean indentOnly) throws BadLocationException {
         //assertTrue(SwingUtilities.isEventDispatchThread());
         configureIndenters(document, formatter, compilationInfo, indentOnly);
 
 //        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
-        @SuppressWarnings("deprecation")
         final org.netbeans.editor.Formatter f = document.getFormatter();
         try {
             f.reformatLock();
@@ -2604,7 +2614,7 @@ public abstract class GsfTestBase extends NbTestCase {
         org.netbeans.modules.gsfret.source.usages.ClassIndexManager.get(language).getBootIndices();
     }
     
-    public void checkComputeMethodCall(String file, String caretLine, String fqn, String param, boolean expectSuccess) throws Exception {
+    public void checkComputeMethodCall(String file, String caretLine, String param, boolean expectSuccess) throws Exception {
         initializeClassPaths();
         
         QueryType type = QueryType.COMPLETION;
@@ -2624,7 +2634,7 @@ public abstract class GsfTestBase extends NbTestCase {
         assertNotNull(pr);
         
         CodeCompletionHandler cc = getCodeCompleter();
-        assertNotNull("getSemanticAnalyzer must be implemented", cc);
+        assertNotNull("getCodeCompleter must be implemented", cc);
 
         boolean upToOffset = type == QueryType.COMPLETION;
         String prefix = cc.getPrefix(ci, caretOffset, upToOffset);
@@ -2982,6 +2992,81 @@ public abstract class GsfTestBase extends NbTestCase {
         return new Pair<EditHistory,String>(history, modifiedText);
     }
 
+    protected final Pair<EditHistory,String> getEditHistory(BaseDocument doc, final EditHistory history, String... edits) throws BadLocationException {
+        assertNotNull("Must provide a list of edits", edits);
+        assertTrue("Should be an even number of edit events: pairs of caret, insert/remove", edits.length % 2 == 0);
+
+        String initialText = doc.getText(0, doc.getLength());
+        doc.addDocumentListener(new DocumentListener() {
+
+            public void insertUpdate(DocumentEvent e) {
+                history.insertUpdate(e);
+            }
+
+            public void removeUpdate(DocumentEvent e) {
+                history.removeUpdate(e);
+            }
+
+            public void changedUpdate(DocumentEvent e) {
+            }
+        });
+
+        TokenHierarchy th = TokenHierarchy.get((Document) doc);
+        th.addTokenHierarchyListener(new TokenHierarchyListener() {
+                public void tokenHierarchyChanged(TokenHierarchyEvent e) {
+                    // I'm getting empty token change events from tests...
+                    // Figure out why this happens
+                    // assert e.type() != TokenHierarchyEventType.MODIFICATION || e.tokenChange().addedTokenCount() > 0 || e.tokenChange().removedTokenCount() > 0;
+                    history.tokenHierarchyChanged(e);
+                }
+        });
+
+
+        // Attempt to activate them token hierarchy, one of my attempts to get TokenHierarchyEvents fired
+        //// doc.writeLock();
+        //try {
+        //    MutableTextInput input = (MutableTextInput)doc.getProperty(MutableTextInput.class);
+        //    assertNotNull(input);
+        //    input.tokenHierarchyControl().setActive(true);
+        //} finally {
+        //    // doc.writeUnlock();
+        //}
+
+        String modifiedText = initialText;
+        for (int i = 0, n = edits.length; i < n; i += 2) {
+            String caretLine = edits[i];
+            String event = edits[i+1];
+            int caretOffset = getCaretOffset(modifiedText, caretLine);
+
+            assertTrue(event + " must start with " + INSERT + " or " + REMOVE,
+                    event.startsWith(INSERT) || event.startsWith(REMOVE));
+            if (event.startsWith(INSERT)) {
+                event = event.substring(INSERT.length());
+                //assertTrue(th.isActive());
+                doc.insertString(caretOffset, event, null);
+                modifiedText = modifiedText.substring(0, caretOffset) + event + modifiedText.substring(caretOffset);
+            } else {
+                assertTrue(event.startsWith(REMOVE));
+                event = event.substring(REMOVE.length());
+                assertTrue(modifiedText.regionMatches(caretOffset, event, 0, event.length()));
+                doc.remove(caretOffset, event.length());
+                modifiedText = modifiedText.substring(0, caretOffset) + modifiedText.substring(caretOffset+event.length());
+            }
+        }
+
+        assertEquals(modifiedText, doc.getText(0, doc.getLength()));
+        // Make sure the hierarchy is activated - this happens when we obtain a token sequence
+        TokenSequence ts = th.tokenSequence();
+        ts.moveStart();
+        for (int i = 0; i < 10; i++) {
+            if (!ts.moveNext()) {
+                break;
+            }
+        }
+
+        return new Pair<EditHistory,String>(history, modifiedText);
+    }
+
     /**
      * Produce an incremental parser result for the given test file with the given
      * series of edits. An edit is a pair of caret position string (with ^ representing
@@ -3011,6 +3096,11 @@ public abstract class GsfTestBase extends NbTestCase {
         System.gc();
         System.gc();
         long incrementalStartTime = System.nanoTime();
+        int caretOffset = history.getStart();
+        if (history.getSizeDelta() > 0) {
+            caretOffset += history.getSizeDelta();
+        }
+        info.setCaretOffset(caretOffset);
         ParserResult incrementalResult = info.getEmbeddedResult(info.getPreferredMimeType(), 0);
         assertNotNull(incrementalResult);
         long incrementalEndTime = System.nanoTime();
@@ -3036,6 +3126,8 @@ public abstract class GsfTestBase extends NbTestCase {
                     ((double)fullParseTime)/incrementalParseTime,
                     ((double)incrementalParseTime)*speedupExpectation < fullParseTime);
         }
+
+        assertEquals(incrementalResult.getDiagnostics().toString(), fullParseResult.getDiagnostics().size(), incrementalResult.getDiagnostics().size());
 
         return new IncrementalParse(initialResult, info, incrementalResult, history, initialText, modifiedText, fullParseResult);
     }

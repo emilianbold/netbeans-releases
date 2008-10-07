@@ -52,6 +52,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel.UpdateState;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.html.editor.HTMLKit;
@@ -85,6 +86,11 @@ public class JsModelTest extends JsTestBase {
         } catch (IllegalStateException ise) {
             // Already registered?
         }
+        try {
+            TestLanguageProvider.register(JsTokenId.language());
+        } catch (IllegalStateException ise) {
+            // Already registered?
+        }
     }
 
     @Override
@@ -97,6 +103,13 @@ public class JsModelTest extends JsTestBase {
         if (!jsFile.exists()) {
             NbTestCase.fail("File " + jsFile + " not found.");
         }
+
+        BaseDocument doc = getDocument(getTestFile(relFilePath));
+
+        return getTranslatedSource(doc, relFilePath);
+    }
+
+    private TranslatedSource getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
         String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
         String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
 
@@ -115,7 +128,6 @@ public class JsModelTest extends JsTestBase {
 
         EmbeddingModel model = LanguageRegistry.getInstance().getEmbedding(JsTokenId.JAVASCRIPT_MIME_TYPE, mimeType);
         assertNotNull(model);
-        BaseDocument doc = getDocument(getTestFile(relFilePath));
 
         doc.putProperty("mimeType", mimeType);
         doc.putProperty(org.netbeans.api.lexer.Language.class, lexerLanguage);
@@ -411,5 +423,70 @@ public class JsModelTest extends JsTestBase {
         assertEquals(blockEnd, source.getLexicalOffset(astOffset+1));
         assertEquals(blockEnd, source.getLexicalOffset(astOffset+2));
         assertEquals(blockEnd, source.getLexicalOffset(astOffset+3));
+    }
+
+    // Test incremental updates: new areas such as <script>, onclick=, etc.
+    public void testIncrementalUpdate8() throws Exception {
+        String relFilePath = "testfiles/embedding/rails-index.html";
+        BaseDocument doc = getDocument(getTestFile(relFilePath));
+        final TranslatedSource ts = getTranslatedSource(doc, relFilePath);
+        assertNotNull(ts);
+
+        // Now apply some updates
+        final EditHistory history = new EditHistory();
+        getEditHistory(doc, history,
+                "background^-color: #f0f0f0;", INSERT+"d",
+                "backgroundd^-color: #f0f0f0;", REMOVE+"-"
+                );
+        // HACK -- events don't seem to get fired synchronously... I've tried
+        // EventQueue.invokeLater, overriding runInEq, and some other tricks
+        // but without success. For now, access it directly
+        history.testHelperNotifyToken(false, HTMLTokenId.STYLE);
+        history.testHelperNotifyToken(true, HTMLTokenId.STYLE);
+
+        assertTrue(history.wasModified(HTMLTokenId.STYLE));
+        assertTrue(!history.wasModified(HTMLTokenId.TEXT));
+        assertTrue(!history.wasModified(HTMLTokenId.SCRIPT));
+        assertTrue(!history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT));
+
+        // Assert the translated source model is correctly updated
+        assertTrue(ts instanceof JsTranslatedSource);
+        JsTranslatedSource jts = (JsTranslatedSource)ts;
+        UpdateState state = jts.incrementalUpdate(history);
+        assertEquals(IncrementalEmbeddingModel.UpdateState.COMPLETED, state);
+    }
+
+    public void testIncrementalUpdate9() throws Exception {
+        // Insert a new <script> block near the top
+
+        String relFilePath = "testfiles/embedding/rails-index.html";
+        BaseDocument doc = getDocument(getTestFile(relFilePath));
+
+        final TranslatedSource ts = getTranslatedSource(doc, relFilePath);
+        assertNotNull(ts);
+
+
+        final EditHistory history = new EditHistory();
+        getEditHistory(doc, history,
+                "</title>^\n", INSERT+"<script>\nfunction foo() { }\n</script>"
+                );
+        // HACK -- events don't seem to get fired synchronously... I've tried
+        // EventQueue.invokeLater, overriding runInEq, and some other tricks
+        // but without success. For now, access it directly
+        history.testHelperNotifyToken(true, HTMLTokenId.SCRIPT);
+        history.testHelperNotifyToken(true, HTMLTokenId.TEXT);
+
+
+        assertTrue(history.wasModified(HTMLTokenId.TEXT)); // The \n before the script
+        assertTrue(history.wasModified(HTMLTokenId.SCRIPT));
+        assertTrue(!history.wasModified(HTMLTokenId.STYLE));
+        assertTrue(!history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT));
+
+        // Assert the translated source model is correctly updated
+        assertTrue(ts instanceof JsTranslatedSource);
+        JsTranslatedSource jts = (JsTranslatedSource)ts;
+        UpdateState state = jts.incrementalUpdate(history);
+        // New JavaScript block -- can't update this incrementally (yet!)
+        assertEquals(IncrementalEmbeddingModel.UpdateState.FAILED, state);
     }
 }

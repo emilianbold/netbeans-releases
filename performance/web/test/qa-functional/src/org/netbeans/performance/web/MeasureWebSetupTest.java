@@ -58,7 +58,7 @@ public class MeasureWebSetupTest {
     
     public static Test suite() {
         TestSuite suite = new NbTestSuite("UI Responsiveness Web Setup suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebSetupTest");
+        System.setProperty("suitename", MeasureWebSetupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(WebSetup.class, ".*", ".*"));
         

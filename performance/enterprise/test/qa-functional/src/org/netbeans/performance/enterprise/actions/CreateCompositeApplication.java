@@ -41,9 +41,10 @@
 
 package org.netbeans.performance.enterprise.actions;
 
+import java.awt.Container;
+import javax.swing.JComponent;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 
@@ -52,6 +53,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
 
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.CommonUtilities;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
@@ -67,8 +69,6 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     private NewProjectNameLocationStepOperator wizard_location;
     
     private String category, project, project_name;
-    
-    private int index;
     
     public void testCreateCompositeApplication() {
         measureTime();
@@ -99,7 +99,8 @@ public class CreateCompositeApplication extends PerformanceTestCase {
     public void initialize(){
         category = Bundle.getStringTrimmed("org.netbeans.modules.bpel.project.Bundle", "OpenIDE-Module-Display-Category"); // "SOA"
         project = "Composite Application"; // NOI18N
-        index=1;
+
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
         
         closeAllModal();
     }
@@ -120,7 +121,7 @@ public class CreateCompositeApplication extends PerformanceTestCase {
         new EventTool().waitNoEvent(1000);
         wizard_location.txtProjectLocation().setText(directory);
         
-        project_name = "CompositeApp_" + (index++);
+        project_name = "CompositeApp_" + System.currentTimeMillis();
         log("================= Project name="+project_name+"}");
         wizard_location.txtProjectName().setText("");
         new EventTool().waitNoEvent(1000);

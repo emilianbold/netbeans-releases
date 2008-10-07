@@ -92,7 +92,7 @@ public class ProjectInfo {
                         //wsgenSupported = j2eePlatform.isToolSupported(J2eePlatform.TOOL_WSGEN);
                         wsgenSupported = true;
                         wsimportSupported = true;
-                        serverType = getServerType(project);
+                        serverType = WSStackUtils.getServerType(project);
                     }
                 } catch (InstanceRemovedException ex) {
                     Logger.getLogger(getClass().getName()).log(Level.FINE, "Failed to find J2eePlatform", ex);
@@ -140,24 +140,4 @@ public class ProjectInfo {
     public ServerType getServerType() {
         return serverType;
     }
-    
-    private ServerType getServerType(Project project) {
-        J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null || j2eeModuleProvider.getServerInstanceID() == null) {
-            return ServerType.NOT_SPECIFIED;
-        }
-        String serverId = j2eeModuleProvider.getServerID();
-        if (serverId != null) {
-            if (serverId.startsWith("Tomcat")) return ServerType.TOMCAT; //NOI18N
-            else if (serverId.equals("J2EE")) return ServerType.GLASSFISH; //NOI18N
-            else if (serverId.equals("GlassFish")) return ServerType.GLASSFISH; //NOI18N
-            else if (serverId.equals("APPSERVER")) return ServerType.GLASSFISH; //NOI18N
-            else if (serverId.equals("JavaEE")) return ServerType.GLASSFISH; //NOI18N
-            else if (serverId.startsWith("JBoss")) return ServerType.JBOSS; //NOI18N
-            else if (serverId.startsWith("WebLogic")) return ServerType.WEBLOGIC; //NOI18N
-            else if (serverId.startsWith("WebSphere")) return ServerType.WEBSPHERE; //NOI18N
-        }
-        return ServerType.UNKNOWN;
-    }
 }
-

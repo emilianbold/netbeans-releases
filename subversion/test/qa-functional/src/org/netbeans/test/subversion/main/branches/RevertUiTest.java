@@ -82,7 +82,7 @@ public class RevertUiTest extends JellyTestCase{
         try {
             MessageHandler mh = new MessageHandler("Committing");
             log.addHandler(mh);
-
+            TestKit.TIME_OUT = 25;
             new File(TMP_PATH).mkdirs();
             RepositoryMaintenance.deleteFolder(new File(TMP_PATH + File.separator + REPO_PATH));
             RepositoryMaintenance.createRepository(TMP_PATH + File.separator + REPO_PATH);
@@ -163,6 +163,7 @@ public class RevertUiTest extends JellyTestCase{
             assertNotNull("Components shouldn't be accessed", tee);
 
             rmo.cancel();
+            TestKit.TIME_OUT = 15;
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {

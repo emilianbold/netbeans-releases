@@ -98,7 +98,7 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     
     public String getManagedBeanName() {
         if (beanName == null) {
-            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
+            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI())).trim();
         }
         return beanName;
     }

@@ -324,8 +324,11 @@ made subject to such option by the copyright holder.
             <istrue value="${jnlp.sign.jars}"/>
         </condition>
         
+        <condition property="app.icon.safe" value="${app.icon}" else=".png">
+            <isset property="app.icon" />
+        </condition>
         <pathconvert property="app.icon.ext">
-            <path path="${app.icon}"/>
+            <path path="${app.icon.safe}"/>
             <mapper type="regexp" from="^(.*)\.(.*)$$" to="\2"/>
         </pathconvert>
         

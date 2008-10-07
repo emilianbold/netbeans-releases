@@ -58,7 +58,7 @@ public class MeasureEnterpriseActions7Test {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Enterprise Actions suite. Part 7");
-        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseActions7Test");
+        System.setProperty("suitename", MeasureEnterpriseActions7Test.class.getCanonicalName());
 
         
         // EPMeasureActions7

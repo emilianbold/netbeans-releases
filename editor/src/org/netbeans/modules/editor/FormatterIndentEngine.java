@@ -49,10 +49,13 @@ import org.netbeans.editor.ext.ExtFormatter;
 import org.openide.text.IndentEngine;
 
 /**
-* Indent engine that delegates to formatter
-*
-* @author Miloslav Metelka
-*/
+ * Indent engine that delegates to formatter
+ *
+ * @author Miloslav Metelka
+ *
+ * @deprecated Please use Editor Indentation API instead, for details see
+ *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+ */
 
 public abstract class FormatterIndentEngine extends IndentEngine {
 

@@ -755,23 +755,24 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 JsElementCtx fileCtx = new JsElementCtx(root, node, element, workingCopy.getFileObject(), workingCopy);
                 
                 Node scopeNode = null;
-                if (node.getType() == org.mozilla.nb.javascript.Token.NAME ||
-                    node.getType() == org.mozilla.nb.javascript.Token.BINDNAME ||
-                    node.getType() == org.mozilla.nb.javascript.Token.PARAMETER) {
+                if (workingCopy.getFileObject() == searchCtx.getFileObject()) {
+                    if (node.getType() == org.mozilla.nb.javascript.Token.NAME ||
+                        node.getType() == org.mozilla.nb.javascript.Token.BINDNAME ||
+                        node.getType() == org.mozilla.nb.javascript.Token.PARAMETER) {
 
-                    
-                    // TODO - map this node to our new tree.
-                    // In the mean time, just search in the old seach tree.
-                    Node searchRoot = node;
-                    while (searchRoot.getParentNode() != null) {
-                        searchRoot = searchRoot.getParentNode();
+
+                        // TODO - map this node to our new tree.
+                        // In the mean time, just search in the old seach tree.
+                        Node searchRoot = node;
+                        while (searchRoot.getParentNode() != null) {
+                            searchRoot = searchRoot.getParentNode();
+                        }
+
+                        VariableVisitor v = new VariableVisitor();
+                        new ParseTreeWalker(v).walk(searchRoot);
+                        scopeNode = v.getDefiningScope(node);
                     }
-
-                    VariableVisitor v = new VariableVisitor();
-                    new ParseTreeWalker(v).walk(searchRoot);
-                    scopeNode = v.getDefiningScope(node);
                 }
-                
 
                 if (scopeNode != null) {
                     findLocal(searchCtx, fileCtx, scopeNode, oldName);
@@ -921,17 +922,24 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 case Token.FUNCTION:
                     desc = getString("UpdateMethodDef");
                     break;
+                case Token.NEW:
                 case Token.CALL:
                     desc = getString("UpdateCall");
                     break;
                 case Token.NAME:
-                    if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL) {
+                    if (node.getParentNode() != null && 
+                            (node.getParentNode().getType() == Token.CALL ||
+                             node.getParentNode().getType() == Token.NEW)) {
                         // Ignore 
                         desc = getString("UpdateCall");
                         break;
                     }
                     // Fallthrough
                 case Token.BINDNAME:
+                    if (oldCode != null && oldCode.length() > 0 && Character.isUpperCase(oldCode.charAt(0))) {
+                        desc = getString("UpdateClass");
+                        break;
+                    }
                     desc = getString("UpdateLocalvar");
                     break;
                 case Token.PARAMETER:
@@ -1046,7 +1054,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             case Token.NAME:
-                if (node.getParentNode() != null && node.getParentNode().getType() == Token.CALL &&
+                if ((node.getParentNode() != null && node.getParentNode().getType() == Token.CALL ||
+                     node.getParentNode() != null && node.getParentNode().getType() == Token.NEW) &&
                         node.getParentNode().getFirstChild() == node) {
                     // Ignore calls
                     break;
@@ -1054,7 +1063,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 // Fallthrough
             case Token.BINDNAME:
                 if (node.getString().equals(name)) {
-                    rename(node, name, null, getString("UpdateLocalvar"));
+                    rename(node, name, null, Character.isUpperCase(name.charAt(0)) ? getString("UpdateClass") : getString("UpdateLocalvar"));
                 }
             }
 
@@ -1129,6 +1138,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                 }
                 break;
             }
+            case org.mozilla.nb.javascript.Token.NEW:
             case org.mozilla.nb.javascript.Token.CALL: {
                 String s = AstUtilities.getCallName(node, false);
                 if (s.equals(name)) {
@@ -1142,7 +1152,8 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                  break;
             }
             case org.mozilla.nb.javascript.Token.NAME:
-                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL) {
+                if (node.getParentNode().getType() == org.mozilla.nb.javascript.Token.CALL ||
+                        node.getParentNode().getType() == org.mozilla.nb.javascript.Token.NEW) {
                     // Skip - call name is already handled as part of parent
                     break;
                 }

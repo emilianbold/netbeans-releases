@@ -61,6 +61,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.uml.common.Util;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IConfigManager;
 import org.netbeans.modules.uml.reporting.dataobjects.DataObjectFactory;
 import org.netbeans.modules.uml.reporting.dataobjects.ElementDataObject;
@@ -761,7 +762,7 @@ public class ReportTask extends Thread implements Cancellable
             if (elementFileMap.containsKey(element.getXMIID()))
             {
                 link = elementFileMap.get(element.getXMIID());
-                buffer.append("<A HREF=\"" + link + "\" target=\"elementframe\">" + pname + "</A>\n<BR>\n"); // NOI18N
+                buffer.append("<A HREF=\"" + link + "\" target=\"elementframe\">" + Util.convertToHTML(pname) + "</A>\n<BR>\n"); // NOI18N
             }
             else
             {

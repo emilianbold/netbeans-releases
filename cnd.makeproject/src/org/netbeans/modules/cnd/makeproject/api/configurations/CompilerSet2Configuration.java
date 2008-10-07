@@ -43,6 +43,8 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
@@ -61,6 +63,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     private CompilerSetNodeProp compilerSetNodeProp;
     private String flavor;
     private boolean dirty = false;
+    private Map<String, String> oldNameMap = new HashMap<String, String>();
 
     private CompilerSet2Configuration(CompilerSet2Configuration other) {
         this.dhconf = (DevelopmentHostConfiguration) other.dhconf.clone();
@@ -283,27 +286,33 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public void propertyChange(final PropertyChangeEvent evt) {
+        CompilerSet ocs = null;
         final String key = ((DevelopmentHostConfiguration) evt.getNewValue()).getName();
-        if (key.equals(CompilerSetManager.LOCALHOST)) {
-            setValue(getCompilerSetManager().getCompilerSet(0).getName());
+        final String oldName = oldNameMap.get(key);
+        if (oldName != null) {
+            ocs = CompilerSetManager.getDefault(key).getCompilerSet(oldName);
         } else {
-            CompilerSet cs = CompilerSetManager.getDefault(key).getDefaultCompilerSet();
-            if (cs == null) {
-                cs = CompilerSetManager.getDefault(key).getCompilerSet(0);
-            }
-            setValue(cs.getName());
+            ocs = CompilerSetManager.getDefault(key).getDefaultCompilerSet();
+        }
+        if (ocs == null) {
+            ocs = CompilerSetManager.getDefault(key).getCompilerSet(0);
+        }
+
+        String okey = (String) evt.getOldValue();
+        oldNameMap.put(okey, getName());
+        if (key.equals(CompilerSetManager.LOCALHOST)) {
+            setValue(ocs.getName());
+        } else {
+            setValue(ocs.getName());
+            final CompilerSet focs = ocs;
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
                     if (server != null) {
                         ServerRecord record = server.get(key);
                         if (record != null) {
-                            CompilerSetManager csm = CompilerSetManager.getDefault(key);
-                            CompilerSet cs = csm.getDefaultCompilerSet();
-                            if (cs == null) {
-                                cs = csm.getCompilerSet(0);
-                            }
-                            setValue(cs.getName());
+                            // Not sure why we do this in an RP, but don't want to remove it this late in the release
+                            setValue(focs.getName());
                             if (compilerSetNodeProp != null) {
                                 compilerSetNodeProp.repaint();
                             }

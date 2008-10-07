@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.drawingarea;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -121,10 +122,16 @@ public final class ShapeUniqueAnchor extends Anchor
         if (! requiresRecalculation)
             return;
         
-        HashMap<Entry, Float> topmap = new HashMap<Entry, Float> ();
-        HashMap<Entry, Float> bottommap = new HashMap<Entry, Float> ();
-        HashMap<Entry, Float> leftmap = new HashMap<Entry, Float> ();
-        HashMap<Entry, Float> rightmap = new HashMap<Entry, Float> ();
+//        HashMap<Entry, Float> topmap = new HashMap<Entry, Float> ();
+//        HashMap<Entry, Float> bottommap = new HashMap<Entry, Float> ();
+//        HashMap<Entry, Float> leftmap = new HashMap<Entry, Float> ();
+//        HashMap<Entry, Float> rightmap = new HashMap<Entry, Float> ();
+        
+        ArrayList <Entry> topList = new ArrayList <Entry>();
+        ArrayList <Entry> bottomList = new ArrayList <Entry>();
+        ArrayList <Entry> leftList = new ArrayList <Entry>();
+        ArrayList <Entry> rightList = new ArrayList <Entry>();
+        
         
         
         Widget widget = getRelatedWidget();
@@ -177,20 +184,28 @@ public final class ShapeUniqueAnchor extends Anchor
             if (ddx == 0 && ddy == 0)
             {
                 if (entry.isAttachedToConnectionSource())
-                    rightmap.put(entry, 0f);
+                {
+//                    rightmap.put(entry, 0f);
+                    rightList.add(entry);
+                }
                 else
-                    bottommap.put(entry, 0f);
+                {
+//                    bottommap.put(entry, 0f);
+                    bottomList.add(entry);
+                }
             }
             else if (ddx >= ddy)
             {
                 //direction = dx >= 0.0f ? Direction.RIGHT : Direction.LEFT;
                 if(dx > 0.0f)
                 {
-                    rightmap.put(entry, dy / dx);
+//                    rightmap.put(entry, dy / dx);
+                    rightList.add(entry);
                 }
                 else
                 {
-                    leftmap.put(entry, - dy / dx);
+//                    leftmap.put(entry, - dy / dx);
+                    leftList.add(entry);
                 }
             }
             else
@@ -198,25 +213,26 @@ public final class ShapeUniqueAnchor extends Anchor
                 //direction = dy >= 0.0F ? Direction.BOTTOM : Direction.TOP;
                 if(dy >= 0.0F)
                 {
-                    bottommap.put(entry,  dx / dy);
+//                    bottommap.put(entry,  dx / dy);
+                    bottomList.add(entry);
                 }
                 else
                 {
-                    topmap.put(entry, -dx / dy);
+//                    topmap.put(entry, -dx / dy);
+                    topList.add(entry);
                 }
             }
         }
         
         int edgeGap = 0;
-        Entry[] rightEntries = toArray(rightmap);
-        int len = rightEntries.length;
+        int len = rightList.size();
 
         // Inside the loop I need to now calculate the new slop (based on the 
         // location of the entries new point), and then 
         int x = bounds.x + bounds.width + edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = rightEntries[a];
+            Entry curEntry = rightList.get(a);
             int y = bounds.y + (a + 1) * bounds.height / (len + 1);
             
             Point newPt = null;
@@ -232,13 +248,12 @@ public final class ShapeUniqueAnchor extends Anchor
             results.put (curEntry, new Result (newPt, Direction.RIGHT));
         }
 
-        Entry[] leftEntries = toArray(leftmap);
-        len = leftEntries.length;
+        len = leftList.size();
 
         x = bounds.x - edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = leftEntries[a];
+            Entry curEntry = leftList.get(a);
             int y = bounds.y + (a + 1) * bounds.height / (len + 1);
             
             Point newPt = null;
@@ -254,13 +269,12 @@ public final class ShapeUniqueAnchor extends Anchor
             results.put (curEntry, new Result (newPt, Direction.LEFT));
         }
         
-        Entry[] topEntries = toArray(topmap);
-        len = topEntries.length;
+        len = topList.size();
 
         int y = bounds.y - edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = topEntries[a];
+            Entry curEntry = topList.get(a);
             x = bounds.x + (a + 1) * bounds.width / (len + 1);
             
             Point newPt = null;
@@ -276,13 +290,12 @@ public final class ShapeUniqueAnchor extends Anchor
             results.put (curEntry, new Result (newPt, Direction.TOP));
         }
 
-        Entry[] bottomEntries = toArray(bottommap);
-        len = bottomEntries.length;
+        len = bottomList.size();
 
         y = bounds.y + bounds.height + edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = bottomEntries[a];
+            Entry curEntry = bottomList.get(a);
             x = bounds.x + (a + 1) * bounds.width / (len + 1);
             
             Point newPt = null;

@@ -47,6 +47,7 @@ import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
@@ -109,7 +110,7 @@ public class ScriptingNodePopup extends PerformanceTestCase {
          */
         
         java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
+        int button = JTreeOperator.getPopupMouseButton();
         dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
         return new JPopupMenuOperator();
     }
@@ -134,7 +135,7 @@ public class ScriptingNodePopup extends PerformanceTestCase {
     public void test_PHP_NodePopup() {
         testProject = Projects.PHP_PROJECT;
         pathName = "";
-        docName = "php20kb.rb";
+        docName = "php20kb.php";
         testNode(new Node(getProjectNode(testProject),"Source Files"+"|"+docName));        
     }
     

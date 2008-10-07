@@ -57,7 +57,7 @@ public class MeasureJ2SEActionsTest {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2SE Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEActionsTest");
+        System.setProperty("suitename", MeasureJ2SEActionsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AddToFavorites.class)
         .addTest(CloseAllEditors.class)
@@ -86,6 +86,7 @@ public class MeasureJ2SEActionsTest {
         .addTest(SwitchToFile.class)
         .addTest(SwitchView.class)
         .addTest(TypingInEditor.class)
+        .addTest(ShiftCodeInEditor.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
  
         return suite;

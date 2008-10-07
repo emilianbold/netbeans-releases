@@ -59,7 +59,7 @@ public class MeasureJ2EEDialogsTest {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Dialogs suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEDialogsTest");
+        System.setProperty("suitename", MeasureJ2EEDialogsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(InvokeEJBAction.class)
         .addTest(InvokeWSAction.class)

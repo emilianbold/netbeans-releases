@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.AntProjectListener;
@@ -58,6 +59,7 @@ import org.w3c.dom.Element;
 import org.netbeans.modules.ant.freeform.spi.support.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  * Implementation of FileEncodingQuery for Freeform project, its instance can be 
@@ -78,29 +80,27 @@ public class FreeformFileEncodingQueryImpl extends FileEncodingQueryImplementati
         evaluator.addPropertyChangeListener(this);
     }
     
-    public Charset getEncoding(FileObject file) {
-        
-        synchronized (this) {
-            
-            if (encodingsCache == null) {
-                computeEncodingsCache();
+    public Charset getEncoding(final FileObject file) {
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Charset>() {
+            public Charset run() {
+                Charset toReturn = null;
+                synchronized (this) {
+                    if (encodingsCache == null) {
+                        computeEncodingsCache();
+                    }
+                    if (encodingsCache.size() > 0) {
+                        Set<FileObject> roots = encodingsCache.keySet();
+                        FileObject parent = getNearestParent(roots, file);
+                        if (parent != null) {
+                            toReturn = encodingsCache.get(parent);
+                        }
+                    }
+                }
+                return toReturn;
             }
-            
-            if (encodingsCache.size() == 0) {
-                return null;
-            }
-            
-            Set<FileObject> roots = encodingsCache.keySet();
-            FileObject parent = getNearestParent(roots, file);
-            if (parent != null) {
-                return encodingsCache.get(parent);
-            }
-        }
-        
-        return null;
-        
+        });
     }
-    
+
     private FileObject getNearestParent(Set<FileObject> parents, FileObject file) {
         while (file != null) {
              if (parents.contains(file)) {

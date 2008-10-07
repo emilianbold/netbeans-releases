@@ -1,0 +1,9 @@
+.t.e.s.t. html comment - issue #149018
+BLOCK_COMMENT   "<!-- comment --->", st=0
+TEXT            "\n", la=1, st=0
+BLOCK_COMMENT   "<!-- unfinished -- >", la=1, st=21000
+----- EOF -----
+
+<Unnamed test>
+----- EOF -----
+

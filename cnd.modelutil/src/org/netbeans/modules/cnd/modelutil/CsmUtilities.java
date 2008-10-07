@@ -70,6 +70,7 @@ import java.awt.Container;
 import java.awt.event.FocusAdapter;
 import java.awt.event.FocusEvent;
 import java.io.File;
+import java.nio.BufferUnderflowException;
 import java.util.ArrayList;
 import java.util.Collection;
 import javax.swing.JEditorPane;
@@ -331,6 +332,8 @@ public class CsmUtilities {
                     }
                     return l.toArray(new CsmFile[l.size()]);
                 }
+            } catch (BufferUnderflowException ex) {
+                // FIXUP: IZ#148840
             } catch (IllegalStateException ex) {
                 // dobj can be invalid
             }

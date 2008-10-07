@@ -44,7 +44,6 @@ package org.netbeans.modules.glassfish.javaee;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -133,7 +132,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
         
         String gfRootStr = properties.getGlassfishRoot();
         if (gfRootStr != null) {
-            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices-rt" + ServerUtilities.GFV3_VERSION_MATCHER);
+            wsLib = ServerUtilities.getJarName(gfRootStr, "webservices" + ServerUtilities.GFV3_VERSION_MATCHER);
             jsr109lib = new File(gfRootStr, "jsr109-impl");
         }
 
@@ -153,9 +152,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
             }
             if (TOOL_JSR109.equals(toolName)) {        //NOI18N
                 // FIXME ---> jsr109 is not supported currently
-//                if ((jsr109lib != null) && (jsr109lib.exists())) {
-//                    return true;
-//                }
+                if ((jsr109lib != null) && (jsr109lib.exists())) {
+                    return true;
+                }
                 return false;
             }
             if (TOOL_KEYSTORE.equals(toolName)) {      //NOI18N
@@ -187,15 +186,16 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
      * @return 
      */
     public File[] getToolClasspathEntries(String toolName) {
-
         String gfRootStr = properties.getGlassfishRoot();
         if (TOOL_WSGEN.equals(toolName) || TOOL_WSIMPORT.equals(toolName)) {
-            String[] entries = new String[] {"javax.javaee", 
-                                             "webservices-api", 
-                                             "webservices-rt", 
-                                             "webservices-tools", 
-                                             "jsr109-impl"};
+            String[] entries = new String[] {"webservices", //NOI18N
+                                             "javax.activation", //NOI18N
+                                             "jaxb", //NOI18N
+                                             "jsr109-impl"}; //NOI18N
             List<File> cPath = new ArrayList<File>();
+            
+            // Note: javax.javaee is probably not needed
+            /*
             List<String> entryList = Arrays.asList(entries);
             File f = ServerUtilities.getJarName(gfRootStr, "javax.javaee" + ServerUtilities.GFV3_VERSION_MATCHER);
             if (null == f) {
@@ -203,8 +203,9 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl {
                 entryList = ServerUtilities.filterByManifest(entryList, 
                         new File(gfRootStr, "modules"), 0, true);
             }
-            for (String entry : entryList) {
-                f = ServerUtilities.getJarName(gfRootStr, entry);
+            */
+            for (String entry : entries) {
+                File f = ServerUtilities.getJarName(gfRootStr, entry + ServerUtilities.GFV3_VERSION_MATCHER);
                 if ((f != null) && (f.exists())) {
                     cPath.add(f);
                 }

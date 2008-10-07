@@ -42,13 +42,18 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.prefs.Preferences;
+import org.mozilla.nb.javascript.FunctionNode;
+import org.mozilla.nb.javascript.Node;
+import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.GsfTestBase;
+import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.Formatter;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -87,6 +92,9 @@ public abstract class JsTestBase extends GsfTestBase {
 
     @Override
     protected void validateParserResult(ParserResult result) {
+        if (JsParser.runtimeException != null) {
+            JsParser.runtimeException.printStackTrace();
+        }
         JsTestBase.assertNull(JsParser.runtimeException != null ? JsParser.runtimeException.toString() : "", JsParser.runtimeException);
     }
     
@@ -203,4 +211,76 @@ public abstract class JsTestBase extends GsfTestBase {
         "testfiles/yui-anim.js",
         "testfiles/yui.js",
     };
+
+    @Override
+    protected void assertEquals(String message, BaseDocument doc, ParserResult expected, ParserResult actual) throws Exception {
+        Node expectedRoot = ((JsParseResult)expected).getRootNode();
+        Node actualRoot = ((JsParseResult)actual).getRootNode();
+        assertEquals(doc, expectedRoot, actualRoot);
+    }
+
+    private boolean assertEquals(BaseDocument doc, Node expected, Node actual) throws Exception {
+        assertEquals(expected.hasChildren(), actual.hasChildren());
+        if (expected.getType() != actual.getType() ||
+                expected.hasChildren() != actual.hasChildren() /* ||
+                expected.getSourceStart() != actual.getSourceStart() ||
+                expected.getSourceEnd() != actual.getSourceEnd()*/
+                ) {
+            String s = null;
+            Node curr = expected;
+            while (curr != null) {
+                String desc = curr.toString();
+                int start = curr.getSourceStart();
+                int line = Utilities.getLineOffset(doc, start);
+                desc = desc + " (line " + line + ")";
+                if (curr.getType() == Token.FUNCTION) {
+                    String name = null;
+                    Node label = ((FunctionNode)curr).labelNode;
+                    if (label != null) {
+                        name = label.getString();
+                    } else {
+                        for (Node child = curr.getFirstChild(); child != null; child = child.getNext()) {
+                            if (child.getType() == Token.FUNCNAME) {
+                                desc = child.getString();
+                                break;
+                            }
+                        }
+                    }
+                    if (name != null) {
+                        desc = desc + " : " + name + "()";
+                    }
+                } else if (curr.getType() == Token.OBJECTLIT) {
+                    String[] names = AstUtilities.getObjectLitFqn(curr);
+                    if (names != null) {
+                        desc = desc + " : " + names[0];
+                    }
+                }
+                if (s == null) {
+                    s = desc;
+                } else {
+                    s = desc + " - " + s;
+                }
+                curr = curr.getParentNode();
+            }
+            fail("node mismatch: Expected=" + expected + ", Actual=" + actual + "; path=" + s);
+        }
+
+        if (expected.hasChildren()) {
+            for (Node expectedChild = expected.getFirstChild(),
+                    actualChild = actual.getFirstChild();
+                    expectedChild != null; expectedChild = expectedChild.getNext(), actualChild = actualChild.getNext()) {
+                assertEquals(expectedChild.getNext() != null, actualChild.getNext() != null);
+                assertEquals(doc, expectedChild, actualChild);
+            }
+        }
+
+        return true;
+    }
+
+    @Override
+    protected void verifyIncremental(ParserResult result, EditHistory history, ParserResult oldResult) {
+        JsParseResult pr = (JsParseResult)result;
+        assertNotNull(pr.getIncrementalParse());
+        assertNotNull(pr.getIncrementalParse().newFunction);
+    }
 }

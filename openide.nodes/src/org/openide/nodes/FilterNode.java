@@ -1306,6 +1306,49 @@ public class FilterNode extends Node {
             original = or;
         }
         
+        @Override
+        EntrySupport entrySupport() {
+            FilterChildrenSupport support = null;
+            synchronized (Children.class) {
+                if (entrySupport != null && !entrySupport.isInitialized()) {
+                    // support is not initialized, it should be checked against original
+                    support = (FilterChildrenSupport) entrySupport;
+                }
+            }
+
+            if (support != null) {
+                // get original support without lock
+                EntrySupport origSupport = original.getChildren().entrySupport();
+                synchronized (Children.class) {
+                    if (entrySupport == support && support.originalSupport() != origSupport) {
+                        // original support was changed, force new support creation
+                        entrySupport = null;
+                    }
+                }
+            }
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+            }
+
+            // access without lock
+            org.openide.nodes.Children origChildren = original.getChildren();
+            EntrySupport os = origChildren.entrySupport();
+            boolean osIsLazy = origChildren.isLazy();
+
+            synchronized (Children.class) {
+                if (entrySupport != null) {
+                    return entrySupport;
+                }
+                lazySupport = osIsLazy;
+                entrySupport = lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
+                postInitializeEntrySupport();
+                return entrySupport;
+            }
+        }
+        
         /** Sets the original children for this children. 
          * Be aware that this method aquires
          * write lock on the nodes hierarchy ({@link Children#MUTEX}). 
@@ -1386,7 +1429,7 @@ public class FilterNode extends Node {
                 entrySupport = null;
             }
 
-            if (newOriginal == null) {
+            if (init || newOriginal == null) {
                 entrySupport().notifySetEntries();
 
                 if (LOG_ENABLED) {
@@ -1487,17 +1530,6 @@ public class FilterNode extends Node {
             return original.getChildren().add(arr);
         }
 
-        @Override
-        void checkSupportValidity() {
-            if (entrySupport != null && !entrySupport.isInitialized()) {
-                FilterChildrenSupport support = (FilterChildrenSupport) entrySupport;
-                EntrySupport origSupport = original.getChildren().entrySupport();
-                if (support.originalSupport() != origSupport) {
-                    entrySupport = null;
-                }
-            }
-        }
-
         private FilterChildrenSupport filterSupport() {
             return (FilterChildrenSupport) entrySupport();
         }
@@ -1578,13 +1610,6 @@ public class FilterNode extends Node {
         @Override
         Entry createEntryForKey(Node key) {
             return filterSupport().createEntryForKey(key);
-        }
-        
-        @Override
-        EntrySupport createEntrySource() {
-            EntrySupport os = original.getChildren().entrySupport();
-            lazySupport = original.getChildren().isLazy();
-            return lazySupport ? new LazySupport(this, (Lazy) os) : new DefaultSupport(this, (Default) os);
         }
         
         @Override
@@ -1692,11 +1717,39 @@ public class FilterNode extends Node {
                 this.origSupport = origSupport;
             }
 
+            class FilterLazySnapshot extends LazySnapshot {
+                private LazySnapshot origSnapshot;
+
+                public FilterLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
+                    super(entries, e2i);
+                    origSnapshot = (LazySnapshot) origSupport.createSnapshot();
+                }
+
+                @Override
+                public Node get(Entry entry) {
+                    EntryInfo info = entryToInfo.get(entry);
+                    Node node = info.currentNode();
+                    if (node == null) {
+                        node = info.getNode(false, origSnapshot);
+                    }
+                    if (isDummyNode(node)) {
+                        // force new snapshot
+                        hideEmpty(null, entry, null);
+                    }
+                    return node;
+                }
+            }
+
+            final class FilterDelayedLazySnapshot extends FilterLazySnapshot {
+
+                public FilterDelayedLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
+                    super(entries, e2i);
+                }
+            }
+
             @Override
             protected List<Node> createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
-                LazySnapshot snapshot = (LazySnapshot) super.createSnapshot(entries, e2i, delayed);
-                snapshot.holder = origSupport.createSnapshot();
-                return snapshot;
+                return delayed ? new FilterDelayedLazySnapshot(entries, e2i) : new FilterLazySnapshot(entries, e2i);
             }
         
             public Node[] callGetNodes(boolean optimalResult) {
@@ -1800,8 +1853,15 @@ public class FilterNode extends Node {
                 }
 
                 @Override
-                public Collection<Node> nodes() {
-                    Node node = origSupport.getNode(origEntry);
+                public Collection<Node> nodes(Object source) {
+                    Node node;
+                    if (source != null) {
+                        LazySnapshot origSnapshot = (LazySnapshot) source;
+                        node = origSnapshot.get(origEntry);
+                    } else {
+                        node = origSupport.getNode(origEntry);
+                    }
+
                     key = node;
                     if (node == null) {
                         return Collections.emptyList();
@@ -1827,9 +1887,9 @@ public class FilterNode extends Node {
                 public String toString() {
                     return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(hashCode(), 16);
                 }
-            }            
+            }
         }
-        
+
         interface FilterChildrenSupport {
             Node[] callGetNodes(boolean optimalResult);
 

@@ -42,6 +42,7 @@ package org.netbeans.modules.php.dbgp;
 
 import java.io.IOException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -64,6 +65,9 @@ import org.netbeans.modules.php.dbgp.packets.DbgpCommand;
 import org.netbeans.modules.php.dbgp.packets.DbgpMessage;
 import org.netbeans.modules.php.dbgp.packets.DbgpResponse;
 import org.netbeans.modules.php.dbgp.packets.InitMessage;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -265,12 +269,38 @@ public class DebugSession implements Runnable {
         }
         for (DbgpCommand command : list) {
             if (continueDebugging()) {
-                command.send(getSocket().getOutputStream());
-                if (continueDebugging() && command.wantAcknowledgment()) {
-                    receiveData(command);
+                // #146724
+                try {
+                    command.send(getSocket().getOutputStream());
+                    if (continueDebugging() && command.wantAcknowledgment()) {
+                        receiveData(command);
+                    }
+                } catch (SocketException exc) {
+                    Logger.getLogger(DebugSession.class.getName()).log(Level.INFO, null, exc);
+                    Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
+                    SessionId sessionId = getSessionId();
+                    for (Session session : sessions) {
+                        SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
+                        if (id != null && id.getId().equals(sessionId.getId())) {
+                            StartActionProviderImpl.getInstance().stop(session);
+                        }
+                    }
+
+                    warnUserInCaseOfSocketException();
                 }
             }
         }
+    }
+
+    private void warnUserInCaseOfSocketException() {
+        NotifyDescriptor descriptor = new NotifyDescriptor(
+                NbBundle.getMessage(DebugSession.class, "MSG_SocketError"),
+                NbBundle.getMessage(DebugSession.class, "MSG_SocketErrorTitle"),
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(descriptor);
     }
 
     private void addCommand(DbgpCommand command) {
