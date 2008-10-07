@@ -96,7 +96,6 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.modules.web.project.WebProjectUtil;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -803,7 +802,7 @@ final public class WebProjectProperties {
         String []rootLabels = new String[data.size()];
         for (int i=0; i<data.size();i++) {
             File f = ((File)((Vector)data.elementAt(i)).elementAt(0));
-            rootURLs[i] = WebProjectUtil.getRootURL(f,null);
+            rootURLs[i] = Utils.getRootURL(f,null);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
         }
         roots.putRoots(rootURLs,rootLabels);

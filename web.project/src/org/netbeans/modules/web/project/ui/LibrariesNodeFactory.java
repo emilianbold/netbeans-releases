@@ -57,8 +57,8 @@ import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.web.project.Utils;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.WebProjectUtil;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -154,7 +154,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         WebProjectProperties.J2EE_PLATFORM_CLASSPATH,
                         new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
-                            LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), WebProjectUtil.getFilter(project)),
+                            LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), Utils.getFilter(project)),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
@@ -181,7 +181,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         null,
                         new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
-                            LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), WebProjectUtil.getFilter(project)),
+                            LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), Utils.getFilter(project)),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
                             new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N

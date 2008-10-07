@@ -43,6 +43,8 @@ package org.netbeans.modules.web.project;
 
 import java.awt.*;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -59,7 +61,10 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.libraries.Library;
+import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -412,4 +417,50 @@ public class Utils {
         int iSep = jspUri.lastIndexOf('/') + 1;
         return makeJavaIdentifier(jspUri.substring(iSep));
     }
+    
+    /**
+     * Creates an URL of a classpath or sourcepath root
+     * For the existing directory it returns the URL obtained from {@link File#toUri()}
+     * For archive file it returns an URL of the root of the archive file
+     * For non existing directory it fixes the ending '/'
+     * @param root the file of a root
+     * @param offset a path relative to the root file or null (eg. src/ for jar:file:///lib.jar!/src/)" 
+     * @return an URL of the root
+     * @throws MalformedURLException if the URL cannot be created
+     */
+    public static URL getRootURL (File root, String offset) throws MalformedURLException {
+        URL url = root.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        } else if (!root.exists()) {
+            url = new URL(url.toExternalForm() + "/"); // NOI18N
+        }
+        if (offset != null) {
+            assert offset.endsWith("/");    //NOI18N
+            url = new URL(url.toExternalForm() + offset); // NOI18N
+        }
+        return url;
+    }
+    
+    public static LibraryChooser.Filter getFilter(WebProject p) {
+        LibraryChooser.Filter filter = null;
+        if ("1.3".equals(WebModule.getWebModule(p.getProjectDirectory()).getJ2eePlatformVersion())) { // NOI18N
+            filter = new LibraryChooser.Filter() {
+                public boolean accept(Library library) {
+                    if ("javascript".equals(library.getType())) { //NOI18N
+                        return false;
+                    }
+                    try {
+                        library.getContent("classpath"); //NOI18N
+                    } catch (IllegalArgumentException ex) {
+                        return false;
+                    }
+                    return !library.getName().matches("jstl11|jaxrpc16|toplink|Spring|jaxws20|jaxb20|struts|jsf"); // NOI18N
+                }
+            };
+        }
+        return filter;
+    }
+
+    
 }
