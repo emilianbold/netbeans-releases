@@ -54,6 +54,7 @@ import java.util.List;
  * You do not need to call Snapshot methods under 
  * any locks, but on other hand Snapshot may not be up to date.
  * 
+
  * @author Jan Jancura
  */
 public final class Snapshot {
