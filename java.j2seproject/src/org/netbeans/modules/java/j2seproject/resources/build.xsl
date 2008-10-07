@@ -59,6 +59,11 @@ made subject to such option by the copyright holder.
         <xsl:comment> You may freely edit this file. See commented blocks below for </xsl:comment>
         <xsl:comment> some examples of how to customize the build. </xsl:comment>
         <xsl:comment> (If you delete it and reopen the project it will be recreated.) </xsl:comment>
+        <xsl:comment> By default, only the Clean and Build commands use this build script. </xsl:comment>
+        <xsl:comment> Commands such as Run, Debug, and Test only use this build script if </xsl:comment>
+        <xsl:comment> the Compile on Save feature is turned off for the project. </xsl:comment>
+        <xsl:comment> You can turn off the Compile on Save (or Deploy on Save) setting </xsl:comment>
+        <xsl:comment> in the project's Project Properties dialog box.</xsl:comment>
         
         <xsl:variable name="name" select="/project:project/project:configuration/j2seproject:data/j2seproject:name"/>
         <!-- Synch with build-impl.xsl: -->
