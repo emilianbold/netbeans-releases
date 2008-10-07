@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -55,12 +56,14 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.apache.maven.model.CiManagement;
 import org.apache.maven.model.Contributor;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Developer;
 import org.apache.maven.model.IssueManagement;
 import org.apache.maven.model.License;
 import org.apache.maven.model.MailingList;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.Organization;
+import org.apache.maven.model.Repository;
 import org.apache.maven.model.Scm;
 import org.apache.maven.project.ProjectBuildingException;
 import org.apache.maven.project.build.model.ModelLineage;
@@ -85,6 +88,7 @@ import org.openide.util.RequestProcessor;
  * @author  mkleint
  */
 public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager.Provider, Runnable {
+
     private transient ExplorerManager explorerManager = new ExplorerManager();
     
     private BeanTreeView treeView;
@@ -332,6 +336,48 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
                 }
             }, key, "Licenses", licenses));
 
+            @SuppressWarnings("unchecked")
+            List<List> dependencies = getValue(models, "getDependencies", Model.class);
+            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator2() {
+                public Children createChildren(List value, ModelLineage lineage) {
+                    @SuppressWarnings("unchecked")
+                    List<Dependency> lst = value;
+                    return new DependencyChildren(lst, lineage);
+                }
+
+                public String createName(Object value) {
+                    String[] name = getStringValue(new Object[] {value}, "getArtifactId", Dependency.class);
+                    return name.length > 0 ? name[0] : "Dependency";
+                }
+
+                public boolean objectsEqual(Object value1, Object value2) {
+                    Dependency d1 = (Dependency)value1;
+                    Dependency d2 = (Dependency)value2;
+                    return d1.getManagementKey().equals(d2.getManagementKey());
+                }
+            }, key, "Dependencies", dependencies));
+
+            @SuppressWarnings("unchecked")
+            List<List> repositories = getValue(models, "getRepositories", Model.class);
+            nds.add(new ListNode(Lookup.EMPTY, new ChildrenCreator2() {
+                public Children createChildren(List value, ModelLineage lineage) {
+                    @SuppressWarnings("unchecked")
+                    List<Repository> lst = value;
+                    return new RepositoryChildren(lst, lineage);
+                }
+
+                public String createName(Object value) {
+                    String[] name = getStringValue(new Object[] {value}, "getId", Repository.class);
+                    return name.length > 0 ? name[0] : "Repository";
+                }
+
+                public boolean objectsEqual(Object value1, Object value2) {
+                    Repository d1 = (Repository)value1;
+                    Repository d2 = (Repository)value2;
+                    return d1.getId().equals(d2.getId());
+                }
+            }, key, "Repositories", repositories));
+
             List<Properties> props = getValue(models, "getProperties", Model.class);
             nds.add(new ObjectNode(Lookup.EMPTY, new PropsChildren(props, key), key, "Properties", props));
             return nds.toArray(new Node[0]);
@@ -343,6 +389,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private static interface ChildrenCreator {
         Children createChildren(List value, ModelLineage lineage);
         String createName(Object value);
+    }
+
+    private static interface ChildrenCreator2 extends ChildrenCreator {
+        boolean objectsEqual(Object value1, Object value2);
     }
 
     // <editor-fold defaultstate="collapsed" desc="IssueManagement Children">
@@ -564,6 +614,58 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Distribution", vals));
             vals = getStringValue(models, "getComments", License.class);
             nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Comments", vals));
+            return nds.toArray(new Node[0]);
+        }
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Dependency Children">
+    private static class DependencyChildren extends Children.Keys<List<Dependency>> {
+        private ModelLineage lineage;
+        public DependencyChildren(List<Dependency> list, ModelLineage lin) {
+            setKeys(new List[] {list});
+            lineage = lin;
+        }
+
+        @Override
+        protected Node[] createNodes(List<Dependency> key) {
+            Dependency[] models = key.toArray(new Dependency[key.size()]);
+            List<Node> nds = new ArrayList<Node>();
+            String[] vals = getStringValue(models, "getGroupId", Dependency.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "GroupId", vals));
+            vals = getStringValue(models, "getArtifactId", Dependency.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "ArtifactId", vals));
+            vals = getStringValue(models, "getVersion", Dependency.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Version", vals));
+            vals = getStringValue(models, "getType", Dependency.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Type", vals));
+            vals = getStringValue(models, "getScope", Dependency.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Scope", vals));
+            vals = getStringValue(models, "getClassifier", Dependency.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Classifier", vals));
+            return nds.toArray(new Node[0]);
+        }
+    }
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Repository Children">
+    private static class RepositoryChildren extends Children.Keys<List<Repository>> {
+        private ModelLineage lineage;
+        public RepositoryChildren(List<Repository> list, ModelLineage lin) {
+            setKeys(new List[] {list});
+            lineage = lin;
+        }
+
+        @Override
+        protected Node[] createNodes(List<Repository> key) {
+            Repository[] models = key.toArray(new Repository[key.size()]);
+            List<Node> nds = new ArrayList<Node>();
+            String[] vals = getStringValue(models, "getId", Repository.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Id", vals));
+            vals = getStringValue(models, "getName", Repository.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Name", vals));
+            vals = getStringValue(models, "getUrl", Repository.class);
+            nds.add(new SingleFieldNode(Lookup.EMPTY, Children.LEAF, lineage, "Url", vals));
             return nds.toArray(new Node[0]);
         }
     }
@@ -802,7 +904,11 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         private List values;
 
         private ListNode(Lookup lkp, ChildrenCreator childrenCreator, ModelLineage lineage, String name, List<List> values) {
-            super( definesValue(values.toArray()) ? createOverrideListChildren(childrenCreator, lineage, values) : Children.LEAF, lkp);
+            super( definesValue(values.toArray()) ?
+                (childrenCreator instanceof ChildrenCreator2 ?
+                    createMergeListChildren((ChildrenCreator2)childrenCreator, lineage, values) :
+                    createOverrideListChildren(childrenCreator, lineage, values))
+                : Children.LEAF, lkp);
             setName(name);
             this.key = name;
             this.values = values;
@@ -811,6 +917,7 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
 
         @Override
         public String getHtmlDisplayName() {
+            //TODO - this needs different markings..
             String dispVal = definesValue(values.toArray()) ? "" : "&lt;Undefined&gt;";
             boolean override = overridesParentValue(values.toArray());
             String overrideStart = override ? "<b>" : "";
@@ -857,21 +964,47 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         return toRet;
     }
 
-//    private static Children createMergeListChildren(ChildrenCreator subs, ModelLineage key, List<List> values) {
-//        Children toRet = new Children.Array();
-//        for (List lst : values) {
-//            if (lst != null && lst.size() > 0) {
-//                for (Object o : lst) {
-//                    toRet.add(new Node[] {
-//                        new ObjectNode(Lookup.EMPTY, subs.createChildren(o, key), key, subs.createName(o), Collections.singletonList(o))
-//                    });
-//                }
-//                break;
-//            }
-//        }
-//
-//        return toRet;
-//    }
+    private static Children createMergeListChildren(ChildrenCreator2 subs, ModelLineage key, List<List> values) {
+        Children toRet = new Children.Array();
+        HashMap<Object, List> content = new HashMap<Object, List>();
+        List order = new ArrayList();
 
+        int count = 0;
+        for (List lst : values) {
+            if (lst != null && lst.size() > 0) {
+                for (Object o : lst) {
+                    processObjectList(o, content, count, subs);
+                            new ArrayList(Collections.nCopies(count, null));
+                }
+            }
+            count = count + 1;
+        }
+        for (Map.Entry<Object, List> entry : content.entrySet()) {
+            toRet.add(new Node[] {
+                new ObjectNode(Lookup.EMPTY, subs.createChildren(entry.getValue(), key), key, subs.createName(entry.getKey()), entry.getValue())
+            });
+        }
+
+        return toRet;
+    }
+
+    private static List processObjectList(Object o, Map<Object, List> content, int count, ChildrenCreator2 subs) {
+        List lst = null;
+        for (Object known : content.keySet()) {
+            if (subs.objectsEqual(o, known)) {
+                lst = content.get(known);
+                break;
+            }
+        }
+        if (lst == null) {
+            lst = new ArrayList();
+            content.put(o, lst);
+        }
+        if (lst.size() < count) {
+            lst.addAll(new ArrayList(Collections.nCopies(count - lst.size(), null)));
+        }
+        lst.add(o);
+        return lst;
+    }
 }
 
