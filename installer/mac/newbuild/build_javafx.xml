@@ -70,14 +70,14 @@ Microsystems, Inc. All Rights Reserved.
         </exec>      
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="unzip -d ${basedir}/javafxtmpdir/`ls ${basedir}/javafxtmpdir/javafx*` ${common.name}-javafx-sdk.zip"/>
+            <arg value="unzip -d `ls -d1 ${basedir}/javafxtmpdir/javafx*` ${common.name}-javafx-sdk.zip"/>
         </exec>      
         <delete file="${common.name}-javafx.zip"/>
         <delete file="${common.name}-javafx-sdk.zip"/>
 
         <exec executable="sh" failonerror="yes">
             <arg value="-c"/>
-            <arg value="zip -r -9 ${common.name}-javafx.zip ${basedir}/javafxtmpdir"/>
+            <arg value="zip -r -9 ${common.name}-javafx.zip ${basedir}/javafxtmpdir/*"/>
         </exec>      
         <delete dir="${basedir}/javafxtmpdir"/>
 
