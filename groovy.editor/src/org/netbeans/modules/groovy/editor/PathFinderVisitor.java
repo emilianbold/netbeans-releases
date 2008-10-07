@@ -608,12 +608,11 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
                     to.setLastLineNumber(to.getLineNumber());
                 }
             }
-        // see http://jira.codehaus.org/browse/GROOVY-3049
         } else if (node instanceof PropertyExpression) {
-            // bit suspucious, try to fix the data
-            if (node.getLineNumber() == node.getLastLineNumber()
-                    && node.getColumnNumber() == node.getLastColumnNumber()) {
-                PropertyExpression propertyExpression = (PropertyExpression) node;
+            // see http://jira.codehaus.org/browse/GROOVY-3049
+            PropertyExpression propertyExpression = (PropertyExpression) node;
+            if (propertyExpression.getLineNumber() == propertyExpression.getLastLineNumber()
+                    && propertyExpression.getColumnNumber() == propertyExpression.getLastColumnNumber()) {
                 Expression expression = propertyExpression.getProperty();
                 if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
                     if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
@@ -622,6 +621,36 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
                 } else {
                     node.setLastLineNumber(expression.getLastLineNumber());
                     node.setLastColumnNumber(expression.getLastColumnNumber());
+                }
+            } else {
+                // see http://jira.codehaus.org/browse/GROOVY-3070
+                Expression expression = propertyExpression.getObjectExpression();
+                if (expression.getLineNumber() == expression.getLastLineNumber()
+                        && (expression.getLastColumnNumber() - expression.getColumnNumber()) <= 1) {
+                    // this is just a rough guess
+                    int column1 = -1;
+                    if (propertyExpression.getProperty().getLineNumber() == expression.getLastLineNumber()) {
+                        column1 = propertyExpression.getProperty().getColumnNumber() - 1;
+                    }
+                    int column2 = expression.getColumnNumber() + expression.getText().length();
+                    if (column1 > 0) {
+                        expression.setLastColumnNumber(Math.max(column1, column2));
+                    } else {
+                        expression.setLastColumnNumber(column2);
+                    }
+                }
+            }
+        // see http://jira.codehaus.org/browse/GROOVY-3076
+        } else if (node instanceof BinaryExpression) {
+            Expression right = ((BinaryExpression) node).getRightExpression();
+            if (right.getLastLineNumber() > node.getLastLineNumber()
+                    || (right.getLastLineNumber() == node.getLastLineNumber() && right.getLastColumnNumber() > node.getLastColumnNumber())) {
+
+                // dowe have meaningful data
+                if (node.getLineNumber() != node.getLastLineNumber() || node.getColumnNumber() != node.getLastColumnNumber()) {
+                    // this may be not accurate, but it is more accurate than current state
+                    right.setLastLineNumber(node.getLastLineNumber());
+                    right.setLastColumnNumber(node.getLastColumnNumber());
                 }
             }
         }
