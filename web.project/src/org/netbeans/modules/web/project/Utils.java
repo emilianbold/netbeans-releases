@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -382,5 +383,33 @@ public class Utils {
             logRecord.setParameters(params);
         }
         USG_LOGGER.log(logRecord);
+    }
+    
+    public static String getServletName(FileObject docBase, FileObject jsp) {
+        String jspRelativePath = FileUtil.getRelativePath(docBase, jsp);
+        return getServletResourcePath(null, jspRelativePath);
+    }
+    
+    public static String getServletResourcePath(String moduleContextPath, String jspResourcePath) {
+        return getServletPackageName(jspResourcePath).replace('.', '/') + '/' +
+            getServletClassName(jspResourcePath) + ".java";
+    }
+
+    private static String getServletPackageName(String jspUri) {
+        String dPackageName = getDerivedPackageName(jspUri);
+        if (dPackageName.length() == 0) {
+            return JSP_PACKAGE_NAME;
+        }
+        return JSP_PACKAGE_NAME + '.' + getDerivedPackageName(jspUri);
+    }
+    
+    private static String getDerivedPackageName(String jspUri) {
+        int iSep = jspUri.lastIndexOf('/');
+        return (iSep > 0) ? makeJavaPackage(jspUri.substring(0,iSep)) : "";
+    }
+    
+    private static String getServletClassName(String jspUri) {
+        int iSep = jspUri.lastIndexOf('/') + 1;
+        return makeJavaIdentifier(jspUri.substring(iSep));
     }
 }

@@ -44,7 +44,6 @@ import java.io.IOException;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -76,7 +75,6 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.*;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.modules.web.project.ui.SetExecutionUriAction;
-import org.netbeans.modules.web.project.parser.JspNameUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
@@ -790,7 +788,7 @@ class WebActionProvider implements ActionProvider {
             return;
         }
 
-        String name = JspNameUtil.getServletName(wm.getDocumentBase(), jsp);
+        String name = Utils.getServletName(wm.getDocumentBase(), jsp);
         if (name == null) {
             return;
         }
