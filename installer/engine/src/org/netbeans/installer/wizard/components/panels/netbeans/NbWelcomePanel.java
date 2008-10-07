@@ -359,6 +359,9 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                         Registry.getInstance().getProducts(dependencies.get(0));
                 if (sources.size() > 0) {
                     final Product nbProduct = sources.get(0);
+                    if(nbProduct.getStatus() != Status.INSTALLED) {
+                        continue;
+                    }
                     List<Product> dependents = Registry.getInstance().getInavoidableDependents(nbProduct);
                     boolean requiresJDK = false;
                     for (Product pr : dependents) {
@@ -370,7 +373,6 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     }
                     requiresJDK = requiresJDK || "false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
                     if (requiresJDK) {
-			LogManager.log("... nbProduct status = " + nbProduct.getStatus());
                         final File nbLocation = nbProduct.getInstallationLocation();
                         try {
                             final File javaHome = new File(NetBeansUtils.getJavaHome(nbLocation));
