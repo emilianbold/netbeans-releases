@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -327,8 +327,10 @@ public class J2SEProjectGenerator {
         if (manifestFile != null) {
             ep.setProperty("manifest.file", manifestFile); // NOI18N
         }
-        ep.setProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE, "false"); // NOI18N
-        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);        
+        h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
+        ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.setProperty(J2SEProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
+        h.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
         return h;
     }
 
