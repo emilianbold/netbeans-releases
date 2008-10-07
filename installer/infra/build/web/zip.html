@@ -56,6 +56,7 @@
 		}
 	</script>
 
+        <script src="http://www.netbeans.org/images/js/companion-projects.js" type="text/javascript"></script>
         <script type="text/javascript">load_page_js("common.js")</script>
 	<script type="text/javascript">load_page_js("languages.js")</script>
 	<script type="text/javascript">load_page_js_locale("common_strings",".js")</script>
@@ -81,19 +82,23 @@
                     </a>
                 </div>
 		<div id="search">
-                    <form method="get" action="http://www.google.com/custom" style="display:inline;">
-                        <table>
-                            <tr>
-                                <td>
-                                <a href="http://www.netbeans.org/community/search.html" style="color:#213552;">Search:</a> </td><td><input type="text" name="q" class="text" style="border:1px solid #0B686D;"/>
-                                </td>
-                                <td>
-                                    <input type="image" src="http://www.netbeans.org/images/v6/search-button.gif" alt="Search netbeans.org" name="Button"/>
-                                    <input type=hidden name=cof VALUE="GIMP:#FF0F12;LW:193;ALC:#FF0F12;L:http://www.netbeans.org/images/logo.gif;GFNT:#8A8DB0;LC:#0E0E76;LH:45;AH:center;VLC:#0E0E76;S:http://www.netbeans.org/;AWFID:a8753e5d03543916;"><input type=hidden name=domains value="netbeans.org"><input type=hidden name=sitesearch value="netbeans.org">
-                                </td>
-                            </tr>
-                        </table>
-                    </form>
+                    	<!-- Google CSE Search Box Begins  -->
+			<form action="/search_result.html" id="cse-search-box">
+			  <input type="hidden" name="cx" value="006102455337629464213:mt38ytkbuak" >
+			  <input type="hidden" name="cof" value="FORID:11" >
+			   <table>
+			     <tr>
+			       <td>
+			         <a href="http://www.netbeans.org/community/search.html" style="color:#213552;">Search:</a> </td><td><input type="text" name="q" class="text" style="border:1px solid #0B686D;">
+			       </td>
+			       <td>
+			         <input type="image" src="http://www.netbeans.org/images/v6/search-button.gif" alt="Search netbeans.org" name="sa" value="Search">	
+			       </td>
+			     </tr>
+			   </table>
+			</form>
+			<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+			<!-- Google CSE Search Box Ends -->
                 </div>
                 <div class="lang-dropdown" id="pagelanguagesbox" style="visibility: hidden;">
                     <ul id="nav">
@@ -191,41 +196,34 @@
                     </div>
                 </div>
             </div>
-            <div class="align-center" style="width:910px;margin-left:auto;margin-right:auto;">
-                <center>
-                  	<table>
-				<tr>
-					<td class="companions-left b-green-left valign-center" style="padding-left:7px;">Companion <br>Projects: </td>
-					<td class="valign-center">
-						<a href="http://www.mysql.com/"><img src="http://www.netbeans.org/images/v6/mysql_logo.gif" border="0" title="MySQL - Open Source Database Server" alt="MySQL Database Server" width="58" height="30"></a>&nbsp;&nbsp;
-					</td>
-					<td  class="valign-center">
-					<a href="https://openjdk.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/openjdk.gif" border="0" title="Open JDK: an Open SourceJDK" width="63" height="19"></a>&nbsp;&nbsp;
-					</td>
-					<td  class="valign-center">
-						<a href="https://glassfish.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/glassfish.gif" border="0" title="GlassFish Community: an Open Source Application Server" width="56" height="27"></a>&nbsp;&nbsp;&nbsp;
-					</td>
-	                                
-					<td  class="valign-center">
-						<a href="http://community.java.net/mobileandembedded/"><img alt="" src="http://www.netbeans.org/images/v6/mobile-duke.gif" border="0" width="37" heigh="35"></a>&nbsp;&nbsp;&nbsp;
-					</td>
-					<td  class="valign-center">
-						<a href="http://opensolaris.org/"><img alt="" src="http://www.netbeans.org/images/v6/opensolaris.gif" border="0" title="OpenSolaris" width="95" height="17"></a>&nbsp;&nbsp;
-					</td>
-					<td  class="valign-center ">
-						<a href="http://java.net/"><img alt="" src="http://www.netbeans.org/images/v6/javanet.gif" border="0" width="80" heigh="36"></a>&nbsp;&nbsp;
-					</td>
-					<td  class="valign-center">
-						<a href="http://www.virtualbox.org/wiki/VirtualBox"><img alt="Virtual Box - full virtualizer" title="Virtual Box - full virtualizer" src="http://www.netbeans.org/images/v6/vbox.gif" border="0" width="108" heigh="35"></a>
-					</td>
-					<td  class="valign-center b-green-right" style="padding-right:20px;">
-						<a href="https://open-esb.dev.java.net/"><img alt="" src="http://www.netbeans.org/images/v6/open-esb.gif" border="0" width="92" heigh="30"></a>
-					</td>
-					<td  class="companions-right b-green-right valign-center align-center">Powered by<br>&nbsp;<img src="http://www.netbeans.org/images/v6/poweredby.gif"  width="70" height="14"/>&nbsp;</td>
-				</tr>
-			</table>
-                </center>
-            </div>
+	    <div id="companion-projects">
+		<center>
+		    <table>
+		      <tr>
+			<td class="companions-left b-green-left valign-center">Companion <br>Projects: </td>
+		        <td  class="valign-center">
+				<a href="http://www.mysql.com/"><img src="http://www.netbeans.org/images/v6/mysql_logo.gif" border="0" title="MySQL - Open Source Database Server" alt="MySQL Database Server" width="58" height="30"></a>&nbsp;&nbsp;
+			</td>
+			<td  class="valign-center">
+				<a href="https://glassfish.dev.java.net/"><img alt="GlassFish Community: an Open Source Application Server" src="http://www.netbeans.org/images/v6/glassfish.gif" border="0" title="GlassFish Community: an Open Source Application Server" width="55" height="35"></a>&nbsp;&nbsp;
+			</td>
+		        <td  class="valign-center">
+				<a href="http://opensolaris.org/"><img alt="Open Solaris" src="http://www.netbeans.org/images/v6/opensolaris.gif" border="0" title="OpenSolaris" width="95" height="17"></a>&nbsp;
+			</td>
+		        <td  class="valign-center">
+		            <a href="https://openjdk.dev.java.net/"><img alt="Open JDK: an Open SourceJDK" src="http://www.netbeans.org/images/v6/openjdk.gif" border="0" title="Open JDK: an Open SourceJDK" width="63" height="19"></a>&nbsp;&nbsp;
+			</td>
+			<td  class="valign-center">
+				<a href="http://community.java.net/mobileandembedded/"><img alt="Mobile & Embedded Community" src="http://www.netbeans.org/images/v6/mobile-duke.gif" border="0" width="37" height="35" title="Mobile & Embedded Community"></a>&nbsp;&nbsp;&nbsp;
+			</td>
+		        <script>
+		        document.write(renderCompanionProjectIcons());
+		        </script>
+			<td class="companions-right b-green-right valign-center align-center">&nbsp;Sponsored&nbsp;by&nbsp;<br><a href="http://www.sun.com/"><img src="http://www.netbeans.org/images/v6/sun-logo.gif" width="61" height="26" alt="Sponsored by Sun Microsystems" title="Sponsored by Sun Microsystems"></a></td>
+                             </tr>
+		    </table>
+		</center>
+	    </div>
         </div>
 
 	<script type="text/javascript">

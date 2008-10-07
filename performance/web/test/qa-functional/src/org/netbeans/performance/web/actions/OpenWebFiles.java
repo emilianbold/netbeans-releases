@@ -51,6 +51,7 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.ActionTracker;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.logging.LogRecord;
 
 /**
@@ -226,6 +227,7 @@ public class OpenWebFiles extends PerformanceTestCase {
     }
     
     public void prepare(){
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
         Logger.getLogger("TIMER").addHandler(phaseHandler);
         System.out.println("PREPARE: "+WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);
         this.openNode = new Node(new ProjectsTabOperator().getProjectRootNode(fileProject),WEB_PAGES + (fileFolder.equals("")?"":"|") + fileFolder + '|' + fileName);

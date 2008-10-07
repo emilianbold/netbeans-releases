@@ -964,18 +964,18 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         
         PropertyElement user = jdbcConnectionPool.newPropertyElement();
         user.setName(WizardConstants.__User); // NOI18N
+        user.setValue(username);
         PropertyElement passElement = jdbcConnectionPool.newPropertyElement();
         passElement.setName(WizardConstants.__Password); // NOI18N
-        String dbUser = username;
-        String dbPassword = password;
+        jdbcConnectionPool.addPropertyElement(user);
+        if (username != null && (password == null || password.trim().length() == 0)) {
+            password = "()"; //NOI18N
+        }
+        passElement.setValue(password);
+        jdbcConnectionPool.addPropertyElement(passElement);
+
         if(vendorName.equals("derby_net")) {  //NOI18N)
             jdbcConnectionPool = setDerbyProps(databaseUrl, jdbcConnectionPool);
-            if(dbUser == null || dbUser.trim().length() == 0) {
-                dbUser = "app"; //NOI18N
-            }    
-            if(dbPassword == null || dbPassword.trim().length() == 0) {
-                dbPassword = "app"; //NOI18N
-            }    
         }else {
             if(Arrays.asList(WizardConstants.VendorsExtraProps).contains(vendorName)) {
                 jdbcConnectionPool = setAdditionalProps(vendorName, databaseUrl, jdbcConnectionPool);
@@ -988,10 +988,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
                 }
             }
         }
-        user.setValue(dbUser);
-        jdbcConnectionPool.addPropertyElement(user);
-        passElement.setValue(dbPassword);
-        jdbcConnectionPool.addPropertyElement(passElement);
+        
         PropertyElement url = jdbcConnectionPool.newPropertyElement();
         url.setName(WizardConstants.__Url); // NOI18N
         url.setValue(databaseUrl);

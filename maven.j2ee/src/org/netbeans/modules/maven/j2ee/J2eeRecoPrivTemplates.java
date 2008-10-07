@@ -71,7 +71,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "ejb-types_2_1",        // NOI18N
                 "j2ee-14-types",        // NOI18N
                 "ejb-types-server",     // NOI18N
-                "web-services",         // NOI18N
+//#134462                "web-services",         // NOI18N
                 "j2ee-types",           // NOI18N
     };
     
@@ -79,7 +79,7 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "ejb-types",            // NOI18N
                 "ejb-types_3_0",        // NOI18N
                 "ejb-types-server",     // NOI18N
-                "web-services",         // NOI18N
+//#134462                "web-services",         // NOI18N
                 "j2ee-types",           // NOI18N
     };
     

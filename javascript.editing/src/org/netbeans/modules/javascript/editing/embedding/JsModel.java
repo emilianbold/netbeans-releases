@@ -41,10 +41,12 @@
 package org.netbeans.modules.javascript.editing.embedding;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -55,6 +57,8 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
+import org.netbeans.spi.lexer.LanguageProvider;
+import org.openide.util.Lookup;
 
 /**
  * Creates a JavaScript model for a set of HTML fragments.
@@ -81,7 +85,9 @@ public class JsModel {
     // in javascript.hints/test/unit/data/testfiles/generated.js
     // Also sync Rhino's Parser.java patched class
     private static final String GENERATED_IDENTIFIER = " __UNKNOWN__ "; // NOI18N
-    
+    /** PHPTokenId's T_INLINE_HTML name */
+    private static final String T_INLINE_HTML = "T_INLINE_HTML";
+
     private final Document doc;
     private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
     private String jsCode;
@@ -91,7 +97,7 @@ public class JsModel {
     private int prevAstOffset; // Don't need to initialize: the map 0 => 0 is correct
     /** Caching */
     private int prevLexOffset;
-
+    
     public static JsModel get(Document doc) {
         JsModel model = (JsModel) doc.getProperty(JsModel.class);
         if (model == null) {
@@ -254,7 +260,7 @@ public class JsModel {
         while (tokenSequence.moveNext()) {
             Token<? extends TokenId> token = tokenSequence.token();
 
-            if (token.id().name().equals("T_INLINE_HTML")) { // NOI18N
+            if (token.id().name().equals(T_INLINE_HTML)) { // NOI18N
                 TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
                 if (ts == null) {
                     continue;
@@ -269,7 +275,7 @@ public class JsModel {
 
                     token = tokenSequence.token();
 
-                    if (token.id().name().equals("T_INLINE_HTML")) {
+                    if (token.id().name().equals(T_INLINE_HTML)) {
                         //we are out of php code
                         tokenSequence.movePrevious();
                         int sourceEnd = sourceStart + token.length();
@@ -740,6 +746,8 @@ public class JsModel {
         int delta = history.getSizeDelta();
 
         boolean codeOverlaps = false;
+        // True if all edits were contained within the JavaScript codeblocks
+        boolean editsContained = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
             if (codeBlock.sourceEnd < offset) {
@@ -752,13 +760,76 @@ public class JsModel {
             }
             if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= limit) {
                 codeBlock.sourceEnd += delta;
+                if (history.getEditedEnd() <= codeBlock.sourceEnd) {
+                    editsContained = true;
+                }
                 codeOverlaps = true;
                 continue;
             }
             return IncrementalEmbeddingModel.UpdateState.FAILED;
         }
-        
-        return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
+
+        if (codeOverlaps) {
+            if (editsContained) {
+                // All edits are inside our existing code blocks, so we
+                // know there aren't any new or removed code blocks to worry about.
+                return IncrementalEmbeddingModel.UpdateState.UPDATED;
+            } else {
+                // We MAY have new or removed separate sections, but one or
+                // more of these overlap with our blocks so we're not sure.
+                // Err on the safe side and recompute everything.
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            }
+        } else {
+            // See if it looks like we have added or removed any JavaScript sections
+            initForeignTokens();
+            if (history.wasModified(HTMLTokenId.SCRIPT) || history.wasModified(HTMLTokenId.VALUE_JAVASCRIPT) ||
+                    // HACK: Embedded tokenid notification doesn't seem to work yet (bug in EditHistory).
+                    // Therefore, we have to detect if there is a relevant top-level change in PHP files,
+                    // JSP files or RHTML files that can correspond to an HTML section, and if so, recompute
+                    // everything.
+                    history.wasModified(phpHtml) || history.wasModified(jspHtml) || history.wasModified(erbHtml)) {
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            } else {
+                return IncrementalEmbeddingModel.UpdateState.COMPLETED;
+            }
+        }
+    }
+
+    /** Whether we have initialized phpHtml, jspHtml and erbHtml yet */
+    private static boolean foreignTokensInitialized;
+    /** PHPTokenId.T_INLINE_HTML token id, initialized lazily */
+    private static TokenId phpHtml;
+    /** JspTokenId.TEXT token id, initialized lazily */
+    private static TokenId jspHtml;
+    /** RhtmlTokenId.HTML token id, initialized lazily */
+    private static TokenId erbHtml;
+
+    @SuppressWarnings("unchecked")
+    private void initForeignTokens() {
+        if (foreignTokensInitialized) {
+            return;
+        }
+        foreignTokensInitialized = true;
+
+        Collection<LanguageProvider> providers = (Collection<LanguageProvider>)Lookup.getDefault().lookupAll(LanguageProvider.class);
+        for (LanguageProvider provider : providers) {
+            Language erbLanguage = (Language<? extends TokenId>)provider.findLanguage(RHTML_MIME_TYPE);
+            if (erbLanguage != null) {
+                // Sync with RhtmlTokenId.HTML!
+                erbHtml = erbLanguage.tokenId("HTML"); // NOI18N
+            }
+            Language jspLanguage = (Language<? extends TokenId>)provider.findLanguage(JSP_MIME_TYPE);
+            if (jspLanguage != null) {
+                // Sync with JspTokenId.TEXT!
+                jspHtml = jspLanguage.tokenId("TEXT"); // NOI18N
+            }
+            Language phpLanguage = (Language<? extends TokenId>)provider.findLanguage(PHP_MIME_TYPE);
+            if (phpLanguage != null) {
+                // Sync with PHPTokenId.T_INLINE_HTML
+                phpHtml = phpLanguage.tokenId(T_INLINE_HTML);
+            }
+        }
     }
 
     //private void addJavaScriptFiles(FileObject file, StringBuilder sb) {
@@ -844,7 +915,7 @@ public class JsModel {
         }
     }
 
-    // For debugging only; pass in "rubyCode" or "rhtmlCode" in JsModel to print
+    // For debugging only; pass in "jsCode" or "sourceCode" in JsModel to print
     //private String debugPos(String code, int pos) {
     //    if (pos == -1) {
     //        return "<-1:notfound>";

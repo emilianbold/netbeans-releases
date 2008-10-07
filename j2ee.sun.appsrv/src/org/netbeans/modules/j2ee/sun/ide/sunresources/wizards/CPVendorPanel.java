@@ -459,6 +459,9 @@ public class CPVendorPanel extends ResourceWizardPanel implements ChangeListener
             String url = dbconn.getDatabaseURL();
             String user = dbconn.getUser();
             String password = dbconn.getPassword();
+            if(user != null && (password == null || password.trim().length() == 0)){ 
+                password = "()"; //NOI18N
+            }
             String tmpStr = url;
             
             Field urlField = FieldHelper.getField(this.vendorGroup, "vendorUrls"); //NOI18N
