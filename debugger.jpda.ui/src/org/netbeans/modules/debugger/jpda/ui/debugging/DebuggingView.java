@@ -510,7 +510,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
     @Override
     public boolean requestFocusInWindow() {
         DebugTreeView tView = getTreeView();
-        return tView.requestFocusInWindow ();
+        if (tView != null) {
+            return tView.requestFocusInWindow ();
+        }
+        return super.requestFocusInWindow();
     }
     
     @Override
