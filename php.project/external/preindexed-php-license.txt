@@ -1,5 +1,5 @@
 Name: preindexed-php
-Version: 0.4.7
+Version: 0.5.5
 Description: Binary Lucene data used for fast user scanning of known libraries. This file is not really third party but is included here to use the Mercurial binary hooks to avoid bloating the regular repository with binary diffs.
 License: CDDL-GPL-2-CP
 OSR: None
