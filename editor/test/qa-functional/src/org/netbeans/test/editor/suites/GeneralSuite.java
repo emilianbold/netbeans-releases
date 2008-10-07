@@ -51,6 +51,6 @@ public class GeneralSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(GeneralTypingTest.class).addTest(GeneralTypingTest.class).addTest(MainMenuTest.class));
+                NbModuleSuite.createConfiguration(GeneralTypingTest.class).addTest(GeneralTypingTest.class,"testJavaEnterBeginAndEnd").addTest(MainMenuTest.class,"testMainMenu"));
     }
 }
