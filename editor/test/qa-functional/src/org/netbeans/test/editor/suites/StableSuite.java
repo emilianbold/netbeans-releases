@@ -56,11 +56,26 @@ public class StableSuite {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(GeneralTypingTest.class)
-                .addTest(GeneralTypingTest.class,"testJavaEnterBeginAndEnd")
-                .addTest(MainMenuTest.class,"testMainMenu")
-                .addTest(IncrementalSearchTest.class)
+                .addTest(GeneralTypingTest.class,
+                         "testJavaEnterBeginAndEnd")
+                .addTest(MainMenuTest.class,
+                         "testMainMenu")
+                .addTest(IncrementalSearchTest.class,
+                         //"testSearchForward",  //failing on windows -> removing from stable suite
+                         "testSearchBackwards",
+                         "testMatchCase",
+                         "testNextButton",
+                         "testPrevButton",
+                         "testCloseButton",
+                         "testNotFound",
+                         "testInvalidRegexp",
+                         "testSearchForwardBackward",
+                         "testWholeWords",
+                         "testRegularExpression",
+                         "testFindNext",
+                         "testFindPrev")
                 .addTest(ReplaceTest.class)
-                .addTest(AbbreviationsAddRemovePerformer.class)
+                //.addTest(AbbreviationsAddRemovePerformer.class) // unstable
                 );
     }
 }

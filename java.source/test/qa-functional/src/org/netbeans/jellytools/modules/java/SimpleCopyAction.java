@@ -43,7 +43,6 @@ package org.netbeans.jellytools.modules.java;
 
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.actions.PasteAction;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.Operator;
 
@@ -51,11 +50,10 @@ import org.netbeans.jemmy.operators.Operator;
  *
  * @author Jiri Prox
  */
-public class SimpleCopyAction extends PasteAction{
+public class SimpleCopyAction {
     
     protected static final String POPUP = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Paste");
-    protected static final String MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
-                                            + "|" + POPUP+ "|Copy";               
+    protected static final String MENU = "Edit|" + POPUP + "|Copy";
     
     public void perform() {
         new EventTool().waitNoEvent(500);        
