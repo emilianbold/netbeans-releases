@@ -370,6 +370,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
                     }
                     requiresJDK = requiresJDK || "false".equals(product.getProperty(JdkLocationPanel.JRE_ALLOWED_PROPERTY));
                     if (requiresJDK) {
+			LogManager.log("... nbProduct status = " + nbProduct.getStatus());
                         final File nbLocation = nbProduct.getInstallationLocation();
                         try {
                             final File javaHome = new File(NetBeansUtils.getJavaHome(nbLocation));
