@@ -81,19 +81,23 @@
                     </a>
                 </div>
 		<div id="search">
-                    <form method="get" action="http://www.google.com/custom" style="display:inline;">
-                        <table>
-                            <tr>
-                                <td>
-                                <a href="http://www.netbeans.org/community/search.html" style="color:#213552;">Search:</a> </td><td><input type="text" name="q" class="text" style="border:1px solid #0B686D;"/>
-                                </td>
-                                <td>
-                                    <input type="image" src="http://www.netbeans.org/images/v6/search-button.gif" alt="Search netbeans.org" name="Button"/>
-                                    <input type=hidden name=cof VALUE="GIMP:#FF0F12;LW:193;ALC:#FF0F12;L:http://www.netbeans.org/images/logo.gif;GFNT:#8A8DB0;LC:#0E0E76;LH:45;AH:center;VLC:#0E0E76;S:http://www.netbeans.org/;AWFID:a8753e5d03543916;"><input type=hidden name=domains value="netbeans.org"><input type=hidden name=sitesearch value="netbeans.org">
-                                </td>
-                            </tr>
-                        </table>
-                    </form>
+			<!-- Google CSE Search Box Begins  -->
+			<form action="/search_result.html" id="cse-search-box">
+			  <input type="hidden" name="cx" value="006102455337629464213:mt38ytkbuak" >
+			  <input type="hidden" name="cof" value="FORID:11" >
+			   <table>
+			     <tr>
+			       <td>
+			         <a href="http://www.netbeans.org/community/search.html" style="color:#213552;">Search:</a> </td><td><input type="text" name="q" class="text" style="border:1px solid #0B686D;">
+			       </td>
+			       <td>
+			         <input type="image" src="/images/v6/search-button.gif" alt="Search netbeans.org" name="sa" value="Search">	
+			       </td>
+			     </tr>
+			   </table>
+			</form>
+			<script type="text/javascript" src="http://www.google.com/coop/cse/brand?form=cse-search-box&lang=en"></script>
+			<!-- Google CSE Search Box Ends -->
                 </div>
                 <div class="lang-dropdown" id="pagelanguagesbox" style="visibility: hidden;">
                     <ul id="nav">
