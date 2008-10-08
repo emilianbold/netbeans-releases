@@ -140,7 +140,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabel1 = new javax.swing.JLabel();
         vmOptions = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
-        dosDescritpiton = new javax.swing.JLabel();
+        dosDescription = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -340,14 +340,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         add(jLabel2, gridBagConstraints);
         jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSN_CustomizerRun_NA")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(dosDescritpiton, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_Description")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_Description")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 11, 0);
-        add(dosDescritpiton, gridBagConstraints);
+        add(dosDescription, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
@@ -368,7 +368,7 @@ private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//G
 }                                               
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel dosDescritpiton;
+    private javax.swing.JLabel dosDescription;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
