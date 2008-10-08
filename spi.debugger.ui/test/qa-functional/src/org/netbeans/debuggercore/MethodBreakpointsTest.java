@@ -136,6 +136,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             NbDialogOperator dialog = Utilities.newBreakpoint(92);
             setBreakpointType(dialog, "Method");
             new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
@@ -158,7 +159,8 @@ public class MethodBreakpointsTest extends JellyTestCase {
             //open source
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");            
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             NbDialogOperator dialog = Utilities.newBreakpoint(53);            
             setBreakpointType(dialog, "Method");
             assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 1).getText());
@@ -292,6 +294,7 @@ public class MethodBreakpointsTest extends JellyTestCase {
 
             dialog.ok();
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             //toggle control line breakpoint
             Utilities.toggleBreakpoint(eo, 104);
 
