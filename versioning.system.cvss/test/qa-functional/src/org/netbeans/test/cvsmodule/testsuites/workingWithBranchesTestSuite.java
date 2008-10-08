@@ -44,16 +44,7 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.cvsmodule.BranchCreationAndSwitchTest;
 import org.netbeans.test.cvsmodule.BranchTest;
-import org.netbeans.test.cvsmodule.CommittingCvs11Test;
-import org.netbeans.test.cvsmodule.CommittingCvs12Test;
-import org.netbeans.test.cvsmodule.DeleteTest;
-import org.netbeans.test.cvsmodule.IgnoreUnignoreTest;
-import org.netbeans.test.cvsmodule.ResolveConflictsAndRevertTest;
-import org.netbeans.test.cvsmodule.ShowAnnotationsAndSearchHistoryTest;
-import org.netbeans.test.cvsmodule.TagTest;
 import org.netbeans.test.cvsmodule.TestKit;
-import org.netbeans.test.cvsmodule.UpdateErrorTest;
-import org.netbeans.test.cvsmodule.VersioningButtonsTest;
 
 /**
  *
@@ -76,11 +67,16 @@ public class workingWithBranchesTestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(BranchTest.class, "testCheckOutProject", "testBranchDialogUI", "testSwitchToBranchDialogUI", "testMergeChangesFromBranchDialogUI", "testOnNonVersioned", "removeAllData")
-                .addTest(BranchCreationAndSwitchTest.class, "testCheckOutProject", "testCreateBranchForProject", "testSwitchProjectToBranch", "removeAllData")
-                .enableModules(".*")
-                .clusters(".*"));
+        String osName = System.getProperty("os.name");
+        if (osName.contains("Windows")&&!(osName.contains("Vista"))) {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        } else {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                    .addTest(BranchTest.class, "testCheckOutProject", "testBranchDialogUI", "testSwitchToBranchDialogUI", "testMergeChangesFromBranchDialogUI", "testOnNonVersioned", "removeAllData")
+                    .addTest(BranchCreationAndSwitchTest.class, "testCheckOutProject", "testCreateBranchForProject", "testSwitchProjectToBranch", "removeAllData")
+                    .enableModules(".*")
+                    .clusters(".*"));
+        }
     }
     
 }

@@ -187,7 +187,6 @@ final class QuietEditorPane extends JEditorPane {
             "document", //NOI18N
             "editorKit", //NOI18N
             "keymap", //NOI18N
-            "caret", //NOI18N
     }));
 
     public @Override void firePropertyChange(String s, Object val1, Object val2) {

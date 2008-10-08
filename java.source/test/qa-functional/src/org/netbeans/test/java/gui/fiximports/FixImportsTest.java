@@ -329,12 +329,14 @@ public class FixImportsTest extends JavaTestCase {
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
             FixAllImports fio = new FixAllImports();
             fio.cbRemoveUnusedImports().setSelected(false);
-            fio.cancel();
+            fio.ok();
+            editor.insert("Node n;\n", 17, 1);
             Utilities.takeANap(100);            
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
             fio = new FixAllImports();
             assertEquals("Checkbox state is not persistent",fio.cbRemoveUnusedImports().isSelected(),false);
+            fio.cbRemoveUnusedImports().setSelected(true);
             fio.cancel();
         } finally {
             editor.close(false);
@@ -358,7 +360,7 @@ public class FixImportsTest extends JavaTestCase {
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_I,
                     KeyEvent.CTRL_MASK | KeyEvent.SHIFT_MASK);            
             Utilities.takeANap(200);
-            assertEquals("Nothing to fix in import statements.",MainWindowOperator.getDefault().getStatusText());            
+            assertEquals("Nothing to fix in import statements.",MainWindowOperator.getDefault().getStatusText());
         } finally {
             editor.close(false);
         }

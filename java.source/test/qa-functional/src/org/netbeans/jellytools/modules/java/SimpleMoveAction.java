@@ -53,8 +53,7 @@ import org.netbeans.jemmy.operators.Operator;
 public class SimpleMoveAction {
     
     protected static final String POPUP = Bundle.getStringTrimmed("org.openide.actions.Bundle", "Paste");
-    protected static final String MENU = Bundle.getStringTrimmed("org.netbeans.core.Bundle", "Menu/Edit")
-            + "|" + POPUP+ "|Move";
+    protected static final String MENU = "Edit|" + POPUP + "|Move";
     
     public void perform() {
         new EventTool().waitNoEvent(500);

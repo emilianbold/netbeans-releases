@@ -62,6 +62,24 @@ Microsystems, Inc. All Rights Reserved.
     <target name="unzip-nb" description="Unzip clusters to modules" >                                                  
         <mkdir dir="build"/> 
 	<get src="${javafx_location}" dest="${common.name}-javafx.zip"/>
+	<get src="${javafx_sdk_location}" dest="${common.name}-javafx-sdk.zip"/>
+
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d ${basedir}/javafxtmpdir ${common.name}-javafx.zip"/>
+        </exec>      
+        <exec executable="sh" failonerror="yes">
+            <arg value="-c"/>
+            <arg value="unzip -d `ls -d1 ${basedir}/javafxtmpdir/javafx*` ${common.name}-javafx-sdk.zip"/>
+        </exec>      
+        <delete file="${common.name}-javafx.zip"/>
+        <delete file="${common.name}-javafx-sdk.zip"/>
+
+        <exec executable="sh" failonerror="yes" dir="${basedir}/javafxtmpdir">
+            <arg value="-c"/>
+            <arg value="zip -r -9 ${common.name}-javafx.zip *"/>
+        </exec>      
+        <delete dir="${basedir}/javafxtmpdir"/>
 
         <property name="clusters" value="apisupport(javase), profiler(javase), java(javase), harness(javase),
                                          ide(baseide), nb6.0-etc(baseide), platform(baseide), gsf(baseide),
