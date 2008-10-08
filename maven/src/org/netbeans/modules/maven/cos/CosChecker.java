@@ -42,6 +42,7 @@ import hidden.org.codehaus.plexus.util.cli.CommandLineUtils;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
@@ -62,7 +64,10 @@ import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
+import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
@@ -83,8 +88,6 @@ public class CosChecker implements PrerequisitesChecker {
         //compile on save stuff
         if (NbMavenProject.TYPE_JAR.equals(
                 config.getProject().getLookup().lookup(NbMavenProject.class).getPackagingType())) {
-            Project prj = config.getProject();
-            //TODO replace with an api method call
 
             if (RunUtils.hasApplicationCompileOnSaveEnabled(config) &&
                    (ActionProvider.COMMAND_RUN.equals(actionName) ||
@@ -100,10 +103,7 @@ public class CosChecker implements PrerequisitesChecker {
                 Map<String, Object> params = new HashMap<String, Object>();
                 params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
                 params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
-                //TODO somehow use the config.getMavenProject() call rather than looking up the
-                // ClassPathProviderImpl from lookup. The loaded project can be different from the executed one.
-                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cpp.getProjectClassPaths(ClassPath.EXECUTE)[0]);
+                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, createRuntimeClassPath(config.getMavenProject(), false));
                 //exec:exec property
                 String exargs = config.getProperties().getProperty("exec.args"); //NOI18N
                 if (exargs != null) {
@@ -203,13 +203,10 @@ public class CosChecker implements PrerequisitesChecker {
                     //add and for debugging, remove the debugging ones..
                 }
 
-                //TODO somehow use the config.getMavenProject() call rather than looking up the
-                // ClassPathProviderImpl from lookup. The loaded project can be different from the executed one.
-                ClassPathProviderImpl cpp = config.getProject().getLookup().lookup(ClassPathProviderImpl.class);
                 //add additionalClasspathElements parameter in surefire plugin..
                 String[] additionals = PluginPropertyUtils.getPluginPropertyList(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
                         Constants.PLUGIN_SUREFIRE, "additionalClasspathElements", "additionalClasspathElement", "test"); //NOI18N
-                ClassPath cp = cpp.getProjectClassPaths(ClassPath.EXECUTE)[1];
+                ClassPath cp = createRuntimeClassPath(config.getMavenProject(), true);
                 if (additionals != null) {
                     List<URL> roots = new ArrayList<URL>();
                     File base = FileUtil.toFile(config.getProject().getProjectDirectory());
@@ -247,6 +244,19 @@ public class CosChecker implements PrerequisitesChecker {
 
         }
         return true;
+    }
+
+    //create a special runtime classpath here as the resolved mavenproject in execution
+    // can be different from the one in loaded project
+    private ClassPath createRuntimeClassPath(MavenProject prj, boolean test) {
+        List<URI> roots;
+        if (test) {
+            roots = TestRuntimeClassPathImpl.createPath(prj);
+        }
+        else {
+            roots = RuntimeClassPathImpl.createPath(prj);
+        }
+        return ClassPathSupport.createClassPath(AbstractProjectClassPathImpl.getPath(roots.toArray(new URI[0])));
     }
 
     private String action2Quick(String actionName) {
