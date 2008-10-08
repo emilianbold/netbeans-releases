@@ -106,7 +106,7 @@ public class ModuleLogicalViewTest extends TestBase {
         Node root = new FilterNode(lvp.createLogicalView());
         
         lvp.findPath(root, f); // ping
-        waitForChildrenUpdate();
+        waitForNodesUpdate();
         
         Node n = lvp.findPath(root, f);
         DataObject d = DataObject.find(f);
@@ -115,14 +115,6 @@ public class ModuleLogicalViewTest extends TestBase {
             assertEquals("right DataObject", d, n.getLookup().lookup(DataObject.class));
         }
         return n;
-    }
-    
-    private void waitForChildrenUpdate() {
-        ImportantFilesNodeFactory.RP.post(new Runnable() {
-            public void run() {
-                // flush ModuleLogicalView.RP under which is the Children's update run
-            }
-        }).waitFinished();
     }
     
         //    XXX: failing test, fix or delete
