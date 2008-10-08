@@ -135,4 +135,9 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("iz148014.cc");
     }
 
+    public void testIZ149225() throws Exception {
+        // IZ#149225 incorrect concatenation with token that starts with digit
+        performTest("iz149225.c");
+    }
+
 }

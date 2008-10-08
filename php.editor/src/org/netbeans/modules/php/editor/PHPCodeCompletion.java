@@ -71,6 +71,7 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
+import org.netbeans.modules.php.editor.PredefinedSymbols.VariableKind;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedElement;
@@ -755,6 +756,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
+        VariableKind varKind = VariableKind.STANDARD; 
         Document document = request.info.getDocument();
         if (document == null) {
             return;
@@ -787,6 +789,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String typeName = null;
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             if (varName.equals("self")) { //NOI18N
+                varKind = VariableKind.SELF;
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
@@ -795,6 +798,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
+                varKind = VariableKind.PARENT;
                 invalidProposalsForClsMembers = Collections.emptyList();
 
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
@@ -807,6 +811,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
+                varKind = VariableKind.THIS;
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (staticContext) {
                     return;
@@ -854,7 +859,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedFunction method : methods){
-                    if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
+                    if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                             if (!invalidProposalsForClsMembers.contains(method.getName())) {
                                 proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));

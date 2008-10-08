@@ -425,6 +425,9 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136188_5() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
     }
+    public void test149519() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue149519.php", "$this->^", false);
+    }
     // tests for class declaration until '{' like "class name extends MyClass  "
     public void testClsDeclaration() throws Exception {
         checkCompletion("testfiles/completion/lib/clsDeclaration.php", "class^", false);

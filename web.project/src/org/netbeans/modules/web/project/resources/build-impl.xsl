@@ -312,7 +312,7 @@ introduced by support for multiple source roots. -jglick
                 <condition>
                     <xsl:attribute name="property">deploy.on.save</xsl:attribute>
                     <xsl:attribute name="value">true</xsl:attribute>
-                    <isfalse value="${{disable.deploy.on.save}}"/>
+                    <istrue value="${{j2ee.deploy.on.save}}"/>
                 </condition>            
             </target>
             

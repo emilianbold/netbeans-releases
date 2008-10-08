@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ListModel;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JDialogOperator;
@@ -44,10 +43,7 @@ import org.netbeans.spi.editor.codegen.CodeGenerator;
  * @author Jiri Prox Jiri.Prox@Sun.COM
  */
 public class GenerateCodeOperator {
-    
-        
-    //public static final String GENERATE_CONSTRUCTOR = Bundle.getStringTrimmed("org.netbeans.modules.java.editor.codegen.Bundle.properties", "LBL_constructor"); //NOI18N
-    
+                
     public static final String GENERATE_CONSTRUCTOR = "Constructor..."; //NOI18N
 
     public static final String GENERATE_GETTER = "Getter..."; //NOI18N
@@ -57,6 +53,10 @@ public class GenerateCodeOperator {
     public static final String GENERATE_GETTER_SETTER = "Getter and Setter..."; //NOI18N
     
     public static final String GENERATE_EQUALS_HASHCODE = "equals() and hashCode()..."; //NOI18N
+
+    public static final String GENERATE_EQUALS = "equals()..."; //NOI18N
+
+    public static final String GENERATE_HASHCODE = "hashCode()..."; //NOI18N
     
     public static final String OVERRIDE_METHOD = "Override Method..."; //NOI18N
             
@@ -91,8 +91,8 @@ public class GenerateCodeOperator {
     /**
      * Compares list of items provided in the Insert Code dialog with the list of expected items
      * @param editor Operator of editor window where should Insert Code should be caled
-     * @param items Expested items
-     * @return true is both list are the same, false otherwise
+     * @param items Expected items
+     * @return true if both list are the same, false otherwise
      */
     public static boolean containsItems(EditorOperator editor, String ... items) {
         Set<String> actItems = new HashSet<String>();
@@ -110,6 +110,26 @@ public class GenerateCodeOperator {
             if(!actItems.contains(string)) return false;            
         }
         return true;       
+    }
+
+    /**
+     * Check if Insertcode popup contains requested item
+     * @param editor Operator of editor window where should Insert Code should be caled
+     * @param items Expected items
+     * @return true if all requested item are pressent, to exact match use {@link #containsItems(org.netbeans.jellytools.EditorOperator, java.lang.String[]) containsItems}
+     */
+    public static boolean checkItems(EditorOperator editor, String ... items) {        
+        Set<String> expItems = new HashSet<String>(Arrays.asList(items));
+        editor.pushKey(KeyEvent.VK_INSERT, KeyEvent.ALT_DOWN_MASK);
+        JDialogOperator jdo = new JDialogOperator();
+        JListOperator list = new JListOperator(jdo);
+        ListModel lm = list.getModel();
+        for (int i = 0; i < lm.getSize(); i++) {
+            CodeGenerator cg  = (CodeGenerator) lm.getElementAt(i);
+            expItems.remove(cg.getDisplayName());            
+        }
+        if(!expItems.isEmpty()) return false;
+        return true;
     }
 
 }
