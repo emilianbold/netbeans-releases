@@ -414,7 +414,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             inFile = win2UnixPath(inFile);
                             outFile = win2UnixPath(outFile);
                         }
-                        inRedir = " < " + inFile + " > " + outFile; // NOI18N
+                        inRedir = " < " + inFile + " >& " + outFile; // NOI18N
                     }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
