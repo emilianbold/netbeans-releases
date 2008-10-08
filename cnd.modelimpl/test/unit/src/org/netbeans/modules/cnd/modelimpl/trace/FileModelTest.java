@@ -514,6 +514,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("ternary_operator.cc"); // NOI18N        
     }
     
+    // IZ#149483 : parser fails on unsigned const char
+    public void testConst() throws Exception {      
+        performTest("const.cc"); // NOI18N        
+    }    
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
