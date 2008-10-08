@@ -514,6 +514,13 @@ public class APTExpandedStream implements TokenStream {
         } else {
             rightText = tokensRightMerged.toString();
         }
+        // IZ#149505: special handling of __VA_ARGS__ with preceding comma
+        if (tokenLeft.getType() == APTTokenTypes.COMMA && rightText.length() == 0 && 
+            APTUtils.isVaArgsToken(tokensRight.get(0))) {
+            // when __VA_ARGS__ is empty expanded => 
+            // need to eat comma as well and should return no tokens
+            return new ArrayList<Token>();
+        }
         String text = leftText + rightText;
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text);
         List<Token> tokens = APTUtils.toList(ts);
