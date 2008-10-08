@@ -120,7 +120,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(LocalHistoryViewTest.class).addTest(
                 "testLocalHistoryInvoke",
                 "testLocalHistoryRevertFromHistory",
-                "testLocalHistoryRevisionCountAfterModification",
+//                "testLocalHistoryRevisionCountAfterModification",
                 "testLocalHistoryNewFileInNewPackage",
                 "testLocalHistoryRevertDeleted",
                 "testLocalHistoryRevisionCountAfterModification2")
@@ -176,9 +176,12 @@ public class LocalHistoryViewTest extends JellyTestCase {
     }
 
     public void testLocalHistoryRevisionCountAfterModification() {
+        sleep(1500);
+        eo = new EditorOperator("Main.java");
         eo.insert("// modification //", 11, 1);
         eo.save();
         sleep(1500);
+        slho = ShowLocalHistoryOperator.invoke(node);
         int versions = slho.getVersionCount();
         assertEquals("3. Wrong number of versions!", 3, versions);
         slho.close();

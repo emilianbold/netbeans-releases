@@ -53,36 +53,6 @@
     <!-- import the base script for building product packages -->
     <import file="${common.dir}/product.xml" optional="false"/>
     
-    <!--
-      Corrects the layout of the incoming installation data files. 
-      
-      Overrides the '-pre-package' target in product.xml.
-    -->
-    <target name="-pre-package">
-        <if property="instrument.jars" value="true">
-            <if property="i" value="2">
-                <mkdir 
-                    dir="${data.directory}/emma-lib"/>
-                <copy 
-                    file="${emma.jar.file}" 
-                    todir="${data.directory}/emma-lib"/>
-                <chmod dir="${data.directory}/emma-lib" perm="a+w"/>
-                    
-                <replace 
-                    file="${data.directory}/etc/netbeans.conf" 
-                    token="netbeans_default_options=&quot;"
-                    value="netbeans_default_options=&quot;--cp:p &quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/emma.jar&quot;\&quot;&quot; -J-Demma.coverage.file=&quot;\&quot;&quot;${NETBEANS_HOME}/emma-lib/netbeans_coverage.ec&quot;\&quot;&quot; -J-Dnetbeans.security.nocheck=true "/>
-            </if>
-            
-            <exec executable="${bash.executable}" failonerror="true" dir="${data.directory}">
-                <arg value="${emma.sh.file}"/>
-                <arg value="."/>
-                <arg value="${emma.txt.file}"/>
-                <arg value="${emma.jar.file}"/>
-            </exec>
-        </if>
-    </target>
-    
     <!-- ============================================================================
       Default
     ============================================================================= -->

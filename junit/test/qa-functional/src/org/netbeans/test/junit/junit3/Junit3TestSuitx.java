@@ -47,9 +47,9 @@ import org.netbeans.junit.NbModuleSuite;
  *
  * @author peter
  */
-public class Junit3TestSuite extends JellyTestCase {
+public class Junit3TestSuitx extends JellyTestCase {
     
-    public Junit3TestSuite(String name) {
+    public Junit3TestSuitx(String name) {
         super(name);
     }
 

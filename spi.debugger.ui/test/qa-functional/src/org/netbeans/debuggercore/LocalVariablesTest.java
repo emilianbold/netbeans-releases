@@ -138,6 +138,7 @@ public class LocalVariablesTest extends JellyTestCase {
         Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode);
         EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
+        eo.clickMouse(50,50,1);
         Utilities.setCaret(eo, temp);
         new RunToCursorAction().perform();
         Utilities.getDebugToolbar().waitComponentVisible(true);
@@ -310,6 +311,7 @@ public class LocalVariablesTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.setCaret(eo, 104);
             new EventTool().waitNoEvent(500);
             new RunToCursorAction().performMenu();
@@ -348,6 +350,7 @@ public class LocalVariablesTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.setCaret(eo, 104);
             new EventTool().waitNoEvent(500);
             new RunToCursorAction().performMenu();

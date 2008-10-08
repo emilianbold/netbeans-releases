@@ -260,6 +260,7 @@ public final class RailsServerManager {
                 desc.useInterpreter(false);
                 desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
                 desc.postBuild(getFinishAction());
+                desc.jvmArguments(jvmArgs);
                 desc.addStandardRecognizers();
                 desc.addOutputRecognizer(new GrizzlyServerRecognizer(instance));
                 desc.frontWindow(false);
