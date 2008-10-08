@@ -67,7 +67,7 @@ import java.util.List;
 public class Parser
 {
     // <netbeans>
-    // Keep in sync with JsModel.GENERATED_IDENTIFIER and unit tests -
+    // Keep in sync with JsModel.GENERATED_IDENTIFIER
     // but NOTE -- there should be NO SPACES AROUND the identifier here - the
     // parser strips the spaces during parsing.
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -761,13 +761,6 @@ return null;
                     }
                     fnNode.addParam(s);
                     decompiler.addName(s);
-
-                    // <netbeans>
-                    // Skip extra __UNKNOWN__ tokens
-                    while (peekToken() == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
-                        consumeToken();
-                    }
-                    // </netbeans>
                 } while (matchToken(Token.COMMA));
 
                 mustMatchToken(Token.RP, "msg.no.paren.after.parms");
@@ -1665,6 +1658,32 @@ return null;
             break;
           default:
             if ((ttFlagged & TI_AFTER_EOL) == 0) {
+                // <netbeans>
+                // Autoinsert a ";" when dealing with __UNKNOWN__ identifiers -
+                // this typically happens in for dynamically generated JavaScript
+                // from templating languages, see for example issue 133173
+                if (pn != null && pn.getType() == Token.EXPR_VOID &&
+                        pn.hasChildren()) {
+                    Node child = pn.getFirstChild();
+                    if (child.getType() == Token.NAME &&
+                        (GENERATED_IDENTIFIER.equals(child.getString()))) {
+                        break;
+                    } else if (child.getType() == Token.SETNAME && child.hasChildren()) {
+                        // Handle the case where there is a assignment on the left
+                        // as well, e.g. x = __UNKNOWN__ __UNKNOWN__ - in this case
+                        // the structure of the EXPR_VOID is slightly different
+                        Node grandChild = child.getFirstChild();
+                        if (grandChild != null) {
+                            Node rhs = grandChild.getNext();
+                            if (rhs != null && rhs.getType() == Token.NAME &&
+                                    (GENERATED_IDENTIFIER).equals(rhs.getString())) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                // </netbeans>
+
                 // Report error if no EOL or autoinsert ; otherwise
                 reportError("msg.no.semi.stmt");
             }
@@ -1828,22 +1847,6 @@ return null;
         Node pn = condExpr(inForInit);
 
         int tt = peekToken();
-        // <netbeans>
-        if (tt == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
-            // One or more extra __UNKNOWN__ tokens in there
-            while (true) {
-                if ((currentFlaggedToken & TI_AFTER_EOL) != 0) {
-                    break;
-                }
-                if (peekToken() == Token.NAME && GENERATED_IDENTIFIER.equals(ts.getString())) {
-                    consumeToken();
-                } else {
-                    break;
-                }
-            }
-            tt = peekToken();
-        }
-        // </netbeans>
         if (Token.FIRST_ASSIGN <= tt && tt <= Token.LAST_ASSIGN) {
             consumeToken();
             decompiler.addToken(tt);
@@ -2714,16 +2717,6 @@ Node pn = null;
         // <netbeans>
         //int startOffset = getStartOffset();
         int startOffset = matchedTokenStart;
-
-        // Issue 149019: Handle spurious extra __UNKNOWN__ tokens
-        // in a property name
-        if (GENERATED_IDENTIFIER.equals(name)) {
-            int peek = peekToken();
-            if (peek == Token.NAME) {
-                nextToken();
-                name = ts.getString();
-            }
-        }
         // </netbeans>
 
         String namespace = null;
@@ -2824,6 +2817,14 @@ Node pn = null;
                     break;
                 } else {
                     if (!after_lb_or_comma) {
+                        // <netbeans>
+                        if (prevExpr != null && prevExpr.getType() == Token.NAME &&
+                                GENERATED_IDENTIFIER.equals(prevExpr.getString())) {
+                            // Looks like we need to insert a comma. See for example
+                            // issue 136495 for a scenario to reproduce this...
+                            after_lb_or_comma = true;
+                        } else
+                        // </netbeans>
                           reportError("msg.no.bracket.arg");
                     }
                     // <netbeans>
@@ -3029,38 +3030,6 @@ Node pn = null;
             }
             // </netbeans>
             String name = ts.getString();
-// <netbeans>
-            if (GENERATED_IDENTIFIER.equals(name)) {
-                int peek = peekToken();
-                boolean inMiddle = false;
-                switch (peek) {
-                    case Token.FUNCTION:
-                    case Token.LB:
-                    case Token.LC:
-                    case Token.LP:
-                    case Token.XMLATTR:
-                    case Token.NAME:
-                    case Token.NUMBER:
-                    case Token.STRING:
-                    case Token.DIV:
-                    case Token.ASSIGN_DIV:
-                    case Token.NULL:
-                    case Token.THIS:
-                    case Token.FALSE:
-                    case Token.TRUE:
-                        inMiddle = true;
-                }
-                if (inMiddle) {
-                    // The __UNKNOWN__ identifier is in the middle; we don't
-                    // want it so skip it and resume
-                    pn = primaryExpr();
-                    // <netbeans>
-                    setSourceOffsets(pn, startOffset);
-                    // </netbeans>
-                    return pn;
-                }
-            }
-// </netbeans>
             if ((ttFlagged & TI_CHECK_LABEL) != 0) {
                 if (peekToken() == Token.COLON) {
                     // Do not consume colon, it is used as unwind indicator
