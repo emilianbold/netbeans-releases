@@ -374,12 +374,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public synchronized boolean isScanInProgress() {
-        return notInitialized || this.noSubmited > 0;
+        // true, when updater is not initilized, there is no scanning task
+        // submitted and GlobalSourcePath is actually changing.
+        return notInitialized || this.noSubmited > 0 || !GlobalSourcePath.getDefault().isFinished();
     }
     
     public synchronized void waitScanFinished () throws InterruptedException {
         while (isScanInProgress()) {
-            this.wait();
+            this.wait(1000);
         }
     }
     

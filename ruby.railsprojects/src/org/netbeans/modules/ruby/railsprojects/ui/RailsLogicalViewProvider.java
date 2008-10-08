@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.railsprojects.ui;
 
+import java.awt.EventQueue;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -234,14 +235,23 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             setProjectFiles(project);
             helper.getRakeProjectHelper().addRakeProjectListener(new RakeProjectListener() {
                 public void configurationXmlChanged(RakeProjectEvent ev) {
-                    fireShortDescriptionChange(null, null);
+                    fireShortDescriptionChange();
                 }
 
                 public void propertiesChanged(RakeProjectEvent ev) {
-                    fireShortDescriptionChange(null, null);
+                    fireShortDescriptionChange();
                 }
             });
             this.rspecSupport = new RSpecSupport(project);
+        }
+
+        private void fireShortDescriptionChange() {
+            // cf. issue #149066
+            EventQueue.invokeLater(new Runnable() {
+                public void run() {
+                    fireShortDescriptionChange(null, null);
+                }
+            });
         }
 
         public @Override String getShortDescription() {
@@ -416,7 +426,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         // sources change
         public void stateChanged(ChangeEvent e) {
             setProjectFiles(project);
-            fireShortDescriptionChange(null, null);
+            fireShortDescriptionChange();
         }
         
         // group change
