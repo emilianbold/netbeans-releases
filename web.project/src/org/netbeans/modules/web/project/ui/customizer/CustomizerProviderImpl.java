@@ -51,11 +51,11 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.project.ui.CustomizerProvider2;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -66,7 +66,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Petr Hrebejk, Radko Najman
  */
-public class CustomizerProviderImpl implements CustomizerProvider {
+public class CustomizerProviderImpl implements CustomizerProvider2 {
     
     private final Project project;
     private final UpdateHelper updateHelper;

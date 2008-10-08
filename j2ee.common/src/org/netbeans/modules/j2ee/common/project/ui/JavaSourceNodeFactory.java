@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.ejbjarproject.ui;
+package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.util.ArrayList;
@@ -55,9 +55,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.spi.java.project.support.ui.PackageView;
+import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.filesystems.FileObject;
@@ -67,34 +66,33 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- * NodeFactory to create Source nodes.
- * 
- * @author gpatil
+ *
+ * @author mkleint
  */
-public final class SourceNodeFactory implements NodeFactory {
-    public SourceNodeFactory() {
+public final class JavaSourceNodeFactory implements NodeFactory {
+    public JavaSourceNodeFactory() {
     }
     
     public NodeList createNodes(Project p) {
-        EjbJarProject project = p.getLookup().lookup(EjbJarProject.class);
+        Project project = (Project)p.getLookup().lookup(Project.class);
         assert project != null;
         return new SourcesNodeList(project);
     }
     
     private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
-        private final EjbJarProject project;
+        
+        private final Project project;
+        
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         
-        public SourcesNodeList(EjbJarProject proj) {
+        public SourcesNodeList(Project proj) {
             project = proj;
         }
         
         public List<SourceGroupKey> keys() {
-            FileObject projDir = project.getProjectDirectory();
-            if ((projDir != null) && (!projDir.isValid())) {
+            if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.<SourceGroupKey>emptyList();
-            } 
-            
+            }
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
             
@@ -126,6 +124,7 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         public void stateChanged(ChangeEvent e) {
+            // setKeys(getKeys());
             // The caller holds ProjectManager.mutex() read lock
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
@@ -137,6 +136,7 @@ public final class SourceNodeFactory implements NodeFactory {
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
+        
     }
     
     private static class SourceGroupKey {
@@ -149,7 +149,7 @@ public final class SourceNodeFactory implements NodeFactory {
             this.fileObject = group.getRootFolder();
         }
         
-         @Override
+        @Override
         public int hashCode() {
             int hash = 5;
             String disp = this.group.getDisplayName();
@@ -178,14 +178,13 @@ public final class SourceNodeFactory implements NodeFactory {
                 return true;
             }
         }
-
         
     }
     
-    /** 
-     * Yet another cool filter node just to add properties action
+    /** Yet another cool filter node just to add properties action
      */
     private static class PackageViewFilterNode extends FilterNode {
+        
         private final String nodeName;
         private final Project project;
         
@@ -194,10 +193,10 @@ public final class SourceNodeFactory implements NodeFactory {
         public PackageViewFilterNode(SourceGroup sourceGroup, Project project) {
             super(PackageView.createPackageView(sourceGroup));
             this.project = project;
-            this.nodeName = "Sources"; // NOI18N
+            this.nodeName = "Sources";
         }
         
-        @Override
+        
         public Action[] getActions(boolean context) {
             if (!context) {
                 if (actions == null) {
@@ -218,8 +217,7 @@ public final class SourceNodeFactory implements NodeFactory {
     
     /** The special properties action
      */
-    static class PreselectPropertiesAction extends AbstractAction {
-        private static final long serialVersionUID = 1517163112L;
+    public static class PreselectPropertiesAction extends AbstractAction {
         
         private final Project project;
         private final String nodeName;
@@ -230,19 +228,23 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
-            super(NbBundle.getMessage(SourceNodeFactory.class, "LBL_Properties_Action")); //NOI18N
+            super(NbBundle.getMessage(JavaSourceNodeFactory.class, "LBL_Properties_Action")); //NOI18N
             this.project = project;
             this.nodeName = nodeName;
             this.panelName = panelName;
         }
         
         public void actionPerformed(ActionEvent e) {
-            CustomizerProviderImpl cp = 
-                       project.getLookup().lookup(CustomizerProviderImpl.class);
-            if (cp != null) {
-                cp.showCustomizer(nodeName, panelName);
-            }
-            
+            CustomizerProvider2 cp2 = (CustomizerProvider2) project.getLookup().lookup(CustomizerProvider2.class);
+            if (cp2 != null) {
+                cp2.showCustomizer(nodeName, panelName);
+            } else {
+                CustomizerProvider cp = (CustomizerProvider) project.getLookup().lookup(CustomizerProvider.class);
+                if (cp != null) {
+                    cp.showCustomizer();
+                }
+            }            
         }
     }
+    
 }

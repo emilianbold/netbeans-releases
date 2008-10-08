@@ -53,6 +53,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -157,7 +158,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(resolver, project.getSourceRoots(), Utils.getFilter(project)),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
-                            new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
+                            new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
                         },
                         WebProjectProperties.TAG_WEB_MODULE_LIBRARIES,
                         cs
@@ -184,7 +185,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(resolver, project.getTestSourceRoots(), Utils.getFilter(project)),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
-                            new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
+                            new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                         },
                         null,
                         cs

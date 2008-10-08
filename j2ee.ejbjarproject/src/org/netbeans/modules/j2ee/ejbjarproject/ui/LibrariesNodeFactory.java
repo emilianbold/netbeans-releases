@@ -53,11 +53,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.SourceNodeFactory.PreselectPropertiesAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -155,7 +155,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                         null,
-                        new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
+                        new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
                     cs
@@ -181,7 +181,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         LibrariesNode.createAddLibraryAction(refHelper, project.getTestSourceRoots(), null),
                         LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                         null,
-                        new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
+                        new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
                     null,
                     cs
