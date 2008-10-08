@@ -508,7 +508,7 @@ public class FileModelTest extends TraceModelTestBase {
     public void testStructInitializer() throws Exception {      
         performTest("struct_initializer.c"); // NOI18N        
     }
-    
+
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

@@ -12,3 +12,12 @@ static const struct
     { .src = 0, .p_dst = { 0, 0, 0 }, .pf_blend = 0 },
     { 0, {0,}, 0 }
 };
+
+typedef struct {
+    int num;
+    int den;
+} AVRational;
+
+void foo() {
+        AVRational s = (AVRational){1, 2};        
+}
