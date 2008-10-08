@@ -64,6 +64,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     private CsmUID<CsmFunction> declarationUID;
     
     private final CsmCompoundStatement body;
+    private int parseCount;
     
     public FunctionDefinitionImpl(AST ast, CsmFile file, CsmScope scope) throws AstRendererException {
         this(ast, file, scope, true);
@@ -96,10 +97,15 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
     
     public CsmFunction getDeclaration(Resolver parent) {
         CsmFunction declaration = _getDeclaration();
-	if( declaration == null ) {
+	if( declaration == null) {
+             int newCount = FileImpl.getParseCount();
+             if (newCount == parseCount) {
+                 return null;
+             }
             _setDeclaration(null);
 	    declaration = findDeclaration(parent);
             _setDeclaration(declaration);
+            parseCount = newCount;
 	}
 	return declaration;
     }

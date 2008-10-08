@@ -537,12 +537,8 @@ public class JaxWsCodeGenerator {
         WsdlService service = serviceNode.getLookup().lookup(WsdlService.class);
         Client client = wsdlNode.getLookup().lookup(Client.class);
 
-        String wsdlUrl = client.getWsdlUrl();
-        if (wsdlUrl.startsWith("file:")) //NOI18N
-        {
-            wsdlUrl = findWsdlLocation(client, NbEditorUtilities.getFileObject(document));
-        }
-
+        String wsdlUrl = findWsdlLocation(client, NbEditorUtilities.getFileObject(document));
+        
         if (client.getUseDispatch()) {
             insertDispatchMethod(document, pos, service, port, operation, wsdlUrl);
         } else {
