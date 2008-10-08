@@ -36,38 +36,25 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.highlight;
 
-package org.netbeans.test.junit.junit3;
-
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.openide.util.Cancellable;
 
 /**
  *
- * @author peter
+ * @author AlexanderSimon
  */
-public class Junit3TestSuite extends JellyTestCase {
-    
-    public Junit3TestSuite(String name) {
-        super(name);
+public class InterrupterImpl implements Interrupter, Cancellable {
+
+    private boolean canceled = false;
+
+    public boolean cancelled() {
+        return canceled;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
-    }
-
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(CreateProjectTest.class,
-                        "testCreateJUnit3Project",
-                        "testAddLibrary",
-                        "testGeneratedProjectSuiteFile",
-                        "testGeneratedMainTestFile",
-                        "testCreateTestWithoutInitializerAndFinalizer",
-                        "testGeneratedMainTestFile2",
-                        "testDeteleJUnit3Project")
-                .enableModules(".*").clusters(".*"));
+    public boolean cancel() {
+        canceled = true;
+        return true;
     }
 }

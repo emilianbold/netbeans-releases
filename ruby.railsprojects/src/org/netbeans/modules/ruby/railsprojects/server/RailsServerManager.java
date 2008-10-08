@@ -260,6 +260,7 @@ public final class RailsServerManager {
                 desc.useInterpreter(false);
                 desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
                 desc.postBuild(getFinishAction());
+                desc.jvmArguments(jvmArgs);
                 desc.addStandardRecognizers();
                 desc.addOutputRecognizer(new GrizzlyServerRecognizer(instance));
                 desc.frontWindow(false);
@@ -342,6 +343,7 @@ public final class RailsServerManager {
     private void ensurePortAvailable() {
         portConflict = false;
         String portString = project.evaluator().getProperty(RailsProjectProperties.RAILS_PORT);
+        LOGGER.fine("Port number in project properties:" + portString);
         port = 0;
         if (portString != null) {
             port = Integer.parseInt(portString);
@@ -506,6 +508,7 @@ public final class RailsServerManager {
             System.getProperty("rails.server.http.validation"));
 
     public static boolean isPortInUse(int port) {
+        LOGGER.fine("Checking port: " + port + ". Ports in use: " + IN_USE_PORTS);
         if (IN_USE_PORTS.contains(port)) {
             return true;
         }
@@ -513,6 +516,7 @@ public final class RailsServerManager {
         Socket socket = new Socket();
         try {
             try {
+                LOGGER.fine("Connecting to " + port + ", using http validation: " + useHttpValidation);
                 socket.connect(new InetSocketAddress("localhost", port), timeout); // NOI18N
                 if(useHttpValidation) {
                     socket.setSoTimeout(timeout);
@@ -526,6 +530,7 @@ public final class RailsServerManager {
 
                             // response
                             String text = in.readLine();
+                            LOGGER.fine("Got response " + text);
                             if (text != null && text.startsWith("HTTP")) { // NOI18N
                                 return true; // http response.
                             }
@@ -543,6 +548,7 @@ public final class RailsServerManager {
                 socket.close();
             }
         } catch (IOException ioe) {
+            LOGGER.log(Level.FINE, "Exception while connecting to " + port, ioe);
             return false;
         }
     }

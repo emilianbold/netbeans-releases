@@ -78,8 +78,12 @@ public class CreatePHPSampleProject  extends org.netbeans.modules.performance.ut
     @Override
     public void initialize(){
         log("::initialize::");              
-                
+
+        log("org.netbeans.modules.php.samples.donotopenreadmehtml = "
+                + System.getProperty("org.netbeans.modules.php.samples.donotopenreadmehtml"));
+        closeAllModal();
     }
+
     @Override
     public void prepare(){
         log("::prepare");

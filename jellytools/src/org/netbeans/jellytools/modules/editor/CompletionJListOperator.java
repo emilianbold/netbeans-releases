@@ -150,7 +150,7 @@ public class CompletionJListOperator extends JListOperator {
                         iarfMethod.setAccessible(true);
                         Boolean allResultsFinished = (Boolean) iarfMethod.invoke(comp, resultSets);
                         if (!allResultsFinished) {
-                            System.out.println(System.currentTimeMillis()+": all CC Results not finished yet.");
+                            LOG.fine(System.currentTimeMillis()+": all CC Results not finished yet.");
                             return null;
                         }
                     }

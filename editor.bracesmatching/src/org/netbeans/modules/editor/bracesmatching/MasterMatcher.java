@@ -691,13 +691,20 @@ public final class MasterMatcher {
                                 "Offending BracesMatcher: " + matcher[0]); //NOI18N
                         }
                         origin = null;
-                    } else if (origin[0] < 0 || origin[1] > document.getLength() || origin[0] > origin[1]) {
-                        if (LOG.isLoggable(Level.WARNING)) {
-                            LOG.warning("Invalid origin offsets [" + origin[0] + ", " + origin[1] + "]. " + //NOI18N
-                                "Offending BracesMatcher: " + matcher[0]); //NOI18N
-                        }
-                        origin = null;
                     } else {
+                        for(int i = 0; i < origin.length / 2; i++) {
+                            if (origin[2 * i] < 0 || origin[2 * i + 1] > document.getLength() || origin[2 * i] > origin[2 * i + 1]) {
+                                if (LOG.isLoggable(Level.WARNING)) {
+                                    LOG.warning("Invalid origin offsets [" + origin[2 * i] + ", " + origin[2 * i + 1] + "]. " + //NOI18N
+                                        "Offending BracesMatcher: " + matcher[0]); //NOI18N
+                                }
+                                origin = null;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (origin != null) {
                         if (backward) {
                             if (origin[1] < caretOffset - lookahead || origin[0] > caretOffset) {
                                 if (LOG.isLoggable(Level.WARNING)) {
@@ -723,7 +730,6 @@ public final class MasterMatcher {
                                 origin = null;
                             }
                         }
-
                     }
                 }
 

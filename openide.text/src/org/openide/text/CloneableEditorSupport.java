@@ -937,8 +937,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                         // remember time of last save
                         ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
-                        setLastSaveTime(System.currentTimeMillis());
-                        
+                        // #149069 - Cannot use System.currentTimeMillis()
+                        // because there can be a delay between closing stream
+                        // and setting file modification time by OS.
+                        setLastSaveTime(cesEnv().getTime().getTime());
                         doMarkAsUnmodified = true;
                         ERR.fine("doMarkAsUnmodified"); // NOI18N
                     } catch (BadLocationException blex) {

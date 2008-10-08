@@ -37,23 +37,37 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.impl.ui;
+package org.netbeans.test.junit.junit3;
 
-import java.util.logging.Logger;
+import junit.framework.Test;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * Package-level logger provider
- *
- * @author quynguyen
+ * @author peter
  */
-class Log {
-   private static Logger logger;
+public class Junit3TestSuitx extends JellyTestCase {
+    
+    public Junit3TestSuitx(String name) {
+        super(name);
+    }
 
-   static Logger getLogger() {
-       if (logger == null) {
-           logger = Logger.getLogger(Log.class.getPackage().getName()); // NOI18N
-       }
-       return logger;
-   }
+    @Override
+    protected void setUp() throws Exception {
+        System.out.println("### " + getName() + " ###");
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(CreateProjectTest.class,
+                        "testCreateJUnit3Project",
+                        "testAddLibrary",
+                        "testGeneratedProjectSuiteFile",
+                        "testGeneratedMainTestFile",
+                        "testCreateTestWithoutInitializerAndFinalizer",
+                        "testGeneratedMainTestFile2",
+                        "testDeteleJUnit3Project")
+                .enableModules(".*").clusters(".*"));
+    }
 }

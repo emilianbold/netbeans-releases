@@ -24,10 +24,10 @@ public class RevertAction extends ActionNoBlock{
     public static final String SVN_ITEM = "Subversion";
 
     /** "Revert" popup menu item. */
-    public static final String REVERT_MENU_ITEM = "Revert...";
+    public static final String REVERT_MENU_ITEM = "Revert Modifications...";
 
     /** "Revert" popup menu item. */
-    public static final String REVERT_POPUP_ITEM = "Revert Modifications";
+    public static final String REVERT_POPUP_ITEM = "Revert Modifications...";
     
     /** Creates a new instance of RevertAction */
     public RevertAction() {
