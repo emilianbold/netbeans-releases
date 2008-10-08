@@ -153,13 +153,13 @@ public class JsParserTest extends JsTestBase {
 
     public void testPartial13() throws Exception {
         // http://www.netbeans.org/issues/show_bug.cgi?id=133173
-        checkParseTree("testfiles/broken13.js", "__UNKN^OWN__", Token.NAME);
+        checkParseTree("testfiles/broken13.js", "__UNKN^OWN__", Token.BLOCK);
     }
 
     public void testPartial14() throws Exception {
         // Variation of
         // http://www.netbeans.org/issues/show_bug.cgi?id=133173
-        checkParseTree("testfiles/broken14.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/broken14.js", "__UNK^NOWN__", Token.SETNAME);
     }
 
     public void testPartial15() throws Exception {
@@ -169,19 +169,27 @@ public class JsParserTest extends JsTestBase {
     }
 
     public void test136495a() throws Exception {
-        checkParseTree("testfiles/lbracketlist.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/lbracketlist.js", "__UNK^NOWN__", Token.ARRAYLIT);
     }
 
     public void test136495b() throws Exception {
-        checkParseTree("testfiles/embedding/issue136495.erb.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/embedding/issue136495.erb.js", "__UNK^NOWN__", Token.ARRAYLIT);
     }
 
     public void test120499() throws Exception {
-        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.BLOCK);
     }
 
     public void test148423() throws Exception {
         checkParseTree("testfiles/issue148423.js", "__UNK^NOWN__", Token.STRING);
+    }
+
+    public void test149019() throws Exception {
+        checkParseTree("testfiles/issue149019.js", "__UNK^NOWN__", Token.STRING);
+    }
+
+    public void testGeneratedIdentifiers() throws Exception {
+        checkParseTree("testfiles/generated_identifiers.js", "__UNK^NOWN__", Token.SETNAME);
     }
 
     public void testIncremental1() throws Exception {
