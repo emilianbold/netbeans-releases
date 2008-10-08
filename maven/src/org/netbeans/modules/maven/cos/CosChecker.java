@@ -53,19 +53,18 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.java.project.runner.JavaRunner;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
-import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
@@ -138,7 +137,20 @@ public class CosChecker implements PrerequisitesChecker {
         if (RunUtils.hasTestCompileOnSaveEnabled(config) &&
                    (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                     ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
-            //TODO identify testng tests and not allow CoS for them.
+            String testng = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_SUREFIRE, "testNGArtifactName", "test"); //NOI18N
+            if (testng == null) {
+                testng = "org.testng:testng"; //NOI18N
+            }
+            @SuppressWarnings("unchecked")
+            List<Dependency> deps = config.getMavenProject().getTestDependencies();
+            for (Dependency d : deps) {
+                if (testng.equals(d.getManagementKey())) {
+                    //skip tests that are invoked by testng, no support for it yet.
+                    return true;
+                }
+            }
+
 
             //TODO check the COS timestamp against critical files (pom.xml)
             // if changed, don't do COS.
