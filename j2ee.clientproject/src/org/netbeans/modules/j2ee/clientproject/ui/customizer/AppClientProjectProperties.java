@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -308,8 +309,8 @@ final public class AppClientProjectProperties {
         CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
-        SOURCE_ROOTS_MODEL = AppClientSourceRootsUi.createModel( project.getSourceRoots() );
-        TEST_ROOTS_MODEL = AppClientSourceRootsUi.createModel( project.getTestSourceRoots() );        
+        SOURCE_ROOTS_MODEL = SourceRootsUi.createModel( project.getSourceRoots() );
+        TEST_ROOTS_MODEL = SourceRootsUi.createModel( project.getTestSourceRoots() );        
         includes = evaluator.getProperty(ProjectProperties.INCLUDES);
         if (includes == null) {
             includes = "**"; // NOI18N

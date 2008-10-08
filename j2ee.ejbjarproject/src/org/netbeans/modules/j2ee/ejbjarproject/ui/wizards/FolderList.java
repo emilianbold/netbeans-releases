@@ -52,7 +52,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarSourceRootsUi;
+import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 import org.openide.filesystems.FileUtil;
 
 
@@ -254,7 +254,7 @@ public final class FolderList extends JPanel {
                 this.setLastUsedDir(FileUtil.normalizeFile(cd));
             }
             if (invalidRoots.size()>0) {
-                EjbJarSourceRootsUi.showIllegalRootsDialog(invalidRoots);
+                SourceRootsUi.showIllegalRootsDialog(invalidRoots);
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed

@@ -62,6 +62,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -101,23 +102,25 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
 
         jTextFieldConfigFilesFolder.setDocument(uiProperties.META_INF_MODEL);
         
-        AppClientSourceRootsUi.EditMediator emSR = AppClientSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getSourceRoots(),
             sourceRoots,
             addSourceRoot,
             removeSourceRoot, 
             upSourceRoot, 
-            downSourceRoot);
+            downSourceRoot,
+            true);
         
-        AppClientSourceRootsUi.EditMediator emTSR = AppClientSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getTestSourceRoots(),
             testRoots,
             addTestRoot,
             removeTestRoot, 
             upTestRoot, 
-            downTestRoot);
+            downTestRoot,
+            true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

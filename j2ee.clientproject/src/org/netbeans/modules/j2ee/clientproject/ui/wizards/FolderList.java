@@ -54,11 +54,11 @@ import javax.swing.event.ListSelectionEvent;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientSourceRootsUi;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 
 /**
  * List of source/test roots
@@ -253,7 +253,7 @@ public final class FolderList extends javax.swing.JPanel {
                 this.setLastUsedDir(FileUtil.normalizeFile(cd));
             }
             if (invalidRoots.size()>0) {
-                AppClientSourceRootsUi.showIllegalRootsDialog(invalidRoots);
+                SourceRootsUi.showIllegalRootsDialog(invalidRoots);
             }
         }
     }//GEN-LAST:event_addButtonActionPerformed

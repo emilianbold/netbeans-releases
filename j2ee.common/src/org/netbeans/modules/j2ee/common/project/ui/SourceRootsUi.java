@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,9 +39,12 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.ui.customizer;
+package org.netbeans.modules.j2ee.common.project.ui;
 
-import java.awt.*;
+import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -52,7 +55,20 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.text.MessageFormat;
-import javax.swing.*;
+import javax.swing.DefaultCellEditor;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.CellEditorListener;
@@ -60,7 +76,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -70,12 +85,14 @@ import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-
 /** Handles adding, removing, reordering of source roots.
  *
- * @author Tomas Zezula, Radko Najman
+ * @author Tomas Zezula
  */
-public final class WebSourceRootsUi {
+public final class SourceRootsUi {
+    
+    private SourceRootsUi() {
+    }
   
     public static DefaultTableModel createModel( SourceRoots roots ) {
         
@@ -91,13 +108,14 @@ public final class WebSourceRootsUi {
                 
     }
     
-    public static EditMediator registerEditMediator( WebProject master,
+    public static EditMediator registerEditMediator( Project master,
                                              SourceRoots sourceRoots,
                                              JTable rootsList,
                                              JButton addFolderButton,
                                              JButton removeButton,
                                              JButton upButton,
-                                             JButton downButton) {
+                                             JButton downButton,
+                                             boolean emptyTableIsValid) {
         
         EditMediator em = new EditMediator( master,
                                             sourceRoots,
@@ -105,7 +123,8 @@ public final class WebSourceRootsUi {
                                             addFolderButton,
                                             removeButton,
                                             upButton,
-                                            downButton);
+                                            downButton,
+                                            emptyTableIsValid);
         
         // Register the listeners        
         // On all buttons
@@ -124,32 +143,32 @@ public final class WebSourceRootsUi {
         
         DefaultTableModel model = (DefaultTableModel)rootsList.getModel();
         String[] columnNames = new String[2];
-        columnNames[0]  = NbBundle.getMessage( WebSourceRootsUi.class,"CTL_PackageFolders"); //NOI18N
-        columnNames[1]  = NbBundle.getMessage( WebSourceRootsUi.class,"CTL_PackageLabels"); //NOI18N
+        columnNames[0]  = NbBundle.getMessage( SourceRootsUi.class,"CTL_PackageFolders");
+        columnNames[1]  = NbBundle.getMessage( SourceRootsUi.class,"CTL_PackageLabels");
         model.setColumnIdentifiers(columnNames);
         rootsList.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
         
         return em;
     }
-        
+    
     /**
      * Opens the standard dialog for warning an user about illegal source roots.
      * @param roots the set of illegal source/test roots
      */
     public static void showIllegalRootsDialog (Set/*<File>*/ roots) {
-        JButton closeOption = new JButton (NbBundle.getMessage(WebSourceRootsUi.class,"CTL_WebSourceRootsUi_Close"));
-        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_WebSourceRootsUi_Close"));
+        JButton closeOption = new JButton (NbBundle.getMessage(SourceRootsUi.class,"CTL_EjbJarSourceRootsUi_Close"));
+        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(SourceRootsUi.class,"AD_EjbJarSourceRootsUi_Close"));
         JPanel warning = new WarningDlg (roots);
-        String message = NbBundle.getMessage(WebSourceRootsUi.class,"MSG_InvalidRoot");
+        String message = NbBundle.getMessage(SourceRootsUi.class,"MSG_InvalidRoot");
         JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
             JOptionPane.WARNING_MESSAGE,
             0,
             null,
             new Object[0],
             null);
-        optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_InvalidRootDlg"));
+        optionPane.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(SourceRootsUi.class,"AD_InvalidRootDlg"));
         DialogDescriptor dd = new DialogDescriptor (optionPane,
-            NbBundle.getMessage(WebSourceRootsUi.class,"TITLE_InvalidRoot"),
+            NbBundle.getMessage(SourceRootsUi.class,"TITLE_InvalidRoot"),
             true,
             new Object[] {
                 closeOption,
@@ -160,7 +179,7 @@ public final class WebSourceRootsUi {
             null);
         DialogDisplayer.getDefault().notify(dd);
     }
- 
+        
     // Private innerclasses ----------------------------------------------------
 
     public static class EditMediator implements ActionListener, ListSelectionListener, CellEditorListener {
@@ -178,13 +197,18 @@ public final class WebSourceRootsUi {
         private EditMediator relatedEditMediator;
         private File lastUsedDir; //Last used current folder in JFileChooser
         
-        public EditMediator( WebProject master,
+        private boolean emptyTableIsValid;
+        
+        public EditMediator( Project master,
                              SourceRoots sourceRoots,
                              JTable rootsList,
                              JButton addFolderButton,
                              JButton removeButton,
                              JButton upButton,
-                             JButton downButton) {
+                             JButton downButton,
+                             boolean emptyTableIsValid) {
+            
+            this.emptyTableIsValid = emptyTableIsValid;
 
             if ( !( rootsList.getModel() instanceof DefaultTableModel ) ) {
                 throw new IllegalArgumentException( "Jtable's model has to be of class DefaultTableModel" ); // NOI18N
@@ -223,17 +247,19 @@ public final class WebSourceRootsUi {
             Object source = e.getSource();
             
             if ( source == addFolderButton ) { 
+                
                 // Let user search for the Jar file
                 JFileChooser chooser = new JFileChooser();
                 FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
                 chooser.setFileSelectionMode( JFileChooser.DIRECTORIES_ONLY );
                 chooser.setMultiSelectionEnabled( true );
                 
-                if (sourceRoots.isTest())                
-                    chooser.setDialogTitle( NbBundle.getMessage( WebSourceRootsUi.class, "LBL_TestFolder_DialogTitle" )); // NOI18N
-                else
-                    chooser.setDialogTitle( NbBundle.getMessage( WebSourceRootsUi.class, "LBL_SourceFolder_DialogTitle" )); // NOI18N
-                
+                if (sourceRoots.isTest()) {
+                    chooser.setDialogTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_TestFolder_DialogTitle"));  // NOI18N
+                } else {
+                    chooser.setDialogTitle(NbBundle.getMessage(SourceRootsUi.class, "LBL_SourceFolder_DialogTitle")); // NOI18N
+                }
+
                 File curDir = this.lastUsedDir;
                 if (curDir == null) {
                     curDir = FileUtil.toFile(this.project.getProjectDirectory());
@@ -254,7 +280,6 @@ public final class WebSourceRootsUi {
                     File files[] = chooser.getSelectedFiles();
                     addFolders( files );
                 }
-                
             }
             else if ( source == removeButton ) { 
                 removeElements();
@@ -283,6 +308,9 @@ public final class WebSourceRootsUi {
             
             // remove enabled only if selection is not empty
             boolean remove = si != null && si.length > 0;
+            if (si != null && !emptyTableIsValid && remove) {
+                remove = si.length < rootsList.getRowCount();
+            }
             // and when the selection does not contain unremovable item
 
             // up button enabled if selection is not empty
@@ -356,7 +384,7 @@ public final class WebSourceRootsUi {
 
             // Remove the items
             for( int i = si.length - 1 ; i >= 0 ; i-- ) {
-                this.ownedFolders.remove(((Vector)rootsModel.getDataVector().elementAt(0)).elementAt(0));
+                this.ownedFolders.remove(((Vector)rootsModel.getDataVector().elementAt(si[i])).elementAt(0));
                 rootsModel.removeRow( si[i] );
             }
 
@@ -420,15 +448,18 @@ public final class WebSourceRootsUi {
     }
 
     private static class SourceRootsModel extends DefaultTableModel {
+        private static final long serialVersionUID = 139645020171023706L;
 
         public SourceRootsModel (Object[][] data) {
             super (data,new Object[]{"location","label"});//NOI18N
         }
 
+        @Override
         public boolean isCellEditable(int row, int column) {
             return column == 1;
         }
 
+        @Override
         public Class getColumnClass(int columnIndex) {
             switch (columnIndex) {
                 case 0:
@@ -442,6 +473,7 @@ public final class WebSourceRootsUi {
     }
     
     private static class FileRenderer extends DefaultTableCellRenderer {
+        private static final long serialVersionUID = 19773973042472054L;
         
         private File projectFolder;
         
@@ -449,9 +481,10 @@ public final class WebSourceRootsUi {
             this.projectFolder = projectFolder;
         }
         
+        @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus,int row, int column) {
             String displayName;
-           if (value instanceof File) {
+            if (value instanceof File) {
                 File root = (File) value;
                 String pfPath = projectFolder.getAbsolutePath() + File.separatorChar;
                 String srPath = root.getAbsolutePath();            
@@ -470,10 +503,11 @@ public final class WebSourceRootsUi {
                 ((JComponent) c).setToolTipText (displayName);
             }
             return c;
-        }                        
+        }                                
     }
 
     private static class WarningDlg extends JPanel {
+        private static final long serialVersionUID = 178428385251850014L;
 
         public WarningDlg (Set invalidRoots) {            
             this.initGui (invalidRoots);
@@ -482,8 +516,8 @@ public final class WebSourceRootsUi {
         private void initGui (Set invalidRoots) {
             setLayout( new GridBagLayout ());                        
             JLabel label = new JLabel ();
-            label.setText (NbBundle.getMessage(WebSourceRootsUi.class,"LBL_InvalidRoot")); //NOI18N
-            label.setDisplayedMnemonic(NbBundle.getMessage(WebSourceRootsUi.class,"MNE_InvalidRoot").charAt(0)); //NOI18N        
+            label.setText (NbBundle.getMessage(SourceRootsUi.class,"LBL_InvalidRoot"));
+            label.setDisplayedMnemonic(NbBundle.getMessage(SourceRootsUi.class,"MNE_InvalidRoot").charAt(0));
             GridBagConstraints c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
@@ -508,9 +542,9 @@ public final class WebSourceRootsUi {
             ((GridBagLayout)this.getLayout()).setConstraints(p,c);
             this.add (p);
             label.setLabelFor(roots);
-            roots.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(WebSourceRootsUi.class,"AD_InvalidRoot")); //NOI18N
+            roots.getAccessibleContext().setAccessibleDescription (NbBundle.getMessage(SourceRootsUi.class,"AD_InvalidRoot"));
             JLabel label2 = new JLabel ();
-            label2.setText (NbBundle.getMessage(WebSourceRootsUi.class,"MSG_InvalidRoot2")); //NOI18N
+            label2.setText (NbBundle.getMessage(SourceRootsUi.class,"MSG_InvalidRoot2"));
             c = new GridBagConstraints();
             c.gridx = GridBagConstraints.RELATIVE;
             c.gridy = GridBagConstraints.RELATIVE;
@@ -524,6 +558,7 @@ public final class WebSourceRootsUi {
         }
 
         private static class InvalidRootRenderer extends DefaultListCellRenderer {
+            private static final long serialVersionUID = 194496879246810209L;
 
             private boolean projectConflict;
 
@@ -539,7 +574,7 @@ public final class WebSourceRootsUi {
                     if (p!=null) {
                         ProjectInformation pi = ProjectUtils.getInformation(p);
                         String projectName = pi.getDisplayName();
-                        message = MessageFormat.format (NbBundle.getMessage(WebSourceRootsUi.class,"TXT_RootOwnedByProject"), new Object[] { //NOI18N
+                        message = MessageFormat.format (NbBundle.getMessage(SourceRootsUi.class,"TXT_RootOwnedByProject"), new Object[] {
                             message,
                             projectName});
                     }
@@ -548,4 +583,5 @@ public final class WebSourceRootsUi {
             }
         }
     }
+
 }

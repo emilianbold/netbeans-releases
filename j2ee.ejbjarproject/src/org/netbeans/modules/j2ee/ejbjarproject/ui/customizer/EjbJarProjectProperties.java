@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -288,8 +289,8 @@ final public class EjbJarProjectProperties {
         CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
-        SOURCE_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getSourceRoots() );
-        TEST_ROOTS_MODEL = EjbJarSourceRootsUi.createModel( project.getTestSourceRoots() );
+        SOURCE_ROOTS_MODEL = SourceRootsUi.createModel( project.getSourceRoots() );
+        TEST_ROOTS_MODEL = SourceRootsUi.createModel( project.getTestSourceRoots() );
         includes = evaluator.getProperty(ProjectProperties.INCLUDES);
         if (includes == null) {
             includes = "**"; // NOI18N
