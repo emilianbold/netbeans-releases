@@ -828,7 +828,17 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private Collection<CsmEnumerator> getLibEnumerators(CsmProject prj, String strPrefix, boolean match) {
-        return contResolver.getLibEnumerators(strPrefix, match, true);
+        Collection<CsmEnumerator> res = null;
+        if (fileReferncesContext != null && match) {
+            res = fileReferncesContext.getLibEnumerators(strPrefix);
+        }
+        if (res == null) {
+            res = contResolver.getLibEnumerators(strPrefix, match, true);
+            if (fileReferncesContext != null && match) {
+                fileReferncesContext.putLibEnumerators(strPrefix, res);
+            }
+        }
+        return res;
     }
 
     private Collection<CsmFunction> getLibFunctions(CsmProject prj, String strPrefix, boolean match) {

@@ -120,6 +120,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     public static final int SOURCE_C_FILE = 2;
     public static final int SOURCE_CPP_FILE = 3;
     public static final int HEADER_FILE = 4;
+    private static long parseCount = 1;
+
+    public static int getParseCount() {
+        return (int)(parseCount & 0xFFFFFFFFL);
+    }
 
     private FileBuffer fileBuffer;
     
@@ -946,6 +951,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	if( aHook != null ) {
 	    aHook.parsingFinished(this, preprocHandler);
 	}
+        parseCount++;
         return ast;
     }
     
@@ -1350,6 +1356,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 if (curElem != null) {
                     if( curElem instanceof FunctionImplEx ) {
                         ((FunctionImplEx) curElem).fixFakeRegistration();
+                        parseCount++;
                     } else {
                         DiagnosticExceptoins.register(new Exception("Incorrect fake registration class: " + curElem.getClass())); // NOI18N
                     }
