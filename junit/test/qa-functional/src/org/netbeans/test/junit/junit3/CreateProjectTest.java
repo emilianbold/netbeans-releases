@@ -51,6 +51,10 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit3 {
     }
     */
 
+    public void dummyTest() {
+
+    }
+
     public void testCreateJUnit3Project() {
         new Action("File|New Project", null).perform();
         NewProjectWizardOperator newOp = new NewProjectWizardOperator();
@@ -58,7 +62,15 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit3 {
         newOp.selectProject("Java Application");
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
-        newOp.finish();
+        if (new JButtonOperator(newOp, "Finish").isEnabled()) {
+            newOp.finish();
+        } else {
+            newOp.cancel();
+            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(TEST_PROJECT_NAME);
+            //Node beanNode = new Node(new SourcePackagesNode(TEST_PROJECT_NAME), TEST_PACKAGE_NAME + "MemoryView.java"); //NOI18N
+            //new OpenAction().performAPI(beanNode); // NOI18N
+            //new OpenAction()
+        }
         ProjectSupport.waitScanFinished();
 
         // select source packages node
@@ -188,6 +200,7 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit3 {
         new JCheckBoxOperator(opDelConfirm, 0).setSelected(true); //also sources
         new JButtonOperator(opDelConfirm,"Yes").clickMouse();
         waitAMoment();
+        new Action("Window|Close All Documents", null).perform();
 
     }
 }
