@@ -135,113 +135,113 @@ public class CosChecker implements PrerequisitesChecker {
             }
         }
 
-        //TODO identify testng tests and not allow CoS for them.
         if (RunUtils.hasTestCompileOnSaveEnabled(config) &&
                    (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                     ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
-                //TODO check the COS timestamp against critical files (pom.xml)
-                // if changed, don't do COS.
+            //TODO identify testng tests and not allow CoS for them.
 
-                //TODO check the COS timestamp against resources etc.
-                //if changed, perform part of the maven build. (or skip COS)
+            //TODO check the COS timestamp against critical files (pom.xml)
+            // if changed, don't do COS.
+
+            //TODO check the COS timestamp against resources etc.
+            //if changed, perform part of the maven build. (or skip COS)
 
 
-                Map<String, Object> params = new HashMap<String, Object>();
-                String test = config.getProperties().getProperty("test"); //NOI18N
-                if (test == null) {
-                    //user somehow configured mapping in unknown way.
-                    return true;
+            Map<String, Object> params = new HashMap<String, Object>();
+            String test = config.getProperties().getProperty("test"); //NOI18N
+            if (test == null) {
+                //user somehow configured mapping in unknown way.
+                return true;
+            }
+            params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
+
+            List<String> jvmProps = new ArrayList<String>();
+            Set<String> jvmPropNames = new HashSet<String>();
+            params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
+            String dir = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
+            //TODO there's another property named workingDirectory that overrides  basedir.
+            // basedir is also assumed to end up as system property for tests..
+            jvmPropNames.add("basedir"); //NOI18N
+            if (dir != null) {
+                params.put(JavaRunner.PROP_WORK_DIR, dir);
+                jvmProps.add("-Dbasedir=" + dir); //NOI18N
+            } else {
+                params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
+                jvmProps.add("-Dbasedir=" + config.getExecutionDirectory().getAbsolutePath()); //NOI18N
+            }
+            //add properties defined in surefire plugin
+            Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_SUREFIRE, "systemProperties", "test"); //NOI18N
+            if (sysProps != null) {
+                for (Map.Entry key : sysProps.entrySet()) {
+                    jvmProps.add("-D" + key.getKey() + "=" + key.getValue()); //NOI18N
+                    jvmPropNames.add((String)key.getKey());
                 }
-                params.put(JavaRunner.PROP_EXECUTE_FILE, config.getSelectedFileObject());
-
-                List<String> jvmProps = new ArrayList<String>();
-                Set<String> jvmPropNames = new HashSet<String>();
-                params.put(JavaRunner.PROP_PROJECT_NAME, config.getExecutionName());
-                String dir = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                        Constants.PLUGIN_SUREFIRE, "basedir", "test"); //NOI18N
-                //TODO there's another property named workingDirectory that overrides  basedir.
-                // basedir is also assumed to end up as system property for tests..
-                jvmPropNames.add("basedir"); //NOI18N
-                if (dir != null) {
-                    params.put(JavaRunner.PROP_WORK_DIR, dir);
-                    jvmProps.add("-Dbasedir=" + dir); //NOI18N
-                } else {
-                    params.put(JavaRunner.PROP_WORK_DIR, config.getExecutionDirectory());
-                    jvmProps.add("-Dbasedir=" + config.getExecutionDirectory().getAbsolutePath()); //NOI18N
-                }
-                //add properties defined in surefire plugin
-                Properties sysProps = PluginPropertyUtils.getPluginPropertyParameter(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                        Constants.PLUGIN_SUREFIRE, "systemProperties", "test"); //NOI18N
-                if (sysProps != null) {
-                    for (Map.Entry key : sysProps.entrySet()) {
-                        jvmProps.add("-D" + key.getKey() + "=" + key.getValue()); //NOI18N
-                        jvmPropNames.add((String)key.getKey());
-                    }
-                }
-                //add properties from action config,
-                if (config.getProperties() != null) {
-                   for (Map.Entry entry : config.getProperties().entrySet()) {
-                        //TODO do these have preference to ones defined in surefire plugin?
-                       if (!jvmPropNames.contains((String)entry.getKey())) {
-                           jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
-                           jvmPropNames.add((String)entry.getKey());
-                       }
+            }
+            //add properties from action config,
+            if (config.getProperties() != null) {
+               for (Map.Entry entry : config.getProperties().entrySet()) {
+                    //TODO do these have preference to ones defined in surefire plugin?
+                   if (!jvmPropNames.contains((String)entry.getKey())) {
+                       jvmProps.add("-D" + entry.getKey() + "=" + entry.getValue());
+                       jvmPropNames.add((String)entry.getKey());
                    }
-                }
+               }
+            }
 
-                String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                        Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
-                if (argLine != null) {
-                    try {
-                        String[] arr = CommandLineUtils.translateCommandline(argLine);
-                        jvmProps.addAll(Arrays.asList(arr));
-                    } catch (Exception ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                } else {
-                    //TODO jvm args from the argLine exec property,
-                    //add and for debugging, remove the debugging ones..
+            String argLine = PluginPropertyUtils.getPluginProperty(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_SUREFIRE, "argLine", "test"); //NOI18N
+            if (argLine != null) {
+                try {
+                    String[] arr = CommandLineUtils.translateCommandline(argLine);
+                    jvmProps.addAll(Arrays.asList(arr));
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
                 }
+            } else {
+                //TODO jvm args from the argLine exec property,
+                //add and for debugging, remove the debugging ones..
+            }
 
-                //add additionalClasspathElements parameter in surefire plugin..
-                String[] additionals = PluginPropertyUtils.getPluginPropertyList(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
-                        Constants.PLUGIN_SUREFIRE, "additionalClasspathElements", "additionalClasspathElement", "test"); //NOI18N
-                ClassPath cp = createRuntimeClassPath(config.getMavenProject(), true);
-                if (additionals != null) {
-                    List<URL> roots = new ArrayList<URL>();
-                    File base = FileUtil.toFile(config.getProject().getProjectDirectory());
-                    for (String add : additionals) {
-                        File root = FileUtilities.resolveFilePath(base, add);
-                        if (root != null) {
-                            try {
-                                roots.add(root.toURI().toURL());
-                            } catch (MalformedURLException ex) {
-                                Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
-                            }
-                        } else {
-                            Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL.");
+            //add additionalClasspathElements parameter in surefire plugin..
+            String[] additionals = PluginPropertyUtils.getPluginPropertyList(config.getMavenProject(), Constants.GROUP_APACHE_PLUGINS,
+                    Constants.PLUGIN_SUREFIRE, "additionalClasspathElements", "additionalClasspathElement", "test"); //NOI18N
+            ClassPath cp = createRuntimeClassPath(config.getMavenProject(), true);
+            if (additionals != null) {
+                List<URL> roots = new ArrayList<URL>();
+                File base = FileUtil.toFile(config.getProject().getProjectDirectory());
+                for (String add : additionals) {
+                    File root = FileUtilities.resolveFilePath(base, add);
+                    if (root != null) {
+                        try {
+                            roots.add(root.toURI().toURL());
+                        } catch (MalformedURLException ex) {
+                            Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL");
                         }
+                    } else {
+                        Logger.getLogger(CosChecker.class.getName()).info("Cannot convert '" + add + "' to URL.");
                     }
-                    ClassPath addCp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
-                    cp = ClassPathSupport.createProxyClassPath(cp, addCp);
                 }
-                params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
+                ClassPath addCp = ClassPathSupport.createClassPath(roots.toArray(new URL[roots.size()]));
+                cp = ClassPathSupport.createProxyClassPath(cp, addCp);
+            }
+            params.put(JavaRunner.PROP_EXECUTE_CLASSPATH, cp);
 
-                params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
-                String action2Quick = action2Quick(actionName);
-                boolean supported = JavaRunner.isSupported(action2Quick, params);
-                if (supported) {
-                    try {
-                        JavaRunner.execute(action2Quick, params);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } catch (UnsupportedOperationException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    return false;
-                } else {
+            params.put(JavaRunner.PROP_RUN_JVMARGS, jvmProps);
+            String action2Quick = action2Quick(actionName);
+            boolean supported = JavaRunner.isSupported(action2Quick, params);
+            if (supported) {
+                try {
+                    JavaRunner.execute(action2Quick, params);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (UnsupportedOperationException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
-
+                return false;
+            } else {
+            }
         }
         return true;
     }
