@@ -503,6 +503,11 @@ public class FileModelTest extends TraceModelTestBase {
     public void testFunctionDeclarationAsParameter() throws Exception {      
         performTest("function_declaration_as_parameter.cc"); // NOI18N        
     }
+
+    // IZ#149412 : parser doesn't recover after specific structure initialization
+    public void testStructInitializer() throws Exception {      
+        performTest("struct_initializer.c"); // NOI18N        
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
