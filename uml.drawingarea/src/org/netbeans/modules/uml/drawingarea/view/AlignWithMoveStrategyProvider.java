@@ -181,15 +181,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
             }
             
             movingWidgets.clear();
-            movingWidgets = null;
-            if (scene instanceof DesignerScene) 
-            {
-                TopComponent topComp = ((DesignerScene) scene).getTopComponent();
-                if (topComp instanceof UMLDiagramTopComponent) 
-                {
-                    ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
-                }
-            }
+            movingWidgets = null;            
         }
         
         ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
@@ -282,6 +274,16 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     }
                     else
                         details.getWidget().setPreferredLocation(newPt);
+                }
+                //Now mark the diagram dirty.. since we really moved
+                Scene scene = widget.getScene();
+                if (scene != null && scene instanceof DesignerScene)
+                {
+                    TopComponent topComp = ((DesignerScene) scene).getTopComponent();
+                    if (topComp instanceof UMLDiagramTopComponent)
+                    {
+                        ((UMLDiagramTopComponent) topComp).setDiagramDirty(true);
+                    }
                 }
             }
         }
