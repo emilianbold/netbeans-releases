@@ -61,18 +61,18 @@ public class StableSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MarkOccurrencesTest.class)
+                NbModuleSuite.createConfiguration(MarkOccurrencesTest.class)                
                 .addTest(MarkOccurrencesTest.class)
                 .addTest(JavaEditActionsTest.class)
                 .addTest(JavaNavigationActionsTest.class)
                 .addTest(JavaSmartBracketTest.class)
                 .addTest(SmartEnterTest.class)
                 .addTest(CreateConstructorTest.class)
-                //.addTest(CreateEqualsHashcodeTest.class)
+                .addTest(CreateEqualsHashcodeTest.class)
                 .addTest(CreateGetterSetterTest.class)
-                //.addTest(ImplementMethodTest.class)
+                .addTest(ImplementMethodTest.class)
                 .addTest(JavaFoldsNavigationTest.class)
-                //.addTest(JavaFoldsTest.class)
+                .addTest(JavaFoldsTest.class)
                 .enableModules(".*")
                 .clusters(".*")
                 );
