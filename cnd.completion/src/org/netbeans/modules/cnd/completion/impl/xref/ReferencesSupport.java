@@ -199,7 +199,13 @@ public final class ReferencesSupport {
             csmItem = getReferencedObject(csmFile, key);
             if (csmItem == null) {
                 csmItem = findDeclaration(csmFile, doc, jumpToken, key, fileReferencesContext);
-                putReferencedObject(csmFile, key, csmItem);
+                if (csmItem == null) {
+                    putReferencedObject(csmFile, key, FAKE);
+                } else {
+                    putReferencedObject(csmFile, key, csmItem);
+                }
+            } else if (csmItem == FAKE) {
+                csmItem = null;
             }
         }
         return csmItem;
@@ -574,6 +580,8 @@ public final class ReferencesSupport {
     private static final int MAX_CACHE_SIZE = 10;
     private final ReadWriteLock  cacheLock = new ReentrantReadWriteLock();
     private Map<CsmFile, Map<Integer,CsmObject>> cache = new HashMap<CsmFile, Map<Integer,CsmObject>>();
+    private static CsmObject FAKE = new CsmObject(){};
+
     private CsmObject getReferencedObject(CsmFile file, int offset){
         try {
             cacheLock.readLock().lock();
