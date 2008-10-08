@@ -203,9 +203,13 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             if(descriptor.useInterpreter()) {
                 proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
                         rDebugF.getAbsolutePath(), interpreter, timeout);
-            } else {
+            } else { // use 'java' executable
                 List<String> cmd = new ArrayList<String>(20);
                 cmd.add(descriptor.getCmd().getAbsolutePath());
+                assert jrubySet : "jruby is used";
+                if (descriptor.getJVMArguments() != null) {
+                    cmd.addAll(Arrays.asList(descriptor.getJVMArguments()));
+                }
                 cmd.addAll(Arrays.asList(descriptor.getInitialArgs()));
                 proxy = RubyDebuggerFactory.startRubyDebug(
                         debugDesc, cmd, rDebugF.getAbsolutePath(), timeout);
