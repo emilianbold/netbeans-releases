@@ -2984,7 +2984,7 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
             |   LESSTHAN
             |   LESSTHANOREQUALTO
             |   GREATERTHANOREQUALTO
-            |   QUESTIONMARK expression COLON assignment_expression
+            |   QUESTIONMARK (expression)? COLON assignment_expression
             |   SHIFTLEFT 
             |   SHIFTRIGHT
             |   PLUS 
