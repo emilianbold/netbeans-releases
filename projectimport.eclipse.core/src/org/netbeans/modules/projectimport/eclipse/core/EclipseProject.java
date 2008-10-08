@@ -424,10 +424,7 @@ public final class EclipseProject implements Comparable {
             if (javadoc == null) {
                 continue;
             }
-            String resolvedPath = resolveJavadocLocationAttribute(javadoc, workspace, importProblems, false);
-            if (resolvedPath != null) {
-                entry.updateJavadoc(resolvedPath);
-            }
+            entry.updateJavadoc(resolveJavadocLocationAttribute(javadoc, workspace, importProblems, false));
         }
     }
     
@@ -443,6 +440,10 @@ public final class EclipseProject implements Comparable {
             javadoc = javadoc.substring(4, javadoc.indexOf("!/")); //NOI18N
         }
         if (javadoc.startsWith("platform:/resource")) { // NOI18N
+            if (workspace == null) {
+                importProblems.add(org.openide.util.NbBundle.getMessage(EclipseProject.class, "MSG_WorkspaceDependentProtocol", javadoc)); //NOI18N
+                return null;
+            }
             String s = resolvePath(javadoc.substring(18), workspace);
             if (s != null) {
                 if (returnURL) {
