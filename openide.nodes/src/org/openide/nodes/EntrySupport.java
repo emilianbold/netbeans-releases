@@ -1202,7 +1202,7 @@ abstract class EntrySupport {
             return null;
         }
         
-        final boolean isDummyNode(Node node) {
+        static final boolean isDummyNode(Node node) {
             return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode"); // NOI18N
         }
 

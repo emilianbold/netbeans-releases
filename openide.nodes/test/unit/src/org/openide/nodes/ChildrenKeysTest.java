@@ -1308,6 +1308,9 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("Child check", "a", ta.getChildren().getNodeAt(0).getName());
         lch.assertLazyCount("Counter shouldbe all", 3);
 
+        // to prevent GC/removeNotify()
+        Node hold = ta.getChildren().getNodeAt(0);
+
         lch.keys("a", "b", "c", "x", "-x");
         
         lch.assertLazyCount("Counter shouldstill be 3", 3);

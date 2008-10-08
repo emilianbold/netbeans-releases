@@ -1863,7 +1863,7 @@ public class FilterNode extends Node {
                     }
 
                     key = node;
-                    if (node == null) {
+                    if (node == null || isDummyNode(node)) {
                         return Collections.emptyList();
                     }
                     Node[] nodes = createNodes(node);
