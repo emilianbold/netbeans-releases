@@ -398,10 +398,10 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            if (modRegions.get(index) != region) {
+            if (index >= modRegions.size() || modRegions.get(index) != region) {
                 index = findRegionIndex(region.getStartOffset(), false);
             }
-            if (modRegions.get(index) == region) {
+            if (index >= 0 && modRegions.get(index) == region) { // For valid index
                 modRegions.remove(index);
             } else { // Safety fallback
                 modRegions.remove(region);

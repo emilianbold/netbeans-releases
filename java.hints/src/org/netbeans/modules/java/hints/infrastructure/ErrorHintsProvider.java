@@ -287,8 +287,8 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
                     a = mit.getArguments().get(index[0]);
                 }
 
-                int start = info.getPositionConverter().getOriginalPosition((int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), a));
-                int end = info.getPositionConverter().getOriginalPosition((int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), a));
+                int start = (int) info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), a);
+                int end = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), a);
             
                 return new int[] {start, end};
             }
@@ -308,7 +308,7 @@ public final class ErrorHintsProvider implements CancellableTask<CompilationInfo
         boolean rangePrepared = false;
         
         if (INVALID_METHOD_INVOCATION.contains(d.getCode())) {
-            int[] span = handlePossibleMethodInvocation(info, d, doc, startOffset, endOffset);
+            int[] span = translatePositions(info, handlePossibleMethodInvocation(info, d, doc, startOffset, endOffset));
             
             if (span != null) {
                 startOffset = span[0];

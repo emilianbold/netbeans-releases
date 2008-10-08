@@ -137,6 +137,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
             setBreakpointType(dialog, "Class");
             new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
@@ -156,6 +157,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
     public void testClassBreakpointPrefilledInClass() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             NbDialogOperator dialog = Utilities.newBreakpoint(37);            
             assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
             assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());

@@ -45,6 +45,7 @@ package org.netbeans.debuggercore;
 
 import java.awt.Component;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.*;
@@ -264,7 +265,7 @@ public class Utilities {
         // "Set as Main Project"
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(testProjectName));
-        new DebugProjectAction().performMenu();
+        new DebugProjectAction().performShortcut();
         getDebugToolbar().waitComponentVisible(true);
     }
 
@@ -299,6 +300,7 @@ public class Utilities {
 
     public static NbDialogOperator newBreakpoint(int line, int column) {
         EditorOperator eo = new EditorOperator("MemoryView.java");
+        eo.clickMouse(column,line,1);
         eo.setCaretPosition(line, column);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);
@@ -309,6 +311,7 @@ public class Utilities {
     public static NbDialogOperator newBreakpoint(int line) {
         Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(testProjectName);
         EditorOperator eo = new EditorOperator("MemoryView.java");
+        eo.clickMouse();
         setCaret(eo, line);
         new NewBreakpointAction().perform();
         NbDialogOperator dialog = new NbDialogOperator(newBreakpointTitle);

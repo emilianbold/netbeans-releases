@@ -52,9 +52,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -135,14 +138,28 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
     }
 
     private void createJarArtifactsSet() throws FileStateInvalidException, URISyntaxException {
+        // adding jar artifacts
         AntArtifactProvider provider = project.getLookup().lookup(AntArtifactProvider.class);
-        AntArtifact[] arts = provider.getBuildArtifacts();
-        for(AntArtifact art:arts) {
-            if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(art.getType())) {
-                File scriptLocation = art.getScriptLocation();
-                for (URI artifactLocation:art.getArtifactLocations()) {
-                    URI artifactUri = scriptLocation.toURI().resolve(artifactLocation).normalize();
-                    jarArtifacts.add(artifactUri);
+        if (provider != null) {
+            AntArtifact[] arts = provider.getBuildArtifacts();
+            for(AntArtifact art:arts) {
+                if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(art.getType())) {
+                    File scriptLocation = art.getScriptLocation();
+                    for (URI artifactLocation:art.getArtifactLocations()) {
+                        URI artifactUri = scriptLocation.toURI().resolve(artifactLocation).normalize();
+                        jarArtifacts.add(artifactUri);
+                    }
+                }
+            }
+        }
+        // Adding project's binary roots
+        SourceGroup[] srcGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (srcGroups != null && srcGroups.length > 0) {
+            org.netbeans.api.java.queries.BinaryForSourceQuery.Result result = 
+                    BinaryForSourceQuery.findBinaryRoots(srcGroups[0].getRootFolder().getURL());
+            if (result != null) {
+                for (URL url:result.getRoots()) {
+                    jarArtifacts.add(url.toURI());
                 }
             }
         }

@@ -51,6 +51,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
@@ -81,7 +82,7 @@ public class ActionsTest extends JellyTestCase {
     public static void main(String[] args) {
         TestRunner.run(suite());
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(
             NbModuleSuite.createConfiguration(ActionsTest.class).addTest(
@@ -101,12 +102,15 @@ public class ActionsTest extends JellyTestCase {
 
     /** setUp method  */
     public void setUp() throws IOException {
+
+
+
         openDataProjects(Utilities.testProjectName);
-        System.out.println("########  " + getName() + "  #######");           
+        System.out.println("########  " + getName() + "  #######");
     }
 
     public void tearDown() {
-        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");        
+        JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
         Utilities.endAllSessions();
         Utilities.deleteAllBreakpoints();
     }
@@ -116,7 +120,7 @@ public class ActionsTest extends JellyTestCase {
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
-            Utilities.verifyPopup(projectNode, new String[]{Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_BuildAction_Name"), 
+            Utilities.verifyPopup(projectNode, new String[]{Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_BuildAction_Name"),
             Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_RunAction_Name"),
             Bundle.getString("org.netbeans.modules.debugger.ui.actions.Bundle", "LBL_DebugProjectActionOnProject_Name")});
 
@@ -158,6 +162,7 @@ public class ActionsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.setCaret(eo, 80);
             new EventTool().waitNoEvent(1000); //because of issue 70731
             //main menu file actions
@@ -167,7 +172,7 @@ public class ActionsTest extends JellyTestCase {
 
             //run to cursor
             assertTrue(Utilities.runMenu + "|" + Utilities.runToCursorItem + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runToCursorItem, true));
-            
+
             //toggle breakpoint
             assertTrue(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem + " is not enabled", Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, true));
             MainWindowOperator.getDefault().pushKey(KeyEvent.VK_ESCAPE);
@@ -207,6 +212,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 104);
             //start debugging
@@ -246,8 +252,8 @@ public class ActionsTest extends JellyTestCase {
             assertTrue(Utilities.runMenu + "|" + Utilities.runToCursorItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runToCursorItem, true));
             //run into method
             //assertTrue(Utilities.runMenu + "|" + Utilities.runIntoMethodItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.runIntoMethodItem, true));
-            //apply code changes
-            assertFalse(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, true));
+            //apply code changes 
+            assertTrue(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.applyCodeChangesItem, true));
             //toggle breakpoint
             assertTrue(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, Utilities.verifyMainMenu(Utilities.runMenu + "|" + Utilities.toggleBreakpointItem, true));
             //evaluate expression
@@ -288,6 +294,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 80);
             assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
@@ -305,8 +312,9 @@ public class ActionsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
-            new EventTool().waitNoEvent(1000);     
+            new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -327,6 +335,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
@@ -337,7 +346,7 @@ public class ActionsTest extends JellyTestCase {
         }
     }
 
-    public void testStepInto() throws Throwable {        
+    public void testStepInto() throws Throwable {
         try {
             Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(Utilities.testProjectName);
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
@@ -345,6 +354,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -366,11 +376,12 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
-            new StepOverAction().performMenu();            
+            new StepOverAction().performMenu();
             assertFalse("CurrentPC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
             assertTrue("CurrentPC annotation is not on line 82", Utilities.checkAnnotation(eo, 82, "CurrentPC"));
         } catch (Throwable th) {
@@ -387,6 +398,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -411,6 +423,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 94);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -431,15 +444,16 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
             Utilities.deleteAllBreakpoints();
             Utilities.toggleBreakpoint(eo, 104);
-            new ContinueAction().performMenu();  
+            new ContinueAction().performMenu();
             assertFalse("Current PC annotation remains on line 80", Utilities.checkAnnotation(eo, 80, "CurrentPC"));
-            assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));            
+            assertTrue("Current PC annotation is not on line 104", Utilities.checkAnnotation(eo, 104, "CurrentPC"));
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -454,6 +468,7 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 104);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -488,11 +503,12 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:80");
-            new ContinueAction().performMenu();                      
+            new ContinueAction().performMenu();
             //continue
             new ContinueAction().performMenu();
             //remove breakpoint
