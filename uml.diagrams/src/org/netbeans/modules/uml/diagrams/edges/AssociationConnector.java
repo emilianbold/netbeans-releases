@@ -152,7 +152,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
     }
 
     public static boolean isSourceEnd(ConnectionWidget widget,
-                                        IAssociationEnd end)
+                                      IAssociationEnd end)
     {
         boolean retVal = false;
 
@@ -160,22 +160,39 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         {
             throw new NullPointerException();
         }
-        Widget w=null;
-        if (widget.getSourceAnchor() != null)
+        
+        List < IAssociationEnd > ends = end.getAssociation().getEnds();
+        if((ends.size() == 2) && 
+           (ends.get(0).isSameParticipant(ends.get(1).getParticipant()) == true))
         {
-            w = widget.getSourceAnchor().getRelatedWidget();
+            // recursive relationship.  First end is the source, second is the
+            // target end.
+            retVal = false;
+            if(ends.get(0).isSame(end) == true)
+            {
+                retVal = true;
+            }
+            
         }
-        if (w != null && (w.getScene() instanceof ObjectScene))
+        else
         {
-            ObjectScene scene = (ObjectScene) w.getScene();
-            IPresentationElement element = (IPresentationElement) scene.findObject(w);
-            retVal = end.isSameParticipant(element.getFirstSubject());
-        }
-        else if(w==null)
-        {
-            //do not return always false, but try to assume from end position in ends list
-            IAssociation assoc=end.getAssociation();
-            if(assoc.getEndIndex(end)==0)retVal=true;
+            Widget w=null;
+            if (widget.getSourceAnchor() != null)
+            {
+                w = widget.getSourceAnchor().getRelatedWidget();
+            }
+            if (w != null && (w.getScene() instanceof ObjectScene))
+            {
+                ObjectScene scene = (ObjectScene) w.getScene();
+                IPresentationElement element = (IPresentationElement) scene.findObject(w);
+                retVal = end.isSameParticipant(element.getFirstSubject());
+            }
+            else if(w==null)
+            {
+                //do not return always false, but try to assume from end position in ends list
+                IAssociation assoc=end.getAssociation();
+                if(assoc.getEndIndex(end)==0)retVal=true;
+            }
         }
 
         return retVal;
@@ -190,24 +207,40 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         {
             throw new NullPointerException();
         }
-        Widget w=null;
-        if (widget.getTargetAnchor() != null)
+        
+        List < IAssociationEnd > ends = end.getAssociation().getEnds();
+        if((ends.size() == 2) && 
+           (ends.get(0).isSameParticipant(ends.get(1).getParticipant()) == true))
         {
-            w = widget.getTargetAnchor().getRelatedWidget();
+            // recursive relationship.  First end is the source, second is the
+            // target end.
+            retVal = false;
+            if(ends.get(1).isSame(end) == true)
+            {
+                retVal = true;
+            }
+            
         }
-        if (w != null && (w.getScene() instanceof ObjectScene))
+        else
         {
-            ObjectScene scene = (ObjectScene) w.getScene();
-            IPresentationElement element = (IPresentationElement) scene.findObject(w);
-            retVal = end.isSameParticipant(element.getFirstSubject());
+            Widget w=null;
+            if (widget.getTargetAnchor() != null)
+            {
+                w = widget.getTargetAnchor().getRelatedWidget();
+            }
+            if (w != null && (w.getScene() instanceof ObjectScene))
+            {
+                ObjectScene scene = (ObjectScene) w.getScene();
+                IPresentationElement element = (IPresentationElement) scene.findObject(w);
+                retVal = end.isSameParticipant(element.getFirstSubject());
+            }
+            else if(w==null)
+            {
+                //do not return always false, but try to assume from end position in ends list
+                IAssociation assoc=end.getAssociation();
+                if(assoc.getEndIndex(end)==1)retVal=true;
+            }
         }
-        else if(w==null)
-        {
-            //do not return always false, but try to assume from end position in ends list
-            IAssociation assoc=end.getAssociation();
-            if(assoc.getEndIndex(end)==1)retVal=true;
-        }
-
 
         return retVal;
     }
@@ -310,6 +343,10 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
     
     private void updateAssociationEnds(IAssociation element)
     {
+        // If the association is a recursive association then it will be 
+        // impossible to determine the source end and the target end.  
+        // Therefore special logic is needed.
+        
         for (IAssociationEnd curEnd : element.getEnds())
         {
             if (isSourceEnd(this, curEnd) == true)
@@ -344,7 +381,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         {
             filled = true;
         }
-
+        
         for (IAssociationEnd curEnd : element.getEnds())
         {
             if (isSourceEnd(this, curEnd) == true)
