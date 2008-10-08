@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.web.project.classpath;
+package org.netbeans.modules.j2ee.common.project.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.io.File;
@@ -55,7 +55,6 @@ import java.util.Iterator;
 import java.util.StringTokenizer;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -75,8 +74,9 @@ import org.openide.util.WeakListeners;
 /**
  * Implementation of a single classpath that is derived from one Ant property.
  */
-final class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
+final public class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
     private static final String DIR_GEN_BINDINGS = "generated/addons"; // NOI18N
+    private static final String BUILD_DIR = "build.dir"; // NOI18N
     private static RequestProcessor REQ_PROCESSOR = new RequestProcessor(); // No I18N
     
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
@@ -92,14 +92,15 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
      * @param projectHelper used to obtain the project root
      */
     public SourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
-        assert sourceRoots != null;
+        assert sourceRoots != null && projectHelper != null && evaluator != null;
         this.sourceRoots = sourceRoots;
         this.sourceRoots.addPropertyChangeListener (this);
         this.projectHelper=projectHelper;
         this.evaluator = evaluator;
+        evaluator.addPropertyChangeListener(this);
     }
 
-    private synchronized void createAddOnGenSrcRootsListener(String buildDir, String[] paths){
+    private synchronized void createListener(String buildDir, String[] paths){
         if (this.fcl == null){
             // Need to keep reference to fcl.
             // See JavaDoc for org.openide.util.WeakListeners
@@ -110,7 +111,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         }
     }
     
-    private List<PathResourceImplementation> getAddOnGeneratedSrcRoots(String buildDir, String[] paths){
+    private List<PathResourceImplementation> getGeneratedSrcRoots(String buildDir, String[] paths){
         List<PathResourceImplementation> ret = 
                 new ArrayList<PathResourceImplementation>();
         
@@ -150,7 +151,6 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
             }
         }        
         URL[] roots = this.sourceRoots.getRootURLs();                                
-        String buildDir = projectHelper.getStandardPropertyEvaluator().getProperty(WebProjectProperties.BUILD_DIR);
         synchronized (this) {
             if (this.resources == null) {
                 List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(roots.length);
@@ -203,45 +203,44 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                     result.add(new PRI());
                 }
                 // adds build/generated/wsclient and build/generated/wsimport to resources to be available for code completion
-                if (projectHelper!=null) {
-                    try {
-                        if (buildDir!=null) {
-                            // generated/wsclient
-                            File f = new File (projectHelper.resolveFile(buildDir),"generated/wsclient"); //NOI18N
-                            URL url = f.toURI().toURL();
-                            if (!f.exists()) {  //NOI18N
-                                assert !url.toExternalForm().endsWith("/");  //NOI18N
-                                url = new URL (url.toExternalForm()+'/');   //NOI18N
-                            }
-                            result.add(ClassPathSupport.createResource(url));
-                            // generated/wsimport/client
-                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
-                            url = f.toURI().toURL();
-                            if (!f.exists()) {  //NOI18N
-                                assert !url.toExternalForm().endsWith("/");  //NOI18N
-                                url = new URL (url.toExternalForm()+'/');   //NOI18N
-                            }
-                            result.add(ClassPathSupport.createResource(url));
-                            // generated/wsimport/service
-                            f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
-                            url = f.toURI().toURL();
-                            if (!f.exists()) {  //NOI18N
-                                assert !url.toExternalForm().endsWith("/");  //NOI18N
-                                url = new URL (url.toExternalForm()+'/');   //NOI18N
-                            }
-                            result.add(ClassPathSupport.createResource(url));
-
-                            // generated/addons/<subDirs>
-                            result.addAll(getAddOnGeneratedSrcRoots(buildDir, 
-                                    new String[] {DIR_GEN_BINDINGS}));
-                            // Listen for any new Source root creation.
-                            createAddOnGenSrcRootsListener(buildDir, 
-                                    new String[] {DIR_GEN_BINDINGS});
+                try {
+                    String buildDir = evaluator.getProperty(BUILD_DIR);
+                    if (buildDir!=null) {
+                        // generated/wsclient
+                        File f = new File (projectHelper.resolveFile(buildDir),"generated/wsclient"); //NOI18N
+                        URL url = f.toURI().toURL();
+                        if (!f.exists()) {  //NOI18N
+                            assert !url.toExternalForm().endsWith("/");  //NOI18N
+                            url = new URL (url.toExternalForm()+'/');   //NOI18N
                         }
+                        result.add(ClassPathSupport.createResource(url));
+                        // generated/wsimport/client
+                        f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/client"); //NOI18N
+                        url = f.toURI().toURL();
+                        if (!f.exists()) {  //NOI18N
+                            assert !url.toExternalForm().endsWith("/");  //NOI18N
+                            url = new URL (url.toExternalForm()+'/');   //NOI18N
+                        }
+                        result.add(ClassPathSupport.createResource(url));
+                        // generated/wsimport/service
+                        f = new File (projectHelper.resolveFile(buildDir),"generated/wsimport/service"); //NOI18N
+                        url = f.toURI().toURL();
+                        if (!f.exists()) {  //NOI18N
+                            assert !url.toExternalForm().endsWith("/");  //NOI18N
+                            url = new URL (url.toExternalForm()+'/');   //NOI18N
+                        }
+                        result.add(ClassPathSupport.createResource(url));
+
+                        // generated/addons/<subDirs>
+                        result.addAll(getGeneratedSrcRoots(buildDir,
+                                new String[] {DIR_GEN_BINDINGS}));
+                        // Listen for any new Source root creation.
+                        createListener(buildDir,
+                                new String[] {DIR_GEN_BINDINGS});
+                    }
                     } catch (MalformedURLException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-                }
                 this.resources = Collections.unmodifiableList(result);
             }
         }
@@ -259,6 +258,9 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (SourceRoots.PROP_ROOTS.equals (evt.getPropertyName())) {
+            invalidate();
+        } else if (this.evaluator != null && evt.getSource() == this.evaluator &&
+                (evt.getPropertyName() == null || BUILD_DIR.equals(evt.getPropertyName()))) {
             invalidate();
         }
     }
