@@ -749,6 +749,7 @@ public final class NbMavenProjectImpl implements Project {
                     new JarPackagingRunChecker(),
                     new DebuggerChecker(),
                     new CosChecker(),
+                    CosChecker.createResultChecker(),
                     new PrereqCheckerMerger()
                 });
         return staticLookup;

@@ -53,16 +53,19 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
@@ -70,6 +73,8 @@ import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
@@ -78,6 +83,15 @@ import org.openide.util.Exceptions;
  * @author mkleint
  */
 public class CosChecker implements PrerequisitesChecker {
+
+    private static final String NB_COS = ".netbeans_automatic_build"; //NOI18N
+
+    private static final String MAVEN_MAIN_COS = ".netbeans_CoS_timestamp_main"; //NOI18N
+    private static final String MAVEN_TEST_COS = ".netbeans_CoS_timestamp_test"; //NOI18N
+
+    public static ExecutionResultChecker createResultChecker() {
+        return new COSExChecker();
+    }
 
     public boolean checkRunConfig(RunConfig config) {
         String actionName = config.getActionName();
@@ -92,9 +106,15 @@ public class CosChecker implements PrerequisitesChecker {
                    (ActionProvider.COMMAND_RUN.equals(actionName) ||
                     ActionProvider.COMMAND_DEBUG.equals(actionName) ||
                     ActionProvider.COMMAND_RUN_SINGLE.equals(actionName) ||
-                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName))) {
-                //TODO check the COS timestamp against critical files (pom.xml)
+                    ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)))
+            {
+                long stamp = getLastCoSLastTouch(config, true);
+                System.out.println("stamp=" + stamp);
+                //check the COS timestamp against critical files (pom.xml)
                 // if changed, don't do COS.
+                if (checkImportantFiles(stamp,config)) {
+                    return true;
+                }
 
                 //TODO check the COS timestamp against resources etc.
                 //if changed, perform part of the maven build. (or skip COS)
@@ -120,10 +140,13 @@ public class CosChecker implements PrerequisitesChecker {
                     if (supported) {
                         try {
                             JavaRunner.execute(action2Quick, params);
+                            touchCoSTimeStamp(config, false);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         } catch (UnsupportedOperationException ex) {
                             Exceptions.printStackTrace(ex);
+                        } finally {
+                            touchCoSTimeStamp(config, false);
                         }
                         return false;
                     } else {
@@ -151,10 +174,13 @@ public class CosChecker implements PrerequisitesChecker {
                     return true;
                 }
             }
-
-
-            //TODO check the COS timestamp against critical files (pom.xml)
+            long stamp = getLastCoSLastTouch(config, true);
+            System.out.println("stamp=" + stamp);
+            //check the COS timestamp against critical files (pom.xml)
             // if changed, don't do COS.
+            if (checkImportantFiles(stamp, config)) {
+                return true;
+            }
 
             //TODO check the COS timestamp against resources etc.
             //if changed, perform part of the maven build. (or skip COS)
@@ -246,17 +272,50 @@ public class CosChecker implements PrerequisitesChecker {
             boolean supported = JavaRunner.isSupported(action2Quick, params);
             if (supported) {
                 try {
-                    JavaRunner.execute(action2Quick, params);
+                    ExecutorTask tsk = JavaRunner.execute(action2Quick, params);
+                    //TODO listen on result of execution
+                    //if failed, tweak the timestamps to force a non-CoS build
+                    //next time around.
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (UnsupportedOperationException ex) {
                     Exceptions.printStackTrace(ex);
+                } finally {
+                    touchCoSTimeStamp(config, true);
+                    touchCoSTimeStamp(config, false);
                 }
                 return false;
             } else {
             }
         }
         return true;
+    }
+
+    private boolean checkImportantFiles(long stamp, RunConfig rc) {
+        assert rc.getProject() != null;
+        FileObject prjDir = rc.getProject().getProjectDirectory();
+        if (isNewer(stamp, prjDir.getFileObject("pom.xml"))) { //NOI18N
+            return true;
+        }
+        if (isNewer(stamp, prjDir.getFileObject("profiles.xml"))) { //NOI18N
+            return true;
+        }
+        if (isNewer(stamp, prjDir.getFileObject("nbactions.xml"))) { //NOI18N
+            return true;
+        }
+        //TODO what other files/folders to check
+        // the nbactions.xml file belonging to active configuration?
+        return false;
+    }
+
+    private boolean isNewer(long stamp, FileObject fo) {
+        if (fo != null) {
+            File fl = FileUtil.toFile(fo);
+            if (fl.lastModified() >= stamp) {
+                return true;
+            }
+        }
+        return false;
     }
 
     //create a special runtime classpath here as the resolved mavenproject in execution
@@ -272,6 +331,85 @@ public class CosChecker implements PrerequisitesChecker {
         return ClassPathSupport.createClassPath(AbstractProjectClassPathImpl.getPath(roots.toArray(new URI[0])));
     }
 
+    /**
+     * returns the
+     * @param rc
+     * @param test
+     * @return
+     */
+    private long getLastCoSLastTouch(RunConfig rc, boolean test) {
+        if (rc.getProject() == null) {
+            return 0;
+        }
+        Build build = rc.getMavenProject().getBuild();
+        if (build == null || build.getDirectory() == null) {
+            return 0;
+        }
+        File fl = new File(build.getDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        if (!fl.exists()) {
+            //the project was not built
+            return 0;
+        }
+        File check = new File(fl, test ? MAVEN_TEST_COS : MAVEN_MAIN_COS);
+        if (!check.exists()) {
+            //wasn't yet run with CoS, assume it's been built correctly.
+            // if CoS fails, we probably want to remove the file to trigger
+            // rebuilding by maven
+            return Long.MAX_VALUE;
+        }
+        return check.lastModified();
+    }
+
+    private boolean touchCoSTimeStamp(RunConfig rc, boolean test) {
+        if (rc.getProject() == null) {
+            return false;
+        }
+        Build build = rc.getMavenProject().getBuild();
+        if (build == null || build.getDirectory() == null) {
+            return false;
+        }
+        File fl = new File(build.getDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        if (!fl.exists()) {
+            //the project was not built
+            return false;
+        }
+        File check = new File(fl, test ? MAVEN_TEST_COS : MAVEN_MAIN_COS);
+        if (!check.exists()) {
+            try {
+                return check.createNewFile();
+            } catch (IOException ex) {
+                return false;
+            }
+        } else {
+            return check.setLastModified(System.currentTimeMillis());
+        }
+    }
+
+    private static void deleteCoSTimeStamp(RunConfig rc, boolean test) {
+        if (rc.getProject() == null) {
+            return;
+        }
+        Build build = rc.getMavenProject().getBuild();
+        if (build == null || build.getDirectory() == null) {
+            return;
+        }
+        File fl = new File(build.getDirectory());
+        fl = FileUtil.normalizeFile(fl);
+        if (!fl.exists()) {
+            //the project was not built
+            return;
+        }
+        File check = new File(fl, test ? MAVEN_TEST_COS : MAVEN_MAIN_COS);
+        if (check.exists()) {
+            check.delete();
+        }
+    }
+
+
+
+
     private String action2Quick(String actionName) {
         if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
             return JavaRunner.QUICK_CLEAN;
@@ -286,6 +424,17 @@ public class CosChecker implements PrerequisitesChecker {
         }
         assert false: "Cannot convert " + actionName + " to quick actions.";
         return null;
+    }
+
+    private static class COSExChecker implements ExecutionResultChecker {
+
+        public void executionResult(RunConfig config, ExecutionContext res, int resultCode) {
+            if (resultCode == 0) {
+                // in all those cases, delete the CoS timestamp to allow CoS on the next iteration.
+                CosChecker.deleteCoSTimeStamp(config, false);
+                CosChecker.deleteCoSTimeStamp(config, true);
+            }
+        }
     }
 
 }
