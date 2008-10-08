@@ -1565,7 +1565,7 @@ declaration_specifiers [boolean allowTypedef, boolean noTypeId]
 		)*
 		(	
                         (options {greedy=true;} :type_attribute_specification)?
-                        ts = type_specifier[ds, noTypeId] 
+                        ts = type_specifier[ds, noTypeId]
                         // support for "A const*";
                         // need to catch postfix_cv_qualifier
                         (postfix_cv_qualifier)? 
@@ -1613,11 +1613,13 @@ type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int
 	;
 
 simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
+{TypeQualifier tq;}
 	:	(	{!noTypeId && qualifiedItemIsOneOf(qiType|qiCtor)}? 
 			qualified_type {ts=tsTYPEID;}	
 			{ #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		|	
-			(	LITERAL_char		{ts |= tsCHAR;}
+			(options {warnWhenFollowAmbig = false;}:
+                                LITERAL_char		{ts |= tsCHAR;}
 			|	LITERAL_wchar_t	{ts |= tsWCHAR_T;}  
 			|	LITERAL_bool	{ts |= tsBOOL;}
 			|	LITERAL_short	{ts |= tsSHORT;}
@@ -1631,6 +1633,9 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 			|	LITERAL_double	{ts |= tsDOUBLE;}
 			|	LITERAL_void		{ts |= tsVOID;}
                         |       literal_complex         {ts |= tsCOMPLEX;}
+                        |       tq = cv_qualifier
+                                (options {warnWhenFollowAmbig = false;}:ptr:unnamed_ptr_operator
+                                )*
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
@@ -1794,7 +1799,7 @@ initializer
             | BITWISEANDEQUAL
             | BITWISEXOREQUAL
             | BITWISEOREQUAL
-            )
+            )            
             initializer
         )?
     |   
@@ -2541,7 +2546,7 @@ assigned_type_name
 	{/*TypeSpecifier*/int ts;
          TypeQualifier tq;}
 	:
-            (tq=cv_qualifier)? (LITERAL_typename)?
+            (options {warnWhenFollowAmbig = false;}: tq=cv_qualifier)? (LITERAL_typename)?
             ts = simple_type_specifier[false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
