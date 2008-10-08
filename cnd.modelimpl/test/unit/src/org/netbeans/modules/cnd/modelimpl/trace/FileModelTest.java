@@ -509,6 +509,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("struct_initializer.c"); // NOI18N        
     }
 
+    // IZ#149499 : parser does not support omitting first branch of ? : operator
+    public void testTernaryOperator() throws Exception {      
+        performTest("ternary_operator.cc"); // NOI18N        
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     
