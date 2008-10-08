@@ -147,6 +147,7 @@ public class CosChecker implements PrerequisitesChecker {
             for (Dependency d : deps) {
                 if (testng.equals(d.getManagementKey())) {
                     //skip tests that are invoked by testng, no support for it yet.
+                    //#149464
                     return true;
                 }
             }
