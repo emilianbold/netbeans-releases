@@ -983,12 +983,12 @@ external_declaration {String s; K_and_R = false; boolean definition;}
                         { #external_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #external_declaration); }
         |
 		// Function definition with return value
-		((LITERAL___extension__)? declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=> 
+		((LITERAL___extension__)? (options {greedy=true;} :function_attribute_specification!)? declaration_specifiers[false, false] function_declarator[true, false] LCURLY)=>
 		{if (statementTrace>=1) 
 			printf("external_declaration_8[%d]: Function definition\n",
 				LT(1).getLine());
 		}
-		(LITERAL___extension__!)? function_definition
+		(LITERAL___extension__!)? (options {greedy=true;} :function_attribute_specification!)? function_definition
 		{ #external_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #external_declaration); }
 	|
 		// FIXUP: Function definition without return value
