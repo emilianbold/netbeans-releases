@@ -38,12 +38,13 @@
  */
 package org.openide.nodes;
 
+import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.openide.nodes.Children.Keys;
 
 /**
  *
- * @author Holy
+ * @author Tomas Holy
  */
 public class LazyChildrenKeysTest extends NbTestCase {
     
@@ -51,18 +52,46 @@ public class LazyChildrenKeysTest extends NbTestCase {
         super(testName);
     }
 
-    public void testFilterNodeOfFilterNodeWithOriginalHavingNoNodeForEntry() {
-        String[] keys = new String[]{"First", "Empty"};
-        Children.Keys<String> children = new LazyKeys();
+    public void testFFNWithEmptyEntries() {
+        LazyKeys keys = new LazyKeys();
+        keys.keys("a", "-b");
+        FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(keys)));
+        Node[] nodes = fn.getChildren().getNodes(true);
+        assertEquals(1, nodes.length);
+        assertEquals("a", nodes[0].getName());
+    }
 
-        final Node root = new AbstractNode(children);
-        children.setKeys(keys);
-        root.setName("Root");
-        FilterNode f1 = new FilterNode(root);
-        FilterNode f2 = new FilterNode(f1);
-        Node[] nodes = f2.getChildren().getNodes(true);
-        assertEquals("Only one node", 1, nodes.length);
-        assertEquals("First one expected", "First", nodes[0].getName());
+    public void test() {
+        class FCh extends FilterNode.Children {
+
+            public FCh(Node or) {
+                super(or);
+            }
+
+            @Override
+            protected Node[] createNodes(Node key) {
+                if (EntrySupport.Lazy.isDummyNode(key)) {
+                    fail("Should not call createNodes() for DummyNode");
+                }
+                return super.createNodes(key);
+            }
+        }
+
+        LazyKeys keys = new LazyKeys();
+        keys.keys("a", "-b", "b");
+        Node or = new AbstractNode(keys);
+        FilterNode fn = new FilterNode(or, new FCh(or));
+        fn.getChildren().getNodesCount();
+        List<Node> snapshot = fn.getChildren().snapshot();
+        assertEquals(3, snapshot.size());
+        assertEquals("a", snapshot.get(0).getName());
+        assertEquals("", snapshot.get(1).getName());
+        assertEquals("b", snapshot.get(2).getName());
+
+        Node[] nodes = fn.getChildren().getNodes();
+        assertEquals(2, nodes.length);
+        assertEquals("a", nodes[0].getName());
+        assertEquals("b", nodes[1].getName());
     }
 
     private static class LazyKeys extends Keys<String> {
@@ -71,10 +100,14 @@ public class LazyChildrenKeysTest extends NbTestCase {
             super(true);
         }
 
+        public void keys(String... args) {
+            super.setKeys(args);
+        }
+
         @Override
         protected Node[] createNodes(String key) {
-            if (key.equals("Empty")) {
-                return new Node[0];
+            if (key.startsWith("-")) {
+                return null;
             } else {
                 AbstractNode n = new AbstractNode(Children.LEAF);
                 n.setName(key);
