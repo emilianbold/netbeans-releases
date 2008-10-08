@@ -880,7 +880,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                         if (!staticContext) {
                             item.doNotInsertDollarPrefix();
-                            }
+                        }
 
                         proposals.add(item);
                     }
