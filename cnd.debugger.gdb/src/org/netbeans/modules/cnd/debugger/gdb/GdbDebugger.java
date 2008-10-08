@@ -414,7 +414,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             inFile = win2UnixPath(inFile);
                             outFile = win2UnixPath(outFile);
                         }
-                        inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                        // tcsh does not support 2>&1 stream redirection, see issue 147872
+                        String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
+                        if (shell != null && shell.endsWith("tcsh")) { // NOI18N
+                            inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                        } else {
+                            inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                        }
                     }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
