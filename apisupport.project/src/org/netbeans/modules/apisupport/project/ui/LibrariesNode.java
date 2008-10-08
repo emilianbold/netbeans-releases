@@ -115,8 +115,6 @@ final class LibrariesNode extends AbstractNode {
     static final String LIBRARIES_NAME = "libraries"; // NOI18N
     private static final String ARCHIVE_ICON = "org/netbeans/modules/apisupport/project/ui/resources/jar.gif"; //NOI18N
     private static final String DISPLAY_NAME = getMessage("LBL_libraries");
-    /** Package private for unit tests only. */
-    static final RequestProcessor RP = new RequestProcessor();
     private final Action[] actions;
 
     public LibrariesNode(final NbModuleProject project) {
@@ -207,7 +205,7 @@ final class LibrariesNode extends AbstractNode {
             // with already acquired ProjectManager.mutex. This could lead to
             // refreshing during the misconfigurated suite/suite_component
             // relationship.
-            RP.post(new Runnable() {
+            ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
 
                 public void run() {
                     try {
@@ -228,7 +226,7 @@ final class LibrariesNode extends AbstractNode {
                                 // XXX still not good when dependency was just edited, since Children use
                                 // hashCode/equals (probably HashMap) to find lastly selected node (so neither
                                 // SortedSet would help here). Use probably wrapper instead to keep selection.
-                                RP.post(new Runnable() {
+                                ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
 
                                     public void run() {
                                         setKeys(Collections.unmodifiableList(keys));
@@ -240,7 +238,7 @@ final class LibrariesNode extends AbstractNode {
                     } catch (MutexException e) {
                         Logger.getLogger(LibrariesNode.class.getName()).log(Level.FINE, null, e);
                     }
-                }
+                 }
             });
         }
 
