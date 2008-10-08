@@ -46,6 +46,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree;
@@ -3272,7 +3273,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             jt = null;
                             activeTuple = null;                            
                             listener.cleanDiagnostics();
-                            if (!(t instanceof Abort)) {                                
+                            if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {                                
                                 final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                                 final ClassPath classPath  = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                                 final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);
