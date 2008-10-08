@@ -264,8 +264,8 @@ public class Utilities {
         // "Set as Main Project"
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(testProjectName));
-        new DebugProjectAction().performShortcut();
-//        getDebugToolbar().waitComponentVisible(true);
+        new DebugProjectAction().performMenu();
+        getDebugToolbar().waitComponentVisible(true);
     }
 
     public static ContainerOperator getDebugToolbar() {

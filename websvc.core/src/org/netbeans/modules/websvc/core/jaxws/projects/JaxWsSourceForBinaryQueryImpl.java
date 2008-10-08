@@ -86,7 +86,7 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                     createJarArtifactsSet();
                     jarArtifactsSetCreated = true;
                 }
-                if (jarArtifacts.contains(archiveFile.toURL().toURI())) {
+                if (jarArtifacts.contains(archiveFile.toURI())) {
                     projectJar = true;
                 }
             } catch (URISyntaxException ex) {

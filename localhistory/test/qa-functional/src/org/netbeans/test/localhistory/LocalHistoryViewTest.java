@@ -46,6 +46,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
+
 /**
  *
  * @author peter
@@ -62,9 +63,11 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.CheckboxOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
 import org.openide.util.Exceptions;
@@ -136,6 +139,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
     public void testLocalHistoryInvoke() {
         try {
             openDataProjects(PROJECT_NAME);
+            ProjectSupport.waitScanFinished();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             fail("Unable to open project: " + PROJECT_NAME);
@@ -198,6 +202,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
     }
 
     public void testLocalHistoryRevertDeleted() {
+        new EventTool().waitNoEvent(2000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
         node.performPopupActionNoBlock("Delete");
 //        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");

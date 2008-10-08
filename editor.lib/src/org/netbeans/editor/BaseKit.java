@@ -1601,15 +1601,6 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CutAction.class.getName ()); // NOI18N
         }
 
-        @Override
-        public void setEnabled(boolean newValue) {
-            // In order to allow the action to operate even if there is no selection
-            // (to cut a single line) the setEnabled(false) is ignored.
-            if (enabled) {
-                super.setEnabled(enabled);
-            }
-        }
-        
         public void actionPerformed(final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -1655,15 +1646,6 @@ public class BaseKit extends DefaultEditorKit {
             //#54893 putValue ("helpID", CopyAction.class.getName ()); // NOI18N
         }
 
-        @Override
-        public void setEnabled(boolean enabled) {
-            // In order to allow the action to operate even if there is no selection
-            // (to copy a single line) the setEnabled(false) is ignored.
-            if (enabled) {
-                super.setEnabled(enabled);
-            }
-        }
-        
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             if (target != null) {
                 try {
