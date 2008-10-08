@@ -942,6 +942,7 @@ org.netbeans.api.debugger.DebuggerManagerAdapter
 org.netbeans.api.debugger.DebuggerManagerListener
 org.netbeans.api.debugger.LazyActionsManagerListener
 org.netbeans.api.debugger.LazyArrayList
+org.netbeans.api.debugger.LazyArrayList$Itr
 org.netbeans.api.debugger.LazyArrayList$LazyEntry
 org.netbeans.api.debugger.LazyDebuggerManagerListener
 org.netbeans.api.debugger.Lookup
@@ -2862,6 +2863,9 @@ org.netbeans.modules.form.palette.PaletteItemDataObject$PaletteItemDataLoader
 org.netbeans.modules.glassfish.common.Installer
 org.netbeans.modules.gototest.GotoOppositeAction
 org.netbeans.modules.groovy.grailsproject.GrailsProjectFactory
+org.netbeans.modules.groovy.support.debug.Context
+org.netbeans.modules.groovy.support.debug.GroovyLineBreakpoint
+org.netbeans.modules.groovy.support.debug.GroovyToggleBreakpointActionProvider
 org.netbeans.modules.gsf.DefaultLanguage
 org.netbeans.modules.gsf.GsfDataLoader
 org.netbeans.modules.gsf.GsfDataObject
@@ -4836,6 +4840,7 @@ org.openide.explorer.view.TreeView$ExplorerTree$SearchFieldListener
 org.openide.explorer.view.TreeView$PopupAdapter
 org.openide.explorer.view.TreeView$PopupSupport
 org.openide.explorer.view.TreeView$TreePropertyListener
+org.openide.explorer.view.TreeView$VisualizerHolder
 org.openide.explorer.view.TreeViewCellEditor
 org.openide.explorer.view.TreeViewCellEditor$Ed
 org.openide.explorer.view.TreeViewDragSupport
@@ -5085,6 +5090,7 @@ org.openide.nodes.Children$Empty
 org.openide.nodes.Children$Entry
 org.openide.nodes.Children$Keys
 org.openide.nodes.Children$Keys$KE
+org.openide.nodes.Children$ProjectManagerDeadlockDetector
 org.openide.nodes.ChildrenArray
 org.openide.nodes.CookieSet
 org.openide.nodes.CookieSet$Before
@@ -5112,6 +5118,7 @@ org.openide.nodes.FilterNode
 org.openide.nodes.FilterNode$Children
 org.openide.nodes.FilterNode$Children$ChildrenSupport
 org.openide.nodes.FilterNode$Children$DefaultSupport
+org.openide.nodes.FilterNode$Children$FilterChildrenSupport
 org.openide.nodes.FilterNode$Children$LazySupport
 org.openide.nodes.FilterNode$ChildrenAdapter
 org.openide.nodes.FilterNode$FilterLookup

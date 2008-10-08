@@ -46,6 +46,7 @@
  * To change this template, choose Tools | Template Manager
  * and open the template in the editor.
  */
+
 /**
  *
  * @author peter
@@ -62,9 +63,11 @@ import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.CheckboxOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
 import org.openide.util.Exceptions;
@@ -117,7 +120,6 @@ public class LocalHistoryViewTest extends JellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(LocalHistoryViewTest.class).addTest(
                 "testLocalHistoryInvoke",
                 "testLocalHistoryRevertFromHistory",
-                "testLocalHistoryDeleteFromHistory",
                 "testLocalHistoryRevisionCountAfterModification",
                 "testLocalHistoryNewFileInNewPackage",
                 "testLocalHistoryRevertDeleted",
@@ -137,6 +139,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
     public void testLocalHistoryInvoke() {
         try {
             openDataProjects(PROJECT_NAME);
+            ProjectSupport.waitScanFinished();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
             fail("Unable to open project: " + PROJECT_NAME);
@@ -160,6 +163,14 @@ public class LocalHistoryViewTest extends JellyTestCase {
     public void testLocalHistoryDeleteFromHistory() {
         slho.performPopupAction(2, "Delete from History");
         sleep(1500);
+        //nodes are collapsed after deletion - new invocation has to called
+        EditorOperator.closeDiscardAll();
+        node.performPopupAction("Open");
+        eo = new EditorOperator("Main.java");
+        node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
+        slho = ShowLocalHistoryOperator.invoke(node);
+        //
+        sleep(1500);
         int versions = slho.getVersionCount();
         assertEquals("2. Wrong number of versions!", 1, versions);
     }
@@ -169,7 +180,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
         eo.save();
         sleep(1500);
         int versions = slho.getVersionCount();
-        assertEquals("3. Wrong number of versions!", 2, versions);
+        assertEquals("3. Wrong number of versions!", 3, versions);
         slho.close();
     }
 
@@ -191,6 +202,7 @@ public class LocalHistoryViewTest extends JellyTestCase {
     }
 
     public void testLocalHistoryRevertDeleted() {
+        new EventTool().waitNoEvent(2000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
         node.performPopupActionNoBlock("Delete");
 //        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");

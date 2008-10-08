@@ -56,6 +56,7 @@ import org.netbeans.modules.bpel.model.api.Sequence;
 import org.netbeans.modules.bpel.model.api.TerminationHandler;
 import org.netbeans.modules.bpel.model.api.Throw;
 import org.netbeans.modules.bpel.model.api.While;
+import org.netbeans.modules.bpel.model.ext.Extensions;
 import org.netbeans.modules.bpel.nodes.BpelNode;
 import org.netbeans.modules.soa.ui.nodes.NodeFactory;
 
@@ -102,6 +103,11 @@ public class BpelUserFaultsChildren extends Children.Keys {
         Set<QName> standardFaultNames = 
                 mStandardFaultsChildren.getStandardFaultNames();
         allUsedFaultNames.removeAll(standardFaultNames);
+        //
+         Set<QName> systemFault = new HashSet<QName>();
+        systemFault.add( new QName(Extensions.ERROR_EXT_URI, 
+                Extensions.SYSTEM_FAULT_NAME)); 
+        allUsedFaultNames.removeAll(systemFault);
         //
         Set<QName> wsdlFaultNames = 
                 mWsdlImportFaultsChildren.getImportedWsdlFaultNames();

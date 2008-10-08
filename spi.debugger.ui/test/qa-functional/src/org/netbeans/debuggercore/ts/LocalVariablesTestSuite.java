@@ -60,14 +60,13 @@ public class LocalVariablesTestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(LocalVariablesTest.class, 
                     "testLocalVariablesThisNode",
                     "testLocalVariablesStaticNode",
                     "testLocalVariablesStaticInherited",
                     "testLocalVariablesInheritedNode",
                     "testLocalVariablesExtended",
-                    "testLocalVariablesValues",
-                    "testLocalVariablesSubExpressions").enableModules(".*").clusters(".*"));
+                    "testLocalVariablesValues").enableModules(".*").clusters(".*"));
+        }
     } 
-}

@@ -256,16 +256,17 @@ public class AbstractProject implements JavaEEProject{
         this.epts = getWebservicesEndpoints();
 
         // sun-resources
-        String resourcesStr = null;
-        // only scan for resources if deploying through CompApp
-        if (this.deployThruCA) {
-            try {
-                resourcesStr = scanForResources();
-            } catch (Exception e) {
-                e.printStackTrace();
-                // do not throw exception, let build process continue
-            }
-        }
+// Do not generate any Sun-resource.xml content.        
+//        String resourcesStr = null;
+//        // only scan for resources if deploying through CompApp
+//        if (this.deployThruCA) {
+//            try {
+//                resourcesStr = scanForResources();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//                // do not throw exception, let build process continue
+//            }
+//        }
 
         Iterator<JavaEEProject> itr = null;
         JarOutputStream jos = null;
@@ -289,12 +290,13 @@ public class AbstractProject implements JavaEEProject{
             writeJBIXMLUsingDOM(epts, jos);
 
             // sun-resources
-            if ((this.deployThruCA) && (resourcesStr != null)
-                                    && (!"".equals(resourcesStr))) {
-                je = new JarEntry(RES_XML_ENTRY);
-                jos.putNextEntry(je);
-                writeResourcesFile(resourcesStr, jos);
-            }
+// Do not generate any Sun-resource.xml content.                    
+//            if ((this.deployThruCA) && (resourcesStr != null)
+//                                    && (!"".equals(resourcesStr))) {
+//                je = new JarEntry(RES_XML_ENTRY);
+//                jos.putNextEntry(je);
+//                writeResourcesFile(resourcesStr, jos);
+//            }
 
             if (additionalJbiFileDir != null){
                 FileOutputStream jfos = null;

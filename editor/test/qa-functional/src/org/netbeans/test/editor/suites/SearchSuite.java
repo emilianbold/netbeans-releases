@@ -52,7 +52,23 @@ public class SearchSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                //NbModuleSuite.createConfiguration(IncrementalSearchTest.class).addTest(IncrementalSearchTest.class).addTest(ReplaceTest.class));
-                NbModuleSuite.createConfiguration(ReplaceTest.class).addTest(IncrementalSearchTest.class));
+                //NbModuleSuite.createConfiguration(IncrementalSearchTest.class).addTest(IncrementalSearchTest.class).addTest(ReplaceTest.class));                
+                NbModuleSuite
+                .createConfiguration(IncrementalSearchTest.class)
+                .addTest(IncrementalSearchTest.class,
+                         "testSearchForward",
+                         "testSearchBackwards",
+                         "testMatchCase",
+                         "testNextButton",
+                         "testPrevButton",
+                         "testCloseButton",
+                         "testNotFound",
+                         "testInvalidRegexp",
+                         "testSearchForwardBackward",
+                         "testWholeWords",
+                         "testRegularExpression",
+                         "testFindNext",
+                         "testFindPrev")
+                .addTest(ReplaceTest.class));
     }
 }

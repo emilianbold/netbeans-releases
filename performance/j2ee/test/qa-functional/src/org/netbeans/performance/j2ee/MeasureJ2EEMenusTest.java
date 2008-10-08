@@ -60,7 +60,7 @@ public class MeasureJ2EEMenusTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness J2EE Menus suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2ee.MeasureJ2EEMenusTest");
+        System.setProperty("suitename", MeasureJ2EEMenusTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(AppServerPopupMenu.class)
         .addTest(J2EEProjectsViewPopupMenu.class)

@@ -86,7 +86,7 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
                     createJarArtifactsSet();
                     jarArtifactsSetCreated = true;
                 }
-                if (jarArtifacts.contains(archiveFile.toURL().toURI())) {
+                if (jarArtifacts.contains(archiveFile.toURI())) {
                     projectJar = true;
                 }
             } catch (URISyntaxException ex) {
@@ -140,8 +140,9 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         for(AntArtifact art:arts) {
             if (JavaProjectConstants.ARTIFACT_TYPE_JAR.equals(art.getType())) {
                 File scriptLocation = art.getScriptLocation();
-                for (FileObject artifactFo:art.getArtifactFiles()) {
-                    jarArtifacts.add(artifactFo.getURL().toURI());
+                for (URI artifactLocation:art.getArtifactLocations()) {
+                    URI artifactUri = scriptLocation.toURI().resolve(artifactLocation).normalize();
+                    jarArtifacts.add(artifactUri);
                 }
             }
         }

@@ -60,8 +60,7 @@ public class ScriptingMeasureActionsTest1 {
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(CreateRubyProject.class)
                 .addTest(CreatePHPProject.class)
-                // TODO: Enable once browser problem is fixed (Issue 148463)
-//                .addTest(CreatePHPSampleProject.class)
+                .addTest(CreatePHPSampleProject.class)
                 
                 .addTest(SavingPHPProjectProperties.class)
                 .addTest(CreateScriptingPackFiles.class)
@@ -69,6 +68,9 @@ public class ScriptingMeasureActionsTest1 {
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)
                 .addTest(NavigateGoToSourceTest.class)
+                .addTest(FormatFileTest.class)
+                .addTest(CloseProjectTest.class)
+                .addTest(CloseScriptingFiles.class)
                 .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return suite;        

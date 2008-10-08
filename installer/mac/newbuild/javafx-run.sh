@@ -23,7 +23,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    fi
    ssh $NATIVE_MAC_MACHINE mkdir -p $MAC_PATH/zip/moduleclusters
    #scp -q -v $LAST_BITS_ZIP/$BASENAME*.zip $NATIVE_MAC_MACHINE:$MAC_PATH/zip
-   ls $LAST_BITS_ZIP/moduleclusters | grep -v "all-in-one" | xargs -I {} scp -q -v $LAST_BITS_ZIP/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
+   ls $LAST_BITS_ZIP/moduleclusters | grep -v "all-in-one" | grep -v "mobility" | grep -v "enterprise" | grep -v "visualweb" | grep -v "ruby" | grep -v "uml" | grep -v "soa" | xargs -I {} scp -q -v $LAST_BITS_ZIP/moduleclusters/{} $NATIVE_MAC_MACHINE:$MAC_PATH/zip/moduleclusters/
 
    ERROR_CODE=$?
    if [ $ERROR_CODE != 0 ]; then

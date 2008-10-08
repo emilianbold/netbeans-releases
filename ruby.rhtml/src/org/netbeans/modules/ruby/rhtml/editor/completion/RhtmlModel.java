@@ -364,7 +364,10 @@ public class RhtmlModel {
         int limit = history.getOriginalEnd();
         int delta = history.getSizeDelta();
 
+        // True if the edits occur within (or overlapping) one or more Ruby code blocks
         boolean codeOverlaps = false;
+        // True if all edits were contained within the Ruby codeblocks
+        boolean editsContained = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
             if (codeBlock.sourceEnd < offset) {
@@ -377,13 +380,38 @@ public class RhtmlModel {
             }
             if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= limit) {
                 codeBlock.sourceEnd += delta;
+                if (history.getEditedEnd() <= codeBlock.sourceEnd) {
+                    editsContained = true;
+                }
                 codeOverlaps = true;
                 continue;
             }
             return IncrementalEmbeddingModel.UpdateState.FAILED;
         }
 
-        return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
+        if (codeOverlaps) {
+            if (editsContained) {
+                return IncrementalEmbeddingModel.UpdateState.UPDATED;
+            } else {
+                // We MAY have new or removed separate sections, but one or
+                // more of these overlap with our blocks so we're not sure.
+                // Err on the safe side and recompute everything.
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            }
+        } else {
+            // See if it looks like we have added or removed any JavaScript sections
+            boolean scriptAddedOrRemoved = false;
+
+            if (history.wasModified(RhtmlTokenId.DELIMITER)) {
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            }
+
+            if (scriptAddedOrRemoved) {
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            } else {
+                return IncrementalEmbeddingModel.UpdateState.COMPLETED;
+            }
+        }
     }
 
     private class CodeBlockData {

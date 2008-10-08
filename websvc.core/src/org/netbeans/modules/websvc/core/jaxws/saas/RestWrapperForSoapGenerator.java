@@ -155,7 +155,7 @@ public class RestWrapperForSoapGenerator {
                 if (pathAnn == null) {
                     addPathAnnotation(workingCopy, new String[]{javaClass.getSimpleName().toString().toLowerCase()});
                 }
-                if (getPrimitiveType(returnType) == null) {
+                if (!returnType.equals("void") && getPrimitiveType(returnType) == null) {
                     addQNameImport(workingCopy);
                 }
                 ClassTree finalJavaClass = addHttpMethod(returnType, workingCopy, javaClass);

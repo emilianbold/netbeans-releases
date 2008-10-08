@@ -104,6 +104,7 @@ import org.netbeans.modules.websvc.api.client.WsCompileClientEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDescriptor;
 import org.openide.ErrorManager;
@@ -147,11 +148,14 @@ class WebActionProvider implements ActionProvider {
     // Project
     WebProject project;
     // Ant project helper of the project
-    private UpdateHelper updateHelper;
+    private final UpdateHelper updateHelper;
+    
+    private final PropertyEvaluator evaluator;
+
     /** Map from commands to ant targets */
     Map<String,String[]> commands;
 
-    public WebActionProvider(WebProject project, UpdateHelper updateHelper) {
+    public WebActionProvider(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator) {
 
         commands = new HashMap<String, String[]>();
         commands.put(COMMAND_BUILD, new String[]{"dist"}); // NOI18N
@@ -175,6 +179,7 @@ class WebActionProvider implements ActionProvider {
         commands.put(COMMAND_VERIFY, new String[]{"verify"}); // NOI18N
 
         this.updateHelper = updateHelper;
+        this.evaluator = evaluator;
         this.project = project;
     }
 
@@ -208,7 +213,8 @@ class WebActionProvider implements ActionProvider {
         }
 
         String realCommand = command;
-        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()) {
+        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()
+                && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")) {
             boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
                     new DeployOnSaveUtils.CustomizerPresenter() {
 
@@ -404,7 +410,10 @@ class WebActionProvider implements ActionProvider {
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
             
-            setJavaScriptDebuggerProperties(p);
+            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
+            if (!keepDebugging) {
+                return null;
+            }
                         
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
@@ -541,7 +550,10 @@ class WebActionProvider implements ActionProvider {
                 return null;
             }
 
-            setJavaScriptDebuggerProperties(p);
+            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
+            if (!keepDebugging) {
+                return null;
+            }
             
             WebServicesClientSupport wscs = WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory());
             if (wscs != null) { //project contains ws reference
@@ -738,18 +750,27 @@ class WebActionProvider implements ActionProvider {
         return targetNames;
     }
 
-    private void setJavaScriptDebuggerProperties(Properties p) {       
+    private boolean setJavaScriptDebuggerProperties(Properties p) {
         if (!WebClientToolsSessionStarterService.isAvailable()) {
             // If JavaScript debugger is not available, set to server debugging only
             p.setProperty("debug.client", "false"); // NOI18N
             p.setProperty("debug.server", "true"); // NOI18N
+            return true;
 
         } else {
+            // display Debug Project Dialog
+            boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(project);
+            if (!keepDebugging) {
+                return false;
+            }
+
             boolean debugServer = WebClientToolsProjectUtils.getServerDebugProperty(project);
             boolean debugClient = WebClientToolsProjectUtils.getClientDebugProperty(project);
 
             p.setProperty("debug.client", String.valueOf(debugClient)); // NOI18N
             p.setProperty("debug.server", String.valueOf(debugServer)); // NOI18N
+
+            return true;
         }
     }
 
@@ -926,7 +947,8 @@ class WebActionProvider implements ActionProvider {
         }
 
         // build or compile source file (JSP compilation allowed)
-        if (isCosEnabled() && (COMMAND_COMPILE_SINGLE.equals(command)
+        if (isCosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
+                && (COMMAND_COMPILE_SINGLE.equals(command)
                     && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null))) {
 
             return false;

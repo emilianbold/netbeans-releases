@@ -58,7 +58,7 @@ public class MeasureWebFootprintsTest {
     
     public static Test suite() {
         TestSuite suite = new NbTestSuite("Web Footprints suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebFootprintsTest");
+        System.setProperty("suitename", MeasureWebFootprintsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(WebProjectWorkflow.class, ".*", ".*"));
         
