@@ -1780,10 +1780,28 @@ init_declarator
 	;
 
 initializer
-   :  assignment_expression
-   |  LCURLY RCURLY
-   |  LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
-   ;
+    :  
+        lazy_expression[false, false]
+	(options {warnWhenFollowAmbig = false;}:	
+            ( ASSIGNEQUAL
+            | TIMESEQUAL
+            | DIVIDEEQUAL
+            | MINUSEQUAL
+            | PLUSEQUAL
+            | MODEQUAL
+            | SHIFTLEFTEQUAL
+            | SHIFTRIGHTEQUAL
+            | BITWISEANDEQUAL
+            | BITWISEXOREQUAL
+            | BITWISEOREQUAL
+            )
+            initializer
+        )?
+    |   
+        LCURLY RCURLY
+    |   
+        LCURLY initializer (COMMA initializer)* (COMMA)? (EOF!|RCURLY)
+    ;
 
 
 // so far this one is used in predicates only
