@@ -984,8 +984,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            String disableDeployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE);
-            if (!Boolean.parseBoolean(disableDeployOnSave)) {
+            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE);
+            if (Boolean.parseBoolean(deployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
             artifactSupport.enableArtifactSynchronization(true);
@@ -1025,20 +1025,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
             
-            // configure DoS
-            if (!props.containsKey(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
-                boolean deployOnSaveEnabled = false;
-                try {
-                    String instanceId = ep.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
-                    if (instanceId != null) {
-                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
-                                .isDeployOnSaveSupported();
-                    }
-                } catch (InstanceRemovedException ex) {
-                    // false
-                }
-                props.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
-            }
 
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            
             

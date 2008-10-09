@@ -369,9 +369,8 @@ public class DefaultProjectActionHandler implements ActionListener {
                             // we need to run the application under cmd on windows
                             exe = "cmd.exe"; // NOI18N
                             args = "/c " + IpeUtils.quoteIfNecessary(pae.getExecutable()) + " " + pae.getProfile().getArgsFlat(); // NOI18N
-                        } else {
-                            exe = IpeUtils.quoteIfNecessary(pae.getExecutable());
-                            args = pae.getProfile().getArgsFlat();
+                        } else if (conf.getDevelopmentHost().isLocalhost()) {
+                            exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
                         }
                         unbuffer = true;
                     } else {

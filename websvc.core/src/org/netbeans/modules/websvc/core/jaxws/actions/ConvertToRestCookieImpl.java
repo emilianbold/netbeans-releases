@@ -40,7 +40,8 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
@@ -66,29 +67,32 @@ public class ConvertToRestCookieImpl implements ConvertToRestCookie {
     }
 
     public void convertToRest() {
-        try {
-            FileObject fo = node.getLookup().lookup(FileObject.class);
-            JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fo);
-            Service service = node.getLookup().lookup(Service.class);
-            String packageName = getPackageName(service.getImplementationClass());
-            String wsdlFileName = service.getLocalWsdlFile();
-            URL wsdlURL = null;
-            if (wsdlFileName != null) {  //fromWsdl
 
-                File urlFile = new File(support.getLocalWsdlFolderForService(service.getName(), false) + "/" + wsdlFileName);
-                wsdlURL = urlFile.getCanonicalFile().toURL();
-            } else {   //fromJava
-              wsdlURL = new URL(node.getWsdlURL() );
+        FileObject fo = node.getLookup().lookup(FileObject.class);
+        JAXWSSupport support = JAXWSSupport.getJAXWSSupport(fo);
+        Service service = node.getLookup().lookup(Service.class);
+        String packageName = getPackageName(service.getImplementationClass());
+        String wsdlFileName = service.getLocalWsdlFile();
+        URI wsdlURL = null;
+        if (wsdlFileName != null) {  //fromWsdl
 
+            File urlFile = new File(support.getLocalWsdlFolderForService(service.getName(), false) + "/" + wsdlFileName);
+            wsdlURL = urlFile.toURI();
+        } else {  
+            try {
+                //fromJava
+                wsdlURL = new URI(node.getWsdlURL());
+            } catch (URISyntaxException ex) {
+                ErrorManager.getDefault().notify(ex);
             }
-            RestResourceGenerator generator = new RestResourceGenerator(fo.getParent(), wsdlURL, packageName);
-            generator.generate();
-        } catch (IOException ex) {
-            ErrorManager.getDefault().notify(ex);
+
         }
+        RestResourceGenerator generator = new RestResourceGenerator(fo.getParent(), wsdlURL, packageName);
+        generator.generate();
+
     }
 
-    private String getPackageName(String implementationClass){
+    private String getPackageName(String implementationClass) {
         int index = implementationClass.lastIndexOf(".");
         return implementationClass.substring(0, index);
     }

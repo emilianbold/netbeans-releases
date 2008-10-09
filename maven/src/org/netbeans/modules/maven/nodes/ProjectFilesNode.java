@@ -53,6 +53,7 @@ import java.util.HashSet;
 import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.embedder.MavenSettingsSingleton;
@@ -70,6 +71,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -196,7 +198,16 @@ public class ProjectFilesNode extends AnnotatedAbstractNode {
             super.removeNotify();
         }
         
-        private void regenerateKeys(boolean refresh) {
+        private void regenerateKeys(final boolean refresh) {
+            //#149566 prevent setting keys under project mutex.
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        regenerateKeys(refresh);
+                    }
+                });
+                return;
+            }
             Collection<File> keys = new ArrayList<File>();
             keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "pom.xml")); //NOI18N
             keys.add(new File(FileUtil.toFile(project.getProjectDirectory()), "profiles.xml")); //NOI18N

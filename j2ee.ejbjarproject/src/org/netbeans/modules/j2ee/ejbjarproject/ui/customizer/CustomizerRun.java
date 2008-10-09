@@ -120,6 +120,7 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         jLabel1 = new javax.swing.JLabel();
         vmOptions = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        dosDescription = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -173,7 +174,7 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -186,11 +187,11 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 5, 0);
         add(jCheckBoxDeployOnSave, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
@@ -200,13 +201,13 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "Label_JVM_Argument")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
         add(jLabel1, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
@@ -215,12 +216,21 @@ public class CustomizerRun extends javax.swing.JPanel implements HelpCtx.Provide
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "Label_VM_Hint")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
         add(jLabel2, gridBagConstraints);
+
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_Description")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(dosDescription, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void jComboBoxJ2eeSpecVersionItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jComboBoxJ2eeSpecVersionItemStateChanged
@@ -237,6 +247,7 @@ private void jComboBoxJ2eePlatformActionPerformed(java.awt.event.ActionEvent evt
 }//GEN-LAST:event_jComboBoxJ2eePlatformActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel dosDescription;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JComboBox jComboBoxJ2eePlatform;

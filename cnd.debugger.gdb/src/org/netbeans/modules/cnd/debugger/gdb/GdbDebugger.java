@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.proxy.InputProxy;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -202,7 +202,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
     private String sig = null;
-    private InputProxy inputProxy = null;
+    private IOProxy inputProxy = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -387,7 +387,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-                        inputProxy = InputProxy.create(hkey, iotab);
+                        inputProxy = IOProxy.create(hkey, iotab);
                     }
                 }
 
@@ -408,11 +408,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 try {
                     String inRedir = "";
                     if (inputProxy != null) {
-                        String inFile = inputProxy.getFilename();
+                        String inFile = inputProxy.getInFilename();
+                        String outFile = inputProxy.getOutFilename();
                         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                             inFile = win2UnixPath(inFile);
+                            outFile = win2UnixPath(outFile);
                         }
-                        inRedir = " < " + inFile; // NOI18N
+                        inRedir = " < " + inFile + " >& " + outFile; // NOI18N
                     }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {

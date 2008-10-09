@@ -67,6 +67,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.modules.apisupport.project.suite.SuiteProjectGenerator;
+import org.netbeans.modules.apisupport.project.ui.ImportantFilesNodeFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.apisupport.project.universe.NbPlatform;
@@ -348,6 +349,18 @@ import org.openide.util.Lookup;
         } finally {
             os.close();
         }
+    }
+
+    /**
+     * Blocking call waiting for change in project metadata to be reflected
+     * in nodes.
+     */
+    public static void waitForNodesUpdate() {
+      ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
+
+          public void run() {
+          }
+      }).waitFinished();
     }
     
     // XXX copied from TestBase in ant/freeform

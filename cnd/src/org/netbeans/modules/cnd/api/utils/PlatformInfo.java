@@ -67,7 +67,7 @@ public final class PlatformInfo {
         this.hkey = hkey;
         this.platform = platform;
 
-        String path = getEnv().get("PATH"); // NOI18N
+        String path = getEnv().get(getPathName());
         if (Boolean.getBoolean("cnd.debug.use_altpath")) { // NOI18N
             // Its very hard to debug path problems on Windows because changing PATH is so hard. So these
             // properties let me do it without changing my real path

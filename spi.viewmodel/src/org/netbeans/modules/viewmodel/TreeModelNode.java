@@ -1082,12 +1082,17 @@ public class TreeModelNode extends AbstractNode {
             }
             try {
                 javax.swing.JToolTip tooltip = new javax.swing.JToolTip();
-                tooltip.putClientProperty("getShortDescription", object); // NOI18N
-                Object tooltipObj = model.getValueAt(tooltip, id);
-                if (tooltipObj == null) {
-                    return null;
-                } else {
-                    return adjustHTML(tooltipObj.toString());
+                try {
+                    tooltip.putClientProperty("getShortDescription", object); // NOI18N
+                    Object tooltipObj = model.getValueAt(tooltip, id);
+                    if (tooltipObj == null) {
+                        return null;
+                    } else {
+                        return adjustHTML(tooltipObj.toString());
+                    }
+                } finally {
+                    // We MUST clear the client property, Swing holds this in a static reference!
+                    tooltip.putClientProperty("getShortDescription", null); // NOI18N
                 }
             } catch (UnknownTypeException e) {
                 // Ignore models that do not define tooltips for values.

@@ -525,12 +525,14 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
 
                             Action a = kit.getActionByName(BaseKit.copyAction);
                             if (a != null) {
-                                a.setEnabled(selectionVisible);
+                                // In order to allow the action to operate even if there is no selection
+                                // (to copy a single line) the action is always enabled.
+                                a.setEnabled(true);
                             }
 
                             a = kit.getActionByName(BaseKit.cutAction);
                             if (a != null) {
-                                a.setEnabled(selectionVisible && !caretGuarded && isEditable);
+                                a.setEnabled(!caretGuarded && isEditable);
                             }
 
                             a = kit.getActionByName(BaseKit.removeSelectionAction);
@@ -545,6 +547,11 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                                     a.setEnabled(!a.isEnabled());
                                     isPasteActionInited = true;
                                 }
+                                a.setEnabled(!caretGuarded && isEditable);
+                            }
+
+                            a = kit.getActionByName(BaseKit.pasteFormatedAction);
+                            if (a != null) {
                                 a.setEnabled(!caretGuarded && isEditable);
                             }
                         }
