@@ -1788,7 +1788,7 @@ init_declarator
 initializer
     :  
         lazy_expression[false, false]
-	(options {warnWhenFollowAmbig = false;}:	
+	(options {greedy=true;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL
             | DIVIDEEQUAL
@@ -2930,7 +2930,7 @@ expression
 assignment_expression
 	:	
         lazy_expression[false, false]
-		(options {warnWhenFollowAmbig = false;}:	
+		(options {greedy=true;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL
             | DIVIDEEQUAL
