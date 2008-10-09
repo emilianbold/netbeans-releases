@@ -10,17 +10,21 @@ package org.netbeans.test.mercurial.utils;
  */
 public class hgExistsChecker {
 
-    public static boolean check(boolean printStackTraceIfSVNNotFound) {
+    public static boolean check(boolean printStackTraceIfHgNotFound) {
         Runtime rt = Runtime.getRuntime();
-
+        Process proc = null;
+        
         try {
-            Process proc = rt.exec("hg");
-            proc.waitFor();
+            proc = rt.exec("hg -v");
         } catch (Exception e) {
-            if (printStackTraceIfSVNNotFound) {
+            if (printStackTraceIfHgNotFound) {
                 e.printStackTrace();
             }
             return false;
+        } finally {
+            if (proc != null) {
+                proc.destroy();
+            }
         }
         return true;
     }

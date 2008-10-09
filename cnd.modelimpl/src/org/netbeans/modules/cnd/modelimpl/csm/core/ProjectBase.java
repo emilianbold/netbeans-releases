@@ -2169,6 +2169,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public static ProjectBase getStartProject(StartEntry startEntry) {
+        if (startEntry == null) {
+            return null;
+        }
         Key key = startEntry.getStartFileProject();
         ProjectBase prj = (ProjectBase)RepositoryUtils.get(key);
         return prj;
