@@ -502,10 +502,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             public void execute() throws Exception {
                 disconnectSync();
 
+                checkConfiguration();
+
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
                     Utils.getMessage("MSG_ConnectingToServer"));
-
-                checkConfiguration();
 
                 try {
                     progress.start();
@@ -599,10 +599,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             cmd.syncUp();
 
             Throwable e = cmd.getException();
-            if (e instanceof DatabaseException) {
-                throw (DatabaseException)e;
-            } else {
-                throw Utils.launderThrowable(e);
+            if (e != null) {
+                if (e instanceof DatabaseException) {
+                    throw (DatabaseException)e;
+                } else {
+                    throw Utils.launderThrowable(e);
+                }
             }
         } catch (InterruptedException e) {
             disconnect();

@@ -71,7 +71,6 @@ public class RailsProjectUtil {
         try {
             Pattern VERSION_ELEMENT = Pattern.compile("\\s*[A-Z]+\\s*=\\s*(\\d+)\\s*");
             BufferedReader br = new BufferedReader(new FileReader(versionFile));
-            StringBuilder sb = new StringBuilder();
             int major = 0;
             int minor = 0;
             int tiny = 0;
@@ -126,10 +125,46 @@ public class RailsProjectUtil {
                 }
             }
         }
-        
+
+        FileObject environment = project.getProjectDirectory().getFileObject("config/environment.rb"); // NOI18N
+        if (environment != null && environment.isValid()) {
+            String specifiedVersion = getSpecifiedRailsVersion(FileUtil.toFile(environment));
+            if (specifiedVersion != null) {
+                railsVersion = specifiedVersion;
+            }
+        }
+
         return railsVersion;
     }
-    
+
+    /** Return the version of Rails requested in environment.rb */
+    public static String getSpecifiedRailsVersion(File environment) {
+        try {
+            // Look for version specifications like
+            //    RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
+            // in environment.rb
+            BufferedReader br = new BufferedReader(new FileReader(environment));
+
+            Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]((\\d+)\\.(\\d+)\\.(\\d+))['\"].*"); // NOI18N
+            for (int line = 0; line < 20; line++) {
+                String s = br.readLine();
+                if (s == null) {
+                    break;
+                }
+                if (s.indexOf("RAILS_GEM_VERSION") != -1) { // NOI18N
+                    Matcher m = VERSION_PATTERN.matcher(s);
+                    if (m.matches()) {
+                        return m.group(1);
+                    }
+                }
+            }
+        } catch (IOException ioe) {
+            Exceptions.printStackTrace(ioe);
+        }
+        
+        return null;
+    }
+
     /**
      * Returns the property value evaluated by RailsProject's PropertyEvaluator.
      *

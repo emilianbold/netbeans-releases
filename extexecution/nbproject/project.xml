@@ -98,6 +98,7 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ada.platform</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.scala.console</friend>

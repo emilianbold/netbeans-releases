@@ -66,6 +66,8 @@ import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
@@ -168,7 +170,9 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             } catch (PatternSyntaxException pse) {
                 Exceptions.printStackTrace(pse);
             }
-            
+
+            gemUrls = adjustGemsForExplicitVersion(gemUrls);
+
             // Add in all the vendor/ paths, if any
             File vendor = new File(projectDirectory, "vendor");
             if (vendor.exists()) {
@@ -238,6 +242,81 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         }
         
         return urlString;
+    }
+
+    /** Adjust the gem urls according to the RAILS_GEM_VERSION specified in config/environment.rb */
+    private Map<String,URL> adjustGemsForExplicitVersion(Map<String, URL> gemUrls) {
+        // Look for version specifications like
+        //    RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
+        // in environment.rb
+        File environment = new File(projectDirectory, "config" + File.separator + "environment.rb"); // NOI18N
+        if (!environment.exists()) {
+            return gemUrls;
+        }
+
+        String railsVersion = RailsProjectUtil.getSpecifiedRailsVersion(environment);
+        if (railsVersion == null) {
+            // No version specified - no need to adjust anything
+            return gemUrls;
+        }
+
+        // See if we've picked the right version
+        String ACTIVERECORD = "activerecord"; // NOI18N
+        URL activerecord = gemUrls.get(ACTIVERECORD);
+        if (activerecord == null) {
+            // Activerecord not found at all - not good for a Rails projects, but at least no point adjusting versions
+            return gemUrls;
+        }
+        String activerecordUrl = activerecord.toExternalForm();
+        if (activerecordUrl.indexOf(ACTIVERECORD+"-" + railsVersion) != -1) { // NOI18N
+            // Already have the right version - we're done
+            return gemUrls;
+        }
+
+        Pattern VERSION_PATTERN = Pattern.compile(".*activerecord-(\\d+\\.\\d+\\.\\d+).*"); // NOI18N
+        Matcher m = VERSION_PATTERN.matcher(activerecordUrl);
+        if (!m.matches()) {
+            // Couldn't determine current version - don't attempt adjustments
+            return gemUrls;
+        }
+
+        String defaultVersion = m.group(1);
+
+        // Now attempt to fix the urls
+        gemUrls.get("actionwebservice");
+        String[] railsGems =  new String[] { "actionmailer", "actionpack", "activerecord",  // NOI18N
+                                         "activeresource", "activesupport", "rails", // NOI18N
+                                         "actionwebservice" }; // NOI18N    actionwebservice is Rails 1.x only
+        boolean first = true;
+        for (String gemName : railsGems) { // NOI18N
+            URL url = gemUrls.get(gemName);
+            if (url != null) {
+                String urlString = url.toExternalForm();
+                String replace = gemName + "-" + defaultVersion;
+                int index = urlString.indexOf(replace);
+                if (index != -1) {
+                    try {
+                        URL newUrl = new URL(urlString.replace(replace, gemName + "-" + railsVersion)); // NOI18N
+                        if (first) {
+                            first = false;
+                            FileObject fo = URLMapper.findFileObject(newUrl);
+                            if (fo == null) {
+                                // Can't find this URL - the project is probably specifying a Rails
+                                // project we don't have installed
+                                return gemUrls;
+                            }
+                            // Replace map the first time - the one we were passed was read-only
+                            gemUrls = new HashMap<String,URL>(gemUrls);
+                        }
+                        gemUrls.put(gemName, newUrl);
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
+
+        return gemUrls;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -380,7 +459,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             }
         }
     }
-    
+
     private List<URL> getVendorPlugins(File vendor) {
         assert vendor != null;
         

@@ -84,9 +84,10 @@ public abstract class IndexedElement extends RubyElement {
     protected int docLength = -1;
     private Document document;
     private FileObject fileObject;
+    private FileObject context;
 
     protected IndexedElement(RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
+        String clz, String require, String attributes, int flags, FileObject context) {
         this.index = index;
         this.fileUrl = fileUrl;
         this.fqn = fqn;
@@ -95,6 +96,7 @@ public abstract class IndexedElement extends RubyElement {
         // XXX Why do methods need to know their clz (since they already have fqn)
         this.clz = clz;
         this.flags = flags;
+        this.context = context;
     }
 
     public abstract String getSignature();
@@ -156,7 +158,7 @@ public abstract class IndexedElement extends RubyElement {
     @Override
     public FileObject getFileObject() {
         if ((fileObject == null) && (fileUrl != null)) {
-            fileObject = RubyIndex.getFileObject(fileUrl);
+            fileObject = RubyIndex.getFileObject(fileUrl, context);
 
             if (fileObject == null) {
                 // Don't try again

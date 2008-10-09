@@ -42,12 +42,14 @@
 package org.netbeans.modules.db.util;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.openide.util.NbBundle;
@@ -356,12 +358,16 @@ public class DriverListUtil {
 
                     driverUrls.add(url);
                 } else {
-                    // We already have one driver registered for this class name.
-                    // This is a new driver for the same driver class.  That means
-                    // it should be on the list with its own entry, but with the
-                    // same URL tempate
-                    newurl = new JdbcUrl(driver, url.getUrlTemplate(), url.isParseUrl());
-                    driverUrls.add(newurl);
+                    if (! isDriverEquals(driver, url.getDriver())) {
+                        // We already have one driver registered for this class name.
+                        // This is a new driver for the same driver class.  That means
+                        // it should be on the list with its own entry, but with the
+                        // same URL tempate
+                        newurl = new JdbcUrl(driver, url.getUrlTemplate(), url.isParseUrl());
+                        driverUrls.add(newurl);
+                    } else {
+                        driverUrls.add(url);
+                    }
                 }
             }
         }
@@ -409,5 +415,27 @@ public class DriverListUtil {
             }
         else
             return name;
+    }
+
+    private static boolean isDriverEquals(JDBCDriver driverOne, JDBCDriver driverTwo) {
+        // I didn't put this as a method on JDBCDriver because I don't want to change
+        // the behavior of equals() on a public class, and what we want for equals()
+        // may not be what others want.
+        if (driverOne == null && driverTwo == null) {
+            return true;
+        }
+
+        if (driverOne == null || driverTwo == null) {
+            return false;
+        }
+
+        if (driverOne == driverTwo) {
+            return true;
+        }
+
+        return driverOne.getClassName().equals(driverTwo.getClassName()) &&
+                driverOne.getDisplayName().equals(driverTwo.getDisplayName()) &&
+                driverOne.getName().equals(driverTwo.getName()) &&
+                Arrays.equals(driverOne.getURLs(), driverTwo.getURLs());
     }
 }

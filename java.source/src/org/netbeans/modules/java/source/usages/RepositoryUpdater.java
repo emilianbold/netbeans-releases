@@ -46,6 +46,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree;
@@ -373,12 +374,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public synchronized boolean isScanInProgress() {
-        return notInitialized || this.noSubmited > 0;
+        // true, when updater is not initilized, there is no scanning task
+        // submitted and GlobalSourcePath is actually changing.
+        return notInitialized || this.noSubmited > 0 || !GlobalSourcePath.getDefault().isFinished();
     }
     
     public synchronized void waitScanFinished () throws InterruptedException {
         while (isScanInProgress()) {
-            this.wait();
+            this.wait(1000);
         }
     }
     
@@ -3272,7 +3275,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             jt = null;
                             activeTuple = null;                            
                             listener.cleanDiagnostics();
-                            if (!(t instanceof Abort)) {                                
+                            if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {                                
                                 final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                                 final ClassPath classPath  = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                                 final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);

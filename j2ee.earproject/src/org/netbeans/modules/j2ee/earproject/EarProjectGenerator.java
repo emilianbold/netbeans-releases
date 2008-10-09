@@ -594,7 +594,7 @@ public final class EarProjectGenerator {
         } catch (InstanceRemovedException ex) {
             // false
         }
-        ep.setProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
+        ep.setProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
 
         Deployment deployment = Deployment.getDefault();
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));

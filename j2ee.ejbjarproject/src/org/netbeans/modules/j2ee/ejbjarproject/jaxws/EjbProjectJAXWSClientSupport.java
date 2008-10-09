@@ -98,10 +98,9 @@ public class EjbProjectJAXWSClientSupport extends ProjectJAXWSClientSupport/* im
         String finalClientName = super.addServiceClient(clientName, wsdlUrl, packageName, isJsr109);
         
         // copy resources to META-INF/wsdl/client/${clientName}
-        // this will be done only for local wsdl files
         JaxWsModel jaxWsModel = project.getLookup().lookup(JaxWsModel.class);
         Client client = jaxWsModel.findClientByName(finalClientName);
-        if (client!=null && client.getWsdlUrl().startsWith("file:")) { //NOI18N
+        if (client!=null) {
             try {
                 FileObject wsdlFolder = getWsdlFolderForClient(finalClientName);
                 FileObject xmlResorcesFo = getLocalWsdlFolderForClient(finalClientName, false);

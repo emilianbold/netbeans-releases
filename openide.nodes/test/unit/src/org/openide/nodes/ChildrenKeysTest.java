@@ -1308,6 +1308,9 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("Child check", "a", ta.getChildren().getNodeAt(0).getName());
         lch.assertLazyCount("Counter shouldbe all", 3);
 
+        // to prevent GC/removeNotify()
+        Node hold = ta.getChildren().getNodeAt(0);
+
         lch.keys("a", "b", "c", "x", "-x");
         
         lch.assertLazyCount("Counter shouldstill be 3", 3);
@@ -1562,6 +1565,33 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a1", snapshot.get(0).getName());
         assertEquals("a2", snapshot.get(1).getName());
         assertEquals("a3", snapshot.get(2).getName());
+    }
+    
+    public void testSnapshotWithEmptyEntries() {
+        class K extends Keys {
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+        Keys ch = new K(lazy(), "a1", "a2", "-a3");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a2", snapshot.get(1).getName());
+        if (lazy()) {
+            assertEquals("", snapshot.get(2).getName());
+        }
     }
 
     // test for issue #145892

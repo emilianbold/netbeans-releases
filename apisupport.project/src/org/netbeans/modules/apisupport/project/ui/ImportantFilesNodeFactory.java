@@ -85,14 +85,23 @@ public class ImportantFilesNodeFactory implements NodeFactory {
     /** Package private for unit tests. */
     static final String IMPORTANT_FILES_NAME = "important.files"; // NOI18N
 
-    /** Package private for unit tests only. */
-    static final RequestProcessor RP = new RequestProcessor();
+    private static final RequestProcessor RP = new RequestProcessor(ImportantFilesNodeFactory.class.getName());
     
     public ImportantFilesNodeFactory() {
     }
     
     public NodeList createNodes(Project p) {
         return new ImpFilesNL(p);
+    }
+
+    /**
+     * Public RP serving as queue of calls into org.openide.nodes.
+     * All such calls must be made outside ProjectManager#mutex(),
+     * this (shared) queue ensures ordering of calls.
+     * @return Shared RP
+     */
+    public static RequestProcessor getNodesSyncRP() {
+        return RP;
     }
 
     private static class ImpFilesNL implements NodeList<String> {
@@ -269,7 +278,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             newVisibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
             if (!newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
-                RP.post(new Runnable() { // #72471
+                getNodesSyncRP().post(new Runnable() { // #72471
                     public void run() {
                         setKeys(visibleFiles);
                     }
@@ -452,7 +461,7 @@ public class ImportantFilesNodeFactory implements NodeFactory {
             }
             if (!isInitialized() || !newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
-                RP.post(new Runnable() { // #72471
+                getNodesSyncRP().post(new Runnable() { // #72471
                     public void run() {
                         setKeys(visibleFiles);
                     }

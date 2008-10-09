@@ -216,6 +216,16 @@ public class GlobalSourcePath implements Runnable {
         LOG.log(Level.FINE, "resetCacheAndFire"); // NOI18N
         firerTask.schedule(0);
     }
+
+    /** 
+     * If all the source path events where fired (task is finished) return true,
+     * otherwise false. (Means there is waiting event to be fired.)
+     *
+     * @return true when there is no waiting event, otherwise false
+     */
+    public boolean isFinished() {
+        return firerTask.isFinished();
+    }
     
     public void run() {
         assert firer.isRequestProcessorThread();
