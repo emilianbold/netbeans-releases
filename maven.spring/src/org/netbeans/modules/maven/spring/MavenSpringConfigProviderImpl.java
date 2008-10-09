@@ -72,7 +72,6 @@ public class MavenSpringConfigProviderImpl implements SpringConfigFileLocationPr
      */
 
     public FileObject getLocation() {
-        System.out.println("get location");
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
         if (NbMavenProject.TYPE_WAR.equals(project.getPackagingType())) {
             FileObject fo = FileUtilities.convertURItoFileObject(project.getWebAppDirectory());
@@ -91,7 +90,6 @@ public class MavenSpringConfigProviderImpl implements SpringConfigFileLocationPr
     }
 
     public Set<File> getConfigFiles() {
-        System.out.println("get config files");
         Set<File> result = new HashSet<File>();
         NbMavenProject project = prj.getLookup().lookup(NbMavenProject.class);
         if (NbMavenProject.TYPE_WAR.equals(project.getPackagingType())) {
