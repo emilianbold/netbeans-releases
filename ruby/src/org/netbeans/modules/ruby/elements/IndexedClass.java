@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -59,14 +60,14 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     private String in;
 
     protected IndexedClass(RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags);
+        String clz, String require, String attributes, int flags, FileObject context) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
     }
 
     public static IndexedClass create(RubyIndex index, String clz, String fqn, String fileUrl,
-        String require, String attributes, int flags) {
+        String require, String attributes, int flags, FileObject context) {
         IndexedClass c =
-            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags);
+            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags, context);
 
         return c;
     }

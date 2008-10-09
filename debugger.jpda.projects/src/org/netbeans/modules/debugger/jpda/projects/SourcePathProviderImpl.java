@@ -209,12 +209,33 @@ public class SourcePathProviderImpl extends SourcePathProvider {
                     }
                 }
             }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("SourcePathProviderImpl: preferred source roots = "+preferredRoots+")");
+            }
             Set<FileObject> globalRoots = new TreeSet<FileObject>(new FileObjectComparator());
             globalRoots.addAll(GlobalPathRegistry.getDefault().getSourceRoots());
             for (FileObject fo : globalRoots) {
                 if (!preferredRoots.contains(fo)) {
                     allSourceRoots.add(fo);
                 }
+            }
+            JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
+            for (int i = 0; i < platforms.length; i++) {
+                FileObject[] roots = platforms[i].getSourceFolders().getRoots ();
+                int j, jj = roots.length;
+                for (j = 0; j < jj; j++) {
+                    if (!allSourceRoots.contains(roots [j])) {
+                        allSourceRoots.add(roots [j]);
+                    }
+                }
+            }
+            if (logger.isLoggable(Level.FINE)) {
+                logger.fine("SourcePathProviderImpl: GlobalPathRegistry roots = "+GlobalPathRegistry.getDefault().getSourceRoots()+")");
+                logger.fine("Platform roots:");
+                for (int i = 0; i < platforms.length; i++) {
+                    logger.fine(" "+Arrays.asList(platforms[i].getSourceFolders().getRoots ()).toString());
+                }
+                logger.fine("SourcePathProviderImpl: all source roots = "+allSourceRoots+")");
             }
             
             originalSourcePath = ClassPathSupport.createClassPath (
@@ -225,8 +246,6 @@ public class SourcePathProviderImpl extends SourcePathProvider {
 
             srcRootsToListenForArtifactsUpdates = new HashSet(allSourceRoots);
             
-            JavaPlatform[] platforms = JavaPlatformManager.getDefault ().
-                getInstalledPlatforms ();
             int i, k = platforms.length;
             for (i = 0; i < k; i++) {
                 FileObject[] roots = platforms [i].getSourceFolders ().

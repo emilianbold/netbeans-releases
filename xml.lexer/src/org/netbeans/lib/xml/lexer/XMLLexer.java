@@ -718,11 +718,15 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                         case '"':
                             state = ISP_DECL_STRING;
                             input.backup(1);
-                            return token(XMLTokenId.DECLARATION);
+                            if (input.readLength() > 0)
+                                return token(XMLTokenId.DECLARATION);
+                            break;
                         case '\'':
                             state = ISP_DECL_CHARS;
                             input.backup(1);
-                            return token(XMLTokenId.DECLARATION);
+                            if (input.readLength() > 0)
+                                return token(XMLTokenId.DECLARATION);
+                            break;
                         case '[':
                             state = INIT;
                             enterInternalDTD();
@@ -742,8 +746,10 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     } else {
                         state = INIT;
                         input.backup(1);
-                        return token(XMLTokenId.ERROR);
+                        if (input.readLength() > 0)
+                            return token(XMLTokenId.ERROR);
                     }
+                    break;
                     
                 case ISA_SGML_DECL_DASH:
                     if( actChar == '-' ) {

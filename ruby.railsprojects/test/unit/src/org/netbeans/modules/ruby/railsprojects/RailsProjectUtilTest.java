@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,57 +31,37 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.subversion.testsuites;
+package org.netbeans.modules.ruby.railsprojects;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.subversion.main.commit.CommitDataTest;
-import org.netbeans.test.subversion.main.commit.CommitUiTest;
-import org.netbeans.test.subversion.main.commit.IgnoreTest;
-import org.netbeans.test.subversion.utils.svnExistsChecker;
+import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Dvorak, (joshis)
+ * @author Tor Norbye
  */
-public class commitTestSuite extends JellyTestCase {
-    
-    public commitTestSuite(String name) {
+public class RailsProjectUtilTest extends RubyTestBase {
+
+    public RailsProjectUtilTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+    public void testGetVersionString() throws Exception {
+        FileObject versionFo = getTestFile("testfiles/version.rb");
+        String version = RailsProjectUtil.getVersionString(FileUtil.toFile(versionFo));
+        assertEquals("2.0.2", version);
     }
 
-    /**
-     * Simple method uniting together all the different tests under subversion
-     * tests-qa-functional
-     */
-    public static Test suite() {
-        if (System.getProperty("os.name").toLowerCase().contains("vista")) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                        .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
-                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                        .enableModules(".*").clusters(".*"));
-        } else {
-            if (svnExistsChecker.check(false)) {
-                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                        .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
-                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                        .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
-                        .enableModules(".*").clusters(".*"));
-            } else {
-                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-            }
-        }
+    public void testGetSpecifiedRailsVersion() throws Exception {
+        FileObject versionFo = getTestFile("testfiles/environment.rb");
+        String version = RailsProjectUtil.getSpecifiedRailsVersion(versionFo);
+        assertEquals("2.1.0", version);
     }
 }
