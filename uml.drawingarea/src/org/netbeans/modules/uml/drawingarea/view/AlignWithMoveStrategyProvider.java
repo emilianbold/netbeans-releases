@@ -67,6 +67,7 @@ import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
 
@@ -207,6 +208,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         initializeMovingWidgets(widget.getScene(), widget);
         
         lastPoint = original;
+        original = widget.getParentWidget().convertLocalToScene(lastPoint);
         return original;
     }
 
@@ -257,11 +259,11 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     //in case if this class is used only as provider and strategy isn't used
                     initializeMovingWidgets(widget.getScene(), widget);
                 }
-                
+
                 // The dx is calcuated using a start location of when the move
                 // first started.  However for connection points we do not have
                 // the connection point values from before the move started.
-                // 
+                //
                 // Therefore use the reference widget to determine the dx.
 
                 lastPoint = location;
@@ -273,7 +275,7 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     {
                         point = details.getWidget().getLocation();
                     }
-                    
+
                     Point newPt = new Point(point.x + dx, point.y + dy);
                     if (details.getWidget() instanceof ConnectionWidget)
                     {
@@ -281,7 +283,21 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                         // take care of this situation.
                     }
                     else
+                    {
+                        // I do not understand what is different between the
+                        // composite container and the other nodes.  However
+                        // the position is always relative to the contianers
+                        // original owner.
+                        //
+                        // Since we are at the end of the release cycle I am
+                        // not wanting to do anything big here.  So special
+                        // case the composite nodes.
+                        if(details.getWidget() instanceof ContainerWithCompartments)
+                        {
+                            newPt = details.getOwner().convertLocalToScene(newPt);
+                        }
                         details.getWidget().setPreferredLocation(newPt);
+                    }
                 }
             }
         }
