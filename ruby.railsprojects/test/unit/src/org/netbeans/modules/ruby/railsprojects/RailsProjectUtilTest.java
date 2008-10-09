@@ -53,7 +53,6 @@ public class RailsProjectUtilTest extends RubyTestBase {
         super(name);
     }
 
-
     public void testGetVersionString() throws Exception {
         FileObject versionFo = getTestFile("testfiles/version.rb");
         String version = RailsProjectUtil.getVersionString(FileUtil.toFile(versionFo));
@@ -62,7 +61,7 @@ public class RailsProjectUtilTest extends RubyTestBase {
 
     public void testGetSpecifiedRailsVersion() throws Exception {
         FileObject versionFo = getTestFile("testfiles/environment.rb");
-        String version = RailsProjectUtil.getSpecifiedRailsVersion(FileUtil.toFile(versionFo));
+        String version = RailsProjectUtil.getSpecifiedRailsVersion(versionFo);
         assertEquals("2.1.0", version);
     }
 }
