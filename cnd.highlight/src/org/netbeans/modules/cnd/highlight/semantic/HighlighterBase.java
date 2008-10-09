@@ -119,15 +119,4 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
         }
     }
 
-    protected class MyInterruptor implements Interrupter, Cancellable {
-        private boolean canceled = false;
-        public boolean cancelled() {
-            return canceled;
-        }
-        public boolean cancel() {
-            canceled = true;
-            return true;
-        }
-    }
-    
 }

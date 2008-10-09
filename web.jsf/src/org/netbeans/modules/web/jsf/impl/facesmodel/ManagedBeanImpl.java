@@ -98,7 +98,10 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     
     public String getManagedBeanName() {
         if (beanName == null) {
-            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI())).trim();
+            beanName = getChildElementText(JSFConfigQNames.MANAGED_BEAN_NAME.getQName(getNamespaceURI()));
+            if (beanName != null) {
+                beanName = beanName.trim();
+            }
         }
         return beanName;
     }
@@ -109,7 +112,10 @@ public class ManagedBeanImpl extends DescriptionGroupImpl implements ManagedBean
     
     public String getManagedBeanClass() {
         if (beanClass ==  null) {
-            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI())).trim();
+            beanClass = getChildElementText(JSFConfigQNames.MANAGED_BEAN_CLASS.getQName(getNamespaceURI()));
+            if (beanClass != null) {
+                beanClass = beanClass.trim();
+            }
         }
         return beanClass;
     }

@@ -135,6 +135,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
@@ -212,6 +213,7 @@ public class FieldBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 109);
 

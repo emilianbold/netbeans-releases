@@ -17,15 +17,19 @@ public class svnExistsChecker {
      */
     public static boolean check(boolean printStackTraceIfSVNNotFound) {
         Runtime rt = Runtime.getRuntime();
+        Process proc = null;
 
         try {
-            Process proc = rt.exec("svn");
-            proc.waitFor();
+            proc = rt.exec("svn");
         } catch (Exception e) {
             if (printStackTraceIfSVNNotFound) {
                 e.printStackTrace();
             }
             return false;
+        } finally {
+            if (proc != null) {
+                proc.destroy();
+            }
         }
         return true;
     }

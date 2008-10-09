@@ -763,7 +763,7 @@ public class WebProjectUtilities {
         } catch (InstanceRemovedException ex) {
             // false
         }
-        ep.setProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
+        ep.setProperty(WebProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
         
         ep.setProperty(WebProjectProperties.J2EE_SERVER_TYPE, serverType);
         

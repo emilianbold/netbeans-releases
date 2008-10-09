@@ -151,11 +151,18 @@ class SQLStatementGenerator {
     String generateCreateStatement(DBTable table) throws DBException, Exception{
 
         Connection conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
-        if(conn == null) {
-            String msg = NbBundle.getMessage(SQLStatementGenerator.class,"MSG_connection_failure", dataView.getDatabaseConnection());
+        String msg = "";
+        if (conn == null) {
+            Throwable ex = DBConnectionFactory.getInstance().getLastException();
+            if (ex != null) {
+                msg = ex.getMessage();
+            } else {
+                msg = NbBundle.getMessage(SQLExecutionHelper.class, "MSG_connection_failure", dataView.getDatabaseConnection());
+            }
+            dataView.setErrorStatusText(new DBException(msg));
             throw new DBException(msg);
         }
-
+        
         DBMetaDataFactory dbMeta = new DBMetaDataFactory(conn);
         boolean isdb2 = dbMeta.getDBType() == DBMetaDataFactory.DB2? true : false;
         Map<Integer, String> typeInfo = dbMeta.buildDBSpecificDatatypeMap();

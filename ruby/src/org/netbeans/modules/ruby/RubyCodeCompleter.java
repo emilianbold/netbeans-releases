@@ -2059,7 +2059,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
 
         anchor = lexOffset - prefix.length();
 
-        final RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+        final RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
         final Document document = info.getDocument();
         if (document == null) {
@@ -3381,7 +3381,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
             if (node != null) {
                 Index idx = info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE);
                 if (idx != null) {
-                    RubyIndex index = RubyIndex.get(idx);
+                    RubyIndex index = RubyIndex.get(idx, info.getFileObject());
                     IndexedClass cls = index.getSuperclass(AstUtilities.getFqnName(path));
 
                     if (cls != null) {
