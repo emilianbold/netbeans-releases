@@ -398,7 +398,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsLocalReload() : "local gems are ready";
-        LOGGER.finer("Updating loca gems UI for: " + gemManager);
+        LOGGER.finer("Updating local gems UI for: " + gemManager);
         
         hideLocalProgressBars();
 
@@ -412,7 +412,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsRemoteReload() : "remote gems are ready";
-        LOGGER.finer("Updating loca gems UI for: " + gemManager);
+        LOGGER.finer("Updating local gems UI for: " + gemManager);
         
         hideRemoteProgressBars();
 
