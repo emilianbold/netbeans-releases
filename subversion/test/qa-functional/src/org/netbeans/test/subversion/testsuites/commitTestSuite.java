@@ -67,14 +67,18 @@ public class commitTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (svnExistsChecker.check(false)) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
-                    .enableModules(".*").clusters(".*"));
-        } else {
+        if (System.getProperty("os.name").contains("Vista")) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        } else {
+            if (svnExistsChecker.check(false)) {
+                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                        .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
+                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                        .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
+                        .enableModules(".*").clusters(".*"));
+            } else {
+                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+            }
         }
     }
 }
