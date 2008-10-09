@@ -67,6 +67,7 @@ import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.RailsProjectUtil;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
@@ -250,11 +251,15 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
         //    RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
         // in environment.rb
         File environment = new File(projectDirectory, "config" + File.separator + "environment.rb"); // NOI18N
-        if (!environment.exists()) {
+        if (!environment.isFile()) {
+            return gemUrls;
+        }
+        FileObject environmentFO = FileUtil.toFileObject(FileUtil.normalizeFile(environment));
+        if (environment == null) {
             return gemUrls;
         }
 
-        String railsVersion = RailsProjectUtil.getSpecifiedRailsVersion(environment);
+        String railsVersion = RailsProjectUtil.getSpecifiedRailsVersion(environmentFO);
         if (railsVersion == null) {
             // No version specified - no need to adjust anything
             return gemUrls;
