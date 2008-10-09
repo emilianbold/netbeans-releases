@@ -87,6 +87,7 @@ import org.openide.awt.HtmlRenderer;
 import org.openide.nodes.Node.Property;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /** 
  * Factory for renderers which can display properties.  With the exception
@@ -116,6 +117,7 @@ final class RendererFactory {
     private IconPanel iconPanel;
     private ReusablePropertyModel mdl;
     private ReusablePropertyEnv env;
+    private PropertyChangeListener activeThemeListener;
     private boolean tableUI;
     private boolean suppressButton;
     private int radioButtonMax = -1;
@@ -130,7 +132,8 @@ final class RendererFactory {
 
         
         //reset renderers when windows theme is changing (classic <-> xp)
-        Toolkit.getDefaultToolkit().addPropertyChangeListener( "win.xpstyle.themeActive", new PropertyChangeListener() { //NOI18N
+        ToolkitPropertyChangeListenerProxy tp = new ToolkitPropertyChangeListenerProxy();
+        activeThemeListener = new PropertyChangeListener() {
             public void propertyChange(PropertyChangeEvent evt) {
                 stringRenderer = null;
                 checkboxRenderer = null;
@@ -140,7 +143,36 @@ final class RendererFactory {
                 buttonPanel = null;
                 iconPanel = null;
             }
-        });
+        };
+        tp.addPropertyChangeListener(WeakListeners.propertyChange(activeThemeListener, tp));
+
+    }
+
+    private static class ToolkitPropertyChangeListenerProxy implements PropertyChangeListener {
+
+        private PropertyChangeListener l;
+
+        public ToolkitPropertyChangeListenerProxy() {
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener l) {
+            this.l = l;
+            Toolkit.getDefaultToolkit().addPropertyChangeListener(
+                    "win.xpstyle.themeActive",   //NOI18N
+                    this);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener l) {
+            if (this.l == l) {
+                Toolkit.getDefaultToolkit().removePropertyChangeListener(
+                        "win.xpstyle.themeActive",   //NOI18N
+                        this);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            l.propertyChange(evt);
+        }
     }
 
     public void setRadioButtonMax(int i) {

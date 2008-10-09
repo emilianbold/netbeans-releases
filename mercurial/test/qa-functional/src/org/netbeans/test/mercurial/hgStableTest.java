@@ -62,25 +62,20 @@ public class hgStableTest extends JellyTestCase {
     }
 
     public static Test suite() {
-        String osName = System.getProperty("os.name");
-        if (osName.contains("Windows")&&!(osName.contains("Vista"))) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        if (hgExistsChecker.check(false)) {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                    .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
+                    .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
+                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                    .addTest(CloneTest.class, "testCloneProject")
+                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
+                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
+                    .addTest(AnnotationsTest.class, "testShowAnnotations")
+                    .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
+                    .enableModules(".*")
+                    .clusters(".*"));
         } else {
-            if (hgExistsChecker.check(false)) {
-                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                        .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
-                        .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
-                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                        .addTest(CloneTest.class, "testCloneProject")
-                        .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
-                        .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
-                        .addTest(AnnotationsTest.class, "testShowAnnotations")
-                        .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
-                        .enableModules(".*")
-                        .clusters(".*"));
-            } else {
-                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-            }
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
         }
     }
 }
