@@ -1778,7 +1778,7 @@ init_declarator
 	:	declarator 
 		(	
 			ASSIGNEQUAL 
-                        ((LPAREN ID RPAREN) => (LPAREN ID RPAREN))?
+                        ((LPAREN ID RPAREN LCURLY) => (LPAREN ID RPAREN))?
 			initializer
 		|	
 			LPAREN expression_list RPAREN
