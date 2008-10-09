@@ -45,6 +45,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
@@ -60,7 +61,8 @@ import org.openide.util.Exceptions;
 
 /**
  * Miscellaneous utilities for the Rails project module.
- * @author  Jiri Rechtacek
+ *
+ * @author Jiri Rechtacek
  */
 public class RailsProjectUtil {
     
@@ -69,7 +71,7 @@ public class RailsProjectUtil {
     /** Get the version string out of a ruby version.rb file */
     public static String getVersionString(File versionFile) {
         try {
-            Pattern VERSION_ELEMENT = Pattern.compile("\\s*[A-Z]+\\s*=\\s*(\\d+)\\s*");
+            Pattern VERSION_ELEMENT = Pattern.compile("\\s*[A-Z]+\\s*=\\s*(\\d+)\\s*"); // NOI18N
             BufferedReader br = new BufferedReader(new FileReader(versionFile));
             int major = 0;
             int minor = 0;
@@ -80,17 +82,17 @@ public class RailsProjectUtil {
                     break;
                 }
 
-                if (s.indexOf("MAJOR") != -1) {
+                if (s.indexOf("MAJOR") != -1) { // NOI18N
                     Matcher m = VERSION_ELEMENT.matcher(s);
                     if (m.matches()) {
                         major = Integer.parseInt(m.group(1));
                     }
-                } else if (s.indexOf("MINOR") != -1) {
+                } else if (s.indexOf("MINOR") != -1) { // NOI18N
                     Matcher m = VERSION_ELEMENT.matcher(s);
                     if (m.matches()) {
                         minor = Integer.parseInt(m.group(1));
                     }
-                } else if (s.indexOf("TINY") != -1) {
+                } else if (s.indexOf("TINY") != -1) { // NOI18N
                     Matcher m = VERSION_ELEMENT.matcher(s);
                     if (m.matches()) {
                         tiny = Integer.parseInt(m.group(1));
@@ -100,7 +102,7 @@ public class RailsProjectUtil {
             br.close();
             
         
-            return major + "." + minor + "." + tiny;
+            return major + "." + minor + "." + tiny; // NOI18N
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -128,7 +130,7 @@ public class RailsProjectUtil {
 
         FileObject environment = project.getProjectDirectory().getFileObject("config/environment.rb"); // NOI18N
         if (environment != null && environment.isValid()) {
-            String specifiedVersion = getSpecifiedRailsVersion(FileUtil.toFile(environment));
+            String specifiedVersion = getSpecifiedRailsVersion(environment);
             if (specifiedVersion != null) {
                 railsVersion = specifiedVersion;
             }
@@ -138,12 +140,13 @@ public class RailsProjectUtil {
     }
 
     /** Return the version of Rails requested in environment.rb */
-    public static String getSpecifiedRailsVersion(File environment) {
+    public static String getSpecifiedRailsVersion(final FileObject environment) {
+        BufferedReader br = null;
         try {
             // Look for version specifications like
             //    RAILS_GEM_VERSION = '2.1.0' unless defined? RAILS_GEM_VERSION
             // in environment.rb
-            BufferedReader br = new BufferedReader(new FileReader(environment));
+            br = new BufferedReader(new InputStreamReader(environment.getInputStream()));
 
             Pattern VERSION_PATTERN = Pattern.compile("\\s*RAILS_GEM_VERSION\\s*=\\s*['\"]((\\d+)\\.(\\d+)\\.(\\d+))['\"].*"); // NOI18N
             for (int line = 0; line < 20; line++) {
@@ -160,6 +163,14 @@ public class RailsProjectUtil {
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
         
         return null;
@@ -188,7 +199,7 @@ public class RailsProjectUtil {
     public static void getAllScripts(String prefix, FileObject sourcesRoot, List<String> result) {
         FileObject children[] = sourcesRoot.getChildren();
         if (!"".equals(prefix)) {
-            prefix += "/";
+            prefix += "/"; // NOI18N
             //prefix += ".";
         }
         for (int i = 0; i < children.length; i++) {
