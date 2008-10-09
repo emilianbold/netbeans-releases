@@ -67,8 +67,11 @@ public class commitTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (System.getProperty("os.name").contains("Vista")) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        if (System.getProperty("os.name").toLowerCase().contains("vista")) {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                        .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
+                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                        .enableModules(".*").clusters(".*"));
         } else {
             if (svnExistsChecker.check(false)) {
                 return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
