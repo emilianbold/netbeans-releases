@@ -256,9 +256,9 @@ public class AstRenderer {
         if( typedefs != null ) {
             for (int i = 0; i < typedefs.length; i++) {
                 // It could be important to register in project before add as member...
-//                if (!isRenderingLocalContext()) {
+                if (!isRenderingLocalContext()) {
                     file.getProjectImpl(true).registerDeclaration(typedefs[i]);
-//                }
+                }
                 if (container != null) {
                     container.addDeclaration(typedefs[i]);
                 }

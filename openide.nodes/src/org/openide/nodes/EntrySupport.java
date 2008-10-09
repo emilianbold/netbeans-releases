@@ -202,6 +202,7 @@ abstract class EntrySupport {
                 if (LOG_ENABLED) {
                     LOGGER.finer("Find child got: " + find); // NOI18N
                 }
+                Children.LOG.log(Level.FINEST,"after findChild: {0}", optimalResult);
             }
 
             return getNodes();
@@ -1133,9 +1134,12 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return new Node[0];
             }
+            Node holder = null;
             if (optimalResult) {
-                children.findChild(null);
+                holder = children.findChild(null);
             }
+            Children.LOG.log(Level.FINEST, "findChild returns: {0}", holder); // NOI18N
+            Children.LOG.log(Level.FINEST, "after findChild: {0}", optimalResult); // NOI18N
             while (true) {
                 Set<Entry> invalidEntries = null;
                 Node[] tmpNodes = null;
@@ -1202,7 +1206,7 @@ abstract class EntrySupport {
             return null;
         }
         
-        final boolean isDummyNode(Node node) {
+        static final boolean isDummyNode(Node node) {
             return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode"); // NOI18N
         }
 
@@ -1483,7 +1487,7 @@ abstract class EntrySupport {
                 return getNode(false, null);
             }
             
-            private boolean creatingNode = false;
+            private Thread creatingNodeThread = null;
             public final Node getNode(boolean refresh, Object source) {
                 while (true) {
                     Node node = null;
@@ -1498,13 +1502,17 @@ abstract class EntrySupport {
                                 return node;
                             }
                         }
-                        if (creatingNode) {
+                        if (creatingNodeThread != null) {
+                            if (creatingNodeThread == Thread.currentThread()) {
+                                return new DummyNode();
+                            }
                             try {
                                 LOCK.wait();
                             } catch (InterruptedException ex) {
                             }
                         } else {
-                            creatingNode = creating = true;
+                            creatingNodeThread = Thread.currentThread();
+                            creating = true;
                         }
                     }
                     Collection<Node> nodes = Collections.emptyList();
@@ -1536,7 +1544,7 @@ abstract class EntrySupport {
                         }
                         refNode = new NodeRef(node, this);
                         if (creating) {
-                            creatingNode = false;
+                            creatingNodeThread = null;
                             LOCK.notifyAll();
                         }
                     }

@@ -41,11 +41,24 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.gsf.api.ParseEvent;
+import org.netbeans.modules.gsf.api.ParseListener;
+import org.netbeans.modules.gsf.api.Parser.Job;
+import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.gsf.api.ParserResult;
+import org.netbeans.modules.gsf.api.SourceFileReader;
+import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.gsf.spi.DefaultParserFile;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -153,13 +166,13 @@ public class JsParserTest extends JsTestBase {
 
     public void testPartial13() throws Exception {
         // http://www.netbeans.org/issues/show_bug.cgi?id=133173
-        checkParseTree("testfiles/broken13.js", "__UNKN^OWN__", Token.NAME);
+        checkParseTree("testfiles/broken13.js", "__UNKN^OWN__", Token.BLOCK);
     }
 
     public void testPartial14() throws Exception {
         // Variation of
         // http://www.netbeans.org/issues/show_bug.cgi?id=133173
-        checkParseTree("testfiles/broken14.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/broken14.js", "__UNK^NOWN__", Token.SETNAME);
     }
 
     public void testPartial15() throws Exception {
@@ -169,19 +182,27 @@ public class JsParserTest extends JsTestBase {
     }
 
     public void test136495a() throws Exception {
-        checkParseTree("testfiles/lbracketlist.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/lbracketlist.js", "__UNK^NOWN__", Token.ARRAYLIT);
     }
 
     public void test136495b() throws Exception {
-        checkParseTree("testfiles/embedding/issue136495.erb.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/embedding/issue136495.erb.js", "__UNK^NOWN__", Token.ARRAYLIT);
     }
 
     public void test120499() throws Exception {
-        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.NAME);
+        checkParseTree("testfiles/issue120499.js", "__UNK^NOWN__", Token.BLOCK);
     }
 
     public void test148423() throws Exception {
         checkParseTree("testfiles/issue148423.js", "__UNK^NOWN__", Token.STRING);
+    }
+
+    public void test149019() throws Exception {
+        checkParseTree("testfiles/issue149019.js", "__UNK^NOWN__", Token.STRING);
+    }
+
+    public void testGeneratedIdentifiers() throws Exception {
+        checkParseTree("testfiles/generated_identifiers.js", "__UNK^NOWN__", Token.SETNAME);
     }
 
     public void testIncremental1() throws Exception {
@@ -211,5 +232,49 @@ public class JsParserTest extends JsTestBase {
                 0.0d, // small file - no speedup expected
                 "^localObject", INSERT+"var "
                 );
+    }
+
+    public void testValidResult() throws Exception {
+        // Make sure we get a valid parse result out of an aborted parse
+        FileObject fo = getTestFile("testfiles/issue149226.js");
+        ParserFile file = new DefaultParserFile(fo, null, false);
+        List<ParserFile> files = Collections.<ParserFile>singletonList(file);
+        final ParserResult[] resultHolder = new ParserResult[1];
+        final Exception[] exceptionHolder = new Exception[1];
+
+        ParseListener listener = new ParseListener() {
+
+            public void started(ParseEvent e) {
+            }
+
+            public void finished(ParseEvent e) {
+                resultHolder[0] = e.getResult();
+            }
+
+            public void error(Error e) {
+            }
+
+            public void exception(Exception e) {
+                exceptionHolder[0] = e;
+            }
+
+        };
+        TranslatedSource ts = null;
+        SourceFileReader reader = new SourceFileReader() {
+
+            public CharSequence read(ParserFile file) throws IOException {
+                throw new IOException("Simulate failure");
+            }
+
+            public int getCaretOffset(ParserFile file) {
+                return -1;
+            }
+
+        };
+        Job job = new Job(files, listener, reader, ts);
+        new JsParser().parseFiles(job);
+
+        assertNotNull("Parser result must be nonnull", resultHolder[0]);
+        assertNotNull("Expected to have the listener notified of a failure", exceptionHolder[0]);
     }
 }

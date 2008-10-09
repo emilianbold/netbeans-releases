@@ -761,8 +761,8 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             //actions
             //seems reasonable to remove control button after drawing
             //add actions to execution specifications
-            if(sourceExWidget!=null)sourceExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
-            if(targetExWidget!=null)targetExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
+            //if(sourceExWidget!=null)sourceExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
+            //if(targetExWidget!=null)targetExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
             //--
             //revalidate with
             if(sourceNested)
@@ -978,8 +978,8 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             //actions
             //seems reasonable to remove control button after drawing
             //add actions to execution specifications
-            if(sourceExWidget!=null)sourceExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
-            if(targetExWidget!=null)targetExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
+            //if(sourceExWidget!=null)sourceExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
+            //if(targetExWidget!=null)targetExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
             //--
             //revalidate with
             if(sourceNested)
@@ -1125,7 +1125,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
             //actions
             //seems reasonable to remove control button after drawing
             //add actions to execution specifications
-            if(sourceExWidget!=null)sourceExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
+            //if(sourceExWidget!=null)sourceExWidget.createActions(DesignerTools.SELECT).addAction(ActionFactory.createMoveAction(new ThinExecutionSpecificationMoveStrategy(),new ThinExecutionSpecificationMoveProvider()));
             //--
             //revalidate with
             if(sourceNested)
