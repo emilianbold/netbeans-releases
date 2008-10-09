@@ -67,6 +67,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -90,7 +91,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.WARNING;
+        return Level.FINEST;
     }
 
     @Override
@@ -335,6 +336,102 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         assertEquals ("index 2 and 4 is not visible", 5, k.getNodesCount(true));
 
+    }
+
+    public void testGCWhenGetNodesTrue() throws Exception {
+
+
+        class K extends Keys implements Runnable {
+            volatile Reference<Node> toClear;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                LOG.info("createNodes for " + key);
+                Node[] arr = super.createNodes(key);
+                toClear = new WeakReference<Node>(arr[0]);
+                LOG.info("reference created: " + toClear.get());
+                synchronized (this) {
+                    notifyAll();
+                }
+                LOG.info("reference notified");
+                return arr;
+            }
+
+            public void run() {
+                LOG.info("before cleanup");
+                while (toClear == null) {
+                    LOG.info("waiting for reference: " + toClear);
+                    synchronized (this) {
+                        try {
+                            wait();
+                        } catch (InterruptedException ex) {
+                            LOG.log(Level.WARNING, "while waiting for ref", ex);
+                        }
+                    }
+                }
+                LOG.info("reference is here: " + toClear);
+                LOG.info("its value is " + toClear.get());
+                try {
+                    assertGC("GCing the reference", toClear);
+                } catch (Throwable t) {
+                    LOG.log(Level.WARNING, "exception", t);
+                } finally {
+                    LOG.info("cleanup done: " + toClear.get());
+                }
+            }
+
+            @Override
+            protected void addNotify() {
+                LOG.info("before addNotify");
+                keys("1");
+                LOG.info("after addNotify");
+            }
+
+            @Override
+            protected void removeNotify() {
+                LOG.info("before removeNotify");
+                keys();
+                LOG.info("after removeNotify");
+            }
+
+
+
+        }
+
+        K k = new K(lazy());
+        Node root = new AbstractNode(k);
+
+        String name = Thread.currentThread().getName();
+        Log.controlFlow(
+            Children.LOG,
+            LOG,
+            "THREAD: " + name + " MSG: after findChild.*true" +
+            "THREAD: cleanup MSG: cleanup done.*" +
+            "THREAD: Finalizer MSG: after removeNotify" +
+            "THREAD: " + name + " MSG: done",
+            300
+        );
+
+        LOG.info("ready");
+
+        RequestProcessor RP = new RequestProcessor("cleanup");
+        RequestProcessor.Task t = RP.post(k);
+
+        LOG.info("post");
+        LOG.info("go");
+
+        Node[] arr = root.getChildren().getNodes(true);
+
+        t.waitFinished();
+
+        LOG.info("done: " + arr);
+        
+        assertEquals("One node", 1, arr.length);
+        assertEquals("value is 1", "1", arr[0].getName());
     }
 
     
