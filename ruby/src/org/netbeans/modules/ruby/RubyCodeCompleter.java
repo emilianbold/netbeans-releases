@@ -1295,7 +1295,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
      */
     static boolean computeMethodCall(CompilationInfo info, int lexOffset, int astOffset,
             IndexedMethod[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder,
-            Set<IndexedMethod>[] alternativesHolder) {
+            Set<IndexedMethod>[] alternativesHolder, NameKind kind) {
         try {
             Node root = AstUtilities.getRoot(info);
 
@@ -1433,6 +1433,14 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
              nodesearch:
                 while (it.hasNext()) {
                     Node node = it.next();
+
+                    if (kind == NameKind.EXACT_NAME) {
+                        // For documentation popups, don't go up through blocks
+                        if (node.nodeId == NodeType.ITERNODE || node.nodeId == NodeType.DEFNNODE || node.nodeId == NodeType.DEFSNODE) {
+                            // Don't consider calls outside the current block or method (149540)
+                            break;
+                        }
+                    }
 
                     if (node.nodeId == NodeType.CALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
@@ -1606,7 +1614,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         int lexOffset = request.lexOffset;
         int astOffset = request.astOffset;
         if (!computeMethodCall(info, lexOffset, astOffset,
-                methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder)) {
+                methodHolder, paramIndexHolder, anchorOffsetHolder, alternatesHolder, request.kind)) {
 
             return false;
         }
@@ -3414,7 +3422,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
         int[] anchorOffsetHolder = new int[1];
         int astOffset = AstUtilities.getAstOffset(info, lexOffset);
         if (!computeMethodCall(info, lexOffset, astOffset,
-                methodHolder, paramIndexHolder, anchorOffsetHolder, null)) {
+                methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX)) {
 
             return ParameterInfo.NONE;
         }
