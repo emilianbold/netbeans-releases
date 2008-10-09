@@ -1613,30 +1613,11 @@ type_specifier[DeclSpecifier ds, boolean noTypeId] returns [/*TypeSpecifier*/int
 	;
 
 simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInvalid]
-{TypeQualifier tq;}
 	:	(	{!noTypeId && qualifiedItemIsOneOf(qiType|qiCtor)}? 
 			qualified_type {ts=tsTYPEID;}	
 			{ #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		|	
-			(options {greedy=true;}:
-                                LITERAL_char		{ts |= tsCHAR;}
-			|	LITERAL_wchar_t	{ts |= tsWCHAR_T;}  
-			|	LITERAL_bool	{ts |= tsBOOL;}
-			|	LITERAL_short	{ts |= tsSHORT;}
-			|	LITERAL_int		{ts |= tsINT;}
-			|	literal_int64	{ts |= tsLONG;}
-			|	LITERAL___w64		{ts |= tsLONG;}
-			|	LITERAL_long		{ts |= tsLONG;}
-			|	literal_signed	{ts |= tsSIGNED;}
-			|	literal_unsigned	{ts |= tsUNSIGNED;}
-			|	LITERAL_float		{ts |= tsFLOAT;}
-			|	LITERAL_double	{ts |= tsDOUBLE;}
-			|	LITERAL_void		{ts |= tsVOID;}
-                        |       literal_complex         {ts |= tsCOMPLEX;}
-                        |       tq = cv_qualifier
-                                (options {greedy=true;}:unnamed_ptr_operator
-                                )*
-			)+
+                        ts = builtin_cv_type_specifier[ts]
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
 		|
                         {!noTypeId}?
@@ -1649,6 +1630,32 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
                         { #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		)
 	;
+
+builtin_cv_type_specifier[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
+{TypeQualifier tq;}
+    :
+        (ts = builtin_type[ts])+
+        ((cv_qualifier builtin_type[ts]) => 
+        tq = cv_qualifier ts = builtin_cv_type_specifier[ts])?
+    ;
+
+builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old_ts]
+    :
+	  LITERAL_char          {ts |= tsCHAR;}
+        | LITERAL_wchar_t       {ts |= tsWCHAR_T;}  
+        | LITERAL_bool          {ts |= tsBOOL;}
+        | LITERAL_short         {ts |= tsSHORT;}
+        | LITERAL_int           {ts |= tsINT;}
+        | literal_int64         {ts |= tsLONG;}
+        | LITERAL___w64         {ts |= tsLONG;}
+        | LITERAL_long          {ts |= tsLONG;}
+        | literal_signed        {ts |= tsSIGNED;}
+        | literal_unsigned      {ts |= tsUNSIGNED;}
+        | LITERAL_float         {ts |= tsFLOAT;}
+        | LITERAL_double        {ts |= tsDOUBLE;}
+        | LITERAL_void          {ts |= tsVOID;}
+        | literal_complex       {ts |= tsCOMPLEX;}
+    ;
 
 qualified_type
 	{String s;}
