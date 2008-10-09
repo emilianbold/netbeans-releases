@@ -93,6 +93,8 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
 
         private final CsmErrorProvider.Request request;
         private final CsmErrorProvider.Response response;
+        private int foundError = 0;
+
 
         public ReferenceVisitor(CsmErrorProvider.Request request, CsmErrorProvider.Response response) {
             this.request = request;
@@ -100,6 +102,10 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         }
 
         public void visit(CsmReferenceContext context) {
+            if (SemanticHighlighter.getErrorLimit(request.getDocument()) >= 0 &&
+                SemanticHighlighter.getErrorLimit(request.getDocument()) <= foundError){
+                return;
+            }
             CsmReference ref = context.getReference();
             if (!request.isCancelled() && ref.getReferencedObject() == null) {
                 if (CsmFileReferences.isAfterUnresolved(context)) {
@@ -115,7 +121,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
                 } else if (CsmKindUtilities.isClassForwardDeclaration(ref.getOwner())) {
                     severity = Severity.WARNING;
                 }
-
+                foundError++;
                 response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));
