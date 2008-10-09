@@ -255,7 +255,7 @@ final class BootClassPathImplementation implements ClassPathImplementation, Prop
             return gemUrls;
         }
         FileObject environmentFO = FileUtil.toFileObject(FileUtil.normalizeFile(environment));
-        if (environment == null) {
+        if (environmentFO == null) {
             return gemUrls;
         }
 
