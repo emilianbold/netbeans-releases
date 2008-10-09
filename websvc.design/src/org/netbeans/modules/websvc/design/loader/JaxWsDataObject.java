@@ -207,6 +207,14 @@ public final class JaxWsDataObject extends MultiDataObject {
         return dob;
     }
     
+    /* Getter for rename action.
+    * @return true if the object can be renamed
+    */
+    @Override
+    public boolean isRenameAllowed () {
+        return false;
+    }
+    
     private synchronized JaxWsJavaEditorSupport createEditorSupport() {
         if (jes == null) {
             jes = new JaxWsJavaEditorSupport (this);
