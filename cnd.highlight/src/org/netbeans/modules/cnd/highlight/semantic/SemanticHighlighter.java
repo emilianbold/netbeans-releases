@@ -130,24 +130,6 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    private static final int MAX_ERROR_LIMIT;
-    static {
-        String limit = System.getProperty("cnd.highlighting.error.limit"); // NOI18N
-        int userInput = 100;
-        if (limit != null) {
-            try {
-                userInput = Integer.parseInt(limit);
-            } catch (Exception e) {
-                // skip
-            }
-        }
-        MAX_ERROR_LIMIT = userInput;
-    }
-
-    public static int getErrorLimit(Document doc) {
-        return MAX_ERROR_LIMIT;
-    }
-
     private void update(final Interrupter interrupter) {
         BaseDocument doc = getDocument();
         if (doc != null) {

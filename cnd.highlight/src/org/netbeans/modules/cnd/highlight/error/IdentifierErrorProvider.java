@@ -62,6 +62,20 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
             getBoolean("cnd.identifier.error.provider", true); //NOI18N
     private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.identifier.error.provider.times");
 
+    private static final int MAX_ERROR_LIMIT;
+    static {
+        String limit = System.getProperty("cnd.highlighting.error.limit"); // NOI18N
+        int userInput = 100;
+        if (limit != null) {
+            try {
+                userInput = Integer.parseInt(limit);
+            } catch (Exception e) {
+                // skip
+            }
+        }
+        MAX_ERROR_LIMIT = userInput;
+    }
+
     @Override
     protected boolean validate(CsmErrorProvider.Request request) {
         return super.validate(request) && ENABLED && !disableAsLibraryHeaderFile(request.getFile()) && request.getFile().isParsed();
@@ -102,8 +116,7 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         }
 
         public void visit(CsmReferenceContext context) {
-            if (SemanticHighlighter.getErrorLimit(request.getDocument()) >= 0 &&
-                SemanticHighlighter.getErrorLimit(request.getDocument()) <= foundError){
+            if (MAX_ERROR_LIMIT >= 0 && foundError >= MAX_ERROR_LIMIT){
                 return;
             }
             CsmReference ref = context.getReference();
