@@ -650,8 +650,6 @@ class DataViewTableUI extends ExtendedJTable {
         public ResultSetTableCellEditor(final JTextField textField) {
             super(textField);
             textField.setFont(getFont());
-//            textField.setForeground(Color.BLACK);
-//            textField.setBackground(Color.WHITE);
             delegate = new EditorDelegate() {
 
                 @Override
