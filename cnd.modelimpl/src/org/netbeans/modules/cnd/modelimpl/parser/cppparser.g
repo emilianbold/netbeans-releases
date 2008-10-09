@@ -1618,7 +1618,7 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 			qualified_type {ts=tsTYPEID;}	
 			{ #simple_type_specifier = #([CSM_TYPE_COMPOUND, "CSM_TYPE_COMPOUND"], #simple_type_specifier); }
 		|	
-			(options {warnWhenFollowAmbig = false;}:
+			(options {greedy=true;}:
                                 LITERAL_char		{ts |= tsCHAR;}
 			|	LITERAL_wchar_t	{ts |= tsWCHAR_T;}  
 			|	LITERAL_bool	{ts |= tsBOOL;}
@@ -1634,7 +1634,7 @@ simple_type_specifier[boolean noTypeId] returns [/*TypeSpecifier*/int ts = tsInv
 			|	LITERAL_void		{ts |= tsVOID;}
                         |       literal_complex         {ts |= tsCOMPLEX;}
                         |       tq = cv_qualifier
-                                (options {warnWhenFollowAmbig = false;}:ptr:unnamed_ptr_operator
+                                (options {greedy=true;}:unnamed_ptr_operator
                                 )*
 			)+
 			{ #simple_type_specifier = #([CSM_TYPE_BUILTIN, "CSM_TYPE_BUILTIN"], #simple_type_specifier); }
@@ -2547,7 +2547,7 @@ assigned_type_name
 	{/*TypeSpecifier*/int ts;
          TypeQualifier tq;}
 	:
-            (options {warnWhenFollowAmbig = false;}: tq=cv_qualifier)? (LITERAL_typename)?
+            (options {greedy=true;}: tq=cv_qualifier)? (LITERAL_typename)?
             ts = simple_type_specifier[false] (postfix_cv_qualifier)?
             abstract_declarator
 	;
@@ -3227,7 +3227,7 @@ protected
 postfix_cv_qualifier
         :
             ((literal_volatile|literal_const) 
-                (options {warnWhenFollowAmbig = false;}:ptr:unnamed_ptr_operator
+                (options {greedy=true;}:unnamed_ptr_operator
                  { #postfix_cv_qualifier=#(#[CSM_PTR_OPERATOR,"CSM_PTR_OPERATOR"], #postfix_cv_qualifier);}
                 )*
             )+
