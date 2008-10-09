@@ -51,6 +51,12 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class FilesTabOperatorTest extends JellyTestCase {
 
+    public static final String[] tests = new String[] {
+                "testInvoke",
+                "testTree",
+                "testGetProjectNode",
+                "testVerify"
+    };
     public FilesTabOperatorTest(java.lang.String testName) {
         super(testName);
     }
@@ -71,10 +77,7 @@ public class FilesTabOperatorTest extends JellyTestCase {
          */
         return (NbTest) NbModuleSuite.create(
         NbModuleSuite.createConfiguration(FilesTabOperatorTest.class).
-                addTest("testInvoke").
-                addTest("testTree").
-                addTest("testGetProjectNode").
-                addTest("testVerify").
+                addTest(tests).
                 enableModules(".*").clusters(".*"));
     }
     
