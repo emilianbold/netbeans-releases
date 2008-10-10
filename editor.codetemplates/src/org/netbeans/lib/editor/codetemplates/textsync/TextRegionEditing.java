@@ -316,13 +316,21 @@ public final class TextRegionEditing {
     }
     
     boolean enterAction() {
-        TextRegion<?> master = activeTextSync().validMasterRegion();
-        if (master.startOffset() <= component.getCaretPosition() && component.getCaretPosition() <= master.endOffset()) {
-            activateTextSync(findEditableTextSyncIndex(activeGroupEditing().activeTextSyncIndex + 1, +1, false, false),
-                    true);
-            return true;
+        TextSync textSync = activeTextSync();
+        if (textSync != null) {
+            TextRegion<?> master = textSync.validMasterRegion();
+            if (master.startOffset() <= component.getCaretPosition() && component.getCaretPosition() <= master.endOffset()) {
+                activateTextSync(findEditableTextSyncIndex(activeGroupEditing().activeTextSyncIndex + 1, +1, false, false),
+                        true);
+                return true;
+            }
+            releaseActiveGroup(false);
+        } else {
+            // #145443 - I'm not sure why this is called when there is no active
+            // TextSync, but apparently it happens under certain circumstances. So
+            // let's try closing all active groups, which will terminate the special editing mode.
+            releaseActiveGroup(true);
         }
-        releaseActiveGroup(false);
         return false;
     }
     
