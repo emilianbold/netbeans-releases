@@ -962,6 +962,7 @@ public class NbServiceTagSupport {
     
     private static final String NB_HEADER_PNG_KEY = "@@NB_HEADER_PNG@@";
     private static final String PRODUCT_KEY = "@@PRODUCT@@";
+    private static final String PRODUCT_TITLE_KEY = "@@PRODUCT_TITLE@@";
     private static final String REGISTRATION_URL_KEY = "@@REGISTRATION_URL@@";
     private static final String REGISTRATION_PAYLOAD_KEY = "@@REGISTRATION_PAYLOAD@@";
 
@@ -1027,18 +1028,23 @@ public class NbServiceTagSupport {
         BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         PrintWriter pw = new PrintWriter(f,"UTF-8");
         String line = null;
-        String productName = "";
+        String productName = "", productNameTitle = "";
         for (int i = 0; i < productNames.length; i++) {
             if (i > 0) {
                 productName +=
                 " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
+                productNameTitle +=
+                " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
             }
             productName += "<strong>" + productNames[i] + "</strong>";
+            productNameTitle += productNames[i];
         }
         while ((line = reader.readLine()) != null) {
             String output = line;
             if (line.contains(PRODUCT_KEY)) {
                 output = line.replace(PRODUCT_KEY, productName);
+            } else if (line.contains(PRODUCT_TITLE_KEY)) {
+                output = line.replace(PRODUCT_TITLE_KEY, productNameTitle);
             } else if (line.contains(NB_HEADER_PNG_KEY)) {
                 output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
             } else if (line.contains(REGISTRATION_URL_KEY)) {
