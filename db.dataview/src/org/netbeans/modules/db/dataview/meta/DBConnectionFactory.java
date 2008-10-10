@@ -61,6 +61,7 @@ import org.openide.util.Mutex;
 public final class DBConnectionFactory {
 
     private static volatile DBConnectionFactory INSTANCE = null;
+    private volatile Throwable ex = null;
 
     public static DBConnectionFactory getInstance() {
         synchronized (DBConnectionFactory.class) {
@@ -85,11 +86,21 @@ public final class DBConnectionFactory {
 
     public Connection getConnection(DatabaseConnection dbConn) {
         DBConnectionProvider connectionProvider = findDBConnectionProvider();
-        if (connectionProvider != null) {
-            return connectionProvider.getConnection(dbConn);
-        } else {
-            return showConnectionDialog(dbConn);
+        this.ex = null;
+        try {
+            if (connectionProvider != null) {
+                return connectionProvider.getConnection(dbConn);
+            } else {
+                return showConnectionDialog(dbConn);
+            }
+        } catch (Exception ex) {
+            this.ex = ex;
+            return null;
         }
+    }
+
+    public Throwable getLastException(){
+        return ex;
     }
 
     private Connection showConnectionDialog(final DatabaseConnection dbConn) {
