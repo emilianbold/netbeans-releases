@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,82 +38,86 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.j2ee.common.project.classpath;
 
-package org.netbeans.modules.j2ee.ejbjarproject.classpath;
-
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Map;
 import java.util.HashMap;
-
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.project.classpath.BootClassPathImplementation;
-import org.netbeans.modules.j2ee.common.project.classpath.SourcePathImplementation;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.openide.util.WeakListeners;
 
 /**
- * Defines the various class paths for a EJB project.
+ * Defines the various class paths for a J2SE project.
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, AntProjectListener {
+public final class JavaClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+
+    private String buildClassesDir = "build.classes.dir"; // NOI18N
+    private String distJar = "dist.jar"; // NOI18N
+    private String buildTestClassesDir = "build.test.classes.dir"; // NOI18N
+    private String[] javacClasspath = new String[]{"javac.classpath"};    //NOI18N
+    private String[] javacTestClasspath = new String[]{"javac.test.classpath"};  //NOI18N
+    private String[] runClasspath = new String[]{"run.classpath"};    //NOI18N
+    private String[] runTestClasspath = new String[]{"run.test.classpath"};  //NOI18N
     
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
     private final SourceRoots sourceRoots;
     private final SourceRoots testSourceRoots;
-    
-    /**
-     * Cache for classpaths:
-     * <dl>
-     *     <dt>0</dt> <dd>sources classpath</dd>
-     *     <dt>1</dt> <dd>test sources classpath</dd>
-     *     <dt>2</dt> <dd>sources compile classpath</dd>
-     *     <dt>3</dt> <dd>test sources compile classpath</dd>
-     *     <dt>4</dt> <dd>sources and built sources run classpath</dd>
-     *     <dt>5</dt> <dd>test sources and built test sources run classpath</dd>
-     *     <dt>6</dt> <dd>XXX: todo</dd>
-     *     <dt>7</dt> <dd>boot classpath</dd>
-     *     <dt>8</dt> <dd>J2EE platform classpath</dd>
-     * </dl>
-     */
-    private final ClassPath[] cache = new ClassPath[9];
+    private final ClassPath[] cache = new ClassPath[8];
 
-    private final Map<String, FileObject> dirCache = new HashMap<String, FileObject>();
+    private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, 
-            SourceRoots sourceRoots, SourceRoots testSourceRoots) {
+    public JavaClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
+                                 SourceRoots testSourceRoots) {
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert this.projectDirectory != null;
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
-        this.helper.addAntProjectListener (this);
+        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
+    public JavaClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator,
+            SourceRoots sourceRoots, SourceRoots testSourceRoots,
+            String buildClassesDir, String distJar, String buildTestClassesDir,
+            String[] javacClasspath, String[] javacTestClasspath, String[] runClasspath,
+            String[] runTestClasspath) {
+        this(helper, evaluator, sourceRoots, testSourceRoots);
+        this.buildClassesDir = buildClassesDir;
+        this.distJar = distJar;
+        this.buildTestClassesDir = buildTestClassesDir;
+        this.javacClasspath = javacClasspath;
+        this.javacTestClasspath = javacTestClasspath;
+        this.runClasspath = runClasspath;
+        this.runTestClasspath = runTestClasspath;
+    }
+
+    
     private FileObject getDir(final String propname) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject>() {
             public FileObject run() {
-                synchronized (ClassPathProviderImpl.this) {
-                    FileObject fo = (FileObject) ClassPathProviderImpl.this.dirCache.get (propname);
+                synchronized (JavaClassPathProviderImpl.this) {
+                    FileObject fo = (FileObject) JavaClassPathProviderImpl.this.dirCache.get (propname);
                     if (fo == null ||  !fo.isValid()) {
-                        String prop = helper.getStandardPropertyEvaluator ().getProperty (propname);
+                        String prop = evaluator.getProperty(propname);
                         if (prop != null) {
                             fo = helper.resolveFileObject(prop);
-                            ClassPathProviderImpl.this.dirCache.put (propname, fo);
+                            JavaClassPathProviderImpl.this.dirCache.put (propname, fo);
                         }
                     }
                     return fo;
@@ -126,19 +130,19 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
     }
     
     private FileObject[] getTestSrcDir() {
-         return this.testSourceRoots.getRoots();
+        return this.testSourceRoots.getRoots();
     }
     
     private FileObject getBuildClassesDir() {
-        return getDir("build.classes.dir");    //NOI18N
+        return getDir(buildClassesDir);
     }
     
-    private FileObject getBuildJar() {
-        return getDir("dist.jar");            //NOI18N
+    private FileObject getDistJar() {
+        return getDir(distJar);
     }
     
     private FileObject getBuildTestClassesDir() {
-        return getDir("build.test.classes.dir"); // NOI18N
+        return getDir(buildTestClassesDir);
     }
     
     /**
@@ -172,8 +176,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
             return 2;
         }
-        dir = getBuildJar();
-        if (dir != null && (dir.equals(file))) {     //TODO: When MasterFs check also isParentOf
+        dir = getDistJar(); // not really a dir at all, of course
+        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
+            // XXX check whether this is really the root
             return 4;
         }
         dir = getBuildTestClassesDir();
@@ -194,52 +199,57 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
             return null;
         }
         ClassPath cp = cache[2+type];
-        if ( cp == null) {
+        if ( cp == null) {            
             if (type == 0) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
+                    projectDirectory, evaluator, javacClasspath)); // NOI18N
             }
             else {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
+                    projectDirectory, evaluator, javacTestClasspath)); // NOI18N
             }
             cache[2+type] = cp;
         }
         return cp;
     }
     
-    private synchronized ClassPath getRunTimeClasspath(FileObject file) {
+    private ClassPath getRunTimeClasspath(FileObject file) {
         int type = getType(file);
         if (type < 0 || type > 4) {
+            // Unregistered file, or in a JAR.
+            // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
+            // run.classpath since that does not actually contain the file!
+            // (It contains file:$projdir/build/classes/ instead.)
             return null;
         } else if (type > 1) {
-            type -= 2;
+            type-=2;            //Compiled source transform into source
         }
-        
+        return getRunTimeClasspath(type);
+    }
+    
+    private synchronized ClassPath getRunTimeClasspath(final int type) {
         ClassPath cp = cache[4+type];
-        if (cp == null) {
+        if ( cp == null) {
             if (type == 0) {
-                // XXX: should return run.classpath, but since there's no run classpath,
-                // in and EJB project, using debug.classpath instead
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"debug.classpath"})); // NOI18N
+                    projectDirectory, evaluator, runClasspath)); // NOI18N
             }
             else if (type == 1) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"run.test.classpath"})); // NOI18N
+                    projectDirectory, evaluator, runTestClasspath)); // NOI18N
             }
-            else if (type == 2) {
-                //Only to make the CompiledDataNode hapy
-                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"dist.jar"})); // NOI18N
-            }
-            
+// XXXXX
+//            else if (type == 2) {
+//                //Only to make the CompiledDataNode hapy
+//                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
+//                cp = ClassPathFactory.createClassPath(
+//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+//                    projectDirectory, evaluator, new String[] {distJar})); // NOI18N
+//            }
             cache[4+type] = cp;
         }
         return cp;
@@ -258,33 +268,22 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots,this.helper, this.evaluator));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots,this.helper, this.evaluator));
+                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper, evaluator));
                     break;
             }
         }
         cache[type] = cp;
         return cp;
     }
-
+    
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
-        if (cp == null) {
+        if ( cp== null ) {
             cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
             cache[7] = cp;
-        }
-        return cp;
-    }
-    
-    public synchronized ClassPath getJ2eePlatformClassPath() {
-        ClassPath cp = cache[8];
-        if (cp == null) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
-            cache[8] = cp;
         }
         return cp;
     }
@@ -313,7 +312,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         }
         if (ClassPath.COMPILE.equals(type)) {
             ClassPath[] l = new ClassPath[2];
-            l[0] = getCompileTimeClasspath(0);
+            l[0] = getCompileTimeClasspath(0);            
             l[1] = getCompileTimeClasspath(1);
             return l;
         }
@@ -341,28 +340,52 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         if (ClassPath.SOURCE.equals(type)) {
             return getSourcepath(0);
         }
-        assert false;
+        if (ClassPath.EXECUTE.equals(type)) {
+            return getRunTimeClasspath(0);
+        }
+        assert false : "Unknown classpath type: " + type;   //NOI18N
         return null;
     }
 
-    public void configurationXmlChanged(AntProjectEvent ev) {
-        this.dirCache.clear();
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
+        dirCache.remove(evt.getPropertyName());
     }
-
-    public synchronized void propertiesChanged(AntProjectEvent ev) {
-        this.dirCache.clear();
+    
+    public String[] getPropertyName (final SourceRoots roots, final String type) {
+        if (roots.isTest()) {
+            if (ClassPath.COMPILE.equals(type)) {
+                return javacTestClasspath;
+            }
+            else if (ClassPath.EXECUTE.equals(type)) {
+                return runTestClasspath;
+            }
+            else {
+                return null;
+            }
+        }
+        else {
+            if (ClassPath.COMPILE.equals(type)) {
+                return javacClasspath;
+            }
+            else if (ClassPath.EXECUTE.equals(type)) {
+                return runClasspath;
+            }
+            else {
+                return null;
+            }
+        }
     }
-
-    public String getPropertyName (SourceGroup sg, String type) {
+    
+    public String[] getPropertyName (SourceGroup sg, String type) {
         FileObject root = sg.getRootFolder();
         FileObject[] path = getPrimarySrcPath();
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
                 if (ClassPath.COMPILE.equals(type)) {
-                    return ProjectProperties.JAVAC_CLASSPATH;
+                    return javacClasspath;
                 }
                 else if (ClassPath.EXECUTE.equals(type)) {
-                    return EjbJarProjectProperties.DEBUG_CLASSPATH;
+                    return runClasspath;
                 }
                 else {
                     return null;
@@ -373,10 +396,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         for (int i=0; i<path.length; i++) {
             if (root.equals(path[i])) {
                 if (ClassPath.COMPILE.equals(type)) {
-                    return ProjectProperties.JAVAC_TEST_CLASSPATH;
+                    return javacTestClasspath;
                 }
                 else if (ClassPath.EXECUTE.equals(type)) {
-                    return ProjectProperties.RUN_TEST_CLASSPATH;
+                    return runTestClasspath;
                 }
                 else {
                     return null;
@@ -385,6 +408,5 @@ public final class ClassPathProviderImpl implements ClassPathProvider, AntProjec
         }
         return null;
     }
-
+    
 }
-

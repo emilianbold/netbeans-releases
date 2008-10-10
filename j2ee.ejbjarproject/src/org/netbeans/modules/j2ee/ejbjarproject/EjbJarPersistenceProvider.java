@@ -52,11 +52,11 @@ import java.util.Set;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
@@ -91,7 +91,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     
     private final EjbJarProject project;
     private final PropertyEvaluator evaluator;
-    private final ClassPathProviderImpl cpProvider;
+    private final JavaClassPathProviderImpl cpProvider;
     
     private final ScopeImpl scopeImpl = new ScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
@@ -102,7 +102,7 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     
     private ClassPath projectSourcesClassPath;
     
-    public EjbJarPersistenceProvider(EjbJarProject project, PropertyEvaluator evaluator, ClassPathProviderImpl cpProvider) {
+    public EjbJarPersistenceProvider(EjbJarProject project, PropertyEvaluator evaluator, JavaClassPathProviderImpl cpProvider) {
         this.project = project;
         this.evaluator = evaluator;
         this.cpProvider = cpProvider;
@@ -157,10 +157,9 @@ public class EjbJarPersistenceProvider implements PersistenceLocationProvider, P
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl classPathProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
-                    classPathProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    classPathProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
+                    cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
+                    cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
                 });
             }
             return projectSourcesClassPath;

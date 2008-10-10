@@ -50,7 +50,7 @@ import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.project.classpath.BootClassPathImplementation;
+import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.SourcePathImplementation;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -79,16 +79,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private final Map<ClassPathCache, ClassPath> cache = new HashMap<ClassPathCache, ClassPath>();
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
+    
+    private JavaClassPathProviderImpl javaClassPathProvider;
 
     /**
      * Type of file classpath is required for.
      */
     private static enum FileType {
         SOURCE,         // java source
-        TEST_SOURCE,    // junit test source
         CLASS,          // compiled java class
-        TEST_CLASS,     // compiled junit test class
-        CLASS_IN_JAR,   // compiled java class packaged in jar
         WEB_SOURCE,     // web source
         UNKNOWN }
 
@@ -96,19 +95,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      * Constants for different cached classpaths.
      */
     private static enum ClassPathCache {
-        SOURCE_COMPILATION,
-        TEST_SOURCE_COMPILATION,
-        SOURCE,
-        TEST_SOURCE,
         WEB_SOURCE,
-        SOURCE_RUNTIME,
-        TEST_SOURCE_RUNTIME,
-        BOOT,
-        PLATFORM,
         PACKAGED, // #131785
     }
     
-    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots, SourceRoots testSourceRoots) {
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, 
+            SourceRoots sourceRoots, SourceRoots testSourceRoots) {
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
         assert this.projectDirectory != null;
@@ -116,6 +108,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        this.javaClassPathProvider = new JavaClassPathProviderImpl(
+                helper, evaluator, sourceRoots, testSourceRoots, 
+                ProjectProperties.BUILD_CLASSES_DIR, WebProjectProperties.DIST_WAR, ProjectProperties.BUILD_TEST_CLASSES_DIR, 
+                new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
+                new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH });
     }
 
     private FileObject getDir(final String propname) {
@@ -138,21 +137,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private FileObject[] getPrimarySrcPath() {
         return this.sourceRoots.getRoots();
     }
-    
-    private FileObject[] getTestSrcDir() {
-        return this.testSourceRoots.getRoots();
-    }
 
     private FileObject getBuildClassesDir() {
         return getDir(ProjectProperties.BUILD_CLASSES_DIR);
-    }
-    
-    private FileObject getDistJar() {
-        return getDir(WebProjectProperties.DIST_WAR);
-    }
-    
-    private FileObject getBuildTestClassesDir() {
-        return getDir(ProjectProperties.BUILD_TEST_CLASSES_DIR);
     }
 
     private FileObject getDocumentBaseDir() {
@@ -171,13 +158,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (root.equals(file) || FileUtil.isParentOf(root, file)) {
                 return FileType.SOURCE;
             }
-        }        
-        srcPath = getTestSrcDir();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject root = srcPath[i];
-            if (root.equals(file) || FileUtil.isParentOf(root, file)) {
-                return FileType.TEST_SOURCE;
-            }
         }
         FileObject dir = getDocumentBaseDir();
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
@@ -187,42 +167,13 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
             return FileType.CLASS;
         }
-        dir = getDistJar(); // not really a dir at all, of course
-        if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
-            // XXX check whether this is really the root
-            return FileType.CLASS_IN_JAR;
-        }
-        dir = getBuildTestClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return FileType.TEST_CLASS;
-        }
         
         return FileType.UNKNOWN;
     }
     
     private synchronized ClassPath getCompileTimeClasspath(FileType type) {        
-        if (type == FileType.SOURCE || type == FileType.CLASS || type == FileType.WEB_SOURCE)
-        {
-            // treat all these types as source:
-            ClassPath cp = cache.get(ClassPathCache.SOURCE_COMPILATION);
-            if (cp == null)
-            {
-                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
-                cache.put(ClassPathCache.SOURCE_COMPILATION, cp);
-            }
-            return cp;
-        }
-        if (type == FileType.TEST_SOURCE)
-        {
-            ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE_COMPILATION);
-            if (cp == null)
-            {
-                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
-                cache.put(ClassPathCache.TEST_SOURCE_COMPILATION, cp);
-            }
-            return cp;
+        if (type == FileType.WEB_SOURCE) {
+            return javaClassPathProvider.findClassPath(sourceRoots.getRoots()[0], ClassPath.COMPILE);
         }
         return null;
     }
@@ -243,62 +194,16 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     }
     
     private synchronized ClassPath getRunTimeClasspath(FileType type) {
-        if (type == FileType.SOURCE || type == FileType.CLASS || 
-            type == FileType.CLASS_IN_JAR || type == FileType.WEB_SOURCE)
-        {
-            // treat all these types as source:
-            ClassPath cp = cache.get(ClassPathCache.SOURCE_RUNTIME);
-            if (cp == null)
-            {
-                cp = 
-                    ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
-                cache.put(ClassPathCache.SOURCE_RUNTIME, cp);
-            }
-            return cp;
-        }
-        if (type == FileType.TEST_SOURCE || type == FileType.TEST_CLASS)
-        {
-            // treat all these types as source:
-            ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE_RUNTIME);
-            if (cp == null)
-            {
-                cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"run.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
-                cache.put(ClassPathCache.TEST_SOURCE_RUNTIME, cp);
-            }
-            return cp;
+        if (type == FileType.WEB_SOURCE) {
+            return javaClassPathProvider.findClassPath(sourceRoots.getRoots()[0], ClassPath.EXECUTE);
         }
         return null;
     }
     
     private synchronized ClassPath getSourcepath(FileType type) {
-        if (type == FileType.SOURCE || type == FileType.CLASS)
-        {
-            // treat all these types as source:
-            ClassPath cp = cache.get(ClassPathCache.SOURCE);
-            if (cp == null)
-            {
-                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.sourceRoots,helper, evaluator));
-                cache.put(ClassPathCache.SOURCE, cp);
-            }
-            return cp;
-        }
-        if (type == FileType.TEST_SOURCE)
-        {
-            ClassPath cp = cache.get(ClassPathCache.TEST_SOURCE);
-            if (cp == null)
-            {
-                cp = ClassPathFactory.createClassPath(new SourcePathImplementation(this.testSourceRoots,helper, evaluator));
-                cache.put(ClassPathCache.TEST_SOURCE, cp);
-            }
-            return cp;
-        }
-        if (type == FileType.WEB_SOURCE)
-        {
+        if (type == FileType.WEB_SOURCE) {
             ClassPath cp = cache.get(ClassPathCache.WEB_SOURCE);
-            if (cp == null)
-            {
+            if (cp == null) {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
                         ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator)),
@@ -311,40 +216,22 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
     
-    private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = cache.get(ClassPathCache.BOOT);
-        if (cp == null ) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
-            cache.put(ClassPathCache.BOOT, cp);
-        }
-        return cp;
-    }
-    
-    public synchronized ClassPath getJ2eePlatformClassPath() {
-        ClassPath cp = cache.get(ClassPathCache.PLATFORM);
-        if (cp == null) {
-            cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
-            cache.put(ClassPathCache.PLATFORM, cp);
-        }
-        return cp;
-    }
-    
     public ClassPath findClassPath(FileObject file, String type) {
+        ClassPath cp = javaClassPathProvider.findClassPath(file, type);
+        if (cp != null) {
+            return cp;
+        }
         FileType fileType = getType(file);
         if (type.equals(ClassPath.COMPILE)) {
-            return getCompileTimeClasspath(fileType);
+            cp = getCompileTimeClasspath(fileType);
         } else if (type.equals(ClassPath.EXECUTE)) {
-            return getRunTimeClasspath(fileType);
+            cp = getRunTimeClasspath(fileType);
         } else if (type.equals(ClassPath.SOURCE)) {
-            return getSourcepath(fileType);
-        } else if (type.equals(ClassPath.BOOT)) {
-            return getBootClassPath();
+            cp = getSourcepath(fileType);
         } else if (type.equals("classpath/packaged")) { // NOI18N
-            return getPackagedClasspath(fileType);
-        } else {
-            return null;
+            cp = getPackagedClasspath(fileType);
         }
+        return cp;
     }
     
     /**
@@ -352,24 +239,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      * The result is used for example for GlobalPathRegistry registrations.
      */
     public ClassPath[] getProjectClassPaths(String type) {
-        if (ClassPath.BOOT.equals(type)) {
-            return new ClassPath[]{getBootClassPath()};
-        }
-        if (ClassPath.COMPILE.equals(type)) {
-            ClassPath[] l = new ClassPath[2];
-            l[0] = getCompileTimeClasspath(FileType.SOURCE);
-            l[1] = getCompileTimeClasspath(FileType.TEST_SOURCE);
-            return l;
-        }
         if (ClassPath.SOURCE.equals(type)) {
-            ClassPath[] l = new ClassPath[3];
-            l[0] = getSourcepath(FileType.SOURCE);
-            l[1] = getSourcepath(FileType.WEB_SOURCE);
-            l[2] = getSourcepath(FileType.TEST_SOURCE);
+            ClassPath[] base = javaClassPathProvider.getProjectClassPaths(type);
+            ClassPath[] l = new ClassPath[base.length+1];
+            System.arraycopy(base, 0, l, 0, base.length);
+            l[l.length-1] = getSourcepath(FileType.WEB_SOURCE);
             return l;
+        } else {
+            return javaClassPathProvider.getProjectClassPaths(type);
         }
-        assert false;
-        return null;
     }
     
     /**
@@ -377,55 +255,15 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
      * (i.e., excluding tests roots).
      */
     public ClassPath getProjectSourcesClassPath(String type) {
-        if (ClassPath.BOOT.equals(type)) {
-            return getBootClassPath();
-        }
-        if (ClassPath.COMPILE.equals(type)) {
-            return getCompileTimeClasspath(FileType.SOURCE);
-        }
-        if (ClassPath.SOURCE.equals(type)) {
-            return getSourcepath(FileType.SOURCE);
-        }
-        assert false;
-        return null;
+        return javaClassPathProvider.getProjectSourcesClassPath(type);
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
     }
     
-    public String getPropertyName (SourceGroup sg, String type) {
-        FileObject root = sg.getRootFolder();
-        FileObject[] path = getPrimarySrcPath();
-        for (int i=0; i<path.length; i++) {
-            if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return ProjectProperties.JAVAC_CLASSPATH;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return WebProjectProperties.DEBUG_CLASSPATH;
-                }
-                else {
-                    return null;
-                }
-            }
-        }
-        path = getTestSrcDir();
-        for (int i=0; i<path.length; i++) {
-            if (root.equals(path[i])) {
-                if (ClassPath.COMPILE.equals(type)) {
-                    return ProjectProperties.JAVAC_TEST_CLASSPATH;
-                }
-                else if (ClassPath.EXECUTE.equals(type)) {
-                    return ProjectProperties.RUN_TEST_CLASSPATH;
-                }
-                else {
-                    return null;
-                }
-            }
-        }
-        return null;
+    public String[] getPropertyName (SourceGroup sg, String type) {
+        return javaClassPathProvider.getPropertyName(sg, type);
     }
 
 }
-

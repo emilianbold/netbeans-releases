@@ -48,8 +48,8 @@ import java.io.IOException;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
+import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -78,7 +78,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
 
     private final AppClientProject project;
     private final PropertyEvaluator evaluator;
-    private final ClassPathProviderImpl cpProvider;
+    private final JavaClassPathProviderImpl cpProvider;
 
     private final ScopeImpl scopeImpl = new ScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
@@ -89,7 +89,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
 
     private ClassPath projectSourcesClassPath;
 
-    public AppClientPersistenceProvider(AppClientProject project, PropertyEvaluator evaluator, ClassPathProviderImpl cpProvider) {
+    public AppClientPersistenceProvider(AppClientProject project, PropertyEvaluator evaluator, JavaClassPathProviderImpl cpProvider) {
         this.project = project;
         this.evaluator = evaluator;
         this.cpProvider = cpProvider;
@@ -145,7 +145,6 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
     private ClassPath getProjectSourcesClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                ClassPathProviderImpl cpProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     cpProvider.getProjectSourcesClassPath(ClassPath.COMPILE),
