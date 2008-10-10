@@ -234,6 +234,20 @@ public class JsParserTest extends JsTestBase {
                 );
     }
 
+    public void testIncremental5() throws Exception {
+        checkIncremental("testfiles/incremental.js",
+                0.0d, // small file - no speedup expected
+                "1,^", INSERT+"\n"
+                );
+    }
+
+    public void testIncremental6() throws Exception {
+        checkIncremental("testfiles/incremental.js",
+                0.0d, // small file - no speedup expected
+                "4, ^", INSERT+"\n"
+                );
+    }
+
     public void testValidResult() throws Exception {
         // Make sure we get a valid parse result out of an aborted parse
         FileObject fo = getTestFile("testfiles/issue149226.js");

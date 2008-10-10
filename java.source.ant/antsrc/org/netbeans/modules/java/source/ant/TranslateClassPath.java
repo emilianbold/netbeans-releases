@@ -63,6 +63,7 @@ public class TranslateClassPath extends Task {
 
     private String classpath;
     private String targetProperty;
+    private boolean clean;
     
     public void setClasspath(String cp) {
         this.classpath = cp;
@@ -70,6 +71,10 @@ public class TranslateClassPath extends Task {
     
     public void setTargetProperty(String tp) {
         this.targetProperty = tp;
+    }
+
+    public void setClean(boolean clean) {
+        this.clean = clean;
     }
 
     @Override
@@ -134,7 +139,8 @@ public class TranslateClassPath extends Task {
                         continue;
                     }
 
-                    Boolean bamiResult = BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true);
+                    Boolean bamiResult = clean ? BuildArtifactMapperImpl.clean(sourceFile.toURI().toURL())
+                                               : BuildArtifactMapperImpl.ensureBuilt(sourceFile.toURI().toURL(), true);
 
                     if (bamiResult == null) {
                         appendEntry = true;

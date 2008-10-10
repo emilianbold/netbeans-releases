@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,51 +37,42 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.editor.suites;
+package org.netbeans.modules.ruby.testrunner.ui;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.editor.general.GeneralTypingTest;
-import org.netbeans.test.editor.popup.MainMenuTest;
-import org.netbeans.test.editor.search.IncrementalSearchTest;
-import org.netbeans.test.editor.search.ReplaceTest;
-import org.netbeans.test.editor.suites.abbrevs.AbbreviationsAddRemovePerformer;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.openide.nodes.Node;
 
 /**
+ * Jump to action for call stack lines.
  *
- * @author Jiri Prox
+ * @author Marian Petras, Erno Mononen
  */
-public class StableSuite {
+final class JumpToCallStackAction extends AbstractAction {
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(GeneralTypingTest.class)
-                .addTest(GeneralTypingTest.class,
-                         "testJavaEnterBeginAndEnd")
-                .addTest(MainMenuTest.class,
-                         "testMainMenu")
-                .addTest(IncrementalSearchTest.class,
-                         //"testSearchForward",  //failing on windows -> removing from stable suite
-                         //"testSearchBackwards",
-                         "testMatchCase",
-                         "testNextButton",
-                         "testPrevButton",
-                         "testCloseButton",
-                         "testNotFound",
-                         "testInvalidRegexp",
-                         "testSearchForwardBackward",
-                         //"testWholeWords",
-                         "testRegularExpression",
-                         "testFindNext",
-                         "testFindPrev")
-                .addTest(ReplaceTest.class)
-                //.addTest(AbbreviationsAddRemovePerformer.class) // unstable
-                );
+    /** */
+    private final Node node;
+    /** */
+    private final String callstackFrameInfo;
+
+    /** Creates a new instance of JumpAction */
+    JumpToCallStackAction(Node node, String callstackFrameInfo) {
+        this.node = node;
+        this.callstackFrameInfo = callstackFrameInfo;
     }
+
+    /**
+     * If the <code>callstackFrameInfo</code> is not <code>null</code>,
+     * tries to jump to the callstack frame source code. Otherwise does nothing.
+     */
+    public void actionPerformed(ActionEvent e) {
+        if (callstackFrameInfo == null) {
+            return;
+        }
+        
+        OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+    }
+
 }

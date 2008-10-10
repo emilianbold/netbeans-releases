@@ -50,7 +50,6 @@ import org.netbeans.modules.performance.utilities.CommonUtilities;
 
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 
 /**
@@ -156,13 +155,7 @@ public class CreateProject extends PerformanceTestCase {
     
     @Override
     public void close(){
-        if (index != repeat) { // ignore last round tha reports LRU caches
-            Object /* Project */ prj = ProjectSupport.openProject(
-                    System.getProperty("xtest.tmpdir") + java.io.File.separator + "createdProjects" + java.io.File.separator + project_name);
-            reportReference("Project "+project_name+" from CreateProject test", prj, PROJECT_REFS);
-        }
-        ProjectSupport.closeProject(project_name);
-    }
+   }
     
     /** Tests if created and later dclosed projects can be GCed from memory.
      */

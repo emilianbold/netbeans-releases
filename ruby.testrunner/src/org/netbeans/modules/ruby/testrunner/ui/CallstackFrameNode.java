@@ -83,7 +83,7 @@ final class CallstackFrameNode extends AbstractNode {
      */
     @Override
     public Action getPreferredAction() {
-        return new JumpAction(this, frameInfo);
+        return new JumpToCallStackAction(this, frameInfo);
     }
     
     public SystemAction[] getActions(boolean context) {

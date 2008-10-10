@@ -37,45 +37,40 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.editor.suites;
+package org.netbeans.modules.ruby.testrunner.ui;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.test.editor.general.GeneralTypingTest;
-import org.netbeans.test.editor.popup.MainMenuTest;
-import org.netbeans.test.editor.search.IncrementalSearchTest;
-import org.netbeans.test.editor.search.ReplaceTest;
-import org.netbeans.test.editor.suites.abbrevs.AbbreviationsAddRemovePerformer;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.netbeans.napi.gsfret.source.UiUtils;
 
 /**
+ * Jump to action for test methods.
  *
- * @author Jiri Prox
+ * @author Erno Mononen
  */
-public class StableSuite {
+final class JumpToTestMethodAction extends AbstractAction {
 
-    public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(GeneralTypingTest.class)
-                .addTest(GeneralTypingTest.class,
-                         "testJavaEnterBeginAndEnd")
-                .addTest(MainMenuTest.class,
-                         "testMainMenu")
-                .addTest(IncrementalSearchTest.class,
-                         //"testSearchForward",  //failing on windows -> removing from stable suite
-                         //"testSearchBackwards",
-                         "testMatchCase",
-                         "testNextButton",
-                         "testPrevButton",
-                         "testCloseButton",
-                         "testNotFound",
-                         "testInvalidRegexp",
-                         "testSearchForwardBackward",
-                         //"testWholeWords",
-                         "testRegularExpression",
-                         "testFindNext",
-                         "testFindPrev")
-                .addTest(ReplaceTest.class)
-                //.addTest(AbbreviationsAddRemovePerformer.class) // unstable
-                );
+    private final Report.Testcase testcase;
+    private final Project project;
+
+    JumpToTestMethodAction(Testcase testcase, Project project) {
+        this.testcase = testcase;
+        this.project = project;
     }
+
+    private String getTestMethod() {
+        return testcase.className + "/" + testcase.name; //NOI18N
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(project.getProjectDirectory(), getTestMethod());
+        if (!(DeclarationLocation.NONE == location)) {
+            UiUtils.open(location.getFileObject(), location.getOffset());
+        }
+    }
+
 }
