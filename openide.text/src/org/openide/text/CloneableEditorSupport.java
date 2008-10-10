@@ -908,7 +908,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     @Override
                     public void confirmed() throws IOException {
-                        lastSaveTime = externalMod;
+                        setLastSaveTime(externalMod);
                         saveDocument();
                     }
                 };
