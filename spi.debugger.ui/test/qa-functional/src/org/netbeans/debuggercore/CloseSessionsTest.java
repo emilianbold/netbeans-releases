@@ -106,7 +106,11 @@ public class CloseSessionsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new EventTool().waitNoEvent(1000);
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 104);
