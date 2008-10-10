@@ -43,9 +43,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
-import org.netbeans.napi.gsfret.source.UiUtils;
+import org.openide.filesystems.FileObject;
 
 /**
  * Jump to action for test methods.
@@ -66,10 +68,18 @@ final class JumpToTestMethodAction extends AbstractAction {
         return testcase.className + "/" + testcase.name; //NOI18N
     }
 
+    private FileObject getTestSourceRoot() {
+        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
+        // need to use test source roots, not source roots -- see the comments in #135680
+        FileObject[] testRoots = baseProject.getTestSourceRootFiles();
+        // if there are not test roots, return the project root -- works in rails projects
+        return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
+        
+    }
     public void actionPerformed(ActionEvent e) {
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(project.getProjectDirectory(), getTestMethod());
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
         if (!(DeclarationLocation.NONE == location)) {
-            UiUtils.open(location.getFileObject(), location.getOffset());
+            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
         }
     }
 

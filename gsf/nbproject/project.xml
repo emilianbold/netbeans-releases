@@ -396,7 +396,6 @@
                 <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.php.refactoring</friend>
                 <friend>org.netbeans.modules.ruby.rhtml</friend>
-                <friend>org.netbeans.modules.ruby.testrunner</friend>
                 <friend>org.netbeans.modules.scala.debugger.projects</friend>
                 <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.scala.platform</friend>
