@@ -46,10 +46,11 @@ import javax.swing.AbstractAction;
 import org.openide.nodes.Node;
 
 /**
+ * Jump to action for call stack lines.
  *
- * @author Marian Petras
+ * @author Marian Petras, Erno Mononen
  */
-final class JumpAction extends AbstractAction {
+final class JumpToCallStackAction extends AbstractAction {
 
     /** */
     private final Node node;
@@ -57,7 +58,7 @@ final class JumpAction extends AbstractAction {
     private final String callstackFrameInfo;
 
     /** Creates a new instance of JumpAction */
-    public JumpAction(Node node, String callstackFrameInfo) {
+    JumpToCallStackAction(Node node, String callstackFrameInfo) {
         this.node = node;
         this.callstackFrameInfo = callstackFrameInfo;
     }

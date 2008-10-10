@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.ruby.testrunner.ui;
-import javax.swing.Action;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.util.actions.SystemAction;
+
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.netbeans.napi.gsfret.source.UiUtils;
 
 /**
+ * Jump to action for test methods.
  *
- * @author Marian Petras
+ * @author Erno Mononen
  */
-final class CallstackFrameNode extends AbstractNode {
-    
-    /** */
-    private final String frameInfo;
-    
-    /** Creates a new instance of CallstackFrameNode */
-    public CallstackFrameNode(final String frameInfo) {
-        this(frameInfo, null);
-    }
-    
-    /**
-     * Creates a new instance of CallstackFrameNode
-     *
-     * @param  frameInfo  line of a callstack, e.g. <code>foo.bar.Baz:314</code>
-     * @param  displayName  display name for the node, or <code>null</code>
-     *                      to use the default display name for the given
-     *                      callstack frame info
-     */
-    public CallstackFrameNode(final String frameInfo,
-                              final String displayName) {
-        super(Children.LEAF);
-        setDisplayName(displayName != null
-                       ? displayName
-                       : frameInfo);                            //NOI18N
-        setIconBaseWithExtension(
-                "org/netbeans/modules/ruby/testrunner/ui/res/empty.gif");     //NOI18N
+final class JumpToTestMethodAction extends AbstractAction {
 
-        this.frameInfo = frameInfo;
+    private final Report.Testcase testcase;
+    private final Project project;
+
+    JumpToTestMethodAction(Testcase testcase, Project project) {
+        this.testcase = testcase;
+        this.project = project;
     }
-    
-    /**
-     */
-    @Override
-    public Action getPreferredAction() {
-        return new JumpToCallStackAction(this, frameInfo);
+
+    private String getTestMethod() {
+        return testcase.className + "/" + testcase.name; //NOI18N
     }
-    
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[0];
+
+    public void actionPerformed(ActionEvent e) {
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(project.getProjectDirectory(), getTestMethod());
+        if (!(DeclarationLocation.NONE == location)) {
+            UiUtils.open(location.getFileObject(), location.getOffset());
+        }
     }
+
 }

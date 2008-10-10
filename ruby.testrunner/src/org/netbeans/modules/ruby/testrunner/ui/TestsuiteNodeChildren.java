@@ -101,7 +101,7 @@ final class TestsuiteNodeChildren extends Children.Keys<Report.Testcase> {
         if (filtered && (testcase.trouble == null)) {
             return EMPTY_NODE_ARRAY;
         }
-        return new Node[] {new TestMethodNode(testcase)};
+        return new Node[] {new TestMethodNode(testcase, report.getProject())};
     }
     
     /**
