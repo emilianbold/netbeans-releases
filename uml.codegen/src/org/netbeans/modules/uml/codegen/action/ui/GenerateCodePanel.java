@@ -186,8 +186,9 @@ public class GenerateCodePanel extends javax.swing.JPanel
         
         if (targetFolderName != null && targetFolderName.length() > 0)
         {
+            File normalizedFile = FileUtil.normalizeFile(new File(targetFolderName));
             FileObject targetSrcFolderFO = 
-                FileUtil.toFileObject(new File(targetFolderName));
+                FileUtil.toFileObject(normalizedFile);
 
             if (targetSrcFolderFO == null || !targetSrcFolderFO.isValid())
             {
@@ -721,14 +722,18 @@ public class GenerateCodePanel extends javax.swing.JPanel
         
         try
         {
-            fo = FileUtil.toFileObject(new File(new File(path).getCanonicalPath()));
+            File normalizedFile = FileUtil.normalizeFile(new File(path));
+            fo = FileUtil.toFileObject(new File(normalizedFile.getCanonicalPath()));
         }
         
         catch (IOException ex)
         {
             return false;
         }
-        
+        catch (Exception e)
+        {
+            return false;
+        }
         if (fo == null)
             return false;
         
