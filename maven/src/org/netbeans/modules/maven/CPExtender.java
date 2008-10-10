@@ -336,12 +336,17 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
             ClassPath.EXECUTE
         };
     }
-    
+
     public boolean addLibraries(Library[] libraries, SourceGroup grp, String type) throws IOException {
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML); //NOI18N
         Model model = WriterUtils.loadModel(pom);
         boolean added = libraries.length > 0;
         String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null; //NOI18N
+        //figure if we deal with test or regular sources.
+        String name = grp.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
         for (Library library : libraries) {
             added = added && addLibrary(library, model, scope);
         }
@@ -368,6 +373,11 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
         Model model = WriterUtils.loadModel(pom);
         boolean added = urls.length > 0;
         String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null;//NOI18N
+        //figure if we deal with test or regular sources.
+        String name = grp.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
         for (URL url : urls) {
             URL fileUrl = FileUtil.getArchiveFile(url);
             if (fileUrl != null) {
