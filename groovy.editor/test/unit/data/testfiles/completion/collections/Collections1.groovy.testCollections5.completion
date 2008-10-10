@@ -42,7 +42,8 @@ METHOD     findIndexValues(int, Closure)              List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     first()                                    Object
-METHOD     flatten()                                  List
+METHOD     flatten()                                  Collection
+METHOD     flatten(Closure)                           Collection
 METHOD     get(int)                                   E
 METHOD     getAt(Collection)                          List
 METHOD     getAt(IntRange)                            List

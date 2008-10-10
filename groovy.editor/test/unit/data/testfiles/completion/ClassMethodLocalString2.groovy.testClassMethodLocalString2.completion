@@ -11,6 +11,7 @@ METHOD     getAt(int)                                 String
 METHOD     getBytes()                                 class [B
 METHOD     getBytes(String)                           class [B
 METHOD     getBytes(int, int, byte[], int             void
+METHOD     getChars()                                 class [C
 METHOD     getChars(int, int, char[], int             void
 METHOD     getClass()                                 Class
 METHOD     getMetaClass()                             MetaClass

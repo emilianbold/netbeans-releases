@@ -63,6 +63,7 @@ METHOD     multiply(Number)                           Number
 METHOD     next()                                     Number
 METHOD     notify()                                   void
 METHOD     notifyAll()                                void
+METHOD     numberAwareCompareTo(Comparabl             int
 METHOD     or(Number)                                 Number
 METHOD     parseByte(String)                          byte
 METHOD     parseByte(String, int)                     byte

@@ -2989,7 +2989,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             String className;
 
             if (ame.isGDK()) {
-                className = mm.getDeclaringClass().getCachedClass().getName();
+                className = mm.getDeclaringClass()/*.getCachedClass()*/.getName();
             } else {
 
                 String declName = null;
@@ -2997,11 +2997,15 @@ public class CodeCompleter implements CodeCompletionHandler {
                 if (mm != null) {
                     CachedClass cc = mm.getDeclaringClass();
                     if (cc != null) {
+                        declName = cc.getName();
+                    }                    
+                    /*CachedClass cc = mm.getDeclaringClass();
+                    if (cc != null) {
                         Class clz = cc.getCachedClass();
                         if (clz != null) {
                             declName = clz.getName();
                         }
-                    }
+                    }*/
                 }
 
                 if (declName != null) {
