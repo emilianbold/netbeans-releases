@@ -260,9 +260,13 @@ public class JsParser implements IncrementalParser {
                                 removeChars = 1;
                             }
                         } else if (line.endsWith(",")) { // NOI18N                            removeChars = 1;
-                            removeChars = 1;
+                            if (!isLineEnd) {
+                                removeChars = 1;
+                            }
                         } else if (line.endsWith(", ")) { // NOI18N
-                            removeChars = 2;
+                            if (!isLineEnd) {
+                                removeChars = 2;
+                            }
                         } else if (line.endsWith(",)")) { // NOI18N
                             // Handle lone comma in parameter list - e.g.
                             // type "foo(a," -> you end up with "foo(a,|)" which doesn't parse - but

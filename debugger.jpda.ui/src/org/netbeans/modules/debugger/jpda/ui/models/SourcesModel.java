@@ -513,21 +513,28 @@ NodeActionsProvider {
                     }
 
                     public boolean accept(File file) {
-                        return file.isDirectory();
+                        if (file.isDirectory()) {
+                            return true;
+                        }
+                        String name = file.getName();
+                        int dotIndex = name.lastIndexOf('.');
+                        if (dotIndex > 0) {
+                            String ext = name.substring(dotIndex + 1);
+                            if ("zip".equalsIgnoreCase(ext) || "jar".equalsIgnoreCase(ext)) { // NOI18N
+                                return true;
+                            }
+                        }
+                        return false;
                     }
 
                 });
-                newSourceFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Btn"));
             if (state == JFileChooser.APPROVE_OPTION) {
-                File dir = newSourceFileChooser.getSelectedFile();
-                if (!dir.isDirectory()) {
-                    return ;
-                }
+                File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
-                    String d = dir.getCanonicalPath();
+                    String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesModel.this) {
                         additionalSourceRoots.add(d);
                         enabledSourceRoots.add(d);

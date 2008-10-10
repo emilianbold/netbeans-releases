@@ -131,7 +131,6 @@
                 <friend>org.netbeans.modules.erlang.platform</friend>
                 <friend>org.netbeans.modules.erlang.project</friend>
                 <friend>org.netbeans.modules.fortress.editing</friend>
-                <friend>org.netbeans.modules.fortress.project</friend>
                 <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.groovy.gsp</friend>
                 <friend>org.netbeans.modules.groovy.refactoring</friend>
@@ -163,6 +162,7 @@
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.php.prado</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>
+                <friend>org.netbeans.modules.ada.editor</friend>
                 <package>org.netbeans.modules.gsf.api</package>
                 <package>org.netbeans.modules.gsf.api.annotations</package>
                 <package>org.netbeans.modules.gsf.spi</package>
