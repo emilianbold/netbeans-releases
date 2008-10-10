@@ -219,7 +219,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.5"; // NOI18N
+        return "0.5.6"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -324,6 +324,7 @@ public class PHPIndexer implements Indexer {
             @Override
             public void visit(FunctionDeclaration node) {
                 if (getPath().get(0) instanceof MethodDeclaration){
+                    super.visit(node);
                     return;
                 }
 
