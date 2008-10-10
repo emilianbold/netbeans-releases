@@ -246,19 +246,25 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     public VisualizerChildren getChildren() {
         return getChildren(true);
     }
+
     final VisualizerChildren getChildren(boolean create) {
         VisualizerChildren ch = children.get();
 
         if (create && (ch == null) && !node.isLeaf()) {
             // initialize the nodes children before we enter the readAccess section 
             // (otherwise we could receive invalid node count (under lock))
-            final int count = node.getChildren().getNodesCount();
-            Node[] nodes;
+            Children nch = node.getChildren();
+            final int count = nch.getNodesCount();
+            Node[] nodes = null;
             if (prefetchCount > 0) {
-                Children nch = node.getChildren();
-                nodes = new Node[Math.min(prefetchCount, count)];
-                for (int i = 0; i < nodes.length; i++) {
-                    nodes[i] = nch.getNodeAt(i);
+                if (count <= prefetchCount) {
+                    // fire empty entries in single event if possible
+                    nodes = nch.getNodes();
+                } else {
+                    nodes = new Node[Math.min(prefetchCount, count)];
+                    for (int i = 0; i < nodes.length; i++) {
+                        nodes[i] = nch.getNodeAt(i);
+                    }
                 }
             }
             // go into lock to ensure that no childrenAdded, childrenRemoved,
@@ -269,7 +275,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                         public VisualizerChildren run() {
                             int nodesCount = node.getChildren().getNodesCount();
                             List<Node> snapshot = node.getChildren().snapshot();
-                            VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, nodesCount, snapshot);
+                            VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, snapshot);
                             notifyVisualizerChildrenChange(nodesCount == 0, vc);
                             return vc;
                         }
@@ -750,7 +756,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     VisualizerNode[] getPathToRoot(int depth) {
-       depth++;
+        depth++;
         VisualizerNode[] retNodes;
         if (parent == null || parent.parent == null) {
             retNodes = new VisualizerNode[depth];
