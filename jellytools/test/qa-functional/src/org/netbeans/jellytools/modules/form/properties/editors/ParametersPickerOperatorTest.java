@@ -57,6 +57,25 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class ParametersPickerOperatorTest extends FormPropertiesEditorsTestCase {
     
+    public static final String[] tests = new String[] {
+        "testLblGetParameterFrom",
+        "testRbComponent",
+        "testCboComponent",
+        "testRbProperty",
+        "testTxtProperty",
+        "testBtSelectProperty",
+        "testRbMethodCall",
+        "testTxtMethodCall",
+        "testBtSelectMethod",
+        // Component radion button is disabled in sample JFrame
+        //"testComponent",
+        //"testSetComponent",
+        "testProperty",
+        "testSelectProperty",
+        "testMethodCall",
+        "testSelectMethod",
+        "testClose"
+    };
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -90,23 +109,7 @@ public class ParametersPickerOperatorTest extends FormPropertiesEditorsTestCase 
         return suite;
          */
         return (NbTestSuite) createModuleTest(ParametersPickerOperatorTest.class,
-        "testLblGetParameterFrom",
-        "testRbComponent",
-        "testCboComponent",
-        "testRbProperty",
-        "testTxtProperty",
-        "testBtSelectProperty",
-        "testRbMethodCall",
-        "testTxtMethodCall",
-        "testBtSelectMethod",
-        // Component radion button is disabled in sample JFrame
-        //"testComponent",
-        //"testSetComponent",
-        "testProperty",
-        "testSelectProperty",
-        "testMethodCall",
-        "testSelectMethod",
-        "testClose");
+        tests);
     }
     
     /** Opens method picker. */

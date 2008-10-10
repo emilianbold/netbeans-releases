@@ -45,6 +45,7 @@ package org.netbeans.modules.websvc.core;
  */
 public enum ServerType {
     GLASSFISH,
+    GLASSFISH_V3,
     JBOSS,
     TOMCAT,
     WEBLOGIC,

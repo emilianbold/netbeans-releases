@@ -294,6 +294,27 @@ public class LoggingRepaintManager extends RepaintManager {
     };
 
     /**
+     * Ignores paints from DiffSidebar
+     */
+    public static final RegionFilter IGNORE_DIFF_SIDEBAR_FILTER =
+            new RegionFilter() {
+
+        public boolean accept(JComponent c) {
+            String cn = c.getClass().getName();
+            if ("org.netbeans.modules.versioning.diff.DiffSidebar".equals(cn)) {
+                return false;
+            } else {
+                return true;
+            }
+        }
+
+        public String getFilterName() {
+            return "Ignores versioning.diff.DiffSidebar";
+        }
+
+    };
+
+    /**
      * Accept paints only from Explorer :
      *  - org.openide.explorer.view
      */

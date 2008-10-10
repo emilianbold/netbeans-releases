@@ -55,9 +55,14 @@ import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
+import org.netbeans.modules.performance.guitracker.ActionTracker;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 
+import java.util.logging.Handler;
+import java.util.logging.Logger;
+import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 /**
  *
@@ -90,7 +95,28 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
         super(testName, performanceDataName);        
         expectedTime = WINDOW_OPEN;        
     }
-    
+
+        class PhaseHandler extends Handler {
+
+            public boolean published = false;
+
+            public void publish(LogRecord record) {
+
+            if (record.getMessage().equals("Open Editor, phase 1, AWT [ms]"))
+               ActionTracker.getInstance().stopRecording();
+
+            }
+
+            public void flush() {
+            }
+
+            public void close() throws SecurityException {
+            }
+
+        }
+
+    PhaseHandler phaseHandler=new PhaseHandler();
+
     @Override
     protected void initialize(){
         log("::initialize");
@@ -111,6 +137,8 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
     @Override
     public void prepare() {
         log("::prepare");
+        Logger.getLogger("TIMER").setLevel(Level.FINE);
+        Logger.getLogger("TIMER").addHandler(phaseHandler);
         String path = nodePath+"|"+fileName;    
         fileToBeOpened = new Node(getProjectNode(testProject),path);
         log("========== Open file path ="+fileToBeOpened.getPath());        
@@ -161,6 +189,7 @@ public class OpenScriptingFiles extends org.netbeans.modules.performance.utiliti
     
     @Override
     protected void shutdown(){
+        Logger.getLogger("TIMER").removeHandler(phaseHandler);
         testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();

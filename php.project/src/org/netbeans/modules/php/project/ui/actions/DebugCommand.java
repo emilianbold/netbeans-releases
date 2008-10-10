@@ -98,6 +98,13 @@ public class DebugCommand extends Command implements Displayable {
             };
             
             boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
+            if (jsDebuggingAvailable) {
+                boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
+                if (!keepDebugging) {
+                    return;
+                }
+            }
+
             if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
                 //temporary; after narrowing deps. will be changed
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();

@@ -50,6 +50,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
+import org.netbeans.api.visual.widget.LabelWidget.Alignment;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.widgets.MultilineLabelWidget;
@@ -94,6 +95,7 @@ public class CommentWidget extends UMLNodeWidget implements PropertyChangeListen
         bodyLabel = new MultilineEditableCompartmentWidget(getScene(),
                 getResourcePath(),
                 NbBundle.getMessage(CommentWidget.class, "LBL_body"));
+        bodyLabel.setAlignment(Alignment.LEFT);
 
         Border border = BorderFactory.createEmptyBorder(TAB_WIDTH + 2);
         bodyLabel.setBorder(border);

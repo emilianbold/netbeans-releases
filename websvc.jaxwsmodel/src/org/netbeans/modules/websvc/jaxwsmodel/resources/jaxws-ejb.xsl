@@ -271,13 +271,13 @@ made subject to such option by the copyright holder.
                         </condition>
                     </target>
                     <target name="wsimport-service-{$wsname}" depends="wsimport-init,wsimport-service-check-{$wsname}" unless="wsimport-service-{$wsname}.notRequired">
-                        <property name="wsdl" location="${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"/>
+                        <property name="service-wsdl-{$wsname}" location="${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/{$wsdl_url}"/>
                         <xsl:if test="jaxws:package-name/@forceReplace">
                             <wsimport
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 package="{$package_name}"
                                 destdir="${{build.generated.dir}}/wsimport/binaries"
-                                wsdl="${{wsdl}}"
+                                wsdl="${{service-wsdl-{$wsname}}}"
                                 catalog="{$catalog}">
                                 <xsl:if test="$wsimportoptions">
                                     <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
@@ -321,7 +321,7 @@ made subject to such option by the copyright holder.
                             <wsimport
                                 sourcedestdir="${{build.generated.dir}}/wsimport/service"
                                 destdir="${{build.generated.dir}}/wsimport/binaries"
-                                wsdl="${{wsdl}}"
+                                wsdl="${{service-wsdl-{$wsname}}}"
                                 catalog="{$catalog}">
                                 <xsl:if test="$wsimportoptions">
                                     <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
@@ -361,10 +361,10 @@ made subject to such option by the copyright holder.
                                 </xsl:if>
                             </wsimport>                        
                         </xsl:if>
-                        <property name="targetLocation" location="${{meta.inf}}/wsdl/{$wsname}"/>
-                        <property name="sourceLocation" location="${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/"/>
-                        <copy todir="${{targetLocation}}">
-                            <fileset dir="${{sourceLocation}}" />
+                        <property name="targetLocation-{$wsname}" location="${{meta.inf}}/wsdl/{$wsname}"/>
+                        <property name="sourceLocation-{$wsname}" location="${{meta.inf}}/xml-resources/web-services/{$wsname}/wsdl/"/>
+                        <copy todir="${{targetLocation-{$wsname}}}">
+                            <fileset dir="${{sourceLocation-{$wsname}}}" />
                         </copy> 
                     </target>
                     <target name="wsimport-service-clean-{$wsname}" depends="-init-project">

@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.drawingarea;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -126,6 +127,12 @@ public final class ShapeUniqueAnchor extends Anchor
         HashMap<Entry, Float> leftmap = new HashMap<Entry, Float> ();
         HashMap<Entry, Float> rightmap = new HashMap<Entry, Float> ();
         
+        ArrayList <Entry> topList = new ArrayList <Entry>();
+        ArrayList <Entry> bottomList = new ArrayList <Entry>();
+        ArrayList <Entry> leftList = new ArrayList <Entry>();
+        ArrayList <Entry> rightList = new ArrayList <Entry>();
+        
+        
         
         Widget widget = getRelatedWidget();
         
@@ -177,9 +184,15 @@ public final class ShapeUniqueAnchor extends Anchor
             if (ddx == 0 && ddy == 0)
             {
                 if (entry.isAttachedToConnectionSource())
+                {
                     rightmap.put(entry, 0f);
+                    rightList.add(entry);
+                }
                 else
+                {
                     bottommap.put(entry, 0f);
+                    bottomList.add(entry);
+                }
             }
             else if (ddx >= ddy)
             {
@@ -187,10 +200,12 @@ public final class ShapeUniqueAnchor extends Anchor
                 if(dx > 0.0f)
                 {
                     rightmap.put(entry, dy / dx);
+                    rightList.add(entry);
                 }
                 else
                 {
                     leftmap.put(entry, - dy / dx);
+                    leftList.add(entry);
                 }
             }
             else
@@ -199,24 +214,26 @@ public final class ShapeUniqueAnchor extends Anchor
                 if(dy >= 0.0F)
                 {
                     bottommap.put(entry,  dx / dy);
+                    bottomList.add(entry);
                 }
                 else
                 {
                     topmap.put(entry, -dx / dy);
+                    topList.add(entry);
                 }
             }
         }
         
         int edgeGap = 0;
-        Entry[] rightEntries = toArray(rightmap);
-        int len = rightEntries.length;
+        int len = rightList.size();
+        Entry[] sortedEntries = toArray(rightList, rightmap);
 
         // Inside the loop I need to now calculate the new slop (based on the 
         // location of the entries new point), and then 
         int x = bounds.x + bounds.width + edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = rightEntries[a];
+            Entry curEntry = sortedEntries[a];
             int y = bounds.y + (a + 1) * bounds.height / (len + 1);
             
             Point newPt = null;
@@ -232,13 +249,13 @@ public final class ShapeUniqueAnchor extends Anchor
             results.put (curEntry, new Result (newPt, Direction.RIGHT));
         }
 
-        Entry[] leftEntries = toArray(leftmap);
-        len = leftEntries.length;
-
+        len = leftList.size();
+        sortedEntries = toArray(leftList, leftmap);
+        
         x = bounds.x - edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = leftEntries[a];
+            Entry curEntry = sortedEntries[a];
             int y = bounds.y + (a + 1) * bounds.height / (len + 1);
             
             Point newPt = null;
@@ -254,13 +271,13 @@ public final class ShapeUniqueAnchor extends Anchor
             results.put (curEntry, new Result (newPt, Direction.LEFT));
         }
         
-        Entry[] topEntries = toArray(topmap);
-        len = topEntries.length;
-
+        len = topList.size();
+        sortedEntries = toArray(topList,topmap);
+        
         int y = bounds.y - edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = topEntries[a];
+            Entry curEntry = sortedEntries[a];
             x = bounds.x + (a + 1) * bounds.width / (len + 1);
             
             Point newPt = null;
@@ -276,13 +293,13 @@ public final class ShapeUniqueAnchor extends Anchor
             results.put (curEntry, new Result (newPt, Direction.TOP));
         }
 
-        Entry[] bottomEntries = toArray(bottommap);
-        len = bottomEntries.length;
+        len = bottomList.size();
+        sortedEntries = toArray(bottomList,bottommap);
 
         y = bounds.y + bounds.height + edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = bottomEntries[a];
+            Entry curEntry = sortedEntries[a];
             x = bounds.x + (a + 1) * bounds.width / (len + 1);
             
             Point newPt = null;
@@ -330,30 +347,36 @@ public final class ShapeUniqueAnchor extends Anchor
     }
     
     
-    private Entry[] toArray(final HashMap<Entry, Float> map)
+    private Entry[] toArray(List < Entry > entries, final HashMap<Entry, Float> map)
     {
         Set<Entry> keys = map.keySet();
-        Entry[] entries = keys.toArray(new Entry[keys.size()]);
-        Arrays.sort(entries, new Comparator<Entry>()
+        
+        Entry[] retVal = new Entry[entries.size()];
+        if(entries.size() > 0)
         {
-
-            public int compare(Entry o1, Entry o2)
+            entries.toArray(retVal);
+        
+            Arrays.sort(retVal, new Comparator<Entry>()
             {
-                float f = map.get(o1) - map.get(o2);
-                if (f > 0.0f)
+
+                public int compare(Entry o1, Entry o2)
                 {
-                    return 1;
+                    float f = map.get(o1) - map.get(o2);
+                    if (f > 0.0f)
+                    {
+                        return 1;
+                    }
+                    else if (f < 0.0f)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
-                else if (f < 0.0f)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        });
-        return entries;
+            });
+        }
+        return retVal;
     }
 }

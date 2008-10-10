@@ -181,6 +181,7 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVersion = new javax.swing.JLabel();
         jTextFieldVersion = new javax.swing.JTextField();
         jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
+        dosDescription = new javax.swing.JLabel();
 
         jLabelContextPath.setLabelFor(clientModuleUriCombo);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelContextPath, NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ClientModuleURI_JLabel")); // NOI18N
@@ -220,7 +221,7 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(webInfoPanelLayout.createSequentialGroup()
                         .add(jLabelRelativeURL)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextFieldRelativeURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 526, Short.MAX_VALUE)))
+                        .add(jTextFieldRelativeURL, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 514, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         webInfoPanelLayout.setVerticalGroup(
@@ -265,11 +266,11 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(clientInfoPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(jLabelVMOptionsExample)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextVMOptions, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jTextArgs, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, clientInfoPanelLayout.createSequentialGroup()
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(jTextMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 530, Short.MAX_VALUE)))
+                        .add(jTextMainClass, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 518, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         clientInfoPanelLayout.setVerticalGroup(
@@ -298,6 +299,8 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_JCheckBox")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(dosDescription, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_Description")); // NOI18N
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -315,17 +318,20 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(clientModuleUriCombo, 0, 542, Short.MAX_VALUE))
-                            .add(jComboBoxServer, 0, 542, Short.MAX_VALUE)
+                                .add(clientModuleUriCombo, 0, 530, Short.MAX_VALUE))
+                            .add(jComboBoxServer, 0, 530, Short.MAX_VALUE)
                             .add(jTextFieldVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(jCheckBoxDeployOnSave)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 516, Short.MAX_VALUE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(21, 21, 21)
+                                .add(dosDescription, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE))
+                            .add(jCheckBoxDeployOnSave)))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(webInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .add(layout.createSequentialGroup()
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(clientInfoPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
@@ -349,11 +355,13 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .add(jTextFieldVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(7, 7, 7)
                 .add(jCheckBoxDeployOnSave)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(dosDescription)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(webInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(clientInfoPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(170, Short.MAX_VALUE))
+                .addContainerGap(126, Short.MAX_VALUE))
         );
 
         jComboBoxServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_Server_A11YDesc")); // NOI18N
@@ -373,6 +381,7 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel clientInfoPanel;
     private javax.swing.JComboBox clientModuleUriCombo;
+    private javax.swing.JLabel dosDescription;
     private javax.swing.JLabel filler;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;

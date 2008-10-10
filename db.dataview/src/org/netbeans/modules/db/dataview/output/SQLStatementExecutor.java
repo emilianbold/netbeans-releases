@@ -92,8 +92,14 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
                 dataView.disableButtons();
 
                 conn = DBConnectionFactory.getInstance().getConnection(dataView.getDatabaseConnection());
+                String msg = "";
                 if (conn == null) {
-                    String msg = NbBundle.getMessage(SQLStatementExecutor.class,"MSG_connection_failure", dataView.getDatabaseConnection());
+                    Throwable connEx = DBConnectionFactory.getInstance().getLastException();
+                    if (connEx != null) {
+                        msg = connEx.getMessage();
+                    } else {
+                        msg = NbBundle.getMessage(SQLStatementExecutor.class, "MSG_connection_failure", dataView.getDatabaseConnection());
+                    }
                     NotifyDescriptor nd = new NotifyDescriptor.Message(msg);
                     DialogDisplayer.getDefault().notify(nd);
                     return;

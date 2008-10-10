@@ -501,9 +501,13 @@ public class JarClassLoader extends ProxyClassLoader {
         private void doCloseJar() throws IOException {
             synchronized(sources) {
                 if (jar != null) {
-                    if (!sources.remove(this)) System.err.println("Can't remove " + this);
+                    if (!sources.remove(this)) {
+                        LOGGER.warning("Can't remove " + this);
+                    }
+                    LOGGER.log(Level.FINE, "Closing JAR {0}", jar.getName());
                     jar.close();
                     jar = null;
+                    LOGGER.log(Level.FINE, "Remaining open JARs: {0}", sources.size());
                 }
             }
             
@@ -545,6 +549,8 @@ public class JarClassLoader extends ProxyClassLoader {
                 }
                 
                 sources.add(source); // now register the newly opened
+                LOGGER.log(Level.FINE, "Opening module JAR {0}", source.file);
+                LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
             }
         }
 

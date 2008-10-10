@@ -121,11 +121,11 @@ class ClickableIcon extends JLabel implements MouseListener {
     
     private void setFocusedThread() {
         if (state != STATE_NORMAL) {
-            if (tree.threadFocuseGained(jpdaThread)) {
+            if (tree != null && tree.threadFocuseGained(jpdaThread)) {
                 getParent().repaint();
             }
         } else {
-            if (tree.threadFocuseLost(jpdaThread)) {
+            if (tree != null && tree.threadFocuseLost(jpdaThread)) {
                 getParent().repaint();
             }
         }

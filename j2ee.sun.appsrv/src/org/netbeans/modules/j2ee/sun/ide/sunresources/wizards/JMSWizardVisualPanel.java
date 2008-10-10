@@ -366,31 +366,31 @@ public class JMSWizardVisualPanel extends javax.swing.JPanel implements ChangeLi
     }// </editor-fold>//GEN-END:initComponents
 
     private void connectionFactoryRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectionFactoryRadioButtonActionPerformed
-        this.helper.getData().setString(__ResType, bundle.getString("LBL_Connector_ConnectionFactory")); //NOI18N
+        this.helper.getData().setString(__ResType, __CNTN_FACTORY); 
         this.helper.getData().setProperties(new Vector());
         this.panel.fireChange(evt.getSource());    
     }//GEN-LAST:event_connectionFactoryRadioButtonActionPerformed
 
     private void topicConnectionRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_topicConnectionRadioButtonActionPerformed
-        this.helper.getData().setString(__ResType, bundle.getString("LBL_Connector_TopicConnectionFactory")); //NOI18N
+        this.helper.getData().setString(__ResType, __TOPIC_CNTN_FACTORY); 
         this.helper.getData().setProperties(new Vector());
         this.panel.fireChange(evt.getSource());
     }//GEN-LAST:event_topicConnectionRadioButtonActionPerformed
 
     private void queueConnectionRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueConnectionRadioButtonActionPerformed
-        this.helper.getData().setString(__ResType, bundle.getString("LBL_Connector_QueueConnectionFactory")); //NOI18N
+        this.helper.getData().setString(__ResType, __QUEUE_CNTN_FACTORY); 
         this.helper.getData().setProperties(new Vector());
         this.panel.fireChange(evt.getSource());
     }//GEN-LAST:event_queueConnectionRadioButtonActionPerformed
 
     private void topicRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_topicRadioButtonActionPerformed
-        this.helper.getData().setString(__ResType, bundle.getString("LBL_AdminObject_Topic")); //NOI18N
+        this.helper.getData().setString(__ResType, __TOPIC); 
         setPropsForAdminObj();
         this.panel.fireChange(evt.getSource());
     }//GEN-LAST:event_topicRadioButtonActionPerformed
 
     private void queueRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queueRadioButtonActionPerformed
-        this.helper.getData().setString(__ResType, bundle.getString("LBL_AdminObject_Queue")); //NOI18N
+        this.helper.getData().setString(__ResType, __QUEUE); 
         setPropsForAdminObj();
         this.panel.fireChange(evt.getSource());
     }//GEN-LAST:event_queueRadioButtonActionPerformed
@@ -488,7 +488,7 @@ public class JMSWizardVisualPanel extends javax.swing.JPanel implements ChangeLi
         String isResTypeSelected = this.helper.getData().getString(__ResType);
         if(isResTypeSelected == null || isResTypeSelected.trim().equals("") ){//NOI18N
             this.queueRadioButton.setSelected(true);
-            this.helper.getData().setString(__ResType, bundle.getString("LBL_AdminObject_Queue")); //NOI18N
+            this.helper.getData().setString(__ResType,  __QUEUE); 
             setPropsForAdminObj();
         }
      }

@@ -36,7 +36,6 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.client.tools.impl;
 
 import java.net.MalformedURLException;
@@ -50,9 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
-import org.netbeans.modules.web.client.tools.impl.ui.DebugConfigPanel;
 import org.netbeans.modules.web.client.tools.spi.WebClientToolsSessionStarter;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser.Factory;
@@ -69,9 +66,10 @@ import org.openide.util.RequestProcessor;
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
 public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionStarter {
-    
+
     public void startSession(final URI uri, final Factory browser, final Lookup lookup) throws WebClientToolsSessionException {
         Runnable startSession = new Runnable() {
+
             public void run() {
                 try {
                     startSessionImpl(uri, browser, lookup);
@@ -80,83 +78,25 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
                 }
             }
         };
-        
+
         RequestProcessor.getDefault().post(startSession);
     }
 
     private void startSessionImpl(URI uri, Factory browser, Lookup lookup) throws WebClientToolsSessionException {
-        Project project = lookup.lookup(Project.class);
-        
-        if (project != null) {
-            boolean ieSupported = WebClientToolsProjectUtils.isInternetExplorerSupported();
-            boolean ffSupported = WebClientToolsProjectUtils.isFirefoxSupported();
-            Preferences globalPrefs = NbPreferences.forModule(DebugConstants.class);
-            
-            boolean displayConfigPanel = globalPrefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
-            
-            if (!ieSupported && !ffSupported) {
-                displayNoBrowserDialog(globalPrefs);
-                displayInBrowser(uri);
-                return;
-            }
-            
-            // Normal dialog is not applicable to Grails; for now, just launch the debugger
-            Project p = project.getLookup().lookup(Project.class);
-            project = (p != null) ? p : project;
-            if (project.getClass().getName().equals("org.netbeans.modules.groovy.grailsproject.GrailsProject")) { // NOI18N
-                browser = getSupportedBrowser(browser, ffSupported, ieSupported);
-                NbJSDebugger.startDebugging(uri, browser, lookup);
-                return;
-            }
-            
-            boolean serverDebug = WebClientToolsProjectUtils.getServerDebugProperty(project);
-            displayConfigPanel &= serverDebug;
-            
-            if (displayConfigPanel) {
-                boolean cancel = !displayDebugConfigDialog(ffSupported, ieSupported, globalPrefs);
-                if (cancel) {
-                    displayInBrowser(uri);
-                    return;
-                }
-                
-                // If the user turns off client-side debugging and selects
-                // 'Do not show this message again', turn off client-side debugging
-                // in the project too
-                boolean launchClientDebugger = globalPrefs.getBoolean(DebugConstants.CLIENT_DEBUG, true);
-                boolean showDialog = globalPrefs.getBoolean(DebugConstants.DISPLAY_CONFIG, true);
-                if (!launchClientDebugger && !showDialog) {
-                    WebClientToolsProjectUtils.Browser savedBrowser = WebClientToolsProjectUtils.isFirefox(project) ?
-                        WebClientToolsProjectUtils.Browser.FIREFOX : WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER;
-                    WebClientToolsProjectUtils.setProjectProperties(project, true, false, savedBrowser);
-                }
-            }
-            
-            if (displayConfigPanel || !WebClientToolsProjectUtils.isDebugPropertySet(project)) {
-                // Use global settings if project properties aren't set or the debug config panel
-                // was used
-                boolean launchClientDebugger = globalPrefs.getBoolean(DebugConstants.CLIENT_DEBUG, true);
-                if (!launchClientDebugger) {
-                    displayInBrowser(uri);
-                    return;
-                }
-                
-                String defBrowser = ffSupported ? 
-                    WebClientToolsProjectUtils.Browser.FIREFOX.name() :
-                    WebClientToolsProjectUtils.Browser.INTERNET_EXPLORER.name();
-                
-                String browserValue = globalPrefs.get(DebugConstants.BROWSER, defBrowser);
-                browser = (WebClientToolsProjectUtils.Browser.valueOf(browserValue) == WebClientToolsProjectUtils.Browser.FIREFOX) ?
-                    WebClientToolsProjectUtils.getFirefoxBrowser() : WebClientToolsProjectUtils.getInternetExplorerBrowser();
-            } else {
-                // automatically switch to a supported browser if the configured one
-                // (non-updated preferences) are not valid
-                browser = getSupportedBrowser(browser, ffSupported, ieSupported);
-            }
+        boolean ieSupported = WebClientToolsProjectUtils.isInternetExplorerSupported();
+        boolean ffSupported = WebClientToolsProjectUtils.isFirefoxSupported();
+        Preferences globalPrefs = NbPreferences.forModule(DebugConstants.class);
+
+        if (!ieSupported && !ffSupported) {
+            displayNoBrowserDialog(globalPrefs);
+            displayInBrowser(uri);
+            return;
         }
-        
-        NbJSDebugger.startDebugging(uri, browser, lookup);        
+
+        browser = getSupportedBrowser(browser, ffSupported, ieSupported);
+        NbJSDebugger.startDebugging(uri, browser, lookup);
     }
-    
+
     private void displayNoBrowserDialog(final Preferences globalPrefs) {
         if (globalPrefs.getBoolean(DebugConstants.DISPLAY_NOBROWSER, true)) {
             JCheckBox doNotShowAgain = new JCheckBox();
@@ -165,11 +105,11 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
             String dialogText = NbBundle.getMessage(WebClientToolsSessionStarterImpl.class, "NO_BROWSER_TEXT");
             JLabel text = new JLabel(dialogText);
             text.setOpaque(false);
-             
+
             NotifyDescriptor nd = new NotifyDescriptor.Message(
-                    new Object[] { text, doNotShowAgain });
+                    new Object[]{text, doNotShowAgain});
             nd.setMessageType(NotifyDescriptor.ERROR_MESSAGE);
-            
+
             DialogDisplayer.getDefault().notify(nd);
             if (doNotShowAgain.isSelected()) {
                 globalPrefs.putBoolean(DebugConstants.DISPLAY_NOBROWSER, false);
@@ -181,32 +121,15 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
             }
         }
     }
-    
-    private boolean displayDebugConfigDialog(boolean ffSupported, boolean ieSupported, Preferences globalPrefs) {
-        DebugConfigPanel panel = new DebugConfigPanel(ffSupported, ieSupported, globalPrefs);
-        String dialogTitle = NbBundle.getMessage(WebClientToolsSessionStarterImpl.class, "DEBUG_CONFIG_TITLE");
-        
-        DialogDescriptor dd = new DialogDescriptor(
-                panel, 
-                dialogTitle, 
-                true,
-                DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.CANCEL_OPTION,
-                DialogDescriptor.BOTTOM_ALIGN,
-                null,
-                panel.getPanelCloseHandler());
-        
-        return DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION;
-    }
-    
+
     private void displayInBrowser(URI uri) {
         try {
             URLDisplayer.getDefault().showURL(uri.toURL());
         } catch (MalformedURLException ex) {
             Log.getLogger().log(Level.SEVERE, "Could not launch browser", ex);
-        }        
+        }
     }
-    
+
     /**
      * Ensures that the selected browser type is valid.  Since values are only validated
      * when the user edits project Properties, this is required before debugging starts.
@@ -220,12 +143,11 @@ public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionSt
         if (ffSupported && ieSupported) {
             return baseBrowser;
         }
-        
+
         if (ieSupported) {
             return WebClientToolsProjectUtils.getInternetExplorerBrowser();
         } else {
             return WebClientToolsProjectUtils.getFirefoxBrowser();
         }
     }
-    
 }

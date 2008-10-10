@@ -58,11 +58,7 @@ public class ScriptingMeasureActionsTest2 {
         NbTestSuite suite = new NbTestSuite("Scripting UI Responsiveness Actions suite");
         System.setProperty("suitename", ScriptingMeasureActionsTest2.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(EditorMenuPopup.class)
-                .addTest(FormatFileTest.class)
-                .addTest(CloseProjectTest.class)
-                .addTest(CloseScriptingFiles.class)
-                .addTest(TypingInScriptingEditor.class)
+        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(TypingInScriptingEditor.class)
                 .addTest(ScriptingCodeCompletionInEditor.class)
                 .addTest(OpenScriptingFiles.class)
 

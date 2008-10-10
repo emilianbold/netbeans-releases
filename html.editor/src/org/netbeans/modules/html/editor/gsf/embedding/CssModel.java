@@ -41,12 +41,14 @@
 package org.netbeans.modules.html.editor.gsf.embedding;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
@@ -56,7 +58,9 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+import org.netbeans.spi.lexer.LanguageProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * Creates a CSS model from html source code. 
@@ -394,12 +398,15 @@ public class CssModel {
         // Clear cache
         // prevLexOffset = prevAstOffset = 0;
         prevLexOffset = history.convertOriginalToEdited(prevLexOffset);
-        
+
         int offset = history.getStart();
         int limit = history.getOriginalEnd();
         int delta = history.getSizeDelta();
 
+        // True if the edits occur within (or overlapping) one or more CSS code blocks
         boolean codeOverlaps = false;
+        // True if all edits were contained within the CSS codeblocks
+        boolean editsContained = false;
         for (CodeBlockData codeBlock : codeBlocks) {
             // Block not affected by move
             if (codeBlock.sourceEnd < offset) {
@@ -412,13 +419,93 @@ public class CssModel {
             }
             if (codeBlock.sourceStart <= offset && codeBlock.sourceEnd >= limit) {
                 codeBlock.sourceEnd += delta;
+                if (history.getEditedEnd() <= codeBlock.sourceEnd) {
+                    editsContained = true;
+                }
                 codeOverlaps = true;
                 continue;
             }
             return IncrementalEmbeddingModel.UpdateState.FAILED;
         }
 
-        return codeOverlaps ? IncrementalEmbeddingModel.UpdateState.UPDATED : IncrementalEmbeddingModel.UpdateState.COMPLETED;
+        if (codeOverlaps) {
+            if (editsContained) {
+                // All edits are inside our existing code blocks, so we
+                // know there aren't any new or removed code blocks to worry about.
+                return IncrementalEmbeddingModel.UpdateState.UPDATED;
+            } else {
+                // We MAY have new or removed separate sections, but one or
+                // more of these overlap with our blocks so we're not sure.
+                // Err on the safe side and recompute everything.
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            }
+        } else {
+            // See if it looks like we have added or removed any CSS sections
+            initForeignTokens();
+
+            if (history.wasModified(HTMLTokenId.STYLE) ||
+                    // HACK: Embedded tokenid notification doesn't seem to work yet (bug in EditHistory).
+                    // Therefore, we have to detect if there is a relevant top-level change in PHP files,
+                    // JSP files or RHTML files that can correspond to an HTML section, and if so, recompute
+                    // everything.
+                    history.wasModified(phpHtml) || history.wasModified(jspHtml) || history.wasModified(erbHtml)) {
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            } else if (history.wasModified(HTMLTokenId.VALUE)) {
+                // HACK for "VALUE" -- I really only want to do this when the token text is
+                // a "style" attribute -value-, however, that's not a separate TokenId
+                // from other values (the way the javascript attributes are separated out as VALUE_JAVASCRIPT)
+                // so we'll just treat ANY attribute change as a possible style attribute change.
+
+                // We might be able to do some extra optimizations to avoid recomputing the
+                // model here. For example, if you've only inserted text (history.getOriginalSize()==0)
+                // and look up the current token sequence, and see if the range (history.getStart() to
+                // history.getEditedEnd()) is completely within the same VALUE token. If so, we've
+                // only edited the token. Next see if this is a value token corresponding to a style
+                // attribute (which can be tricky outside of HTML in languages like JSP and ERB where
+                // we may have to worry about <% %>'s in the middle), and if not, return
+                // COMPLETED instead of FAILED.
+
+                return IncrementalEmbeddingModel.UpdateState.FAILED;
+            }
+
+            return IncrementalEmbeddingModel.UpdateState.COMPLETED;
+        }
+    }
+
+    /** Whether we have initialized phpHtml, jspHtml and erbHtml yet */
+    private static boolean foreignTokensInitialized;
+    /** PHPTokenId.T_INLINE_HTML token id, initialized lazily */
+    private static TokenId phpHtml;
+    /** JspTokenId.TEXT token id, initialized lazily */
+    private static TokenId jspHtml;
+    /** RhtmlTokenId.HTML token id, initialized lazily */
+    private static TokenId erbHtml;
+
+    @SuppressWarnings("unchecked")
+    private void initForeignTokens() {
+        if (foreignTokensInitialized) {
+            return;
+        }
+        foreignTokensInitialized = true;
+
+        Collection<LanguageProvider> providers = (Collection<LanguageProvider>)Lookup.getDefault().lookupAll(LanguageProvider.class);
+        for (LanguageProvider provider : providers) {
+            Language erbLanguage = (Language<? extends TokenId>)provider.findLanguage("application/x-httpd-eruby");
+            if (erbLanguage != null) {
+                // Sync with RhtmlTokenId.HTML!
+                erbHtml = erbLanguage.tokenId("HTML"); // NOI18N
+            }
+            Language jspLanguage = (Language<? extends TokenId>)provider.findLanguage("text/x-jsp");
+            if (jspLanguage != null) {
+                // Sync with JspTokenId.TEXT!
+                jspHtml = jspLanguage.tokenId("TEXT"); // NOI18N
+            }
+            Language phpLanguage = (Language<? extends TokenId>)provider.findLanguage("text/x-php5");
+            if (phpLanguage != null) {
+                // Sync with PHPTokenId.T_INLINE_HTML
+                phpHtml = phpLanguage.tokenId("T_INLINE_HTML");
+            }
+        }
     }
 
     protected class CodeBlockData {

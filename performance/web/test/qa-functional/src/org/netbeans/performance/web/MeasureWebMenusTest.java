@@ -58,7 +58,7 @@ public class MeasureWebMenusTest {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Menus suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebMenusTest");
+        System.setProperty("suitename", MeasureWebMenusTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WebProjectsViewPopupMenu.class)
         .addTest(WebRuntimeViewPopupMenu.class)

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -221,6 +222,10 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             return true;
         }
     }
+
+    private boolean isCompileOnSaveDisabled() {
+         return !J2SEProjectUtil.isCompileOnSaveEnabled(project) && J2SEProjectUtil.isCompileOnSaveSupported(project);
+    }
     
     private String[] getBreakableProperties() {
         SourceRoots roots = this.project.getSourceRoots();
@@ -235,6 +240,14 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     }
     
     private static Image brokenProjectBadge = ImageUtilities.loadImage("org/netbeans/modules/java/j2seproject/ui/resources/brokenProjectBadge.gif", true);
+    private static final String COMPILE_ON_SAVE_DISABLED_BADGE_PATH = "org/netbeans/modules/java/j2seproject/ui/resources/compileOnSaveDisabledBadge.gif";
+    private static final Image compileOnSaveDisabledBadge;
+
+    static {
+        URL errorBadgeIconURL = J2SELogicalViewProvider.class.getClassLoader().getResource(COMPILE_ON_SAVE_DISABLED_BADGE_PATH);
+        String compileOnSaveDisabledTP = "<img src=\"" + errorBadgeIconURL + "\">&nbsp;" + NbBundle.getMessage(J2SELogicalViewProvider.class, "TP_CompileOnSaveDisabled");
+        compileOnSaveDisabledBadge = ImageUtilities.assignToolTipToImage(ImageUtilities.loadImage(COMPILE_ON_SAVE_DISABLED_BADGE_PATH), compileOnSaveDisabledTP); // NOI18N
+    }
     
     /** Filter node containin additional features for the J2SE physical
      */
@@ -243,6 +256,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         private Action brokenLinksAction;
         private boolean broken;         //Represents a state where project has a broken reference repairable by broken reference support
         private boolean illegalState;   //Represents a state where project is not in legal state, eg invalid source/target level
+        private boolean compileOnSaveDisabled;  //true iff Compile-on-Save is disabled
         
         public J2SELogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-java-j2seproject/Nodes"), 
@@ -255,6 +269,7 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             else if (hasInvalidJdkVersion ()) {
                 illegalState = true;
             }
+            compileOnSaveDisabled = isCompileOnSaveDisabled();
             brokenLinksAction = new BrokenLinksAction();
         }
 
@@ -279,13 +294,23 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
         @Override
         public Image getIcon(int type) {
             Image original = super.getIcon(type);
-            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+
+            if (broken || illegalState) {
+                return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
+            } else {
+                return compileOnSaveDisabled ? ImageUtilities.mergeImages(original, compileOnSaveDisabledBadge, 8, 0) : original;
+            }
         }
         
         @Override
         public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            return broken || illegalState ? ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0) : original;
+            
+            if (broken || illegalState) {
+                return ImageUtilities.mergeImages(original, brokenProjectBadge, 8, 0);
+            } else {
+                return compileOnSaveDisabled ? ImageUtilities.mergeImages(original, compileOnSaveDisabledBadge, 8, 0) : original;
+            }
         }
         
         @Override
@@ -368,6 +393,13 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
             fireDisplayNameChange(null, null);
         }
         
+        private void setCompileOnSaveDisabled (boolean value) {
+            this.compileOnSaveDisabled = value;
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
+
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
@@ -419,6 +451,11 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
                 broken = hasInvalidJdkVersion ();
                 if (old != broken) {
                     setIllegalState(broken);
+                }
+                old = J2SELogicalViewRootNode.this.compileOnSaveDisabled;
+                boolean cosDisabled = isCompileOnSaveDisabled();
+                if (old != cosDisabled) {
+                    setCompileOnSaveDisabled(cosDisabled);
                 }
             }
             

@@ -40,7 +40,9 @@
 package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -180,4 +182,11 @@ public final class Utils {
         
         return moduleID;
     }
+    
+    public static class JarFileFilter implements FileFilter {
+        public boolean accept(File f) {
+            return ((! f.isDirectory()) && f.getName().toLowerCase(Locale.ENGLISH).endsWith(".jar")); //NOI18N
+        }
+    }
+    
 }

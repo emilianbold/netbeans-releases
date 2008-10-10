@@ -41,9 +41,10 @@
 
 package org.netbeans.modules.gsf;
 
-import org.netbeans.modules.gsf.SourceAdapter;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.SourceModel;
 import org.netbeans.modules.gsf.api.SourceModelFactory;
+import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
 
@@ -56,7 +57,8 @@ public class SourceAdapterFactory extends SourceModelFactory {
     /** Creates a new instance of SourceAdapterFactory */
     public SourceAdapterFactory() {
     }
-    
+
+    @Override
     public SourceModel getModel(FileObject fo) {
         Source source = Source.forFileObject(fo);
         if (source != null) {
@@ -66,4 +68,9 @@ public class SourceAdapterFactory extends SourceModelFactory {
         return null;
     }
 
+    @Override
+    public Index getIndex(FileObject fileInProject, String mimeType) {
+        ClasspathInfo cp = ClasspathInfo.create(fileInProject);
+        return (cp != null) ? cp.getClassIndex(mimeType) : null;
+    }
 }

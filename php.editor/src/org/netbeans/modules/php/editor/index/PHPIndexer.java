@@ -147,6 +147,8 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_IDENTIFIER_DECLARATION = "identifier_declaration"; //NOI18N
 
     static final String FIELD_VAR = "var"; //NOI18N
+    /** This field is for fast access top level elemnts */
+    static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
     public boolean isIndexable(ParserFile file) {
         // Cannot call file.getFileObject().getMIMEType() here for several reasons:
@@ -217,7 +219,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.5.4"; // NOI18N
+        return "0.5.5"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -423,6 +425,7 @@ public class PHPIndexer implements Indexer {
 
             classSignature.append(superClass + ";"); //NOI18N
             document.addPair(FIELD_CLASS, classSignature.toString(), true);
+            document.addPair(FIELD_TOP_LEVEL, classDeclaration.getName().getName().toLowerCase(), true);
 
             for (Statement statement : classDeclaration.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
@@ -465,6 +468,7 @@ public class PHPIndexer implements Indexer {
 
             ifaceSign.append(';');
             document.addPair(FIELD_IFACE, ifaceSign.toString(), true);
+            document.addPair(FIELD_TOP_LEVEL, ifaceDecl.getName().getName().toLowerCase(), true);
 
             for (Statement statement : ifaceDecl.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
@@ -506,6 +510,7 @@ public class PHPIndexer implements Indexer {
                         signature.append(";"); //NOI18N
                         signature.append(var.getStartOffset() + ";");
                         document.addPair(FIELD_VAR, signature.toString(), true);
+                        document.addPair(FIELD_TOP_LEVEL, varName.toLowerCase(), true);
                     }
                 }
             }
@@ -544,6 +549,7 @@ public class PHPIndexer implements Indexer {
                                     signature.append(invocation.getStartOffset());
                                     signature.append(';');
                                     document.addPair(FIELD_CONST,  signature.toString(), true);
+                                    document.addPair(FIELD_TOP_LEVEL, defineVal.toLowerCase(), true);
                                 }
                             }
                         }
@@ -557,6 +563,7 @@ public class PHPIndexer implements Indexer {
             signature.append(getBaseSignatureForFunctionDeclaration(functionDeclaration));
 
             document.addPair(FIELD_BASE, signature.toString(), true);
+            document.addPair(FIELD_TOP_LEVEL, functionDeclaration.getFunctionName().getName().toLowerCase(), true);
         }
 
         private void indexMethod(FunctionDeclaration functionDeclaration, int modifiers, IndexDocument document) {

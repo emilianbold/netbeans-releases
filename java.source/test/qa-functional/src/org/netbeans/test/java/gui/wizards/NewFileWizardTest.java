@@ -151,11 +151,12 @@ public class NewFileWizardTest extends JavaTestCase {
      * Tests creating of a package.
      */
     public void testCreatePackage() {
-        GuiUtilities.createPackage(TEST_PROJECT_NAME,TEST_PACKAGE_NAME);
+        createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
+        GuiUtilities.createPackage(TEST_PROJECT_NAME,TEST_PACKAGE_NAME+TEST_PACKAGE_NAME);
     }
     
-    public void testCreatePackage(String projName,String packName) {
-        GuiUtilities.createPackage(projName,packName);
+    public void testCreatePackage(String projName,String packName) {        
+        GuiUtilities.createPackage(projName,packName);        
     }
     
     /**
@@ -163,6 +164,7 @@ public class NewFileWizardTest extends JavaTestCase {
      */
     public void testDeletePackage() {
         // delete a package
+        createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
         Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
         pn.select();
         
@@ -189,11 +191,13 @@ public class NewFileWizardTest extends JavaTestCase {
      */
     public void testNewFileWizardComplex() {
         // create test project
-        testCreateProject(TEST_PROJECT_NAME);
+        //testCreateProject(TEST_PROJECT_NAME);
         
         // create test package
-        testCreatePackage(TEST_PROJECT_NAME,TEST_PACKAGE_NAME);
-        
+        //testCreatePackage(TEST_PROJECT_NAME,TEST_PACKAGE_NAME);
+
+        createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
+
         // select project node
         Node pn = new ProjectsTabOperator().getProjectRootNode(TEST_PROJECT_NAME);
         pn.select();
@@ -235,6 +239,7 @@ public class NewFileWizardTest extends JavaTestCase {
      * Negative test for creating of a package.
      */
     public void testCreatePackageFailure() {
+        createIfNotOpened(TEST_PROJECT_NAME, TEST_PACKAGE_NAME);
         NewFileWizardOperator op = NewFileWizardOperator.invoke();
         
         // wait till all fields are loaded

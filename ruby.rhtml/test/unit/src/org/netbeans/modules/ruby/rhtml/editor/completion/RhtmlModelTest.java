@@ -53,6 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.gsf.LanguageRegistry;
 import org.netbeans.modules.gsf.api.EditHistory;
 import org.netbeans.modules.gsf.api.EmbeddingModel;
+import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.gsf.api.Error;
@@ -96,6 +97,17 @@ public class RhtmlModelTest extends RubyTestBase {
         if (!jsFile.exists()) {
             NbTestCase.fail("File " + jsFile + " not found.");
         }
+
+        BaseDocument doc = getDocument(getTestFile(relFilePath));
+
+        return getTranslatedSource(doc, relFilePath);
+    }
+
+    private TranslatedSource getTranslatedSource(BaseDocument doc, String relFilePath) throws Exception {
+        File jsFile = new File(getDataDir(), relFilePath);
+        if (!jsFile.exists()) {
+            NbTestCase.fail("File " + jsFile + " not found.");
+        }
         String RHTML_MIME_TYPE = RhtmlTokenId.MIME_TYPE;
         String HTML_MIME_TYPE = HTMLKit.HTML_MIME_TYPE;
 
@@ -114,7 +126,6 @@ public class RhtmlModelTest extends RubyTestBase {
 
         EmbeddingModel model = LanguageRegistry.getInstance().getEmbedding(RubyInstallation.RUBY_MIME_TYPE, mimeType);
         assertNotNull(model);
-        BaseDocument doc = getDocument(getTestFile(relFilePath));
 
         doc.putProperty("mimeType", mimeType);
         doc.putProperty(org.netbeans.api.lexer.Language.class, lexerLanguage);
@@ -304,5 +315,30 @@ public class RhtmlModelTest extends RubyTestBase {
         checkIncrementalUpdate("testfiles/conv.rhtml", UpdateState.UPDATED,
                 "^begin action", INSERT+"bbb"
                 );
+    }
+
+    public void testIncrementalUpdate8() throws Exception {
+        String relFilePath = "testfiles/conv.rhtml";
+        BaseDocument doc = getDocument(getTestFile(relFilePath));
+        final TranslatedSource ts = getTranslatedSource(doc, relFilePath);
+        assertNotNull(ts);
+
+        // Now apply some updates
+        final EditHistory history = new EditHistory();
+        getEditHistory(doc, history,
+                "<div id=\"page-nav\">^", INSERT+"<% foo %>"
+                );
+        // HACK -- events don't seem to get fired synchronously... I've tried
+        // EventQueue.invokeLater, overriding runInEq, and some other tricks
+        // but without success. For now, access it directly
+        history.testHelperNotifyToken(true, RhtmlTokenId.DELIMITER);
+        history.testHelperNotifyToken(true, RhtmlTokenId.RUBY);
+
+
+        // Assert the translated source model is correctly updated
+        assertTrue(ts instanceof RubyTranslatedSource);
+        RubyTranslatedSource jts = (RubyTranslatedSource)ts;
+        UpdateState state = jts.incrementalUpdate(history);
+        assertEquals(IncrementalEmbeddingModel.UpdateState.FAILED, state);
     }
 }

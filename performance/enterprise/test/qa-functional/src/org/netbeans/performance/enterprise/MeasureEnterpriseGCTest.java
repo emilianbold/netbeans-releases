@@ -59,7 +59,7 @@ public class MeasureEnterpriseGCTest extends NbTestCase {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("Enterprise Performance GC suite");
-        System.setProperty("suitename", "org.netbeans.performance.enterprise.MeasureEnterpriseGCTest");
+        System.setProperty("suitename", MeasureEnterpriseGCTest.class.getCanonicalName());
 
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(WatchProjects.class)

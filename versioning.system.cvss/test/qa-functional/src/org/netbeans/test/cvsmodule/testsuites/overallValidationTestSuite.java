@@ -45,13 +45,9 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.cvsmodule.CommittingCvs11Test;
 import org.netbeans.test.cvsmodule.CommittingCvs12Test;
 import org.netbeans.test.cvsmodule.DeleteTest;
-import org.netbeans.test.cvsmodule.ExportPatchAndDiffTest;
-import org.netbeans.test.cvsmodule.IgnoreUnignoreTest;
-import org.netbeans.test.cvsmodule.ResolveConflictsAndRevertTest;
 import org.netbeans.test.cvsmodule.ShowAnnotationsAndSearchHistoryTest;
 import org.netbeans.test.cvsmodule.TagTest;
 import org.netbeans.test.cvsmodule.TestKit;
-import org.netbeans.test.cvsmodule.UpdateErrorTest;
 import org.netbeans.test.cvsmodule.VersioningButtonsTest;
 
 /**
@@ -82,11 +78,10 @@ public class overallValidationTestSuite extends JellyTestCase {
                 .addTest(CommittingCvs12Test.class, "testCheckOutProject", "testCommitModifiedCvs12", "removeAllData")
                 .addTest(DeleteTest.class, "testCheckOutProject", "testDeleteFile", "removeAllData")
                 //.addTest(UpdateErrorTest.class, "testCheckOutProject", "testUpdate", "removeAllData")
-                .addTest(IgnoreUnignoreTest.class, "testCheckOutProject", "testIgnoreUnignoreFile", "testIgnoreUnignoreGuiForm", "removeAllData")
+                //.addTest(IgnoreUnignoreTest.class, "testCheckOutProject", "testIgnoreUnignoreFile", "testIgnoreUnignoreGuiForm", "removeAllData")
                 //.addTest(ResolveConflictsAndRevertTest.class, "testCheckOutProject", "testResolveConflicts", "testRevertModifications")
                 .addTest(ShowAnnotationsAndSearchHistoryTest.class, "testCheckOutProject", "testShowAnnotations", "removeAllData")
-                .addTest(VersioningButtonsTest.class, "testCheckOutProject", "testVersioningButtons", "removeAllData")
-                //.addTest(ExportPatchAndDiffTest.class, "testCheckOutProject", "testExportDiffPatch", "testDiffFile", "removeAllData")
+                .addTest(VersioningButtonsTest.class, "testCheckOutProject", "testVersioningButtons")
                 .enableModules(".*")
                 .clusters(".*"));
     }

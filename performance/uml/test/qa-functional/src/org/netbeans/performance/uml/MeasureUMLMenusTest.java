@@ -58,7 +58,7 @@ public class MeasureUMLMenusTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Menus suite");
-        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLMenusTest");
+        System.setProperty("suitename", MeasureUMLMenusTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MultipleNodeContextMenu.class)
                 .addTest(MultipleNodeContextMenu.class, "measureTime")

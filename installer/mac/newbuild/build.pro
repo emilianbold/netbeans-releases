@@ -59,6 +59,7 @@
 
     <!-- JavaFX Properties -->
     <property name="javafx_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-cluster-mac.zip"/>
+    <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-sdk-mac.zip"/>
 
 
     <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         

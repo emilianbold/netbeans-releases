@@ -55,6 +55,7 @@ package org.netbeans.modules.xml.retriever.impl;
  * @author girix
  */
 public interface IConstants {
+    public static final String XPATH_SCHEMA_IMPORT_NAMESPACE = "//xsd:schema/xsd:import/@namespace"; //NOI18N
     public static final String XPATH_SCHEMA_IMPORT_LOCATION = "//xsd:schema/xsd:import/@schemaLocation"; //NOI18N
     public static final String XPATH_SCHEMA_INCLUDE_LOCATION = "//xsd:schema/xsd:include/@schemaLocation"; //NOI18N
     public static final String XPATH_SCHEMA_REDEFINE_LOCATION = "//xsd:schema/xsd:redefine/@schemaLocation" ; //NOI18N

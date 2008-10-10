@@ -58,7 +58,7 @@ public class MeasureUMLMemoryFootprintTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UML Memory Footprint suite");
-        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLMemoryFootprintTest");
+        System.setProperty("suitename", MeasureUMLMemoryFootprintTest.class.getCanonicalName());
 
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(UMLWorkflow.class)

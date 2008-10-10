@@ -60,6 +60,9 @@ import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.wsstack.api.WSStack;
+import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRs;
+import org.netbeans.modules.websvc.wsstack.jaxrs.JaxRsStackProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -71,7 +74,6 @@ public class WebProjectRestSupport extends RestSupport {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";
     public static final String DIRECTORY_DEPLOYMENT_SUPPORTED = "directory.deployment.supported"; // NOI18N
-
 
     /** Creates a new instance of WebProjectRestSupport */
     public WebProjectRestSupport(Project project) {
@@ -121,7 +123,7 @@ public class WebProjectRestSupport extends RestSupport {
 
         extendBuildScripts();
 
-        if (ignorePlatformRestLibrary() || !hasSwdpLibrary()) {
+        if (!hasSwdpLibrary()) {
             addSwdpLibrary(new String[]{
                         ClassPath.COMPILE,
                         ClassPath.EXECUTE
@@ -148,6 +150,16 @@ public class WebProjectRestSupport extends RestSupport {
         return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
     }
 
+    private boolean platformHasRestLib(J2eePlatform j2eePlatform) {
+        if (j2eePlatform != null) {
+            WSStack<JaxRs> wsStack = JaxRsStackProvider.getJaxRsStack(j2eePlatform);
+            if (wsStack != null) {
+                return wsStack.isFeatureSupported(JaxRs.Feature.JAXRS);
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean hasSwdpLibrary() {
         J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
@@ -160,6 +172,9 @@ public class WebProjectRestSupport extends RestSupport {
             return false;
         }
 
+        if(platformHasRestLib(platform)){
+            return true;
+        }
         boolean hasRestBeansApi = false;
         boolean hasRestBeansImpl = false;
         for (File file : platform.getClasspathEntries()) {
@@ -192,11 +207,11 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return null;
     }
-    
+
     public static ServletMapping getRestServletMapping(Project project) throws IOException {
         return getRestServletMapping(getWebApp(project));
     }
-    
+
     public static ServletMapping getRestServletMapping(WebApp webApp) {
         for (ServletMapping sm : webApp.getServletMapping()) {
             if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
@@ -280,11 +295,11 @@ public class WebProjectRestSupport extends RestSupport {
             webApp.write(ddFO);
         }
     }
-    
+
     private WebApp getWebApp() throws IOException {
         return getWebApp(project);
     }
-    
+
     public static WebApp getWebApp(Project project) throws IOException {
         FileObject fo = getWebXml(project);
         if (fo != null) {
@@ -292,11 +307,11 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return null;
     }
-    
+
     public FileObject getWebXml() {
         return getWebXml(project);
     }
-    
+
     public static FileObject getWebXml(Project project) {
         WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
 

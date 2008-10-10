@@ -129,6 +129,10 @@ public class DocumentTypeSchemaWsdlParser implements DocumentTypeParser{
         //scan for schema imports'
         String locationExpression = IConstants.XPATH_SCHEMA_IMPORT_LOCATION; //noi18n
         NodeList nodes = (NodeList) xpath.evaluate(locationExpression, documentNode, XPathConstants.NODESET);
+        if(nodes == null) {
+            locationExpression = IConstants.XPATH_SCHEMA_IMPORT_NAMESPACE; //noi18n
+            nodes = (NodeList) xpath.evaluate(locationExpression, documentNode, XPathConstants.NODESET);
+        }
         if((nodes != null) && (nodes.getLength() > 0)){
             for(int i=0; i<nodes.getLength();i++){
                 Node node = nodes.item(i);
