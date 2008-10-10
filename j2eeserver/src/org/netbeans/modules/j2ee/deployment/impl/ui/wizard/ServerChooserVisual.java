@@ -157,8 +157,10 @@ public class ServerChooserVisual extends javax.swing.JPanel {
         Iterator iter = ServerRegistry.getInstance().getInstances().iterator();
         while (iter.hasNext()) {
             ServerInstance instance = (ServerInstance)iter.next();
-            if (instance.getDisplayName().compareToIgnoreCase(displayName) == 0)
+            if (instance.getDisplayName() != null
+                    && instance.getDisplayName().equalsIgnoreCase(displayName)) {
                 return instance;
+            }
         }
         return null;
     }
