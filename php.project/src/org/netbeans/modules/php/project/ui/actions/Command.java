@@ -212,11 +212,22 @@ public abstract class Command {
     }
 
     protected final URL urlForDebugProjectFile(boolean useWebRoot) throws MalformedURLException {
-        return appendQuery(urlForProjectFile(useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        return appendQuery(urlForProjectFile(useWebRoot), getDebugArguments());
     }
 
     protected final URL urlForDebugContext(Lookup context, boolean useWebRoot) throws MalformedURLException {
-        return appendQuery(urlForContext(context, useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        return appendQuery(urlForContext(context, useWebRoot), getDebugArguments());
+    }
+
+    private String getDebugArguments() {
+        String args = ProjectPropertiesSupport.getArguments(project);
+        StringBuilder arguments = new StringBuilder();
+        if (args != null && args.length() > 0) {
+            arguments.append(args);
+            arguments.append("&"); // NOI18N
+        }
+        arguments.append("XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); // NOI18N
+        return arguments.toString();
     }
 
     protected final URL urlForProjectFile(boolean useWebRoot) throws MalformedURLException {

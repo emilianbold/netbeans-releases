@@ -86,14 +86,17 @@ import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
+import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.gsf.api.SourceModelFactory;
 import org.netbeans.modules.ruby.elements.AstElement;
 import org.netbeans.modules.ruby.elements.IndexedClass;
 import org.netbeans.modules.ruby.elements.IndexedElement;
@@ -595,6 +598,46 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         }
 
         return DeclarationLocation.NONE;
+    }
+
+    /** Compute the declaration location for a test string (such as MosModule::TestBaz/test_qux) */
+    public static DeclarationLocation getTestDeclaration(FileObject fileInProject, String testString) {
+        int methodIndex = testString.indexOf('/');
+        if (methodIndex == -1) {
+            return DeclarationLocation.NONE;
+        }
+
+        String clz = testString.substring(0, methodIndex);
+        String method = testString.substring(methodIndex+1);
+        if (method.length() == 0) {
+            return DeclarationLocation.NONE;
+        }
+        Index gsfIndex = SourceModelFactory.getInstance().getIndex(fileInProject, RubyInstallation.RUBY_MIME_TYPE);
+        if (gsfIndex == null) {
+            return DeclarationLocation.NONE;
+        }
+        RubyIndex index = RubyIndex.get(gsfIndex, fileInProject);
+        Set<IndexedMethod> methods = index.getMethods(method, clz, NameKind.EXACT_NAME, RubyIndex.SOURCE_SCOPE);
+        DeclarationLocation loc = DeclarationLocation.NONE;
+        for (IndexedMethod m : methods) {
+            FileObject fo = m.getFileObject();
+            if (fo == null) {
+                continue;
+            }
+            if (loc == DeclarationLocation.NONE) {
+                int offset = -1;
+                Node node = AstUtilities.getForeignNode(m, (Node[])null);
+                if (node != null) {
+                    offset = AstUtilities.getRange(node).getStart();
+                }
+                loc = new DeclarationLocation(fo, offset, m);
+            } else {
+                AlternativeLocation alternate = new RubyAltLocation(m, false);
+                loc.addAlternative(alternate);
+            }
+        }
+
+        return loc;
     }
     
     private DeclarationLocation findRailsFile(CompilationInfo info, BaseDocument doc, TokenHierarchy<Document> th, int lexOffset, int astOffset) {
