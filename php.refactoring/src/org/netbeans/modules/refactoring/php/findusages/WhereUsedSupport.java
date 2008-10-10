@@ -63,9 +63,13 @@ import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticFieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.refactoring.php.findusages.AttributedNodes.AttributedElement;
@@ -191,7 +195,7 @@ public final class WhereUsedSupport {
             } else if (leaf instanceof ArrayAccess) {
                 ArrayAccess arrayAccess = (ArrayAccess) leaf;
                 leaf = arrayAccess.getIndex();
-            }
+            } 
             el = attribs.getElement(leaf);
             if (el != null) {
                 break;
