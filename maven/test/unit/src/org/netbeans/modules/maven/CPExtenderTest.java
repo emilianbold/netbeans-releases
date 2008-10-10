@@ -93,6 +93,17 @@ public class CPExtenderTest extends TestCase {
         assertEquals("junit", result[2]);
         assertEquals("junit", result[3]);
         assertEquals("3.8.2", result[4]);
+
+
+        pom = new URL("http://repo1.maven.org/maven2/org/testng/testng/5.8/testng-5.8.pom#jdk15");
+        result = CPExtender.checkLibrary(pom, repos);
+        assertNotNull(result);
+        assertEquals("default", result[0]);
+        assertEquals("http://repo1.maven.org/maven2/", result[1]);
+        assertEquals("org.testng", result[2]);
+        assertEquals("testng", result[3]);
+        assertEquals("5.8", result[4]);
+        assertEquals("jdk15", result[5]);
     }
     
 }
