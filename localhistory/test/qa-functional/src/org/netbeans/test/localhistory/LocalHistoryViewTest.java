@@ -64,10 +64,8 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
-import org.netbeans.jemmy.operators.CheckboxOperator;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.localhistory.operators.ShowLocalHistoryOperator;
 import org.netbeans.test.localhistory.utils.TestKit;
 import org.openide.util.Exceptions;
@@ -139,11 +137,11 @@ public class LocalHistoryViewTest extends JellyTestCase {
     public void testLocalHistoryInvoke() {
         try {
             openDataProjects(PROJECT_NAME);
-            ProjectSupport.waitScanFinished();
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ex.printStackTrace();
             fail("Unable to open project: " + PROJECT_NAME);
         }
+        new EventTool().waitNoEvent(5000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|Main.java");
         node.performPopupAction("Open");
         eo = new EditorOperator("Main.java");
@@ -205,8 +203,8 @@ public class LocalHistoryViewTest extends JellyTestCase {
     }
 
     public void testLocalHistoryRevertDeleted() {
-        new EventTool().waitNoEvent(2000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "NewPackage");
+        new EventTool().waitNoEvent(3000);
         node.performPopupActionNoBlock("Delete");
 //        NbDialogOperator dialog = new NbDialogOperator("Safe Delete");
         NbDialogOperator dialog = new NbDialogOperator("Delete");
