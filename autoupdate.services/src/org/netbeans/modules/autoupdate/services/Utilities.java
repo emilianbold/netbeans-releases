@@ -506,6 +506,9 @@ public class Utilities {
                 retval.addAll (findRequiredUpdateElements (module.getUpdateElement (), infos, brokenDependencies));
             }
             break;
+        case CUSTOM_HANDLED_COMPONENT :
+            getLogger ().log (Level.INFO, "CUSTOM_HANDLED_COMPONENT doesn't care about required elements."); // XXX
+            break;
         default:
             assert false : "Not implement for type " + el.getType () + " of UpdateElement " + el;
         }

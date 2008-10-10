@@ -39,8 +39,10 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
-import java.io.File;
+import java.awt.Image;
+import java.net.URL;
 import java.text.MessageFormat;
+import javax.swing.ImageIcon;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -50,6 +52,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
@@ -62,8 +65,30 @@ public final class DeployOnSaveUtils {
 
     private static final String COS_MARK = ".netbeans_automatic_build"; // NOI18N
 
+    private static final String DEPLOY_ON_SAVE_DISABLED_BADGE_PATH = "org/netbeans/modules/j2ee/common/ui/resources/compileOnSaveDisabledBadge.gif"; // NOI18N
+
+    private static final Image DEPLOY_ON_SAVE_DISABLED_BADGE;
+
+    static {
+        URL errorBadgeIconURL = DeployOnSaveUtils.class.getClassLoader().getResource(
+                DEPLOY_ON_SAVE_DISABLED_BADGE_PATH);
+        String compileOnSaveDisabledTP = "<img src=\"" + errorBadgeIconURL
+                + "\">&nbsp;" + NbBundle.getMessage(DeployOnSaveUtils.class, "TP_DeployOnSaveDisabled");
+        DEPLOY_ON_SAVE_DISABLED_BADGE = ImageUtilities.assignToolTipToImage(
+                ImageUtilities.loadImage(DEPLOY_ON_SAVE_DISABLED_BADGE_PATH), compileOnSaveDisabledTP);
+    }
+
     private DeployOnSaveUtils() {
         super();
+    }
+    /**
+     *
+     * @param icon
+     * @return
+     * @since 1.34
+     */
+    public static Image badgeDisabledDeployOnSave(Image icon) {
+        return ImageUtilities.mergeImages(icon, DEPLOY_ON_SAVE_DISABLED_BADGE, 8, 0);
     }
 
     /**

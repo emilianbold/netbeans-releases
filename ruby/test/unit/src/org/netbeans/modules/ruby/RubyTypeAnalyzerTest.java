@@ -64,7 +64,7 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
         GsfTestCompilationInfo info = getInfo(fo);
         Node root = AstUtilities.getRoot(info);
         initializeRegistry();
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
 
         int caretOffset = -1;
         if (caretLine != null) {

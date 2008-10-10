@@ -920,8 +920,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     //@Deprecated
     public final APTPreprocHandler getPreprocHandler(File file) {
+        return createPreprocHandler(file, getFileContainer().getPreprocState(file));
+    }
+    
+    /* package */ final APTPreprocHandler createPreprocHandler(File file, APTPreprocHandler.State state) {
         APTPreprocHandler preprocHandler = createEmptyPreprocHandler(file);
-        APTPreprocHandler.State state = getFileContainer().getPreprocState(file);
 	if( state != null ) {
             if( state.isCleaned() ) {
                 return restorePreprocHandler(file, preprocHandler, state);
@@ -934,7 +937,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (TRACE_PP_STATE_OUT) System.err.printf("null state for %s, returning default one", file);
 	return preprocHandler;
     }
-
+    
     
     public final Collection<APTPreprocHandler> getPreprocHandlers(File file) {
         Collection<APTPreprocHandler.State> states = getFileContainer().getPreprocStates(file);
@@ -1076,6 +1079,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (entry.getLock()) {
                 comparisonResult = fillStatesToKeep(newState, entry.getStates(), statesToKeep, newStateFound);
                 if (comparisonResult == ComparisonResult.BETTER) {
+                    entry.setPendingReparse(true); // #148608 Instable test regressions on CLucene
                     // some of the old states are worse than the new one; we'll deinitely parse
                     if (TraceFlags.SMART_HEADERS_PARSE) {
                         entry.setStates(statesToKeep, new FileContainer.StatePair(newState, null));
@@ -1119,8 +1123,11 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 // it's locked; "good" states are are in statesToKeep, "bad" states don't matter
 
                 assert comparisonResult != ComparisonResult.WORSE;
-                
-                boolean clean;
+
+                // if another thread decided that it should be REparsed, let's fo it
+                // (#148608 Instable test regressions on CLucene)
+                boolean clean = entry.isPendingReparse();
+                entry.setPendingReparse(false);
 
                 Collection<APTPreprocHandler.State> statesToParse = new ArrayList<APTPreprocHandler.State>();
                 statesToParse.add(newState);
@@ -1135,7 +1142,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                                 clean = true;
                                 break;
                             case SAME:
-                                clean = false;
+                                //clean is set by isPendingReparse() call
                                 break;
                             case WORSE:
                                 return csmFile;
@@ -2162,6 +2169,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     public static ProjectBase getStartProject(StartEntry startEntry) {
+        if (startEntry == null) {
+            return null;
+        }
         Key key = startEntry.getStartFileProject();
         ProjectBase prj = (ProjectBase)RepositoryUtils.get(key);
         return prj;

@@ -452,9 +452,9 @@ public abstract class SwitchableWidget extends UMLNodeWidget
         viewName = "";
    
         initializeNode(getObject());
-        Rectangle bounds = getBounds();
+        //Rectangle bounds = getBounds();
         switchTo(oldViewName);
-        setPreferredBounds(bounds);
+        //setPreferredBounds(bounds);
         scene.validate();
         if(resizetocontent)Util.resizeNodeToContents(this);
     }

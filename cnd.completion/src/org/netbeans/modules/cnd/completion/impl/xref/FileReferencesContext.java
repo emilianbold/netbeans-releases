@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -71,6 +73,7 @@ public final class FileReferencesContext {
     private int lastOffset;
     private boolean isClened = false;
     private Map<String,List<CsmUID<CsmVariable>>> fileLocalVars;
+    private Map<String,Collection<CsmEnumerator>> libEnumerators;
     private List<Offsets> fileObjectOffsets;
     private List<Offsets> fileDeclarationsOffsets;
     private Map<String,CsmUID<CsmMacro>> projectMacros;
@@ -95,6 +98,7 @@ public final class FileReferencesContext {
             fileDeclarationsOffsets = null;
             fileObjectOffsets = null;
             projectMacros = null;
+            libEnumerators = null;
         }
     }
     
@@ -107,6 +111,26 @@ public final class FileReferencesContext {
             return;
         }
         lastOffset = offset;
+    }
+
+    public Collection<CsmEnumerator> getLibEnumerators(String name){
+        if (isCleaned()){
+            return null;
+        }
+        if (libEnumerators == null) {
+            libEnumerators = new HashMap<String,Collection<CsmEnumerator>>();
+        }
+        return libEnumerators.get(name);
+    }
+
+    public void putLibEnumerators(String name, Collection<CsmEnumerator> value){
+        if (isCleaned()){
+            return;
+        }
+        if (libEnumerators == null) {
+            libEnumerators = new HashMap<String,Collection<CsmEnumerator>>();
+        }
+        libEnumerators.put(name, value);
     }
 
     public List<CsmVariable> getFileLocalIncludeVariables(String name){

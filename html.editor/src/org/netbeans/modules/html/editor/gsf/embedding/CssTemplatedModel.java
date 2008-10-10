@@ -219,7 +219,7 @@ public class CssTemplatedModel extends CssModel {
                             boolean representsPropertyName = false;
                             int offset = parent.endOffset();
                             while(true) {
-                                char c = buff.charAt(++offset);
+                                char c = buff.charAt(offset++);
                                 if(c == ':') {
                                     representsPropertyName = true;
                                     break;

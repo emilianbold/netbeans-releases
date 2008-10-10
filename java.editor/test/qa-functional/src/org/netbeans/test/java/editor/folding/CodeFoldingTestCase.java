@@ -83,6 +83,8 @@ import org.netbeans.jemmy.operators.JTextComponentOperator;
         //removing hash from the string
         int startOfHash = foldTxt.indexOf("hash=0x");
         int endOfHash = foldTxt.indexOf(",", startOfHash);
+        foldTxt = foldTxt.replace("E0", "E1");
+        foldTxt = foldTxt.replace("C0", "C1");
         String foldTxtCorrected = foldTxt.substring(0,startOfHash)+foldTxt.substring(endOfHash);
         sb.append(foldTxtCorrected);
         sb.append('\n');
