@@ -316,7 +316,11 @@ public class AstUtilities {
 
                                 // Special handling for "new" - these are synthesized from "initialize" methods
                                 if ((node == null) && "new".equals(o.getName())) { // NOI18N
-                                    signature = signature.replaceFirst("new", "initialize"); //NOI18N
+                                    if (signature.indexOf("#new") != -1) {
+                                        signature = signature.replaceFirst("#new", "#initialize"); //NOI18N
+                                    } else {
+                                        signature = signature.replaceFirst("new", "initialize"); //NOI18N
+                                    }
                                     node = AstUtilities.findBySignature(root, signature);
                                 }
 
@@ -907,28 +911,30 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         //String name = signature.split("(::)")
         // Find next name we're looking for
-        String name = getNextSigComponent(signature);
+        boolean[] lookingForMethod = new boolean[1];
+        String name = getNextSigComponent(signature, lookingForMethod);
         signature = signature.substring(name.length());
 
-        Node node = findBySignature(root, signature, name);
+        Node node = findBySignature(root, signature, name, lookingForMethod);
         
         // Handle top level methods
         if (node == null && originalSig.startsWith("Object#")) {
             // Just look for top level method definitions instead
             originalSig = originalSig.substring(originalSig.indexOf('#')+1);
-            name = getNextSigComponent(signature);
+            name = getNextSigComponent(signature, lookingForMethod);
             signature = originalSig.substring(name.length());
+            lookingForMethod[0] = true;
             
-            node = findBySignature(root, signature, name);
+            node = findBySignature(root, signature, name, lookingForMethod);
         }
-        
+
         return node;
     }
 
     // For a signature of the form Foo::Bar#baz(arg1,arg2,...)
     // pull out the next component; in the above, successively return
     // "Foo", "Bar", "baz", etc.
-    private static String getNextSigComponent(String signature) {
+    private static String getNextSigComponent(String signature, boolean[] lookingForMethod) {
         StringBuilder sb = new StringBuilder();
         int i = 0;
         int n = signature.length();
@@ -937,7 +943,10 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         for (; i < n; i++) {
             char c = signature.charAt(i);
 
-            if ((c == '#') || (c == ':') || (c == '(')) {
+            if (c == '#') {
+                lookingForMethod[0] = true;
+                continue;
+            } else if ((c == ':') || (c == '(')) {
                 continue;
             }
 
@@ -958,7 +967,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         return sb.toString();
     }
 
-    private static Node findBySignature(Node node, String signature, String name) {
+    private static Node findBySignature(Node node, String signature, String name, boolean[] lookingForMethod) {
         switch (node.nodeId) {
         case INSTASGNNODE:
             if (name.charAt(0) == '@') {
@@ -982,8 +991,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
         case DEFNNODE:
         case DEFSNODE:
-            boolean lookingForMethod = (Character.isLowerCase(name.charAt(0)));
-            if (lookingForMethod && name.equals(AstUtilities.getDefName(node))) {
+            if (lookingForMethod[0] && name.equals(AstUtilities.getDefName(node))) {
                 // See if the parameter list matches
                 // XXX TODO
                 List<String> parameters = getDefArgs((MethodDefNode)node, false);
@@ -993,7 +1001,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                     // No args
                     return node;
                 } else if (signature.length() != 0) {
-                    assert signature.charAt(0) == '(';
+                    assert signature.charAt(0) == '(' : signature;
 
                     String argList = signature.substring(1, signature.length() - 1);
                     String[] args = argList.split(",");
@@ -1034,7 +1042,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
                     if (fqn.startsWith(name) && signature.startsWith(fqn.substring(name.length()))) {
                         signature = signature.substring(fqn.substring(name.length()).length());
-                        name = getNextSigComponent(signature);
+                        name = getNextSigComponent(signature, lookingForMethod);
 
                         if (name.length() == 0) {
                             // The signature points to a class (or module) - just return it
@@ -1046,7 +1054,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
                         signature = signature.substring(index + name.length());
                     }
                 } else if (name.equals(AstUtilities.getClassOrModuleName(((IScopingNode)node)))) {
-                    name = getNextSigComponent(signature);
+                    name = getNextSigComponent(signature, lookingForMethod);
 
                     if (name.length() == 0) {
                         // The signature points to a class (or module) - just return it
@@ -1072,7 +1080,7 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
 
             if (rn != null) {
                 if (name.equals(rn)) {
-                    name = getNextSigComponent(signature);
+                    name = getNextSigComponent(signature, lookingForMethod);
 
                     if (name.length() == 0) {
                         // The signature points to a class (or module) - just return it
@@ -1088,16 +1096,19 @@ TranslatedSource translatedSource = null; // TODO - determine this here?
         }
         List<Node> list = node.childNodes();
 
+        boolean old = lookingForMethod[0];
+
         for (Node child : list) {
             if (child.isInvisible()) {
                 continue;
             }
-            Node match = findBySignature(child, signature, name);
+            Node match = findBySignature(child, signature, name, lookingForMethod);
 
             if (match != null) {
                 return match;
             }
         }
+        lookingForMethod[0] = old;
 
         return null;
     }
