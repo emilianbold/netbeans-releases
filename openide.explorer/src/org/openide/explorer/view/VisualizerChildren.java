@@ -82,18 +82,15 @@ final class VisualizerChildren extends Object {
 
     /** recomputes indexes for all nodes.
      * @param tn tree node that we are looking for
-     * @return true if there is non-null object inside
      */
-    private final boolean recomputeIndexes(VisualizerNode tn) {
+    private final void recomputeIndexes(VisualizerNode tn) {
         assert visNodes.size() == snapshot.size() : "visnodes.size()=" + visNodes.size()
                 + " snapshot.size()=" + snapshot.size();
 
-        boolean isNonNull = false;
         for (int i = 0; i < visNodes.size(); i++) {
             VisualizerNode node = (VisualizerNode) visNodes.get(i);
             if (node != null) {
                 node.indexOf = i;
-                isNonNull = true;
             }
         }
 
@@ -103,12 +100,11 @@ final class VisualizerChildren extends Object {
                 VisualizerNode visNode = (VisualizerNode) getChildAt(i);
                 visNode.indexOf = i;
                 if (visNode == tn) {
-                    return isNonNull;
+                    return;
                 }
             }
         }
-        return isNonNull;
-    }  
+    }
     
     public javax.swing.tree.TreeNode getChildAt(int pos) {
         if (pos >= visNodes.size()) {
@@ -120,6 +116,7 @@ final class VisualizerChildren extends Object {
             visNode = VisualizerNode.getVisualizer(this, node);
             visNode.indexOf = pos;
             visNodes.set(pos, visNode);
+            parent.notifyVisualizerChildrenChange(false, this);
         }
         return visNode;
     }
@@ -225,7 +222,7 @@ final class VisualizerChildren extends Object {
             inIndxs++;
         }
 
-        boolean isNonNull = recomputeIndexes(null);
+        recomputeIndexes(null);
 
         VisualizerNode parent = this.parent;
         while (parent != null) {
@@ -234,10 +231,6 @@ final class VisualizerChildren extends Object {
                 ((NodeModel) listeners[i]).added(ev);
             }
             parent = (VisualizerNode) parent.getParent();
-        }
-        if (empty) {
-            // change of state
-            this.parent.notifyVisualizerChildrenChange(isNonNull, this);
         }
     }
 

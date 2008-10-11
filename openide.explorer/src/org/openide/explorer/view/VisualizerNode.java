@@ -276,7 +276,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
                             int nodesCount = node.getChildren().getNodesCount();
                             List<Node> snapshot = node.getChildren().snapshot();
                             VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, snapshot);
-                            notifyVisualizerChildrenChange(nodesCount == 0, vc);
+                            notifyVisualizerChildrenChange(true, vc);
                             return vc;
                         }
                     }
@@ -318,18 +318,10 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
-//        LogRecord rec = assertAccess(p1);
-//        if (rec != null) {
-//            LOG.log(rec);
-//        }
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
-//        LogRecord rec = assertAccess(-1);
-//        if (rec != null) {
-//            LOG.log(rec);
-//        }
         return getChildren().getChildCount();
     }
 
@@ -505,17 +497,21 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     // Access to VisualizerChildren
     //
 
-    /** Notifies change in the amount of children. This is used to distinguish between
-    * weak and hard reference. Called from VisualizerChildren
-    * @param size amount of children
+    /** Notifies that change could be needed in the way the children are held
+    * (weak or hard reference). Called from VisualizerChildren
+    * @param strongly if the children should be held via StrongReference
     * @param ch the children
     */
     void notifyVisualizerChildrenChange(boolean strongly, VisualizerChildren ch) {
         if (strongly) {
             // hold the children hard
-            children = new StrongReference<VisualizerChildren>(ch);
+            if (children.getClass() != StrongReference.class || children.get() != ch) {
+                children = new StrongReference<VisualizerChildren>(ch);
+            }
         } else {
-            children = new WeakReference<VisualizerChildren>(ch);
+            if (children.getClass() != WeakReference.class || children.get() != ch) {
+                children = new WeakReference<VisualizerChildren>(ch);
+            }
         }
     }
 
