@@ -101,8 +101,8 @@ public abstract class TestBase extends RubyTestBase {
             testHandler = new TestHandler(getName());
             Util.LOGGER.setLevel(Level.ALL);
             Util.LOGGER.addHandler(testHandler);
-            org.rubyforge.debugcommons.Util.LOGGER.setLevel(Level.ALL);
-            org.rubyforge.debugcommons.Util.LOGGER.addHandler(testHandler);
+            // org.rubyforge.debugcommons.Util.LOGGER.setLevel(Level.ALL);
+            // org.rubyforge.debugcommons.Util.LOGGER.addHandler(testHandler);
         }
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         touch(getWorkDir(), "config/Services/org-netbeans-modules-debugger-Settings.properties");
@@ -135,7 +135,7 @@ public abstract class TestBase extends RubyTestBase {
         super.tearDown();
         if (verbose) {
             Util.LOGGER.removeHandler(testHandler);
-            org.rubyforge.debugcommons.Util.LOGGER.removeHandler(testHandler);
+            // org.rubyforge.debugcommons.Util.LOGGER.removeHandler(testHandler);
         }
     }
 

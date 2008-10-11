@@ -37,37 +37,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript.editing;
+package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.openide.filesystems.FileObject;
 
 /**
+ * Jump to action for test methods.
  *
- * @author Tor Norbye
+ * @author Erno Mononen
  */
-public class JsDeclarationFinderTest extends JsTestBase {
+final class JumpToTestMethodAction extends AbstractAction {
 
-    public JsDeclarationFinderTest(String testName) {
-        super(testName);
+    private final Report.Testcase testcase;
+    private final Project project;
+
+    JumpToTestMethodAction(Testcase testcase, Project project) {
+        this.testcase = testcase;
+        this.project = project;
     }
 
-    public void testDeclaration1() throws Exception {
-        checkDeclaration("testfiles/prototype.js", "return (scriptTag.match(mat^chOne) || ['', ''])[1];",
-                "var ^matchOne = new RegExp(Prototype.ScriptFragment, 'im');");
+    private String getTestMethod() {
+        return testcase.className + "/" + testcase.name; //NOI18N
     }
 
-    public void testDeclaration2() throws Exception {
-        checkDeclaration("testfiles/prototype.js", "if (useDoubl^eQuotes)",
-                "inspect: function(^useDoubleQuotes) {");
+    private FileObject getTestSourceRoot() {
+        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
+        // need to use test source roots, not source roots -- see the comments in #135680
+        FileObject[] testRoots = baseProject.getTestSourceRootFiles();
+        // if there are not test roots, return the project root -- works in rails projects
+        return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
+        
+    }
+    public void actionPerformed(ActionEvent e) {
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
+        if (!(DeclarationLocation.NONE == location)) {
+            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
+        }
     }
 
-//    public void testDeclaration3() throws Exception {
-//        checkDeclaration("testfiles/prototype.js", "this.responders = this.responders.wi^thout(responder);",
-//                "^without: function() {");
-//    }
-
-    public void testDeclaration3() throws Exception {
-        // Make sure there is no assertion
-        DeclarationLocation loc = findDeclaration("testfiles/issue149795.js", ".^x");
-    }
 }
