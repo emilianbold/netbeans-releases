@@ -327,6 +327,8 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.javascript.editing</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.web.frameworks.facelets</friend>
+                <friend>org.netbeans.modules.php.prado</friend>
+                <friend>org.netbeans.modules.php.symfony</friend>
                 <package>org.netbeans.modules.html.editor</package>
                 <package>org.netbeans.modules.html.editor.coloring</package>
                 <package>org.netbeans.modules.html.editor.options</package>

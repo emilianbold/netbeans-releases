@@ -131,6 +131,7 @@ public class ErrorAnnotations extends JavaTestCase {
             workDir = wd.toString();
         } catch (IOException e) {
         }
+        openDefaultProject();
     }
 
     /**

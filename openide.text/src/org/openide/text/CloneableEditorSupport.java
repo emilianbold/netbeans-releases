@@ -908,7 +908,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     @Override
                     public void confirmed() throws IOException {
-                        lastSaveTime = externalMod;
+                        setLastSaveTime(externalMod);
                         saveDocument();
                     }
                 };
@@ -2746,7 +2746,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             // create new description of lines
             updateLineSet(true);
 
-            setLastSaveTime(System.currentTimeMillis());
+            setLastSaveTime(cesEnv().getTime().getTime());
 
             // Insert before-save undo event to enable unmodifying undo
             getUndoRedo().undoableEditHappened(new UndoableEditEvent(this, new BeforeSaveEdit(lastSaveTime)));

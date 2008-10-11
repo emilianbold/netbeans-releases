@@ -37,37 +37,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.junit3;
+package org.netbeans.modules.ruby.railsprojects;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author peter
+ * @author Tor Norbye
  */
-public class Junit3TestSuite extends JellyTestCase {
-    
-    public Junit3TestSuite(String name) {
+public class RailsProjectUtilTest extends RubyTestBase {
+
+    public RailsProjectUtilTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+    public void testGetVersionString() throws Exception {
+        FileObject versionFo = getTestFile("testfiles/version.rb");
+        String version = RailsProjectUtil.getVersionString(FileUtil.toFile(versionFo));
+        assertEquals("2.0.2", version);
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(CreateProjectTest.class,
-                        "testCreateJUnit3Project",
-                        "testAddLibrary",
-                        "testGeneratedProjectSuiteFile",
-                        "testGeneratedMainTestFile",
-                        "testCreateTestWithoutInitializerAndFinalizer",
-                        "testGeneratedMainTestFile2",
-                        "testDeteleJUnit3Project")
-                .enableModules(".*").clusters(".*"));
+    public void testGetSpecifiedRailsVersion() throws Exception {
+        FileObject versionFo = getTestFile("testfiles/environment.rb");
+        String version = RailsProjectUtil.getSpecifiedRailsVersion(versionFo);
+        assertEquals("2.1.0", version);
     }
 }

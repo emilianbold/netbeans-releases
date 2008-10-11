@@ -53,7 +53,7 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
         try {
             editor.requestFocus();
             editor.setCaretPosition(18, 5);
-            assert (GenerateCodeOperator.containsItems(editor, GenerateCodeOperator.GENERATE_CONSTRUCTOR, GenerateCodeOperator.OVERRIDE_METHOD));
+            assertTrue("Expected items are not pressent",GenerateCodeOperator.checkItems(editor, GenerateCodeOperator.GENERATE_CONSTRUCTOR, GenerateCodeOperator.OVERRIDE_METHOD));
         } finally {
             editor.close(false);
         }
@@ -91,15 +91,27 @@ public class ImplementMethodTest extends GenerateCodeTestCase {
             jto.expandRow(4);
             jto.selectRow(1);
             jto.selectRow(5);
-            imo.btGenerate().push();
-            String expected = "" +                    
+            imo.btGenerate().push();            
+            String expected = "" +
                     "    public int getColumnCount() {\n" +
                     "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
                     "    }\n" +
-                    "\n" +                    
+                    "\n" +
                     "    public void run() {\n" +
                     "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
                     "    }\n";
+            if(getJDKVersionCode().equals("jdk16")) {
+                expected = "" +
+                    "    @Override\n"+
+                    "    public int getColumnCount() {\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "    }\n" +
+                    "\n" +
+                    "    @Override\n"+
+                    "    public void run() {\n" +
+                    "        throw new UnsupportedOperationException(\"Not supported yet.\");\n" +
+                    "    }\n";
+            }
             waitAndCompare(expected);
         } finally {
             editor.close(false);

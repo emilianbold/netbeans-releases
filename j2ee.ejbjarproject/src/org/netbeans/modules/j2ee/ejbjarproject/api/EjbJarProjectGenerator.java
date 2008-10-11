@@ -521,7 +521,7 @@ public class EjbJarProjectGenerator {
         } catch (InstanceRemovedException ex) {
             // false
         }
-        ep.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
+        ep.setProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE, Boolean.toString(deployOnSaveEnabled));
         
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEBUG, "true");
         ep.setProperty(EjbJarProjectProperties.JAVAC_DEPRECATION, "false");

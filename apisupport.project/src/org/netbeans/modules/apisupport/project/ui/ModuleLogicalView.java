@@ -135,12 +135,18 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             setDisplayName(pi.getDisplayName());
             setShortDescription(NbBundle.getMessage(ModuleLogicalView.class, "HINT_project_root_node", FileUtil.getFileDisplayName(project.getProjectDirectory())));
             pi.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (evt.getPropertyName() == ProjectInformation.PROP_DISPLAY_NAME) {
-                        RootNode.this.setDisplayName((String) evt.getNewValue());
-                    } else if (evt.getPropertyName() == ProjectInformation.PROP_NAME) {
-                        RootNode.this.setName((String) evt.getNewValue());
-                    }
+
+                public void propertyChange(final PropertyChangeEvent evt) {
+                    ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
+
+                        public void run() {
+                            if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
+                                RootNode.this.setDisplayName((String) evt.getNewValue());
+                            } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {
+                                RootNode.this.setName((String) evt.getNewValue());
+                            }
+                        }
+                    });
                 }
             });
         }

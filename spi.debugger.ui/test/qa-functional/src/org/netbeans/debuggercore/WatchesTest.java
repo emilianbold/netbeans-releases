@@ -117,8 +117,9 @@ public class WatchesTest extends JellyTestCase {
             
             org.netbeans.jellytools.nodes.Node beanNode = new org.netbeans.jellytools.nodes.Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
-            EditorOperator op = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(op, 76);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            eo.clickMouse(50,50,1);
+            Utilities.setCaret(eo, 76);
             new RunToCursorAction().perform();
             Utilities.getDebugToolbar().waitComponentVisible(true);
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");

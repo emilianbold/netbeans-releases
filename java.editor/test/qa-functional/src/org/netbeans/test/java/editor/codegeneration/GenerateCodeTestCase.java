@@ -27,8 +27,8 @@
  */
 package org.netbeans.test.java.editor.codegeneration;
 
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.test.java.editor.lib.EditorTestCase;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -43,8 +43,24 @@ public class GenerateCodeTestCase extends EditorTestCase {
         super(testMethodName);
     }
 
-    protected boolean contains(String text, String pattern) {
-        return text.contains(pattern);
+
+
+    public static String getJDKVersionCode() {
+        String specVersion = System.getProperty("java.version");
+
+        if (specVersion.startsWith("1.4")) {
+            return "jdk14";
+        }
+
+        if (specVersion.startsWith("1.5")) {
+            return "jdk15";
+        }
+
+        if (specVersion.startsWith("1.6")) {
+            return "jdk16";
+        }
+
+        throw new IllegalStateException("Specification version: " + specVersion + " not recognized.");
     }
 
     private boolean isWin() {
@@ -62,34 +78,60 @@ public class GenerateCodeTestCase extends EditorTestCase {
         super.tearDown();
     }
 
-    protected  void waitAndCompare(String expected) {
-//        if (isWin()) {
-//            expected = expected.replace("\n", "\r\n");
-//        }
+    protected void waitAndCompare(String expected) {
         waitMaxMilisForValue(1500, new EditorValueResolver(expected), Boolean.TRUE);
-        if (!contains(editor.getText(), expected)) {
-            System.out.println("Pattern:");
+        if (!editor.getText().contains(expected)) {
+            System.out.println("Text pattern:");
             System.out.println(expected);
             System.out.println("-------------------");
             System.out.println(editor.getText());
         }
-        assertTrue("Expected code is not inserted", contains(editor.getText(), expected));
+        assertTrue("Expected code is not inserted", editor.getText().contains(expected));
+    }
+
+    protected void waitAndCompareRegexp(String regexp) {
+        Pattern  p = Pattern.compile(regexp, Pattern.DOTALL);
+        waitMaxMilisForValue(1500, new EditorValueResolverRegexp(p), Boolean.TRUE);
+        if (!p.matcher(editor.getText()).matches()) {
+            System.out.println("Regular expresion pattern:");
+            System.out.println(regexp);
+            System.out.println("-------------------");
+
+            System.out.println(editor.getText());
+        }
+        assertTrue("Expected code is not inserted", p.matcher(editor.getText()).matches());
     }
     protected EditorOperator editor;
     protected JEditorPaneOperator txtOper;
-    
-    protected  class EditorValueResolver implements ValueResolver {
-        
-        String text;
-        
+
+    protected class EditorValueResolver implements ValueResolver {
+
+        private String text;
+
         public EditorValueResolver(String text) {
             this.text = text;
         }
-        
+
         public Object getValue() {
             return editor.getText().contains(text);
         }
-        
     }
-          
+
+    protected class EditorValueResolverRegexp implements ValueResolver {
+
+        private Pattern pattern;
+
+        public EditorValueResolverRegexp(String text) {
+        }
+
+        private EditorValueResolverRegexp(Pattern pattern) {
+            this.pattern = pattern;
+            
+        }
+
+        public Object getValue() {
+            Matcher matcher = pattern.matcher(editor.getText());
+            return matcher.matches();
+        }
+    }
 }
