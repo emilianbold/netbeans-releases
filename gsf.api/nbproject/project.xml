@@ -124,7 +124,7 @@
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>net.java.dev.nbpython.editor</friend>
+                <friend>org.netbeans.modules.python.editor</friend>
                 <friend>org.netbeans.modules.css.devtools</friend>
                 <friend>org.netbeans.modules.css.editor</friend>
                 <friend>org.netbeans.modules.erlang.editing</friend>
