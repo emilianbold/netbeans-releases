@@ -528,6 +528,7 @@ NodeActionsProvider {
                     }
 
                 });
+                newSourceFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Btn"));
