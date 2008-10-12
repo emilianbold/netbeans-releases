@@ -137,6 +137,7 @@ public class StartDebuggerTest extends JellyTestCase {
             new OpenAction().performAPI(beanNode); // NOI18N
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
             Utilities.setCaret(eo, 75);
             new Action(null, null, Utilities.stepIntoShortcut).performShortcut();
             Utilities.waitStatusText("Thread main stopped at MemoryView.java:39");
