@@ -61,7 +61,7 @@ public class LazyChildrenKeysTest extends NbTestCase {
         assertEquals("a", nodes[0].getName());
     }
 
-    public void test() {
+    public void testCreateNodesIsNotCalledForDummyNode() {
         class FCh extends FilterNode.Children {
 
             public FCh(Node or) {

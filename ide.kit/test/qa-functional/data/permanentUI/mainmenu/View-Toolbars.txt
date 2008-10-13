@@ -6,7 +6,7 @@
                                [ ] Memory                 M
                                [x] Quick Search           Q
                                ========================
-                                   Small Toolbar Icons    S
+                               [ ] Small Toolbar Icons    S
                                ========================
                                    Reset Toolbars         T
                                    Customize...           C

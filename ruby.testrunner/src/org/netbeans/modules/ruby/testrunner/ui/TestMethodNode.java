@@ -45,6 +45,7 @@ import java.awt.Image;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -60,16 +61,18 @@ final class TestMethodNode extends AbstractNode {
 
     /** */
     private final Report.Testcase testcase;
+    private final Project project;
 
     /**
      * Creates a new instance of TestcaseNode
      */
-    TestMethodNode(final Report.Testcase testcase) {
+    TestMethodNode(final Report.Testcase testcase, Project project) {
         super(testcase.trouble != null
               ? new TestMethodNodeChildren(testcase)
               : Children.LEAF);
 
         this.testcase = testcase;
+        this.project = project;
 
         setDisplayName();
         setIconBaseWithExtension(
@@ -133,7 +136,10 @@ final class TestMethodNode extends AbstractNode {
      */
     @Override
     public Action getPreferredAction() {
-        return new JumpAction(this, getTestCaseLineFromStackTrace());
+        String lineFromStackTrace = getTestCaseLineFromStackTrace();
+        return lineFromStackTrace == null
+                ? new JumpToTestMethodAction(testcase, project)
+                : new JumpToCallStackAction(this, getTestCaseLineFromStackTrace());
     }
     
     /**

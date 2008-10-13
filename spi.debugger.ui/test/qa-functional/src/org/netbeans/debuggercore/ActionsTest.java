@@ -162,7 +162,11 @@ public class ActionsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             Utilities.setCaret(eo, 80);
             new EventTool().waitNoEvent(1000); //because of issue 70731
             //main menu file actions
@@ -212,7 +216,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 104);
             //start debugging
@@ -294,7 +297,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 80);
             assertTrue("Breakpoint annotation is not displayed", Utilities.checkAnnotation(eo, 80, "Breakpoint"));
@@ -314,7 +316,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -335,7 +336,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             //remove breakpoint
             Utilities.toggleBreakpoint(eo, 80, false);
@@ -354,7 +354,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -376,7 +375,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -398,7 +396,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -423,7 +420,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 94);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -444,7 +440,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -468,7 +463,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 104);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint
@@ -503,7 +497,6 @@ public class ActionsTest extends JellyTestCase {
             new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
             new EventTool().waitNoEvent(1000);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             Utilities.toggleBreakpoint(eo, 80);
             new DebugProjectAction().perform(projectNode);
             //wait for breakpoint

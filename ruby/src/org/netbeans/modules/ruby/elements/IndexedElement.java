@@ -276,6 +276,7 @@ public abstract class IndexedElement extends RubyElement {
         return (flags & NODOC) != 0;
     }
     
+    // For testsuite
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
         if ((flags & DOCUMENTED) != 0) {
@@ -298,6 +299,31 @@ public abstract class IndexedElement extends RubyElement {
         }
         
         return sb.toString();
+    }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        int flags = 0;
+        if (string.indexOf("|DOCUMENTED") != -1) {
+            flags += DOCUMENTED;
+        }
+        if (string.indexOf("|PRIVATE") != -1) {
+            flags += PRIVATE;
+        }
+        if (string.indexOf("|PROTECTED") != -1) {
+            flags += PROTECTED;
+        }
+        if (string.indexOf("|TOPLEVEL") != -1) {
+            flags += TOPLEVEL;
+        }
+        if (string.indexOf("|STATIC") != -1) {
+            flags += STATIC;
+        }
+        if (string.indexOf("|NODOC") != -1) {
+            flags += NODOC;
+        }
+
+        return flags;
     }
 
     /**

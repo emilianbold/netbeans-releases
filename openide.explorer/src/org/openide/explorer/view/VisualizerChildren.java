@@ -70,8 +70,9 @@ final class VisualizerChildren extends Object {
     /** Creates new VisualizerChildren.
      * Can be called only from EventQueue.
      */
-    public VisualizerChildren(VisualizerNode parent, int size, List<Node> snapshot) {
+    public VisualizerChildren(VisualizerNode parent, List<Node> snapshot) {
         this.parent = parent;
+        int size = snapshot.size();
         visNodes = new ArrayList<VisualizerNode>(size);
         for (int i = 0; i < size; i++) {
             visNodes.add(null);
