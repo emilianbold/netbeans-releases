@@ -180,6 +180,23 @@ final class Report {
         int timeMillis;
         Trouble trouble;
         private Status status;
+        /**
+         * The location, i.e. the file and line number of this test case. 
+         */
+        private String location;
+
+        void setLocation(String location) {
+            this.location = location;
+        }
+
+        /**
+         * Gets the location, i.e. the path to the file and line number of the test case.
+         * May be null if such info is not available.
+         * @return
+         */
+        String getLocation() {
+            return location;
+        }
         
         void setStatus(Status status) {
             this.status = status;
