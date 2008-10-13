@@ -2169,6 +2169,8 @@ org.netbeans.modules.javahelp.NbDocsStreamHandler$Factory
 org.netbeans.modules.javascript.libraries.provider.JavaScriptLibraryTypeProvider
 org.netbeans.modules.jumpto.file.FileSearchAction
 org.netbeans.modules.jumpto.file.LazyListModel$Filter
+org.netbeans.modules.jumpto.symbol.GoToPanel$ContentProvider
+org.netbeans.modules.jumpto.symbol.GoToSymbolAction
 org.netbeans.modules.jumpto.type.GoToPanel$ContentProvider
 org.netbeans.modules.jumpto.type.GoToTypeAction
 org.netbeans.modules.junit.CreateTestAction
