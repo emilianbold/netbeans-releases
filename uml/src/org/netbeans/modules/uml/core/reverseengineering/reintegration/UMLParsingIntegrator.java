@@ -52,8 +52,10 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.TreeMap;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
@@ -105,6 +107,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IParameterableElement;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.ITypedElement;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IUMLBinding;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Parameter;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.Realization;
@@ -1454,7 +1457,319 @@ public class UMLParsingIntegrator
         }
     }
     
+
+    /**
+     * implements simplistic "merging" for attributes and operations.
+     */
+    public void handleFeatures(Node childInDestinationNamespace, Node elementBeingInjected)
+    {
+        
+        if ((childInDestinationNamespace != null) && (elementBeingInjected != null))
+        {
+            Node destinationOwnedElement 
+                = childInDestinationNamespace.selectSingleNode("UML:Element.ownedElement"); // NOI18N
+            Node injectOwnedElement 
+                = elementBeingInjected.selectSingleNode("UML:Element.ownedElement"); // NOI18N
+            
+            if ((destinationOwnedElement != null) && (injectOwnedElement != null))
+            {
+                mergeElements(destinationOwnedElement, 
+                              injectOwnedElement, 
+                              "UML:Attribute", 
+                              null);
+                mergeElements(destinationOwnedElement, 
+                              injectOwnedElement, 
+                              "UML:Operation", 
+                              new OperationNodesComparator());
+            }
+        }
+    }
     
+    private void mergeElements(Node destinationOwnedElement, 
+                               Node injectOwnedElement, 
+                               String nodeType,
+                               NodeComparator comparator) 
+    {
+        List destList = destinationOwnedElement.selectNodes(nodeType);
+        if (destList != null)
+        {
+            for(int i = 0; i < destList.size(); i++)
+            {
+                Node destinationNestedChild = (Node)destList.get(i);
+                if (destinationNestedChild == null) continue;
+                
+                String destName = UMLXMLManip.getAttributeValue(destinationNestedChild, "name"); // NOI18N
+                Node injectNestedChild = injectOwnedElement
+                    .selectSingleNode(nodeType+"[@name='"+destName+"']"); // NOI18N
+                
+                if (injectNestedChild != null)
+                {
+                    if (comparator == null 
+                        || comparator.compare(destinationNestedChild, injectNestedChild))
+                    {
+                        String destID = XMLManip.getAttributeValue(destinationNestedChild, "xmi.id");
+                        if (destID != null) 
+                        {
+                            XMLManip.setAttributeValue(injectNestedChild, "xmi.id", destID);
+                            if ("UML:Operation".equals(nodeType)) 
+                            {
+                                handleInteractions(destinationNestedChild, injectNestedChild);
+                            }
+                        }                            
+                    }
+                }
+            }
+        }
+    }
+    
+
+
+    public static class OperationNodesComparator implements NodeComparator 
+    {
+        public boolean compare(Node op1, Node op2) 
+        {
+
+            String query = "./UML:Element.ownedElement/UML:Parameter";
+            List<Node> params1 = XMLManip.selectNodeList(op1, query);
+            List<Node> params2 = XMLManip.selectNodeList(op2, query);
+            return compareNodeLists(params1, params2, new ParameterNodesComparator());
+        }    
+    }
+    
+    public static class ParameterNodesComparator implements NodeComparator {
+
+        public boolean compare(Node pn1, Node pn2) 
+        {
+            
+            TypedFactoryRetriever<IParameter> fact = new TypedFactoryRetriever<IParameter>();
+            IParameter param1 = fact.createTypeAndFill(pn1);
+            IClassifier type1 = param1.getType();
+            if (type1 instanceof IDerivationClassifier) 
+            { 
+                String dQuery = "./TokenDescriptors/TDerivation";
+                Node derivation2 = XMLManip.selectSingleNode(pn2, dQuery);
+                if (derivation2 != null) 
+                {
+                    return compareDerivations((IDerivationClassifier)type1, derivation2);
+                }
+                return false;
+            } 
+            else if (type1 != null)
+            {
+                String typeName1 = type1.getFullyQualifiedName(false);
+                String typeName2 = XMLManip.getAttributeValue(pn2, "type");
+                if (typeName1 == null || typeName2 == null 
+                    || ( ! typeName1.equals(typeName2)))
+                {
+                    return false;
+                }
+            
+                String query = "./UML:TypedElement.multiplicity/UML:Multiplicity/UML:Multiplicity.range/UML:MultiplicityRange";
+                List mults1 = XMLManip.selectNodeList(pn1, query);
+                List mults2 = XMLManip.selectNodeList(pn2, query);
+                
+                if (! compareNodeLists(mults1, mults2,
+                        new BySpecificAttributeNodeComparator("collectionType"))) 
+                {
+                    return false;
+                }
+                
+                return true;
+            }
+            else 
+            {
+                return false;
+            }
+        }
+
+        private boolean compareDerivations(IDerivationClassifier type1, Node derivation2) 
+        {
+            String typeName1 = null;
+            IClassifier template = type1.getTemplate();
+            if (template != null) 
+            {
+                typeName1 = template.getFullyQualifiedName(false);
+            }
+            String typeName2 = XMLManip.getAttributeValue(derivation2, "name");
+            if (typeName1 == null || typeName2 == null
+                || ( ! typeName1.equals(typeName2)) )
+            {
+                return false;
+            }
+
+            ArrayList nodelist = new ArrayList();
+            String queryTDer = "./TokenDescriptors/TDerivation";
+            List derivs  = XMLManip.selectNodeList(derivation2, queryTDer);
+            if (derivs != null) 
+            {
+                nodelist.addAll(derivs);
+            }
+            String queryParams = "./DerivationParameter";
+            List derivParams  = XMLManip.selectNodeList(derivation2, queryParams);
+            if (derivParams != null) 
+            {
+                nodelist.addAll(derivParams);
+            }
+
+            TreeMap<Integer, Node> map = new TreeMap<Integer, Node>();
+            for(Object o : nodelist) 
+            {
+                if (o instanceof Node) 
+                {
+                    Node n = (Node)o;
+                    int pos = -1;
+                    try {
+                        pos = Integer.parseInt(XMLManip.getAttributeValue(n, "position"));
+                    }
+                    catch (NumberFormatException ex) {}
+                    if (pos != -1) 
+                    {
+                        map.put(new Integer(pos), n);
+                    }
+                    
+                }
+            }
+
+            Set<Integer> keys = map.keySet();
+            List<IUMLBinding> bindings = type1.getBindings();
+            if (keys != null && bindings != null
+                && keys.size() == bindings.size()) 
+            {
+                Iterator<IUMLBinding> iter = bindings.iterator();
+                for(Integer p :  keys) 
+                {
+                    Node n = map.get(p);
+                    String nodeType = ((Element)n).getName();
+                    IUMLBinding binding = iter.next();
+                    if (binding != null) 
+                    {
+                        IParameterableElement actual = binding.getActual();
+                        if (actual instanceof IDerivationClassifier 
+                            && nodeType.equals("TDerivation")) 
+                        {
+                            if ( ! compareDerivations((IDerivationClassifier)actual, n)) 
+                            {
+                                return false;
+                            }
+                            
+                        }
+                        else if ( ! (actual instanceof IDerivationClassifier)  
+                                 && nodeType.equals("DerivationParameter"))
+                        {
+                            String t1 = null;
+                            if (actual instanceof IClassifier) 
+                            {
+                                t1 = ((IClassifier)actual).getFullyQualifiedName(false);
+                            }
+                            String t2 = XMLManip.getAttributeValue(n, "value");
+                            if (t1 == null || t2 == null 
+                                || (! t1.equals(t2))) 
+                            {
+                                return false;
+                            }
+                        }
+                        else 
+                        {
+                            return false;
+                        }
+                    }
+                    else 
+                    {
+                        return false;
+                    }
+                }
+                return true;
+            }
+            else 
+            {
+                return false;
+            }
+        }
+
+    }
+
+    public static boolean compareNodeLists(List l1, List l2, NodeComparator nodeCpr) {
+	if (l1 == null) {
+	    if (l2 != null) { 
+		return false;
+	    }
+	} else {
+	    if (l2 == null) { 
+		return false;
+	    }
+	    if (l1.size() != l2.size()) {
+		return false;		
+	    }
+	    Iterator iter1 = l1.iterator();
+	    Iterator iter2 = l2.iterator();
+	    while(iter1.hasNext()) 
+	    { 
+		if (! nodeCpr.compare((Node)iter1.next(), (Node)iter2.next())) {
+		    return false;
+		}		
+	    }
+	}
+	return true;
+    }
+    
+    public static interface NodeComparator {	
+	public boolean compare(Node n1, Node n2);
+    }
+     
+    public static class BySpecificAttributeNodeComparator implements NodeComparator {
+
+	String attrName;
+
+	public BySpecificAttributeNodeComparator(String attrNamem) {
+	    this.attrName = attrName;
+	}
+
+	public boolean compare(Node n1, Node n2) {
+	    if ( (n1 == null) != (n2 == null) ) {
+		return false;
+	    } else if (n1 != null) {	    
+		String v1 = XMLManip.getAttributeValue(n1, attrName);
+		String v2 = XMLManip.getAttributeValue(n2, attrName);
+                if ( (v1 == null) != (v2 == null)) {
+                    return false;
+                } else if ((v1 != null) && (! v1.equals(v2))) {
+                    return false;
+                } 
+	    }
+	    return true;
+	}
+    
+    }
+
+    protected void handleInteractions(Node childInDestinationNamespace, Node elementBeingInjected)
+    {
+        try
+        {
+            Node destinationOwnedElement = childInDestinationNamespace
+                .selectSingleNode("UML:Element.ownedElement"); // NOI18N
+            String query = "./UML:Interaction"; // NOI18N
+            List<Node> interactionNodes = destinationOwnedElement.selectNodes(query);
+            if (interactionNodes != null) 
+            {
+                Node injectOwnedElement = XMLManip.ensureNodeExists(
+                    elementBeingInjected,
+                    "UML:Element.ownedElement", "" +  // NOI18N
+                    "UML:Element.ownedElement"); // NOI18N
+                    
+                for(Node interaction : interactionNodes) 
+                {
+                    interaction.detach();
+                    ((Element)injectOwnedElement).add(interaction);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            sendExceptionMessage(e);
+        }
+    }
+
+
     public void verifyUniqueness(ETList<String> files)
     {
         if (m_Files != null)
@@ -1698,6 +2013,8 @@ public class UMLParsingIntegrator
                     // IZ 87008. While the node isn't of container type, yet it still may contain
                     // nested classes and interfaces.
                     handleNested(childInDestinationNamespace, elementBeingInjected);
+
+                    handleFeatures(childInDestinationNamespace, elementBeingInjected);
                     
                     Node parent = childInDestinationNamespace.getParent();
                     if (parent != null)
