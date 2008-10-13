@@ -2911,7 +2911,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         BeforeModificationEdit(long saveTime, UndoableEdit delegate) {
             this.saveTime = saveTime;
             this.delegate = delegate;
-            ERR.log(Level.FINE, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
+            ERR.log(Level.FINEST, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
         }
 
         @Override
