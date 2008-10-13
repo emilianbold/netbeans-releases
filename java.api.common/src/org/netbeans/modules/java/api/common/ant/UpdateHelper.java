@@ -176,16 +176,18 @@ public final class UpdateHelper {
      * @throws IOException if error occurs during saving.
      */
     public boolean requestUpdate() throws IOException {
+        if (isCurrent()) {
+            return true;
+        }
+        if (!updateProject.canUpdate()) {
+            return false;
+        }
         try {
             return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Boolean>() {
-                public Boolean run() throws IOException {
-                    if (isCurrent()) {
-                        return true;
+                public Boolean run() throws IOException {                                        
+                    if (!isCurrent()) {
+                        updateProject.saveUpdate(null);
                     }
-                    if (!updateProject.canUpdate()) {
-                        return false;
-                    }
-                    updateProject.saveUpdate(null);
                     return true;
                 }
             });
@@ -204,7 +206,11 @@ public final class UpdateHelper {
      * @return <code>true</code> if the project is of current version.
      */
     public boolean isCurrent() {
-        return updateProject.isCurrent();
+        return ProjectManager.mutex().readAccess(new Mutex.Action<Boolean>() {
+            public Boolean run() {
+                return updateProject.isCurrent();
+            }
+        });
     }
 
     /**

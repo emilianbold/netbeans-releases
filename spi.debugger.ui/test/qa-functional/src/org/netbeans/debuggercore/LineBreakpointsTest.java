@@ -143,7 +143,11 @@ public class LineBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 73);
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
@@ -167,7 +171,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionality() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 73);
             Utilities.startDebugger();
@@ -184,7 +187,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionalityAfterContinue() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 52);
             Utilities.startDebugger();
@@ -205,7 +207,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionalityInStaticMethod() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 114);
             Utilities.startDebugger();
@@ -222,7 +223,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionalityInInitializer() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 45);
             Utilities.startDebugger();
@@ -239,7 +239,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionalityInConstructor() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 54);
             Utilities.startDebugger();
@@ -256,7 +255,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionalityInInnerClass() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 123);
             Utilities.startDebugger();
@@ -273,7 +271,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointFunctionalityInSecondaryClass() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 154);
             Utilities.startDebugger();
@@ -290,7 +287,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testConditionalLineBreakpointFunctionality() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 63);
             Utilities.toggleBreakpoint(eo, 64);
@@ -321,7 +317,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointActions() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 102);
             
@@ -349,7 +344,6 @@ public class LineBreakpointsTest extends JellyTestCase {
         try {
             int[] prelines = new int[]{33, 34, 37, 43, 49};
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //start debugging
             Utilities.startDebugger();
             Utilities.waitStatusText(Utilities.runningStatusBarText);
@@ -373,7 +367,6 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointsHitCount() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 64);
             Utilities.toggleBreakpoint(eo, 65);

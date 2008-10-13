@@ -65,6 +65,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     private static Set<String> approvedLicences = new HashSet<String> ();
     private InstallSupport support;
     private OperationContainer<InstallSupport> updateContainer = null;
+    private OperationContainer<OperationSupport> customContainer = Containers.forCustomInstall ();
     private PluginManagerUI manager;
     
     /** Creates a new instance of InstallUnitWizardModel */
@@ -117,7 +118,7 @@ public class InstallUnitWizardModel extends OperationWizardModel {
     }
     
     public OperationContainer<OperationSupport> getCustomHandledContainer () {
-        return Containers.forCustomInstall ();
+        return customContainer;
     }
     
     public boolean allLicensesApproved () {

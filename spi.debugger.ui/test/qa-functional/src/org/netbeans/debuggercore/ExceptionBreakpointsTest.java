@@ -129,12 +129,16 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
      *
      */
     public void testExceptionBreakpointCreation() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        eo.clickMouse(50,50,1);
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
             setBreakpointType(dialog, "Exception");

@@ -81,6 +81,22 @@ implements CloneableEditorSupport.Env {
     /** Delay in miliseconds to simulate delay between closing stream and file modification time. */
     private long delay = 0L;
 
+    public void testSaveAfterLoadOfFileThatWasModifiedInFuture() throws Exception {
+        content = "Ahoj\nMyDoc";
+        // simulate the the just opened file has modification time in future
+        // intentionally extremly big to make it work even in debugger
+        date = new Date(System.currentTimeMillis() + 86400000);
+        
+        javax.swing.text.Document doc = support.openDocument ();
+        assertNotNull (doc);
+
+        doc.remove(0, doc.getLength());
+
+        support.saveDocument();
+
+        assertEquals("Saved ok and empty", "", content);
+    }
+
     public void testDocCanBeGCdWhenNotModifiedButOpened() throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();

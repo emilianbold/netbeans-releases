@@ -49,6 +49,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -507,42 +508,60 @@ public final class RailsServerManager {
     private static boolean useHttpValidation = Boolean.parseBoolean(
             System.getProperty("rails.server.http.validation"));
 
+    private static boolean checkIsPortInUseUsingServerSocket(int port) {
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(port);
+            return false;
+        } catch (IOException ex) {
+            LOGGER.log(Level.FINE, "Port " + port + " is in use.", ex);
+            return true;
+        } finally {
+            if (serverSocket != null && !serverSocket.isClosed()) {
+                try {
+                    serverSocket.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.FINE, "Exception while closing ServerSocked in port " + port, ex);
+                }
+            }
+        }
+    }
+    
     public static boolean isPortInUse(int port) {
         LOGGER.fine("Checking port: " + port + ". Ports in use: " + IN_USE_PORTS);
         if (IN_USE_PORTS.contains(port)) {
             return true;
         }
+        LOGGER.fine("Connecting to " + port + ", using http validation: " + useHttpValidation);
+        if (!useHttpValidation) {
+            return checkIsPortInUseUsingServerSocket(port);
+        }
         int timeout = 3000;
         Socket socket = new Socket();
         try {
             try {
-                LOGGER.fine("Connecting to " + port + ", using http validation: " + useHttpValidation);
                 socket.connect(new InetSocketAddress("localhost", port), timeout); // NOI18N
-                if(useHttpValidation) {
-                    socket.setSoTimeout(timeout);
-                    OutputStream out = socket.getOutputStream();
+                socket.setSoTimeout(timeout);
+                OutputStream out = socket.getOutputStream();
+                try {
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     try {
-                        BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-                        try {
-                            // request -- mongrel requires \r\n instead of just \n
-                            out.write("GET / HTTP/1.0\r\n\r\n".getBytes("UTF8")); // NOI18N
-                            out.flush();
+                        // request -- mongrel requires \r\n instead of just \n
+                        out.write("GET / HTTP/1.0\r\n\r\n".getBytes("UTF8")); // NOI18N
+                        out.flush();
 
-                            // response
-                            String text = in.readLine();
-                            LOGGER.fine("Got response " + text);
-                            if (text != null && text.startsWith("HTTP")) { // NOI18N
-                                return true; // http response.
-                            }
-                            return false;
-                        } finally {
-                            in.close();
+                        // response
+                        String text = in.readLine();
+                        LOGGER.fine("Got response " + text);
+                        if (text != null && text.startsWith("HTTP")) { // NOI18N
+                            return true; // http response.
                         }
+                        return false;
                     } finally {
-                        out.close();
+                        in.close();
                     }
-                } else {
-                    return true;
+                } finally {
+                    out.close();
                 }
             } finally {
                 socket.close();
