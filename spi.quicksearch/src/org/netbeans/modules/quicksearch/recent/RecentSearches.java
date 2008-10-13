@@ -93,7 +93,8 @@ public class RecentSearches {
 
         // don't create duplicates, however poor-man's test only
         for (ItemResult ir : recent) {
-            if (ir.getDisplayName().equals(result.getDisplayName())) {
+            if (stripHTMLnames(ir.getDisplayName()).equals(
+                    stripHTMLnames(result.getDisplayName()))) {
                 ir.setDate(now);
                 return;
             }

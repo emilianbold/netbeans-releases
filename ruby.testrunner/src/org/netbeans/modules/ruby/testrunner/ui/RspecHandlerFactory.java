@@ -116,15 +116,19 @@ public class RspecHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%RSPEC_TEST_FINISHED%\\s(.*)\\stime=(.+)"); //NOI18N
+            super(".*%RSPEC_TEST_FINISHED%\\sfile=(.*)\\sdescription=(.*)\\stime=(.+)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
             Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(2));
+            testcase.timeMillis = toMillis(matcher.group(3));
             testcase.className = session.getSuiteName();
-            testcase.name = matcher.group(1);
+            String location = matcher.group(1);
+            if (location != null && !"".equals(location)) {
+                testcase.setLocation(matcher.group(1));
+            }
+            testcase.name = matcher.group(2);
             session.addTestCase(testcase);
         }
     }

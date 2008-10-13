@@ -60,8 +60,13 @@ public class WatchesTestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(WatchesTest.class, 
+        String os = System.getProperty("os.name");
+        String jdk = System.getProperty("java.version");
+        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+        } else {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(WatchesTest.class,
                     "testWatchesPublicVariables",
                     "testWatchesProtectedVariables",
                     "testWatchesPrivateVariables",
@@ -76,6 +81,7 @@ public class WatchesTestSuite extends JellyTestCase {
                     "testWatchesFiltersTreeSet",
                     "testWatchesFilters1DArray",
                     "testWatchesFilters2DArray",
-                    "testWatchesValues").enableModules(".*").clusters(".*"));        
+                    "testWatchesValues").enableModules(".*").clusters(".*"));
+        }        
     } 
 }

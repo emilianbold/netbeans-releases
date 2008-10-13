@@ -63,7 +63,35 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class EditorOperatorTest extends JellyTestCase {
-    
+
+    public static final String[] tests = new String[] {
+                "testTxtEditorPane",
+                "testLblRowColumn",
+                "testLblStatusBar",
+                "testLblInputMode",
+                "testGetText",
+                "testContains",
+                "testSelect",
+                "testGetLineNumber",
+                "testPushHomeKey",
+                "testPushEndKey",
+                "testPushDownArrowKey",
+                "testPushUpArrowKey",
+                "testFolding",
+                "testSetCaretPositionRelative",
+                "testSetCaretPositionToLine",
+                "testSetCaretPosition",
+                "testGetToolbarButton",
+                "testReplace",
+                "testInsert",
+        // annotations have to be tested after testInsert because of parser annotations
+                "testGetAnnotations",
+                "testGetAnnotationType",
+                "testGetAnnotationShortDescription",
+                "testDelete",
+                "testPushTabKey",
+                "testCloseDiscard",
+    };
     /** Constructor required by JUnit.
      * @param testName method name to be used as testcase
      */
@@ -112,35 +140,7 @@ public class EditorOperatorTest extends JellyTestCase {
         suite.addTest(new EditorOperatorTest("testCloseDiscard"));
         return suite;
          */
-        return (NbTest) NbModuleSuite.create(
-        NbModuleSuite.createConfiguration(EditorOperatorTest.class).
-                addTest("testTxtEditorPane").
-                addTest("testLblRowColumn").
-                addTest("testLblStatusBar").
-                addTest("testLblInputMode").
-                addTest("testGetText").
-                addTest("testContains").
-                addTest("testSelect").
-                addTest("testGetLineNumber").
-                addTest("testPushHomeKey").
-                addTest("testPushEndKey").
-                addTest("testPushDownArrowKey").
-                addTest("testPushUpArrowKey").
-                addTest("testFolding").
-                addTest("testSetCaretPositionRelative").
-                addTest("testSetCaretPositionToLine").
-                addTest("testSetCaretPosition").
-                addTest("testGetToolbarButton").
-                addTest("testReplace").
-                addTest("testInsert").
-        // annotations have to be tested after testInsert because of parser annotations
-                addTest("testGetAnnotations").
-                addTest("testGetAnnotationType").
-                addTest("testGetAnnotationShortDescription").
-                addTest("testDelete").
-                addTest("testPushTabKey").
-                addTest("testCloseDiscard").
-                enableModules(".*").clusters(".*"));
+        return createModuleTest(EditorOperatorTest.class, tests);
     }
 
     private static EditorOperator eo;

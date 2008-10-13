@@ -167,15 +167,13 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
                     clientNode.getJaxWsModel().write();
                 }
                 // copy resources to WEB-INF[META-INF]/wsdl/client/${clientName}
-                if (client.getWsdlUrl().startsWith("file:")) {
-                    FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
-                    Project project = FileOwnerQuery.getOwner(srcRoot);
-                    if (project.getLookup().lookup(J2eeModuleProvider.class) != null) {
-                        FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName, false);
-                        if (xmlResorcesFo != null) {
-                            FileObject wsdlFolder = getWsdlFolderForClient(support, clientName);
-                            WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
-                        }
+                FileObject sourceRoot = getNode().getLookup().lookup(FileObject.class);
+                Project project = FileOwnerQuery.getOwner(srcRoot);
+                if (project.getLookup().lookup(J2eeModuleProvider.class) != null) {
+                    FileObject xmlResorcesFo = support.getLocalWsdlFolderForClient(clientName, false);
+                    if (xmlResorcesFo != null) {
+                        FileObject wsdlFolder = getWsdlFolderForClient(support, clientName);
+                        WSUtils.copyFiles(xmlResorcesFo, wsdlFolder);
                     }
                 }
             } catch (URISyntaxException ex) {

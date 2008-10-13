@@ -45,7 +45,7 @@ import org.netbeans.modules.glassfish.common.SimpleIO;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.PrintWriter;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -107,8 +107,17 @@ public class ViewUpdateCenterAction extends NodeAction {
                 RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         try {
-                            if(isUCInstalled(serverName, serverUrl, installDir, launcher)) {
-                                new NbProcessDescriptor(launcher.getPath(), "").exec(null, null, launcher.getParentFile());
+                            File realLauncher = launcher;
+                            if(!isUCInstalled(installDir)) {
+                                if(installUpdateCenter(serverName, serverUrl, installDir, launcher)) {
+                                    realLauncher = getUpdateCenterLauncher(installDir);
+                                } else {
+                                    realLauncher = null;
+                                }
+                            }
+
+                            if(realLauncher != null) {
+                                new NbProcessDescriptor(realLauncher.getPath(), "").exec(null, null, realLauncher.getParentFile());
                             }
                         } catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
@@ -154,40 +163,40 @@ public class ViewUpdateCenterAction extends NodeAction {
         return result;
     }
     
-    private boolean isUCInstalled(String serverName, String serverUrl, File installRoot, File launcher) {
-        if(new File(installRoot, "updatetool/bin").exists()) {
-            return true;
-        }
-        
+    private boolean isUCInstalled(File installRoot) {
+        return new File(installRoot, "updatetool/bin").exists();
+    }
+
+    private boolean installUpdateCenter(String serverName, String serverUrl, File installRoot, File launcher) {
         if(!installRoot.canWrite()) {
-            String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+            String message = NbBundle.getMessage(ViewUpdateCenterAction.class,
                     "MSG_UpdateCenterNoPermission", serverName, installRoot);
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
                     NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
             return false;
         }
-        
-        String message = NbBundle.getMessage(ViewUpdateCenterAction.class, 
+
+        String message = NbBundle.getMessage(ViewUpdateCenterAction.class,
                 "MSG_QueryInstallUpdateCenter", serverName);
         NotifyDescriptor nd = new NotifyDescriptor.Confirmation(message,
                 NotifyDescriptor.YES_NO_OPTION, NotifyDescriptor.QUESTION_MESSAGE);
-        
+
         boolean result = false;
         if(DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.YES_OPTION) {
-            Writer writer = null;
+            PrintWriter writer = null;
             try {
                 Process process = new NbProcessDescriptor(launcher.getPath(), "").exec(null, null, launcher.getParentFile());
                 synchronized(taskMap) {
                     taskMap.put(serverUrl, process);
                 }
-                
+
                 SimpleIO ucIO = new SimpleIO("Update Center Installer", process);
                 ucIO.readInputStreams(process.getInputStream(), process.getErrorStream());
-                writer = new OutputStreamWriter(process.getOutputStream());
-                writer.write("y\n");
+                writer = new PrintWriter(new OutputStreamWriter(process.getOutputStream()), true);
+                // Answer affirmative to the "do you want to install..." question
+                writer.println("y");
                 writeProxyInfo(writer);
-                writer.flush();
                 int exitCode = process.waitFor();
                 Logger.getLogger("glassfish").log(Level.FINEST, "UC exit code = " + exitCode);
                 if(exitCode == 0) {
@@ -204,9 +213,9 @@ public class ViewUpdateCenterAction extends NodeAction {
                 synchronized (taskMap) {
                     taskMap.remove(serverUrl);
                 }
-                
+
                 if(writer != null) {
-                    try { writer.close(); } catch(IOException ex) { }
+                    writer.close();
                 }
             }
         }
@@ -245,9 +254,10 @@ public class ViewUpdateCenterAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
 
-    private void writeProxyInfo(Writer writer) throws IOException {
+    private void writeProxyInfo(PrintWriter writer) throws IOException {
         // TODO - add code to write proxy info to the output stream.
-        writer.write("n\n");
+        // For now, answer negative to the "do you have proxy info..." question
+        writer.println("n");
     }
     
 }

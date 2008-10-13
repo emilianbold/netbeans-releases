@@ -54,7 +54,7 @@ public class CssEmbeddingModelUtils {
     }
     
     public static final boolean containsGeneratedCode(String text) {
-        return text.contains(GEN_CODE_IDENT);
+        return text == null ? false : text.contains(GEN_CODE_IDENT);
     }
     
 }

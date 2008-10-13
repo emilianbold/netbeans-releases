@@ -55,4 +55,7 @@ public final class RubyExceptionBreakpoint extends RubyBreakpoint implements IRu
         return exceptionClass;
     }
 
+    public @Override String toString() {
+        return "RubyExceptionBreakpoint[exceptionClass: " + exceptionClass + ']'; // NOI18N
+    }
 }

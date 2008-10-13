@@ -143,6 +143,11 @@ public class LineBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 73);
             Utilities.showDebuggerView(Utilities.breakpointsViewTitle);
@@ -347,7 +352,7 @@ public class LineBreakpointsTest extends JellyTestCase {
                 Utilities.toggleBreakpoint(eo, prelines[i]);
                 Utilities.waitStatusText("Invalid LineBreakpoint MemoryView.java : " + prelines[i]);
             }
-            int[] debuglines = new int[]{72, 81, 83, 95, 96, 105, 108, 122, 125, 153};
+            int[] debuglines = new int[]{72, 81, 83, 95, 96, 105, 108, 125, 153};
             //toggle breakpoints
             for (int i = 0; i < debuglines.length; i++) {
                 Utilities.toggleBreakpoint(eo, debuglines[i]);
@@ -362,6 +367,7 @@ public class LineBreakpointsTest extends JellyTestCase {
     public void testLineBreakpointsHitCount() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 64);
             Utilities.toggleBreakpoint(eo, 65);
