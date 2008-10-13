@@ -204,6 +204,7 @@ public class NbServiceTagCreateAction extends WizardAction {
             } else if (product.getUid().equals("nb-javafx")) {
                 LogManager.log("... create ST for " + product.getDisplayName());
                 NbServiceTagSupport.createJavaFXServiceTag(source, javaVersion);
+                NbServiceTagSupport.createJavaFXSdkServiceTag(source, javaVersion);
             }
         } catch (IOException e) {
             LogManager.log(e);
