@@ -37,43 +37,56 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.projectimport.eclipse;
+package org.netbeans.modules.projectimport.eclipse.gui;
 
-import junit.framework.Test;
-import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportAppRunParams;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaCParams;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithJarRef;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
-import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
-import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSimpleJavaProjectFromWS;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportSourceFilters;
-import org.netbeans.modules.projectimport.eclipse.gui.ImportTestProjects;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.WizardOperator;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ImporterTest {
+public class ImportProjectWithJarRef extends ProjectImporterTestCase {
+    WizardOperator importWizard;
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.createConfiguration(ImporterMenu.class).
-                addTest(ImporterWizard.class).
-		addTest(ImportSimpleJavaProjectFromWS.class).
-                //addTest(ImportSimpleWebProjectFromWS.class).
-                addTest(ImportMultipleRootsJavaProjectFromWS.class).
-                addTest(ImportJavaVersion.class).
-                addTest(ImportProjectWithTransitiveDeps.class).
-                addTest(ImportAppRunParams.class).
-                addTest(ImportJavaCParams.class).
-                addTest(ImportSourceFilters.class).
-                addTest(ImportTestProjects.class).
-                addTest(ImportProjectWithJarRef.class).
-                enableModules(".*").clusters(".*").
-                gui(true).reuseUserDir(true));
+    public ImportProjectWithJarRef(String testName) {
+        super(testName);
     }
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        ExtractToWorkDir(getDataDir().getAbsolutePath(),"testdata.jar");
+    }
+
+    public void testImportProjectWithIntJarRef() {
+        String projectName = "IntJarUsage";
+        importProject(projectName);
+        validateLibrary(projectName, "anagrams.jar");
+    }
+    public void testImportProjectWithExtJarRef() {
+        String projectName = "ExtJarUsage";
+        importProject(projectName);
+        validateLibrary(projectName, "anagrams.jar");
+    }
+    private void importProject(String projectName) {
+        importWizard = invokeImporterWizard();
+        selectProjectFromWS(importWizard,"testdata", projectName);
+        importWizard.finish();
+
+        waitForProjectsImporting();
+
+        try {
+            NbDialogOperator issuesWindow = new NbDialogOperator(Bundle.getStringTrimmed("org.netbeans.modules.projectimport.eclipse.core.Bundle", "MSG_ImportIssues"));
+            issuesWindow.close();
+        } catch (Exception e) {
+            // ignore
+        }
+    }
+
+    private void validateProjectLibNode(String string) {
+        throw new UnsupportedOperationException("Not yet implemented");
+    }
+
 
 }

@@ -174,7 +174,14 @@ public class LineBreakpointsTest extends JellyTestCase {
             //toggle breakpoints
             Utilities.toggleBreakpoint(eo, 73);
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:73");
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:73");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:73")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

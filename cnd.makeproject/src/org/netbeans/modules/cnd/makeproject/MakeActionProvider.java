@@ -461,19 +461,12 @@ public class MakeActionProvider implements ActionProvider {
                 if (conf.isMakefileConfiguration()) {
                     String path;
                     if (targetName.equals("run")) { // NOI18N
-                        // naturalize if relative
                         path = conf.getMakefileConfiguration().getOutput().getValue();
                         if (path.length() > 0 && !IpeUtils.isPathAbsolute(path)) {
                             // make path relative to run working directory
+                            // path here should always be in unix style, see issue 149404
                             path = conf.getMakefileConfiguration().getAbsOutput();
-                            path = FilePathAdaptor.naturalize(path);
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
-                            path = FilePathAdaptor.naturalize(path);
-                            CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) { // NOI18N
-                                // IZ 120352
-                                path = FilePathAdaptor.normalize(path);
-                        }
                         }
                     } else {
                         // Always absolute
