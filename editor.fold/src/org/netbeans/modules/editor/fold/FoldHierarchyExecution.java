@@ -43,7 +43,6 @@ package org.netbeans.modules.editor.fold;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -140,7 +139,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
     
     private PriorityMutex mutex;
     
-    private EventListenerList listenerList;
+    private final EventListenerList listenerList;
     
     private boolean foldingEnabled;
     
@@ -174,6 +173,7 @@ public final class FoldHierarchyExecution implements DocumentListener {
      */
     private FoldHierarchyExecution(JTextComponent component) {
         this.component = component;
+        this.listenerList = new EventListenerList();
     }
     
     /**
@@ -184,9 +184,6 @@ public final class FoldHierarchyExecution implements DocumentListener {
      * the hierarchy.
      */
     private void init() {
-        // Allow listeners to be added
-        listenerList = new EventListenerList();
-
         // Assign mutex
         mutex = (PriorityMutex)component.getClientProperty(PROPERTY_FOLD_HIERARCHY_MUTEX);
         if (mutex == null) {
@@ -325,14 +322,15 @@ public final class FoldHierarchyExecution implements DocumentListener {
         }
 
         Object[] listeners = listenerList.getListenerList(); // no need to sync
-        for (int i = listeners.length - 2; i >= 0; i -= 2) {
+        // fire events to the listeners in the same order as they were registered (#70915)
+        for (int i = 0; i < listeners.length; i += 2) {
             if (listeners[i] == FoldHierarchyListener.class) {
                 ((FoldHierarchyListener)listeners[i + 1]).foldHierarchyChanged(evt);
             }
         }
         
     }
-    
+
     /**
      * Attempt to add the given fold to the code folding hierarchy.
      * The fold will either become part of the hierarchy or it will
