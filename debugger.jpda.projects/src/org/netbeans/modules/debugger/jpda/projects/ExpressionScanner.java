@@ -199,9 +199,13 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
     }
 
     public List<Tree> visitAssert(AssertTree node, ExpressionScanner.ExpressionsInfo p) {
-        List<Tree> result = scan(node.getCondition(), p);
-        result = reduce(result, scan(node.getDetail(), p));
-        return result;
+        if (acceptsTree(node)) {
+            List<Tree> result = scan(node.getCondition(), p);
+            result = reduce(result, scan(node.getDetail(), p));
+            return result;
+        } else {
+            return null;
+        }
     }
 
     public List<Tree> visitAssignment(AssignmentTree node, ExpressionScanner.ExpressionsInfo p) {
