@@ -104,7 +104,7 @@ abstract class EntrySupport {
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
-    abstract List<Node> createSnapshot();
+    abstract List<Node> snapshot();
 
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -134,7 +134,18 @@ abstract class EntrySupport {
             return inited;
         }
 
-        protected List<Node> createSnapshot() {
+        @Override
+        List<Node> snapshot() {
+            Node[] nodes = getNodes();
+            try {
+                Children.PR.enterReadAccess();
+                return createSnapshot();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+        }
+
+        DefaultSnapshot createSnapshot() {
             return new DefaultSnapshot(getNodes(), array.get());
         }
 
@@ -1058,6 +1069,17 @@ abstract class EntrySupport {
             return true;
         }
 
+        @Override
+        List<Node> snapshot() {
+            checkInit();
+            try {
+                Children.PR.enterReadAccess();
+                return createSnapshot();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+        }
+
         final void registerNode(int delta, EntryInfo who) {
             if (delta == -1) {
                 try {
@@ -1721,12 +1743,11 @@ abstract class EntrySupport {
             return newArray;
         }
 
-        @Override
-        List<Node> createSnapshot() {
+        LazySnapshot createSnapshot() {
             return createSnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo), false);
         }
         
-        protected List<Node> createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
+        protected LazySnapshot createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
             return delayed ? new DelayedLazySnapshot(entries, e2i) : new LazySnapshot(entries, e2i);
         }
         
