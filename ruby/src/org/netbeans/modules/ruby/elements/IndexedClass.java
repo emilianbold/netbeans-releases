@@ -44,6 +44,7 @@ import java.util.Set;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -59,14 +60,14 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
     private String in;
 
     protected IndexedClass(RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags);
+        String clz, String require, String attributes, int flags, FileObject context) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
     }
 
     public static IndexedClass create(RubyIndex index, String clz, String fqn, String fileUrl,
-        String require, String attributes, int flags) {
+        String require, String attributes, int flags, FileObject context) {
         IndexedClass c =
-            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags);
+            new IndexedClass(index, fileUrl, fqn, clz, require, attributes, flags, context);
 
         return c;
     }
@@ -140,6 +141,7 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return docLength;
     }
     
+    // For testsuite
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
         sb.append(IndexedElement.decodeFlags(flags));
@@ -152,5 +154,16 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         }
         
         return sb.toString();
+    }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        int flags = IndexedElement.stringToFlags(string);
+
+        if (string.indexOf("|MODULE") != -1) {
+            flags += MODULE;
+        }
+
+        return flags;
     }
 }

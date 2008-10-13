@@ -64,7 +64,7 @@
                     <param fixed="facebook.admin.getAllocation" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:integer"/>
+                    <representation mediaType="text/xml" element="f:admin_getAllocation_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -110,7 +110,7 @@
                     <param fixed="facebook.admin.getAppProperties" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:integer"/>
+                    <representation mediaType="text/xml" element="f:admin_getAppProperties_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -138,7 +138,7 @@
                     <param fixed="facebook.admin.setAppProperties" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:admin_setAppProperties_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -243,7 +243,7 @@
                     <param fixed="facebook.data.setCookie" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:integerType"/>
+                    <representation mediaType="text/xml" element="f:data_setCookie_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -554,7 +554,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.fbml.refreshImgSrc" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:fbml_refreshImgSrc_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -590,7 +590,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.fbml.refreshRefUrl" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:fbml_refreshRefUrl_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -630,7 +630,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.fbml.setRefHandle" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:fbml_setRefHandle_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -662,7 +662,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.fbml.uploadNativeStrings" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:integer"/>
+                    <representation mediaType="text/xml" element="f:fbml_uploadNativeStrings_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -734,7 +734,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.feed.publishActionOfUser" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:feed_publishActionOfUser_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -858,7 +858,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.feed.publishUserAction" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:feed_publishUserAction_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -970,7 +970,7 @@ This method does not require a session key. However if you call this method with
                     <param fixed="facebook.feed.publishStoryToUser" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:feed_publishStoryToUser_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1064,7 +1064,7 @@ For PHP users the function can be found in '''facebookapi_php5_restlib.php''' (f
                     <param fixed="facebook.feed.publishTemplatizedAction" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:feed_publishTemplatizedAction_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1410,7 +1410,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.marketplace.createListing" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:integer"/>
+                    <representation mediaType="text/xml" element="f:marketplace_createListing_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1560,7 +1560,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.marketplace.removeListing" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:marketplace_removeListing_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1676,7 +1676,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.notifications.send" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:notifications_send_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1716,7 +1716,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.notifications.sendEmail" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:notifications_sendEmail_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1792,7 +1792,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.pages.isAdmin" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:pages_isAdmin_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1828,7 +1828,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.pages.isAppAdded" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:pages_isAppAdded_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1868,7 +1868,7 @@ If both parameters are omitted, the method returns all groups of the session use
                     <param fixed="facebook.pages.isFan" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:pages_isFan_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -1927,7 +1927,7 @@ For regular applications, tags can only be added to pending photos owned by the 
                     <param fixed="facebook.photos.addTag" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:photos_addTag_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2135,7 +2135,7 @@ The values returned from this call are '''cannot''' be stored.
                     <param fixed="facebook.profile.getFBML" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:profile_getFBML_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2203,7 +2203,7 @@ The values returned from this call are '''cannot''' be stored.
                     <param fixed="facebook.profile.setInfo" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:profile_setInfo_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2231,7 +2231,7 @@ The values returned from this call are '''cannot''' be stored.
                     <param fixed="facebook.profile.getInfoOptions" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:profile_getInfoOptions_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2259,7 +2259,7 @@ The values returned from this call are '''cannot''' be stored.
                     <param fixed="facebook.profile.setInfoOptions" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:string"/>
+                    <representation mediaType="text/xml" element="f:profile_setInfoOptions_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2313,7 +2313,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
                     <param fixed="facebook.profile.setFBML" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:profile_setFBML_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2385,7 +2385,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
                     <param fixed="facebook.users.getLoggedInUser" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:integer"/>
+                    <representation mediaType="text/xml" element="f:users_getLoggedInUser_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2421,7 +2421,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
                     <param fixed="facebook.users.hasAppPermission" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:users_hasAppPermission_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2453,7 +2453,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
                     <param fixed="facebook.users.isAppAdded" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:users_isAppAdded_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>
@@ -2538,7 +2538,7 @@ The FBML is cached on Facebook's server for that particular user and that partic
                     <param fixed="facebook.users.setStatus" name="method" required="true" style="query" type="xsd:string"/>
                 </request>
                 <response>
-                    <representation mediaType="text/xml" element="f:boolean"/>
+                    <representation mediaType="text/xml" element="f:users_setStatus_response"/>
                     <fault mediaType="text/xml" element="f:error_response"/>
                 </response>
             </method>

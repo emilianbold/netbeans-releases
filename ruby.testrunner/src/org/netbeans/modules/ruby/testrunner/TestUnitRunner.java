@@ -169,7 +169,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.addStandardRecognizers();
         desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name, 
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 TestUnitHandlerFactory.getHandlers(),
@@ -199,9 +199,8 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         // the custom test runner as an option for the task. This is needed since
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
         task.addRakeParameters("-r \"" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath() + "\""); //NOI18N
-        FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestSession session = new TestSession(task.getDisplayName(),
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 TestUnitHandlerFactory.getHandlers(),

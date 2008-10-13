@@ -263,27 +263,35 @@ public class CommittingCvs12Test extends JellyTestCase {
         cvss2.stop();
         cvss3.stop();
         cvss4.stop();
-        
+
+        Thread.sleep(1000);
         //modify files
         Node node = new Node(new SourcePackagesNode(projectName), "aa|NewClass.java");
+        Thread.sleep(1000);
         node.performPopupAction("Open");
         EditorOperator eo = new EditorOperator("NewClass.java");
         eo.deleteLine(2);
         eo.insert(" a", 3, 4);
         eo.save();
+        Thread.sleep(1000);
         node = new Node(new SourcePackagesNode(projectName), "aa|NewClass2.java");
+        Thread.sleep(1000);
         node.performPopupAction("Open");
         eo = new EditorOperator("NewClass2.java");
         eo.deleteLine(2);
         eo.insert(" a", 3, 4);
         eo.save();
+        Thread.sleep(1000);
         node = new Node(new SourcePackagesNode(projectName), "bb|NewClass.java");
+        Thread.sleep(1000);
         node.performPopupAction("Open");
         eo = new EditorOperator("NewClass.java");
         eo.deleteLine(2);
         eo.insert(" a", 3, 4);
         eo.save();
+        Thread.sleep(1000);
         node = new Node(new SourcePackagesNode(projectName), "bb|NewClass2.java");
+        Thread.sleep(1000);
         node.performPopupAction("Open");
         eo = new EditorOperator("NewClass2.java");
         eo.deleteLine(2);

@@ -59,6 +59,9 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class CopyActionTest extends JellyTestCase {
+
+    public static final String[] tests = new String[]
+    {"testPerformPopup", "testPerformAPI", "testPerformMenu"};
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -78,7 +81,7 @@ public class CopyActionTest extends JellyTestCase {
         suite.addTest(new CopyActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(CopyActionTest.class);
+        return createModuleTest(CopyActionTest.class, tests);
     }
     
     /** Use for internal test execution inside IDE

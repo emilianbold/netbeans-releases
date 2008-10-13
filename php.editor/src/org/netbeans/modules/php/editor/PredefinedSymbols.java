@@ -142,6 +142,12 @@ public class PredefinedSymbols {
             });
 
 
+    public static enum VariableKind {
+        STANDARD,
+        THIS,
+        SELF,
+        PARENT
+    };
 
     private static String docURLBase;
 

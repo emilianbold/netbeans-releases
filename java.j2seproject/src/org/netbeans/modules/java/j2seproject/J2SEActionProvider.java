@@ -380,7 +380,7 @@ class J2SEActionProvider implements ActionProvider {
                 if (targetNames == null) {
                     return;
                 }
-                if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                if (J2SEProjectUtil.isCompileOnSaveEnabled(project)) {
                     if (COMMAND_BUILD.equals(command) && !allowAntBuild()) {
                         showBuildActionWarning(context);
                         return ;
@@ -871,12 +871,6 @@ class J2SEActionProvider implements ActionProvider {
         return relPath.substring(0, relPath.length() - 5).replace('/', '.');
     }
 
-    private boolean isCompileOnSaveEnabled(String propertyName) {
-        String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
-
-        return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
-    }
-
     private boolean allowAntBuild() {
         String buildClasses = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
         File buildClassesFile = this.updateHelper.getAntProjectHelper().resolveFile(buildClasses);
@@ -890,7 +884,7 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)
+            && J2SEProjectUtil.isCompileOnSaveEnabled(project)
             && !allowAntBuild()) {
             return false;
         }
@@ -915,7 +909,7 @@ class J2SEActionProvider implements ActionProvider {
             return fos != null && fos.length == 1;
         } else if (command.equals(SingleMethod.COMMAND_RUN_SINGLE_METHOD)
                 || command.equals(SingleMethod.COMMAND_DEBUG_SINGLE_METHOD)) {
-            if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+            if (J2SEProjectUtil.isCompileOnSaveEnabled(project)) {
                 SingleMethod[] methodSpecs = findTestMethods(context);
                 return (methodSpecs != null) && (methodSpecs.length == 1);
             } else {

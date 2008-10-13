@@ -184,7 +184,7 @@ public class wsdlRepository {
         File jbiASADir = new File(jbiAsaDirLoc);
         FilenameFilter filter = new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.endsWith(".wsdl");
+                return name.toLowerCase().endsWith(".wsdl");
             }
         };
         
@@ -193,9 +193,15 @@ public class wsdlRepository {
         // For all the WSDLs defined in JBI project, we want to use the  
         // original R/W copy under src/jbiasa/ instead of the R/O copy under 
         // src/jbiServiceUnits/.
+        
+        // jbiASAChildNames: jbiasa/*/*.wsdl relative to jbiasa/
+        // (See IZ #148697)
         List<String> jbiASAChildNames = new ArrayList<String>();
-        for (File file : jbiASADir.listFiles()) {
-            jbiASAChildNames.add(file.getName());
+//        for (File file : jbiASADir.listFiles()) {
+//            jbiASAChildNames.add(file.getName());
+//        }
+        for (File file : MyFileUtil.listFiles(jbiASADir, filter, true)) {
+            jbiASAChildNames.add(MyFileUtil.getRelativePath(jbiASADir, file));
         }
 
         // 02/12/08, add all CompApp wsdls first...
@@ -203,12 +209,19 @@ public class wsdlRepository {
         ret.addAll(MyFileUtil.listFiles(jbiASADir, filter, true));
 
         // Add all WSDLs coming from SU projects
-        for (File file : serviceUnitsDir.listFiles()) {
-            String fileName = file.getName();
-            // Skip <compapp>.wsdl and other wsdl files or directories 
-            // defined under src/jbiasa/.
-            if (!jbiASAChildNames.contains(fileName)) {
-                ret.addAll(MyFileUtil.listFiles(file, filter, true));
+//        for (File file : serviceUnitsDir.listFiles()) {
+//            String fileName = file.getName();
+//            // Skip <compapp>.wsdl and other wsdl files or directories 
+//            // defined under src/jbiasa/.
+//            if (!jbiASAChildNames.contains(fileName)) {
+//                ret.addAll(MyFileUtil.listFiles(file, filter, true));
+//            }
+//        }
+        for (File file : MyFileUtil.listFiles(serviceUnitsDir, filter, true)) {
+            // relativePath: jbiServiceUnits/*/*.wsdl relative to jbiServiceUnits
+            String relativePath = MyFileUtil.getRelativePath(serviceUnitsDir, file);
+            if (!jbiASAChildNames.contains(relativePath)) {
+                ret.add(file);
             }
         }
 

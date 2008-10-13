@@ -57,6 +57,7 @@ import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -129,12 +130,16 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
      *
      */
     public void testExceptionBreakpointCreation() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
             setBreakpointType(dialog, "Exception");
@@ -163,7 +168,12 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (TimeoutExpiredException e) {
+                System.err.println(e.getMessage());
+                Utilities.checkConsoleForText(Utilities.runningStatusBarText, 0);
+            }
             new ContinueAction().perform();
             Utilities.waitStatusText("Thread main stopped at URLClassLoader.java");
         } catch (Throwable th) {

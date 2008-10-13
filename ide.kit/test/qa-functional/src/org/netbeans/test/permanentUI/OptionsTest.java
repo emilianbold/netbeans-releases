@@ -144,7 +144,8 @@ public class OptionsTest extends JellyTestCase {
             Manager.getSystemDiff().diff(ideOptionsLogFile, permuiOptionsLogsFile, diffFile);
             //assert
             String message = Utilities.readFileToString(diffFile);
-            assertNull(message, message);
+
+            assertFile(message, permuiOptionsLogsFile, ideOptionsLogFile, diffFile);
         } catch (IOException ex) {
             ex.printStackTrace();
         }

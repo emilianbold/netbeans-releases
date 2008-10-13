@@ -118,7 +118,7 @@ final public class EjbJarProjectProperties {
     public static final String EJB_PROJECT_NAME = "j2ee.ejbjarproject.name"; // NOI18N
     public static final String JAVA_PLATFORM = "platform.active"; // NOI18N
     public static final String J2EE_PLATFORM = "j2ee.platform"; // NOI18N
-    public static final String DISABLE_DEPLOY_ON_SAVE = "disable.deploy.on.save"; // NOI18N
+    public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; // NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
     /** root of external web module sources (full path), ".." if the sources are within project folder */
@@ -354,7 +354,7 @@ final public class EjbJarProjectProperties {
             J2eeModule.EJB);
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty(J2EE_PLATFORM));
-        DEPLOY_ON_SAVE_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, DISABLE_DEPLOY_ON_SAVE);
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
         RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
     }
     

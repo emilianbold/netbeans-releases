@@ -1,0 +1,13 @@
+
+attrs=|CLASS|
+class=session_hash
+class-ig=session_hash
+filename=gem:gems/actionpack-2.1.0/lib/action_controller/session/drb_server.rb
+fqn=session_hash
+require=action_controller/session/drb_server
+requires=drb
+method=[](key);|STATIC|
+method=[]=(key,value);|STATIC|
+method=delete(key);|STATIC|
+
+

@@ -45,6 +45,7 @@ import org.netbeans.modules.projectimport.eclipse.gui.ImportAppRunParams;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaCParams;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportJavaVersion;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportMultipleRootsJavaProjectFromWS;
+import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithJarRef;
 import org.netbeans.modules.projectimport.eclipse.gui.ImportProjectWithTransitiveDeps;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterMenu;
 import org.netbeans.modules.projectimport.eclipse.gui.ImporterWizard;
@@ -70,6 +71,7 @@ public class ImporterTest {
                 addTest(ImportJavaCParams.class).
                 addTest(ImportSourceFilters.class).
                 addTest(ImportTestProjects.class).
+                addTest(ImportProjectWithJarRef.class).
                 enableModules(".*").clusters(".*").
                 gui(true).reuseUserDir(true));
     }

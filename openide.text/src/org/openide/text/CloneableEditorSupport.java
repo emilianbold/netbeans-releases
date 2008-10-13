@@ -908,7 +908,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                     @Override
                     public void confirmed() throws IOException {
-                        lastSaveTime = externalMod;
+                        setLastSaveTime(externalMod);
                         saveDocument();
                     }
                 };
@@ -937,8 +937,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
                         // remember time of last save
                         ERR.fine("Save ok, assign new time, while old was: " + oldSaveTime); // NOI18N
-                        setLastSaveTime(System.currentTimeMillis());
-                        
+                        // #149069 - Cannot use System.currentTimeMillis()
+                        // because there can be a delay between closing stream
+                        // and setting file modification time by OS.
+                        setLastSaveTime(cesEnv().getTime().getTime());
                         doMarkAsUnmodified = true;
                         ERR.fine("doMarkAsUnmodified"); // NOI18N
                     } catch (BadLocationException blex) {
@@ -2744,7 +2746,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             // create new description of lines
             updateLineSet(true);
 
-            setLastSaveTime(System.currentTimeMillis());
+            setLastSaveTime(cesEnv().getTime().getTime());
 
             // Insert before-save undo event to enable unmodifying undo
             getUndoRedo().undoableEditHappened(new UndoableEditEvent(this, new BeforeSaveEdit(lastSaveTime)));
@@ -2909,7 +2911,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         BeforeModificationEdit(long saveTime, UndoableEdit delegate) {
             this.saveTime = saveTime;
             this.delegate = delegate;
-            ERR.log(Level.FINE, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
+            ERR.log(Level.FINEST, null, new Exception("new BeforeModificationEdit(" + saveTime +")")); // NOI18N
         }
 
         @Override

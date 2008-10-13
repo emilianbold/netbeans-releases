@@ -915,8 +915,8 @@ public final class WebProject implements Project, AntProjectListener {
             }
 
             
-            if (!Boolean.parseBoolean(evaluator().getProperty(
-                    WebProjectProperties.DISABLE_DEPLOY_ON_SAVE))) {
+            if (Boolean.parseBoolean(evaluator().getProperty(
+                    WebProjectProperties.J2EE_DEPLOY_ON_SAVE))) {
                 Deployment.getDefault().enableCompileOnSaveSupport(webModule);
             }
             artifactSupport.enableArtifactSynchronization(true);
@@ -985,20 +985,6 @@ public final class WebProject implements Project, AntProjectListener {
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
 
-            // configure DoS
-            if (!props.containsKey(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
-                boolean deployOnSaveEnabled = false;
-                try {
-                    String instanceId = ep.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
-                    if (instanceId != null) {
-                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
-                                .isDeployOnSaveSupported();
-                    }
-                } catch (InstanceRemovedException ex) {
-                    // false
-                }
-                props.setProperty(WebProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
-            }
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
 
             try {
