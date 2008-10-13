@@ -150,7 +150,7 @@
 	<mapID target="uml_editors_windows_navigating_within_diagrams" url="editors_windows/navigating_within_diagrams.html"/>
 	<mapID target="uml_editors_windows_stacking_diagram_elements" url="editors_windows/stacking_diagram_elements.html"/>
 	<mapID target="uml_editors_windows_using_diagram_windows" url="editors_windows/using_diagram_windows.html"/>
-	<mapID target="uml_editors_windows_using_overview_window" url="editors_windows/using_overview_window.html"/>
+	<mapID target="uml_editors_windows_using_navigator_window" url="editors_windows/using_navigator_window.html"/>
 	<mapID target="uml_editors_windows_ww_editors_windows" url="editors_windows/ww_editors_windows.html"/>
 	<mapID target="uml_editors_windows_zooming_in_diagrams" url="editors_windows/zooming_in_diagrams.html"/>
 	<mapID target="uml_gloss_guard_condition" url="glossary/gloss_guard_condition.html"/>
