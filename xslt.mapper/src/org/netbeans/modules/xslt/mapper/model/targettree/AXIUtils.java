@@ -100,7 +100,7 @@ public class AXIUtils {
                 return qname.getLocalPart().equals(((AXIType) axic).getName());
             } else {
                 return qname.getLocalPart().equals(((AXIType) axic).getName()) &&
-                        qname.getNamespaceURI().equals(axic.getTargetNamespace());
+                        qname.getNamespaceURI().equals(AxiomUtils.getNamespace(axic));
             }
         }
         
