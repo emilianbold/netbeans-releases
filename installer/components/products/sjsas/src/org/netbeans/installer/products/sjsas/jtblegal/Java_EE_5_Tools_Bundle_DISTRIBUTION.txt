@@ -19,4 +19,11 @@ component(s) of the Redistributable,
 
 The following files are each a Redistributable:
 
-Java Application Platform SDK Update 5
+Sun Java System Application Server 9.1 Update 2
+Open ESB v2
+Portlet Container 2.0 Update 1
+Sun Java System Access Manager 7.1 Patch 1
+Java BluePrints
+Java Engineering Edition 5 Samples
+Your First Cup: An Introduction to the Java EE Platform
+API Documentation
