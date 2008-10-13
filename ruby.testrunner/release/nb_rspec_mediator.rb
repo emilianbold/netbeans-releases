@@ -107,7 +107,12 @@ class Reporter < Spec::Runner::Reporter
 
   private
   def example_passed(example)
-    puts "%RSPEC_TEST_FINISHED% #{example.description} time=#{elapsed_time}"
+    location = ''
+    backtrace = example.implementation_backtrace
+    if (backtrace != nil)
+      location = backtrace[0] unless backtrace.length == 0
+    end
+    puts "%RSPEC_TEST_FINISHED% file=#{location} description=#{example.description} time=#{elapsed_time}"
     super
   end
       
