@@ -54,8 +54,10 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -142,7 +144,14 @@ public class LocalVariablesTest extends JellyTestCase {
         Utilities.toggleBreakpoint(eo, temp);
         new EventTool().waitNoEvent(500);
         Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+"."); //NOI18N
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+".");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+".")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
         expandNodes();
     }
     

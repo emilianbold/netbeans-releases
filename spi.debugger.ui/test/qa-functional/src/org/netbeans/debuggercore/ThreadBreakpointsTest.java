@@ -159,19 +159,30 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             Utilities.startDebugger();
             try {
                 Utilities.waitStatusText("Thread breakpoint hit by thread ");
-            } catch (TimeoutExpiredException e) {
-                System.err.println(e.getMessage());
-                Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 1);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
             }
             new ContinueAction().perform();
             try {
                 Utilities.waitStatusText("Thread breakpoint hit by thread ");
-            } catch (TimeoutExpiredException e) {
-                System.err.println(e.getMessage());
-                Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 3);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
             }
             new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -189,9 +200,23 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            try {
+                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             assertEquals("There were more than one hit of the breakpoint", Utilities.checkConsoleForNumberOfOccurrences(Utilities.runningStatusBarText, 0), 2);
         } catch (Throwable th) {
             Utilities.captureScreen(this);

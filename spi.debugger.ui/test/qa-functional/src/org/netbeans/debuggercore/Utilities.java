@@ -438,6 +438,15 @@ public class Utilities {
         return false;
     }
 
+    public static boolean checkConsoleLastLineForText(String text) {
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        int n =op.getLineCount();
+        if ( (n>0) && (op.getLine(n-1).startsWith(text)) ) {
+            return true;
+        }
+        return false;
+    }
+
     public static int checkConsoleForNumberOfOccurrences(String text, int startLine) {
         OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
         int number = 0;

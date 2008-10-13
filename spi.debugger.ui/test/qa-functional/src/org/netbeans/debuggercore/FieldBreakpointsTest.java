@@ -221,9 +221,23 @@ public class FieldBreakpointsTest extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 109);
 
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:109")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
