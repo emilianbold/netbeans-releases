@@ -39,20 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.java.j2seproject.queries;
+package org.netbeans.modules.java.api.common.queries;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.BinaryForSourceQuery;
 import org.netbeans.api.java.queries.BinaryForSourceQuery.Result;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -63,7 +64,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tomas Zezula
  */
-public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {        
+final class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementation {        
     
     
     private final Map<URL,BinaryForSourceQuery.Result>  cache = new HashMap<URL,BinaryForSourceQuery.Result>();
@@ -71,17 +72,24 @@ public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementat
     private final SourceRoots test;
     private final PropertyEvaluator eval;
     private final AntProjectHelper helper;
+    private String[] sourceProps;
+    private String[] testProps;
     
     /** Creates a new instance of BinaryForSourceQueryImpl */
-    public BinaryForSourceQueryImpl(SourceRoots src, SourceRoots test, AntProjectHelper helper, PropertyEvaluator eval) {
+    BinaryForSourceQueryImpl(SourceRoots src, SourceRoots test, AntProjectHelper helper, 
+            PropertyEvaluator eval, String[] sourceProps, String[] testProps) {
         assert src != null;
         assert test != null;
         assert helper != null;
         assert eval != null;        
+        assert sourceProps != null && sourceProps.length > 0;
+        assert testProps != null && testProps.length > 0;
         this.src = src;
         this.test = test;
         this.eval = eval;
         this.helper = helper;
+        this.sourceProps = sourceProps;
+        this.testProps = testProps;
     }
     
     public Result findBinaryRoots(URL sourceRoot) {
@@ -90,14 +98,14 @@ public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementat
         if (result == null) {
             for (URL root : this.src.getRootURLs()) {
                 if (root.equals(sourceRoot)) {
-                    result = new R (J2SEProjectProperties.BUILD_CLASSES_DIR);
+                    result = new R (sourceProps);
                     cache.put (sourceRoot,result);
                     break;
                 }
             }
             for (URL root : this.test.getRootURLs()) {
                 if (root.equals(sourceRoot)) {
-                    result = new R (J2SEProjectProperties.BUILD_TEST_CLASSES_DIR);
+                    result = new R (testProps);
                     cache.put (sourceRoot,result);
                     break;
                 }
@@ -108,28 +116,31 @@ public class BinaryForSourceQueryImpl implements BinaryForSourceQueryImplementat
     
     class R implements BinaryForSourceQuery.Result, PropertyChangeListener {
         
-        private final String propName;
+        private final String[] propNames;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
         
-        R (final String propName) {
-            assert propName != null;
-            this.propName = propName;
+        R (final String[] propNames) {
+            assert propNames != null && propNames.length > 0;
+            this.propNames = propNames;
             eval.addPropertyChangeListener(this);
         }
         
         public URL[] getRoots() {
-            String val = eval.getProperty(propName);
-            if (val != null) {                
-                File f = helper.resolveFile(val);
-                if (f != null) {
-                    try {
-                        return new URL[] {f.toURI().toURL()};
-                    } catch (MalformedURLException e) {
-                        Exceptions.printStackTrace(e);
+            List<URL> urls = new ArrayList<URL>();
+            for (String propName : propNames) {
+                String val = eval.getProperty(propName);
+                if (val != null) {                
+                    File f = helper.resolveFile(val);
+                    if (f != null) {
+                        try {
+                            urls.add(f.toURI().toURL());
+                        } catch (MalformedURLException e) {
+                            Exceptions.printStackTrace(e);
+                        }
                     }
                 }
             }
-            return new URL[0];
+            return urls.toArray(new URL[urls.size()]);
         }
 
         public void addChangeListener(ChangeListener l) {

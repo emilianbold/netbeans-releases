@@ -86,7 +86,6 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -452,7 +451,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 LookupMergerSupport.createSFBLookupMerger(),
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createJFBLookupMerger(),
-                BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+                QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
