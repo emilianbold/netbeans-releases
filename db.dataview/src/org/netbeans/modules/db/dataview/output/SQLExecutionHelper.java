@@ -92,8 +92,14 @@ class SQLExecutionHelper {
         Statement stmt = null;
         try {
             Connection conn = DBConnectionFactory.getInstance().getConnection(dbConn);
+            String msg = "";
             if(conn == null) {
-                String msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                Throwable ex = DBConnectionFactory.getInstance().getLastException();
+                if(ex != null) {
+                    msg = ex.getMessage();
+                } else {
+                    msg = NbBundle.getMessage(SQLExecutionHelper.class,"MSG_connection_failure", dv.getDatabaseConnection());
+                }
                 dv.setErrorStatusText(new DBException(msg));
                 return;
             }

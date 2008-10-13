@@ -40,8 +40,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicLong;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 
 /**
@@ -68,14 +67,16 @@ public class TestSession {
     private final SessionType sessionType;
     private final String name;
     private final SessionResult result;
+    private final Project project;
     /*
      * The message to display when this session is starting.
      */
     private String startingMsg;
 
-    public TestSession(String name, FileLocator fileLocator, SessionType sessionType) {
+    public TestSession(String name, Project project, SessionType sessionType) {
         this.name = name;
-        this.fileLocator = fileLocator;
+        this.project = project;
+        this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.sessionType = sessionType;
         this.result = new SessionResult();
     }
@@ -93,6 +94,12 @@ public class TestSession {
     String getStartingMsg() {
         return startingMsg;
     }
+
+    Project getProject() {
+        return project;
+    }
+
+
 
     /**
      * Sets the name of the currently running suite.
@@ -125,7 +132,7 @@ public class TestSession {
      * @return
      */
     Report getReport(long timeInMillis) {
-        Report report = new Report(suiteName, fileLocator);
+        Report report = new Report(suiteName, project);
         report.elapsedTimeMillis = timeInMillis;
         for (Report.Testcase testcase : testCases) {
             report.reportTest(testcase);

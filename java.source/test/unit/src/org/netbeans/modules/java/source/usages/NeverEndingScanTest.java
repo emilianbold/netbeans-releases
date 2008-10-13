@@ -37,37 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.junit3;
+package org.netbeans.modules.java.source.usages;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author peter
+ * @author Pavel Flaska
  */
-public class Junit3TestSuite extends JellyTestCase {
-    
-    public Junit3TestSuite(String name) {
+public class NeverEndingScanTest extends NbTestCase {
+
+    public NeverEndingScanTest(String name) {
         super(name);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+    /**
+     * When no projects are being opened, scan shouldn't be in progress.
+     * (#149727)
+     *
+     * @throws java.lang.InterruptedException
+     */
+    public void testNeverendingScan() throws InterruptedException {
+        int counter = 0;
+        while (RepositoryUpdater.getDefault().isScanInProgress() && counter < 8) {
+            Thread.sleep(1000);
+            counter++;
+        }
+        assertFalse("Scan does not end", RepositoryUpdater.getDefault().isScanInProgress());
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(CreateProjectTest.class,
-                        "testCreateJUnit3Project",
-                        "testAddLibrary",
-                        "testGeneratedProjectSuiteFile",
-                        "testGeneratedMainTestFile",
-                        "testCreateTestWithoutInitializerAndFinalizer",
-                        "testGeneratedMainTestFile2",
-                        "testDeteleJUnit3Project")
-                .enableModules(".*").clusters(".*"));
-    }
 }

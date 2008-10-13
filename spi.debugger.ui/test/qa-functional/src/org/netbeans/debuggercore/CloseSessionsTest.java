@@ -106,6 +106,11 @@ public class CloseSessionsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode); // NOI18N
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new EventTool().waitNoEvent(1000);
             //place breakpoint
             Utilities.toggleBreakpoint(eo, 104);
@@ -127,6 +132,7 @@ public class CloseSessionsTest extends JellyTestCase {
             //nulling all temporary variables which could hold some references to debugger
             list = null;
             debugger = null;
+            System.gc();
             try {
                 NbTestCase.assertGC("All the debugging sessions were not correctly closed", debuggerRef);
             } catch (OutOfMemoryError u) {

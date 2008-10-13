@@ -61,10 +61,11 @@ public abstract class SourceModelFactory {
     @NonNull
     public static SourceModelFactory getInstance() {
         // TODO - cache instance?
-        SourceModelFactory factory = (SourceModelFactory) Lookup.getDefault().lookup(SourceModelFactory.class);
+        SourceModelFactory factory = Lookup.getDefault().lookup(SourceModelFactory.class);
         assert factory != null : "SourceModelFactory Lookup registration failure!";  // NOI18N
         return factory;
     }
 
     public abstract SourceModel getModel(FileObject fo);
+    public abstract Index getIndex(FileObject fileInProject, String mimeType);
 }

@@ -28,6 +28,11 @@
 
 package org.netbeans.modules.ruby;
 
+import org.netbeans.api.ruby.platform.RubyInstallation;
+import org.netbeans.modules.gsf.GsfTestCompilationInfo;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.openide.filesystems.FileObject;
+
 /**
  *
  * @author Tor Norbye
@@ -60,5 +65,71 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
 
     //public void testDeclaration6() throws Exception {
     //    checkDeclaration("testfiles/declaration.rb", "File.safe_un^link", "ftools.rb", 1);
+    //}
+
+    public void testTestDeclaration1() throws Exception {
+        // Make sure the test file is indexed
+        FileObject fo = getTestFile("testfiles/testfile.rb");
+        GsfTestCompilationInfo info = getInfo(fo);
+        assertNotNull(AstUtilities.getRoot(info));
+        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+
+        //TestFoo/test_bar => test/test_foo.rb:99
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar");
+        assertTrue(loc != DeclarationLocation.NONE);
+        assertEquals("testfile.rb", loc.getFileObject().getNameExt());
+        assertEquals(38, loc.getOffset());
+    }
+
+    public void testTestDeclaration2() throws Exception {
+        // Make sure the test file is indexed
+        FileObject fo = getTestFile("testfiles/testfile.rb");
+        GsfTestCompilationInfo info = getInfo(fo);
+        assertNotNull(AstUtilities.getRoot(info));
+        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+
+        //MosModule::TestBaz/test_qux => test/test_baz.rb:88
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux");
+        assertTrue(loc != DeclarationLocation.NONE);
+        assertEquals("testfile.rb", loc.getFileObject().getNameExt());
+        assertEquals(119, loc.getOffset());
+    }
+
+    // I don't actually get multiple locations for a single method out of the index
+    //public void testTestDeclaration3() throws Exception {
+    //    // Make sure the test file is indexed
+    //    FileObject fo = getTestFile("testfiles/testfile.rb");
+    //    GsfTestCompilationInfo info = getInfo(fo);
+    //    assertNotNull(AstUtilities.getRoot(info));
+    //    info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+    //    // Force init of the index for both files that we care about
+    //    RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE)).getMethods("a", "b", NameKind.EXACT_NAME, RubyIndex.SOURCE_SCOPE);
+    //
+    //    fo = getTestFile("testfiles/testfile2.rb");
+    //    info = getInfo(fo);
+    //    assertNotNull(AstUtilities.getRoot(info));
+    //    info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+    //    // Force init of the index for both files that we care about
+    //    RubyIndex.get(info.getIndex(RubyInstallation.RUBY_MIME_TYPE)).getMethods("a", "b", NameKind.EXACT_NAME, RubyIndex.SOURCE_SCOPE);
+    //
+    //    //MosModule::TestBaz/test_qux => test/test_baz.rb:88
+    //    DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_two");
+    //    assertTrue(loc != DeclarationLocation.NONE);
+    //    assertEquals(1, loc.getAlternativeLocations().size());
+    //    AlternativeLocation alternate = loc.getAlternativeLocations().get(0);
+    //    DeclarationLocation loc2 = alternate.getLocation();
+    //    assertTrue(loc2 != DeclarationLocation.NONE);
+    //
+    //    if (loc.getFileObject().getNameExt().equals("testfile2.rb")) {
+    //        // Swap the two
+    //        DeclarationLocation tmp = loc2;
+    //        loc2 = loc;
+    //        loc = tmp;
+    //    }
+    //
+    //    assertEquals("testfile.rb", loc.getFileObject().getNameExt());
+    //    assertEquals("testfile2.rb", loc.getFileObject().getNameExt());
+    //    assertEquals(10, loc.getOffset());
+    //    assertEquals(20, loc2.getOffset());
     //}
 }

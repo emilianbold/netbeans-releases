@@ -144,7 +144,7 @@ final public class WebProjectProperties {
 
     public static final String LAUNCH_URL_RELATIVE = "client.urlPart"; //NOI18N
     public static final String DISPLAY_BROWSER = "display.browser"; //NOI18N
-    public static final String DISABLE_DEPLOY_ON_SAVE = "disable.deploy.on.save"; //NOI18N
+    public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
     public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
@@ -394,7 +394,7 @@ final public class WebProjectProperties {
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
-        DEPLOY_ON_SAVE_MODEL = projectGroup.createInverseToggleButtonModel(evaluator, DISABLE_DEPLOY_ON_SAVE);
+        DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, J2EE_DEPLOY_ON_SAVE);
         J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
                 projectProperties.getProperty(J2EE_PLATFORM),

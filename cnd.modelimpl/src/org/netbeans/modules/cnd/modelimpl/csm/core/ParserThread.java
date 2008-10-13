@@ -96,23 +96,23 @@ public class ParserThread implements Runnable {
                     try {
                         Collection<APTPreprocHandler.State> states = entry.getPreprocStates();
                         Collection<APTPreprocHandler> preprocHandlers = new ArrayList<APTPreprocHandler>(states.size());
+                        ProjectBase project = file.getProjectImpl(true);
                         for (APTPreprocHandler.State state : states) {
-                            if( ! file.getProjectImpl(true).isDisposing() ) { // just in case check
+                            if( ! project.isDisposing() ) { // just in case check
                                 if (state == FileImpl.DUMMY_STATE) {
                                     assert states.size() == 1 : "Dummy state sould never be mixed with normal states"; //NOI18N
                                     preprocHandlers = FileImpl.DUMMY_HANDLERS;
                                     break;
                                 }
-                                APTPreprocHandler preprocHandler = file.getProjectImpl(true).createEmptyPreprocHandler(file.getBuffer().getFile());
+                                APTPreprocHandler preprocHandler = project.createPreprocHandler(file.getBuffer().getFile(), state);
                                 if( TraceFlags.TRACE_PARSER_QUEUE ) {
                                     System.err.println("before ensureParse on " + file.getAbsolutePath() +
                                             ParserQueue.tracePreprocState(state));
                                 }
-                                preprocHandler.setState(state);
                                 preprocHandlers.add(preprocHandler);
                             }
                         }
-                        if( ! file.getProjectImpl(true).isDisposing() ) {
+                        if( ! project.isDisposing() ) {
                             file.ensureParsed(preprocHandlers, fileState);
                         }
                     }

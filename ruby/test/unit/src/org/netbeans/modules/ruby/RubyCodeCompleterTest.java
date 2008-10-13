@@ -43,6 +43,7 @@ package org.netbeans.modules.ruby;
 
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
+import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.ruby.elements.IndexedMethod;
 
 /**
@@ -85,7 +86,7 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         int[] anchorOffsetHolder = new int[1];
         int lexOffset = caretOffset;
         int astOffset = caretOffset;
-        boolean ok = RubyCodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null);
+        boolean ok = RubyCodeCompleter.computeMethodCall(info, lexOffset, astOffset, methodHolder, paramIndexHolder, anchorOffsetHolder, null, NameKind.PREFIX);
 
         if (expectSuccess) {
             assertTrue(ok);

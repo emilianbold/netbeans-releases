@@ -137,6 +137,11 @@ public class ClassBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
             setBreakpointType(dialog, "Class");
             new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");

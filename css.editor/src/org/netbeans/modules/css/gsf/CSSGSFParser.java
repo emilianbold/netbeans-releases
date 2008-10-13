@@ -126,6 +126,7 @@ public class CSSGSFParser implements Parser, PositionManager {
 
             } catch (IOException ioe) {
                 job.listener.exception(ioe);
+                result = new CSSParserResult(this, file, null);
             }
 
             if (TIMERS.isLoggable(Level.FINE)) {

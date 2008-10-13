@@ -61,7 +61,7 @@ public class StableSuite {
 
     public static Test suite() {
         return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(MarkOccurrencesTest.class)
+                NbModuleSuite.createConfiguration(MarkOccurrencesTest.class)                
                 .addTest(MarkOccurrencesTest.class)
                 .addTest(JavaEditActionsTest.class)
                 .addTest(JavaNavigationActionsTest.class)

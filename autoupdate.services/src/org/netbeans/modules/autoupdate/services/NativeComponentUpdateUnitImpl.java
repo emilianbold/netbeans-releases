@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -42,6 +42,7 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.logging.Logger;
+import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateManager;
 import org.netbeans.api.autoupdate.UpdateManager.TYPE;
 
@@ -54,6 +55,29 @@ public class NativeComponentUpdateUnitImpl extends UpdateUnitImpl {
 
     public TYPE getType () {
         return UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT;
+    }
+
+    @Override
+    public void setInstalled (UpdateElement newInstalled) {
+        UpdateElement oldInstalled = getInstalled ();
+        if (oldInstalled == null) {
+            super.setInstalled (newInstalled);
+        } else if (oldInstalled.getSpecificationVersion () != null && ! oldInstalled.getSpecificationVersion ().equals (newInstalled.getSpecificationVersion ())) {
+            setAsUninstalled ();
+            super.setInstalled (newInstalled);
+        }
+    }
+
+    @Override
+    public void addUpdate (UpdateElement update) {
+        UpdateElementImpl impl = Trampoline.API.impl (update);
+        assert impl instanceof NativeComponentUpdateElementImpl : impl + " is instanceof NativeComponentUpdateElementImpl";
+        NativeComponentUpdateElementImpl nativeImpl = (NativeComponentUpdateElementImpl) impl;
+        if (nativeImpl.getNativeItem ().isInstalled ()) {
+            setInstalled (update);
+        } else {
+            super.addUpdate (update);
+        }
     }
 }
 

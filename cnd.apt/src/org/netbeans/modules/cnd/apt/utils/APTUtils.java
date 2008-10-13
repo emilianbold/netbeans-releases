@@ -230,6 +230,18 @@ public class APTUtils {
     public static boolean isID(Token token) {
         return token != null && token.getType() == APTTokenTypes.ID;
     }
+
+    public static boolean isInt(Token token) {
+        if (token != null) {
+            switch (token.getType()) {
+                case APTTokenTypes.DECIMALINT:
+                case APTTokenTypes.HEXADECIMALINT:
+                case APTTokenTypes.OCTALINT:
+                    return true;
+            }
+        }
+        return false;
+    }
     
     public static boolean isEOF(Token token) {
         assert (token != null);
