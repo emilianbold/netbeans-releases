@@ -40,7 +40,13 @@
  */
 package org.netbeans.modules.uml.drawingarea.view;
 
+import java.awt.Graphics2D;
+import java.awt.Stroke;
 import java.awt.Point;
+import java.awt.geom.AffineTransform;
+import java.awt.geom.GeneralPath;
+import java.awt.geom.Line2D;
+import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -289,6 +295,194 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         }
     }
     abstract public void initialize(IPresentationElement element);
+
+    /**
+     * Fix for 148994 - workaround for 6755974. Override of ConnectionWidget.paintWidget() 
+     * to paint in "scaled out" mode.
+     * Paints the connection widget (the path, the anchor shapes, the control points, the end points).
+     */
+    protected void paintWidget () {
+        Graphics2D gr = getGraphics ();
+        gr.setColor (getForeground ());
+        GeneralPath path = null;
+
+        Point firstControlPoint = getFirstControlPoint ();
+        Point lastControlPoint = getLastControlPoint ();
+                
+        //checking to see if we should draw line through the AnchorShape. If the 
+        //AnchorShape is hollow, the cutdistance will be true.
+        boolean isSourceCutDistance = getSourceAnchorShape().getCutDistance () != 0.0;
+        boolean isTargetCutDistance = getTargetAnchorShape().getCutDistance () != 0.0;
+        
+        double firstControlPointRotation = 
+                firstControlPoint != null  &&  (getSourceAnchorShape().isLineOriented ()  
+                ||  isSourceCutDistance) ? 
+                    getSourceAnchorShapeRotation () : 0.0;
+        double lastControlPointRotation = 
+                lastControlPoint != null  
+                &&  (getTargetAnchorShape().isLineOriented () || isTargetCutDistance) ? 
+                    getTargetAnchorShapeRotation () : 0.0;
+        
+        List<Point> points;
+        if ((isSourceCutDistance  ||  isTargetCutDistance)  &&  getControlPoints().size () >= 2) {
+            points = new ArrayList<Point> (getControlPoints());
+            points.set (0, new Point (
+                firstControlPoint.x + (int) (getSourceAnchorShape().getCutDistance () * Math.cos (firstControlPointRotation)),
+                firstControlPoint.y + (int) (getSourceAnchorShape().getCutDistance () * Math.sin (firstControlPointRotation))
+            ));
+            points.set (getControlPoints().size () - 1, new Point (
+                lastControlPoint.x + (int) (getTargetAnchorShape().getCutDistance () * Math.cos (lastControlPointRotation)),
+                lastControlPoint.y + (int) (getTargetAnchorShape().getCutDistance () * Math.sin (lastControlPointRotation))
+            ));
+        } else {
+            points = getControlPoints();
+        }
+
+        if (getControlPointCutDistance() > 0) {
+            for (int a = 0; a < points.size () - 1; a ++) {
+                Point p1 = points.get (a);
+                Point p2 = points.get (a + 1);
+                double len = p1.distance (p2);
+
+                if (a > 0) {
+                    Point p0 = points.get (a - 1);
+                    double ll = p0.distance (p1);
+                    if (len < ll)
+                        ll = len;
+                    ll /= 2;
+                    double cll = getControlPointCutDistance();
+                    if (cll > ll)
+                        cll = ll;
+                    double direction = Math.atan2 (p2.y - p1.y, p2.x - p1.x);
+                    if (!Double.isNaN (direction)) {
+                        path = addToPath (path,
+                                p1.x + (int) (cll * Math.cos (direction)),
+                                p1.y + (int) (cll * Math.sin (direction))
+                        );
+                    }
+                } else {
+                    path = addToPath (path, p1.x, p1.y);
+                }
+
+                if (a < points.size () - 2) {
+                    Point p3 = points.get (a + 2);
+                    double ll = p2.distance (p3);
+                    if (len < ll)
+                        ll = len;
+                    ll /= 2;
+                    double cll = getControlPointCutDistance();
+                    if (cll > ll)
+                        cll = ll;
+                    double direction = Math.atan2 (p2.y - p1.y, p2.x - p1.x);
+                    if (!Double.isNaN (direction)) {
+                        path = addToPath (path,
+                                p2.x - (int) (cll * Math.cos (direction)),
+                                p2.y - (int) (cll * Math.sin (direction))
+                        );
+                    }
+                } else {
+                    path = addToPath (path, p2.x, p2.y);
+                }
+            }
+        } else {
+            for (Point point : points)
+                path = addToPath (path, point.x, point.y);
+        }
+        if (path != null) {
+
+            double zoomFactor = getScene().getZoomFactor ();
+            AffineTransform oldTransform = null;
+            if (zoomFactor <= 0.25 ) 
+            {
+                oldTransform = gr.getTransform ();
+                gr.scale (1/zoomFactor, 1/zoomFactor );
+                path.transform(new AffineTransform(zoomFactor, 0, 0, zoomFactor, 0, 0)); 
+            }
+
+            Stroke previousStroke = gr.getStroke ();
+            gr.setPaint (getForeground ());
+            gr.setStroke (getStroke ());
+            gr.draw (path);
+            gr.setStroke (previousStroke);
+
+            if (oldTransform != null) {
+                gr.setTransform (oldTransform);
+            }
+
+        }
+
+
+        AffineTransform previousTransform;
+
+        if (firstControlPoint != null) {
+            previousTransform = gr.getTransform ();
+            gr.translate (firstControlPoint.x, firstControlPoint.y);
+            if (getSourceAnchorShape().isLineOriented ())
+                gr.rotate (firstControlPointRotation);
+            getSourceAnchorShape().paint (gr, true);
+            gr.setTransform (previousTransform);
+        }
+
+        if (lastControlPoint != null) {
+            previousTransform = gr.getTransform ();
+            gr.translate (lastControlPoint.x, lastControlPoint.y);
+            if (getTargetAnchorShape().isLineOriented ())
+                gr.rotate (lastControlPointRotation);
+            getTargetAnchorShape().paint (gr, false);
+            gr.setTransform (previousTransform);
+        }
+
+        if (isPaintControlPoints()) {
+            int last = getControlPoints().size () - 1;
+            for (int index = 0; index <= last; index ++) {
+                Point point = getControlPoints().get (index);
+                previousTransform = gr.getTransform ();
+                gr.translate (point.x, point.y);
+                if (index == 0  ||  index == last)
+                    getEndPointShape().paint (gr);
+                else
+                    getControlPointShape().paint (gr);
+                gr.setTransform (previousTransform);
+            }
+        }
+    }
+
+    private GeneralPath addToPath (GeneralPath path, int x, int y) {
+        if (path == null) {
+            path = new GeneralPath ();
+            path.moveTo (x, y);
+        } else {
+            path.lineTo (x, y);
+        }
+        return path;
+    }
+
+
+    /**
+     * Returns the rotation of the source anchor shape.
+     * @return the source anchor shape rotation
+     */
+    private double getSourceAnchorShapeRotation () {
+        if (getControlPoints().size () <= 1)
+            return 0.0;
+        Point point1 = getControlPoints().get (0);
+        Point point2 = getControlPoints().get (1);
+        return Math.atan2 (point2.y - point1.y, point2.x - point1.x);
+    }
+
+    /**
+     * Returns the rotation of the target anchor shape.
+     * @return the target anchor shape rotation
+     */
+    public double getTargetAnchorShapeRotation () {
+        int size = getControlPoints().size ();
+        if (size <= 1)
+            return 0.0;
+        Point point1 = getControlPoints().get (size - 1);
+        Point point2 = getControlPoints().get (size - 2);
+        return Math.atan2 (point2.y - point1.y, point2.x - point1.x);
+    }
+
 
     ///////////// 
     // Accessible
