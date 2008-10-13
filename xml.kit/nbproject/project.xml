@@ -59,12 +59,6 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.xml.axi</code-name-base>
-                    <run-dependency>
-                        <specification-version>1.3.2</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.xml.nbprefuse</code-name-base>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
