@@ -574,7 +574,7 @@ public class NbServiceTagSupport {
                                       parentName,
                                       parentURN,
                                       getNbProductDefinedId(javaVersion, false),
-                                      "NetBeans.org",
+                                      "Sun Microsystems",
                                       System.getProperty("os.arch"),
                                       getZoneName(),
                                       svcTagSource);
