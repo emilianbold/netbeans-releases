@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.j2ee.common.project.classpath;
 
+import org.netbeans.modules.java.api.common.classpath.BootClassPathImplementation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -282,7 +283,7 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
+            cp = ClassPathFactory.createClassPath(BootClassPathImplementation.createBootClassPathImplementation(evaluator));
             cache[7] = cp;
         }
         return cp;

@@ -48,7 +48,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.common.project.classpath.BootClassPathImplementation;
+import org.netbeans.modules.java.api.common.classpath.BootClassPathImplementation;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -148,7 +148,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private synchronized ClassPath getBootClassPath() {
         if (bootClassPath == null) {
-            bootClassPath = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
+            bootClassPath = ClassPathFactory.createClassPath(BootClassPathImplementation.createBootClassPathImplementation(evaluator));
         }
         return bootClassPath;
     }

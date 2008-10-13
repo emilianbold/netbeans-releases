@@ -187,6 +187,7 @@
                 <friend>org.netbeans.modules.xtest</friend>
                 <package>org.netbeans.modules.java.api.common</package>
                 <package>org.netbeans.modules.java.api.common.ant</package>
+                <package>org.netbeans.modules.java.api.common.classpath</package>
                 <package>org.netbeans.modules.java.api.common.queries</package>
                 <package>org.netbeans.modules.java.api.common.ui</package>
                 <package>org.netbeans.modules.java.api.common.util</package>
