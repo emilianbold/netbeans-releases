@@ -4,3 +4,5 @@
 
 GLAPI void GLAPIENTRY glFunction( int red, int green, int blue );
 
+// example from IZ#149506
+__attribute__((format(printf,0,1))) static void foo_149506() {}

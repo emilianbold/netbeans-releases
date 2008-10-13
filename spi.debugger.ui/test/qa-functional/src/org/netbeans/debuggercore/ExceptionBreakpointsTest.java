@@ -57,6 +57,7 @@ import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -167,7 +168,12 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (TimeoutExpiredException e) {
+                System.err.println(e.getMessage());
+                Utilities.checkConsoleForText(Utilities.runningStatusBarText, 0);
+            }
             new ContinueAction().perform();
             Utilities.waitStatusText("Thread main stopped at URLClassLoader.java");
         } catch (Throwable th) {

@@ -295,6 +295,21 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("versions sorted", Arrays.asList("0.2.4", "0.1.41", "0.1.10", "0.1.2"), versions);
     }
 
+    public void testGetVersionsFromMultipleRepositories() throws IOException {
+        RubyPlatform platform = getSafeJRuby();
+        GemManager gemManager = platform.getGemManager();
+        String gem = "abcd";
+        installFakeGem(gem, "0.1.2", platform);
+        gemManager.addGemPath(gemManager.getGemHomeF());
+        platform.setGemHome(platform.getHome());
+        installFakeGem(gem, "0.1.3", platform);
+        List<String> versions = new ArrayList<String>();
+        for (GemInfo gemInfo : gemManager.getVersions(gem)) {
+            versions.add(gemInfo.getVersion());
+        }
+        assertEquals("versions sorted", Arrays.asList("0.1.2", "0.1.3"), versions);
+    }
+
     public void testEqualsAndHashCode() throws IOException {
         GemManager jGemManager = getSafeJRuby().getGemManager();
         RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());

@@ -71,8 +71,12 @@ public class ViewsTestSuite extends JellyTestCase {
                         "testViewsSessions",
                         "testViewsSources",
                         "testViewsClose").enableModules(".*").clusters(".*"));
-        } else {          
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+        } else {
+            String os = System.getProperty("os.name");
+            if (os.contains("Windows") && !os.contains("Vista") ) {
+                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+            } else {
+                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(ViewsTest.class, 
                         "testViewsDefaultOpen",
                         "testViewsCallStack",
@@ -81,6 +85,7 @@ public class ViewsTestSuite extends JellyTestCase {
                         "testViewsSessions",
                         "testViewsSources",
                         "testViewsClose").enableModules(".*").clusters(".*"));
+            }
         }
-    } 
+    }
 }
