@@ -92,17 +92,10 @@ import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
-import org.codehaus.groovy.ast.expr.ConstantExpression;
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.Expression;
-import org.codehaus.groovy.ast.expr.ListExpression;
-import org.codehaus.groovy.ast.expr.MapExpression;
-import org.codehaus.groovy.ast.expr.MethodCallExpression;
-import org.codehaus.groovy.ast.expr.PropertyExpression;
 import org.codehaus.groovy.ast.expr.RangeExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.codehaus.groovy.ast.stmt.ExpressionStatement;
 import org.codehaus.groovy.reflection.CachedClass;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -134,15 +127,20 @@ import org.netbeans.modules.gsf.api.Index.SearchScope;
 
 public class CodeCompleter implements CodeCompletionHandler {
 
-    private static volatile boolean testMode = false;   // see setTesting(), thanks Petr. ;-)
-    private int anchor;
-    private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
-    private String jdkJavaDocBase = null;
-    private String groovyJavaDocBase = null;
-    private String gapiDocBase = null;
-    Set<GroovyKeyword> keywords;
-    List<String> dfltImports = new ArrayList<String>();
+    private static final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
+    
+    private final List<String> dfltImports = new ArrayList<String>();
 
+    private int anchor;
+    
+    private String jdkJavaDocBase = null;
+
+    private String groovyJavaDocBase = null;
+
+    private String gapiDocBase = null;
+
+    private Set<GroovyKeyword> keywords;
+    
     public CodeCompleter() {
         JavaPlatformManager platformMan = JavaPlatformManager.getDefault();
         JavaPlatform platform = platformMan.getDefaultPlatform();
@@ -154,7 +152,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
 
         GroovySettings groovySettings = new GroovySettings();
-        String docroot = groovySettings.getGroovyDoc() + "/";
+        String docroot = groovySettings.getGroovyDoc() + "/"; // NOI18N
 
         groovyJavaDocBase = directoryNameToUrl(docroot + "groovy-jdk/"); // NOI18N
         gapiDocBase = directoryNameToUrl(docroot + "gapi/"); // NOI18N
@@ -162,31 +160,20 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "GDK Doc path: {0}", groovyJavaDocBase);
         LOG.log(Level.FINEST, "GAPI Doc path: {0}", gapiDocBase);
 
-        if (testMode) {
-            LOG.log(Level.FINEST, "Running in test-mode");
-        } else {
-            LOG.log(Level.FINEST, "Running in the IDE");
-        }
-
-        dfltImports.add("java.io");
-        dfltImports.add("java.lang");
-        dfltImports.add("java.net");
-        dfltImports.add("java.util");
-        dfltImports.add("groovy.util");
-        dfltImports.add("groovy.lang");
-
+        dfltImports.add("java.io"); // NOI18N
+        dfltImports.add("java.lang"); // NOI18N
+        dfltImports.add("java.net"); // NOI18N
+        dfltImports.add("java.util"); // NOI18N
+        dfltImports.add("groovy.util"); // NOI18N
+        dfltImports.add("groovy.lang"); // NOI18N
     }
 
-    /*Configures testing environment only*/
-    static void setTesting(boolean testing) {
-        testMode = testing;
-    }
-
-    String directoryNameToUrl(String dirname) {
+    private static String directoryNameToUrl(String dirname) {
         if (dirname == null) {
             return "";
         }
 
+        // FIXME use FileObject (?)
         File dirFile = new File(dirname);
 
         if (dirFile != null && dirFile.exists() && dirFile.isDirectory()) {
@@ -203,7 +190,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         }
     }
 
-    private void printASTNodeInformation(String description, ASTNode node) {
+    private static void printASTNodeInformation(String description, ASTNode node) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------------");
         LOG.log(Level.FINEST, "{0}", description);
@@ -226,7 +213,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "--------------------------------------------------------");
     }
 
-    private void printMethod(MetaMethod mm) {
+    private static void printMethod(MetaMethod mm) {
 
         LOG.log(Level.FINEST, "--------------------------------------------------");
         LOG.log(Level.FINEST, "getName()           : " + mm.getName());
@@ -1061,10 +1048,10 @@ public class CodeCompleter implements CodeCompletionHandler {
             if(request.prefix.startsWith("$")) {
                 fieldName = request.prefix.substring(1);
                 anchorShift = 1;
-                }
+            }
             
             if (field.getName().startsWith(fieldName)) {
-                proposals.add(new FieldItem(field.getName(), anchor + anchorShift, request, ElementKind.FIELD, fieldTypeAsString));
+                proposals.add(new FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request, fieldTypeAsString));
             }
 
         }
@@ -1519,6 +1506,106 @@ public class CodeCompleter implements CodeCompletionHandler {
         String prefix = "";
     }
 
+    private DotCompletionContext getDotCompletionContext(final CompletionRequest request) {
+        int position = request.lexOffset;
+
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        
+        int difference = ts.move(position);
+
+        // get the active token:
+        Token<? extends GroovyTokenId> active = null;
+        if (ts.isValid() && ts.moveNext() && ts.offset() >= 0) {
+            active = (Token<? extends GroovyTokenId>) ts.token();
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            if (ts.isValid() && active != null) {
+                LOG.log(Level.FINE, "Current token text {0}", active.text());
+            }
+        }
+
+        // this should move us to dot or whitespace or NLS or prefix
+        if (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+
+
+            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.WHITESPACE
+                    && t.id() != GroovyTokenId.NLS) {
+                // is it prefix
+                if (t.id() != GroovyTokenId.IDENTIFIER) {
+                    return null;
+                } else {
+                    ts.movePrevious();
+                }
+            }
+        }
+
+        // now we should be on dot or in whitespace or NLS after the dot
+        boolean remainingTokens = true;
+        if (ts.token().id() != GroovyTokenId.DOT) {
+            
+            // travel back on the token string till the token is neither a
+            // WHITESPACE nor NLS
+            while (ts.isValid() && (remainingTokens = ts.movePrevious()) && ts.offset() >= 0) {
+                Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+                if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
+                    break;
+                }
+            }
+        }
+
+        if (ts.token().id() != GroovyTokenId.DOT || !remainingTokens) {
+            // no astpath
+            return null;
+        }
+
+        // travel back on the token string till the token is neither a
+        // WHITESPACE nor NLS
+        Token<? extends GroovyTokenId> t = null;
+        while (ts.isValid() && ts.movePrevious() && ts.offset() >= 0) {
+            t = (Token<? extends GroovyTokenId>) ts.token();
+            if (t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
+                break;
+            }
+        }
+
+        int lexOffset = ts.offset();
+
+        int astOffset = AstUtilities.getAstOffset(request.info, lexOffset);
+
+        AstPath realPath = getPath(request.info, request.doc, astOffset);
+
+        return new DotCompletionContext(lexOffset, astOffset, realPath);
+    }
+    
+    private static class DotCompletionContext {
+
+        private final int lexOffset;
+
+        private final int astOffset;
+
+        private final AstPath astPath;
+
+        public DotCompletionContext(int lexOffset, int astOffset, AstPath astPath) {
+            this.lexOffset = lexOffset;
+            this.astOffset = astOffset;
+            this.astPath = astPath;
+        }
+
+        public int getLexOffset() {
+            return lexOffset;
+        }
+
+        public int getAstOffset() {
+            return astOffset;
+        }
+
+        public AstPath getAstPath() {
+            return astPath;
+        }
+    }
+
     /**
      *
      * @param request
@@ -1929,29 +2016,6 @@ public class CodeCompleter implements CodeCompletionHandler {
 
     }
     
-    
-    class TypeHolder {
-        String name;
-        ElementKind kind;
-
-        public TypeHolder(String name, ElementKind kind) {
-            this.name = name;
-            this.kind = kind;
-        }
-
-        public ElementKind getKind() {
-            return kind;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        
-    }
-    
-    
-    
     List<TypeHolder> getElementListForPackageAsTypeHolder(final JavaSource javaSource, final String pkg, final String currentPackage) {
         LOG.log(Level.FINEST, "getElementListForPackageAsString(), Package :  {0}", pkg);
         
@@ -2054,39 +2118,25 @@ public class CodeCompleter implements CodeCompletionHandler {
             return request.declaringClass;
         }
 
-        /*
-         * Actually we don't care about the caret location path, but about
-         * the path to before-dot location. In future there may be need to
-         * make this more accurate.
-         */
-        int position = request.lexOffset - request.prefix.length() - 1;
-        int astOffset = AstUtilities.getAstOffset(request.info, position);
+        // FIXME move this up
+        DotCompletionContext dotCompletionContext = getDotCompletionContext(request);
 
-        AstPath realPath = getPath(request.info, request.doc, astOffset);
-
-        if (realPath == null) {
-            LOG.log(Level.FINEST, "path == null"); // NOI18N
+        if (dotCompletionContext == null || dotCompletionContext.getAstPath() == null
+                || dotCompletionContext.getAstPath().leaf() == null) {
             return null;
         }
 
-        // FIXME
-        request.beforeDotPath = realPath;
+        request.beforeDotPath = dotCompletionContext.getAstPath();
 
-        ASTNode closest = realPath.leaf();
+        ASTNode closest = request.beforeDotPath.leaf();
 
-        LOG.log(Level.FINEST, "getDeclaringClass() ----------------------------------------");
-        LOG.log(Level.FINEST, "Path : {0}", realPath);
-
-
-        if (closest == null) {
-            LOG.log(Level.FINEST, "closest == null"); // NOI18N
-            return null;
-        }
-
+        ClassNode declClass = null;
+        
         // experimental type inference
         if (closest instanceof VariableExpression) {
-            ModuleNode moduleNode = (ModuleNode) realPath.root();
-            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(), realPath, request.doc, astOffset);
+            ModuleNode moduleNode = (ModuleNode) dotCompletionContext.getAstPath().root();
+            TypeVisitor typeVisitor = new TypeVisitor(moduleNode.getContext(),
+                    dotCompletionContext.getAstPath(), request.doc, dotCompletionContext.getAstOffset());
             typeVisitor.collect();
             ClassNode guessedType = typeVisitor.getGuessedType();
             if (guessedType != null) {
@@ -2094,74 +2144,27 @@ public class CodeCompleter implements CodeCompletionHandler {
             }
         }
 
-        ClassNode declClass = null;
+        if (declClass != null) {
+            // type inferred
+            request.declaringClass = declClass;
+        } else if (dotCompletionContext.getAstPath().leaf() instanceof Expression) {
+            Expression expression = (Expression) dotCompletionContext.getAstPath().leaf();
 
-        // Loop the path till we find something usefull.
-
-        for (Iterator<ASTNode> it = realPath.iterator(); it.hasNext();) {
-            ASTNode current = it.next();
-
-            printASTNodeInformation("Declaring-class, current is:", current);
-
-            declClass = getBeforeDotDeclaringClass(current);
-            if (declClass != null) {
-                break;
-            }
-        }
-
-        request.declaringClass = declClass;
-        return declClass;
-    }
-
-    private ClassNode getBeforeDotDeclaringClass(ASTNode current) {
-        printASTNodeInformation("Declaring-class, current is:", current);
-
-        Expression expression = null;
-        if (current instanceof VariableExpression) {
-            LOG.log(Level.FINEST, "* VariableExpression"); // NOI18N
-            expression = (VariableExpression) current;
-        } else if (current instanceof ExpressionStatement) {
-            LOG.log(Level.FINEST, "* ExpressionStatement"); // NOI18N
-            expression = ((ExpressionStatement) current).getExpression();
-        } else if (current instanceof PropertyExpression) {
-            LOG.log(Level.FINEST, "* PropertyExpression"); // NOI18N
-            // FIXME we should differ between accessed property and
-            // unfinished completion
-            expression = ((PropertyExpression) current).getObjectExpression();
-        } else if (current instanceof ConstructorCallExpression) {
-            LOG.log(Level.FINEST, "* ConstructorCallExpression"); // NOI18N
-            expression = (ConstructorCallExpression) current;
-        } else if (current instanceof MethodCallExpression) {
-            LOG.log(Level.FINEST, "* MethodCallExpression"); // NOI18N
-            // TODO unfortunately object expression is always of type java.lang.Object
-            // FIXME we should differ between called method and
-            // unfinished completion
-            expression = ((MethodCallExpression) current).getObjectExpression();
-        } else if (current instanceof ConstantExpression) {
-            LOG.log(Level.FINEST, "* ConstantExpression"); // NOI18N
-            expression = (ConstantExpression) current;
-        } else if (current instanceof MapExpression) {
-            LOG.log(Level.FINEST, "* MapExpression"); // NOI18N
-            expression = (MapExpression) current;
-        } else if (current instanceof ListExpression) {
-            LOG.log(Level.FINEST, "* ListExpression"); // NOI18N
-            expression = (ListExpression) current;
-        } else if (current instanceof RangeExpression) {
-            LOG.log(Level.FINEST, "* RangeExpression"); // NOI18N
-            expression = (RangeExpression) current;
-        }
-
-        if (expression != null) {
             // see http://jira.codehaus.org/browse/GROOVY-3050
             if (expression instanceof RangeExpression
                     && "java.lang.Object".equals(expression.getType().getName())) {
-                expression.setType(
-                        new ClassNode("groovy.lang.Range", ClassNode.ACC_PUBLIC | ClassNode.ACC_INTERFACE, null));
-            }
-            return expression.getType();
-        } else {
-            return null;
+                try {
+                    expression.setType(
+                            new ClassNode(Class.forName("groovy.lang.Range")));
+                } catch (ClassNotFoundException ex) {
+                    expression.setType(
+                            new ClassNode("groovy.lang.Range", ClassNode.ACC_PUBLIC | ClassNode.ACC_INTERFACE, null));
+                }
+            }            
+            request.declaringClass = expression.getType();
         }
+        
+        return request.declaringClass;
     }
 
     /**
@@ -2170,9 +2173,9 @@ public class CodeCompleter implements CodeCompletionHandler {
      * @param exe
      * @return
      */
-    static List<ParamDesc> getParameterList(ExecutableElement exe) {
+    private static List<ParameterDescriptor> getParameterList(ExecutableElement exe) {
 
-        List<ParamDesc> paramList = new ArrayList<ParamDesc>();
+        List<ParameterDescriptor> paramList = new ArrayList<ParameterDescriptor>();
 
         if (exe != null) {
             // generate a list of parameters
@@ -2197,7 +2200,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                     // todo: this needs to be replaced with values from the JavaDoc
                     String varName = "param" + String.valueOf(i);
 
-                    paramList.add(new ParamDesc(fullName, name, varName));
+                    paramList.add(new ParameterDescriptor(fullName, name, varName));
 
                     i++;
                 }
@@ -2326,7 +2329,7 @@ public class CodeCompleter implements CodeCompletionHandler {
                                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
 
                                                     String paramListString = getParameterListForMethod((ExecutableElement)encl);
-                                                    List<CodeCompleter.ParamDesc> paramList = getParameterList((ExecutableElement)encl);
+                                                    List<CodeCompleter.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
 
                                                     proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, request, false));
                                                 }
@@ -2430,19 +2433,15 @@ public class CodeCompleter implements CodeCompletionHandler {
 //                        sb.append(" ");
 //                    }
 
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", "", anchor, request));
+                    // FIXME what is this intended to do ? + modifiers
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null, Collections.<javax.lang.model.element.Modifier>emptySet(), anchor, request));
                 }
             }
         }
-
-        
-        
+ 
         return true;
     }
 
-    /**
-     *
-     */
     private class MethodCompletionHelper implements Task<CompilationController> {
 
         private final CountDownLatch cnt;
@@ -2478,10 +2477,14 @@ public class CodeCompleter implements CodeCompletionHandler {
                         String simpleName = element.getSimpleName().toString();
                         String parameterString = getParameterListForMethod((ExecutableElement) element);
                         // FIXME this should be more accurate
-                        String returnType = ((ExecutableElement) element).getReturnType().toString();
+                        TypeMirror returnType = ((ExecutableElement) element).getReturnType();
 
                         if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-                            proposals.add(new JavaMethodItem(simpleName, parameterString, returnType, anchor, request));
+                            if (LOG.isLoggable(Level.FINEST)) {
+                                LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
+                            }
+                            proposals.add(new JavaMethodItem(simpleName, parameterString,
+                                    returnType, element.getModifiers(), anchor, request));
                         }
                     }
                 }
@@ -2501,7 +2504,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         LOG.log(Level.FINEST, "populateProposalWithMethodsFromClass(): {0}", className); // NOI18N
 
         // getting methods on types the javac way
-
+        
         if (withJavaTypes) {
             JavaSource javaSource = getJavaSourceFromRequest(request);
             
@@ -2547,17 +2550,21 @@ public class CodeCompleter implements CodeCompletionHandler {
 
                 LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMetaMethods()) {
+                    LOG.log(Level.FINEST, method.toString());
                     populateProposal(clz, method, request, result, true);
                 }
-                LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
-                for (Object method : metaClz.getMethods()) {
-                    populateProposal(clz, method, request, result, false);
-                }
 
+                // FIXME could we remove this in favor of java types ?
+                LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
+                if (!withJavaTypes) {
+                    for (Object method : metaClz.getMethods()) {
+                        LOG.log(Level.FINEST, method.toString());
+                        populateProposal(clz, method, request, result, false);
+                    }
+                }
                 for (MethodItem methodItem : result) {
                     proposals.add(methodItem);
                 }
-
             }
         }
 
@@ -2593,10 +2600,12 @@ public class CodeCompleter implements CodeCompletionHandler {
         for (MethodItem methodItem : methodItemList) {
             MetaMethod listMethod = methodItem.getMethod();
 
+            // FIXME return types subtype
             if (listMethod.getName().equals(methodToStore.getName())
-                    && listMethod.getSignature().equals(methodToStore.getSignature())) {
+                    /*&& listMethod.isSame(methodToStore)*/ && isSame(listMethod, methodToStore)) {
 
-                if (listMethod.getDeclaringClass().getSuperClassDistance() < toStoreDistance) {
+                if (listMethod.getReturnType().isAssignableFrom(methodToStore.getReturnType())
+                        && listMethod.getDeclaringClass().getSuperClassDistance() <= toStoreDistance) {
                     LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
                     methodItemList.remove(methodItem);
                     break; // it's unlikely that we have more then one Method with a smaller distance
@@ -2609,7 +2618,35 @@ public class CodeCompleter implements CodeCompletionHandler {
 
         methodItemList.add(itemToStore);
     }
+    
+    private static boolean isSame(MetaMethod listMethod, MetaMethod methodToStore) {
+        if (!listMethod.getName().equals(methodToStore.getName())) {
+            return false;
+        }
+        int mask = java.lang.reflect.Modifier.PRIVATE | java.lang.reflect.Modifier.PROTECTED
+                | java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC;
+        if ((listMethod.getModifiers() & mask) != (methodToStore.getModifiers() & mask)) {
+            return false;
+        }
+        if (!isSame(listMethod.getParameterTypes(), methodToStore.getParameterTypes())) {
+            return false;
+        }
 
+        return true;
+    }
+
+    private static boolean isSame(CachedClass[] parameters1, CachedClass[] parameters2) {
+        if (parameters1.length == parameters2.length) {
+            for (int i = 0, size = parameters1.length; i < size; i++) {
+                if (parameters1[i] != parameters2[i]) {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+    
     /**
      * This should complete CamelCaseTypes. Simply type SB for StringBuilder.
      * a) New Constructors for exising classes
@@ -2738,7 +2775,9 @@ public class CodeCompleter implements CodeCompletionHandler {
             // a couple of completions.
 
             assert request.ctx != null;
-            request.behindDot = checkBehindDot(request);
+
+            // FIXME this must be optimized
+            request.behindDot = getDotCompletionContext(request) != null;//checkBehindDot(request);
 
             if (request.behindDot) {
                 request.declaringClass = getBeforeDotDeclaringClass(request);
@@ -2950,7 +2989,7 @@ public class CodeCompleter implements CodeCompletionHandler {
             String className;
 
             if (ame.isGDK()) {
-                className = mm.getDeclaringClass().getCachedClass().getName();
+                className = mm.getDeclaringClass()/*.getCachedClass()*/.getName();
             } else {
 
                 String declName = null;
@@ -2958,11 +2997,15 @@ public class CodeCompleter implements CodeCompletionHandler {
                 if (mm != null) {
                     CachedClass cc = mm.getDeclaringClass();
                     if (cc != null) {
+                        declName = cc.getName();
+                    }                    
+                    /*CachedClass cc = mm.getDeclaringClass();
+                    if (cc != null) {
                         Class clz = cc.getCachedClass();
                         if (clz != null) {
                             declName = clz.getName();
                         }
-                    }
+                    }*/
                 }
 
                 if (declName != null) {
@@ -3110,7 +3153,7 @@ public class CodeCompleter implements CodeCompletionHandler {
         return ParameterInfo.NONE;
 
     }
-
+    
     // FIXME make it ordinary class and/or split it
     static class CompletionRequest {
 
@@ -3130,16 +3173,51 @@ public class CodeCompleter implements CodeCompletionHandler {
     }
 
     // This is from JavaCompletionItem
-    static class ParamDesc {
+    static class ParameterDescriptor {
 
-        String fullTypeName;
-        String typeName;
-        String name;
+        private final String fullTypeName;
+        
+        private final String typeName;
+        
+        private final String name;
 
-        public ParamDesc(String fullTypeName, String typeName, String name) {
+        public ParameterDescriptor(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;
             this.typeName = typeName;
             this.name = name;
         }
+
+        public String getName() {
+            return name;
+        }
+        
+        public String getTypeName() {
+            return typeName;
+        }
+        
+        public String getFullTypeName() {
+            return fullTypeName;
+        }
     }
+    
+    private static class TypeHolder {
+
+        private final String name;
+
+        private final ElementKind kind;
+
+        public TypeHolder(String name, ElementKind kind) {
+            this.name = name;
+            this.kind = kind;
+        }
+
+        public ElementKind getKind() {
+            return kind;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+    
 }

@@ -1,20 +1,21 @@
 Code completion result for source line:
-new URL("http://google.com").|getPr
+}.|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     addShutdownHook(Closure)                   void
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asType(Class)                              Object
+METHOD     asWritable()                               Closure
+METHOD     call()                                     Object
+METHOD     call(Object)                               Object
+METHOD     call(Object[])                             Object
+METHOD     clone()                                    Object
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     curry(Object[])                            Closure
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
-METHOD     eachByte(Closure)                          void
-METHOD     eachLine(Closure)                          Object
-METHOD     eachLine(String,  int, Closure             Object
-METHOD     eachLine(String, Closure)                  Object
-METHOD     eachLine(int, Closure)                     Object
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                             boolean
 METHOD     every()                                    boolean
@@ -28,24 +29,18 @@ METHOD     findIndexValues(int, Closure)              List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     getAt(String)                              Object
-METHOD     getAuthority()                             String
 METHOD     getClass()                                 Class
-METHOD     getContent()                               Object
-METHOD     getContent(Class[])                        Object
-METHOD     getDefaultPort()                           int
-METHOD     getFile()                                  String
-METHOD     getHost()                                  String
+METHOD     getDelegate()                              Object
+METHOD     getDirective()                             int
+METHOD     getMaximumNumberOfParameters()             int
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
-METHOD     getPath()                                  String
-METHOD     getPort()                                  int
+METHOD     getOwner()                                 Object
+METHOD     getParameterTypes()                        Class
 METHOD     getProperties()                            Map
-METHOD     getProtocol()                              String
-METHOD     getQuery()                                 String
-METHOD     getRef()                                   String
-METHOD     getText()                                  String
-METHOD     getText(String)                            String
-METHOD     getUserInfo()                              String
+METHOD     getProperty(String)                        Object
+METHOD     getResolveStrategy()                       int
+METHOD     getThisObject()                            Object
 METHOD     grep(Object)                               Collection
 METHOD     hashCode()                                 int
 METHOD     identity(Closure)                          Object
@@ -55,14 +50,8 @@ METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
 METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
-METHOD     newInputStream()                           BufferedInputStream
-METHOD     newReader()                                BufferedReader
-METHOD     newReader(String)                          BufferedReader
 METHOD     notify()                                   void
 METHOD     notifyAll()                                void
-METHOD     openConnection()                           URLConnection
-METHOD     openConnection(Proxy)                      URLConnection
-METHOD     openStream()                               InputStream
 METHOD     print(Object)                              void
 METHOD     print(PrintWriter)                         void
 METHOD     printf(String, Object)                     void
@@ -71,15 +60,17 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
-METHOD     sameFile(URL)                              boolean
-METHOD     setURLStreamHandlerFactory(URL             void
+METHOD     run()                                      void
+METHOD     setDelegate(Object)                        void
+METHOD     setDirective(int)                          void
+METHOD     setMetaClass(MetaClass)                    void
+METHOD     setProperty(String, Object)                void
+METHOD     setResolveStrategy(int)                    void
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
-METHOD     toExternalForm()                           String
 METHOD     toString()                                 String
-METHOD     toURI()                                    URI
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object)                                Object
@@ -87,23 +78,18 @@ METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void
 METHOD     with(Closure)                              Object
-METHOD     withInputStream(Closure)                   Object
-METHOD     withReader(Closure)                        Object
-METHOD     withReader(String, Closure)                Object
-FIELD      authority                                  String
-FIELD      factory                                    URLStreamHandlerFactory
-FIELD      file                                       String
-FIELD      handler                                    URLStreamHandler
-FIELD      handlers                                   Hashtable
-FIELD      hashCode                                   int
-FIELD      host                                       String
-FIELD      hostAddress                                InetAddress
-FIELD      path                                       String
-FIELD      port                                       int
-FIELD      protocol                                   String
-FIELD      protocolPathProp                           String
-FIELD      query                                      String
-FIELD      ref                                        String
-FIELD      serialVersionUID                           long
-FIELD      streamHandlerLock                          Object
-FIELD      userInfo                                   String
+FIELD      DELEGATE_FIRST                             int
+FIELD      DELEGATE_ONLY                              int
+FIELD      DONE                                       int
+FIELD      EMPTY_OBJECT_ARRAY                         Object[]
+FIELD      OWNER_FIRST                                int
+FIELD      OWNER_ONLY                                 int
+FIELD      SKIP                                       int
+FIELD      TO_SELF                                    int
+FIELD      delegate                                   Object
+FIELD      directive                                  int
+FIELD      maximumNumberOfParameters                  int
+FIELD      owner                                      Object
+FIELD      parameterTypes                             Class[]
+FIELD      resolveStrategy                            int
+FIELD      thisObject                                 Object

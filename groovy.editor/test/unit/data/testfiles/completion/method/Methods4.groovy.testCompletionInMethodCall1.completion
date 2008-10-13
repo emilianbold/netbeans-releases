@@ -11,5 +11,6 @@ METHOD     eachFile(Closure)                          void
 METHOD     eachFileMatch(Object, Closure)             void
 METHOD     eachFileRecurse(Closure)                   void
 METHOD     eachLine(Closure)                          Object
+METHOD     eachLine(int, Closure)                     Object
 METHOD     eachObject(Closure)                        void
 METHOD     eachWithIndex(Closure)                     Object
