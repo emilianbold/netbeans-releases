@@ -684,6 +684,12 @@ public class SourcePath {
             if (originalSourceRoots.contains (root)) 
                 sourceRoots.add (root);
         }
+        Iterator additionalSourceRoots = properties.getProperties("additional_source_roots").
+                getCollection("src_roots", Collections.EMPTY_LIST).iterator();
+        while (additionalSourceRoots.hasNext()) {
+            String root = (String) additionalSourceRoots.next ();
+            sourceRoots.add (root);
+        }
         Iterator disabledSourceRoots = properties.getProperties ("source_roots").
             getCollection ("disabled", Collections.EMPTY_SET).iterator ();
         while (disabledSourceRoots.hasNext ()) {

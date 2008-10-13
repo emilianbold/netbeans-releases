@@ -352,17 +352,6 @@ NodeActionsProvider {
                 "src_roots",
                 Collections.EMPTY_LIST)
         );
-        if (additionalSourceRoots.size() > 0) {
-            // Set the new source roots:
-            String[] sourceRoots = sourcePath.getSourceRoots();
-            int l = sourceRoots.length;
-            Object[] addSrc = additionalSourceRoots.toArray();
-            int n = addSrc.length;
-            String[] newSourceRoots = new String[l + n];
-            System.arraycopy(sourceRoots, 0, newSourceRoots, 0, l);
-            System.arraycopy(addSrc, 0, newSourceRoots, l, n);
-            sourcePath.setSourceRoots(newSourceRoots);
-        }
     }
 
     private synchronized void saveFilters () {
