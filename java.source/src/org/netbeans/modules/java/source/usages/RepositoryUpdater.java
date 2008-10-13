@@ -1308,6 +1308,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                             
                             handle.start();
+                            handle.progress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies"));
                             try {
                                 final MultiRootsWork mw = (MultiRootsWork) work;
                                 final List<URL> roots = mw.getRoots();
@@ -1343,6 +1344,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             assert handle == null;
                             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                             handle.start();
+                            handle.progress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies"));
                             boolean completed = false;
                             try {
                                 oldRoots = new HashSet<URL> (scannedRoots);
