@@ -458,7 +458,17 @@ public final class GemManager {
                     // Add each of */lib/
                     File[] specFiles = specDir.listFiles();
                     if (specFiles != null) {
-                        localGems.putAll(GemFilesParser.getGemInfos(specFiles));
+                        Map<String, List<GemInfo>> namesToInfos = GemFilesParser.getGemInfos(specFiles);
+                        for (Map.Entry<String, List<GemInfo>> nameToInfos : namesToInfos.entrySet()) {
+                            String name = nameToInfos.getKey();
+                            List<GemInfo> newInfos = nameToInfos.getValue();
+                            List<GemInfo> currentInfos = localGems.get(name);
+                            if (currentInfos != null) {
+                                currentInfos.addAll(newInfos);
+                            }  else {
+                                localGems.put(name, newInfos);
+                            }
+                        }
                     }
                 } else {
                     LOGGER.finer("Cannot find Gems repository. \"" + gemDir + "\" does not exist or is not a directory."); // NOI18N
