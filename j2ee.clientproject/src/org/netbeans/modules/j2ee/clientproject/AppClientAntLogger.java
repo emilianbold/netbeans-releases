@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.j2ee.clientproject;
 
-import org.netbeans.modules.j2ee.common.project.AbstractProjectAntLogger;
+import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
-public final class AppClientAntLogger extends AbstractProjectAntLogger {
+public final class AppClientAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */
     public AppClientAntLogger() {

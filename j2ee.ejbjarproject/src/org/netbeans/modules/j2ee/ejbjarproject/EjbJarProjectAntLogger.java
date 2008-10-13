@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject;
 
-import org.netbeans.modules.j2ee.common.project.AbstractProjectAntLogger;
+import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
-public final class EjbJarProjectAntLogger extends AbstractProjectAntLogger {
+public final class EjbJarProjectAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */
     public EjbJarProjectAntLogger() {

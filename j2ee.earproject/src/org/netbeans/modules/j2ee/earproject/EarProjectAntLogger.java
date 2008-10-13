@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.j2ee.earproject;
 
-import org.netbeans.modules.j2ee.common.project.AbstractProjectAntLogger;
+import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
-public final class EarProjectAntLogger extends AbstractProjectAntLogger {
+public final class EarProjectAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */
     public EarProjectAntLogger() {

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project;
+package org.netbeans.modules.java.api.common;
 
 import java.io.File;
 import java.io.IOException;
@@ -55,12 +55,12 @@ import org.openide.filesystems.FileUtil;
 /**
  * Logger which should suppress or prettify typical Ant output from build-impl.xml.
  */
-public class AbstractProjectAntLogger extends AntLogger {
+public class ProjectAntLogger extends AntLogger {
 
     private Class projectClass;
     private String[] messages;
 
-    public AbstractProjectAntLogger(Class projectClass, String[] messages) {
+    public ProjectAntLogger(Class projectClass, String[] messages) {
         this.projectClass = projectClass;
         this.messages = messages;
     }

@@ -41,9 +41,9 @@
 
 package org.netbeans.modules.web.project;
 
-import org.netbeans.modules.j2ee.common.project.AbstractProjectAntLogger;
+import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
-public final class WebProjectAntLogger extends AbstractProjectAntLogger {
+public final class WebProjectAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */
     public WebProjectAntLogger() {
