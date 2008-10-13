@@ -1,0 +1,10 @@
+
+attrs=|CLASS|
+class=world
+class-ig=world
+filename=gem:gems/rspec-1.1.4/lib/spec/story/runner/scenario_runner.rb
+fqn=world
+require=spec/story/runner/scenario_runner
+method=Scenario(name,&block);|STATIC|BLOCK|
+
+

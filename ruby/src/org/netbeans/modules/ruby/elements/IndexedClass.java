@@ -141,6 +141,7 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         return docLength;
     }
     
+    // For testsuite
     public static String decodeFlags(int flags) {
         StringBuilder sb = new StringBuilder();
         sb.append(IndexedElement.decodeFlags(flags));
@@ -153,5 +154,16 @@ public final class IndexedClass extends IndexedElement implements ClassElement {
         }
         
         return sb.toString();
+    }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        int flags = IndexedElement.stringToFlags(string);
+
+        if (string.indexOf("|MODULE") != -1) {
+            flags += MODULE;
+        }
+
+        return flags;
     }
 }

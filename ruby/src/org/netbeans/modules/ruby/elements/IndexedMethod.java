@@ -242,6 +242,23 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         
         return sb.toString();
     }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        int flags = IndexedElement.stringToFlags(string);
+
+        int blockIndex = string.indexOf("|BLOCK_OPTIONAL");
+        if (blockIndex != -1) {
+            flags += BLOCK_OPTIONAL;
+            if (string.indexOf("|BLOCK") != blockIndex || string.lastIndexOf("|BLOCK") != blockIndex) {
+                flags += BLOCK;
+            }
+        } else if (string.indexOf("|BLOCK") != -1) {
+            flags += BLOCK;
+        }
+
+        return flags;
+    }
     
     public String getEncodedAttributes() {
         return attributes;
