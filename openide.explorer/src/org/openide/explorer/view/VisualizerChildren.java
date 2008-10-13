@@ -207,10 +207,8 @@ final class VisualizerChildren extends Object {
         }        
         snapshot = ev.getSnapshot();
         ListIterator<VisualizerNode> it = visNodes.listIterator();
-        boolean empty = !it.hasNext();
 
         int[] indxs = ev.getArray();
-
         int current = 0;
         int inIndxs = 0;
 

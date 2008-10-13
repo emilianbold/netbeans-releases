@@ -273,7 +273,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             ch = Children.MUTEX.readAccess(
                     new Mutex.Action<VisualizerChildren>() {
                         public VisualizerChildren run() {
-                            int nodesCount = node.getChildren().getNodesCount();
                             List<Node> snapshot = node.getChildren().snapshot();
                             VisualizerChildren vc = new VisualizerChildren(VisualizerNode.this, snapshot);
                             notifyVisualizerChildrenChange(true, vc);

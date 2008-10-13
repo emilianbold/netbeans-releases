@@ -1350,6 +1350,10 @@ public class ChildrenKeysTest extends NbTestCase {
         
         assertEquals ("No nodes", 0, n.getChildren ().getNodesCount ());
         k.setKeys (new Object[] { "Ahoj", NULL });
+
+        // get snapshot to prevent GC
+        List<Node> snapshot = k.snapshot();
+
         l.assertAddEvent("Two nodes added", 2);
         l.assertNoEvents("No more events after add");
         assertEquals ("Two nodes", 2, n.getChildren ().getNodesCount ());
@@ -1663,7 +1667,33 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a2", snapshot.get(1).getName());
         assertEquals("a3", snapshot.get(2).getName());
     }
-    
+
+    public void testSnapshotSize() {
+        class K extends Keys {
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("a", "b", "c");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+        K ch = new K(lazy());
+        Node root = createNode(ch);
+        List<Node> snapshot = root.getChildren().snapshot();
+        assertEquals(snapshot.size(), root.getChildren().getNodesCount());
+    }
+
     public void testSnapshotWithEmptyEntries() {
         class K extends Keys {
 
