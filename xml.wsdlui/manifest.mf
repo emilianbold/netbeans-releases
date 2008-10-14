@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.xml.wsdlui
 OpenIDE-Module-Layer: org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/wsdl/ui/netbeans/module/resources/Bundle.properties
 OpenIDE-Module-Requires: org.netbeans.api.javahelp.Help
-OpenIDE-Module-Specification-Version: 1.3
+OpenIDE-Module-Specification-Version: 1.3.1
 AutoUpdate-Show-In-Client: false

@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.kxml2/1
 OpenIDE-Module-Localizing-Bundle: org/kxml2/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.2
+OpenIDE-Module-Specification-Version: 1.2.1
 

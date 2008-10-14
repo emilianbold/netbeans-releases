@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.libs.xerces/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/xerces/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.12
+OpenIDE-Module-Specification-Version: 1.12.1
 OpenIDE-Module-Implementation-Version: 2.8.0
 

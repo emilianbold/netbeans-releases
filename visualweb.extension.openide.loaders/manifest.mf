@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.visualweb.extension.openide.loaders
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/extension/openide/loaders/resources/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.3
+OpenIDE-Module-Specification-Version: 2.3.2
 AutoUpdate-Show-In-Client: false

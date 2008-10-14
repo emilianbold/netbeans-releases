@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
-OpenIDE-Module-Specification-Version: 3.4
+OpenIDE-Module-Specification-Version: 3.4.1
 OpenIDE-Module: org.netbeans.modules.websvc.wsitmodelext
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/websvc/wsitmodelext/Bundle.properties

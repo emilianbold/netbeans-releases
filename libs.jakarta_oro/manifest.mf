@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.libs.jakarta_oro/1
 OpenIDE-Module-Implementation-Version: 2.0.8
 OpenIDE-Module-Localizing-Bundle: org/netbeans/libs/jakarta_oro/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.1.1
 OpenIDE-Module-Layer: org/netbeans/libs/jakarta_oro/mf-layer.xml

@@ -4,5 +4,5 @@ OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/xml/tax/resources/Bundle.
 OpenIDE-Module-Install: org/netbeans/modules/xml/tax/TAXModuleInstall.class
 OpenIDE-Module-Layer: org/netbeans/modules/xml/tax/resources/mf-layer.xml
 OpenIDE-Module-Requires: org.openide.modules.InstalledFileLocator
-OpenIDE-Module-Specification-Version: 1.16
+OpenIDE-Module-Specification-Version: 1.16.1
 

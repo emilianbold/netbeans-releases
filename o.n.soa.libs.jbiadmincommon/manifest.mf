@@ -1,4 +1,4 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.soa.libs.jbiadmincommon
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.1.1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/soa/libs/jbiadmincommon/Bundle.properties

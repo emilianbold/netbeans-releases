@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.visualweb.jsfsupport.designtime
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/jsfsupport/designtime/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/jsfsupport/designtime/Bundle.properties
 OpenIDE-Module-Install: org/netbeans/modules/visualweb/jsfsupport/designtime/Install.class
-OpenIDE-Module-Specification-Version: 2.3
+OpenIDE-Module-Specification-Version: 2.3.2
 AutoUpdate-Show-In-Client: false
