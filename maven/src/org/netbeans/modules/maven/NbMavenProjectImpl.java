@@ -387,9 +387,10 @@ public final class NbMavenProjectImpl implements Project {
             toReturn = pr.getId();
         }
         if (toReturn == null) {
-            toReturn = getProjectDirectory().getName() + " <No Project ID>"; //NOI18N
+            toReturn = getProjectDirectory().getName() + " _No Project ID_"; //NOI18N
 
         }
+        toReturn = toReturn.replace(":", "_");
         return toReturn;
     }
     /**
