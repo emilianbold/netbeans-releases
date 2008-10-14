@@ -57,10 +57,16 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
+import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -99,7 +105,6 @@ public class ActionMappings extends javax.swing.JPanel {
     private TextValueCompleter profilecompleter;
     private ProfilesListener profilesListener;
     private PropertiesListener propertiesListener;
-    private TestListener testListener;
     private RecursiveListener recursiveListener;
     private CheckBoxUpdater commandLineUpdater;
     public static final String PROP_SKIP_TEST="maven.test.skip"; //NOI18N
@@ -114,7 +119,6 @@ public class ActionMappings extends javax.swing.JPanel {
         profilesListener = new ProfilesListener();
         propertiesListener = new PropertiesListener();
         recursiveListener = new RecursiveListener();
-        testListener = new TestListener();
         FocusListener focus = new FocusListener() {
             public void focusGained(FocusEvent e) {
                 if (e.getComponent() == txtGoals) {
@@ -315,10 +319,10 @@ public class ActionMappings extends javax.swing.JPanel {
         jScrollPane3 = new javax.swing.JScrollPane();
         taProperties = new javax.swing.JTextArea();
         cbRecursively = new javax.swing.JCheckBox();
-        cbSkipTests = new javax.swing.JCheckBox();
         lblMappings = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         lblHint = new javax.swing.JLabel();
+        btnAddProps = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(cbCommandLine, org.openide.util.NbBundle.getMessage(ActionMappings.class, "LBL_UseExternal")); // NOI18N
         cbCommandLine.setToolTipText(org.openide.util.NbBundle.getMessage(ActionMappings.class, "TLT_UseExternal")); // NOI18N
@@ -369,9 +373,6 @@ public class ActionMappings extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(cbRecursively, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbRecursively.text")); // NOI18N
         cbRecursively.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(cbSkipTests, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.cbSkipTests.text")); // NOI18N
-        cbSkipTests.setMargin(new java.awt.Insets(0, 0, 0, 0));
-
         lblMappings.setLabelFor(lstMappings);
         org.openide.awt.Mnemonics.setLocalizedText(lblMappings, org.openide.util.NbBundle.getMessage(ActionMappings.class, "LBL_Actions")); // NOI18N
         lblMappings.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
@@ -381,6 +382,13 @@ public class ActionMappings extends javax.swing.JPanel {
 
         lblHint.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
         jScrollPane2.setViewportView(lblHint);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnAddProps, org.openide.util.NbBundle.getMessage(ActionMappings.class, "ActionMappings.btnAddProps.text")); // NOI18N
+        btnAddProps.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnAddPropsActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -396,16 +404,14 @@ public class ActionMappings extends javax.swing.JPanel {
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(lblGoals)
                             .add(lblProfiles)
-                            .add(lblProperties))
-                        .add(16, 16, 16)
+                            .add(lblProperties)
+                            .add(btnAddProps))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(txtProfiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
-                            .add(txtGoals, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)
-                            .add(layout.createSequentialGroup()
-                                .add(cbRecursively)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(cbSkipTests))
-                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 462, Short.MAX_VALUE)))
+                            .add(txtProfiles, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                            .add(txtGoals, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)
+                            .add(cbRecursively)
+                            .add(jScrollPane3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 466, Short.MAX_VALUE)))
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
@@ -453,12 +459,13 @@ public class ActionMappings extends javax.swing.JPanel {
                     .add(txtProfiles, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(lblProperties)
+                    .add(layout.createSequentialGroup()
+                        .add(lblProperties)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(btnAddProps))
                     .add(jScrollPane3))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(cbRecursively)
-                    .add(cbSkipTests))
+                .add(cbRecursively)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jScrollPane2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
@@ -530,13 +537,11 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             txtGoals.setEditable(true);
             taProperties.setEditable(true);
             txtProfiles.setEditable(true);
-            cbSkipTests.setEnabled(true);
             
             txtGoals.getDocument().removeDocumentListener(goalsListener);
             txtProfiles.getDocument().removeDocumentListener(profilesListener);
             taProperties.getDocument().removeDocumentListener(propertiesListener);
             cbRecursively.removeActionListener(recursiveListener);
-            cbSkipTests.removeActionListener(testListener);
             
             txtGoals.setText(createSpaceSeparatedList(mapp != null ? mapp.getGoals() : Collections.EMPTY_LIST));
             txtProfiles.setText(createSpaceSeparatedList(mapp != null ? mapp.getActivatedProfiles() : Collections.EMPTY_LIST));
@@ -545,18 +550,23 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 cbRecursively.setEnabled(true);
                 cbRecursively.setSelected(mapp != null ? mapp.isRecursive() : true);
             }
-            cbSkipTests.setSelected(checkPropertiesList(mapp != null ? mapp.getProperties() : new Properties()));
-            if (mapp == null) {
-                cbSkipTests.setEnabled(false);
-            }
             txtGoals.getDocument().addDocumentListener(goalsListener);
             txtProfiles.getDocument().addDocumentListener(profilesListener);
             taProperties.getDocument().addDocumentListener(propertiesListener);
             cbRecursively.addActionListener(recursiveListener);
-            cbSkipTests.addActionListener(testListener);
+            btnAddProps.setEnabled(true);
             updateColor(wr);
         }
     }//GEN-LAST:event_lstMappingsValueChanged
+
+    private void btnAddPropsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPropsActionPerformed
+        // TODO add your handling code here:
+        JPopupMenu menu = new JPopupMenu();
+        menu.add(new SkipTestsAction(taProperties));
+        menu.add(new DebugMavenAction(taProperties));
+        menu.show(btnAddProps, btnAddProps.getSize().width, 0);
+
+    }//GEN-LAST:event_btnAddPropsActionPerformed
     
     private void loadMappings() {
         DefaultListModel model = new DefaultListModel();
@@ -647,7 +657,7 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         txtProfiles.setEditable(false);
         updateColor(null);
         cbRecursively.setEnabled(false);
-        cbSkipTests.setEnabled(false);
+        btnAddProps.setEnabled(false);
     }
     
     private void updateColor(MappingWrapper wr) {
@@ -664,42 +674,25 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             Iterator it = properties.keySet().iterator();
             while (it.hasNext()) {
                 String elem = (String) it.next();
-                if (!PROP_SKIP_TEST.equals(elem)) {
-                    String val = properties.getProperty(elem);
-                    if (val.indexOf(" ") > -1) { //NOI18N
-                        val = "\"" + val + "\""; //NOI18N
-                    }
-                    str = str + elem + "=" + val + "\n"; //NOI18N
+                String val = properties.getProperty(elem);
+                if (val.indexOf(" ") > -1) { //NOI18N
+                    val = "\"" + val + "\""; //NOI18N
                 }
+                str = str + elem + "=" + val + "\n"; //NOI18N
             }
         }
         return str;
     }
     
-    private boolean checkPropertiesList(Properties properties) {
-        boolean skip = false;
-        if (properties != null) {
-            Iterator it = properties.keySet().iterator();
-            while (it.hasNext()) {
-                String elem = (String) it.next();
-                if (PROP_SKIP_TEST.equals(elem)) {
-                    String val = properties.getProperty(elem);
-                    skip = Boolean.valueOf(val).booleanValue();
-                    break;
-                }
-            }
-        }
-        return skip;
-    }
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnAdd;
+    private javax.swing.JButton btnAddProps;
     private javax.swing.JButton btnRemove;
     private javax.swing.JButton btnSetup;
     private javax.swing.JCheckBox cbCommandLine;
     private javax.swing.JCheckBox cbRecursively;
-    private javax.swing.JCheckBox cbSkipTests;
     private javax.swing.JComboBox comConfiguration;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
@@ -732,9 +725,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                 props.setProperty(key, prp[1]);
             }
             tok = split.nextPair();
-        }
-        if (cbSkipTests.isSelected()) {
-            props.setProperty(PROP_SKIP_TEST, "true"); //NOI18N
         }
         mapp.setProperties(props);
         if (handle != null) {
@@ -847,7 +837,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
                         mapping = new NetbeansActionMapping();
                         mapping.setActionName(map.getActionName());
                         map.setMapping(mapping);
-                        cbSkipTests.setEnabled(true);
                     }
                     getActionMappings().addAction(mapping);
                     if (handle != null) {
@@ -918,27 +907,6 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         
     }
     
-    private class TestListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
-            MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
-            if (map != null) {
-                if (!map.isUserDefined()) {
-                    NetbeansActionMapping mapping = map.getMapping();
-                    if (mapping == null) {
-                        mapping = new NetbeansActionMapping();
-                        mapping.setActionName(map.getActionName());
-                        map.setMapping(mapping);
-                    }
-                    getActionMappings().addAction(mapping);
-                    map.setUserDefined(true);
-                    updateColor(map);
-                }
-                writeProperties(map.getMapping());
-            }
-        }
-        
-    }
-    
     private class RecursiveListener implements ActionListener {
         public void actionPerformed(ActionEvent e) {
             MappingWrapper map = (MappingWrapper)lstMappings.getSelectedValue();
@@ -980,5 +948,59 @@ private void btnAddActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
             comConfiguration.setModel(comModel);
         }
     }
+
+    static class SkipTestsAction extends AbstractAction {
+        private JTextArea area;
+        SkipTestsAction(JTextArea area) {
+            putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.skipTests"));
+            this.area = area;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String replace = PROP_SKIP_TEST + "=true"; //NOI18N
+            String pattern = ".*" + PROP_SKIP_TEST + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
+            replacePattern(pattern, area, replace, true);
+        }
+    }
     
+    static class DebugMavenAction extends AbstractAction {
+        private JTextArea area;
+        
+        DebugMavenAction(JTextArea area) {
+            putValue(Action.NAME, NbBundle.getMessage(ActionMappings.class, "ActionMappings.debugMaven"));
+            this.area = area;
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String replace = Constants.ACTION_PROPERTY_JPDALISTEN + "=maven"; //NOI18N
+            String pattern = ".*" + Constants.ACTION_PROPERTY_JPDALISTEN + "([\\s]*=[\\s]*[\\S]+).*"; //NOI18N
+            replacePattern(pattern, area, replace, true);
+        }
+    }
+
+    private static void replacePattern(String pattern, JTextArea area, String replace, boolean select) {
+        String props = area.getText();
+        Matcher match = Pattern.compile(pattern, Pattern.DOTALL).matcher(props);
+        if (match.matches()) {
+            int begin = props.indexOf(PROP_SKIP_TEST);
+            props = props.replace(PROP_SKIP_TEST + match.group(1), replace); //NOI18N
+            area.setText(props);
+            if (select) {
+                area.setSelectionStart(begin);
+                area.setSelectionEnd(begin + replace.length());
+            }
+        } else {
+            String sep = "\n";//NOI18N
+            if (props.endsWith("\n") || props.trim().length() == 0) {//NOI18N
+                sep = "";//NOI18N
+            }
+            props = props + sep + replace; //NOI18N
+            area.setText(props);
+            if (select) {
+                area.setSelectionStart(props.length() - replace.length());
+                area.setSelectionEnd(props.length());
+            }
+        }
+
+    }
 }
