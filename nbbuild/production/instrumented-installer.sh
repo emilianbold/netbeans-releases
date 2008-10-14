@@ -45,7 +45,7 @@ for c in platform ide java apisupport harness enterprise profiler visualweb ruby
     expat="$expat|$c[0-9]*"
 done
 find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/$BASENAME-nb6.5-etc.zip -@ || exit
-cd ${NB_EXTRACTED_DIR}
+cd ${EXTRACTED_DIR}
 zip -q $DIST/$BASENAME-all-in-one.zip netbeans
 cd ${WORKSPACE}
 
