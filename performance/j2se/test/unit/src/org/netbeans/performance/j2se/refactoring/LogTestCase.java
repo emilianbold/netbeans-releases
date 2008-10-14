@@ -52,6 +52,7 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.openide.util.Exceptions;
 
 
 
@@ -145,6 +146,7 @@ public class LogTestCase extends NbTestCase {
             e.printStackTrace();
             assertTrue(e.toString(), false);
         }
+
     }
     
     public void prepareProject() {//default - override for another projects
@@ -204,6 +206,14 @@ public class LogTestCase extends NbTestCase {
     /** sets the PrintWriters
      */
     protected void tearDown() {
+
+
+        try {
+            projectDirFo.delete();
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
         ref.close();
         log.close();
         if (CREATE_GOLDENFILES) {
