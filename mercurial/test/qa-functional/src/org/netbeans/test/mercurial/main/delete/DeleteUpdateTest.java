@@ -16,14 +16,12 @@ import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.ide.ProjectSupport;
 import org.netbeans.test.mercurial.operators.VersioningOperator;
 import org.netbeans.test.mercurial.utils.MessageHandler;
 import org.netbeans.test.mercurial.utils.TestKit;
@@ -67,8 +65,6 @@ public class DeleteUpdateTest extends JellyTestCase {
         try {
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
-
-            new EventTool().waitNoEvent(10000);
 
             MessageHandler mh = new MessageHandler("Refreshing");
             log.addHandler(mh);
@@ -118,17 +114,16 @@ public class DeleteUpdateTest extends JellyTestCase {
             TestKit.removeHandlers(log);
             log.addHandler(mh);
 
-            new ActionNoBlock("Versioning|Mercurial|Update", null).perform();
-            System.out.println("DEBUG: testDeleteUpdate - 3");
-            System.out.println("Update Repository - "+PROJECT_NAME);
-            System.out.println("DEBUG: testDeleteUpdate - 4");
+            node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp");
+            node.select();
+            node.performMenuActionNoBlock("Versioning|Mercurial|Update...");
+            NbDialogOperator dlgUpdate = new NbDialogOperator("Update Repository");
+            JButtonOperator btnUpdate = new JButtonOperator(dlgUpdate, "Update");
+            btnUpdate.push();
 
-            NbDialogOperator ndo = new NbDialogOperator("Update Repository - "+PROJECT_NAME);
-            JButtonOperator jbo = new JButtonOperator(ndo, "Update");
-            jbo.push();
             TestKit.waitText(mh);
 
-            Thread.sleep(1000);
+            new EventTool().waitNoEvent(3000);
             
             e=null;
             try {
