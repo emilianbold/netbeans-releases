@@ -80,7 +80,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectPro
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;

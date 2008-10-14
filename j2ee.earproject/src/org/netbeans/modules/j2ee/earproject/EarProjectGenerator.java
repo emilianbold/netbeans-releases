@@ -60,7 +60,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -222,7 +222,7 @@ public final class EarProjectGenerator {
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
-        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
+        SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
      }
     
     private AntProjectHelper doImportProject(final File srcPrjDir,

@@ -78,7 +78,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;

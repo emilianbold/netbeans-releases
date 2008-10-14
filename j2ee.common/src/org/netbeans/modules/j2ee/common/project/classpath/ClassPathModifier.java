@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.common.project.classpath;
 
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;

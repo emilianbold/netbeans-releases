@@ -53,7 +53,7 @@ import java.util.Set;
 import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;

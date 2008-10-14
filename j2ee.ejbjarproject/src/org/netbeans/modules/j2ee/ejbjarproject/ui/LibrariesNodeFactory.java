@@ -52,7 +52,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;

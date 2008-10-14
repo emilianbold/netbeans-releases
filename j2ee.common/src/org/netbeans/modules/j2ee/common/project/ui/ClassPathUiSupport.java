@@ -57,7 +57,7 @@ import org.netbeans.api.project.libraries.LibrariesCustomizer;
 
 import org.netbeans.api.project.libraries.Library;
 
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.NbCollections;

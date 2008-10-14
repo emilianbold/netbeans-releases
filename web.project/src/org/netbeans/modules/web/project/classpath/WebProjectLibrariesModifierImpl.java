@@ -43,7 +43,7 @@ package org.netbeans.modules.web.project.classpath;
 
 import java.net.URL;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.web.project.api.*;
 import java.io.IOException;
 import java.net.URI;
@@ -52,7 +52,7 @@ import java.util.List;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifierSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;

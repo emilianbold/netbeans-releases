@@ -39,12 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.classpath;
+package org.netbeans.modules.java.api.common.classpath;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -57,11 +55,9 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -70,10 +66,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -86,12 +79,24 @@ public final class ClassPathSupport {
     private static final String LIBRARY_PREFIX = "${libs."; // NOI18N
     private static final String LIBRARY_SUFFIX = ".classpath}"; // NOI18N
 
+    // Prefixes and suffixes of classpath
+    private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
+    
+    private static final String[] WELL_KNOWN_PATHS = new String[] {
+        "${javac.classpath}", // NOI18N
+        "${javac.test.classpath}", // NOI18N
+        "${run.classpath}", // NOI18N
+        "${run.test.classpath}", // NOI18N
+        "${build.classes.dir}", // NOI18N
+        "${build.test.classes.dir}" // NOI18N
+    };    
+
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
     private UpdateHelper updateHelper;
-    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS));
-    private static String antArtifactPrefix = ProjectProperties.ANT_ARTIFACT_PREFIX;
+    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(WELL_KNOWN_PATHS));
+    private static String antArtifactPrefix = ANT_ARTIFACT_PREFIX;
         
     private Callback callback;
 
@@ -101,6 +106,7 @@ public final class ClassPathSupport {
                               AntProjectHelper antProjectHelper,
                               UpdateHelper updateHelper,
                               Callback callback) {
+        assert referenceHelper != null;
         this.evaluator = evaluator;
         this.referenceHelper = referenceHelper;
         this.antProjectHelper = antProjectHelper;
@@ -114,9 +120,9 @@ public final class ClassPathSupport {
         return itemsIterator(propertyValue, null);
     }
     
-    public Iterator<Item> itemsIterator( String propertyValue, String webModuleLibraries ) {
+    public Iterator<Item> itemsIterator( String propertyValue, String projectXMLElement ) {
         // XXX More performance frendly impl. would retrun a lazzy iterator.
-        return itemsList( propertyValue, webModuleLibraries ).iterator();
+        return itemsList( propertyValue, projectXMLElement ).iterator();
     }
     
     public List<Item> itemsList(String propertyValue) {
@@ -124,14 +130,10 @@ public final class ClassPathSupport {
     }
     
     public List<Item> itemsList( String propertyValue, String projectXMLElement ) {    
-        // Get the list of items which are included in deployment
-        //Map warMap = ( webModuleLibraries != null ) ? callback.createWarIncludesMap( antProjectHelper, webModuleLibraries) : new LinkedHashMap();
         
         String pe[] = PropertyUtils.tokenizePath( propertyValue == null ? "": propertyValue ); // NOI18N        
         List<Item> items = new ArrayList<Item>( pe.length );        
         for( int i = 0; i < pe.length; i++ ) {
-            //String property = ProjectProperties.getAntPropertyName( pe[i] );
-            
             Item item;
 
             // First try to find out whether the item is well known classpath
@@ -158,8 +160,6 @@ public final class ClassPathSupport {
                     item = Item.createBroken( Item.TYPE_ARTIFACT, pe[i]);
                 }
                 else {
-                    //item = Item.create( (AntArtifact)ret[0], (URI)ret[1], pe[i], (String) warMap.get(property));
-                    //fix of issue #55368
                     AntArtifact artifact = (AntArtifact)ret[0];
                     URI uri = (URI)ret[1];
                     File usedFile = antProjectHelper.resolveFile(evaluator.evaluate(pe[i]));
@@ -215,7 +215,7 @@ public final class ClassPathSupport {
     
     /** Converts list of classpath items into array of Strings.
      * !! This method creates references in the project !!
-     * !! This method may add <included-library> items to project.xml !!
+     * !! This method may update project.xml !!
      */
     public String[] encodeToStrings(List<Item> classpath) {
         return encodeToStrings(classpath, null);
@@ -360,8 +360,6 @@ public final class ClassPathSupport {
         private URI artifactURI;
         private int type;
         private String property;
-        private String raw;
-        private String eval;
         private boolean broken;
         private String sourceFilePath;
         private String javadocFilePath;
@@ -373,7 +371,7 @@ public final class ClassPathSupport {
         
         private Map<String, String> additionalProperties = new HashMap<String, String>();
 
-        private Item( int type, Object object, String raw, String eval, String property, boolean broken) {
+        private Item( int type, Object object, String property, boolean broken) {
             this.type = type;
             this.object = object;
             this.broken = broken;
@@ -381,21 +379,19 @@ public final class ClassPathSupport {
                     (type == TYPE_JAR && object instanceof RelativePath) ||
                     (type == TYPE_ARTIFACT && (object instanceof AntArtifact)) ||
                     (type == TYPE_LIBRARY && (object instanceof Library))) {
-                this.raw = raw;
-                this.eval = eval;
                 this.property = property;
             } else {
                 throw new IllegalArgumentException ("invalid classpath item, type=" + type + " object type:" + object.getClass().getName());
             }
         }
         
-        private Item( int type, Object object, String raw, String eval, URI artifactURI, String property) {
-            this( type, object, raw, eval, property);
+        private Item( int type, Object object, URI artifactURI, String property) {
+            this( type, object, property);
             this.artifactURI = artifactURI;
         }
         
-        private Item(int type, Object object, String raw, String eval, String property) {
-            this(type, object, raw, eval, property, false);
+        private Item(int type, Object object, String property) {
+            this(type, object, property, false);
         }
               
         public String getAdditionalProperty(String key) {
@@ -404,14 +400,6 @@ public final class ClassPathSupport {
         
         public void setAdditionalProperty(String key, String value) {
             additionalProperties.put(key, value);
-        }
-        
-        public void setRaw(String raw) {
-            this.raw = raw;
-        }
-
-        public String getRaw() {
-            return raw;
         }
         
         // Factory methods -----------------------------------------------------
@@ -423,7 +411,7 @@ public final class ClassPathSupport {
             }
                         
             String libraryName = library.getName();
-            Item itm = new Item( TYPE_LIBRARY, library, "${libs."+libraryName+".classpath}", libraryName, property); //NOI18N
+            Item itm = new Item( TYPE_LIBRARY, library, property); //NOI18N
             itm.libraryName = libraryName;
             itm.reassignLibraryManager( library.getManager() );
             return itm;
@@ -436,14 +424,14 @@ public final class ClassPathSupport {
             if ( artifact == null ) {
                 throw new IllegalArgumentException( "artifact must not be null" ); // NOI18N
             }
-            return new Item( TYPE_ARTIFACT, artifact, null, artifact.getArtifactLocations()[0].toString(), artifactURI, property);
+            return new Item( TYPE_ARTIFACT, artifact, artifactURI, property);
         }
         
         public static Item create( String filePath, File base, String property, String variableBasedProperty) {
             if ( filePath == null ) {
                 throw new IllegalArgumentException( "file path must not be null" ); // NOI18N
             }
-            Item i = new Item( TYPE_JAR, RelativePath.createRelativePath(filePath, base), null, filePath, property);
+            Item i = new Item( TYPE_JAR, RelativePath.createRelativePath(filePath, base), property);
             i.variableBasedProperty = variableBasedProperty;
             return i;
         }
@@ -452,16 +440,16 @@ public final class ClassPathSupport {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null" ); // NOI18N
             }
-            return new Item ( TYPE_CLASSPATH, null, null, null, property);
+            return new Item ( TYPE_CLASSPATH, null, property);
         }
         
         public static Item createBroken( int type, String property) {
             if ( property == null ) {
                 throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
             }
-            Item itm = new Item( type, null, null, null, property, true);
+            Item itm = new Item( type, null, property, true);
             if (type == TYPE_LIBRARY) {
-                Pattern LIBRARY_REFERENCE = Pattern.compile("\\$\\{libs\\.([a-zA-Z0-9_\\-\\.]+)\\.([^.]+)\\}"); // NOI18N
+                Pattern LIBRARY_REFERENCE = Pattern.compile("\\$\\{libs\\.([^${}]+)\\.[^${}]+\\}"); // NOI18N
                 Matcher m = LIBRARY_REFERENCE.matcher(property);
                 if (m.matches()) {
                     itm.libraryName = m.group(1);
@@ -473,7 +461,10 @@ public final class ClassPathSupport {
         }
         
         public static Item createBroken(String filePath, File base, String property) {
-            return new Item(TYPE_JAR, RelativePath.createRelativePath(filePath, base), null, null, property, true);
+            if ( property == null ) {
+                throw new IllegalArgumentException( "property must not be null in broken items" ); // NOI18N
+            }
+            return new Item(TYPE_JAR, RelativePath.createRelativePath(filePath, base), property, true);
         }
         
         // Instance methods ----------------------------------------------------
@@ -551,10 +542,6 @@ public final class ClassPathSupport {
             }
         }
         
-        public boolean canDelete() {
-            return getType() != TYPE_CLASSPATH;
-        }
-
         public String getReference() {
             return property;
         }
@@ -832,8 +819,6 @@ public final class ClassPathSupport {
             return "artifactURI=" + artifactURI
                     + ", type=" + type 
                     + ", property=" + property
-                    + ", raw=" + raw
-                    + ", eval=" + eval
                     + ", object=" + object
                     + ", broken=" + broken
                     + ", additional=" + additionalProperties;
@@ -913,74 +898,4 @@ public final class ClassPathSupport {
         
     }
 
-    /**
-     * Method makes sure that sharable project always has a correct version of 
-     * CopyLibs library. As described in issue 146736 CopyLibs library
-     * was enhanced in NetBeans version 6.5 and needs to be automatically upgraded
-     * which is ensured by this method as well.
-     * @since org.netbeans.modules.j2ee.common/1 1.29
-     */
-    public static void makeSureProjectHasCopyLibsLibrary(final AntProjectHelper helper, final ReferenceHelper refHelper) {
-        if (!helper.isSharableProject()) {
-            return;
-        }
-        ProjectManager.mutex().writeAccess(new Runnable() {
-            public void run()  {
-                Library lib = refHelper.getProjectLibraryManager().getLibrary("CopyLibs");
-                if (lib == null) {
-                    try {
-                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                } else {
-                    // #146736 - check that NB6.5 version of CopyLibs is available:
-                    List<URL> roots = lib.getContent("classpath"); // NOI18N
-                    // CopyFiles.class was not present in NB 6.1
-                    boolean version61 = org.netbeans.spi.java.classpath.support.ClassPathSupport.
-                            createClassPath(roots.toArray(new URL[roots.size()])).
-                            findResource("org/netbeans/modules/java/j2seproject/copylibstask/CopyFiles.class") == null; // NOI18N
-                    if (!version61) {
-                        return;
-                    }
-                    // update 6.1 version of CopyLibs library to the latest one:
-                    try {
-                        refHelper.getProjectLibraryManager().removeLibrary(lib);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    // perform removal of library files in separate try/catch:
-                    // if removal fails we can still add CopyLibs library
-                    try {
-                        FileObject parent = null;
-                        for (URL u : roots) {
-                            URL u2 = FileUtil.getArchiveFile(u);
-                            if (u2 != null) {
-                                u = u2;
-                            }
-                            FileObject fo = URLMapper.findFileObject(u);
-                            if (fo != null) {
-                                if (parent == null) {
-                                    parent = fo.getParent();
-                                }
-                                fo.delete();
-                            }
-                        }
-                        if (parent != null && parent.getChildren().length == 0 && parent.getNameExt().equals("CopyLibs")) { // NOI18N
-                            parent.delete();
-                        }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    try {
-                        // this should recreate latest version of library
-                        refHelper.copyLibrary(LibraryManager.getDefault().getLibrary("CopyLibs")); // NOI18N
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        });
-    }
-    
 }
