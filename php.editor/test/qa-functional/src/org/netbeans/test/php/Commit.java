@@ -318,7 +318,8 @@ public class Commit extends GeneralPHP
       boolean bInitialWait,
       String sCodeLocator,
       boolean bInclass,
-      boolean bFormat
+      boolean bFormat,
+      int iAnnotations
     )
   {
     // Check file in tree
@@ -463,6 +464,20 @@ public class Commit extends GeneralPHP
     }
     TypeCode( eoPHP, "public $a, $b;\nprotected $c, $d;\nprivate $e, $f;\n" );
 
+    // Check existing notes
+    Sleep( 5000 );
+    Object[] oo = eoPHP.getAnnotations( );
+    if( iAnnotations != oo.length )
+    {
+      fail( "Invalid number of detected errors. Found: " + oo.length + ", expected: " + iAnnotations );
+    }
+    /*
+    for( Object o : oo )
+    {
+      System.out.println( "***" + eoPHP.getAnnotationType( o ) + " : " + eoPHP.getAnnotationShortDescription( o ) );
+    }
+    */
+
     // Insert constructor
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
 
@@ -569,7 +584,8 @@ public class Commit extends GeneralPHP
         true,
         "// put your code here",
         false,
-        true
+        true,
+        4
       );
 
     endTest( );
@@ -628,7 +644,8 @@ public class Commit extends GeneralPHP
         false,
         "*/",
         false,
-        true
+        true,
+        4
       );
 
     endTest( );
@@ -654,7 +671,8 @@ public class Commit extends GeneralPHP
         false,
         "//put your code here",
         true,
-        false
+        false,
+        0
       );
 
     endTest( );
@@ -747,7 +765,8 @@ public class Commit extends GeneralPHP
         false,
         "<?",
         false,
-        false
+        false,
+        4
       );
 
     endTest( );
