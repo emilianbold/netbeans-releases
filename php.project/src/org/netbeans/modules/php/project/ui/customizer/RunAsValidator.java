@@ -95,12 +95,13 @@ public final class RunAsValidator {
 
     private static final String INVALID_SEPARATOR = "\\";
     public static String validateUploadDirectory(String uploadDirectory, boolean allowEmpty) {
-        assert uploadDirectory != null;
-        if (allowEmpty && uploadDirectory.length() == 0) {
+        if (allowEmpty && (uploadDirectory == null || uploadDirectory.trim().length() == 0)) {
             return null;
         }
 
-        if (!uploadDirectory.startsWith(TransferFile.SEPARATOR)) {
+        if (uploadDirectory == null || uploadDirectory.trim().length() == 0) {
+            return NbBundle.getMessage(RunAsValidator.class, "MSG_MissingUploadDirectory");
+        } else if (!uploadDirectory.startsWith(TransferFile.SEPARATOR)) {
             return NbBundle.getMessage(RunAsValidator.class, "MSG_InvalidUploadDirectoryStart", TransferFile.SEPARATOR);
         } else if (uploadDirectory.length() > 1
                 && uploadDirectory.endsWith(TransferFile.SEPARATOR)) {
