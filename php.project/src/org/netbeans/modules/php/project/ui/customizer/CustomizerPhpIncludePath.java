@@ -94,6 +94,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         moveUpButton = new JButton();
         moveDownButton = new JButton();
         includePathLabel = new JLabel();
+        warnLabel = new JLabel();
 
         setFocusTraversalPolicy(new FocusTraversalPolicy() {
 
@@ -155,7 +156,9 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
         Mnemonics.setLocalizedText(moveDownButton, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_MoveDown"));
         includePathLabel.setLabelFor(includePathList);
 
+
         Mnemonics.setLocalizedText(includePathLabel, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_PhpIncludePath"));
+        Mnemonics.setLocalizedText(warnLabel, NbBundle.getMessage(CustomizerPhpIncludePath.class, "LBL_RestartRequired"));
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
 
@@ -163,17 +166,21 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
+                    .add(includePathLabel)
+                    .add(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 358, Short.MAX_VALUE)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(moveDownButton)
                             .add(moveUpButton)
                             .add(removeButton)
-                            .add(addFolderButton)))
-                    .add(includePathLabel))
+                            .add(addFolderButton))))
                 .add(0, 0, 0))
-        
+            .add(layout.createSequentialGroup()
+                .addContainerGap()
+                .add(warnLabel)
+                .addContainerGap(157, Short.MAX_VALUE))
         );
 
         layout.linkSize(new Component[] {addFolderButton, moveDownButton, moveUpButton, removeButton}, GroupLayout.HORIZONTAL);
@@ -192,9 +199,9 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
                         .add(moveUpButton)
                         .addPreferredGap(LayoutStyle.RELATED)
                         .add(moveDownButton))
-                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 151, Short.MAX_VALUE))
-                .addContainerGap())
-        
+                    .add(includePathScrollPane, GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(warnLabel))
         );
 
         includePathScrollPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpIncludePath.class, "CustomizerPhpIncludePath.includePathScrollPane.AccessibleContext.accessibleName")); // NOI18N
@@ -222,6 +229,7 @@ public class CustomizerPhpIncludePath extends JPanel implements HelpCtx.Provider
     private JButton moveDownButton;
     private JButton moveUpButton;
     private JButton removeButton;
+    private JLabel warnLabel;
     // End of variables declaration//GEN-END:variables
 
     public HelpCtx getHelpCtx() {

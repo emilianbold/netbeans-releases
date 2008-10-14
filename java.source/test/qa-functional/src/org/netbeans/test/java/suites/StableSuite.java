@@ -71,10 +71,10 @@ public class StableSuite {
                 .addTest(NewFileWizardTest.class)
                 .addTest(AddElementHintTest.class)
                 .addTest(AddImportTest.class)
-                .addTest(HintsTest.class)
+                //.addTest(HintsTest.class)
                 .addTest(ImplAllAbstractTest.class)
-                .addTest(IntroduceInlineTest.class)
-                .addTest(SurroundTest.class)
+                //.addTest(IntroduceInlineTest.class)
+                //.addTest(SurroundTest.class)
                 .addTest(MembersViewTest.class)
                 .addTest(ParserTest.class)
                 );

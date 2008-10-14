@@ -451,4 +451,186 @@ public class EditHistoryTest extends TestCase {
         assertTrue(i < 40);
     }
 
+    public void testMultipleInserts4a() throws Exception {
+        // Test real life scenario I ran into where the edit history
+        // wasn't right - simplified from 4b
+        EditHistory history = new EditHistory();
+        String original = "<script>\n    function foo() {}\n</script>";
+        String modified;
+
+        Document doc = getDocument(original);
+        insert(doc, history, 29, "\n    "); // 5 chars
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n    }\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(29, history.getOriginalEnd());
+        assertEquals(34, history.getEditedEnd());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(5, history.getEditedSize());
+        assertEquals(5, history.getSizeDelta());
+        validateHistory(original, modified, history);
+
+
+        insert(doc, history, 32, "        "); // 8 chars
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n            }\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(29, history.getOriginalEnd());
+        assertEquals(42, history.getEditedEnd());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(13, history.getEditedSize());
+        assertEquals(13, history.getSizeDelta());
+        validateHistory(original, modified, history);
+    }
+
+    public void testMultipleInserts4b() throws Exception {
+        // Test real life scenario I ran into where the edit history
+        // wasn't right
+        EditHistory history = new EditHistory();
+        String original = "<script>\n    function foo() {}\n</script>";
+        String modified;
+
+        Document doc = getDocument(original);
+        insert(doc, history, 29, "\n    "); // 5 chars
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n    }\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(29, history.getOriginalEnd());
+        assertEquals(34, history.getEditedEnd());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(5, history.getEditedSize());
+        assertEquals(5, history.getSizeDelta());
+        validateHistory(original, modified, history);
+
+
+        insert(doc, history, 29, "\n"); // 1 char
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n\n    }\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(29, history.getOriginalEnd());
+        assertEquals(35, history.getEditedEnd());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(6, history.getEditedSize());
+        assertEquals(6, history.getSizeDelta());
+        validateHistory(original, modified, history);
+
+        insert(doc, history, 30, "        "); // 8 chars
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n        \n    }\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(29, history.getOriginalEnd());
+        assertEquals(43, history.getEditedEnd());
+        assertEquals(0, history.getOriginalSize());
+        assertEquals(14, history.getEditedSize());
+        assertEquals(14, history.getSizeDelta());
+        validateHistory(original, modified, history);
+    }
+    public void testMultipleRemoves4a() throws Exception {
+        // Similar scenario to the deletion scenario
+    }
+
+    public void testMultipleRemoves4b() throws Exception {
+        // Test real life scenario I ran into where the edit history
+        // wasn't right. This is the reverse of testMultipleInserts4b, which
+        // happens when you perform an undo.
+        EditHistory history = new EditHistory();
+        String original = "<script>\n    function foo() {\n        \n    }\n</script>";
+        String modified;
+
+        Document doc = getDocument(original);
+        remove(doc, history, 30, 8); // "        "
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n\n    }\n</script>", modified);
+        assertEquals(30, history.getStart());
+        assertEquals(38, history.getOriginalEnd());
+        assertEquals(30, history.getEditedEnd());
+        assertEquals(8, history.getOriginalSize());
+        assertEquals(0, history.getEditedSize());
+        assertEquals(-8, history.getSizeDelta());
+        validateHistory(original, modified, history);
+
+
+        remove(doc, history, 29, 1); // "\n"
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {\n    }\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(38, history.getOriginalEnd());
+        assertEquals(29, history.getEditedEnd());
+        assertEquals(9, history.getOriginalSize());
+        assertEquals(0, history.getEditedSize());
+        assertEquals(-9, history.getSizeDelta());
+        //validateHistory(original, modified, history);
+
+        remove(doc, history, 29, 5); // "\n    "
+        modified = doc.getText(0, doc.getLength());
+        assertEquals("<script>\n    function foo() {}\n</script>", modified);
+        assertEquals(29, history.getStart());
+        assertEquals(43, history.getOriginalEnd());
+        assertEquals(29, history.getEditedEnd());
+        assertEquals(14, history.getOriginalSize());
+        assertEquals(0, history.getEditedSize());
+        assertEquals(-14, history.getSizeDelta());
+        //validateHistory(original, modified, history);
+    }
+
+    // TODO : random test. Apply a bunch of edits, then apply them in reverse order
+    // and make sure I don't have any errors in the translation before and after.
+    // The net change (added/removed) should be identical.
+
+    public void testRandom2() throws Exception {
+        EditHistory history = new EditHistory();
+        Random random = new Random(0);
+        StringBuilder original = new StringBuilder();
+        for (int j = 0; j < 100; j++) {
+            char c = (char) ('a' + random.nextInt(25));
+            original.append(c);
+        }
+
+        Document doc = getDocument(original.toString());
+        int originalLength = original.length();
+        random = new Random(0);
+
+        int added = 0;
+        int removed = 0;
+        for (int i = 0; i < 5000; i++) {
+            boolean insert = random.nextBoolean();
+            int editLength = random.nextInt(insert ? 8 : 8);
+            if (doc.getLength() < editLength) {
+                editLength = doc.getLength();
+                if (editLength == 0) {
+                    break;
+                }
+            }
+            int offset = random.nextInt(doc.getLength());
+
+            if (random.nextBoolean()) {
+                // Insert
+                StringBuilder sb = new StringBuilder();
+                for (int j = 0; j < editLength; j++) {
+                    char c = (char) ('a' + j);
+                    sb.append(c);
+                }
+                insert(doc, history, offset, sb.toString());
+                added += editLength;
+            } else {
+                if (offset + editLength > doc.getLength()) {
+                    editLength = doc.getLength()-offset;
+                }
+                // Remove
+                remove(doc, history, offset, editLength);
+                removed += editLength;
+            }
+
+
+            // Now make sure this makes sense
+            int totalDelta = added-removed;
+            assertEquals(totalDelta, history.getSizeDelta());
+
+            assertEquals(0, history.convertOriginalToEdited(0));
+            assertEquals(doc.getLength(), history.convertOriginalToEdited(originalLength));
+            assertEquals(originalLength, history.convertEditedToOriginal(doc.getLength()));
+        }
+    }
+
+    // TODO - test TokenHierarchy
 }

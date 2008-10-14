@@ -59,7 +59,7 @@ public class MeasureMobilitySetupTest extends NbTestSuite {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for Mobility Pack");
-        System.setProperty("suitename", "org.netbeans.performance.mobility.MeasureMobilitySetupTest");
+        System.setProperty("suitename", MeasureMobilitySetupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(MobilitySetup.class)

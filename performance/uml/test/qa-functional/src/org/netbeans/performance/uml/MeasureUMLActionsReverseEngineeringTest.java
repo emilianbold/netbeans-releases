@@ -60,7 +60,7 @@ public class MeasureUMLActionsReverseEngineeringTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness UML Actions suite - Reverse Engineering testcase");
-        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLActionsReverseEngineeringTest");
+        System.setProperty("suitename", MeasureUMLActionsReverseEngineeringTest.class.getCanonicalName());
 
 
         // EPMeasureActions1

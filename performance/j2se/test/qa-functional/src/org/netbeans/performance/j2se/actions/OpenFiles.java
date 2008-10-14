@@ -56,6 +56,7 @@ import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import java.util.logging.Handler;
 import java.util.logging.Logger;
 import java.util.logging.LogRecord;
+import java.util.logging.Level;
 
 /**
  * Test of opening files.
@@ -86,7 +87,10 @@ public class OpenFiles extends PerformanceTestCase {
     protected static String OPEN = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Open");
     
     protected static String EDIT = org.netbeans.jellytools.Bundle.getStringTrimmed("org.openide.actions.Bundle", "Edit");
-    
+
+
+	private Logger TIMER=null;
+
     /**
      * Creates a new instance of OpenFiles
      * @param testName the name of the test
@@ -165,7 +169,10 @@ public class OpenFiles extends PerformanceTestCase {
     }
     
     public void prepare(){
-        Logger.getLogger("TIMER").addHandler(phaseHandler);
+
+        TIMER=Logger.getLogger("TIMER");
+	TIMER.setLevel(Level.FINE);
+        TIMER.addHandler(phaseHandler);
         this.openNode = new Node(new SourcePackagesNode(fileProject), filePackage + '|' + fileName);
         log("========== Open file path ="+this.openNode.getPath());
     }
@@ -200,7 +207,7 @@ public class OpenFiles extends PerformanceTestCase {
     
     @Override
     protected void shutdown(){
-        Logger.getLogger("TIMER").removeHandler(phaseHandler);
+        TIMER.removeHandler(phaseHandler);
         testedComponentOperator = null; // allow GC of editor and documents
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();

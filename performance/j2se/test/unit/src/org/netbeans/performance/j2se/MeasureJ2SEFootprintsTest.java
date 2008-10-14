@@ -55,7 +55,7 @@ public class MeasureJ2SEFootprintsTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Footprints suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEFootprintsTest");
+        System.setProperty("suitename", MeasureJ2SEFootprintsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(OutOfTheBox.class)
         .addTest(J2SEProjectWorkflow.class)

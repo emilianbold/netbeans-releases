@@ -58,7 +58,7 @@ public class MeasureWebActionsTest {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Web Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.web.MeasureWebActionsTest");
+        System.setProperty("suitename", MeasureWebActionsTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ExpandNodesWebProjectsView.class)
         .addTest(JavaCompletionInJspEditor.class)

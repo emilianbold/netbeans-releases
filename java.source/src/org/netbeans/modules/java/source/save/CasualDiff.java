@@ -320,9 +320,18 @@ public class CasualDiff {
         int localPointer = bounds[0];
         
         int[] qualBounds = getBounds(oldT.getQualifiedIdentifier());
-        copyTo(localPointer, qualBounds[0]);
+        if (oldT.staticImport == newT.staticImport) {
+            copyTo(localPointer, qualBounds[0]);
+        } else {
+            if (oldT.staticImport) {
+                //removing "static":
+                moveFwdToToken(tokenSequence, localPointer, JavaTokenId.STATIC);
+                copyTo(localPointer, tokenSequence.offset());
+            } else {
+                //TODO: adding "static"
+            }
+        }
         localPointer = diffTree(oldT.getQualifiedIdentifier(), newT.getQualifiedIdentifier(), qualBounds);
-        // TODO: Missing implementation. Static import change not covered!
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];

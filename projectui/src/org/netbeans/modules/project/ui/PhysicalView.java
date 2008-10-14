@@ -160,13 +160,8 @@ public class PhysicalView {
                 public void run () {
                     changeSupport.fireChange();
                 }
-            };
-            if (SwingUtilities.isEventDispatchThread()) {
-                r.run();
-            }
-            else {
-                SwingUtilities.invokeLater(r);
-            }
+            };            
+            SwingUtilities.invokeLater(r);            
         }        
     
         public void addChangeListener( ChangeListener listener ) {
@@ -312,13 +307,8 @@ public class PhysicalView {
                         assert false : "Attempt to fire an unsupported property change event from " + pi.getClass().getName() + ": " + prop;
                     }
                 }
-            };
-            if (SwingUtilities.isEventDispatchThread()) {
-                r.run();
-            }
-            else {
-                SwingUtilities.invokeLater(r);
-            }            
+            };            
+            SwingUtilities.invokeLater(r);            
         }
         
         private static Lookup createLookup( Project p, SourceGroup group, DataFolder dataFolder ) {

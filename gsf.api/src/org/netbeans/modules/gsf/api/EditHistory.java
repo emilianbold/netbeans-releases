@@ -41,9 +41,18 @@ package org.netbeans.modules.gsf.api;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenChange;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyEventType;
+import org.netbeans.api.lexer.TokenHierarchyListener;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.gsf.api.annotations.CheckForNull;
 import org.netbeans.modules.gsf.api.annotations.NonNull;
 
@@ -113,12 +122,18 @@ import org.netbeans.modules.gsf.api.annotations.NonNull;
  *
  * @author Tor Norbye
  */
-public final class EditHistory implements DocumentListener {
+public final class EditHistory implements DocumentListener, TokenHierarchyListener {
+    private static final Object ADDED = new Object();
+    private static final Object REMOVED = new Object();
+    //private static final Object ADDED_AND_REMOVED = new Object();
+
     private int start = -1;
     private int originalEnd = -1;
     private int editedEnd = -1;
     private List<Edit> edits = new ArrayList<Edit>(4);
+    private Map<TokenId,Object> tokenIds = new IdentityHashMap<TokenId,Object>(); // Really just want an IdentitySet!
     private int delta = 0;
+    private boolean valid = true; // TODO mark it valid until there is a history event!
 
     EditHistory previous; // package protected only for tests
     private int version = -1;
@@ -152,6 +167,16 @@ public final class EditHistory implements DocumentListener {
             return false;
         }
         return range.getStart() < editedEnd && range.getEnd() > start;
+    }
+
+    /** Return whether this EditHistory is considered valid */
+    public boolean isValid() {
+        return valid;
+    }
+
+    /** Set whether this EditHistory is considered valid */
+    public void setValid(boolean valid) {
+        this.valid = valid;
     }
 
     /**
@@ -201,6 +226,19 @@ public final class EditHistory implements DocumentListener {
      */
     public int getVersion() {
         return version;
+    }
+
+    /** Return true iff the given token id was one of the modified (added or removed) tokens
+     * in this edit history. If null is passed in, false will be returned.
+     * 
+     * @param id The token id to be checked
+     * @return True iff the given token id has appeared in this edit history
+     */
+    public boolean wasModified(@CheckForNull TokenId id) {
+        if (id == null) {
+            return false;
+        }
+        return tokenIds.containsKey(id);
     }
 
     /**
@@ -287,13 +325,13 @@ public final class EditHistory implements DocumentListener {
     /**
      * Notify the EditHistory of a document edit (insert).
      */
-    public void insertUpdate(DocumentEvent e) {
+    public void insertUpdate(final DocumentEvent e) {
         int pos = e.getOffset();
         int length = e.getLength();
         insertUpdate(pos, length);
     }
 
-    private void insertUpdate(int pos, int length) {
+    private void insertUpdate(final int pos, final int length) {
         // TODO - synchronize?
         edits.add(new Edit(pos, length, true));
 
@@ -311,7 +349,7 @@ public final class EditHistory implements DocumentListener {
             if (pos < start) {
                 start = pos;
             }
-            if (pos+length > editedEnd) {
+            if (pos > editedEnd) {
                 editedEnd = pos+length;
             } else {
                 editedEnd += length;
@@ -323,14 +361,14 @@ public final class EditHistory implements DocumentListener {
     /**
      * Notify the EditHistory of a document edit (remove).
      */
-    public void removeUpdate(DocumentEvent e) {
+    public void removeUpdate(final DocumentEvent e) {
         int pos = e.getOffset();
         int length = e.getLength();
 
         removeUpdate(pos, length);
     }
 
-    private void removeUpdate(int pos, int length) {
+    private void removeUpdate(final int pos, final int length) {
         // TODO - synchronize?
         edits.add(new Edit(pos, length, false));
         
@@ -344,17 +382,23 @@ public final class EditHistory implements DocumentListener {
             int original = convertEditedToOriginal(pos);
             if (original > originalEnd) {
                 originalEnd = original;
-            }
-
-            if (pos < start) {
-                start = pos;
+            } else if (pos+length > editedEnd) {
+                originalEnd += (pos+length-editedEnd);
             }
 
             if (pos > editedEnd) {
                 editedEnd = pos;
             } else {
                 editedEnd -= length;
+                if (editedEnd < pos) {
+                    editedEnd = pos;
+                }
             }
+
+            if (pos < start) {
+                start = pos;
+            }
+
             delta = getEditedSize()-getOriginalSize();
         }
     }
@@ -364,6 +408,56 @@ public final class EditHistory implements DocumentListener {
      * are not tracked by the EditHistory.
      */
     public void changedUpdate(DocumentEvent e) {
+    }
+
+    public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
+        TokenHierarchyEventType type = evt.type();
+        if (type == TokenHierarchyEventType.MODIFICATION) {
+            changed(evt.tokenChange());
+        } else if (type == TokenHierarchyEventType.REBUILD) {
+            // Lexing has fundamentally changed, don't try to do anything incremental
+            valid = false;
+        }
+    }
+
+    public void changed(TokenChange change) {
+        // Embedded changes
+        int embeddedCount = change.embeddedChangeCount();
+        for (int i = 0; i < embeddedCount; i++) {
+            changed(change.embeddedChange(i)); // Recurse
+        }
+
+        if (change.removedTokenCount() > 0) {
+            TokenSequence<?> removed = change.removedTokenSequence();
+            if (removed != null) {
+                removed.moveStart();
+                while (removed.moveNext()) {
+                    Token<?> token = removed.token();
+                    if (token != null) {
+                        TokenId id = token.id();
+                        tokenIds.put(id, REMOVED);
+                    }
+                }
+            }
+        }
+
+        if (change.addedTokenCount() > 0) {
+            TokenSequence<?> current = change.currentTokenSequence();
+            if (current != null) {
+                current.moveIndex(change.index());
+                for (int i = 0, n = change.addedTokenCount(); current.moveNext() && i < n; i++) {
+                    Token<?> token = current.token();
+                    if (token != null) {
+                        TokenId id = token.id();
+                        //if (tokenIds.containsKey(id)) {
+                        //    tokenIds.put(id, ADDED_AND_REMOVED);
+                        //} else {
+                        tokenIds.put(id, ADDED);
+                        //}
+                    }
+                }
+            }
+        }
     }
 
     @Override
@@ -396,6 +490,10 @@ public final class EditHistory implements DocumentListener {
 
     @CheckForNull
     public static EditHistory getCombinedEdits(int lastVersion, @NonNull EditHistory mostRecent) {
+        if (!mostRecent.isValid()) {
+            return mostRecent;
+        }
+
         if (mostRecent.previous == null || mostRecent.version == lastVersion) {
             return null;
         }
@@ -440,7 +538,7 @@ public final class EditHistory implements DocumentListener {
                     result.removeUpdate(edit.offset, edit.len);
                 }
             }
-
+            result.tokenIds.putAll(history.tokenIds);
         }
 
         return result;
@@ -458,14 +556,26 @@ public final class EditHistory implements DocumentListener {
      * current positions is typically only done for the highlights visible on the screen.
      */
     private class Edit {
-        public Edit(int offset, int len, boolean insert) {
+        private Edit(int offset, int len, boolean insert) {
             this.offset = offset;
             this.len = len;
             this.insert = insert;
         }
 
-        int offset;
-        int len;
-        boolean insert; // true: insert, false: delete
+        private final int offset;
+        private final int len;
+        private final boolean insert; // true: insert, false: delete
+    }
+
+    /** This is just a helper for tests until I figure out why for unit tests,
+     * the TokenHierarchyListener doesn't seem to get any changes from the getChange() 
+     * call on the TokenHierarchyListenerEvent
+     */
+    public void testHelperNotifyToken(boolean add, TokenId id) {
+        if (add) {
+            tokenIds.put(id, ADDED);
+        } else {
+            tokenIds.put(id, REMOVED);
+        }
     }
 }

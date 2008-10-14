@@ -62,7 +62,7 @@ public class MeasureUMLSetupTest extends NbTestSuite {
 
     public static Test suite() {
         NbTestSuite suite = new NbTestSuite("UI Responsiveness Setup suite for UML Pack");
-        System.setProperty("suitename", "org.netbeans.performance.uml.MeasureUMLSetupTest");
+        System.setProperty("suitename", MeasureUMLSetupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(
             NbModuleSuite.createConfiguration(UMLSetup.class)

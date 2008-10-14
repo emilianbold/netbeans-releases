@@ -47,13 +47,12 @@ import org.netbeans.modules.cnd.api.model.CsmMember;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.util.*;
+import org.netbeans.modules.cnd.modelutil.AntiLoop;
 
 /**
  * utilities to merge/get inheritance information
@@ -328,7 +327,7 @@ public final class CsmInheritanceUtilities {
      */
     private static List<CsmInheritance> findInheritanceChain(CsmClass child, CsmClass parent) {
         List<CsmInheritance> res = new ArrayList<CsmInheritance>();
-        Set<CsmClass> handledClasses = new HashSet<CsmClass>();
+        AntiLoop handledClasses = new AntiLoop();
         if (findInheritanceChain(child, parent, res, handledClasses)) {
             return res;
         } else {
@@ -347,7 +346,7 @@ public final class CsmInheritanceUtilities {
     
     private static boolean findInheritanceChain(CsmClass child, CsmClass parent, 
                                         List<CsmInheritance> res, 
-                                        Set<CsmClass> handledClasses) {
+                                        AntiLoop handledClasses) {
         // remember visited childs
         // quick exit, if already handled before
         if (child == null || !handledClasses.add(child)) {

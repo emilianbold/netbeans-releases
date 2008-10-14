@@ -165,7 +165,7 @@ final class ChildrenArray extends NodeAdapter {
         }
 
         if (nodes == null) {
-            nodes = info.entry.nodes();
+            nodes = info.entry.nodes(null);
             info.length = nodes.size();
             map.put(info, nodes);
             if (IS_LOG) {

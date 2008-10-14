@@ -45,7 +45,6 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileNotFoundException;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -55,7 +54,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -63,6 +61,7 @@ import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
@@ -89,9 +88,9 @@ import org.netbeans.modules.maven.queries.MavenForBinaryQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSharabilityQueryImpl;
 import org.netbeans.modules.maven.queries.MavenSourceLevelImpl;
 import org.netbeans.modules.maven.queries.MavenTestForSourceImpl;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectState;
@@ -119,6 +118,7 @@ import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
@@ -307,9 +307,22 @@ public final class NbMavenProjectImpl implements Project {
     }
 
     public void fireProjectReload() {
-        oldProject = project;
-        project = null;
-        FileUtil.refreshFor(FileUtil.toFile(getProjectDirectory()));
+        //#149566 prevent project firing squads to execute under project mutex.
+        if (ProjectManager.mutex().isReadAccess() ||
+            ProjectManager.mutex().isWriteAccess() ||
+            SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    fireProjectReload();
+                }
+
+            });
+            return;
+        }
+        synchronized (this) {
+            oldProject = project;
+            project = null;
+        }
         projectInfo.reset();
         problemReporter.clearReports();
         ACCESSOR.doFireReload(watcher);
@@ -374,9 +387,10 @@ public final class NbMavenProjectImpl implements Project {
             toReturn = pr.getId();
         }
         if (toReturn == null) {
-            toReturn = getProjectDirectory().getName() + " <No Project ID>"; //NOI18N
+            toReturn = getProjectDirectory().getName() + " _No Project ID_"; //NOI18N
 
         }
+        toReturn = toReturn.replace(":", "_");
         return toReturn;
     }
     /**

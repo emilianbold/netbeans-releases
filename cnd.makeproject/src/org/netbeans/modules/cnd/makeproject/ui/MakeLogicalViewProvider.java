@@ -143,7 +143,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     static final String PRIMARY_TYPE = "application"; // NOI18N
     static final String SUBTYPE = "x-org-netbeans-modules-cnd-makeproject-uidnd"; // NOI18N
     static final String MASK = "mask"; // NOI18N
-    
+
     static StandardNodeAction renameAction = null;
     static StandardNodeAction deleteAction = null;
 
@@ -564,7 +564,9 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             // TODO: not clear if we need to call the following method at all
             // but we need to remove remembering the output to prevent memory leak;
             // I think it could be removed
-            getMakeConfigurationDescriptor().getLogicalFolders();
+            if (gotMakeConfigurationDescriptor()) {
+                getMakeConfigurationDescriptor().getLogicalFolders();
+            }
 
             List actions = new ArrayList();
             // Add standard actions
@@ -766,13 +768,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         MakeConfigurationDescriptor makeConfigurationDescriptor = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
         return makeConfigurationDescriptor;
     }
 
     private boolean gotMakeConfigurationDescriptor() {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class );
         return pdp.gotDescriptor();
     }
     
@@ -969,7 +971,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
 
         public Transferable paste() throws IOException {
-            if (!(getMakeConfigurationDescriptor().okToChange())) {
+            if (!gotMakeConfigurationDescriptor() || !(getMakeConfigurationDescriptor().okToChange())) {
                 return null;
             }
             Item item = viewItemNode.getItem();
@@ -1216,7 +1218,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         private Item item;
 
         public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject) {
-            super(dataObject.getNodeDelegate());
+            super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
             this.childrenKeys = childrenKeys;
             this.folder = folder;
             this.item = item;
@@ -1499,8 +1501,10 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
             return folder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }
-    
-    private class StandardNodeAction extends NodeAction {
+
+    // this class should be static, because successors are shared classes
+    // and accessing MakeLogicalViewProvider.this would use wrong one!
+    private static class StandardNodeAction extends NodeAction {
         SystemAction systemAction;
         
         public StandardNodeAction(SystemAction systemAction) {
@@ -1509,8 +1513,23 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         protected void performAction(Node[] activatedNodes) {
-            if (!(getMakeConfigurationDescriptor().okToChange())) {
-                return;
+            if (activatedNodes.length > 0) {
+                Folder folder = activatedNodes[0].getLookup().lookup(Folder.class);
+                if (folder == null) {
+                    // TODO: looking up for views is not a good technique, this should
+                    // be changed one day all other this class
+                    ViewItemNode vin = activatedNodes[0].getLookup().lookup(ViewItemNode.class);
+                    if (vin != null) {
+                        folder = vin.getFolder();
+                    }
+                }
+
+                if (folder != null) {
+                    MakeConfigurationDescriptor mcd = (MakeConfigurationDescriptor)folder.getConfigurationDescriptor();
+                    if (mcd != null && !mcd.okToChange()) {
+                        return;
+                    }
+                }
             }
             InstanceContent ic = new InstanceContent();
             for (int i = 0; i < activatedNodes.length; i++) {
@@ -1551,13 +1570,13 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         }
     }
     
-    private class RenameNodeAction extends StandardNodeAction {
+    private static class RenameNodeAction extends StandardNodeAction {
         public RenameNodeAction() {
             super(SystemAction.get(RenameAction.class));
         }
     }
     
-    private class DeleteNodeAction extends StandardNodeAction {
+    private static class DeleteNodeAction extends StandardNodeAction {
         public DeleteNodeAction() {
             super(SystemAction.get(DeleteAction.class));
         }

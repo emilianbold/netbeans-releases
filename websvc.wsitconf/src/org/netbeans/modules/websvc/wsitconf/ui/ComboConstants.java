@@ -191,6 +191,10 @@ public interface ComboConstants {
     String ISSUED_KEYSIZE_192 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_192");         //NOI18N
     String ISSUED_KEYSIZE_256 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_256");         //NOI18N
 
+    String ISSUED_KEYSIZE_1024 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_1024");         //NOI18N
+    String ISSUED_KEYSIZE_2048 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_2048");         //NOI18N
+    String ISSUED_KEYSIZE_3072 = NbBundle.getMessage(ComboConstants.class, "COMBO_Issued_KeySize_3072");         //NOI18N
+
     String STATIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Static");         //NOI18N
     String DYNAMIC = NbBundle.getMessage(ComboConstants.class, "COMBO_Dynamic");         //NOI18N
     

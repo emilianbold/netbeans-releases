@@ -671,10 +671,8 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                         new Callback() {
                             public void callback(TestModuleDependency td, String cnb) {
                                 runtimeCnbs.add(cnb);
-                                testRuntimeCnbs.add(cnb);
                                 if (td.isCompile()) {
                                     compileCnbs.add(cnb);
-                                    testCompileCnbs.add(cnb);
                                 }
                             }
                         }, ml);
@@ -683,12 +681,12 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
                 if (td.isCompile()) {
                     compileCnbs.add(cnb);
                 }
-                if (td.isTest()) {
-                    if (td.isCompile()) {
-                        testCompileCnbs.add(cnb);
-                    }
-                    testRuntimeCnbs.add(cnb);
+            }
+            if (td.isTest()) {
+                if (td.isCompile()) {
+                    testCompileCnbs.add(cnb);
                 }
+                testRuntimeCnbs.add(cnb);
             }
         }
 
@@ -785,11 +783,11 @@ final class Evaluator implements PropertyEvaluator, PropertyChangeListener, AntP
         classpaths.put(ttName,testClasspath);
     }
   
-  private void processTestEntryRecursive(TestModuleDependency td,
-                                        Callback clb,
-                                        ModuleList ml) {
+  private void processTestEntryRecursive(final TestModuleDependency td,
+                                        final Callback clb,
+                                        final ModuleList ml) {
         Set<String> unprocessed = new HashSet<String>();
-        
+
         unprocessed.add(td.getModule().getCodeNameBase()); 
         while (!unprocessed.isEmpty()) { // crude breadth-first search
             Iterator<String> it = unprocessed.iterator();

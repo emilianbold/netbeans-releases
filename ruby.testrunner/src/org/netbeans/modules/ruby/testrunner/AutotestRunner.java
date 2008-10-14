@@ -123,7 +123,7 @@ public class AutotestRunner implements TestRunner {
         desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
 
         TestSession session = new TestSession(displayName,
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 AutotestHandlerFactory.getHandlers(),

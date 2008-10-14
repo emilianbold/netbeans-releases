@@ -218,13 +218,14 @@ public class FolderChildrenTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #1058 (in FolderChildrenLazyTest)
     public void testChangeableDataFilter() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileUtil.createData (fs.getRoot (), "BB/A.txt");
-        FileUtil.createData (fs.getRoot (), "BB/B.txt");
-        FileUtil.createData (fs.getRoot (), "BB/AA.txt");
-        FileUtil.createData (fs.getRoot (), "BB/BA.txt");
+        String pref = getName() + "/";
+        FileUtil.createData (fs.getRoot (), pref + "BB/A.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/B.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/AA.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/BA.txt");
 
 
-        FileObject bb = fs.findResource("/BB");
+        FileObject bb = fs.findResource(pref + "/BB");
 
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
@@ -241,13 +242,14 @@ public class FolderChildrenTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #1049 (in FolderChildrenLazyTest), #1051 (in this)
     public void testChangeableDataFilterOnNodeDelegate() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileUtil.createData (fs.getRoot (), "BB/A.txt");
-        FileUtil.createData (fs.getRoot (), "BB/B.txt");
-        FileUtil.createData (fs.getRoot (), "BB/AA.txt");
-        FileUtil.createData (fs.getRoot (), "BB/BA.txt");
+        String pref = getName() + "/";
+        FileUtil.createData (fs.getRoot (), pref + "BB/A.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/B.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/AA.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/BA.txt");
 
 
-        FileObject bb = fs.findResource("/BB");
+        FileObject bb = fs.findResource(pref + "BB");
 
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
@@ -297,15 +299,19 @@ public class FolderChildrenTest extends NbTestCase {
         Filter filter = new Filter();
         holder = filter;
 
+        String pref = getName() + '/';
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
         bb.createData("Ahoj.txt");
         bb.createData("Hi.txt");
         DataFolder folder = DataFolder.findFolder(bb);
 
         Children ch = folder.createNodeChildren(filter);
+        LOG.info("children created: " + ch);
         Node[] arr = ch.getNodes(true);
+        LOG.info("nodes obtained" + arr);
         assertEquals("Accepts only Ahoj", 1, arr.length);
+        LOG.info("The one node" + arr[0]);
 
         WeakReference ref = new WeakReference(ch);
         ch = null;
@@ -317,7 +323,8 @@ public class FolderChildrenTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #1043 (in FolderChildrenEagerTest)
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        String pref = getName() + '/';
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
 	bb.createData("Ahoj.txt");
 	bb.createData("Hi.txt");
 
@@ -340,7 +347,8 @@ public class FolderChildrenTest extends NbTestCase {
 
     public void testReorderAfterRename() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        String pref = getName() + '/';
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
         FileObject ahoj = bb.createData("Ahoj.txt");
         bb.createData("Hi.txt");
 

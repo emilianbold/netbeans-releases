@@ -67,7 +67,7 @@ public class VWPMeasureActionsTest  {
         PerformanceTestCase.prepareForMeasurements();
 
         NbTestSuite suite = new NbTestSuite("UI Responsiveness VisualWeb Actions suite");
-        System.setProperty("suitename", "org.netbeans.performance.visualweb.VWPMeasureActionsTest");
+        System.setProperty("suitename", VWPMeasureActionsTest.class.getCanonicalName());
 
 	
 //TODO do Open project through UI	suite.addTest(new OpenWebPackProject("measureTime","Open Small Web Project"));

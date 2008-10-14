@@ -71,10 +71,13 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.modules.php.editor.PredefinedSymbols.MagicIndexedFunction;
 import org.netbeans.modules.php.editor.CompletionContextFinder.KeywordCompletionType;
+import org.netbeans.modules.php.editor.PredefinedSymbols.VariableKind;
 import org.netbeans.modules.php.editor.index.IndexedClass;
 import org.netbeans.modules.php.editor.index.IndexedConstant;
+import org.netbeans.modules.php.editor.index.IndexedElement;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.IndexedInterface;
+import org.netbeans.modules.php.editor.index.IndexedVariable;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
@@ -619,7 +622,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 type, staticContext, rightExpressionBoundary);
     }
 
-    private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence tokenSequence) {
+    private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence<PHPTokenId> tokenSequence) {
         String functionName = tokenSequence.token().text().toString();
         int orgPos = tokenSequence.offset();
 
@@ -753,6 +756,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
     private void autoCompleteClassMembers(List<CompletionProposal> proposals,
             PHPCompletionItem.CompletionRequest request, boolean staticContext) {
+        VariableKind varKind = VariableKind.STANDARD; 
         Document document = request.info.getDocument();
         if (document == null) {
             return;
@@ -785,6 +789,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             String typeName = null;
             List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             if (varName.equals("self")) { //NOI18N
+                varKind = VariableKind.SELF;
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (classDecl != null) {
                     typeName = classDecl.getName().getName();
@@ -793,6 +798,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
+                varKind = VariableKind.PARENT;
                 invalidProposalsForClsMembers = Collections.emptyList();
 
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
@@ -805,6 +811,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
             } else if (varName.equals("$this")) { //NOI18N
+                varKind = VariableKind.THIS;
                 ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
                 if (staticContext) {
                     return;
@@ -852,7 +859,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedFunction method : methods){
-                    if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
+                    if (VariableKind.THIS.equals(varKind) || staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
                             if (!invalidProposalsForClsMembers.contains(method.getName())) {
                                 proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
@@ -921,24 +928,75 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         // end: KEYWORDS
 
         PHPIndex index = request.index;
-        // FUNCTIONS
-        for (IndexedFunction function : index.getFunctions(request.result, request.prefix, nameKind)) {
-            for (int i = 0; i <= function.getOptionalArgs().length; i++) {
-                proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
+
+        // get local toplevelvariables
+        LocalVariables localVars = getLocalVariables(request.result,
+                request.prefix, request.anchor, request.currentlyEditedFileURL);
+
+        // all toplevel variables from index, which are unique. They comes only from one file
+        Map<String, IndexedConstant> allUniqueVars = new LinkedHashMap<String, IndexedConstant>();
+        // all toplevel variables, wchich are defined in more files
+        Map<String, IndexedConstant> allUnUniqueVars = new LinkedHashMap<String, IndexedConstant>();
+
+        //Obtain all top level statment from index
+        for (IndexedElement element : index.getAllTopLevel(request.result, request.prefix, nameKind)) {
+            if (element instanceof IndexedFunction) {
+                IndexedFunction function = (IndexedFunction) element;
+                for (int i = 0; i <= function.getOptionalArgs().length; i++) {
+                    proposals.add(new PHPCompletionItem.FunctionItem(function, request, i));
+                }
+            }
+            else if (element instanceof IndexedClass) {
+                proposals.add(new PHPCompletionItem.ClassItem((IndexedClass) element, request, true));
+            }
+            else if (element instanceof IndexedVariable) {
+                if (localVars.globalContext) {
+                    // are we in global context?
+                    IndexedConstant topLevelVar = (IndexedConstant) element;
+                    if (!request.currentlyEditedFileURL.equals(topLevelVar.getFilenameUrl())) {
+                        IndexedConstant localVar = allUniqueVars.get(topLevelVar.getName());
+                        if (localVar == null) {
+                            // the indexed variable is unique or first one, with the name
+                            allUniqueVars.put(topLevelVar.getName(), topLevelVar);
+                        }
+                        else {
+                            // already there is an variable with the same name
+                            allUnUniqueVars.put(topLevelVar.getName(), topLevelVar);
+                        }
+                    }
+                }
+            }
+            else if (element instanceof IndexedConstant) {
+                proposals.add(new PHPCompletionItem.ConstantItem((IndexedConstant) element, request));
             }
         }
 
-        // CONSTANTS
-        for (IndexedConstant constant : index.getConstants(request.result, request.prefix, nameKind)) {
-            proposals.add(new PHPCompletionItem.ConstantItem(constant, request));
+        // add local variables
+        for (IndexedConstant var : localVars.vars) {
+            allUniqueVars.put(var.getName(), var);
+            // remove local varibales from the indexed varibles
+            allUnUniqueVars.remove(var.getName());
         }
 
-        // CLASS NAMES
-        // TODO only show classes with static elements
-        autoCompleteClassNames(proposals, request,true);
+        for (IndexedConstant var : allUnUniqueVars.values()) {
+            // remove ununique variables from unique varibles
+            allUniqueVars.remove(var.getName());
+            CompletionProposal proposal = new PHPCompletionItem.UnUniqueVaraibaleItems(var, request);
+            proposals.add(proposal);
+        }
 
-        // LOCAL VARIABLES
-        proposals.addAll(getVariableProposals(request.result.getProgram(), request));
+        for (IndexedConstant var : allUniqueVars.values()) {
+            CodeUtils.resolveFunctionType(request.result, index, allUniqueVars, var);
+            CompletionProposal proposal = new PHPCompletionItem.VariableItem(var, request);
+            proposals.add(proposal);
+        }
+
+        for (String name : PredefinedSymbols.SUPERGLOBALS){
+            if (isPrefix("$" + name, request.prefix)) { //NOI18N
+                CompletionProposal proposal = new PHPCompletionItem.SuperGlobalItem(request, name);
+                proposals.add(proposal);
+            }
+        }
 
         // Special keywords applicable only inside a class
         ClassDeclaration classDecl = findEnclosingClass(request.info, lexerToASTOffset(request.result, request.anchor));
@@ -987,7 +1045,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
                 if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
                     IndexedConstant localVar = allVars.get(topLevelVar.getName());
-
+                    // TODO this is not good solution. The varibles, which
+                    // are not unique (are defined in more files),
+                    // should be presented in different way. It is solved
+                    // in autoCompleteExpression method. No time to rewrite for 6.5
                      if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
                         IndexedConstant original = allVars.put(topLevelVar.getName(), topLevelVar);
                         if (original != null && localVars.vars.contains(original)) {

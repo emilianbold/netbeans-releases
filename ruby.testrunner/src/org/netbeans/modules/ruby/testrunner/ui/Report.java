@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.openide.filesystems.FileObject;
 
@@ -79,19 +80,25 @@ final class Report {
     int detectedPassedTests;
     private Collection<Testcase> tests;
     private final FileLocator fileLocator;
+    private final Project project;
     
     /**
      */
-    Report(String suiteClassName, FileLocator fileLocator) {
+    Report(String suiteClassName, Project project) {
         this.suiteClassName = suiteClassName;
-        this.fileLocator = fileLocator;
+        this.project = project;
+        this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.tests = new ArrayList<Testcase>(10);
     }
 
     public FileLocator getFileLocator() {
         return fileLocator;
     }
-    
+
+    Project getProject() {
+        return project;
+    }
+
     /**
      */
     void reportTest(Testcase test) {
@@ -173,6 +180,23 @@ final class Report {
         int timeMillis;
         Trouble trouble;
         private Status status;
+        /**
+         * The location, i.e. the file and line number of this test case. 
+         */
+        private String location;
+
+        void setLocation(String location) {
+            this.location = location;
+        }
+
+        /**
+         * Gets the location, i.e. the path to the file and line number of the test case.
+         * May be null if such info is not available.
+         * @return
+         */
+        String getLocation() {
+            return location;
+        }
         
         void setStatus(Status status) {
             this.status = status;

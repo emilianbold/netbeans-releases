@@ -55,7 +55,7 @@ public class GuiSuite {
     public static Test suite() {
         return NbModuleSuite.create(
                 NbModuleSuite.createConfiguration(ClassNodeTest.class)
-                .addTest(ClassNodeTest.class)
+                .addTest(ClassNodeTest.class,"testCopyPaste","testCutPaste","testCopyPasteInterface","testCutPasteInterface")
                 .addTest(PackageNodeTest.class)
                 .addTest(ErrorAnnotations.class)
                 .addTest(FixImportsTest.class)

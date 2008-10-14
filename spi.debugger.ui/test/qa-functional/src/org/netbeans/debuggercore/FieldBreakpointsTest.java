@@ -135,6 +135,11 @@ public class FieldBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             NbDialogOperator dialog = Utilities.newBreakpoint(36, 36);
             setBreakpointType(dialog, "Field");
             new JTextFieldOperator(dialog, 1).setText("examples.advanced.MemoryView");
@@ -216,9 +221,23 @@ public class FieldBreakpointsTest extends JellyTestCase {
             Utilities.toggleBreakpoint(eo, 109);
 
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:109");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:109")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:104")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

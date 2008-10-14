@@ -49,6 +49,7 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
@@ -112,22 +113,25 @@ public class ViewsTest extends JellyTestCase {
     
     public void tearDown() {
         JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        if ("testViewsClose".equals(getName())) {
-            Utilities.endAllSessions();
-            Utilities.deleteAllBreakpoints();
-        }
+        Utilities.endAllSessions();
+        Utilities.deleteAllBreakpoints();
     }
     
     public void testViewsDefaultOpen() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode); // NOI18N
-        EditorOperator op = new EditorOperator("MemoryView.java");
-        new EventTool().waitNoEvent(500);
-        Utilities.toggleBreakpoint(op, 92);
-        Utilities.startDebugger();
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             assertNotNull("Local variables view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.localVarsViewTitle, 0));
             assertNotNull("Breakpoints view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.breakpointsViewTitle, 0));
             assertNotNull("Watches view was not opened after debugger start", TopComponentOperator.findTopComponent(Utilities.watchesViewTitle, 0));
@@ -139,6 +143,14 @@ public class ViewsTest extends JellyTestCase {
     
     public void testViewsCallStack() throws Throwable {                
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.callStackViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.callStackViewTitle));
             assertEquals("MemoryView.updateStatus:92", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
@@ -152,6 +164,14 @@ public class ViewsTest extends JellyTestCase {
     
     public void testViewsClasses() throws Throwable {
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.classesViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.classesViewTitle));
             TreeTableOperator treeTableOperator = new TreeTableOperator((javax.swing.JTable) jTableOperator.getSource());
@@ -168,8 +188,15 @@ public class ViewsTest extends JellyTestCase {
     
     public void testViewsHeapWalker1() throws Throwable {
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.classesViewTitle);
-            
             TopComponentOperator tco = new TopComponentOperator(Utilities.classesViewTitle);
             JTableOperator jTableOperator = new JTableOperator(tco);
             JComboBoxOperator filter = new JComboBoxOperator(tco);
@@ -186,7 +213,15 @@ public class ViewsTest extends JellyTestCase {
     }
     
     public void testViewsHeapWalker2() throws Throwable {
-        try {
+       try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.classesViewTitle);
             
             TopComponentOperator tco = new TopComponentOperator(Utilities.classesViewTitle);
@@ -204,7 +239,15 @@ public class ViewsTest extends JellyTestCase {
     }
     
     public void testViewsThreads() throws Throwable {
-        try {
+       try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.threadsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.threadsViewTitle));
             assertTrue("Thread group system is not shown in threads view", "system".equals(Utilities.removeTags(jTableOperator.getValueAt(0,0).toString())));
@@ -220,7 +263,15 @@ public class ViewsTest extends JellyTestCase {
     }
     
     public void testViewsSessions() throws Throwable {
-        try {
+try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.sessionsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sessionsViewTitle));
             assertEquals("examples.advanced.MemoryView", Utilities.removeTags(jTableOperator.getValueAt(0,0).toString()));
@@ -241,6 +292,14 @@ public class ViewsTest extends JellyTestCase {
     
     public void testViewsSources() throws Throwable {
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
             Utilities.showDebuggerView(Utilities.sourcesViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.sourcesViewTitle));
             String debugAppSource = "debugTestProject" + java.io.File.separator + "src (Project debugTestProject)";
@@ -263,10 +322,18 @@ public class ViewsTest extends JellyTestCase {
     
     public void testViewsClose() throws Throwable {
         try {
-            //new TopComponentOperator(Utilities.localVarsViewTitle).close();
-            //new TopComponentOperator(Utilities.watchesViewTitle).close();
-            //new TopComponentOperator(Utilities.callStackViewTitle).close();
-//            new TopComponentOperator(Utilities.classesViewTitle).close();
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            new EventTool().waitNoEvent(500);
+            Utilities.toggleBreakpoint(eo, 92);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:92");
+            new TopComponentOperator(Utilities.localVarsViewTitle).close();
+            new TopComponentOperator(Utilities.watchesViewTitle).close();
+            new TopComponentOperator(Utilities.callStackViewTitle).close();
+            new TopComponentOperator(Utilities.classesViewTitle).close();
             new TopComponentOperator(Utilities.sessionsViewTitle).close();
             new TopComponentOperator(Utilities.threadsViewTitle).close();
             new TopComponentOperator(Utilities.sourcesViewTitle).close();

@@ -49,7 +49,6 @@ import java.util.*;
 import org.netbeans.modules.cnd.apt.support.APTMacro;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
-import org.netbeans.modules.cnd.apt.utils.APTUtils;
 
 /**
  * macro map is created for each translation unit and
@@ -58,11 +57,12 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author Vladimir Voskresensky
  */
 public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
-    private APTMacroMap sysMacroMap;       
-      
-    public APTFileMacroMap() {        
+    private APTMacroMap sysMacroMap;
+    private Set<String> notMacroIds = new HashSet<String>();
+
+    public APTFileMacroMap() {
     }
-    
+
     /**
      * Creates a new instance of APTFileMacroMap
      */
@@ -73,68 +73,76 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         this.sysMacroMap = sysMacroMap;
         fill(userMacros);
     }
-    
+
     public void setSysMacros(APTMacroMap sysMacroMap) {
         this.sysMacroMap = sysMacroMap;
     }
-    
-      
+
     @Override
     public APTMacro getMacro(Token token) {
         // check own map
-        APTMacro res = super.getMacro(token);
+        String macroText = token.getText();
+        APTMacro res = null;
+        if (!notMacroIds.contains(macroText)) {
+            res = super.getMacro(token);
+            if (res == APTMacroMapSnapshot.UNDEFINED_MACRO || res == null) {
+                notMacroIds.add(macroText);
+            }
+        }
         // then check system map
-     
         if (res == null && sysMacroMap != null) {
             res = sysMacroMap.getMacro(token);
-        }        
+        }
         // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
     }
-    
+
     @Override
     public void define(Token name, Collection<Token> params, List<Token> value) {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about redefining system macros
         } else {
             super.define(name, params, value);
+            notMacroIds.remove(name.getText());
         }
     }
-    
+
     @Override
     public void undef(Token name) {
         if (false && sysMacroMap != null && sysMacroMap.isDefined(name)) { // disable for IZ#124635
             // TODO: report error about undefined system macros
         }
         super.undef(name);
+        notMacroIds.remove(name.getText());
     }
-    
+
     protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
         return new APTMacroImpl(name, params, value, false);
     }
-    
+
     protected APTMacroMapSnapshot makeSnapshot(APTMacroMapSnapshot parent) {
         return new APTMacroMapSnapshot(parent);
     }
-    
+
     @Override
     public State getState() {
         //Create new snapshot instance in the tree
         changeActiveSnapshotIfNeeded();
         return new FileStateImpl(active.parent, sysMacroMap);
     }
-    
+
     @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);
         if (state instanceof FileStateImpl) {
             sysMacroMap = ((FileStateImpl)state).sysMacroMap;
         }
+        notMacroIds.clear();
     }
-    
+
     public static class FileStateImpl extends StateImpl {
         public final APTMacroMap sysMacroMap;
-        
+
         public FileStateImpl(APTMacroMapSnapshot snap, APTMacroMap sysMacroMap) {
             super(snap);
             this.sysMacroMap = sysMacroMap;
@@ -144,7 +152,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
             super(state, cleanedState);
             this.sysMacroMap = state.sysMacroMap;
         }
-        
+
         @Override
         public String toString() {
             StringBuilder retValue = new StringBuilder();
@@ -155,7 +163,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
             retValue.append(sysMacroMap);
             return retValue.toString();
         }
-        
+
         ////////////////////////////////////////////////////////////////////////
         // persistence support
 
@@ -167,16 +175,16 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
 
         public FileStateImpl(final DataInput input) throws IOException {
             super(input);
-            
+
             APTMacroMap systemMap = APTSerializeUtils.readSystemMacroMap(input);
-             
+
             if (systemMap == null) {
                 this.sysMacroMap = APTBaseMacroMap.EMPTY;
             } else {
                 this.sysMacroMap = systemMap;
             }
-        }  
-        
+        }
+
         @Override
         public StateImpl copyCleaned() {
             return new FileStateImpl(this, true);
@@ -184,9 +192,9 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     }
     ////////////////////////////////////////////////////////////////////////////
     // manage macro expanding stack
-    
+
     private Stack<String> expandingMacros = new Stack<String>();
-    
+
     public boolean pushExpanding(Token token) {
         assert (token != null);
         if (!isExpanding(token)) {
@@ -195,7 +203,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         }
         return false;
     }
-    
+
     public void popExpanding() {
         Object curMacro = null;
         try {
@@ -205,7 +213,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         }
 //        return curMacro;
     }
-    
+
     public boolean isExpanding(Token token) {
         try {
             return expandingMacros.contains(token.getText());
@@ -214,7 +222,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         }
         return false;
     }
-    
+
     //////////////////////////////////////////////////////////////////////////
     // implementation details
     /*public boolean equals(Object obj) {

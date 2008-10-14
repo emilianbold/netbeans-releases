@@ -55,7 +55,7 @@ public class MeasureJ2SEStartupTest {
 
     public static NbTestSuite suite() {
         NbTestSuite suite = new NbTestSuite("J2SE Startup suite");
-        System.setProperty("suitename", "org.netbeans.performance.j2se.MeasureJ2SEStartupTest");
+        System.setProperty("suitename", MeasureJ2SEStartupTest.class.getCanonicalName());
 
         suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MeasureWarmUp.class)
         .addTest(OutOfTheBoxStartup.class)

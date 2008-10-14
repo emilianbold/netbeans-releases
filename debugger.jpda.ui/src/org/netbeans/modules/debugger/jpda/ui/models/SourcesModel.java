@@ -352,17 +352,6 @@ NodeActionsProvider {
                 "src_roots",
                 Collections.EMPTY_LIST)
         );
-        if (additionalSourceRoots.size() > 0) {
-            // Set the new source roots:
-            String[] sourceRoots = sourcePath.getSourceRoots();
-            int l = sourceRoots.length;
-            Object[] addSrc = additionalSourceRoots.toArray();
-            int n = addSrc.length;
-            String[] newSourceRoots = new String[l + n];
-            System.arraycopy(sourceRoots, 0, newSourceRoots, 0, l);
-            System.arraycopy(addSrc, 0, newSourceRoots, l, n);
-            sourcePath.setSourceRoots(newSourceRoots);
-        }
     }
 
     private synchronized void saveFilters () {
@@ -513,21 +502,29 @@ NodeActionsProvider {
                     }
 
                     public boolean accept(File file) {
-                        return file.isDirectory();
+                        if (file.isDirectory()) {
+                            return true;
+                        }
+                        String name = file.getName();
+                        int dotIndex = name.lastIndexOf('.');
+                        if (dotIndex > 0) {
+                            String ext = name.substring(dotIndex + 1);
+                            if ("zip".equalsIgnoreCase(ext) || "jar".equalsIgnoreCase(ext)) { // NOI18N
+                                return true;
+                            }
+                        }
+                        return false;
                     }
 
                 });
-                newSourceFileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+                newSourceFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Btn"));
             if (state == JFileChooser.APPROVE_OPTION) {
-                File dir = newSourceFileChooser.getSelectedFile();
-                if (!dir.isDirectory()) {
-                    return ;
-                }
+                File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
-                    String d = dir.getCanonicalPath();
+                    String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesModel.this) {
                         additionalSourceRoots.add(d);
                         enabledSourceRoots.add(d);

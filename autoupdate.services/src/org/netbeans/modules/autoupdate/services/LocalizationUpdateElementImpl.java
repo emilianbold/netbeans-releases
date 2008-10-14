@@ -115,7 +115,7 @@ public class LocalizationUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
-        if (category != null) {
+        if (category == null) {
             category = UpdateUnitFactory.UNSORTED_CATEGORY;
         }
         return category;

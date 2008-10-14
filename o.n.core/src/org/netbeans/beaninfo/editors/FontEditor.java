@@ -311,7 +311,6 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
             tfSize.addKeyListener( new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
-                    dontSetValue = true;
                     if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
                         setValue ();
                     }
@@ -322,18 +321,26 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                 @Override
                  public void focusLost (FocusEvent evt) {
                     if (dontSetValue) {
-                        dontSetValue = false;
                         return ;
+                    } else {
+                        dontSetValue = true;
                     }
                     Component c = evt.getOppositeComponent ();
-                    if (c != null && c instanceof JButton) {
-                        if (((JButton) c).getText ().equals (NbBundle.getMessage (FontEditor.class, "CTL_OK"))) { // NOI18N
+                    if (c != null) {
+                        if (c instanceof JButton) {
+                            if (((JButton) c).getText ().equals (NbBundle.getMessage (FontEditor.class, "CTL_OK"))) { // NOI18N
+                                setValue ();
+                            }
+                        } else {
                             setValue ();
                         }
-                    } else {
-                        setValue ();
                     }
                  }
+
+                @Override
+                public void focusGained (FocusEvent evt) {
+                    dontSetValue = false;
+                }
             });
             la.setConstraints (tfSize, c);
             add (tfSize);
@@ -445,6 +452,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                             size == 0 ? NbBundle.getMessage (FontEditor.class, "CTL_InvalidValueWithParam", tfSize.getText ()) : // NOI18N
                                 NbBundle.getMessage (FontEditor.class, "CTL_NegativeSize"), // NOI18N
                             null, null);
+                    tfSize.setText (String.valueOf (font.getSize ()));
                     throw iae;
                 }
                 updateSizeList(size);
@@ -452,6 +460,7 @@ public class FontEditor implements PropertyEditor, XMLPropertyEditor {
                 UIExceptions.annotateUser (e, null,
                         NbBundle.getMessage (FontEditor.class, "CTL_InvalidValueWithExc", e), // NOI18N
                         null, null);
+                tfSize.setText (String.valueOf (font.getSize ()));
                 throw e;
             }
             int i = lStyle.getSelectedIndex (), ii = Font.PLAIN;

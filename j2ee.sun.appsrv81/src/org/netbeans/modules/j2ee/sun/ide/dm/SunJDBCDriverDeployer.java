@@ -82,7 +82,9 @@ public class SunJDBCDriverDeployer implements JDBCDriverDeployer {
     public ProgressObject deployJDBCDrivers(Target target, Set<Datasource> datasources) {
         DeploymentManagerProperties dmp = new DeploymentManagerProperties(this.dm);
         File driverLoc = dmp.getDriverLocation();
-        List urls = JDBCDriverDeployHelper.getMissingDrivers(driverLoc, datasources);
+        File installLib = new File (this.sunDm.getPlatformRoot().getAbsolutePath() + File.separator + "lib");
+        File[] locs = {driverLoc, installLib};
+        List urls = JDBCDriverDeployHelper.getMissingDrivers(locs, datasources);
         ProgressObject retVal = JDBCDriverDeployHelper.getProgressObject(driverLoc, urls);
         if (urls.size() > 0) {
             retVal.addProgressListener(new ProgressListener() {

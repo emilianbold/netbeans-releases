@@ -101,13 +101,9 @@ public abstract class CustomComponentProducer extends ComponentProducer {
                         NbBundle.getMessage(SVGFormProducer.class, "DISP_SVG_Form"), //NOI18N
                         NbBundle.getMessage(SVGFormProducer.class, "TTIP_SVG_Form"), //NOI18N
                         SVGFormCD.ICON_PATH, 
-                        SVGFormCD.ICON_LARGE_PATH)); // NOI18N
+                        SVGFormCD.ICON_LARGE_PATH));
         }
 
-        @Override
-        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
-            return true;
-        }
     }
 
     public static final class SVGImageProducer extends CustomComponentProducer {

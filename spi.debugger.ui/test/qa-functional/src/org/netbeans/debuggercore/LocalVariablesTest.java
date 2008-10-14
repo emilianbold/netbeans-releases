@@ -43,19 +43,21 @@
 
 package org.netbeans.debuggercore;
 
+import java.awt.Component;
 import java.io.IOException;
 import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -138,11 +140,18 @@ public class LocalVariablesTest extends JellyTestCase {
         Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
         new OpenAction().performAPI(beanNode);
         EditorOperator eo = new EditorOperator("MemoryView.java"); //NOI18N
-        Utilities.setCaret(eo, temp);
-        new RunToCursorAction().perform();
-        Utilities.getDebugToolbar().waitComponentVisible(true);
-        Utilities.waitStatusText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+"."); //NOI18N
-        new EventTool().waitNoEvent(1000);
+        new EventTool().waitNoEvent(500);
+        Utilities.toggleBreakpoint(eo, temp);
+        new EventTool().waitNoEvent(500);
+        Utilities.startDebugger();
+        try {
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+".");
+        } catch (TimeoutExpiredException e) {
+            if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:"+Integer.toString(temp)+".")) {
+                System.err.println(e.getMessage());
+                throw e;
+            }
+        }
         expandNodes();
     }
     
@@ -175,6 +184,12 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesThisNode() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             checkTreeTableLine(jTableOperator, 2, "Vpublic", "String", "\"Public Variable\"");
             checkTreeTableLine(jTableOperator, 3, "Vprotected", "String", "\"Protected Variable\"");
@@ -307,15 +322,6 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesValues() throws Throwable {
         try {
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(eo, 104);
-            new EventTool().waitNoEvent(500);
-            new RunToCursorAction().performMenu();
-            new EventTool().waitNoEvent(500);
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            
             Utilities.showDebuggerView(Utilities.localVarsViewTitle);
             JTableOperator jTableOperator = new JTableOperator(new TopComponentOperator(Utilities.localVarsViewTitle));
             try {
@@ -344,23 +350,17 @@ public class LocalVariablesTest extends JellyTestCase {
      */
     public void testLocalVariablesSubExpressions() throws Throwable {
         try {
-
-            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode);
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(eo, 104);
             new EventTool().waitNoEvent(500);
-            new RunToCursorAction().performMenu();
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104.");
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
             new EventTool().waitNoEvent(500);
-            new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();
+            Utilities.getStepOverExpressionAction().performShortcut();
+            new EventTool().waitNoEvent(500);
             
             // TODO: Enable after fix of issue 132886 
             //new Action(Utilities.runMenu+"|"+Utilities.stepOverExpresItem, null).perform();

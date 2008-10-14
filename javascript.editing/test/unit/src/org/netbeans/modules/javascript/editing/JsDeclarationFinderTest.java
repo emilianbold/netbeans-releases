@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+
 /**
  *
  * @author Tor Norbye
@@ -63,4 +65,9 @@ public class JsDeclarationFinderTest extends JsTestBase {
 //        checkDeclaration("testfiles/prototype.js", "this.responders = this.responders.wi^thout(responder);",
 //                "^without: function() {");
 //    }
+
+    public void testDeclaration3() throws Exception {
+        // Make sure there is no assertion
+        DeclarationLocation loc = findDeclaration("testfiles/issue149795.js", ".^x");
+    }
 }

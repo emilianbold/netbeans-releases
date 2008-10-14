@@ -104,7 +104,7 @@ abstract class EntrySupport {
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
-    abstract List<Node> createSnapshot();
+    abstract List<Node> snapshot();
 
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -134,7 +134,18 @@ abstract class EntrySupport {
             return inited;
         }
 
-        protected List<Node> createSnapshot() {
+        @Override
+        List<Node> snapshot() {
+            Node[] nodes = getNodes();
+            try {
+                Children.PR.enterReadAccess();
+                return createSnapshot();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+        }
+
+        DefaultSnapshot createSnapshot() {
             return new DefaultSnapshot(getNodes(), array.get());
         }
 
@@ -202,6 +213,7 @@ abstract class EntrySupport {
                 if (LOG_ENABLED) {
                     LOGGER.finer("Find child got: " + find); // NOI18N
                 }
+                Children.LOG.log(Level.FINEST,"after findChild: {0}", optimalResult);
             }
 
             return getNodes();
@@ -539,7 +551,7 @@ abstract class EntrySupport {
             }
 
             Collection<Node> oldNodes = info.nodes();
-            Collection<Node> newNodes = info.entry.nodes();
+            Collection<Node> newNodes = info.entry.nodes(null);
 
             if (oldNodes.equals(newNodes)) {
                 // nodes are the same =>
@@ -641,7 +653,9 @@ abstract class EntrySupport {
 
             if (children.parent != null) {
                 // fire change of nodes
-                children.parent.fireSubNodesChange(false, arr, current);
+                if (children.entrySupport == this) {
+                    children.parent.fireSubNodesChange(false, arr, current);
+                }
 
                 // fire change of parent
                 Iterator it = nodes.iterator();
@@ -677,7 +691,7 @@ abstract class EntrySupport {
 
             Node n = children.parent;
 
-            if (n != null) {
+            if (n != null && children.entrySupport == this) {
                 n.fireSubNodesChange(true, arr, null);
             }
         }
@@ -1055,6 +1069,17 @@ abstract class EntrySupport {
             return true;
         }
 
+        @Override
+        List<Node> snapshot() {
+            checkInit();
+            try {
+                Children.PR.enterReadAccess();
+                return createSnapshot();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+        }
+
         final void registerNode(int delta, EntryInfo who) {
             if (delta == -1) {
                 try {
@@ -1131,9 +1156,12 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return new Node[0];
             }
+            Node holder = null;
             if (optimalResult) {
-                children.findChild(null);
+                holder = children.findChild(null);
             }
+            Children.LOG.log(Level.FINEST, "findChild returns: {0}", holder); // NOI18N
+            Children.LOG.log(Level.FINEST, "after findChild: {0}", optimalResult); // NOI18N
             while (true) {
                 Set<Entry> invalidEntries = null;
                 Node[] tmpNodes = null;
@@ -1200,7 +1228,7 @@ abstract class EntrySupport {
             return null;
         }
         
-        final boolean isDummyNode(Node node) {
+        static final boolean isDummyNode(Node node) {
             return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode"); // NOI18N
         }
 
@@ -1225,7 +1253,7 @@ abstract class EntrySupport {
             }
 
             Node oldNode = info.currentNode();
-            Node newNode = info.getNode(true);
+            Node newNode = info.getNode(true, null);
 
             boolean newIsDummy = isDummyNode(newNode);
             if (newIsDummy && info.isHidden()) {
@@ -1443,7 +1471,7 @@ abstract class EntrySupport {
          *  @param indices list of integers with indexes that changed
          */
         protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
-            if (children.parent != null) {
+            if (children.parent != null && children.entrySupport == this) {
                 children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
             }
         }
@@ -1478,11 +1506,11 @@ abstract class EntrySupport {
              * so they can get garbage collected.
              */
             public final Node getNode() {
-                return getNode(false);
+                return getNode(false, null);
             }
             
-            private boolean creatingNode = false;
-            public final Node getNode(boolean refresh) {
+            private Thread creatingNodeThread = null;
+            public final Node getNode(boolean refresh, Object source) {
                 while (true) {
                     Node node = null;
                     boolean creating = false;
@@ -1496,19 +1524,23 @@ abstract class EntrySupport {
                                 return node;
                             }
                         }
-                        if (creatingNode) {
+                        if (creatingNodeThread != null) {
+                            if (creatingNodeThread == Thread.currentThread()) {
+                                return new DummyNode();
+                            }
                             try {
                                 LOCK.wait();
                             } catch (InterruptedException ex) {
                             }
                         } else {
-                            creatingNode = creating = true;
+                            creatingNodeThread = Thread.currentThread();
+                            creating = true;
                         }
                     }
                     Collection<Node> nodes = Collections.emptyList();
                     if (creating) {
                         try {
-                            nodes = entry.nodes();
+                            nodes = entry.nodes(source);
                         } catch (RuntimeException ex) {
                             NodeOp.warning(ex);
                         }
@@ -1534,7 +1566,7 @@ abstract class EntrySupport {
                         }
                         refNode = new NodeRef(node, this);
                         if (creating) {
-                            creatingNode = false;
+                            creatingNodeThread = null;
                             LOCK.notifyAll();
                         }
                     }
@@ -1596,7 +1628,7 @@ abstract class EntrySupport {
             }
         }     
 
-        private void hideEmpty(final Set<Entry> entries, final Entry entry, final Node oldNode) {
+        void hideEmpty(final Set<Entry> entries, final Entry entry, final Node oldNode) {
             Children.MUTEX.postWriteRequest(new Runnable() {
 
                 public void run() {
@@ -1711,20 +1743,18 @@ abstract class EntrySupport {
             return newArray;
         }
 
-        @Override
-        List<Node> createSnapshot() {
+        LazySnapshot createSnapshot() {
             return createSnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo), false);
         }
         
-        protected List<Node> createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
+        protected LazySnapshot createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
             return delayed ? new DelayedLazySnapshot(entries, e2i) : new LazySnapshot(entries, e2i);
         }
         
 
         class LazySnapshot extends AbstractList<Node> {
-            private final List<Entry> entries;
-            private final Map<Entry, EntryInfo> entryToInfo;
-            Object holder;      // little hack for FilterNode (to have possibility to hold original snapshot)
+            final List<Entry> entries;
+            final Map<Entry, EntryInfo> entryToInfo;
             
             public LazySnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i) {
                 snapshotCount++;
@@ -1734,6 +1764,10 @@ abstract class EntrySupport {
 
             public Node get(int index) {
                 Entry entry = entries.get(index);
+                return get(entry);
+            }
+
+            Node get(Entry entry) {
                 EntryInfo info = entryToInfo.get(entry);
                 Node node = info.getNode();
                 if (isDummyNode(node)) {

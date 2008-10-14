@@ -1407,7 +1407,7 @@ public class FilterNode extends Node {
             }
 
             if (init && parent != null) {
-                List<Node> snapshot = entrySupport().createSnapshot();
+                List<Node> snapshot = entrySupport().snapshot();
                 if (snapshot.size() > 0) {
                     int[] idxs = getSnapshotIdxs(snapshot);
                     if (newOriginal != null) {
@@ -1429,7 +1429,7 @@ public class FilterNode extends Node {
                 entrySupport = null;
             }
 
-            if (newOriginal == null) {
+            if (init || newOriginal == null) {
                 entrySupport().notifySetEntries();
 
                 if (LOG_ENABLED) {
@@ -1633,8 +1633,8 @@ public class FilterNode extends Node {
             }
 
             @Override
-            protected List<Node> createSnapshot() {
-                DefaultSnapshot snapshot = (DefaultSnapshot) super.createSnapshot();
+            protected DefaultSnapshot createSnapshot() {
+                DefaultSnapshot snapshot = super.createSnapshot();
                 Object[] newHolder = new Object[]{snapshot.holder, origSupport.createSnapshot()};
                 snapshot.holder = newHolder;
                 return snapshot;
@@ -1717,11 +1717,39 @@ public class FilterNode extends Node {
                 this.origSupport = origSupport;
             }
 
+            class FilterLazySnapshot extends LazySnapshot {
+                private LazySnapshot origSnapshot;
+
+                public FilterLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
+                    super(entries, e2i);
+                    origSnapshot = (LazySnapshot) origSupport.createSnapshot();
+                }
+
+                @Override
+                public Node get(Entry entry) {
+                    EntryInfo info = entryToInfo.get(entry);
+                    Node node = info.currentNode();
+                    if (node == null) {
+                        node = info.getNode(false, origSnapshot);
+                    }
+                    if (isDummyNode(node)) {
+                        // force new snapshot
+                        hideEmpty(null, entry, null);
+                    }
+                    return node;
+                }
+            }
+
+            final class FilterDelayedLazySnapshot extends FilterLazySnapshot {
+
+                public FilterDelayedLazySnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i) {
+                    super(entries, e2i);
+                }
+            }
+
             @Override
-            protected List<Node> createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
-                LazySnapshot snapshot = (LazySnapshot) super.createSnapshot(entries, e2i, delayed);
-                snapshot.holder = origSupport.createSnapshot();
-                return snapshot;
+            protected LazySnapshot createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
+                return delayed ? new FilterDelayedLazySnapshot(entries, e2i) : new FilterLazySnapshot(entries, e2i);
             }
         
             public Node[] callGetNodes(boolean optimalResult) {
@@ -1825,10 +1853,17 @@ public class FilterNode extends Node {
                 }
 
                 @Override
-                public Collection<Node> nodes() {
-                    Node node = origSupport.getNode(origEntry);
+                public Collection<Node> nodes(Object source) {
+                    Node node;
+                    if (source != null) {
+                        LazySnapshot origSnapshot = (LazySnapshot) source;
+                        node = origSnapshot.get(origEntry);
+                    } else {
+                        node = origSupport.getNode(origEntry);
+                    }
+
                     key = node;
-                    if (node == null) {
+                    if (node == null || isDummyNode(node)) {
                         return Collections.emptyList();
                     }
                     Node[] nodes = createNodes(node);
@@ -1852,9 +1887,9 @@ public class FilterNode extends Node {
                 public String toString() {
                     return "FilterNodeEntry[" + origEntry + "]@" + Integer.toString(hashCode(), 16);
                 }
-            }            
+            }
         }
-        
+
         interface FilterChildrenSupport {
             Node[] callGetNodes(boolean optimalResult);
 

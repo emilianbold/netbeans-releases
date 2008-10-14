@@ -115,7 +115,7 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
     }
     
     public String getCategory () {
-        if (category != null) {
+        if (category == null) {
             category = UpdateUnitFactory.UNSORTED_CATEGORY;
         }
         return category;
@@ -137,13 +137,17 @@ public class NativeComponentUpdateElementImpl extends UpdateElementImpl {
         return Collections.emptyList ();
     }
 
+    public NativeComponentItem getNativeItem () {
+        return nativeItem;
+    }
+
     public UpdateManager.TYPE getType () {
         return UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT;
     }
 
     public boolean isEnabled () {
-        // XXX: how to detect if NativeComponent is enbaled or not
-        return false;
+        // XXX: how to detect if NativeComponent is enabled or not
+        return true;
     }            
     
     public boolean isAutoload () {
