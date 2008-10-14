@@ -146,7 +146,7 @@ public final class NodeOp extends Object {
             if (actionsByNode[n] == null) {
                 // XXX is this permitted by the API?!
                 // use default actions
-                actionsByNode[n] = defaultActions;
+                actionsByNode[n] = getDefaultActions();
             }
 
             // keeps actions handled for this node iteration
