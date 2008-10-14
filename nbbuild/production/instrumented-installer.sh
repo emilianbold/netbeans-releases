@@ -5,7 +5,7 @@ hg up
 
 cd $LAST_BITS
 
-BUILD_NUMBER=`ls | grep netbeans | cut -f 4 -d "-" | uniq`
+BUILD_NUMBER=`ls | grep netbeans | cut -f 3 -d "-" | uniq`
 
 cd ${WORKSPACE}
 #ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
