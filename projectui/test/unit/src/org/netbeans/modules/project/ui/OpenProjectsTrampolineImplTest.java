@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.TestUtil;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -92,7 +93,8 @@ public class OpenProjectsTrampolineImplTest extends NbTestCase {
         TestUtil.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
-    
+
+    @RandomlyFails
     public void testOpenProjects() throws Exception {
     
         OpenProjectsTrampolineImpl trampoline = new OpenProjectsTrampolineImpl();
