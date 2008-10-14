@@ -230,27 +230,28 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
     }
     
     private synchronized ClassPath getRunTimeClasspath(final int type) {
-        ClassPath cp = cache[4+type];
+        int cacheIndex;
+        if (type == 0 || type == 2 || type == 4) {
+            cacheIndex = 4;
+        } else if (type == 1 || type == 3) {
+            cacheIndex = 5;
+        } else {
+            return null;
+        }
+        
+        ClassPath cp = cache[cacheIndex];
         if ( cp == null) {
-            if (type == 0) {
+            if (type == 0 || type == 2 || type == 4) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, runClasspath)); // NOI18N
             }
-            else if (type == 1) {
+            else if (type == 1 || type == 3) {
                 cp = ClassPathFactory.createClassPath(
                     ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
                     projectDirectory, evaluator, runTestClasspath)); // NOI18N
             }
-// XXXXX
-//            else if (type == 2) {
-//                //Only to make the CompiledDataNode hapy
-//                //Todo: Strictly it should return ${run.classpath} - ${build.classes.dir} + ${dist.jar}
-//                cp = ClassPathFactory.createClassPath(
-//                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-//                    projectDirectory, evaluator, new String[] {distJar})); // NOI18N
-//            }
-            cache[4+type] = cp;
+            cache[cacheIndex] = cp;
         }
         return cp;
     }
