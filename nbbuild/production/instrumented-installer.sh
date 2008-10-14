@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 cd ${WORKSPACE}
 rm -rf installer nbi nbextracted zipdist
 hg up
