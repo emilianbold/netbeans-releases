@@ -69,7 +69,7 @@ public class hgStableTest extends JellyTestCase {
                     .addTest(CommitUiTest.class, "testInvokeCloseCommit")
                     .addTest(CloneTest.class, "testCloneProject")
                     .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
-                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
+//                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")
                     .addTest(AnnotationsTest.class, "testShowAnnotations")
                     .addTest(HgPropertiesTest.class, "testHgPropertiesTest")
                     .enableModules(".*")
