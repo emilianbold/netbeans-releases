@@ -66,7 +66,7 @@ public class hgStableTest extends JellyTestCase {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(InitializeTest.class, "testInitializeAndFirstCommit")
                     .addTest(CommitDataTest.class, "testCommitFile", "testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+//                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
                     .addTest(CloneTest.class, "testCloneProject")
                     .addTest(IgnoreTest.class, "testIgnoreUnignoreFile")
 //                    .addTest(DeleteUpdateTest.class, "testDeleteUpdate")

@@ -4,9 +4,14 @@
  */
 package org.netbeans.test.mercurial.utils;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import org.openide.util.Exceptions;
 
 /**
@@ -18,23 +23,36 @@ public class hgExistsChecker {
     public static boolean check(boolean printStackTraceIfHgNotFound) {
         Runtime rt = Runtime.getRuntime();
         Process proc = null;
-        StreamHandler shError;
-        StreamHandler shOutput;
-        File tmpOutput = null;
-        FileOutputStream fos = null;
+
+        BufferedReader input;
+
+        List<String> list = new ArrayList<String>();
+
         try {
-            tmpOutput = new File("/tmp/output.txt");
-            fos = new FileOutputStream(tmpOutput);
             proc = rt.exec("hg -v");
-            shError = new StreamHandler(proc.getErrorStream(), System.err);
-            shOutput = new StreamHandler(proc.getInputStream(), fos);
-            shError.start();
-            shOutput.start();
+            String line;
+
+            input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+            while ((line = input.readLine()) != null) {
+                list.add(line);
+            }
+            input.close();
+            
+            input = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
+            while ((line = input.readLine()) != null) {
+                list.add(line);
+            }
+            input.close();
+
             int value = proc.waitFor();
-            shError.join(5000);
-            shOutput.join(5000);
-            System.out.println("value: " + value);
-            return true;
+            if (value == 255) {
+                return false;
+            }
+            for (String output : list) {
+                if (output.indexOf("Mercurial Distributed SCM") > -1)
+                    return true;
+            }
+            return false;
         } catch (Throwable e) {
             if (printStackTraceIfHgNotFound) {
                 e.printStackTrace();
@@ -47,17 +65,16 @@ public class hgExistsChecker {
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            //close consumer
-            if (fos != null) {
+            //then destroy process
+            if (proc != null) {
                 try {
-                    fos.close();
+                    proc.getInputStream().close();
+                    proc.getOutputStream().close();
+                    proc.getErrorStream().close();
+                    proc.destroy();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-            }
-            //then destroy process
-            if (proc != null) {
-                proc.destroy();
             }
         }
     }
