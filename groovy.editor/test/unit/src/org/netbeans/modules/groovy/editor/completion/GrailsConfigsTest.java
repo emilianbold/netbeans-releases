@@ -37,37 +37,36 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.test.junit.junit3;
+package org.netbeans.modules.groovy.editor.completion;
 
-import junit.framework.Test;
-import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
- * @author peter
+ * @author phejl
  */
-public class Junit3TestSuite extends JellyTestCase {
-    
-    public Junit3TestSuite(String name) {
-        super(name);
+public class GrailsConfigsTest extends GroovyTestBase {
+
+    String TEST_BASE = "testfiles/completion/grails/";
+
+    public GrailsConfigsTest(String testName) {
+        super(testName);
+        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.out.println("### " + getName() + " ###");
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
     }
 
-    public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                .addTest(CreateProjectTest.class,
-                        "testCreateJUnit3Project",
-                        "testAddLibrary",
-                        "testGeneratedProjectSuiteFile",
-                        "testGeneratedMainTestFile",
-                        "testCreateTestWithoutInitializerAndFinalizer",
-                        "testGeneratedMainTestFile2",
-                        "testDeteleJUnit3Project")
-                .enableModules(".*").clusters(".*"));
-    }
+    // FIXME this does not provide accurate results, but we need to test
+    // at least basic closure completion
+    public void testDataSourceClosure1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "GrailsConfig1.groovy", "}.^", false);
+    }  
 }

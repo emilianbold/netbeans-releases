@@ -66,11 +66,23 @@ public class ClassPathParserTest extends NbTestCase {
         assertEquals("1 sources entry", 1, cp.getSourceRoots().size());
         assertNotNull("non empty output", cp.getOutput());
         assertNotNull("non empty JDK", cp.getJREContainer());
-        
+
         DotClassPathEntry entry = cp.getClassPathEntries().get(0);
         assertEquals("lib", entry.getProperty("kind"));
         assertEquals("C:/MyProjects/JavaAPI/integrationServerApi.jar", entry.getProperty("path"));
         assertEquals("jar:file:/C:/MyProjects/JavaAPI/docs/javaApiDoc.jar!/", entry.getProperty("javadoc_location"));
+        
+        EclipseProject ep = new EclipseProject(getWorkDir());
+        ep.setClassPath(cp);
+        entry = cp.getClassPathEntries().get(0);
+        assertEquals("C:/MyProjects/JavaAPI/integrationServerApi.jar", entry.getAbsolutePath());
+        
+        entry = cp.getClassPathEntries().get(2);
+        assertEquals("/MyProjects/JavaAPI/activation.jar", entry.getProperty("path"));
+        assertEquals("/MyProjects/JavaAPI/activation.jar", entry.getAbsolutePath());
+        entry = cp.getClassPathEntries().get(3);
+        assertEquals("JavaAPI/axis.jar", entry.getProperty("path"));
+        assertEquals(getWorkDirPath()+File.separatorChar+"JavaAPI/axis.jar", entry.getAbsolutePath());
     }
     
     public void testAccessrulesDoesNotCauseException() throws Exception { // #91669

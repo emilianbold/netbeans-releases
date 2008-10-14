@@ -71,7 +71,9 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.diagrams.DiagramTypesManager;
 import org.netbeans.modules.uml.diagrams.UMLRelationshipDiscovery;
+import org.netbeans.modules.uml.diagrams.actions.AssociationConnectorIteratorAction;
 import org.netbeans.modules.uml.diagrams.actions.NodeLabelIteratorAction;
+import org.netbeans.modules.uml.diagrams.edges.AssociationConnector;
 import org.netbeans.modules.uml.diagrams.nodes.CompositeNodeWidget;
 import org.netbeans.modules.uml.drawingarea.actions.IterateSelectAction;
 import org.netbeans.modules.uml.drawingarea.RelationshipDiscovery;
@@ -302,6 +304,10 @@ public class DefaultDiagramEngine extends  DiagramEngine {
         navigateLinkTool.addAction(POPUP_ACTION);
         selectTool.addAction (new MoveControlPointAction(ActionFactory.createFreeMoveControlPointProvider (), null));
         selectTool.addAction(new EdgeLabelIteratorAction());
+        if (widget instanceof AssociationConnector)
+        {
+            selectTool.addAction(new AssociationConnectorIteratorAction());
+        }
         
         WidgetAction.Chain readOnly = widget.createActions(DesignerTools.READ_ONLY);      
         readOnly.addAction(sceneSelectAction);

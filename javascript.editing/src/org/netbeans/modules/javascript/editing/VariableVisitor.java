@@ -48,6 +48,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
@@ -434,7 +435,10 @@ public class VariableVisitor implements ParseTreeVisitor {
     /** Return all occurrences of the given node's variable (which can be a read/write to
      * a given variable. It will not include object literals, function calls or global vars. */
     public List<Node> getVarOccurrences(Node node) {
-        assert AstUtilities.isNameNode(node);
+        if (!AstUtilities.isNameNode(node)) {
+            Logger.getLogger(this.getClass().getName()).warning("Should have been a name node: " + node.getString());
+            return null;
+        }
         if (node.getType() == Token.FUNCNAME || node.getType() == Token.OBJLITNAME) {
             return null;
         }

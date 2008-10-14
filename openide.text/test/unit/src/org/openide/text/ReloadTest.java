@@ -85,7 +85,7 @@ implements CloneableEditorSupport.Env {
     }
     
     protected @Override Level logLevel() {
-        return Level.ALL;
+        return Level.FINER;
     }
     
     protected @Override void setUp() {
@@ -109,18 +109,24 @@ implements CloneableEditorSupport.Env {
         String s = doc.getText (0, doc.getLength ());
         assertEquals ("Text has been updated", content, s);
         
-        
+
         long oldtime = System.currentTimeMillis ();
+        Thread.sleep(300);
+        err.info("Document modified");
         doc.insertString (0, "A text", null);
+        err.info("Document about to save");
         support.saveDocument ();
+        err.info("Document saved");
         s = doc.getText (0, doc.getLength ());
-        
+
+        err.info("Current content: " + s);
         content = "NOT TO be loaded";
         propL.firePropertyChange (CloneableEditorSupport.Env.PROP_TIME, null, new Date (oldtime));
         
         waitAWT ();
         
         String s1 = doc.getText (0, doc.getLength ());
+        err.info("New content: " + s1);
         assertEquals ("Text has not been updated", s, s1);
     }
 
@@ -171,6 +177,7 @@ implements CloneableEditorSupport.Env {
             public @Override void close() throws IOException {
                 super.close ();
                 content = new String (toByteArray ());
+                date = new Date();
             }
         }
         

@@ -99,7 +99,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
 
     public ExecutorTask execute(String command, Map<String, ?> properties) throws IOException {
         String[] projectName = new String[1];
-        Properties antProps = computeProperties(properties, projectName);
+        Properties antProps = computeProperties(command, properties, projectName);
         
         FileObject script = buildScript(command);
         AntProjectCookie apc = new FakeAntProjectCookie(AntScriptUtils.antProjectCookieFor(script), projectName[0]);
@@ -111,7 +111,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         return AntTargetExecutor.createTargetExecutor(execenv).execute(apc, null);
     }
 
-    static Properties computeProperties(Map<String, ?> properties, String[] projectNameOut) {
+    static Properties computeProperties(String command, Map<String, ?> properties, String[] projectNameOut) {
         properties = new HashMap<String, Object>(properties);
         FileObject toRun = getValue(properties, PROP_EXECUTE_FILE, FileObject.class);
         String workDir = getValue(properties, PROP_WORK_DIR, String.class);
@@ -121,7 +121,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         String projectName = getValue(properties, PROP_PROJECT_NAME, String.class);
         Iterable<String> runJVMArgs = getMultiValue(properties, PROP_RUN_JVMARGS, String.class);
         Iterable<String> args = getMultiValue(properties, PROP_APPLICATION_ARGS, String.class);
-        if (workDir == null) {
+        if (workDir == null && !QUICK_CLEAN.equals(command)) {
             Parameters.notNull("toRun", toRun);
             Project project = FileOwnerQuery.getOwner(toRun);
             if (project != null) {
@@ -134,7 +134,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
                 }
             }
         }
-        if (className == null) {
+        if (className == null && !QUICK_CLEAN.equals(command)) {
             Parameters.notNull("toRun", toRun);
             ClassPath source = ClassPath.getClassPath(toRun, ClassPath.SOURCE);
             className = source.getResourceName(toRun, '.', false);
@@ -143,7 +143,7 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
             Parameters.notNull("toRun", toRun);
             exec = ClassPath.getClassPath(toRun, ClassPath.EXECUTE);
         }
-        if (javaTool == null) {
+        if (javaTool == null && !QUICK_CLEAN.equals(command)) {
             JavaPlatform p = getValue(properties, PROP_PLATFORM, JavaPlatform.class);
 
             if (p == null) {
@@ -172,12 +172,12 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         LOG.log(Level.FINE, "execute classpath={0}", exec);
         String cp = exec.toString(ClassPath.PathConversionMode.FAIL);
         Properties antProps = new Properties();
-        antProps.setProperty("classpath", cp);
-        antProps.setProperty("classname", className);
-        antProps.setProperty("platform.java", javaTool);
-        antProps.setProperty("work.dir", workDir);
-        antProps.setProperty("run.jvmargs", toOneLine(runJVMArgs));
-        antProps.setProperty("application.args", toOneLine(args));
+        setProperty(antProps, "classpath", cp);
+        setProperty(antProps, "classname", className);
+        setProperty(antProps, "platform.java", javaTool);
+        setProperty(antProps, "work.dir", workDir);
+        setProperty(antProps, "run.jvmargs", toOneLine(runJVMArgs));
+        setProperty(antProps, "application.args", toOneLine(args));
 
         for (Entry<String, ?> e : properties.entrySet()) {
             if (e.getValue() instanceof String) {
@@ -190,6 +190,12 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
         return antProps;
     }
 
+    private static void setProperty(Properties antProps, String property, String value) {
+        if (value != null) {
+            antProps.setProperty(property, value);
+        }
+    }
+
     private static <T> T getValue(Map<String, ?> properties, String name, Class<T> type) {
         Object v = properties.remove(name);
 
@@ -197,6 +203,10 @@ public class ProjectRunnerImpl implements JavaRunnerImplementation{
             FileObject f = (FileObject) v;
             File file = FileUtil.toFile(f);
 
+            if (file == null) {
+                return null;
+            }
+            
             v = file.getAbsolutePath();
         }
 

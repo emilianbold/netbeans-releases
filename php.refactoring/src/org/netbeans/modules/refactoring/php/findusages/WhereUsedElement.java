@@ -126,7 +126,17 @@ public class WhereUsedElement extends SimpleRefactoringElementImplementation {
     public static String extractVariableName(Variable var) {
         if (var.getName() instanceof Identifier) {
             Identifier id = (Identifier) var.getName();
-            return id.getName();
+            StringBuilder varName = new StringBuilder();
+
+            if (var.isDollared()) {
+                varName.append("$");
+            }
+
+            varName.append(id.getName());
+            return varName.toString();
+        } else if (var.getName() instanceof Variable) {
+            Variable name = (Variable) var.getName();
+            return extractVariableName(name);
         }
 
         return null;

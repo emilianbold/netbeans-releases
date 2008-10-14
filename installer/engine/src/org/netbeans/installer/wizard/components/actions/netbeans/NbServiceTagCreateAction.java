@@ -51,6 +51,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
+import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
@@ -146,10 +147,8 @@ public class NbServiceTagCreateAction extends WizardAction {
 
         for (Product product : products) {
             String uid = product.getUid();
-            if (uid.equals("nb-base")) {
-                createSTNetBeans(product, false);
-            } else if (uid.equals("nb-cnd")) {
-                createSTNetBeans(product, true);
+            if (uid.startsWith("nb-")) {
+                createSTNetBeans(product);
             } else if (uid.equals("glassfish")) {
                 createSTGlassFish(product, true);
             } else if (uid.equals("glassfish-mod")) {
@@ -166,31 +165,47 @@ public class NbServiceTagCreateAction extends WizardAction {
         }
         LogManager.logExit("... finished service tags action");
     }
+    
+    private File getNetBeansLocation(Product product) {
+        File nbLocation = null;
 
-    private void createSTNetBeans(Product nbProduct, boolean isCndRegistered) {
+        if (product.getUid().equals("nb-base")) {
+            nbLocation = product.getInstallationLocation();
+        } else if (product.getUid().startsWith("nb-")) {
+            nbLocation = Registry.getInstance().
+                    getProducts(product.getDependencyByUid("nb-base").get(0)).
+                    get(0).getInstallationLocation();
+        }
+        return nbLocation;
+    }
+    
+    private void createSTNetBeans(Product product) {
         try {
-            LogManager.log("... create ST for NetBeans");
-            File nbLocation = nbProduct.getInstallationLocation();
+            File nbLocation = getNetBeansLocation(product);
+            if(nbLocation==null) {
+                return;
+            }
             File nbPlatform = nbLocation.listFiles(new FileFilter() {
-
                 public boolean accept(File pathname) {
                     return pathname.getName().startsWith("platform");
                 }
             })[0];
-
-            System.setProperty("netbeans.home", nbPlatform.getPath());            
-            if (isCndRegistered) {
-                NbServiceTagSupport.createCndServiceTag(source,
-                    JavaUtils.getVersion(
-                    new File(NetBeansUtils.getJavaHome(nbPlatform.getParentFile()))).
-                    toJdkStyle());                
-            } else {
-                NbServiceTagSupport.createNbServiceTag(source,
-                    JavaUtils.getVersion(
-                    new File(NetBeansUtils.getJavaHome(nbPlatform.getParentFile()))).
-                    toJdkStyle());
+            
+            System.setProperty("netbeans.home", nbPlatform.getPath());
+            String javaVersion = JavaUtils.getVersion(new File(NetBeansUtils.getJavaHome(nbLocation))).toJdkStyle();
+            
+            if (product.getUid().equals("nb-base")) {
+                LogManager.log("... create ST for NetBeans");
+                NbServiceTagSupport.createNbServiceTag(source, javaVersion);
                 setNetBeansStatus(false);
-            }            
+            } else if (product.getUid().equals("nb-cnd")) {
+                LogManager.log("... create ST for " + product.getDisplayName());
+                NbServiceTagSupport.createCndServiceTag(source, javaVersion);
+            } else if (product.getUid().equals("nb-javafx")) {
+                LogManager.log("... create ST for " + product.getDisplayName());
+                NbServiceTagSupport.createJavaFXServiceTag(source, javaVersion);
+                NbServiceTagSupport.createJavaFXSdkServiceTag(source, javaVersion);
+            }
         } catch (IOException e) {
             LogManager.log(e);
         }

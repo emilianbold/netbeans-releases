@@ -76,6 +76,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
+import org.netbeans.junit.RandomlyFails;
 
 // XXX mkrauskopf: don't use libs/xerces for testing purposes of apisupport
 // since it could fail with a new version of xerces lib! Generate or create some
@@ -376,6 +377,7 @@ public class SingleModulePropertiesTest extends TestBase {
         assertTrue("There are two available friends for component2.", props.getAvailableFriends().length > 50);
     }
     
+    @RandomlyFails
     public void testSimulateLocalizedBundlePackageRefactoring() throws Exception {
         NbModuleProject p = generateStandaloneModule("module1");
         SingleModuleProperties props = loadProperties(p);
