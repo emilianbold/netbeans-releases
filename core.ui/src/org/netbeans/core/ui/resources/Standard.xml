@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <Toolbar name="File" />
     <Toolbar name="Clipboard" visible="false"/>
     <Toolbar name="UndoRedo" />
-    <Toolbar name="Memory"/>
+    <Toolbar name="Memory" visible="false"/>
   </Row>
   <Row>
     <Toolbar name="WorkspaceSwitcher" visible="true" />
