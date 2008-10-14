@@ -3,7 +3,6 @@ package org.netbeans.test.junit.junit3;
 import org.netbeans.jellytools.modules.junit.testcases.ExtJellyTestCaseForJunit3;
 import java.util.ArrayList;
 import javax.swing.tree.TreePath;
-import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
@@ -13,13 +12,13 @@ import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.jemmy.operators.Operator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
 
 /**
@@ -62,16 +61,9 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit3 {
         newOp.selectProject("Java Application");
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
-        if (new JButtonOperator(newOp, "Finish").isEnabled()) {
-            newOp.finish();
-        } else {
-            newOp.cancel();
-            Node projectNode = ProjectsTabOperator.invoke().getProjectRootNode(TEST_PROJECT_NAME);
-            //Node beanNode = new Node(new SourcePackagesNode(TEST_PROJECT_NAME), TEST_PACKAGE_NAME + "MemoryView.java"); //NOI18N
-            //new OpenAction().performAPI(beanNode); // NOI18N
-            //new OpenAction()
-        }
-        ProjectSupport.waitScanFinished();
+        newOp.finish();
+
+        new EventTool().waitNoEvent(5000);
 
         // select source packages node
         ProjectsTabOperator pto = new ProjectsTabOperator();

@@ -189,4 +189,11 @@ public final class Utils {
         }
     }
     
+    public static String truncate(String s, int maxSize) {
+        String validStr = s;
+        if (s.length() > maxSize){
+            validStr = s.substring(0, maxSize);
+        }
+        return validStr;
+    }
 }

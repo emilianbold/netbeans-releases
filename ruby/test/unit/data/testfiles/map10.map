@@ -1,0 +1,10 @@
+
+attrs=|NODOC|
+class=h
+class-ig=h
+filename=gem:gems/actionmailer-2.1.0/lib/action_mailer/vendor/text-format-0.6.3/text/format.rb
+fqn=h
+require=action_mailer/vendor/text-format-0.6.3/text/format
+requires=test/unit
+method=hyphenate_to(word,size);|STATIC|NODOC|
+

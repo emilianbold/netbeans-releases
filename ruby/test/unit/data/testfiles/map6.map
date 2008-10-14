@@ -1,0 +1,9 @@
+
+attrs=|DOCUMENTED|MODULE|;113
+class=Instance
+class-ig=instance
+filename=cluster:rubystubs/1.8.7-p72/digest.rb
+fqn=Digest::Instance
+in=Digest
+require=digest
+method=new;|DOCUMENTED|

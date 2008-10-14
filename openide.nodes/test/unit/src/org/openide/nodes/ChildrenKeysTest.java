@@ -1350,6 +1350,10 @@ public class ChildrenKeysTest extends NbTestCase {
         
         assertEquals ("No nodes", 0, n.getChildren ().getNodesCount ());
         k.setKeys (new Object[] { "Ahoj", NULL });
+
+        // get snapshot to prevent GC
+        List<Node> snapshot = k.snapshot();
+
         l.assertAddEvent("Two nodes added", 2);
         l.assertNoEvents("No more events after add");
         assertEquals ("Two nodes", 2, n.getChildren ().getNodesCount ());
@@ -1663,7 +1667,33 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a2", snapshot.get(1).getName());
         assertEquals("a3", snapshot.get(2).getName());
     }
-    
+
+    public void testSnapshotSize() {
+        class K extends Keys {
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("a", "b", "c");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+        K ch = new K(lazy());
+        Node root = createNode(ch);
+        List<Node> snapshot = root.getChildren().snapshot();
+        assertEquals(snapshot.size(), root.getChildren().getNodesCount());
+    }
+
     public void testSnapshotWithEmptyEntries() {
         class K extends Keys {
 
@@ -1863,7 +1893,68 @@ public class ChildrenKeysTest extends NbTestCase {
             fail("Original snapshot should be held by FilterNode to prevent removeNotify");
         }
     }
-    
+
+    public void testSnapshotConsistency() {
+        class K extends Keys {
+
+            public K(boolean lazy, String... args) {
+                super(lazy(), args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+
+        class Listener extends NodeAdapter {
+
+            List<Node> snapshot;
+
+            public Listener(List<Node> snapshot) {
+                this.snapshot = snapshot;
+            }
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                snapshot = ev.getSnapshot();
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                List<Node> prevSnapshot = ev.getPrevSnapshot();
+                if (lazy()) {
+                    EntrySupport.Lazy.LazySnapshot ls = (EntrySupport.Lazy.LazySnapshot) snapshot;
+                    EntrySupport.Lazy.LazySnapshot pls = (EntrySupport.Lazy.LazySnapshot) prevSnapshot;
+                    assertEquals(ls.entries, pls.entries);
+                } else {
+                    assertEquals(snapshot, prevSnapshot);
+                }
+                snapshot = ev.getSnapshot();
+            }
+        }
+
+        class Listener2 extends NodeAdapter {
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                ev.getDelta();
+            }
+        }
+        K ch = new K(lazy(), "a1", "a2");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+
+        Listener l1 = new Listener(root.getChildren().snapshot());
+        Listener2 l2 = new Listener2();
+        root.addNodeListener(l1);
+        root.addNodeListener(l2);
+        ch.keys("a1", "a2", "-a3");
+    }
+
     public void testEventSnapshotConsistencyAfterSetChildrenToSameLaziness() {
         doTestEventSnapshotConsistencyAfterSetChildren(lazy(), lazy());
     }

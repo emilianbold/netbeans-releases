@@ -50,7 +50,6 @@ import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
-import org.netbeans.jellytools.modules.debugger.actions.RunToCursorAction;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
@@ -112,18 +111,6 @@ public class WatchesTest extends JellyTestCase {
         openDataProjects(Utilities.testProjectName);
         new Action(null, Utilities.setMainProjectAction).perform(new ProjectsTabOperator().getProjectRootNode(Utilities.testProjectName));
         System.out.println("########  " + getName() + "  #######");
-        if ("testWatchesPublicVariables".equals(getName())) {
-            //open source
-            
-            org.netbeans.jellytools.nodes.Node beanNode = new org.netbeans.jellytools.nodes.Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-            new OpenAction().performAPI(beanNode); // NOI18N
-            EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
-            Utilities.setCaret(eo, 76);
-            new RunToCursorAction().perform();
-            Utilities.getDebugToolbar().waitComponentVisible(true);
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
-        }
     }
     
     /**
@@ -131,9 +118,8 @@ public class WatchesTest extends JellyTestCase {
      */
     public void tearDown() {
         JemmyProperties.getCurrentOutput().printTrace("\nteardown\n");
-        if ("testWatchesValues".equals(getName())) {
-            Utilities.endAllSessions();
-        }
+        Utilities.endAllSessions();
+        Utilities.deleteAllBreakpoints();        
         Utilities.deleteAllWatches();
     }
     
@@ -142,6 +128,18 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesPublicVariables() throws Throwable {
         try {
+            //open source
+            org.netbeans.jellytools.nodes.Node beanNode = new org.netbeans.jellytools.nodes.Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode); // NOI18N
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("Vpublic");
             createWatch("Spublic");
             createWatch("inheritedVpublic");
@@ -163,6 +161,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesProtectedVariables() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("Vprotected");
             createWatch("Sprotected");
             createWatch("inheritedVprotected");
@@ -184,6 +186,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesPrivateVariables() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("Vprivate");
             createWatch("Sprivate");
             createWatch("inheritedVprivate");
@@ -205,6 +211,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesPackagePrivateVariables() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("VpackagePrivate");
             createWatch("SpackagePrivate");
             createWatch("inheritedVpackagePrivate");
@@ -226,6 +236,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersBasic() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("1==1");
             createWatch("1==0");
             createWatch("Integer.toString(10)");
@@ -250,6 +264,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersLinkedList() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("llist");
             createWatch("llist.toString()");
             createWatch("llist.getFirst()");
@@ -274,6 +292,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersArrayList() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("alist");
             createWatch("alist.toString()");
             createWatch("alist.get(2)");
@@ -294,6 +316,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersVector() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("vec");
             createWatch("vec.toString()");
             createWatch("vec.get(3)");
@@ -314,6 +340,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersHashMap() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("hmap");
             createWatch("hmap.containsKey(\"4\")");
             createWatch("hmap.get(\"5\")");
@@ -336,6 +366,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersHashtable() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("htab");
             createWatch("htab.containsKey(\"7\")");
             createWatch("htab.get(\"9\")");
@@ -358,6 +392,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersTreeMap() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("tmap");
             createWatch("tmap.containsKey(\"11\")");
             createWatch("tmap.get(\"12\")");
@@ -380,6 +418,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFiltersTreeSet() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("tset");
             createWatch("tset.contains(\"14. item\")");
             createWatch("tset.iterator()");
@@ -400,6 +442,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFilters1DArray() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("policko");
             createWatch("policko.length");
             createWatch("policko[1]");
@@ -429,6 +475,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesFilters2DArray() throws Throwable {
         try {
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 76);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:76");
             createWatch("d2");
             createWatch("d2.length");
             createWatch("d2[1]");
@@ -456,10 +506,10 @@ public class WatchesTest extends JellyTestCase {
      */
     public void testWatchesValues() throws Throwable {
         try {
-            EditorOperator op = new EditorOperator("MemoryView.java");
-            Utilities.setCaret(op, 104);
-            new RunToCursorAction().perform();
-            MainWindowOperator.getDefault().waitStatusText("Thread main stopped at MemoryView.java:104.");
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            Utilities.toggleBreakpoint(eo, 104);
+            Utilities.startDebugger();
+            Utilities.waitStatusText("Thread main stopped at MemoryView.java:104");
             
             createWatch("free");
             createWatch("taken");

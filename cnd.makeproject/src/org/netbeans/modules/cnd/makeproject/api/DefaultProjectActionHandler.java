@@ -368,7 +368,9 @@ public class DefaultProjectActionHandler implements ActionListener {
                         if (HostInfoProvider.getDefault().getPlatform(key) == PlatformTypes.PLATFORM_WINDOWS) {
                             // we need to run the application under cmd on windows
                             exe = "cmd.exe"; // NOI18N
-                            args = "/c " + IpeUtils.quoteIfNecessary(pae.getExecutable()) + " " + pae.getProfile().getArgsFlat(); // NOI18N
+                            // exe path naturalization is needed for cmd on windows, see issue 149404
+                            args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable()))
+                                   + " " + pae.getProfile().getArgsFlat(); // NOI18N
                         } else if (conf.getDevelopmentHost().isLocalhost()) {
                             exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
                         }

@@ -622,7 +622,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 type, staticContext, rightExpressionBoundary);
     }
 
-    private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence tokenSequence) {
+    private String findLHSideExpressionType_extractFunctionNameFromCall(TokenSequence<PHPTokenId> tokenSequence) {
         String functionName = tokenSequence.token().text().toString();
         int orgPos = tokenSequence.offset();
 

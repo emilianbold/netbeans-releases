@@ -118,7 +118,7 @@ public class GlobalSourcePath implements Runnable {
         this.sourcePath = new SourcePathImplementation ();
         this.binaryPath = new BinaryPathImplementation ();
         this.unknownSourcePath = new UnknownSourcePathImplementation ();
-        this.firerTask = firer.create(this);
+        this.firerTask = firer.create(this, true);
         this.timeStamp = -1;
         this.gpr = GlobalPathRegistry.getDefault();
         this.activeCps = Collections.emptySet();

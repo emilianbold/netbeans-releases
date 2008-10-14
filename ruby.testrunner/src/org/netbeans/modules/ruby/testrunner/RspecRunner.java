@@ -152,7 +152,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(name, locator, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, project, debug ? SessionType.DEBUG : SessionType.TEST);
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -182,7 +182,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.addStandardRecognizers();
         desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name,
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
 
         addSpecOptsWarningIfNeeded(session, opts);
@@ -323,7 +323,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestSession session = new TestSession(task.getDisplayName(),
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         addSpecOptsWarningIfNeeded(session, specOpts);
         

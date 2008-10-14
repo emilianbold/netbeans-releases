@@ -137,7 +137,11 @@ public class ClassBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             NbDialogOperator dialog = Utilities.newBreakpoint(73);
             setBreakpointType(dialog, "Class");
             new JTextFieldOperator(dialog, 0).setText("examples.advanced.MemoryView");
@@ -157,7 +161,6 @@ public class ClassBreakpointsTest extends JellyTestCase {
     public void testClassBreakpointPrefilledInClass() throws Throwable {
         try {
             EditorOperator eo = new EditorOperator("MemoryView.java");
-            eo.clickMouse(50,50,1);
             NbDialogOperator dialog = Utilities.newBreakpoint(37);            
             assertTrue("Class breakpoint is not pre-selected", new JComboBoxOperator(dialog, 1).getSelectedItem().equals("Class"));
             assertEquals("Class Name was not set to correct value.", "examples.advanced.MemoryView", new JTextFieldOperator(dialog, 0).getText());
@@ -238,9 +241,23 @@ public class ClassBreakpointsTest extends JellyTestCase {
             dialog.ok();
             new EventTool().waitNoEvent(500);
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped.");
+            try {
+                Utilities.waitStatusText("Thread main stopped.");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -279,13 +296,41 @@ public class ClassBreakpointsTest extends JellyTestCase {
 
             new DebugProjectAction().performMenu();
             //Class breakpoint hit for class examples.advanced.Helper.");
-            Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper");
+            try {
+                Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.Helper");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.Helper")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1.");
+            try {
+                Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1.");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             //Class breakpoint hit for class examples.advanced.MemoryView$1
-            Utilities.waitStatusText("Thread main stopped at MemoryView.java:121.");
+            try {
+                Utilities.waitStatusText("Thread main stopped at MemoryView.java:121.");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at MemoryView.java:121.")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;

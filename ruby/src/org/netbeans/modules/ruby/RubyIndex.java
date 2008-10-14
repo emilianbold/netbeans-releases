@@ -544,7 +544,7 @@ public final class RubyIndex {
         return methods;
     }
 
-    private IndexedMethod createMethod(String signature, SearchResult map, boolean inherited) {
+    public IndexedMethod createMethod(String signature, SearchResult map, boolean inherited) {
         String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
         String module = map.getValue(RubyIndexer.FIELD_IN);
 
@@ -582,7 +582,7 @@ public final class RubyIndex {
         return m;
     }
 
-    private IndexedField createField(String signature, SearchResult map, boolean isInstance, boolean inherited) {
+    public IndexedField createField(String signature, SearchResult map, boolean isInstance, boolean inherited) {
         String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
         String module = map.getValue(RubyIndexer.FIELD_IN);
 
@@ -619,7 +619,7 @@ public final class RubyIndex {
         return m;
     }
     
-    private IndexedClass createClass(String fqn, String clz, SearchResult map) {
+    public IndexedClass createClass(String fqn, String clz, SearchResult map) {
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
         // TODO - how do I determine -which- file to associate with the file?

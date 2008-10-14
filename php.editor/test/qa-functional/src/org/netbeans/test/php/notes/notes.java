@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,39 +39,22 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.ruby.testrunner.ui;
+package org.netbeans.test.php.notes;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.openide.nodes.Node;
+import org.netbeans.test.php.GeneralPHP;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
+import java.util.List;
 
 /**
  *
- * @author Marian Petras
+ * @author michaelnazarov@netbeans.org
  */
-final class JumpAction extends AbstractAction {
 
-    /** */
-    private final Node node;
-    /** */
-    private final String callstackFrameInfo;
-
-    /** Creates a new instance of JumpAction */
-    public JumpAction(Node node, String callstackFrameInfo) {
-        this.node = node;
-        this.callstackFrameInfo = callstackFrameInfo;
-    }
-
-    /**
-     * If the <code>callstackFrameInfo</code> is not <code>null</code>,
-     * tries to jump to the callstack frame source code. Otherwise does nothing.
-     */
-    public void actionPerformed(ActionEvent e) {
-        if (callstackFrameInfo == null) {
-            return;
-        }
-        
-        OutputUtils.openCallstackFrame(node, callstackFrameInfo);
-    }
-
+public class notes extends GeneralPHP
+{
+  public notes( String arg0 )
+  {
+    super( arg0 );
+  }
 }

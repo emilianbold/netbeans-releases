@@ -1,0 +1,12 @@
+
+attrs=|CLASS|
+class=mediator
+class-ig=mediator
+filename=ruby:lib/ruby/1.8/runit/cui/testrunner.rb
+fqn=mediator
+require=runit/cui/testrunner
+requires=runit/testresult,test/unit/ui/console/testrunner
+attribute=result_delegate
+method=create_result;|STATIC|
+
+

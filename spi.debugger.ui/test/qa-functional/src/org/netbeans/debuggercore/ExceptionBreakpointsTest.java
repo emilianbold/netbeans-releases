@@ -57,6 +57,7 @@ import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JEditorPaneOperator;
@@ -129,12 +130,16 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
      *
      */
     public void testExceptionBreakpointCreation() throws Throwable {
-        //open source
-        Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
-        new OpenAction().performAPI(beanNode);
-        EditorOperator eo = new EditorOperator("MemoryView.java");
-        eo.clickMouse(50,50,1);
         try {
+            //open source
+            Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
+            new OpenAction().performAPI(beanNode);
+            EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
             setBreakpointType(dialog, "Exception");
@@ -163,9 +168,23 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JComboBoxOperator(dialog, 2).selectItem(Bundle.getString("org.netbeans.modules.debugger.jpda.ui.breakpoints.Bundle", "LBL_Exception_Breakpoint_Type_Catched"));
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleForText(Utilities.runningStatusBarText, 0)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at URLClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at URLClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -186,11 +205,32 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JTextFieldOperator(dialog, 1).setText("java.lang.ClassLoader");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0));
         } catch (Throwable th) {
             Utilities.captureScreen(this);
@@ -212,11 +252,32 @@ public class ExceptionBreakpointsTest extends JellyTestCase {
             new JTextFieldOperator(dialog, 2).setText("java.net.URLClassLoader*");
             dialog.ok();
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            try {
+                Utilities.waitStatusText("Thread main stopped at ClassLoader.java");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread main stopped at ClassLoader.java")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             assertFalse("The debugger hit disabled breakpoint", Utilities.checkConsoleForText("Thread main stopped at URLClassLoader.java", 0));
         } catch (Throwable th) {
             Utilities.captureScreen(this);

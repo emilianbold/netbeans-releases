@@ -91,6 +91,7 @@ import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -935,10 +936,15 @@ class LuceneIndex extends Index {
     }
     
     private synchronized IndexReader getReader () throws IOException {
-        if (this.reader == null) {            
-            //It's important that no Query will get access to original IndexReader
-            //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
-            this.reader = new NoNormsReader(IndexReader.open(this.directory));
+        if (this.reader == null) {
+            //Issue #149757 - logging
+            try {
+                //It's important that no Query will get access to original IndexReader
+                //any norms call to it will initialize the HashTable of norms: sizeof (byte) * maxDoc() * max(number of unique fields in document)
+                this.reader = new NoNormsReader(IndexReader.open(this.directory));
+            } catch (IOException ioe) {
+                throw annotateException (ioe);
+            }
         }        
         return this.reader;
     }
@@ -948,8 +954,29 @@ class LuceneIndex extends Index {
             this.reader.close();
             this.reader = null;
         }
-        IndexWriter writer = new IndexWriter (this.directory, analyzer, create);
-        return writer;
+        //Issue #149757 - logging
+        try {
+            IndexWriter writer = new IndexWriter (this.directory, analyzer, create);
+            return writer;
+        } catch (IOException ioe) {
+            throw annotateException (ioe);
+        }
+    }
+    
+    private IOException annotateException (final IOException ioe) {
+        String message;
+        File[] children = refCacheRoot.listFiles();
+        if (children == null) {
+            message = "Non existing index folder";
+        }
+        else {
+            StringBuilder b = new StringBuilder();
+            for (File c : children) {
+                b.append(c.getName() +" f: " + c.isFile() + " r: " + c.canRead() + " w: " + c.canWrite()+"\n");  //NOI18N
+            }
+            message = b.toString();
+        }
+        return Exceptions.attachMessage(ioe, message);
     }
     
     

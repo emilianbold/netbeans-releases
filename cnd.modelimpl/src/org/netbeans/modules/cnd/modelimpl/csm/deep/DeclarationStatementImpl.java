@@ -191,7 +191,13 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 		    {
 			ClassImpl cls = ClassImpl.create(token, null, getContainingFile());
 			declarators.add(cls);
-			addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
+                        CsmTypedef[] typedefs = renderTypedef(token, cls, currentNamespace);
+			addTypedefs(typedefs, currentNamespace, container);
+			if( typedefs != null && typedefs.length > 0 ) {
+			    for (int i = 0; i < typedefs.length; i++) {
+				declarators.add(typedefs[i]);
+                            }
+                        }
 			renderVariableInClassifier(token, cls, currentNamespace, container);
 			break;
 		    }

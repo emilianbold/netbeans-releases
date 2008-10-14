@@ -113,7 +113,14 @@ public class IndexedField extends IndexedElement {
     public void setInherited(boolean inherited) {
         this.inherited = inherited;
     }
+
+    // For testsuite
     public static String decodeFlags(int flags) {
         return IndexedElement.decodeFlags(flags);
+    }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        return IndexedElement.stringToFlags(string);
     }
 }
