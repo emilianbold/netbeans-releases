@@ -68,6 +68,7 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.maven.profiles.Profile;
@@ -89,6 +90,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -275,20 +277,27 @@ public class ActionMappings extends javax.swing.JPanel {
         setupConfigurations();
         loadMappings();
         addListeners();
-        //TODO move the list population out of AWT.
-        GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
-        if (provider != null) {
-            Set<String> strs = provider.getAvailableGoals();
-            try {
-                @SuppressWarnings("unchecked")
-                List<String> phases = EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
-                strs.addAll(phases);
-            } catch (Exception e) {
-                // oh wel just ignore..
-                e.printStackTrace();
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                GoalsProvider provider = Lookup.getDefault().lookup(GoalsProvider.class);
+                if (provider != null) {
+                    final Set<String> strs = provider.getAvailableGoals();
+                    try {
+                        @SuppressWarnings("unchecked")
+                        List<String> phases = EmbedderFactory.getProjectEmbedder().getLifecyclePhases();
+                        strs.addAll(phases);
+                    } catch (Exception e) {
+                        // oh wel just ignore..
+                        e.printStackTrace();
+                    }
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            goalcompleter.setValueList(strs);
+                        }
+                    });
+                }
             }
-            goalcompleter.setValueList(strs);
-        }
+        });
         if (project != null) {
             ProjectProfileHandler profileHandler = project.getLookup().lookup(ProjectProfileHandler.class);
             profilecompleter.setValueList(profileHandler.getAllProfiles());
