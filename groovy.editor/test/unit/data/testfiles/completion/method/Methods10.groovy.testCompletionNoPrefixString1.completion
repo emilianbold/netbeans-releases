@@ -26,7 +26,7 @@ METHOD     contentEquals(StringBuffer)                boolean
 METHOD     copyValueOf(char[])                        String
 METHOD     copyValueOf(char[], int, int)              String
 METHOD     count(String)                              int
-METHOD     decodeBase64()                             class [B
+METHOD     decodeBase64()                             byte[]
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachLine(Closure)                          Object
@@ -57,10 +57,10 @@ METHOD     getAt(IntRange)                            String
 METHOD     getAt(Range)                               String
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 String
-METHOD     getBytes()                                 class [B
-METHOD     getBytes(String)                           class [B
+METHOD     getBytes()                                 byte[]
+METHOD     getBytes(String)                           byte[]
 METHOD     getBytes(int, int, byte[], int             void
-METHOD     getChars()                                 class [C
+METHOD     getChars()                                 char[]
 METHOD     getChars(int, int, char[], int             void
 METHOD     getClass()                                 Class
 METHOD     getMetaClass()                             MetaClass
@@ -127,9 +127,9 @@ METHOD     reverse()                                  String
 METHOD     size()                                     int
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
-METHOD     split()                                    String
-METHOD     split(String)                              String
-METHOD     split(String, int)                         String
+METHOD     split()                                    String[]
+METHOD     split(String)                              String[]
+METHOD     split(String, int)                         String[]
 METHOD     splitEachLine(String, Closure)             Object
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
@@ -141,7 +141,7 @@ METHOD     substring(int, int)                        String
 METHOD     toBigDecimal()                             BigDecimal
 METHOD     toBigInteger()                             BigInteger
 METHOD     toBoolean()                                Boolean
-METHOD     toCharArray()                              class [C
+METHOD     toCharArray()                              char[]
 METHOD     toCharacter()                              Character
 METHOD     toDouble()                                 Double
 METHOD     toFloat()                                  Float

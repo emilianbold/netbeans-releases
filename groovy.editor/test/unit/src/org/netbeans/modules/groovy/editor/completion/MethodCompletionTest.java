@@ -140,10 +140,9 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
     }    
     
-// see http://jira.codehaus.org/browse/GROOVY-3051
-//    public void testCompletionInsideFor2() throws Exception {
-//        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
-//    }
+    public void testCompletionInsideFor2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
+    }
     
 }
 

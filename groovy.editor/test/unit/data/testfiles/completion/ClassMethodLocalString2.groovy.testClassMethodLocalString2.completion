@@ -8,10 +8,10 @@ METHOD     getAt(IntRange)                            String
 METHOD     getAt(Range)                               String
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 String
-METHOD     getBytes()                                 class [B
-METHOD     getBytes(String)                           class [B
+METHOD     getBytes()                                 byte[]
+METHOD     getBytes(String)                           byte[]
 METHOD     getBytes(int, int, byte[], int             void
-METHOD     getChars()                                 class [C
+METHOD     getChars()                                 char[]
 METHOD     getChars(int, int, char[], int             void
 METHOD     getClass()                                 Class
 METHOD     getMetaClass()                             MetaClass

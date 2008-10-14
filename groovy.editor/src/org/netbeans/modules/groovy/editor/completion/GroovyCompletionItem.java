@@ -298,7 +298,7 @@ import org.openide.util.ImageUtilities;
         public String getRhsHtml(HtmlFormatter formatter) {
             // no FQN return types but only the classname, please:
 
-            String retType = method.getReturnType().toString();
+            String retType = method.getReturnType().getSimpleName();
             retType = NbUtilities.stripPackage(retType);
 
             formatter.appendText(retType);
