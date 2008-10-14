@@ -59,7 +59,6 @@ import org.netbeans.napi.gsfret.source.support.CaretAwareSourceTaskFactory;
 public final class HtmlCaretAwareSourceTask implements CancellableTask<CompilationInfo> {
 
     private static final String SOURCE_DOCUMENT_PROPERTY_NAME = Source.class.getName();
-    
     private FileObject file;
 
     HtmlCaretAwareSourceTask(FileObject file) {
@@ -84,20 +83,14 @@ public final class HtmlCaretAwareSourceTask implements CancellableTask<Compilati
     }
 
     public void run(CompilationInfo info) {
-
-        System.out.println("parsed; caret on pos " + CaretAwareSourceTaskFactory.getLastPosition(info.getFileObject()));
-
         resume();
-
         Document doc = getDocument();
-
         if (doc == null) {
             Logger.getLogger(HtmlCaretAwareSourceTask.class.getName()).log(Level.INFO, "Cannot get document!");
             return;
         }
 
         Source source = HtmlCaretAwareSourceTask.forDocument(doc);
-        System.out.println("source = " + source);
         source.parsed(info);
 
     }
@@ -109,11 +102,25 @@ public final class HtmlCaretAwareSourceTask implements CancellableTask<Compilati
         }
 
         public CancellableTask<CompilationInfo> createTask(FileObject file) {
-            return new HtmlCaretAwareSourceTask(file);
+            String mimeType = file.getMIMEType();
+            if (mimeType.equals("text/html")
+                    || mimeType.equals("text/x-jsp")
+                    || mimeType.equals("text/x-tag")
+                    || mimeType.equals("text/x-php5")) {
+                return new HtmlCaretAwareSourceTask(file);
+            } else {
+                return EMPTY_TASK; //is returning just one instance a problem?
+            }
         }
     }
-
     
+    private static final CancellableTask<CompilationInfo> EMPTY_TASK = new CancellableTask<CompilationInfo>() {
+        public void cancel() {
+        }
+        public void run(CompilationInfo parameter) throws Exception {
+        }
+    };
+
     public static synchronized Source forDocument(Document doc) {
         Source source = (Source) doc.getProperty(SOURCE_DOCUMENT_PROPERTY_NAME);
         if (source == null) {
@@ -130,20 +137,17 @@ public final class HtmlCaretAwareSourceTask implements CancellableTask<Compilati
         protected void parsed(CompilationInfo ci) {
             //distribute to clients
             for (SourceListener listener : listeners) {
-                System.out.println("Source(" + this + ").parsed(" + listener + ")");
                 listener.parsed(ci);
             }
         }
 
         public void addChangeListener(SourceListener l) {
-            System.out.println("Source(" + this + ").addChangeListener(" + l + ")");
             listeners.add(l);
         }
 
         public void removeChangeListener(SourceListener l) {
             listeners.remove(l);
         }
-        
     }
 
     public static interface SourceListener {

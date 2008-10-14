@@ -38,17 +38,16 @@
  */
 package org.netbeans.modules.html.editor;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
-import java.awt.Graphics;
-import java.awt.Rectangle;
+import java.awt.Font;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import javax.accessibility.Accessible;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
@@ -63,6 +62,7 @@ import org.netbeans.editor.SideBarFactory;
 import org.netbeans.editor.ext.html.parser.AstNode;
 import org.netbeans.editor.ext.html.parser.AstNodeUtils;
 import org.netbeans.modules.gsf.api.DataLoadersBridge;
+import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.html.editor.HtmlCaretAwareSourceTask.Source;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -74,6 +74,7 @@ import org.openide.util.LookupListener;
 import org.openide.util.WeakListeners;
 
 /**
+ * HTML tag navigation sidebar
  *
  * @author marekfukala
  */
@@ -82,7 +83,8 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private JTextComponent component;
     private volatile AttributeSet attribs;
     private Lookup.Result<? extends FontColorSettings> fcsLookupResult;
-    private FileObject fileObject;
+    private final FileObject fileObject;
+    private final Document doc;
     private final LookupListener fcsTracker = new LookupListener() {
 
         public void resultChanged(LookupEvent ev) {
@@ -99,21 +101,20 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private List<AstNode> nesting = new ArrayList<AstNode>(5);
 
     public NavigationSideBar() {
+        doc = null;
+        fileObject = null;
     }
 
     public NavigationSideBar(JTextComponent component) {
-        setLayout(new FlowLayout(FlowLayout.LEFT));
+        setLayout(new FlowLayout(FlowLayout.LEFT, 17, 0));
 
         this.component = component;
-        Document doc = component.getDocument();
+        this.doc = component.getDocument();
         this.fileObject = DataLoadersBridge.getDefault().getFileObject(doc);
 
         Source source = HtmlCaretAwareSourceTask.forDocument(doc);
-        System.out.println("NavigationSideBar's Source = " + source);
         source.addChangeListener(new HtmlCaretAwareSourceTask.SourceListener() {
-
             public void parsed(CompilationInfo info) {
-                System.out.println("NavigationSideBar - parsed");
                 NavigationSideBar.this.change(info);
             }
         });
@@ -124,83 +125,81 @@ public class NavigationSideBar extends JPanel implements Accessible {
     private void change(CompilationInfo info) {
         int caretPosition = CaretAwareSourceTaskFactory.getLastPosition(fileObject);
 
-        HtmlParserResult result = (HtmlParserResult) info.getEmbeddedResult("text/html", caretPosition);
+        HtmlParserResult result = (HtmlParserResult) info.getEmbeddedResult("text/html", caretPosition); //NOI18N
         if (result == null) {
             return;
         }
 
+        TranslatedSource tsource = result.getTranslatedSource();
         AstNode root = result.root();
 
-        AstNode current = AstNodeUtils.findDescendant(root, caretPosition);
+        AstNode current = AstNodeUtils.findDescendant(root, tsource != null ? tsource.getAstOffset(caretPosition) : caretPosition);
         if (current == null) {
             return;
         }
 
-//        System.out.println("current ast node for position " + caretPosition + ": " + current.path().toString());
-
-        updateNestingInfo(root, current);
+        updateNestingInfo(tsource, root, current);
 
     }
 
-    private void updateNestingInfo(AstNode root, AstNode node) {
+    private void updateNestingInfo(final TranslatedSource tsource, AstNode root, AstNode node) {
         List<AstNode> newNesting = new ArrayList<AstNode>();
         do {
-            if(node.type() == AstNode.NodeType.TAG) {
+            if (node.type() == AstNode.NodeType.TAG) {
                 newNesting.add(0, node);
             }
             node = node.parent();
-
         } while (node != null && node != root);
-
         nesting = newNesting;
 
         //update UI
         SwingUtilities.invokeLater(new Runnable() {
-
             public void run() {
-//                NavigationSideBar.this.repaint();
-                updatePanelUI();
+                updatePanelUI(tsource);
             }
         });
 
     }
 
-    private void updatePanelUI() {
+    private void updatePanelUI(final TranslatedSource tsource) {
         removeAll();
 
+        for (final AstNode node : nesting) {
+            final JLabel label = new javax.swing.JLabel();
+            label.setForeground(Color.BLACK);
+            label.setFont(new Font("Courier New", Font.PLAIN, getColoring().getFont().getSize())); // NOI18N
+            label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            label.setText(getDrawText(node.name()));
+            label.addMouseListener(new java.awt.event.MouseAdapter() {
+                @Override
+                public void mouseEntered(java.awt.event.MouseEvent evt) {
+                    label.setForeground(Color.BLUE);
+                }
+                @Override
+                public void mouseExited(java.awt.event.MouseEvent evt) {
+                    label.setForeground(Color.BLACK);
+                }
+                @Override
+                public void mouseClicked(java.awt.event.MouseEvent evt) {
+                    int documentOffset = tsource != null ? tsource.getLexicalOffset(node.startOffset()) : node.startOffset();
+                    component.getCaret().setDot(documentOffset);
+                }
+            });
 
+            add(label);
+        }
+
+        revalidate();
+        repaint();
     }
 
-    protected
-    @Override
-    void paintComponent(Graphics g) {
-        if (!enabled) {
-            return;
-        }
-        Rectangle clip = getVisibleRect();//g.getClipBounds();
-
-        //background
-//        g.setColor(Color.LIGHT_GRAY);
-//        g.fillRect(clip.x, clip.y, clip.width, clip.height);
-        g.setColor(Color.BLUE);
-        g.drawString(nestingToString(), 0, getColoring().getFont().getSize());
-
-    }
-
-    //XXX cache the string
-    private String nestingToString() {
-        StringBuilder sb = new StringBuilder();
-        Iterator<AstNode> i = nesting.iterator();
-        while(i.hasNext()) {
-            sb.append(i.next().name() + (i.hasNext() ? "  " : ""));
-        }
-        return sb.toString();
-
+    private String getDrawText(String tagName) {
+        return tagName;
     }
 
     private void updatePreferredSize() {
         if (enabled) {
-            setPreferredSize(new Dimension(component.getWidth(), getColoring().getFont().getSize() + 10));
+            setPreferredSize(new Dimension(component.getWidth(), getColoring().getFont().getSize() + 4));
             setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
         } else {
             setPreferredSize(new Dimension(0, 0));
