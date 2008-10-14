@@ -474,7 +474,7 @@ class BraceCompletion {
                                     // It can be revised in the future.
                                     bracketBalance = 1;
                                 }
-                                finished = true;
+                                finished = javaTS.offset() < caretOffset;
                             }
                         }
                         break;

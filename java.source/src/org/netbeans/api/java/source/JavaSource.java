@@ -2844,7 +2844,10 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
                     if (LOGGER.isLoggable(Level.FINER)) {
                         LOGGER.finer("Reparsed method in: " + fo);     //NOI18N
                     }
-                    assert block != null;
+                    if (block == null) {
+                        LOGGER.warning("Skeep reparse method, wrong new content: " + fo);   //NOI18N
+                        return false;
+                    }
                     fav.reset();
                     fav.scan(block, null);
                     final int newNoInner = fav.noInner;

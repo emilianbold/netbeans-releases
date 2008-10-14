@@ -54,20 +54,16 @@ import javax.swing.text.MutableAttributeSet;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.parser.ParserDelegator;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
 /**
  *  HTML Parser. It retrieves sections of the javadoc HTML file.
  *
  * @author  Martin Roskanin
  */
-class HTMLJavadocParser {
-    
-    private final Logger LOG = Logger.getLogger(HTMLJavadocParser.class.getName());
+final class HTMLJavadocParser {
 
     public HTMLJavadocParser() {
-        LOG.setLevel(Level.OFF);
+        super();
     }
     
     /** Gets the javadoc text from the given URL

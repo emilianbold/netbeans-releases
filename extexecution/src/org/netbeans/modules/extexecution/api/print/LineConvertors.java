@@ -107,7 +107,7 @@ public final class LineConvertors {
      * @param fileGroup regexp group supposed to be the filename;
      *             only nonnegative numbers allowed
      * @param lineGroup regexp group supposed to be the line number;
-     *             when negative line number is not parsed
+     *             if negative line number is not parsed
      * @return the convertor searching for lines matching the patterns,
      *             considering matched lines as being files (names or paths)
      */
@@ -153,11 +153,11 @@ public final class LineConvertors {
 
         /**
          * Returns the file corresponding to the filename (or path) or
-         * <code>null</code> if locater can't find the file.
+         * <code>null</code> if locator can't find the file.
          *
          * @param filename name of the file
          * @return the file corresponding to the filename (or path) or
-         *             <code>null</code> if locater can't find the file
+         *             <code>null</code> if locator can't find the file
          */
         FileObject find(String filename);
 

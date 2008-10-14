@@ -484,6 +484,7 @@ public class DesignView extends JPanel implements
 
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
+        im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "delete-something"); // NOI18N
         im1.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_S, KeyEvent.ALT_DOWN_MASK 
                 + KeyEvent.SHIFT_DOWN_MASK), "scroll-to-operation"); // NOI18N
@@ -526,6 +527,7 @@ public class DesignView extends JPanel implements
 
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_F2, 0), "rename-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, 0), "delete-something"); // NOI18N
+        im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_BACK_SPACE, 0), "delete-something"); // NOI18N
         im2.put(KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0), "cancel-something"); // NOI18N
 //        im2.put(org.netbeans.modules.bpel.nodes.actions.GoToSourceAction.GOTOSOURCE_KEYSTROKE, "gotosource-something"); // NOI18N
 //        im2.put(ShowBpelMapperAction.GOTOMAPPER_KEYSTROKE, "gotomapper-something"); // NOI18N
