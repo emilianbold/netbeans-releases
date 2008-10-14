@@ -49,7 +49,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.classpath.BootClassPathImplementation;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -254,10 +253,10 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createSourcePathImplementation(this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createSourcePathImplementation(this.testSourceRoots, helper, evaluator));
                     break;
             }
         }
@@ -268,7 +267,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(BootClassPathImplementation.createBootClassPathImplementation(evaluator));
+            cp = ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createBootClassPathImplementation(evaluator));
             cache[7] = cp;
         }
         return cp;

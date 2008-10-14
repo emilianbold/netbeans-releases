@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.j2ee.common.project.classpath;
 
-import org.netbeans.modules.java.api.common.classpath.BootClassPathImplementation;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -269,10 +268,10 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
         if (cp == null) {
             switch (type) {
                 case 0:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createSourcePathImplementation (this.sourceRoots, helper, evaluator));
                     break;
                 case 1:
-                    cp = ClassPathFactory.createClassPath(new SourcePathImplementation (this.testSourceRoots, helper, evaluator));
+                    cp = ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createSourcePathImplementation (this.testSourceRoots, helper, evaluator));
                     break;
             }
         }
@@ -283,7 +282,7 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
     private synchronized ClassPath getBootClassPath() {
         ClassPath cp = cache[7];
         if ( cp== null ) {
-            cp = ClassPathFactory.createClassPath(BootClassPathImplementation.createBootClassPathImplementation(evaluator));
+            cp = ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createBootClassPathImplementation(evaluator));
             cache[7] = cp;
         }
         return cp;

@@ -62,7 +62,7 @@ import org.openide.util.WeakListeners;
  * {@link ClassPathImplementation#PROP_RESOURCES}.
  * @author Tomas Zezula
  */
-public final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
+final class BootClassPathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     private static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
 
@@ -76,24 +76,13 @@ public final class BootClassPathImplementation implements ClassPathImplementatio
     private long eventId;
     private PropertyChangeSupport support = new PropertyChangeSupport(this);
 
-    private BootClassPathImplementation(PropertyEvaluator evaluator) {
+    BootClassPathImplementation(PropertyEvaluator evaluator) {
         assert evaluator != null;
 
         this.evaluator = evaluator;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
     
-    /**
-     * Creates implementation of BOOT classpath based on project's <code>platform.active</code>
-     * property.
-     * @param evaluator project's property evaluator
-     * @return classpath implementation
-     * @since X.X
-     */
-    public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator) {
-        return new BootClassPathImplementation(evaluator);
-    }
-
     /**
      * @see ClassPathImplementation#getResources()
      */

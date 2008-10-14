@@ -51,7 +51,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.classpath.SourcePathImplementation;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -206,7 +205,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (cp == null) {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
-                        ClassPathFactory.createClassPath(new SourcePathImplementation (this.sourceRoots, helper, evaluator)),
+                        ClassPathFactory.createClassPath(org.netbeans.modules.java.api.common.classpath.ClassPathSupport.createSourcePathImplementation (this.sourceRoots, helper, evaluator)),
                     });
                 cache.put(ClassPathCache.WEB_SOURCE, cp);
 
