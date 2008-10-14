@@ -67,7 +67,7 @@ public class BufferedURLContent implements URLContent {
         this.contentBuffer = null;
     }
     
-    public InputStream getInputStream() throws IOException {
+    public synchronized InputStream getInputStream() throws IOException {
         if (baseContent == null && inputStream == null) {
             return new ByteArrayInputStream(contentBuffer);
         } else {
