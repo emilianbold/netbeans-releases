@@ -7,15 +7,15 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="Dev"/>
-    <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
-    <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
+    <property name="baseide.version" value="6.5 RC1"/>
+    <property name="appname" value="NetBeans 6.5 RC1"/> 
+    <property name="mpkg.name_nb" value="NetBeans 6.5 RC1"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.5"/>      
 
-    <property name="appversion" value="Development Version"/>
-    <property name="nb.display.version.long"  value="Development Version ${buildnumber}"/>
-    <property name="nb.display.version.short" value="Dev"/>
+    <property name="appversion" value="6.5 RC1"/>
+    <property name="nb.display.version.long"  value="6.5 RC1"/>
+    <property name="nb.display.version.short" value="6.5 RC1"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="6.0.18"/>
@@ -62,7 +62,7 @@
     <property name="javafx_sdk_location" value="${javafx_builds_host}/lastSuccessfulBuild/artifact/main/contrib/zips/javafx-sdk-mac.zip"/>
 
 
-    <property name="dmg.prefix.name" value="${prefix}-${buildnumber}"/>                         
+    <property name="dmg.prefix.name" value="${prefix}"/>                         
 
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql.version"      value="5.0.67"/>
