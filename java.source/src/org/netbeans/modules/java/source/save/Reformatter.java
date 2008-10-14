@@ -59,6 +59,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
@@ -86,6 +87,10 @@ public class Reformatter implements ReformatTask {
                 controller = JavaSourceAccessor.getINSTANCE().createCompilationController(javaSource);
                 controller.toPhase(JavaSource.Phase.PARSED);
             } catch (IOException ioe) {
+                controller = null;
+                return;
+            }
+            catch (ParseException pe) {
                 controller = null;
                 return;
             }

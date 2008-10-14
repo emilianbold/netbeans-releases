@@ -111,22 +111,24 @@ public final class ModificationResult {
             throw new IllegalStateException ("Calling commit on already committed Modificationesult."); //NOI18N
         }
         try {
-            RepositoryUpdater.getDefault().lockRU();
-            for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
-                commit(me.getKey(), me.getValue(), null);
-            }
-        } finally {
-            RepositoryUpdater.getDefault().unlockRU();
-            Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
-            if (this.js != null) {
-                JavaSourceAccessor.getINSTANCE().revalidate(this.js);
-                alreadyRefreshed.addAll(js.getFileObjects());
-            }
-            for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
-                if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
-                    JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
-                    if (source != null) {
-                        JavaSourceAccessor.getINSTANCE().revalidate(source);
+            try {
+                RepositoryUpdater.getDefault().lockRU();
+                for (Map.Entry<FileObject, List<Difference>> me : diffs.entrySet()) {
+                    commit(me.getKey(), me.getValue(), null);
+                }
+            } finally {
+                RepositoryUpdater.getDefault().unlockRU();
+                Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
+                if (this.js != null) {
+                    JavaSourceAccessor.getINSTANCE().revalidate(this.js);
+                    alreadyRefreshed.addAll(js.getFileObjects());
+                }
+                for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
+                    if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
+                        JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
+                        if (source != null) {
+                            JavaSourceAccessor.getINSTANCE().revalidate(source);
+                        }
                     }
                 }
             }

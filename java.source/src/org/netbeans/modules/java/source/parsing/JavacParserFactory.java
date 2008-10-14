@@ -42,17 +42,22 @@ package org.netbeans.modules.java.source.parsing;
 import java.util.Collection;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class JavacParserFactory extends ParserFactory {
-
+    
     @Override
     public JavacParser createParser(final Collection<Snapshot> snapshots) {
         assert snapshots != null;
         return new JavacParser(snapshots);
+    }
+    
+    public static JavacParserFactory getDefault () {
+        return Lookup.getDefault().lookup(JavacParserFactory.class);
     }
 
 }

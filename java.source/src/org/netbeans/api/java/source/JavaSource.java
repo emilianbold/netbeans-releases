@@ -67,11 +67,11 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
@@ -79,8 +79,10 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -91,6 +93,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /** Class representing Java source file opened in the editor.
  *
@@ -196,10 +199,7 @@ public final class JavaSource {
     public static JavaSource create(final ClasspathInfo cpInfo, final Collection<? extends FileObject> files) throws IllegalArgumentException {
         if (files == null) {
             throw new IllegalArgumentException ();
-        }
-    
-    private static JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding,
-            final Collection<? extends FileObject> files, final boolean fixedCpInfo) throws IllegalArgumentException {
+        }    
         try {
             return new JavaSource(cpInfo, files);
         } catch (DataObjectNotFoundException donf) {
@@ -384,6 +384,7 @@ public final class JavaSource {
         if (task == null) {
             throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
         }
+        long currentId = -1;
         if (sources.isEmpty()) {
             try {
                 ParserManager.run(new GenericUserTask() {
@@ -520,7 +521,8 @@ public final class JavaSource {
     }
     //where
     private boolean isCurrent (long timestamp) {        
-        return eventCounter == timestamp;
+        //return eventCounter == timestamp;
+        return true;
     }
     
     /**
@@ -581,7 +583,7 @@ public final class JavaSource {
                             final JavacTaskImpl jt = copy.impl.getJavacTask();
                             Log.instance(jt.getContext()).nerrors = 0;
                             theParser[0] = copy.impl.getParser();
-                            final List<Difference> diffs = copy.getChanges(result.tag2Span);
+                            final List<ModificationResult.Difference> diffs = copy.getChanges(result.tag2Span);
                             if (diffs != null && diffs.size() > 0) {
                                 result.diffs.put(copy.getFileObject(), diffs);
                             }
@@ -671,12 +673,28 @@ public final class JavaSource {
         public PositionConverter create(FileObject fo, int offset, int length, JTextComponent component) {
             return new PositionConverter(fo, offset, length, component);
         }
-
-        @Override
-        public long createTaggedCompilationController(JavaSource js, long currentTag, Object[] out) throws IOException {
-            return js.createTaggedController(currentTag, out);
+        
+        public CompilationController createCompilationController (final JavaSource js) throws IOException, ParseException {
+            Parameters.notNull("js", js);
+            if (js.sources.size() != 1) {
+                throw new IllegalArgumentException ();
+            }
+            JavacParserFactory factory = JavacParserFactory.getDefault();
+            final Snapshot snapshot = js.sources.iterator().next().createSnapshot();
+            final JavacParser parser = factory.createParser(Collections.singletonList(snapshot));
+            final UserTask dummy = new UserTask() {
+                @Override
+                public void run(Result result, Snapshot snapshot) throws Exception {                    
+                }
+            };
+            parser.parse(snapshot,dummy, null);            
+            return CompilationController.get(parser.getResult(dummy, null));
         }
         
+        public long createTaggedCompilationController (JavaSource js, long currentTag, Object[] out) throws IOException {
+            return js.createTaggedController(currentTag, out);
+        }
+                
         public CompilationInfo createCompilationInfo (final CompilationInfoImpl impl) {
             return new CompilationInfo(impl);
         }
@@ -701,7 +719,7 @@ public final class JavaSource {
             assert info != null;
             assert js != null;
             info.setJavaSource(js);
-        }
+        }        
     }
     
                 
