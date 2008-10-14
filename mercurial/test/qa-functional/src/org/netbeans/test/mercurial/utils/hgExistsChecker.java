@@ -22,13 +22,9 @@ public class hgExistsChecker {
         StreamHandler shOutput;
         File tmpOutput = null;
         FileOutputStream fos = null;
-        File tmpError = null;
-        FileOutputStream fes = null;
         try {
             tmpOutput = new File("/tmp/output.txt");
             fos = new FileOutputStream(tmpOutput);
-            tmpError = new File("/tmp/error.txt");
-            fes = new FileOutputStream(tmpOutput);
             proc = rt.exec("hg -v");
             shError = new StreamHandler(proc.getErrorStream(), System.err);
             shOutput = new StreamHandler(proc.getInputStream(), fos);
@@ -51,17 +47,10 @@ public class hgExistsChecker {
             } catch (InterruptedException ex) {
                 ex.printStackTrace();
             }
-            //close consumers
+            //close consumer
             if (fos != null) {
                 try {
                     fos.close();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
-                }
-            }
-            if (fes != null) {
-                try {
-                    fes.close();
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
