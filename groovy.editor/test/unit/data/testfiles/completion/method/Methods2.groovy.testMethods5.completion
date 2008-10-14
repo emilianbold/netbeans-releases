@@ -1,20 +1,27 @@
 Code completion result for source line:
-new URL("http://google.com").|getPr
+new Byte().|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
+METHOD     abs()                                      int
 METHOD     addShutdownHook(Closure)                   void
+METHOD     and(Number)                                Number
 METHOD     any()                                      boolean
 METHOD     any(Closure)                               boolean
 METHOD     asType(Class)                              Object
+METHOD     byteValue()                                byte
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
+METHOD     compareTo(Byte)                            int
+METHOD     compareTo(Character)                       int
+METHOD     compareTo(Number)                          int
+METHOD     compareTo(Object)                          int
+METHOD     decode(String)                             Byte
+METHOD     div(Character)                             Number
+METHOD     div(Number)                                Number
+METHOD     doubleValue()                              double
+METHOD     downto(Number, Closure)                    void
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
-METHOD     eachByte(Closure)                          void
-METHOD     eachLine(Closure)                          Object
-METHOD     eachLine(String,  int, Closure             Object
-METHOD     eachLine(String, Closure)                  Object
-METHOD     eachLine(int, Closure)                     Object
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                             boolean
 METHOD     every()                                    boolean
@@ -27,42 +34,44 @@ METHOD     findIndexValues(Closure)                   List
 METHOD     findIndexValues(int, Closure)              List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
+METHOD     floatValue()                               float
 METHOD     getAt(String)                              Object
-METHOD     getAuthority()                             String
 METHOD     getClass()                                 Class
-METHOD     getContent()                               Object
-METHOD     getContent(Class[])                        Object
-METHOD     getDefaultPort()                           int
-METHOD     getFile()                                  String
-METHOD     getHost()                                  String
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
-METHOD     getPath()                                  String
-METHOD     getPort()                                  int
 METHOD     getProperties()                            Map
-METHOD     getProtocol()                              String
-METHOD     getQuery()                                 String
-METHOD     getRef()                                   String
-METHOD     getText()                                  String
-METHOD     getText(String)                            String
-METHOD     getUserInfo()                              String
 METHOD     grep(Object)                               Collection
 METHOD     hashCode()                                 int
 METHOD     identity(Closure)                          Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
+METHOD     intValue()                                 int
+METHOD     intdiv(Character)                          Number
+METHOD     intdiv(Number)                             Number
 METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
+METHOD     isCase(Number)                             boolean
 METHOD     isCase(Object)                             boolean
 METHOD     iterator()                                 Iterator
-METHOD     newInputStream()                           BufferedInputStream
-METHOD     newReader()                                BufferedReader
-METHOD     newReader(String)                          BufferedReader
+METHOD     leftShift(Number)                          Number
+METHOD     longValue()                                long
+METHOD     minus(Character)                           Number
+METHOD     minus(Number)                              Number
+METHOD     mod(Number)                                Number
+METHOD     multiply(Character)                        Number
+METHOD     multiply(Number)                           Number
+METHOD     next()                                     Number
 METHOD     notify()                                   void
 METHOD     notifyAll()                                void
-METHOD     openConnection()                           URLConnection
-METHOD     openConnection(Proxy)                      URLConnection
-METHOD     openStream()                               InputStream
+METHOD     numberAwareCompareTo(Comparabl             int
+METHOD     or(Number)                                 Number
+METHOD     parseByte(String)                          byte
+METHOD     parseByte(String, int)                     byte
+METHOD     plus(Character)                            Number
+METHOD     plus(Number)                               Number
+METHOD     plus(String)                               String
+METHOD     power(Number)                              Number
+METHOD     previous()                                 Number
 METHOD     print(Object)                              void
 METHOD     print(PrintWriter)                         void
 METHOD     printf(String, Object)                     void
@@ -71,39 +80,39 @@ METHOD     println()                                  void
 METHOD     println(Object)                            void
 METHOD     println(PrintWriter)                       void
 METHOD     putAt(String, Object)                      void
-METHOD     sameFile(URL)                              boolean
-METHOD     setURLStreamHandlerFactory(URL             void
+METHOD     rightShift(Number)                         Number
+METHOD     rightShiftUnsigned(Number)                 Number
+METHOD     shortValue()                               short
 METHOD     sleep(long)                                void
 METHOD     sleep(long, Closure)                       void
 METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
-METHOD     toExternalForm()                           String
+METHOD     step(Number, Number, Closure)              void
+METHOD     times(Closure)                             void
+METHOD     toBigDecimal()                             BigDecimal
+METHOD     toBigInteger()                             BigInteger
+METHOD     toDouble()                                 Double
+METHOD     toFloat()                                  Float
+METHOD     toInteger()                                Integer
+METHOD     toLong()                                   Long
 METHOD     toString()                                 String
-METHOD     toURI()                                    URI
+METHOD     toString(byte)                             String
+METHOD     unaryMinus()                               Number
+METHOD     upto(Number, Closure)                      void
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
 METHOD     use(Object)                                Object
+METHOD     valueOf(String)                            Byte
+METHOD     valueOf(String, int)                       Byte
+METHOD     valueOf(byte)                              Byte
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void
 METHOD     with(Closure)                              Object
-METHOD     withInputStream(Closure)                   Object
-METHOD     withReader(Closure)                        Object
-METHOD     withReader(String, Closure)                Object
-FIELD      authority                                  String
-FIELD      factory                                    URLStreamHandlerFactory
-FIELD      file                                       String
-FIELD      handler                                    URLStreamHandler
-FIELD      handlers                                   Hashtable
-FIELD      hashCode                                   int
-FIELD      host                                       String
-FIELD      hostAddress                                InetAddress
-FIELD      path                                       String
-FIELD      port                                       int
-FIELD      protocol                                   String
-FIELD      protocolPathProp                           String
-FIELD      query                                      String
-FIELD      ref                                        String
+METHOD     xor(Number)                                Number
+FIELD      MAX_VALUE                                  byte
+FIELD      MIN_VALUE                                  byte
+FIELD      SIZE                                       int
+FIELD      TYPE                                       Class
 FIELD      serialVersionUID                           long
-FIELD      streamHandlerLock                          Object
-FIELD      userInfo                                   String
+FIELD      value                                      byte
