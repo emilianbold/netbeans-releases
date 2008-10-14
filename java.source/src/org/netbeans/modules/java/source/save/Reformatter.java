@@ -707,7 +707,7 @@ public class Reformatter implements ReformatTask {
             Tree parent = getCurrentPath().getParentPath().getLeaf();
             boolean insideFor = parent.getKind() == Tree.Kind.FOR_LOOP;
             ModifiersTree mods = node.getModifiers();
-            if (mods != null) {
+            if (mods != null && !fieldGroup) {
                 if (scan(mods, p)) {
                     if (!insideFor) {
                         indent += continuationIndentSize;
