@@ -103,7 +103,8 @@ public class Formatter {
         } else {
             Formatter formatter = kitClass2Formatter.get(kitClass);
             if (formatter == null) {
-                formatter = BaseKit.getKit(kitClass).createFormatter();
+                BaseKit kit = BaseKit.getKit(kitClass);
+                formatter = callCreateFormatterMethod(kit);
                 kitClass2Formatter.put(kitClass, formatter);
             }
             return formatter;
@@ -127,9 +128,9 @@ public class Formatter {
         if (formatter == null) {
             EditorKit editorKit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
             if (editorKit instanceof BaseKit) {
-                formatter = ((BaseKit) editorKit).createFormatter();
+                formatter = callCreateFormatterMethod((BaseKit) editorKit);
             } else {
-                formatter = BaseKit.getKit(BaseKit.class).createFormatter();
+                formatter = callCreateFormatterMethod(BaseKit.getKit(BaseKit.class));
             }
             mimePath2Formatter.put(mimePath, formatter);
         }
@@ -852,4 +853,12 @@ public class Formatter {
         }
     }
 
+    private static Formatter callCreateFormatterMethod(BaseKit kit) {
+        try {
+            Method m = kit.getClass().getMethod("createFormatter"); //NOI18N
+            return (Formatter) m.invoke(kit);
+        } catch (Exception e) {
+            return new Formatter(kit.getClass());
+        }
+    }
 }

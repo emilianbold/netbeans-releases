@@ -47,6 +47,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -58,9 +59,14 @@ import javax.swing.text.TextAction;
 import javax.swing.text.Caret;
 import javax.swing.plaf.TextUI;
 import javax.swing.text.Element;
+import javax.swing.text.Position;
 import javax.swing.text.View;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
+import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.openide.util.NbBundle;
 
@@ -937,26 +943,29 @@ public class Utilities {
      * @param endOffset offset at which the formatting ends
      * @return length of the reformatted code
      */
-    public static int reformat (final BaseDocument doc, final int startOffset, final int endOffset)
-    throws BadLocationException {
-        final Formatter formatter = doc.getFormatter();
-        formatter.reformatLock();
+    public static int reformat (final BaseDocument doc, final int startOffset, final int endOffset) throws BadLocationException {
+        final Reformat formatter = Reformat.get(doc);
+        formatter.lock();
         try {
-            final Object[] result = new Object [1];
-            doc.runAtomicAsUser (new Runnable () {
-                public void run () {
+            final Object[] result = new Object[1];
+            doc.runAtomicAsUser(new Runnable() {
+                public void run() {
                     try {
-                        result [0] = formatter.reformat (doc, startOffset, endOffset);
+                        Position endPos = doc.createPosition(endOffset);
+                        formatter.reformat(startOffset, endOffset);
+                        result[0] = Math.max(endPos.getOffset() - startOffset, 0);
                     } catch (BadLocationException ex) {
-                        result [0] = ex;
+                        result[0] = ex;
                     }
                 }
             });
-            if (result [0] instanceof BadLocationException)
-                throw (BadLocationException) result [0];
-            return (Integer) result [0];
+            if (result[0] instanceof BadLocationException) {
+                throw (BadLocationException) result[0];
+            } else {
+                return (Integer) result[0];
+            }
         } finally {
-            formatter.reformatUnlock();
+            formatter.unlock();
         }
     }
 
@@ -996,10 +1005,10 @@ public class Utilities {
     public static String getTabInsertString(BaseDocument doc, int offset)
     throws BadLocationException {
         int col = getVisualColumn(doc, offset);
-        Formatter f = doc.getFormatter();
-        boolean expandTabs = f.expandTabs();
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs);
         if (expandTabs) {
-            int spacesPerTab = f.getSpacesPerTab();
+            int spacesPerTab = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
             int len = (col + spacesPerTab) / spacesPerTab * spacesPerTab - col;
             return new String(Analyzer.getSpacesBuffer(len), 0, len);
         } else { // insert pure tab
@@ -1015,7 +1024,8 @@ public class Utilities {
     public static int getNextTabColumn(BaseDocument doc, int offset)
     throws BadLocationException {
         int col = getVisualColumn(doc, offset);
-        int tabSize = doc.getFormatter().getSpacesPerTab();
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        int tabSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
         return (col + tabSize) / tabSize * tabSize;
     }
 

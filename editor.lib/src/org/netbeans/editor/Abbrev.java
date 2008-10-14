@@ -53,6 +53,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Caret;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /** 
  * Abbreviation support allowing to expand defined character sequences
@@ -293,12 +294,17 @@ public class Abbrev implements /* SettingsChangeListener,*/ PropertyChangeListen
             }
 
             if(ins.indexOf("\n") != -1) { // NOI18N
-                Formatter formatter = doc.getFormatter();
-                formatter.reformatLock();
+                Reformat formatter = Reformat.get(doc);
+                formatter.lock();
                 try {
-                    formatter.reformat(doc, dotPos, dotPos + ins.length());
+                    doc.atomicLock();
+                    try {
+                        formatter.reformat(dotPos, dotPos + ins.length());
+                    } finally {
+                        doc.atomicUnlock();
+                    }
                 } finally {
-                    formatter.reformatUnlock();
+                    formatter.unlock();
                 }
             }
             
