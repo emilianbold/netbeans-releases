@@ -765,6 +765,14 @@ private void showUrl() {
 
         passwordCheckBox.setVisible(true);
 
+
+        // Field entry mode doesn't make sense if this URL isn't parsed.
+        boolean parseUrl = jdbcurl.isParseUrl();
+        fieldEntryMode = parseUrl;
+        this.fieldInputCheckBox.setVisible(parseUrl);
+        this.inputModelLabel.setVisible(parseUrl);
+        this.directInputCheckBox.setVisible(parseUrl);
+
         if (fieldEntryMode) {
             directUrlLabel.setVisible(false);
             directUrlScroll.setVisible(false);
@@ -1067,18 +1075,21 @@ private void showUrl() {
         public void insertUpdate(DocumentEvent evt) 
         {
             updateUrlFromFields();
+            checkValid();
             fireChange();
         }
 
         public void removeUpdate(DocumentEvent evt) 
         {
             updateUrlFromFields();
+            checkValid();
             fireChange();
         }
 
         public void changedUpdate(DocumentEvent evt) 
         {
             updateUrlFromFields();
+            checkValid();
             fireChange();
         }
 
@@ -1095,6 +1106,7 @@ private void showUrl() {
         public void contentsChanged(ListDataEvent evt) 
         {
             updateUrlFromFields();
+            checkValid();
             fireChange();
         }
         
