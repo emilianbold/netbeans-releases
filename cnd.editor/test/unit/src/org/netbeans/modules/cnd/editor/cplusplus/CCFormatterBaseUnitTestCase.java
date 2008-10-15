@@ -28,13 +28,13 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
-import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
 import org.netbeans.modules.cnd.test.base.BaseDocumentUnitTestCase;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
  *
@@ -103,29 +103,41 @@ public class CCFormatterBaseUnitTestCase extends BaseDocumentUnitTestCase {
      * The caret position should be marked in the document text by '|'.
      */
     protected void indentNewLine() {
-        Formatter f = getDocument().getFormatter();
-	try {
-	    f.indentLock();
-	    int offset = f.indentNewLine(getDocument(), getCaretOffset());
-	    getCaret().setDot(offset);
-	} finally {
-	    f.indentUnlock();
-	}
+        Indent indenter = Indent.get(getDocument());
+        indenter.lock();
+        try {
+            getDocument().atomicLock();
+            try {
+                int offset = indenter.indentNewLine(getCaretOffset());
+                getCaret().setDot(offset);
+            } catch (BadLocationException ble) {
+                throw new IllegalStateException(ble);
+            } finally {
+                getDocument().atomicUnlock();
+            }
+        } finally {
+            indenter.unlock();
+        }
     }
     
     /**
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        Formatter f = getDocument().getFormatter();
+        Reformat f = Reformat.get(getDocument());
+        f.lock();
         try {
-	    f.reformatLock();
-            f.reformat(getDocument(), 0, getDocument().getLength());
+            getDocument().atomicLock();
+            try {
+                f.reformat(0, getDocument().getLength());
+            } finally {
+                getDocument().atomicUnlock();
+            }
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail(e.getMessage());
         } finally {
-	    f.reformatUnlock();
+	    f.unlock();
 	}
     }
 }

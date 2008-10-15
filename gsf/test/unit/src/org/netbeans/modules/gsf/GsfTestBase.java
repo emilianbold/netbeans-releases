@@ -144,6 +144,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.Utilities;
 import org.netbeans.junit.MockServices;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
@@ -1766,15 +1767,12 @@ public abstract class GsfTestBase extends NbTestCase {
         configureIndenters(document, formatter, compilationInfo, indentOnly);
 
 //        formatter.reformat(doc, startPos, endPos, getInfoForText(source, "unittestdata"));
-        @SuppressWarnings("deprecation")
-        final org.netbeans.editor.Formatter f = document.getFormatter();
+        Reformat f = Reformat.get(document);
+        f.lock();
         try {
-            f.reformatLock();
-            int reformattedLen = f.reformat(document, 
-                    Math.min(document.getLength(), startPos),
-                    Math.min(document.getLength(), endPos));
+            f.reformat(Math.min(document.getLength(), startPos), Math.min(document.getLength(), endPos));
         } finally {
-            f.reformatUnlock();
+            f.unlock();
         }
     }
 

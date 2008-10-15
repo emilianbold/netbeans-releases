@@ -168,4 +168,23 @@ public final class Indent {
         impl.reindent(startOffset, endOffset, startOffset, false);
     }
 
+    /**
+     * Creates new line at <code>offset</code> and reindents it.
+     *
+     * <p>This method will insert a line break (ie EOL character) at the specified
+     * offset and then reindent the newly created line. The method will return the
+     * offset of the indented beginning of the new line. That is the offset where
+     * the new text should appear when typing in the document.
+     *
+     * @param offset The document offset where the new line will be created.
+     *
+     * @return The offset of the first non-white character (or the EOL character)
+     *   on the new line. This is basically where the caret should be moved to.
+     * @throws javax.swing.text.BadLocationException
+     * @since 1.10
+     */
+    public int indentNewLine(int offset) throws BadLocationException {
+        return impl.reindent(offset, offset, offset, true);
+    }
+
 }

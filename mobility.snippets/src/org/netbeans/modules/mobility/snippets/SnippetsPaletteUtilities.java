@@ -14,7 +14,7 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 
 /**
@@ -35,10 +35,10 @@ public class SnippetsPaletteUtilities {
         if (s == null) s = "";
         Document doc = target.getDocument();
         if (doc == null) return;
-        Formatter f = null;
+        Reformat f = null;
         if (reformat && doc instanceof BaseDocument) {
-            f = ((BaseDocument)doc).getFormatter();
-            f.reformatLock();
+            f = Reformat.get(doc);
+            f.lock();
         }
         try {
             if (doc instanceof BaseDocument) ((BaseDocument)doc).atomicLock();
@@ -46,13 +46,13 @@ public class SnippetsPaletteUtilities {
                 int start = insert(s, target, doc);
                 if (f != null && start >= 0) {  // format the inserted text
                     int end = start + s.length();
-                    f.reformat((BaseDocument)doc, start, end);
+                    f.reformat(start, end);
                 }
             } finally {
                 if (doc instanceof BaseDocument) ((BaseDocument)doc).atomicUnlock();
             }
         } finally {
-            if (f != null) f.reformatUnlock();
+            if (f != null) f.unlock();
         }
     }
     

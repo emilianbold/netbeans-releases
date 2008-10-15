@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="Indent.indentNewLine.added">
+            <summary>Adding org.netbeans.modules.editor.indent.api.Indent.indentNewLine</summary>
+            <version major="1" minor="10"/>
+            <date day="15" month="10" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility source="compatible" binary="compatible" deletion="no" addition="yes" modification="no"/>
+            <description>
+                The new method <code>int Indent.indentNewLine(int)</code> was added as
+                a replacement for the old <code>int Formatter.indentNewLine(BaseDocument, int)</code>.
+            </description>
+            <class package="org.netbeans.modules.editor.indent.api" name="Indent"/>
+            <issue number="120357"/>
+        </change>
+
         <change id="CodeStylePreferences">
             <summary>Adding org.netbeans.modules.editor.indent.spi.CodeStylePreferences</summary>
             <version major="1" minor="9"/>

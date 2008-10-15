@@ -29,10 +29,11 @@
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import javax.swing.text.BadLocationException;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenID;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.options.EditorOptions;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.openide.util.Exceptions;
 
 /**
  * Class was taken from java
@@ -776,15 +777,28 @@ public class CCBracketCompletionUnitTestCase extends CCFormatterBaseUnitTestCase
     
     private void typeChar(char ch, boolean isIndent) throws Exception {
         int pos = getCaretOffset();
-        getDocument ().insertString(pos, String.valueOf(ch), null);
-        BracketCompletion.charInserted(getDocument(), pos, getCaret(), ch);
+        Indent f = null;
+
         if (isIndent) {
-            Formatter f = getDocument().getFormatter();
-            f.indentLock();
+            f = Indent.get(getDocument());
+            f.lock();
+        }
+
+        try {
+            getDocument().atomicLock();
             try {
-                getDocument().getFormatter().indentLine(getDocument(), pos);
+                getDocument().insertString(pos, String.valueOf(ch), null);
+                if (f != null) {
+                    f.reindent(pos);
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             } finally {
-                f.indentUnlock();
+                getDocument().atomicUnlock();
+            }
+        } finally {
+            if (f != null) {
+                f.unlock();
             }
         }
     }

@@ -45,10 +45,12 @@ package org.netbeans.modules.web.struts.editor;
 import java.io.IOException;
 import java.io.StringWriter;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.netbeans.modules.web.struts.config.model.FormProperty;
 import org.netbeans.modules.web.struts.config.model.Forward;
@@ -216,21 +218,23 @@ public class StrutsEditorUtilities {
                     text.append(addNewLines(bean));
                     text.append(END_LINE);
                     text.append("</"); text.append(father); text.append(">");           //NOI18N
-                    Formatter fmt = doc.getFormatter();
-                    fmt.reformatLock();
+                    Reformat fmt = Reformat.get(doc);
+                    fmt.lock();
                     try {
+                        doc.atomicLock();
                         try{
-                            doc.atomicLock();
                             doc.remove(offset, 2);
                             doc.insertString(offset, text.toString(), null);
-                            offset += doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
+                            Position endPos = doc.createPosition(offset + text.length() - 1);
+                            fmt.reformat(offset, endPos.getOffset());
+                            offset += Math.max(0, endPos.getOffset() - offset);
                             possition = offset;
                         }
                         finally{
                             doc.atomicUnlock();
                         }
                     } finally {
-                        fmt.reformatUnlock();
+                        fmt.unlock();
                     }
                 }
                 if (token != null && token.getImage().equals(">")){                     //NOI18N
@@ -368,26 +372,29 @@ public class StrutsEditorUtilities {
     }
     
     private static int writeString(BaseDocument doc, String text, int offset) throws BadLocationException {
-        int formatLength = 0;      
-        Formatter fmt = doc.getFormatter();
-        fmt.indentLock();
+        int formatLength = 0;
+        Indent indent = Indent.get(doc);
+        Reformat fmt = Reformat.get(doc);
+        indent.lock();
         try {
-            fmt.reformatLock();
+            fmt.lock();
             try {
+                doc.atomicLock();
                 try{
-                    doc.atomicLock();
-                    offset = doc.getFormatter().indentNewLine(doc, offset+1);
+                    offset = indent.indentNewLine(offset + 1);
                     doc.insertString(Math.min(offset, doc.getLength()), text, null );
-                    formatLength = doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
+                    Position endPos = doc.createPosition(offset + text.length() - 1);
+                    fmt.reformat(offset, endPos.getOffset());
+                    formatLength = Math.max(0, endPos.getOffset() - offset);
                 }
                 finally{
                     doc.atomicUnlock();
                 }
             } finally {
-                fmt.reformatUnlock();
+                fmt.unlock();
             }
         } finally {
-            fmt.indentUnlock();
+            indent.unlock();
         }
         return Math.min(offset + formatLength + 1, doc.getLength());
     }

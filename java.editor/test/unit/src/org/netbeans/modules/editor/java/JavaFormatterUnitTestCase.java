@@ -43,7 +43,7 @@ package org.netbeans.modules.editor.java;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
@@ -67,9 +67,12 @@ public class JavaFormatterUnitTestCase extends JavaBaseDocumentUnitTestCase {
         // hooked through the ExtKit.ExtDefaultKeyTypedAction.checkIndentHotChars(),
         // which calls f.getReformatBlock and f.reformat
         // IMO this should just be replaced by simple doc.insertString(getCaretOffset(), "\n", null)
-        Formatter f = getDocument().getFormatter();
-        int offset = f.indentNewLine(getDocument(), getCaretOffset());
-        getCaret().setDot(offset);
+        try {
+            int offset = Indent.get(getDocument()).indentNewLine(getCaretOffset());
+            getCaret().setDot(offset);
+        } catch (BadLocationException ble) {
+            throw new IllegalStateException(ble);
+        }
     }
     
     /**
