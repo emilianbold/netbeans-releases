@@ -79,6 +79,7 @@ public class JsModel {
     private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
     private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+    private static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     
     // If you change this, update the testcase reference 
@@ -153,7 +154,7 @@ public class JsModel {
                     @SuppressWarnings("unchecked")
                     TokenSequence<? extends HTMLTokenId> hts = (TokenSequence<? extends HTMLTokenId>) tokenSequence;
                     extractJavaScriptFromHtml(hts, buffer, new JsAnalyzerState());
-                } else if (JSP_MIME_TYPE.equals(mimeType)) {
+                } else if (JSP_MIME_TYPE.equals(mimeType) || (TAG_MIME_TYPE.equals(mimeType))) {
                     extractJavaScriptFromJsp((TokenSequence<? extends TokenId>) tokenSequence, buffer);
                 } else if (PHP_MIME_TYPE.equals(mimeType)) {
                     extractJavaScriptFromPHP((TokenSequence<? extends TokenId>) tokenSequence, buffer);
