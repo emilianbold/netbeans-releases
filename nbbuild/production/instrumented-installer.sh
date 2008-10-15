@@ -38,15 +38,15 @@ sed -i -e "s/^netbeans_default_options=\"/netbeans_default_options=\"--cp:p \"\\
 BASENAME=${BUILD_DESC}-${BUILD_NUMBER}
 export DIST=${WORKSPACE}/dist/zip
 mkdir -p ${DIST}
-cd ${NB_EXTRACTED}
-expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler visualweb ruby mobility soa xml cnd identity gsf php groovy webcommon websvccommon; do
-    find * | egrep "^$c[0-9]*/" | zip -q $DIST/$BASENAME-$c.zip -@ || exit
-    expat="$expat|$c[0-9]*"
-done
-find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/$BASENAME-nb6.5-etc.zip -@ || exit
+#cd ${NB_EXTRACTED}
+#expat='extra|testtools'
+#for c in platform ide java apisupport harness enterprise profiler visualweb ruby mobility soa xml cnd identity gsf php groovy webcommon websvccommon; do
+#    find * | egrep "^$c[0-9]*/" | zip -q $DIST/$BASENAME-$c.zip -@ || exit
+#    expat="$expat|$c[0-9]*"
+#done
+#find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/$BASENAME-nb6.5-etc.zip -@ || exit
 cd ${EXTRACTED_DIR}
-zip -q $DIST/$BASENAME-all-in-one.zip netbeans
+zip -q -r $DIST/$BASENAME-all-in-one.zip netbeans
 cd ${WORKSPACE}
 
 rm -rf ${EXTRACTED_DIR}
