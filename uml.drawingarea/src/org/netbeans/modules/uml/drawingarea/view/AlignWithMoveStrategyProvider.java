@@ -200,7 +200,10 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
         initializeMovingWidgets(widget.getScene(), widget);
         
         lastPoint = original;
-        original = widget.getParentWidget().convertLocalToScene(lastPoint);
+        if (lastPoint != null)
+        {
+            original = widget.getParentWidget().convertLocalToScene(lastPoint);
+        }
         return original;
     }
 
