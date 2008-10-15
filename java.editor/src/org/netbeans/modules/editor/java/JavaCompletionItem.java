@@ -253,6 +253,10 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 case ';':
                 case ',':
                 case '(':
+                case '[':
+                case '+':
+                case '-':
+                case '=':
                     Completion.get().hideDocumentation();
                     Completion.get().hideCompletion();
                     JTextComponent component = (JTextComponent)evt.getSource();
