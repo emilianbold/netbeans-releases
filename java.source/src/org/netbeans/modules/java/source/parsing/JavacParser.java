@@ -104,6 +104,8 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
@@ -200,6 +202,8 @@ public class JavacParser extends Parser {
     private CompilationInfoImpl ciImpl;
     //State of the parser
     private boolean initialized;
+    //Type of ClasspathInfo (explicit, implicit)
+    private boolean explicitCpInfo;
     //Parser is invalidated, new parser impl need to be created
     private boolean invalid;
     //Last used snapshot
@@ -240,6 +244,7 @@ public class JavacParser extends Parser {
             if (task instanceof ClasspathInfoProvider &&
                     (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
                 cpInfo = _tmpInfo;
+                explicitCpInfo = true;
             }
             else {
                 cpInfo = ClasspathInfo.create(file);
@@ -251,6 +256,19 @@ public class JavacParser extends Parser {
             if (singleSource) {
                 cpInfo.addChangeListener(WeakListeners.change(cpInfoListener, cpInfo));
                 initialized = true;
+            }
+        }
+        else if (!explicitCpInfo) {
+            //Recheck ClasspathInfo if still valid
+            assert this.file != null;
+            assert cpInfo != null;
+            final ClassPath scp = ClassPath.getClassPath(this.file, ClassPath.SOURCE);
+            if (scp != cpInfo.getClassPath(PathKind.SOURCE)) {
+                //Revalidate
+                final Project owner = FileOwnerQuery.getOwner(this.file);
+                LOGGER.warning("ClassPath identity changed for " + this.file + ", class path owner: " +       //NOI18N
+                        (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
+                cpInfo = ClasspathInfo.create(this.file);
             }
         }
     }
