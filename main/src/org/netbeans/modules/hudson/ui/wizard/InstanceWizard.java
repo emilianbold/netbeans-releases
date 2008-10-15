@@ -28,14 +28,15 @@ import org.openide.util.NbBundle;
  * 
  * @author Michal Mocnak
  */
-public class InstanceWizard extends WizardDescriptor implements InstanceWizardConstants {
+public class InstanceWizard extends WizardDescriptor
+{
     
     public InstanceWizard() {
         super(new InstanceWizardIterator());
         
-        putProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);
-        putProperty(PROP_CONTENT_DISPLAYED, Boolean.TRUE);
-        putProperty(PROP_CONTENT_NUMBERED, Boolean.TRUE);
+        putProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);
+        putProperty("WizardPanel_contentDisplayed", Boolean.TRUE);
+        putProperty("WizardPanel_contentNumbered", Boolean.TRUE);
         
         setTitle(NbBundle.getMessage(InstanceWizard.class, "LBL_InstanceWiz_Title"));
         setTitleFormat(new MessageFormat(NbBundle.getMessage(InstanceWizard.class, "LBL_InstanceWiz_TitleFormat")));
@@ -49,6 +50,6 @@ public class InstanceWizard extends WizardDescriptor implements InstanceWizardCo
      * @param message
      */
     public void setErrorMessage(String message) {
-        putProperty(PROP_ERROR_MESSAGE, message);
+        putProperty("WizardPanel_errorMessage", message);
     }
 }

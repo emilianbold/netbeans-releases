@@ -29,13 +29,19 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonManager;
+import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -60,7 +66,10 @@ public class HudsonManagerImpl extends HudsonManager {
     private static HudsonManagerImpl defaultInstance;
     
     private Map<String, HudsonInstanceImpl> instances;
-    private List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
+    private final List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
+    private PropertyChangeListener projectsListener;
+    private Map<Project, HudsonInstanceImpl> projectInstances = new HashMap<Project, HudsonInstanceImpl>();
+    private Map<Project, Lookup.Result<ProjectHudsonProvider>> projectLookupInstances = new HashMap<Project, Lookup.Result<ProjectHudsonProvider>>();
     
     public HudsonManagerImpl() {
         synchronized(LOCK_INIT) {
@@ -70,6 +79,18 @@ public class HudsonManagerImpl extends HudsonManager {
             
             defaultInstance = this;
         }
+        projectsListener = new PropertyChangeListener() {
+            public void propertyChange(PropertyChangeEvent evt) {
+                if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            checkOpenProjects();
+                        }
+                    });
+                }
+            }
+
+        };
     }
     
     /**
@@ -182,18 +203,21 @@ public class HudsonManagerImpl extends HudsonManager {
     public void terminate() {
         // Clear default instance
         defaultInstance = null;
-        
+        OpenProjects.getDefault().removePropertyChangeListener(projectsListener);
+        projectInstances.clear();
         // Terminate instances
         for (HudsonInstance instance : getInstances())
             ((HudsonInstanceImpl) instance).terminate();
     }
     
     private void storeInstanceFile(HudsonInstanceImpl instance) {
+        if (!instance.isPersisted()) {
+            return;
+        }
         Repository repository = Lookup.getDefault().lookup(Repository.class);
         FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
         
         String fileName = instance.getName().replace(" ", "_").toLowerCase() + ".xml";
-        
         try {
             FileObject file = directory.getFileObject(fileName);
             
@@ -251,11 +275,67 @@ public class HudsonManagerImpl extends HudsonManager {
                 } finally {
                     // Deactivate startup flag
                     NbPreferences.forModule(HudsonManager.class).putBoolean(STARTUP_PROP, false);
-                    
+                    checkOpenProjects();
+                    OpenProjects.getDefault().addPropertyChangeListener(projectsListener);
                     // Fire changes
                     fireChangeListeners();
                 }
             }
         });
+    }
+
+
+    private void checkOpenProjects() {
+        try {
+            Future<Project[]> fut = OpenProjects.getDefault().openProjects();
+            Project[] prjs = fut.get();
+            for (Project project : prjs) {
+                boolean exists = false;
+                if (projectInstances.containsKey(project)) {
+                    exists = true;
+                }
+                ProjectHudsonProvider prov = project.getLookup().lookup(ProjectHudsonProvider.class);
+                if (prov != null && !exists) {
+                    String url = prov.getServerUrl();
+                    HudsonInstance in = getInstance(url);
+                    if (in != null && !in.isPersisted()) {
+                        ProjectHIP props = (ProjectHIP)((HudsonInstanceImpl)in).getProperties();
+                        props.addProvider(project);
+                        projectInstances.put(project, (HudsonInstanceImpl)in);
+                    } else if (in == null) {
+                        ProjectHIP props = new ProjectHIP();
+                        props.addProvider(project);
+                        addInstance(HudsonInstanceImpl.createHudsonInstance(props));
+                        HudsonInstanceImpl impl = (HudsonInstanceImpl) getInstance(props.getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_URL));
+                        projectInstances.put(project, impl);
+                    }
+                } else if (prov == null && exists) {
+                    HudsonInstanceImpl remove = projectInstances.remove(project);
+                    if (remove != null) {
+                        ProjectHIP props = (ProjectHIP)remove.getProperties();
+                        props.removeProvider(project);
+                        if (props.getProviders().isEmpty()) {
+                            removeInstance(remove);
+                        }
+                    }
+                }
+            }
+            ArrayList<Project> newprjs = new ArrayList<Project>(projectInstances.keySet());
+            newprjs.removeAll(Arrays.asList(prjs));
+            for (Project project : newprjs) {
+                HudsonInstanceImpl remove = projectInstances.remove(project);
+                if (remove != null) {
+                    ProjectHIP props = (ProjectHIP)remove.getProperties();
+                    props.removeProvider(project);
+                    if (props.getProviders().isEmpty()) {
+                        removeInstance(remove);
+                    }
+                }
+            }
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ExecutionException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 }

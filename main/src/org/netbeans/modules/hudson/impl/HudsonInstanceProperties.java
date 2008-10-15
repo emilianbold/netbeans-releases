@@ -42,7 +42,7 @@ public class HudsonInstanceProperties extends Properties
     
     private Sheet.Set set;
     
-    private List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
     
     public HudsonInstanceProperties(String name, String url) {
         this(name, url, "0");

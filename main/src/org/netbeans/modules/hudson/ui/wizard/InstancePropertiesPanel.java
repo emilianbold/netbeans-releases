@@ -44,7 +44,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Michal Mocnak
  */
-public class InstancePropertiesPanel implements WizardDescriptor.Panel, InstanceWizardConstants, ChangeListener {
+public class InstancePropertiesPanel implements WizardDescriptor.Panel, ChangeListener {
     
     private final static String HTTP_PREFIX = "http://";
     private final static String HTTPS_PREFIX = "https://";
@@ -53,7 +53,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
     
     private WizardDescriptor wizard;
     
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     private boolean checkingFlag = false;
     private boolean checkingState = false;
@@ -85,19 +85,19 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
         String sync = getInstancePropertiesVisual().isSync() ? getInstancePropertiesVisual().getSyncTime() : "0";
         
         if (name.length() == 0) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_EmptyName"));
             return false;
         }
         
         if (HudsonManagerImpl.getInstance().getInstanceByName(name) != null) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_ExistName"));
             return false;
         }
         
         if (url.length() == 0) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_EmptyUrl"));
             return false;
         }
@@ -106,7 +106,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
             url = HTTP_PREFIX + url;
         
         if (checkingFlag == true) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_Checking"));
             return false;
         }
@@ -129,7 +129,7 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
                     checkingState = false;
                     
                     // Set wizard tool tip text
-                    wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+                    wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                             "MSG_Checking"));
                     
                     try {
@@ -171,21 +171,21 @@ public class InstancePropertiesPanel implements WizardDescriptor.Panel, Instance
         }
         
         if (checkingState == false) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_WrongVersion", HudsonVersion.SUPPORTED_VERSION));
             return false;
         }
         
         if (HudsonManagerImpl.getDefault().getInstance(url) != null) {
-            wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(InstancePropertiesPanel.class,
+            wizard.putProperty("WizardPanel_errorMessage", NbBundle.getMessage(InstancePropertiesPanel.class,
                     "MSG_ExistUrl"));
             return false;
         }
         
-        wizard.putProperty(PROP_ERROR_MESSAGE, null);
-        wizard.putProperty(PROP_DISPLAY_NAME, name);
-        wizard.putProperty(PROP_URL, url);
-        wizard.putProperty(PROP_SYNC, sync);
+        wizard.putProperty("WizardPanel_errorMessage", null);
+        wizard.putProperty(InstanceWizardConstants.PROP_DISPLAY_NAME, name);
+        wizard.putProperty(InstanceWizardConstants.PROP_URL, url);
+        wizard.putProperty(InstanceWizardConstants.PROP_SYNC, sync);
         
         return true;
     }

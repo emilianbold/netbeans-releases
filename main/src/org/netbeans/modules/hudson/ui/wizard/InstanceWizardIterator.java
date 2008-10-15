@@ -39,7 +39,7 @@ import org.openide.WizardDescriptor.Panel;
  * @author Michal Mocnak
  */
 public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIterator,
-        InstanceWizardConstants, ChangeListener {
+         ChangeListener {
     
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
@@ -65,9 +65,9 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
     public Set instantiate() throws IOException {
         Set<HudsonInstance> results = new HashSet<HudsonInstance>();
         
-        String name = (String) wizard.getProperty(PROP_DISPLAY_NAME);
-        String url = (String) wizard.getProperty(PROP_URL);
-        String sync = (String) wizard.getProperty(PROP_SYNC);
+        String name = (String) wizard.getProperty(InstanceWizardConstants.PROP_DISPLAY_NAME);
+        String url = (String) wizard.getProperty(InstanceWizardConstants.PROP_URL);
+        String sync = (String) wizard.getProperty(InstanceWizardConstants.PROP_SYNC);
         
         if (null == name || null == url)
             return results;
@@ -157,15 +157,15 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
                 // Sets step number of a component
-                jc.putClientProperty(PROP_CONTENT_SELECTED_INDEX, new Integer(i));  //NOI18N
+                jc.putClientProperty("WizardPanel_contentSelectedIndex", new Integer(i));  //NOI18N
                 // Sets steps names for a panel
-                jc.putClientProperty(PROP_CONTENT_DATA, steps);                     //NOI18N
+                jc.putClientProperty("WizardPanel_contentData", steps);                     //NOI18N
                 // Turn on subtitle creation on each step
-                jc.putClientProperty(PROP_AUTO_WIZARD_STYLE, Boolean.TRUE);         //NOI18N
+                jc.putClientProperty("WizardPanel_autoWizardStyle", Boolean.TRUE);         //NOI18N
                 // Show steps on the left side with the image on the background
-                jc.putClientProperty(PROP_CONTENT_DISPLAYED, Boolean.TRUE);         //NOI18N
+                jc.putClientProperty("WizardPanel_contentDisplayed", Boolean.TRUE);         //NOI18N
                 // Turn on numbering of all steps
-                jc.putClientProperty(PROP_CONTENT_NUMBERED, Boolean.TRUE);          //NOI18N
+                jc.putClientProperty("WizardPanel_contentNumbered", Boolean.TRUE);          //NOI18N
             }
         }
     }

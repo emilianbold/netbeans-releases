@@ -56,7 +56,7 @@ public class RemoveInstanceAction extends NodeAction {
         for (Node node : nodes) {
             HudsonInstanceImpl instance = node.getLookup().lookup(HudsonInstanceImpl.class);
             
-            if (null != instance)
+            if (null != instance && instance.isPersisted())
                 return true;
         }
         
@@ -71,6 +71,7 @@ public class RemoveInstanceAction extends NodeAction {
         return HelpCtx.DEFAULT_HELP;
     }
     
+    @Override
     public boolean asynchronous() {
         return false;
     }

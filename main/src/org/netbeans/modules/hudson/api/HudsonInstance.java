@@ -83,4 +83,10 @@ public interface HudsonInstance extends Comparable<HudsonInstance> {
      * @param l HudsonChangeListener
      */
     public void removeHudsonChangeListener(HudsonChangeListener l);
+
+    /**
+     *
+     * @return
+     */
+    boolean isPersisted();
 }

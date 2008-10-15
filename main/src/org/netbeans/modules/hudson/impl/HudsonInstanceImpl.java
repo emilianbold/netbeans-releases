@@ -64,7 +64,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     private Collection<HudsonJob> jobs = new ArrayList<HudsonJob>();
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
-    private Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
+    private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
     
     private HudsonInstanceImpl(String name, String url) {
         this(new HudsonInstanceProperties(name, url));
@@ -136,6 +136,10 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
                 }
             }
         });
+    }
+
+    public boolean isPersisted() {
+        return !(properties instanceof ProjectHIP);
     }
     
     /**

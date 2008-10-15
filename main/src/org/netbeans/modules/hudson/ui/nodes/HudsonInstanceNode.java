@@ -95,12 +95,14 @@ public class HudsonInstanceNode extends AbstractNode {
     
     @Override
     public String getHtmlDisplayName() {
+        boolean pers = instance.isPersisted();
         return (run ? "<b>" : "") + (warn ? "<font color=\"#A40000\">" : "") +
                 instance.getName() + (warn ? "</font>" : "") + (run ? "</b>" : "") +
                 (alive ? (version ? "" : " <font color=\"#A40000\">" +
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
                 HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" +
-                NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>");
+                NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
+                (!pers ? "<i>" : "") + "(Project based)" + (!pers ? "</i>" : "");
     }
     
     @Override

@@ -13,20 +13,25 @@
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  */
 
-package org.netbeans.modules.hudson.ui.wizard;
+package org.netbeans.modules.hudson.spi;
+
+import javax.swing.event.ChangeListener;
 
 /**
- * Add instance wizard constants
- * 
- * @author Michal Mocnak
+ *
+ * @author mkleint
  */
-public interface InstanceWizardConstants {
-    public final static String PROP_DISPLAY_NAME = "InstanceWizard_displayName"; // NOI18N
-    public final static String PROP_URL = "InstanceWizard_url"; // NOI18N
-    public final static String PROP_SYNC = "InstanceWizard_sync"; // NOI18N
-    
+public interface ProjectHudsonProvider {
+
+    String getServerUrl();
+    String getName();
+    String getJobName();
+
+    void addChangeListener(ChangeListener listener);
+    void removeChangeListener(ChangeListener listener);
+
 }
