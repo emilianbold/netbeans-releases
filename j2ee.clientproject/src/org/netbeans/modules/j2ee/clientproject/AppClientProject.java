@@ -79,8 +79,8 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -89,6 +89,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -483,7 +484,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -803,8 +804,8 @@ public final class AppClientProject implements Project, AntProjectListener, File
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
             if (!props.containsKey(ProjectProperties.INCLUDES)) {
                 props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N

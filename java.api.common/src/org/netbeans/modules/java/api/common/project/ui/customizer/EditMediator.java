@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui.customizer;
 
 
 import java.awt.Component;
@@ -48,12 +48,11 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
-
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.prefs.Preferences;
 import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JFileChooser;
@@ -69,7 +68,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.libraries.LibraryChooser.Filter;
 import org.openide.filesystems.FileUtil;
-
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.api.project.libraries.Library;
@@ -77,11 +75,12 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  */
@@ -250,8 +249,9 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
             chooser.setAcceptAllFileFilterUsed( false );
             chooser.setFileFilter(filter);
-            File curDir = UserProjectSettings.getDefault().getLastUsedClassPathFolder(); 
+            File curDir = getLastUsedClassPathFolder(); 
             chooser.setCurrentDirectory (curDir);
+            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ));
             int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list.getComponent() ) ); // Show the chooser
 
             if ( option == JFileChooser.APPROVE_OPTION ) {
@@ -271,7 +271,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
                         chooser.getSelectedPathVariables(), callback);
                 list.setSelectedIndices( newSelection );
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
+                setLastUsedClassPathFolder(curDir);
             }
         }
         else if ( source == addLibrary ) {
@@ -343,6 +343,21 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     }    
 
 
+    private static final String LAST_USED_CP_FOLDER = "lastUsedClassPathFolder";    //NOI18N
+
+    private static Preferences getPreferences() {
+        return NbPreferences.forModule(EditMediator.class);
+    }
+    private static File getLastUsedClassPathFolder () {
+        return new File(getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
+    }
+
+    private static void setLastUsedClassPathFolder (File folder) {
+        assert folder != null : "ClassPath root can not be null";
+        String path = folder.getAbsolutePath();
+        getPreferences().put(LAST_USED_CP_FOLDER, path);
+    }
+
     /** Handles changes in the selection
      */        
     public void valueChanged( ListSelectionEvent e ) {
@@ -376,7 +391,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
 
     }
 
-    static Filter createLibraryFilter() {
+    public static Filter createLibraryFilter() {
         return  new Filter() {
             public boolean accept(Library library) {
                 if ("javascript".equals(library.getType())) { //NOI18N

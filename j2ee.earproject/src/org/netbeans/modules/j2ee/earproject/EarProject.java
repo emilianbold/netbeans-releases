@@ -64,7 +64,7 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -322,9 +322,9 @@ public final class EarProject implements Project, AntProjectListener {
                         public Void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {         
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = EarProjectGenerator.toClasspathString(platform.getClasspathEntries());
-                                ep.setProperty(ProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
+                                ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
                             }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
@@ -529,8 +529,8 @@ public final class EarProject implements Project, AntProjectListener {
             
             //update lib references in project properties
             EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
             // configure DoS
             if (!props.containsKey(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {

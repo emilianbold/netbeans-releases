@@ -78,6 +78,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.queries</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -188,6 +196,9 @@
                 <package>org.netbeans.modules.java.api.common</package>
                 <package>org.netbeans.modules.java.api.common.ant</package>
                 <package>org.netbeans.modules.java.api.common.classpath</package>
+                <package>org.netbeans.modules.java.api.common.project</package>
+                <package>org.netbeans.modules.java.api.common.project.ui</package>
+                <package>org.netbeans.modules.java.api.common.project.ui.customizer</package>
                 <package>org.netbeans.modules.java.api.common.queries</package>
                 <package>org.netbeans.modules.java.api.common.ui</package>
                 <package>org.netbeans.modules.java.api.common.util</package>

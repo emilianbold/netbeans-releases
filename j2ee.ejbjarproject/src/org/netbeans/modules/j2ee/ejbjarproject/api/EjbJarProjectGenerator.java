@@ -62,7 +62,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProjectType;
 import org.netbeans.modules.j2ee.ejbjarproject.Utils;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.FileSystem;
@@ -347,7 +348,7 @@ public class EjbJarProjectGenerator {
             try {
                 EjbJar root = DDProvider.getDefault().getDDRoot(ejbJarXml);
                 boolean writeDD = false;
-                if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && j2eeLevel.equals(ProjectProperties.J2EE_1_4)) { // NOI18N
+                if (new BigDecimal(EjbJar.VERSION_2_0).equals(root.getVersion()) && j2eeLevel.equals(J2EEProjectProperties.J2EE_1_4)) { // NOI18N
                     root.setVersion(new BigDecimal(EjbJar.VERSION_2_1));
                     writeDD = true;
                 }

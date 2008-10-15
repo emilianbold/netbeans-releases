@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.common.project.ui;
 
+import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -77,7 +78,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.SourceGroup;
@@ -92,8 +92,9 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.AntArtifactChooser.ArtifactItem;
+import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;

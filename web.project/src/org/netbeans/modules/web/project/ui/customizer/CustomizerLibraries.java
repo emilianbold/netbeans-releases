@@ -65,9 +65,9 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.EditMediator;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
@@ -242,7 +242,7 @@ public class CustomizerLibraries extends JPanel implements HelpCtx.Provider, Lis
                 
                 // remove all libs.XXX.classpath.libfile.XXX props from private properties
                 EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                ProjectProperties.removeObsoleteLibraryLocations(privateProps);
+                J2EEProjectProperties.removeObsoleteLibraryLocations(privateProps);
                 helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
                 
                 try {

@@ -55,7 +55,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.test.TestUtil;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;

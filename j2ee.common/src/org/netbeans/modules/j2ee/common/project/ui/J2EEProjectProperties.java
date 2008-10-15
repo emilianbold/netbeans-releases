@@ -42,14 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 import java.util.*;
-import javax.swing.ImageIcon;
-import javax.swing.ListCellRenderer;
-import javax.swing.table.TableCellRenderer;
 import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
@@ -57,51 +50,13 @@ import org.openide.util.Utilities;
  * 
  * @author Petr Hrebejk, Radko Najman, David Konecny
  */
-public final class ProjectProperties {
+public final class J2EEProjectProperties {
 
     public static final String JAVA_EE_5 = "1.5"; // NOI18N
     public static final String J2EE_1_4 = "1.4"; // NOI18N
     public static final String J2EE_1_3 = "1.3"; // NOI18N
 
-    public static final String JAVAC_CLASSPATH = "javac.classpath"; //NOI18N
-    public static final String JAVAC_TEST_CLASSPATH = "javac.test.classpath"; // NOI18N
-    public static final String RUN_CLASSPATH = "run.classpath"; // NOI18N
-    public static final String RUN_TEST_CLASSPATH = "run.test.classpath"; // NOI18N
-    public static final String BUILD_CLASSES_DIR = "build.classes.dir"; //NOI18N
-    public static final String BUILD_TEST_CLASSES_DIR = "build.test.classes.dir"; // NOI18N
-
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
-    public static final String[] WELL_KNOWN_PATHS = new String[] {
-        "${" + JAVAC_CLASSPATH + "}", // NOI18N
-        "${" + JAVAC_TEST_CLASSPATH + "}", // NOI18N
-        "${" + RUN_CLASSPATH + "}", // NOI18N
-        "${" + RUN_TEST_CLASSPATH + "}", // NOI18N
-        "${" + BUILD_CLASSES_DIR + "}", // NOI18N
-        "${" + BUILD_TEST_CLASSES_DIR + "}" // NOI18N
-    };    
-   
-    // Prefixes and suffixes of classpath
-    public static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
-
-    private static String RESOURCE_ICON_JAR = "org/netbeans/modules/j2ee/common/project/ui/resources/jar.gif"; //NOI18N
-    private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/j2ee/common/project/ui/resources/libraries.gif"; //NOI18N
-    private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/j2ee/common/project/ui/resources/projectDependencies.gif"; //NOI18N
-    private static String RESOURCE_ICON_BROKEN_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
-    private static String RESOURCE_ICON_SOURCE_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarSourceBadge.png"; //NOI18N
-    private static String RESOURCE_ICON_JAVADOC_BADGE = "org/netbeans/modules/j2ee/common/project/ui/resources/jarJavadocBadge.png"; //NOI18N
-    private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/j2ee/common/project/ui/resources/referencedClasspath.gif"; //NOI18N
-        
-        
-    public static ImageIcon ICON_JAR = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAR ) );
-    public static ImageIcon ICON_LIBRARY = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_LIBRARY ) );
-    public static ImageIcon ICON_ARTIFACT  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_ARTIFACT ) );
-    public static ImageIcon ICON_BROKEN_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_BROKEN_BADGE ) );
-    public static ImageIcon ICON_JAVADOC_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_JAVADOC_BADGE ) );
-    public static ImageIcon ICON_SOURCE_BADGE  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_SOURCE_BADGE ) );
-    public static ImageIcon ICON_CLASSPATH  = new ImageIcon( ImageUtilities.loadImage( RESOURCE_ICON_CLASSPATH ) );
-
-    public static final String INCLUDES = "includes"; // NOI18N
-    public static final String EXCLUDES = "excludes"; // NOI18N
     
     /**
      * Remove obsolete properties from private properties.
@@ -121,14 +76,6 @@ public final class ProjectProperties {
             
     
 
-    public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
-        return new ClassPathListCellRenderer(evaluator, projectFolder);
-    }
-    
-    public static TableCellRenderer createClassPathTableRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
-        return new ClassPathListCellRenderer.ClassPathTableCellRenderer(evaluator, projectFolder);
-    }
-    
     /**
      * Returns <code>true</code> if the server library is used for j2ee instead
      * of the classpath pointing to the server installation.

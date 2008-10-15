@@ -54,6 +54,7 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.StringTokenizer;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
@@ -76,8 +77,6 @@ import org.openide.util.WeakListeners;
 final class SourcePathImplementation implements ClassPathImplementation, PropertyChangeListener {
 
     // TODO: if needed these parameters can be configurable via constructor parameter:
-    public static final String INCLUDES = "includes"; // NOI18N
-    public static final String EXCLUDES = "excludes"; // NOI18N
     private static final String BUILD_DIR = "build.dir"; // NOI18N
 
     private static final String DIR_GEN_BINDINGS = "generated/addons"; // NOI18N
@@ -175,8 +174,8 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
                         public boolean includes(URL root, String resource) {
                             if (matcher == null) {
                                 matcher = new PathMatcher(
-                                        evaluator.getProperty(INCLUDES),
-                                        evaluator.getProperty(EXCLUDES),
+                                        evaluator.getProperty(ProjectProperties.INCLUDES),
+                                        evaluator.getProperty(ProjectProperties.EXCLUDES),
                                         new File(URI.create(root.toExternalForm())));
                             }
                             return matcher.matches(resource, true);
@@ -196,7 +195,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
 
                         public void propertyChange(PropertyChangeEvent ev) {
                             String prop = ev.getPropertyName();
-                            if (prop == null || prop.equals(INCLUDES) || prop.equals(EXCLUDES)) {
+                            if (prop == null || prop.equals(ProjectProperties.INCLUDES) || prop.equals(ProjectProperties.EXCLUDES)) {
                                 matcher = null;
                                 PropertyChangeEvent ev2 = new PropertyChangeEvent(this, FilteringPathResourceImplementation.PROP_INCLUDES, null, null);
                                 ev2.setPropagationId(ev);

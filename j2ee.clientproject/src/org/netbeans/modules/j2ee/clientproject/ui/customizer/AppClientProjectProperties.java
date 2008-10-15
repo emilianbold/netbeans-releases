@@ -77,9 +77,9 @@ import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.AntDeploymentHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -87,6 +87,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
@@ -305,8 +307,8 @@ final public class AppClientProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = ProjectProperties.createClassPathListRendered(evaluator, project.getProjectDirectory());
-        CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ClassPathListCellRenderer.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_ITEM_RENDERER = ClassPathListCellRenderer.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = SourceRootsUi.createModel( project.getSourceRoots() );
@@ -332,8 +334,8 @@ final public class AppClientProjectProperties {
         PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         SpecificationVersion minimalSourceLevel = null;
-        if (ProjectProperties.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
-            minimalSourceLevel = new SpecificationVersion(ProjectProperties.JAVA_EE_5);
+        if (J2EEProjectProperties.JAVA_EE_5.equals(evaluator.getProperty(J2EE_PLATFORM))) {
+            minimalSourceLevel = new SpecificationVersion(J2EEProjectProperties.JAVA_EE_5);
         }
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel(PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET), minimalSourceLevel);
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();
@@ -520,7 +522,7 @@ final public class AppClientProjectProperties {
         }
 
         // Configure new server instance
-        boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProperties,
+        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
                 AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH); 
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
             final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
@@ -707,7 +709,7 @@ final public class AppClientProjectProperties {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
+                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
                     setNewServerInstanceValue(serverInstanceID, project,
                             projectProps, privateProps, !serverLibUsed);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);

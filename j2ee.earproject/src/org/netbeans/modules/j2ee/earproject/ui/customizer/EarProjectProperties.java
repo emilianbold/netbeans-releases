@@ -76,10 +76,10 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
@@ -95,6 +95,8 @@ import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackIm
 import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun.ApplicationUrisComboBoxModel;
 import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -278,7 +280,7 @@ public final class EarProjectProperties {
         EditableProperties projectProperties = updateHelper.getProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH );                
         EditableProperties privateProperties = updateHelper.getProperties( AntProjectHelper.PRIVATE_PROPERTIES_PATH );
         DEBUG_CLASSPATH_MODEL = ClassPathUiSupport.createListModel( cs.itemsIterator( (String)projectProperties.get( ProjectProperties.RUN_CLASSPATH ), null ) );
-        CLASS_PATH_LIST_RENDERER = ProjectProperties.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ClassPathListCellRenderer.createClassPathListRendered(evaluator, project.getProjectDirectory());
 
         // CustomizerJarContent
         ARCHIVE_COMPRESS_MODEL = projectGroup.createToggleButtonModel( evaluator, JAR_COMPRESS );
@@ -298,7 +300,7 @@ public final class EarProjectProperties {
                 CLIENT_MODULE_MODEL.refresh(ClassPathUiSupport.getList( EAR_CONTENT_ADDITIONAL_MODEL.getDefaultListModel()));
             }
         });
-        CLASS_PATH_TABLE_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_RENDERER = ClassPathListCellRenderer.createClassPathTableRendered(evaluator, project.getProjectDirectory());
 
         // CustomizerRun
         J2EE_PLATFORM_MODEL = projectGroup.createStringDocument(evaluator, J2EE_PLATFORM);
@@ -444,7 +446,7 @@ public final class EarProjectProperties {
         
         J2eePlatform j2eePlatform = Deployment.getDefault().getJ2eePlatform(newServInstID);
         
-        if (ProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {         
+        if (J2EEProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
             if (serverLibraryName != null) {
                 projectProps.setProperty(J2EE_PLATFORM_CLASSPATH,
                     "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N

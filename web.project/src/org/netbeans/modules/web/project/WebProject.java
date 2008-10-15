@@ -124,15 +124,16 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
@@ -647,7 +648,7 @@ public final class WebProject implements Project, AntProjectListener {
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -953,8 +954,8 @@ public final class WebProject implements Project, AntProjectListener {
             // #134642 - use Ant task from copylibs library
             SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
 
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {

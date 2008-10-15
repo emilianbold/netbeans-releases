@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -49,15 +49,12 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
 import javax.swing.DefaultListModel;
 import javax.swing.ListSelectionModel;
-
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
-
 import org.netbeans.api.project.libraries.Library;
-
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.NbCollections;

@@ -77,10 +77,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -88,6 +88,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -325,8 +327,8 @@ final public class WebProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = ProjectProperties.createClassPathListRendered(evaluator, project.getProjectDirectory());
-        CLASS_PATH_TABLE_ITEM_RENDERER = ProjectProperties.createClassPathTableRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ClassPathListCellRenderer.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_TABLE_ITEM_RENDERER = ClassPathListCellRenderer.createClassPathTableRendered(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
         SOURCE_ROOTS_MODEL = SourceRootsUi.createModel( project.getSourceRoots() );
@@ -658,7 +660,7 @@ final public class WebProjectProperties {
         }
 
         // Configure new server instance
-        boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProperties,
+        boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProperties,
                 WebProjectProperties.J2EE_PLATFORM_CLASSPATH);
 
         if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
@@ -819,7 +821,7 @@ final public class WebProjectProperties {
                 try {
                     EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
                     EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    boolean serverLibUsed = ProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
+                    boolean serverLibUsed = J2EEProjectProperties.isUsingServerLibrary(projectProps, J2EE_PLATFORM_CLASSPATH);
                     setNewServerInstanceValue(serverInstanceID, project, projectProps,
                             privateProps, !serverLibUsed);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProps);

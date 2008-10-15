@@ -82,7 +82,7 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -92,6 +92,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientView;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -500,7 +501,7 @@ public class AppClientLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 String j2eeSpec = project.evaluator().getProperty(AppClientProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(AppClientLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+AppClientProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N

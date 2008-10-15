@@ -51,9 +51,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupportFactory;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -110,7 +110,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
         this.javaClassPathProvider = new JavaClassPathProviderImpl(
                 helper, evaluator, sourceRoots, testSourceRoots, 
-                ProjectProperties.BUILD_CLASSES_DIR, WebProjectProperties.DIST_WAR, ProjectProperties.BUILD_TEST_CLASSES_DIR, 
+                ProjectProperties.BUILD_CLASSES_DIR, WebProjectProperties.DIST_WAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"javac.test.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },
                 new String[] {"debug.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },

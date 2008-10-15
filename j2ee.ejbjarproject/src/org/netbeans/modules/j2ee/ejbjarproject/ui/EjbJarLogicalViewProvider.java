@@ -86,7 +86,7 @@ import org.openide.util.lookup.Lookups;
 
 
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
@@ -94,6 +94,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -204,7 +205,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
         ProjectProperties.JAVAC_CLASSPATH,
         EjbJarProjectProperties.DEBUG_CLASSPATH,
-        ProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH,
         EjbJarProjectProperties.DEBUG_TEST_CLASSPATH, 
         ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
@@ -429,7 +430,7 @@ public class EjbJarLogicalViewProvider implements LogicalViewProvider {
             public void actionPerformed(ActionEvent e) {
                 String j2eeSpec = project.evaluator().getProperty(EjbJarProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(EjbJarLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+EjbJarProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N

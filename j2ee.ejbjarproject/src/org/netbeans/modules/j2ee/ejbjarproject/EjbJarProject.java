@@ -91,9 +91,9 @@ import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbEnterpriseReferenceContainerSupport;
@@ -139,6 +139,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -691,7 +692,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -1013,8 +1014,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
             if (!props.containsKey(ProjectProperties.INCLUDES)) {
                 props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N

@@ -59,6 +59,7 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -82,20 +83,11 @@ public final class ClassPathSupport {
     // Prefixes and suffixes of classpath
     private static final String ANT_ARTIFACT_PREFIX = "${reference."; // NOI18N
     
-    private static final String[] WELL_KNOWN_PATHS = new String[] {
-        "${javac.classpath}", // NOI18N
-        "${javac.test.classpath}", // NOI18N
-        "${run.classpath}", // NOI18N
-        "${run.test.classpath}", // NOI18N
-        "${build.classes.dir}", // NOI18N
-        "${build.test.classes.dir}" // NOI18N
-    };    
-
     private PropertyEvaluator evaluator;
     private ReferenceHelper referenceHelper;
     private AntProjectHelper antProjectHelper;
     private UpdateHelper updateHelper;
-    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(WELL_KNOWN_PATHS));
+    private static Set<String> wellKnownPaths = new HashSet<String>(Arrays.asList(ProjectProperties.WELL_KNOWN_PATHS));
     private static String antArtifactPrefix = ANT_ARTIFACT_PREFIX;
         
     private Callback callback;

@@ -46,7 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;

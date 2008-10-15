@@ -47,7 +47,7 @@ import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

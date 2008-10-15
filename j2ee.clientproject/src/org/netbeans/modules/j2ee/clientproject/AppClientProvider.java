@@ -63,7 +63,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
@@ -80,6 +80,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementat
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.api.client.WebServicesClientConstants;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -144,8 +145,8 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
-        return ProjectProperties.J2EE_1_3.equals(version) ||
-                ProjectProperties.J2EE_1_4.equals(version);
+        return J2EEProjectProperties.J2EE_1_3.equals(version) ||
+                J2EEProjectProperties.J2EE_1_4.equals(version);
     }
     
     public File getMetaInfAsFile() {

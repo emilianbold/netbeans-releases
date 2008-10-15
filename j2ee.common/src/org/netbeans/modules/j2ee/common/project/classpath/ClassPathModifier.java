@@ -53,7 +53,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
