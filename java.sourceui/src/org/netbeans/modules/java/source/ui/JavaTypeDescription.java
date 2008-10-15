@@ -87,7 +87,14 @@ public class JavaTypeDescription extends TypeDescriptor {
     }
     
     public void open() {        
-        final ClasspathInfo ci = ClasspathInfo.create(cacheItem.getRoot());
+        final FileObject root = cacheItem.getRoot();
+        if (root == null) {
+            final String message = NbBundle.getMessage(JavaTypeDescription.class, "LBL_JavaTypeDescription_nosource",handle.getQualifiedName());
+            StatusDisplayer.getDefault().setStatusText(message);
+            Toolkit.getDefaultToolkit().beep();
+            return;
+        }
+        final ClasspathInfo ci = ClasspathInfo.create(root);
         if ( cacheItem.isBinary() ) {            
             final JavaSource js = JavaSource.create( ci );
             final ElementHandle<TypeElement> eh = handle;
