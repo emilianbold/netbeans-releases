@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 cd ${WORKSPACE}
-rm -rf installer nbi nbextracted zipdist
+rm -rf installer nbi nbextracted zipdist dist
 hg up
 
 cd $LAST_BITS
@@ -46,7 +46,7 @@ mkdir -p ${DIST}
 #done
 #find * | egrep -v "^($expat)(/|$)" | zip -q $DIST/$BASENAME-nb6.5-etc.zip -@ || exit
 cd ${EXTRACTED_DIR}
-zip -q -r $DIST/$BASENAME-all-in-one.zip netbeans
+zip -q -r $DIST/$BASENAME-all-in-one.zip netbeans/*
 cd ${WORKSPACE}
 
 rm -rf ${EXTRACTED_DIR}
