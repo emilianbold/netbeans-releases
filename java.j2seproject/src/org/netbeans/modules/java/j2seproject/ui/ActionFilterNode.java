@@ -48,7 +48,6 @@ import java.util.ArrayList;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.actions.EditAction;
 import org.openide.actions.FindAction;
@@ -66,6 +65,8 @@ import org.openide.util.lookup.ProxyLookup;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -280,7 +281,7 @@ class ActionFilterNode extends FilterNode {
                    if (cp != null) {
                        List<String> result = new ArrayList<String>();
                        for (String entry : PropertyUtils.tokenizePath(cp)) {
-                           if (!entryId.equals(ClassPathSupport.getAntPropertyName(entry))) {
+                           if (!entryId.equals(CommonProjectUtils.getAntPropertyName(entry))) {
                                int size = result.size();
                                if (size>0) {
                                    result.set(size - 1, result.get(size - 1) + ':'); //NOI18N

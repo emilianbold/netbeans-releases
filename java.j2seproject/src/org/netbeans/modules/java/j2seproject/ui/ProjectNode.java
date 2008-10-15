@@ -58,7 +58,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,7 +67,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
@@ -80,6 +78,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -312,7 +312,7 @@ class ProjectNode extends AbstractNode {
                        String[] entries = PropertyUtils.tokenizePath(cp);
                        List/*<String>*/ result = new ArrayList ();
                        for (int i=0; i<entries.length; i++) {
-                           if (!entryId.equals(ClassPathSupport.getAntPropertyName(entries[i]))) {
+                           if (!entryId.equals(CommonProjectUtils.getAntPropertyName(entries[i]))) {
                                int size = result.size();
                                if (size>0) {
                                    result.set (size-1,(String)result.get(size-1) + ':'); //NOI18N

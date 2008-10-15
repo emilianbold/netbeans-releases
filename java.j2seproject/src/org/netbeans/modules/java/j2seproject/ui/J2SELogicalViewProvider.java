@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -185,12 +186,12 @@ public class J2SELogicalViewProvider implements LogicalViewProvider {
     // Private innerclasses ----------------------------------------------------
     
     private static final String[] BREAKABLE_PROPERTIES = {
-        J2SEProjectProperties.JAVAC_CLASSPATH,
-        J2SEProjectProperties.RUN_CLASSPATH,
+        ProjectProperties.JAVAC_CLASSPATH,
+        ProjectProperties.RUN_CLASSPATH,
         J2SEProjectProperties.DEBUG_CLASSPATH,
-        J2SEProjectProperties.RUN_TEST_CLASSPATH,
+        ProjectProperties.RUN_TEST_CLASSPATH,
         J2SEProjectProperties.DEBUG_TEST_CLASSPATH,
-        J2SEProjectProperties.JAVAC_TEST_CLASSPATH,
+        ProjectProperties.JAVAC_TEST_CLASSPATH,
     };
     
     public boolean hasBrokenLinks () {

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.java.j2seproject.classpath;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URL;
@@ -57,8 +58,8 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -97,9 +98,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
         this.helper = helper;
         this.eval = eval;
         this.refHelper = refHelper;        
-        this.cs = new ClassPathSupport( eval, refHelper, helper.getAntProjectHelper(), helper,
-                                        J2SEProjectProperties.WELL_KNOWN_PATHS, 
-                                        J2SEProjectProperties.ANT_ARTIFACT_PREFIX );
+        this.cs = new ClassPathSupport(eval, refHelper, helper.getAntProjectHelper(), helper, null);
     }
     
     protected SourceGroup[] getExtensibleSourceGroups() {
@@ -144,6 +143,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                             String raw = props.getProperty(classPathProperty);                            
                             List<ClassPathSupport.Item> resources = cs.itemsList(raw);
                             boolean changed = false;
+                            File projectFolderFile = FileUtil.toFile(project.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
                                 String f;
                                 if (performHeuristics && classPathRoots[i].isAbsolute()) {
@@ -160,7 +160,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 if (filePath.startsWith("${var.")) { // NOI18N
                                     filePath = project.evaluator().evaluate(filePath);
                                 }
-                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, null, f.startsWith("${var.") ? f : null); // NOI18N
+                                ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath, projectFolderFile, null, f.startsWith("${var.") ? f : null); // NOI18N
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
@@ -181,7 +181,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 }
                             }
                             if (changed) {
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator() );
+                                String itemRefs[] = cs.encodeToStrings( resources );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);  //PathParser may change the EditableProperties
                                 props.setProperty(classPathProperty, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -238,7 +238,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 }
                             }                            
                             if (changed) {
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator() );                                
+                                String itemRefs[] = cs.encodeToStrings( resources );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
                                 props.setProperty (classPathProperty, itemRefs);
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
@@ -312,7 +312,7 @@ public class J2SEProjectClassPathModifier extends ProjectClassPathModifierImplem
                                 }
                             }
                             if (!changed.isEmpty()) {
-                                String itemRefs[] = cs.encodeToStrings( resources.iterator() );                                
+                                String itemRefs[] = cs.encodeToStrings( resources );
                                 props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);    //PathParser may change the EditableProperties                                
                                 props.setProperty(classPathProperty, itemRefs);                                
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);

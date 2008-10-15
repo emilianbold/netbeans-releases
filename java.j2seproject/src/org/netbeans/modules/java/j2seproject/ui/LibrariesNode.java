@@ -66,7 +66,6 @@ import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
-import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -80,7 +79,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.WindowManager;
 import org.netbeans.api.project.SourceGroup;
@@ -94,6 +92,8 @@ import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathModifier;
@@ -104,7 +104,6 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.netbeans.modules.java.j2seproject.ui.customizer.AntArtifactChooser;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.util.Exceptions;
 
@@ -388,7 +387,7 @@ final class LibrariesNode extends AbstractNode {
             List pe = new ArrayList(Arrays.asList(PropertyUtils.tokenizePath( raw )));
             while (pe.size()>0){
                 String prop = (String) pe.remove(0);
-                String propName = org.netbeans.modules.java.j2seproject.classpath.ClassPathSupport.getAntPropertyName (prop);
+                String propName = CommonProjectUtils.getAntPropertyName (prop);
                 if (classPathIgnoreRef.contains(propName)) {
                     continue;
                 }

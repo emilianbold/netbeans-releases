@@ -70,6 +70,7 @@ import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
@@ -114,7 +115,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -344,7 +344,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     }
     
     File getTestClassesDirectory() {
-        String testClassesDir = evaluator().getProperty(J2SEProjectProperties.BUILD_TEST_CLASSES_DIR);
+        String testClassesDir = evaluator().getProperty(ProjectProperties.BUILD_TEST_CLASSES_DIR);
         if (testClassesDir == null) {
             return null;
         }
@@ -548,11 +548,11 @@ public final class J2SEProject implements Project, AntProjectListener {
 
                                 updateHelper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                                 ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                if (!ep.containsKey(J2SEProjectProperties.INCLUDES)) {
-                                    ep.setProperty(J2SEProjectProperties.INCLUDES, "**"); // NOI18N
+                                if (!ep.containsKey(ProjectProperties.INCLUDES)) {
+                                    ep.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
                                 }
-                                if (!ep.containsKey(J2SEProjectProperties.EXCLUDES)) {
-                                    ep.setProperty(J2SEProjectProperties.EXCLUDES, ""); // NOI18N
+                                if (!ep.containsKey(ProjectProperties.EXCLUDES)) {
+                                    ep.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
                                 }
                                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
                                 try {

@@ -54,9 +54,9 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -134,8 +134,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                 //Libraries Node
                 return  
                     new LibrariesNode(NbBundle.getMessage(J2SELogicalViewProvider.class,"CTL_LibrariesNode"),
-                        project, evaluator, helper, resolver, J2SEProjectProperties.RUN_CLASSPATH,
-                        new String[] {J2SEProjectProperties.BUILD_CLASSES_DIR},
+                        project, evaluator, helper, resolver, ProjectProperties.RUN_CLASSPATH,
+                        new String[] {ProjectProperties.BUILD_CLASSES_DIR},
                         "platform.active", // NOI18N
                         new Action[] {
                             LibrariesNode.createAddProjectAction(project, true),
@@ -148,11 +148,11 @@ public final class LibrariesNodeFactory implements NodeFactory {
             } else if (key == TEST_LIBRARIES) {
                 return  
                     new LibrariesNode(NbBundle.getMessage(J2SELogicalViewProvider.class,"CTL_TestLibrariesNode"),
-                        project, evaluator, helper, resolver, J2SEProjectProperties.RUN_TEST_CLASSPATH,
+                        project, evaluator, helper, resolver, ProjectProperties.RUN_TEST_CLASSPATH,
                         new String[] {
-                            J2SEProjectProperties.BUILD_TEST_CLASSES_DIR,
-                            J2SEProjectProperties.JAVAC_CLASSPATH,
-                            J2SEProjectProperties.BUILD_CLASSES_DIR,
+                            ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                            ProjectProperties.JAVAC_CLASSPATH,
+                            ProjectProperties.BUILD_CLASSES_DIR,
                         },
                         null,
                         new Action[] {
