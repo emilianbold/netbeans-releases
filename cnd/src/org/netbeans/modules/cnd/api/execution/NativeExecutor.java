@@ -145,16 +145,6 @@ public class NativeExecutor implements Runnable {
         this(runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, false);
     }*/
     
-    /**
-     * @deprecated Added for an obsolete Mobility module and (I think) no longer used
-     */
-    /*public NativeExecutor(String runDir, String executable, String arguments, String[] envp, String tabName,
-            String actionName, boolean parseOutputForErrors, boolean showInput, boolean showHeader, boolean showFooter ) {
-        this( runDir, executable, arguments, envp, tabName, actionName, parseOutputForErrors, showInput );
-        this.showHeader = showHeader;
-        this.showFooter = showFooter;
-    }*/
-    
     /** Start it going. */
     public ExecutorTask execute() throws IOException {
         return execute(getTab(tabName));

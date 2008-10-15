@@ -58,15 +58,9 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
 
     private static final String ASM_31_JAR = "lib/asm-3.1.jar"; //NOI18N
-    private static final String GRIZZLY_SERVLET_JAR = "lib/grizzly-servlet-webserver-1.7.3.2.jar"; //NOI18N
-    private static final String HTTP_JAR = "lib/http.jar"; //NOI18N
-    private static final String JDOM_10_JAR = "lib/jdom-1.0.jar"; //NOI18N
-    private static final String JERSEY_SPRING_JAR = "lib/jersey-spring.jar";
-    private static final String JERSEY_JAR = "lib/jersey.jar";
-    private static final String JETTISON_10_JAR = "lib/jettison-1.0-RC1.jar";
-    private static final String JSR311_API_JAR = "lib/jsr311-api.jar";
-    private static final String ROME_09_JAR = "lib/rome-0.9.jar";
-    private static final String WADL2JAVA_JAR = "lib/wadl2java.jar";
+    private static final String JERSEY_BUNDLE_10_JAR = "jersey-bundle-1.0.jar"; //NOI18N
+    private static final String JETTISON_10_JAR = "lib/jettison-1.0.1.jar"; //NOI18N
+    private static final String JSR311_API_JAR = "lib/jsr311-api-1.0.jar";//NOI18N
     private File root;
     private JaxRs jaxRs;
 
@@ -92,21 +86,21 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
 
     public boolean isFeatureSupported(Feature feature) {
         if (feature == JaxRs.Feature.JAXRS) {
-            WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
-            if (wsTool != null) {
-                URL[] libs = wsTool.getLibraries();
-                try {
-                    for (URL lib : libs) {
-                        if (!new File(lib.toURI()).exists()) {
-                            return false;
-                        }
+        WSTool wsTool = getWSTool(JaxRs.Tool.JAXRS);
+        if (wsTool != null) {
+            URL[] libs = wsTool.getLibraries();
+            try {
+                for (URL lib : libs) {
+                    if (!new File(lib.toURI()).exists()) {
+                        return false;
                     }
-                } catch (URISyntaxException e) {
-                    return false;
                 }
-            } else {
+            } catch (URISyntaxException e) {
                 return false;
             }
+        } else {
+            return false;
+        }
         } else {
             return false;
         }
@@ -129,15 +123,9 @@ public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
             try {
                 return new URL[]{
                             new File(root, ASM_31_JAR).toURI().toURL(), // NOI18N
-                            new File(root, GRIZZLY_SERVLET_JAR).toURI().toURL(), //NOI18N
-                            new File(root, HTTP_JAR).toURI().toURL(), //NOI18N
-                            new File(root, JDOM_10_JAR).toURI().toURL(), //NOI18N
-                            new File(root, JERSEY_SPRING_JAR).toURI().toURL(), //NOI18N
-                            new File(root, JERSEY_JAR).toURI().toURL(), //NOI18N
+                            new File(root, JERSEY_BUNDLE_10_JAR).toURI().toURL(), //NOI18N
                             new File(root, JETTISON_10_JAR).toURI().toURL(), //NOI18N
                             new File(root, JSR311_API_JAR).toURI().toURL(), //NOI18N
-                            new File(root, ROME_09_JAR).toURI().toURL(), //NOI18N
-                            new File(root, WADL2JAVA_JAR).toURI().toURL()  //NOI18N
                         };
             } catch (MalformedURLException ex) {
                 return new URL[0];

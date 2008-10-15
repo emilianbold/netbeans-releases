@@ -60,11 +60,11 @@ public class StartDebuggerTestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        String os = System.getProperty("os.name");
-        String jdk = System.getProperty("java.version");
-        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
-        } else {
+//        String os = System.getProperty("os.name");
+//        String jdk = System.getProperty("java.version");
+//        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
+//            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+//        } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(StartDebuggerTest.class, 
                 "testDebugProject",
@@ -73,6 +73,6 @@ public class StartDebuggerTestSuite extends JellyTestCase {
                 "testRunDebuggerRunToCursor",
                 "testDebugMainProject")
                 .enableModules(".*").clusters(".*"));
-        }
+//        }
     }
 }
