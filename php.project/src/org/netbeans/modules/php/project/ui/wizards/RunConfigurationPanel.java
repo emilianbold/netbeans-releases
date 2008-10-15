@@ -580,6 +580,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         if (fire) {
             model.fireContentsChanged();
+            // needed because text field is changed => combobox is editable (see LocalServer.ComboBoxEditor#processUpdate)
+            runAsLocalWeb.setCopyFiles(runAsLocalWeb.isCopyFiles());
         }
     }
 
