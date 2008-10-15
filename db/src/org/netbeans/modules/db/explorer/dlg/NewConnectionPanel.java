@@ -767,11 +767,16 @@ private void showUrl() {
 
 
         // Field entry mode doesn't make sense if this URL isn't parsed.
-        boolean parseUrl = jdbcurl.isParseUrl();
-        fieldEntryMode = parseUrl;
-        this.fieldInputCheckBox.setVisible(parseUrl);
-        this.inputModelLabel.setVisible(parseUrl);
-        this.directInputCheckBox.setVisible(parseUrl);
+        if (! jdbcurl.isParseUrl()) {
+            fieldEntryMode = false;
+            this.fieldInputCheckBox.setVisible(false);
+            this.inputModelLabel.setVisible(false);
+            this.directInputCheckBox.setVisible(false);
+        } else {
+            this.fieldInputCheckBox.setVisible(true);
+            this.inputModelLabel.setVisible(true);
+            this.directInputCheckBox.setVisible(true);
+        }
 
         if (fieldEntryMode) {
             directUrlLabel.setVisible(false);
