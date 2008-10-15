@@ -142,11 +142,12 @@ public class DebugCommand extends Command implements Displayable {
 
     protected void startDebugger(final XDebugStarter dbgStarter, final Runnable initDebuggingCode,
             final FileObject debuggedFile, boolean runAsScript) {
-        Callable initDebuggingCallable = Executors.callable(initDebuggingCode, new Cancellable() {
+        Cancellable cancellable = new Cancellable() {
             public boolean cancel() {
                 return true;
             }
-        });
+        };
+        Callable<Cancellable> initDebuggingCallable = Executors.callable(initDebuggingCode, cancellable);
         dbgStarter.start(getProject(), initDebuggingCallable, debuggedFile, runAsScript);
     }
 
