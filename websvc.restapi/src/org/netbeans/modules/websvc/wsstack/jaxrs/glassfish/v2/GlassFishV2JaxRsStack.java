@@ -58,7 +58,7 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
 public class GlassFishV2JaxRsStack implements WSStackImplementation<JaxRs> {
 
     private static final String ASM_31_JAR = "lib/asm-3.1.jar"; //NOI18N
-    private static final String JERSEY_BUNDLE_10_JAR = "jersey-bundle-1.0.jar"; //NOI18N
+    private static final String JERSEY_BUNDLE_10_JAR = "lib/jersey-bundle-1.0.jar"; //NOI18N
     private static final String JETTISON_10_JAR = "lib/jettison-1.0.1.jar"; //NOI18N
     private static final String JSR311_API_JAR = "lib/jsr311-api-1.0.jar";//NOI18N
     private File root;
