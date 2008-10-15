@@ -120,7 +120,7 @@ public final class RunAsValidator {
      * @param arguments arguments to validate, can be <code>null</code>.
      * @return an error message or <code>null</code> if everything is OK.
      */
-    private static String validateIndexFile(File parentDirectory, String indexFile, String arguments) {
+    public static String validateIndexFile(File parentDirectory, String indexFile, String arguments) {
         assert parentDirectory != null;
         if (indexFile != null) {
             if (indexFile.trim().length() == 0) {

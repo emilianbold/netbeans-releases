@@ -70,7 +70,7 @@ public class DebugSingleCommand extends DebugCommand {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationValid()) {
+        if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
         }

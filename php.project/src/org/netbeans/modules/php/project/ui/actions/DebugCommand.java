@@ -77,7 +77,7 @@ public class DebugCommand extends Command implements Displayable {
 
     @Override
     public void invokeAction(final Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationValid()) {
+        if (!isRunConfigurationValid(true)) {
             // property not set yet
             return;
         }
