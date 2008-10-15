@@ -641,7 +641,8 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                         DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
                         for (DatabaseConnection dbconn : dbconns) {
                             if (dbconn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
-                                    dbconn.getDatabaseURL().contains("/" + dbname)) {
+                                    dbconn.getDatabaseURL().contains("/" + dbname) &&
+                                    dbconn.getDatabaseURL().contains(getHost())) {
                                 ConnectionManager.getDefault().removeConnection(dbconn);
                             }
                         }
