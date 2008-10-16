@@ -449,15 +449,17 @@ public class AstUtilities {
 
         Parameter[] parameters = node.getParameters();
         if (parameters.length > 0) {
-            sb.append('(');
+            sb.append('('); // NOI18N
             Iterator<Parameter> it = Arrays.asList(parameters).iterator();
-            sb.append(it.next().getName());
+            sb.append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+                    it.next().getType().getName()));
 
             while (it.hasNext()) {
-                sb.append(',');
-                sb.append(it.next().getName());
+                sb.append(','); // NOI18N
+                sb.append(org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(
+                        it.next().getType().getName()));
             }
-            sb.append(')');
+            sb.append(')'); // NOI18N
         }
 
         return sb.toString();

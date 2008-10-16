@@ -39,7 +39,9 @@
 
 package org.netbeans.modules.groovy.editor.java;
 
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -60,10 +62,46 @@ import org.netbeans.api.java.source.SourceUtils;
  */
 public final class Utilities {
 
-    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
+    private static final String CAPTURED_WILDCARD = "<captured wildcard>"; // NOI18N
     
-    private static final String UNKNOWN = "<unknown>"; //NOI18N
-      
+    private static final String UNKNOWN = "<unknown>"; // NOI18N
+    
+    private static final Map<Character, String> NATIVE_TYPES = new HashMap<Character, String>();
+    
+    static {
+        NATIVE_TYPES.put(Character.valueOf('B'), "byte"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('C'), "char"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('D'), "double"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('F'), "float"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('I'), "int"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('J'), "long"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('S'), "short"); // NOI18N
+        NATIVE_TYPES.put(Character.valueOf('Z'), "boolean"); // NOI18N
+    }
+
+    public static String translateClassLoaderTypeName(String type) {
+        if (type.length() < 1) {
+            return type;
+        }
+        char start = type.charAt(0);
+        if ('L' == start && type.charAt(type.length() - 1) == ';') { // NOI18N
+            return type.substring(1, type.length() - 1);
+        } else if ('[' == start) { // NOI18N
+            if (type.length() < 2) {
+                throw new IllegalArgumentException("Not a correct type: " + type);
+            }
+            return translateClassLoaderTypeName(type.substring(1)) + "[]"; // NOI18N
+        } else if (type.length() == 1) {
+            String result = NATIVE_TYPES.get(Character.valueOf(start));
+            if (result != null) {
+                return result;
+            }
+            return type;
+        }
+
+        return type;
+    }
+    
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
         return getTypeName(type, fqn, false);
     }
