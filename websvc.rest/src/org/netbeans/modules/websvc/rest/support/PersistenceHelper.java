@@ -131,11 +131,13 @@ public class PersistenceHelper {
         // Required by Spring
         setDefaultProvider();
         
-        // Required for Spring + Hibernate
-        addEntityClasses(classNames);
-        
+       
         // Need to do this for Tomcat
         unsetExcludeEnlistedClasses();
+
+         // Required for Spring + Hibernate
+        addEntityClasses(classNames);
+
         
         if (useResourceLocalTx)
             switchToResourceLocalTransaction();
@@ -182,7 +184,7 @@ public class PersistenceHelper {
         
         for (String className : toAdd) {   
             puElement.insertBefore(helper.createElement(CLASS_TAG, className),
-                    helper.findElement(PROPERTIES_TAG));
+                    helper.findElement(EXCLUDE_UNLISTED_CLASSES_TAG));
         }
     }
     
