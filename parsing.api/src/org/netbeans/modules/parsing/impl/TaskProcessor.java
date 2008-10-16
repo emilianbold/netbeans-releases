@@ -236,7 +236,9 @@ public class TaskProcessor {
                     if (rq.task == task) {
                         it.remove();
                         found = true;
-                        break;
+//todo: Some tasks are duplicated (racecondition?), remove even them.
+//todo: Prevent duplication of tasks
+//                      break;                        
                     }
                 }
             }
