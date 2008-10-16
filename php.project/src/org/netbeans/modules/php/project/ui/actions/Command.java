@@ -271,11 +271,12 @@ public abstract class Command {
 
     //or null
     protected final FileObject fileForProject(boolean useWebRoot) {
-        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
-        if (useWebRoot) {
-            return ProjectPropertiesSupport.getWebRootDirectory(project).getFileObject(nameOfIndexFile);
+        FileObject dir = useWebRoot ? ProjectPropertiesSupport.getWebRootDirectory(project) : ProjectPropertiesSupport.getSourcesDirectory(project);
+        String indexFile = ProjectPropertiesSupport.getIndexFile(project);
+        if (dir != null && indexFile != null) {
+            return dir.getFileObject(indexFile);
         }
-        return ProjectPropertiesSupport.getSourcesDirectory(project).getFileObject(nameOfIndexFile);
+        return dir;
     }
 
     /** eventually show the customizer */
