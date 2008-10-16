@@ -56,6 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.ruby.rubyproject.ui.LibrariesNode;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.SourceRoots;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.CustomizerProviderImpl;
@@ -73,55 +74,50 @@ import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author mkleint
+ * Factory for the nodes in the Rails Project logical view.
  */
-public final class SourceNodeFactory implements NodeFactory {
-    public SourceNodeFactory() {
-    }
-    
+public final class ProjectRootNodeFactory implements NodeFactory {
+
     public NodeList createNodes(Project p) {
         RailsProject project = p.getLookup().lookup(RailsProject.class);
         assert project != null;
-        return new SourcesNodeList(project);
+        return new RootChildren(project);
     }
     
-    private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
+    private static class RootChildren implements NodeList<RootChildNode>, ChangeListener {
         
-        private RailsProject project;
+        private final RailsProject project;
+        private final List<ChangeListener> listeners;
         
-        private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
-        
-        public SourcesNodeList(RailsProject proj) {
-            project = proj;
+        public RootChildren(final RailsProject project) {
+            this.project = project;
+            this.listeners = new ArrayList<ChangeListener>();
         }
         
-        public List<SourceGroupKey> keys() {
+        public List<RootChildNode> keys() {
             if (this.project.getProjectDirectory() == null || !this.project.getProjectDirectory().isValid()) {
                 return Collections.emptyList();
             }
-//            Sources sources = getSources();
-//            SourceGroup[] groups = sources.getSourceGroups(RailsProject.SOURCES_TYPE_RUBY);
-//            // Here we're adding sources, tests
-//            List result =  new ArrayList(groups.length);
-//            for( int i = 0; i < groups.length; i++ ) {
-//                result.add(new SourceGroupKey(groups[i]));
-//            }
-
+            
+            // source roots
             Sources sources = getSources();
             SourceGroup[] groups = sources.getSourceGroups(RailsProject.SOURCES_TYPE_RUBY);
             // Here we're adding sources, tests
-            List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>(groups.length);
+            List<RootChildNode> result =  new ArrayList<RootChildNode>(groups.length);
             for( int i = 0; i < groups.length; i++ ) {
-                result.add(new SourceGroupKey(groups[i], getGenerator(groups[i].getName())));
+                result.add(RootChildNode.group(groups[i], getGenerator(groups[i].getName())));
             }
 
+            // libraries node
+            result.add(RootChildNode.libraries());
+
+            // files
             SourceRoots roots = project.getSourceRoots();
             if (roots != null) {
                 FileObject[] extra = roots.getExtraFiles();
                 if (extra != null && extra.length > 0) {
                     for (FileObject f : extra) {
-                        result.add(new SourceGroupKey(f));
+                        result.add(RootChildNode.fileObject(f));
                     }
                 }
             }
@@ -165,8 +161,13 @@ public final class SourceNodeFactory implements NodeFactory {
             }
         }
         
-        public Node node(SourceGroupKey key) {
-            if (key.group == null) {
+        public Node node(final RootChildNode key) {
+            if (key.libraryNode) {
+                return new LibrariesNode(project);
+            }
+            if (key.group != null) {
+                return new FolderViewFilterNode(key.group, key.generator, project);
+            } else if (key.fileObject != null) {
                 try {
                     if (RakeSupport.isRakeFile(key.fileObject)) {
                         return new RakeSupport.RakeNode(key.fileObject);
@@ -176,9 +177,11 @@ public final class SourceNodeFactory implements NodeFactory {
                     }
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
+                    return null;
                 }
+            } else {
+                throw new AssertionError("Unknown/Invalid key: " + key);
             }
-            return new PackageViewFilterNode(key.group, key.generator, project);
         }
         
         public void addNotify() {
@@ -204,40 +207,65 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
     }
-    
-    private static class SourceGroupKey {
-        
-        public final SourceGroup group;
-        public final FileObject fileObject;
-        public final Generator generator;
-        
-        SourceGroupKey(SourceGroup group, Generator generator) {
+
+    private static class RootChildNode {
+
+        private final SourceGroup group;
+        private final FileObject fileObject;
+        private final Generator generator;
+        private final boolean libraryNode;
+
+        private RootChildNode(SourceGroup group, FileObject fileObject, Generator generator, boolean libraryNode) {
             this.group = group;
-            this.fileObject = group.getRootFolder();
+            this.fileObject = fileObject;
             this.generator = generator;
+            this.libraryNode = libraryNode;
+        }
+
+        private RootChildNode(SourceGroup group, FileObject fileObject, Generator generator) {
+            this(group, fileObject, generator, false);
         }
         
-        SourceGroupKey(FileObject fileObject) {
-            this.group = null;
-            this.fileObject = fileObject;
-            this.generator = Generator.NONE;
+        static RootChildNode group(final SourceGroup group, final Generator generator) {
+            return new RootChildNode(group, group.getRootFolder(), generator);
+        }
+
+        static RootChildNode fileObject(final FileObject fileObject) {
+            return new RootChildNode(null, fileObject, Generator.NONE);
+        }
+
+        static RootChildNode libraries() {
+            return new RootChildNode(null, null, Generator.NONE, true);
         }
 
         public @Override int hashCode() {
+            if (libraryNode) {
+                return 0;
+            }
             return fileObject.hashCode();
         }
 
         public @Override boolean equals(Object obj) {
-            if (!(obj instanceof SourceGroupKey)) {
+            if (!(obj instanceof RootChildNode)) {
                 return false;
             } else {
-                SourceGroupKey otherKey = (SourceGroupKey) obj;
+                RootChildNode otherKey = (RootChildNode) obj;
+                if (libraryNode || otherKey.libraryNode) {
+                    return libraryNode && otherKey.libraryNode;
+                }
                 String thisDisplayName = group == null ? null : group.getDisplayName();
                 String otherDisplayName = otherKey.group == null ? null : otherKey.group.getDisplayName();
                 // XXX what is the operator binding order supposed to be here??
                 return fileObject.equals(otherKey.fileObject) &&
                         (thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName));
             }
+        }
+        
+        public @Override String toString() {
+            return "ProjectRootNodeFactory[fileObject: " + fileObject + // NOI18N
+                    ", group: " + group + // NOI18N
+                    ", generator: " + generator + // NOI18N
+                    ", libraryNode: " + libraryNode + ']'; // NOI18N
         }
     }
     
@@ -287,14 +315,14 @@ public final class SourceNodeFactory implements NodeFactory {
     
     /** Yet another cool filter node just to add properties action
      */
-    private static class PackageViewFilterNode extends FilterNode {
+    private static class FolderViewFilterNode extends FilterNode {
         
         private String nodeName;
         private Project project;
         
         Action[] actions;
         
-        public PackageViewFilterNode(SourceGroup sourceGroup, Generator generator, Project project) {
+        public FolderViewFilterNode(SourceGroup sourceGroup, Generator generator, Project project) {
             //super(PackageView.createPackageView(sourceGroup));
             super(new RootNode(sourceGroup, generator));
             
@@ -334,7 +362,7 @@ public final class SourceNodeFactory implements NodeFactory {
         }
         
         public PreselectPropertiesAction(Project project, String nodeName, String panelName) {
-            super(NbBundle.getMessage(SourceNodeFactory.class, "LBL_Properties_Action"));
+            super(NbBundle.getMessage(ProjectRootNodeFactory.class, "LBL_Properties_Action"));
             this.project = project;
             this.nodeName = nodeName;
             this.panelName = panelName;
