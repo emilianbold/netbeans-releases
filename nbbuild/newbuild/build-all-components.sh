@@ -63,6 +63,9 @@ if [ $ERROR_CODE != 0 ]; then
     TEST_CODE=1;
 fi
 
+#Remove file created during commit validation
+rm -rf $NB_ALL/nbbuild/netbeans/nb6.5/servicetag
+
 # Init application server for tests
 #sh -x `dirname $0`/initAppserver.sh
 # visualweb UI validation tests
