@@ -229,6 +229,11 @@ public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
             if (filepath.endsWith(path)) {
                 return project;
             }
+            path = project.getTestArtifactRelativeRepositoryPath();
+            LOG.finest("matching againts known project's test " + path);
+            if (filepath.endsWith(path)) {
+                return project;
+            }
         }
         return null;
         
