@@ -41,9 +41,10 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.RunScript;
 import java.net.MalformedURLException;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -52,17 +53,17 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class RunCommand extends Command implements Displayable {
+public class RunProjectCommand extends Command implements Displayable {
     public static final String ID = ActionProvider.COMMAND_RUN;
-    public static final String DISPLAY_NAME = NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
-    private final RunLocalCommand localCommand;
+    public static final String DISPLAY_NAME = NbBundle.getMessage(RunProjectCommand.class, "LBL_RunProject");
+    private final RunScript runScript;
 
     /**
      * @param project
      */
-    public RunCommand(PhpProject project) {
+    public RunProjectCommand(PhpProject project) {
         super(project);
-        localCommand = new RunLocalCommand(project);
+        runScript = new RunScript(project);
     }
 
     @Override
@@ -73,7 +74,7 @@ public class RunCommand extends Command implements Displayable {
             return;
         }
         if (scriptSelected) {
-            localCommand.invokeAction(null);
+            runScript.invokeAction(null);
         } else {
             eventuallyUploadFiles();
             try {
