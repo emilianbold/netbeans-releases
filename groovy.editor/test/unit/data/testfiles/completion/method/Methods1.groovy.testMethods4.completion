@@ -12,7 +12,9 @@ METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachByte(Closure)                          void
 METHOD     eachLine(Closure)                          Object
+METHOD     eachLine(String,  int, Closure             Object
 METHOD     eachLine(String, Closure)                  Object
+METHOD     eachLine(int, Closure)                     Object
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                             boolean
 METHOD     every()                                    boolean
