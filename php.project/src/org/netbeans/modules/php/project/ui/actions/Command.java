@@ -279,8 +279,8 @@ public abstract class Command {
     }
 
     /** eventually show the customizer */
-    protected boolean isRunConfigurationValid() {
-        return ProjectPropertiesSupport.isActiveConfigValid(project, true);
+    protected boolean isRunConfigurationValid(boolean indexFileNeeded) {
+        return ProjectPropertiesSupport.isActiveConfigValid(project, indexFileNeeded, true);
     }
 
     protected boolean isScriptSelected() {

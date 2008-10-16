@@ -88,7 +88,7 @@ public abstract class FtpCommand extends Command {
 
     @Override
     public final void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationValid()) {
+        if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
         }
