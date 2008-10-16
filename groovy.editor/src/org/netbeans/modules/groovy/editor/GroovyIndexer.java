@@ -235,7 +235,7 @@ public class GroovyIndexer implements Indexer {
                 }
             }
 
-            // FIXME (right now it generates accessors even for closures)
+            // FIXME final field does not generate setter
             // generate property accessors
 //            for (AstElement property : properties) {
 //                String name = property.getName();
@@ -259,6 +259,10 @@ public class GroovyIndexer implements Indexer {
 //                accessor.setLength(0);
 //                accessor.append("set"); // NOI18N
 //                accessor.append(builder);
+//                accessor.append("(");
+//                accessor.append(Utilities.translateClassLoaderTypeName(
+//                        ((FieldNode) property.getNode()).getType().getName()));
+//                accessor.append(")");
 //
 //                if (!methods.containsKey(accessor.toString())) {
 //                    document.addPair(METHOD_NAME, accessor.toString(), true);
@@ -290,6 +294,7 @@ public class GroovyIndexer implements Indexer {
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_NAME, signature, true);
 
+            // FIXME check final fields
             // property candidate
             if (flags == 0) {
                 properties.add(child);
