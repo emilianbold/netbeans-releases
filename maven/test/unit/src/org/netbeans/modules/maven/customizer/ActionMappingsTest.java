@@ -37,50 +37,50 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.classpath;
+package org.netbeans.modules.maven.customizer;
 
-import java.io.File;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.openide.filesystems.FileUtil;
+import java.awt.event.ActionEvent;
+import javax.swing.JTextArea;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author  Milos Kleint 
+ * @author mkleint
  */
-class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
-    
-    /** Creates a new instance of SrcClassPathImpl */
-    public TestCompileClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
-        
+public class ActionMappingsTest {
+
+    public ActionMappingsTest() {
     }
-    
-   URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
-        //TODO we shall add the test class output as well. how?
-        // according the current 2.1 sources this is almost the same as getCompileClasspath()
-        //except for the fact that multiproject references are not redirected to their respective
-        // output folders.. we lways retrieve stuff from local repo..
-        @SuppressWarnings("unchecked")
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(fil.toURI());
-            } else { //NOPMD
-                //null means dependencies were not resolved..
-            } 
-        }
-        File fil = new File(getMavenProject().getOriginalMavenProject().getBuild().getOutputDirectory());
-        fil = FileUtil.normalizeFile(fil);
-        lst.add(0, fil.toURI());
-        URI[] uris = new URI[lst.size()];
-        uris = lst.toArray(uris);
-        return uris;
-    }    
-    
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @Test
+    public void testSkipTestsAction() throws Exception {
+        JTextArea area = new JTextArea();
+        area.setText("");
+        ActionMappings.SkipTestsAction act = new ActionMappings.SkipTestsAction(area);
+        act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
+        assertTrue(area.getText().contains("maven.test.skip=true"));
+
+        area.setText("maven.test.skip=false");
+        act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
+        assertTrue(area.getText().contains("maven.test.skip=true"));
+
+        area.setText("maven.test.skip = false\nyyy=xxx");
+        act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
+        assertTrue(area.getText().contains("maven.test.skip=true"));
+
+        area.setText("aaa=bbb\nmaven.test.skip =    false   \nyyy=xxx");
+        act.actionPerformed(new ActionEvent(area, ActionEvent.ACTION_PERFORMED, "X"));
+        assertTrue(area.getText().contains("maven.test.skip=true"));
+    }
 }

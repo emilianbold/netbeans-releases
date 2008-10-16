@@ -37,50 +37,63 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.classpath;
+package org.netbeans.modules.maven.navigator;
 
-import java.io.File;
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import org.apache.maven.artifact.Artifact;
-import org.netbeans.modules.maven.NbMavenProjectImpl;
-import org.openide.filesystems.FileUtil;
+import java.util.Map;
+import java.util.Properties;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author  Milos Kleint 
+ * @author mkleint
  */
-class TestCompileClassPathImpl extends AbstractProjectClassPathImpl {
-    
-    /** Creates a new instance of SrcClassPathImpl */
-    public TestCompileClassPathImpl(NbMavenProjectImpl proj) {
-        super(proj);
-        
+public class POMModelPanelTest {
+
+    public POMModelPanelTest() {
     }
-    
-   URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
-        //TODO we shall add the test class output as well. how?
-        // according the current 2.1 sources this is almost the same as getCompileClasspath()
-        //except for the fact that multiproject references are not redirected to their respective
-        // output folders.. we lways retrieve stuff from local repo..
-        @SuppressWarnings("unchecked")
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        for (Artifact art : arts) {
-            if (art.getFile() != null) {
-                File fil = FileUtil.normalizeFile(art.getFile());
-                lst.add(fil.toURI());
-            } else { //NOPMD
-                //null means dependencies were not resolved..
-            } 
-        }
-        File fil = new File(getMavenProject().getOriginalMavenProject().getBuild().getOutputDirectory());
-        fil = FileUtil.normalizeFile(fil);
-        lst.add(0, fil.toURI());
-        URI[] uris = new URI[lst.size()];
-        uris = lst.toArray(uris);
-        return uris;
-    }    
-    
+
+
+    /**
+     * Test of getPropertyValues method, of class POMModelPanel.
+     */
+    @Test
+    public void testGetPropertyValues() {
+        System.out.println("getPropertyValues");
+        Properties[] models = new Properties[4];
+        Properties one = new Properties();
+        Properties two = new Properties();
+        Properties three = new Properties();
+        Properties four = new Properties();
+        models[0] = one;
+        models[1] = two;
+        models[2] = three;
+        models[3] = four;
+
+        String prop = "propone";
+        one.put(prop, "val1");
+        three.put(prop, "zzz");
+        Map<String, List<String>> result = POMModelPanel.getPropertyValues(models);
+        List<String> lst = result.get(prop);
+        assertNotNull(lst);
+        assertNotNull(lst.get(0));
+        assertNull(lst.get(1));
+        assertNotNull(lst.get(2));
+        assertNull(lst.get(3));
+
+        prop = "proptwo";
+        two.put(prop, "val1");
+        three.put(prop, "zzz");
+        result = POMModelPanel.getPropertyValues(models);
+        lst = result.get(prop);
+        assertNotNull(lst);
+        assertNull(lst.get(0));
+        assertNotNull(lst.get(1));
+        assertNotNull(lst.get(2));
+        assertNull(lst.get(3));
+
+    }
+
+
 }
