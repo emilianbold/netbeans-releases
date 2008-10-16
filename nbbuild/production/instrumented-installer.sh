@@ -35,6 +35,7 @@ bash ${EMMA_SH} ${NB_EXTRACTED} ${NB_EXTRACTED}/emma-lib/netbeans_coverage.em ${
 
 sed -i -e "s/^netbeans_default_options=\"/netbeans_default_options=\"--cp:p \"\\\\\"\"$\{NETBEANS_HOME\}\/emma-lib\/emma.jar\"\\\\\"\" -J-Demma.coverage.file=\"\\\\\"\"$\{NETBEANS_HOME\}\/emma-lib\/netbeans_coverage.ec\"\\\\\"\" -J-Dnetbeans.security.nocheck=true /" ${NB_EXTRACTED}/etc/netbeans.conf
 
+cp ${EMMA_JAR} ${NB_EXTRACTED}/platform?/lib/
 BASENAME=${BUILD_DESC}-${BUILD_NUMBER}
 export DIST=${WORKSPACE}/dist/zip
 mkdir -p ${DIST}
