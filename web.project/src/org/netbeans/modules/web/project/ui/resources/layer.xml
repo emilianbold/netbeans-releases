@@ -184,7 +184,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-web-project-ui-SetupDirNodeFactory.instance">
                     <attr name="position" intvalue="600"/>
                 </file>
-                <file name="org-netbeans-modules-j2ee-common-project-ui-JavaSourceNodeFactory.instance">
+                <file name="org-netbeans-modules-java-api-common-project-ui-JavaSourceNodeFactory.instance">
                     <attr name="position" intvalue="700"/>
                 </file>
                 <file name="org-netbeans-modules-web-project-ui-LibrariesNodeFactory.instance">
