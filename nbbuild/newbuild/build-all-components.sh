@@ -49,6 +49,8 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+cp -rp nbbuild/netbeans nbbuild/netbeans.orig
+
 ###############  Commit validation tests  ##########################
 #cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-PRISTINE
 
