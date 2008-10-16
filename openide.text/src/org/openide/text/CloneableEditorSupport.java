@@ -1976,7 +1976,6 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         } catch (UserQuestionException ex) {
             throw ex;
         } catch (IOException ex) {
-            aProblem = ex;
             throw ex;
         } catch (Exception e) { // incl. BadLocationException
             aProblem = e;
@@ -1984,15 +1983,14 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if (aProblem != null) {
                 final Throwable tmp = aProblem;
                 SwingUtilities.invokeLater(new Runnable() {
-
-                                               public void run() {
-                                                   Exceptions.attachLocalizedMessage(tmp,
-                                                                                     NbBundle.getMessage(CloneableEditorSupport.class,
-                                                                                                         "EXC_LoadDocument",
-                                                                                                         messageName()));
-                                                   Exceptions.printStackTrace(tmp);
-                                               }
-                                           });
+                    public void run() {
+                        Exceptions.attachLocalizedMessage(tmp,
+                        NbBundle.getMessage(CloneableEditorSupport.class,
+                        "EXC_LoadDocument",
+                        messageName()));
+                        Exceptions.printStackTrace(tmp);
+                    }
+                });
             }
         }
     }
@@ -2665,6 +2663,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         /** Listener to changes in the Env.
         */
         public void propertyChange(PropertyChangeEvent ev) {
+            if ("expectedTime".equals(ev.getPropertyName())) { // NOI18N
+                lastSaveTime = ((Date)ev.getNewValue()).getTime();
+            }
             if (Env.PROP_TIME.equals(ev.getPropertyName())) {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();
