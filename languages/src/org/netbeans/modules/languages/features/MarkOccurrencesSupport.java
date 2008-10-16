@@ -91,16 +91,18 @@ public class MarkOccurrencesSupport implements CaretListener {
         parsingTask = RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 Source source = Source.create (editor.getDocument ());
-                try {
-                    ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
-                        @Override
-                        public void run (ResultIterator resultIterator) throws ParseException {
-                            ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
-                            refresh (e.getDot (), parserResult);
-                        }
-                    });
-                } catch (ParseException ex) {
-                    ex.printStackTrace ();
+                if (source != null) {
+                    try {
+                        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                            @Override
+                            public void run (ResultIterator resultIterator) throws ParseException {
+                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+                                refresh (e.getDot (), parserResult);
+                            }
+                        });
+                    } catch (ParseException ex) {
+                        ex.printStackTrace ();
+                    }
                 }
             }
         }, 1000);
