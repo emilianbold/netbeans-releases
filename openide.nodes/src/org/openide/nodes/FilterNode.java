@@ -1732,6 +1732,10 @@ public class FilterNode extends Node {
                     if (node == null) {
                         node = info.getNode(false, origSnapshot);
                     }
+                    if (isDummyNode(node)) {
+                        // force new snapshot
+                        hideEmpty(null, entry);
+                    }
                     return node;
                 }
             }

@@ -1274,7 +1274,7 @@ abstract class EntrySupport {
             }
 
             if (!info.isHidden() || newIsDummy) {
-                removeEntries(null, entry, newInfo, true, false);
+                removeEntries(null, entry, newInfo, true, true);
             }
 
             if (newInfo != null) {
@@ -1656,8 +1656,7 @@ abstract class EntrySupport {
                 LOGGER.finer("    entryToRemove: " +  entryToRemove); // NOI18N
                 LOGGER.finer("    newEntryInfo: " + newEntryInfo); // NOI18N
                 LOGGER.finer("    justHide: " + justHide); // NOI18N
-                LOGGER.finer("    delayed: " + delayed // NOI18N
-                        );
+                LOGGER.finer("    delayed: " + delayed); // NOI18N
             }
             int index = 0;
             int removedIdx = 0;
