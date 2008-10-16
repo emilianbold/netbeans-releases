@@ -79,7 +79,7 @@ METHOD     toString()                                 String
 METHOD     toString()                                 String
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     values()                                   Collection<V>
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void

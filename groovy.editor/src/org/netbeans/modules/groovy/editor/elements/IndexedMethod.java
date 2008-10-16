@@ -43,10 +43,8 @@ package org.netbeans.modules.groovy.editor.elements;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.groovy.editor.GroovyIndex;
 import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  * A class describing a Groovy method that is in "textual form" (signature, filename, etc.)

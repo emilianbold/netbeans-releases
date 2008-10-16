@@ -2427,16 +2427,19 @@ public class CodeCompleter implements CodeCompletionHandler {
                 for (IndexedMethod indexedMethod : methods) {
                     LOG.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
 
-//                    List<String> params = indexedMethod.getParameters();
-//                    StringBuffer sb = new StringBuffer();
-//
-//                    for (String string : params) {
-//                        sb.append(string);
-//                        sb.append(" ");
-//                    }
+                    // FIXME move sig to method item
+                    List<String> params = indexedMethod.getParameters();
+                    StringBuffer sb = new StringBuffer();
+
+                    for (String string : params) {
+                        if (sb.length() > 0) {
+                            sb.append(", ");
+                        }
+                        sb.append(NbUtilities.stripPackage(string));
+                    }
 
                     // FIXME what is this intended to do ? + modifiers
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null,
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
                             GroovyCompletionItem.toModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, request));
                 }
             }

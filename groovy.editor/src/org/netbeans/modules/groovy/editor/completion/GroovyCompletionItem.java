@@ -299,7 +299,7 @@ import org.openide.util.ImageUtilities;
                     if (buf.length() > 0) {
                         buf.append(", ");
                     }
-                    buf.append(NbUtilities.stripPackage(param));
+                    buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
                 }
 
                 String simpleSig = buf.toString();
