@@ -91,7 +91,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         assertNotNull(defaultCatalog.getSchema("SYSCAT"));
 
         Schema appSchema = defaultCatalog.getSchema("APP");
-        assertSame(appSchema, defaultCatalog.getDefaultSchema());
+        assertSame(appSchema, metadata.getDefaultSchema());
         assertEquals("APP", appSchema.getName());
         assertFalse(appSchema.isSynthetic());
         assertTrue(appSchema.isDefault());
@@ -123,7 +123,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
     }
 
     public void testRefreshTable() throws Exception {
-        Table fooTable = metadata.getDefaultCatalog().getDefaultSchema().getTable("FOO");
+        Table fooTable = metadata.getDefaultSchema().getTable("FOO");
         assertNames(Arrays.asList("ID", "FOO_NAME"), fooTable.getColumns());
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("ALTER TABLE FOO ADD NEW_COLUMN VARCHAR(16)");

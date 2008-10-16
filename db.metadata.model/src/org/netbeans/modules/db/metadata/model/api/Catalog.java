@@ -72,15 +72,6 @@ public class Catalog extends MetadataObject {
         return impl.isDefault();
     }
 
-    // XXX this probably belongs in Metadata.
-    /**
-     * @return the default schema or {@code null}.
-     * @throws MetadataException if an error occurs while retrieving the metadata.
-     */
-    public Schema getDefaultSchema() {
-        return impl.getDefaultSchema();
-    }
-
     /**
      * Returns the synthetic schema in this catalog. The catalog has
      * a synthetic schema if the database doesn't support schemas. Synthetic
