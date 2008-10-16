@@ -49,7 +49,6 @@ import junit.framework.Test;
 import junit.textui.TestRunner;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
-import org.netbeans.jellytools.actions.DebugProjectAction;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;

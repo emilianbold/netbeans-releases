@@ -15,6 +15,7 @@ import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
+import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -75,6 +76,7 @@ public class CommitUiTest extends JellyTestCase{
         
         try {
             TestKit.loadOpenProject(PROJECT_NAME, getDataDir());
+            new EventTool().waitNoEvent(3000);
             TestKit.createNewElements(PROJECT_NAME, "xx", "NewClass");
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass2");
             TestKit.createNewElement(PROJECT_NAME, "xx", "NewClass3");

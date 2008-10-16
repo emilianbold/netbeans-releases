@@ -227,8 +227,8 @@ public class PredicateFinderVisitor extends AbstractXPathVisitor {
             // Extract the namespace and name of the current Tree Node
             assert axiComp instanceof AXIType;
             String typeName = ((AXIType)axiComp).getName();
-            String typeNamespace = AxiomUtils.isUnqualified(axiComp) ?
-                "" : axiComp.getTargetNamespace();
+            String typeNamespace = AxiomUtils.getNamespace(axiComp);
+            typeNamespace = typeNamespace == null ? "" : typeNamespace;
             //
             if (typeName.equals(name) && namespace.equals(typeNamespace)){
                 return true;

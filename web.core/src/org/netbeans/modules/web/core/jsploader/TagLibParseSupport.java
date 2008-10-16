@@ -43,6 +43,7 @@ package org.netbeans.modules.web.core.jsploader;
 
 import java.lang.ref.WeakReference;
 import java.lang.ref.SoftReference;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -381,17 +382,18 @@ public class TagLibParseSupport implements org.openide.nodes.Node.Cookie, TagLib
                     } else {
                         SwingUtilities.invokeLater(new Runnable() {
                             public void run() {
+                                ArrayList<ErrorAnnotation.ErrorInfo> errors = new ArrayList<ErrorAnnotation.ErrorInfo>(locResult.getErrors().length);
                                 for (int i = 0; i < locResult.getErrors().length; i ++){
                                     JspParserAPI.ErrorDescriptor err = locResult.getErrors()[i];
                                     if(checkError(err)) {
-                                        annotations.annotate(new ErrorAnnotation.ErrorInfo[] {
-                                            new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()),
-                                                    err.getLine(),
-                                                    err.getColumn(),
-                                                    ErrorAnnotation.JSP_ERROR)
-                                        } );
+                                        errors.add(new ErrorAnnotation.ErrorInfo(translate(err.getErrorMessage()),
+                                                err.getLine(),
+                                                err.getColumn(),
+                                                ErrorAnnotation.JSP_ERROR));
                                     }
                                 }
+                                annotations.annotate(errors.toArray(new ErrorAnnotation.ErrorInfo[]{}));
+                                
                                 // set icon with error.
                                 if (!hasError){
                                     hasError = true;

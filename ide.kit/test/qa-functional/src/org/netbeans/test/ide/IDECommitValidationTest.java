@@ -134,6 +134,7 @@ public class IDECommitValidationTest extends JellyTestCase {
         // not in commit suite because it needs net connectivity
         // suite.addTest(new IDEValidation("testPlugins"));
 //        conf = conf.addTest("testReflectionUsageAtTheEnd");
+        /* */
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(NbModuleSuite.create(conf));
         suite.addTest(new IDECommitValidationTest("testPostRunCheck"));
