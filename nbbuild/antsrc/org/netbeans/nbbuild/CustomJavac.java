@@ -65,6 +65,12 @@ public class CustomJavac extends Javac {
 
     @Override
     protected void compile() {
+        String specifiedCompiler = getProject().getProperty("build.compiler");
+        if (specifiedCompiler != null) {
+            log("Warning: build.compiler=" + specifiedCompiler + " so disabling JSR 269 annotation processing", Project.MSG_WARN);
+            super.compile();
+            return;
+        }
         if (compileList.length > 0) {
             log("Compiling " + compileList.length + " source file" +
                     (compileList.length == 1 ? "" : "s") +
