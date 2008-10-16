@@ -57,6 +57,7 @@ import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -88,6 +89,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
      * not to be called directrly.. use execute();
      */
     public void run() {
+        synchronized (SEMAPHORE) {
+            if (task == null) {
+                try {
+                    SEMAPHORE.wait();
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.FINE, "interrupted", ex);
+                }
+            }
+        }
+
         final RunConfig clonedConfig = new BeanRunConfig(this.config);
         int executionresult = -10;
         InputOutput ioput = getInputOutput();
@@ -107,6 +118,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         handle.start();
         processInitialMessage();
         try {
+            BuildExecutionSupport.registerRunningItem(item);
+
             out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
             
             File workingDir = clonedConfig.getExecutionDirectory();
@@ -172,6 +185,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             throw death;
         } finally {
+            BuildExecutionSupport.registerFinishedItem(item);
+
             try { //defend against badly written extensions..
                 out.buildFinished();
                 if (clonedConfig.getProject() != null) {

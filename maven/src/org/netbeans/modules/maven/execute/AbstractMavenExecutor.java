@@ -57,6 +57,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.execute.ui.RunGoalsPanel;
 import org.netbeans.modules.maven.spi.lifecycle.MavenBuildPlanSupport;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.execution.ExecutorTask;
@@ -84,7 +85,8 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
     private List<OutputListener> listeners = new ArrayList<OutputListener>();
     protected ExecutorTask task;
     private static final Set<String> forbidden = new HashSet<String>();
-    
+    protected MavenItem item;
+    protected final Object SEMAPHORE = new Object();
 
     static {
         forbidden.add("netbeans.logger.console"); //NOI18N
@@ -123,7 +125,11 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
 
 
     public final void setTask(ExecutorTask task) {
-        this.task = task;
+        synchronized (SEMAPHORE) {
+            this.task = task;
+            this.item = new MavenItem();
+            SEMAPHORE.notifyAll();
+        }
     }
 
     public final void addInitialMessage(String line, OutputListener listener) {
@@ -334,4 +340,25 @@ public abstract class AbstractMavenExecutor extends OutputTabMaintainer implemen
             }
         }
     }
+
+    private class MavenItem implements BuildExecutionSupport.Item {
+
+        public String getDisplayName() {
+            return config.getTaskDisplayName();
+        }
+
+        public void repeatExecution() {
+            RunUtils.executeMaven(config);
+        }
+
+        public boolean isRunning() {
+            return !task.isFinished();
+        }
+
+        public void stopRunning() {
+            AbstractMavenExecutor.this.cancel();
+        }
+
+    }
+
 }
