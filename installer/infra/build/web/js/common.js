@@ -304,7 +304,13 @@ function writeUrl(url,msg) {
     document.write('<a href="' + url + '">' + msg + '</a>');
 }
 function set_page_title(title) {
-    document.write('<title>' + title + '</title>');
+    document.title = title;
+    var titleElement = document.getElementsByTagName("title");
+    if(titleElement.length == 1) {
+        titleElement[0].innerHTML = title;       
+    } else {
+        document.write('<title>' + title + '</title>');
+    }
 }
 
 function set_page_description(desc) {

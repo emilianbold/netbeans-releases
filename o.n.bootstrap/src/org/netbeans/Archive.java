@@ -48,6 +48,8 @@ import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.JarClassLoader.JarSource;
 
 /**
@@ -80,6 +82,7 @@ import org.netbeans.JarClassLoader.JarSource;
 class Archive implements Stamps.Updater {
     // increment on format change
     private static final long magic = 6836742066851800321l;
+    private static final Logger LOG = Logger.getLogger(Archive.class.getName());
     
     private volatile boolean saved;
     private final boolean prepopulated;
@@ -218,6 +221,9 @@ class Archive implements Stamps.Updater {
     }
 
     public void flushCaches(DataOutputStream dos) throws IOException {
+        stopGathering();
+        stopServing();
+        
         assert !gathering;
         assert !active;
        
@@ -248,6 +254,12 @@ class Archive implements Stamps.Updater {
             if (data != null) dos.write(data);
         }
         dos.close();
+
+        if (LOG.isLoggable(Level.FINER)) {
+            for (Object r : requests.keySet()) {
+                LOG.log(Level.FINER, "archiving: {0}", r);
+            }
+        }
 
         // clean up
         requests = null;

@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.drawingarea.view;
 import java.awt.Graphics2D;
 import java.awt.Stroke;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Line2D;
@@ -390,13 +391,26 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
         }
         if (path != null) {
 
-            double zoomFactor = getScene().getZoomFactor ();
             AffineTransform oldTransform = null;
-            if (zoomFactor <= 0.25 ) 
+            if (gr.getTransform() != null) 
             {
-                oldTransform = gr.getTransform ();
-                gr.scale (1/zoomFactor, 1/zoomFactor );
-                path.transform(new AffineTransform(zoomFactor, 0, 0, zoomFactor, 0, 0)); 
+                double det = gr.getTransform().getDeterminant();
+                if (det > 0) 
+                {
+                    double zoomFactor = Math.sqrt(det);
+                    Rectangle bounds = scene.getBounds();
+                    // empiric check to avoid scaling back   
+                    // for high resolution and/or smaller diagrams,
+                    // i.e. phasing out scaling back trigering levels 
+                    // for diagrams less when 100K width
+                    if (zoomFactor <= 0.25 
+                        && (zoomFactor <= (0.25 * (bounds.width / 100000 )))) 
+                    {
+                        oldTransform = gr.getTransform ();
+                        gr.scale (1/zoomFactor, 1/zoomFactor );
+                        path.transform(new AffineTransform(zoomFactor, 0, 0, zoomFactor, 0, 0)); 
+                    }                    
+                }
             }
 
             Stroke previousStroke = gr.getStroke ();

@@ -99,14 +99,15 @@ public class JarClassLoader extends ProxyClassLoader {
      * additional request, if it was still doing so.
      */    
     public static void saveArchive() {
-        archive.stopGathering();
-        archive.stopServing();
         if (cache != null) {
             try {
                 archive.save(cache);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
             }
+        } else {
+            archive.stopGathering();
+            archive.stopServing();
         }
     }
     

@@ -4,6 +4,11 @@ import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -28,20 +33,38 @@ class TemplateAttributesProviderImpl implements CreateFromTemplateAttributesProv
     }
 
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {
+        Map<String, String> values = new HashMap<String, String>();
         EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         String license = props.getProperty("project.license"); // NOI18N
+        if (license != null) {
+            values.put("license", license); // NOI18N
+        }
         Charset charset = encodingQuery.getEncoding(target.getPrimaryFile());
         String encoding = (charset != null) ? charset.name() : null;
-        if (license == null && encoding == null) {
+        if (encoding != null) {
+            values.put("encoding", encoding); // NOI18N
+        }
+        try {
+            Project prj = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+            ProjectInformation info = prj.getLookup().lookup(ProjectInformation.class);
+            if (info != null) {
+                String pname = info.getName();
+                if (pname != null) {
+                    values.put("name", pname);// NOI18N
+                }
+                String pdname = info.getDisplayName();
+                if (pdname != null) {
+                    values.put("displayName", pdname);// NOI18N
+                }
+            }
+        } catch (Exception ex) {
+            //not really important, just log.
+            Logger.getLogger(TemplateAttributesProviderImpl.class.getName()).log(Level.FINE, "", ex);
+        }
+
+        if (values.size() == 0) {
             return null;
         } else {
-            Map<String, String> values = new HashMap<String, String>();
-            if (license != null) {
-                values.put("license", license); // NOI18N
-            }
-            if (encoding != null) {
-                values.put("encoding", encoding); // NOI18N
-            }
             return Collections.singletonMap("project", values); // NOI18N
         }
     }

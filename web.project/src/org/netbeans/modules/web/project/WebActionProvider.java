@@ -409,11 +409,6 @@ class WebActionProvider implements ActionProvider {
         // DEBUG-SINGLE
         } else if (command.equals(COMMAND_DEBUG_SINGLE)) {
             setDirectoryDeploymentProperty(p);
-            
-            boolean keepDebugging = setJavaScriptDebuggerProperties(p);
-            if (!keepDebugging) {
-                return null;
-            }
                         
             FileObject[] files = findTestSources(context, false);
             if (files != null) {
@@ -433,6 +428,11 @@ class WebActionProvider implements ActionProvider {
                     return null;
                 }
 
+                boolean keepDebugging = setJavaScriptDebuggerProperties(p);
+                if (!keepDebugging) {
+                    return null;
+                }
+                
                 files = findJsps(context);
                 if ((files != null) && (files.length > 0)) {
                     // debug jsp

@@ -69,7 +69,7 @@ import org.netbeans.spi.lexer.TokenFactory;
  */
 public final class GroovyLexer implements Lexer<GroovyTokenId> {
     
-    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.groovy.editor.lexer.GroovyLexer");
+    private static final Logger LOG = Logger.getLogger(GroovyLexer.class.getName());
     
     private DelegateLexer scanner;
     private LexerInput lexerInput;

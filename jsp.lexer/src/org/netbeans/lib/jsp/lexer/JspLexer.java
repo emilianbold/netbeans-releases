@@ -560,6 +560,7 @@ public class JspLexer implements Lexer<JspTokenId> {
                     if (!(Character.isLetter(actChar) ||
                             Character.isDigit(actChar) ||
                             (actChar == '_') ||
+                            (actChar == '.') ||
                             (actChar == '-') ||
                             (actChar == ':'))
                             ) { // not alpha

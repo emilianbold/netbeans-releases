@@ -79,7 +79,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
     }
 
     // ------- Tests for completion of right parenthesis ')' -------------
-    
+
     public void testTypeSemicolonInForLoop() { // #146139
         Context ctx = new Context(new JavaKit(),
                 "for (int i = 0|)"
@@ -125,7 +125,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.typeChar('(');
         ctx.assertDocumentTextEquals("m(|)");
     }
-    
+
     public void testTypeSecondRightParen() {
         Context ctx = new Context(new JavaKit(),
                 "m()|)"
@@ -135,7 +135,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "m())|"
         );
     }
-    
+
     public void testTypeRightParenSwingInvokeLaterRunnable() {
         Context ctx = new Context(new JavaKit(),
                 "SwingUtilities.invokeLater(new Runnable()|))"
@@ -169,7 +169,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "})"
         );
     }
-    
+
     public void testTypeRightParenIfMethodCall() {
         Context ctx = new Context(new JavaKit(),
                 "if (a()|) + 5 > 6) {\n" +
@@ -195,7 +195,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
 
 
     // ------- Tests for completion of right brace '}' -------------
-    
+
     public void testTypeAddRightBraceIfLeftBrace() {
         Context ctx = new Context(new JavaKit(),
                 "if (true) {|"
@@ -219,7 +219,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "}"
         );
     }
-    
+
     public void testTypeAddRightBraceIfLeftBraceLineComment() {
         Context ctx = new Context(new JavaKit(),
                 "if (true) { // line-comment|"
@@ -292,9 +292,9 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "    System.out.println(\"\");\n" +
                 "}\n");
     }
-    
-    
-    // ------- Tests for completion of quote (") -------------    
+
+
+    // ------- Tests for completion of quote (") -------------
     public void testTypeSimpleQuoteInEmptyDoc () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "|"
@@ -324,7 +324,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  \"|\""
         );
     }
-    
+
     public void testTypeSimpleQuoteInWhiteSpaceArea () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  |  "
@@ -334,7 +334,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  \"|\"  "
         );
     }
-    
+
     public void testTypeQuoteAtEOL () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  |\n"
@@ -344,7 +344,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  \"|\"\n"
         );
     }
-    
+
     public void testTypeQuoteWithUnterminatedStringLiteral () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  \"unterminated string| \n"
@@ -354,7 +354,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  \"unterminated string\"| \n"
         );
     }
-    
+
     public void testTypeQuoteAtEOLWithUnterminatedStringLiteral () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  \"unterminated string | \n"
@@ -394,7 +394,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 " System.out.println(\"|some text) "
         );
     }
-    
+
     public void testTypeQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 " System.out.println(i+|) "
@@ -404,7 +404,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 " System.out.println(i+\"|\") "
         );
     }
-    
+
     public void testTypeQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedStringLiteral () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 " System.out.println(\"unterminated string literal |); "
@@ -474,7 +474,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "\\\"|"
         );
     }
-    
+
     public void testTypeQuoteEaten() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "|"
@@ -484,8 +484,8 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "\"\"|"
         );
-    }    
-    
+    }
+
     public void testTypeQuoteOnFirstQuote () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 " |\"asdf\""
@@ -504,8 +504,8 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "/** \"|\n */"
         );
-    }    
-    
+    }
+
     public void testTypeQuoteAtTheEndOfLineCommentLine() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "// test line comment |\n"
@@ -514,11 +514,11 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "// test line comment \"|\n"
         );
-    }    
-    
-    
-    // ------- Tests for completion of single quote (') -------------        
-    
+    }
+
+
+    // ------- Tests for completion of single quote (') -------------
+
     public void testTypeSingleQuoteInEmptyDoc () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "|"
@@ -548,7 +548,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  '|'"
         );
     }
-    
+
     public void testTypeSingleQuoteInWhiteSpaceArea () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  |  "
@@ -558,7 +558,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  '|'  "
         );
     }
-    
+
     public void testTypeSingleQuoteAtEOL () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  |\n"
@@ -568,7 +568,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  '|'\n"
         );
     }
-    
+
     public void testTypeSingleQuoteWithUnterminatedCharLiteral () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  '| \n"
@@ -578,7 +578,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "  ''| \n"
         );
     }
-    
+
     public void testTypeSingleQuoteAtEOLWithUnterminatedCharLiteral () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "  ' |\n"
@@ -618,7 +618,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 " System.out.println('|some text) "
         );
     }
-    
+
     public void testTypeSingleQuoteInsideNonEmptyParenthesesBeforeClosingParentheses () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 " System.out.println(i+|) "
@@ -628,7 +628,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 " System.out.println(i+'|') "
         );
     }
-    
+
     public void testTypeSingleQuoteInsideNonEmptyParenthesesBeforeClosingParenthesesAndUnterminatedCharLiteral () throws Exception {
         Context ctx = new Context(new JavaKit(),
                 " System.out.println(' |); "
@@ -698,7 +698,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
                 "\\'|"
         );
     }
-    
+
     public void testTypeSingleQuoteEaten() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "|"
@@ -708,8 +708,8 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "''|"
         );
-    }    
-    
+    }
+
     public void testTypeSingleQuoteInsideComments() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "/* |\n */"
@@ -718,7 +718,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         ctx.assertDocumentTextEquals(
                 "/* \'|\n */"
         );
-    }    
+    }
 
     public void testTypeSingleQuoteAtTheEndOfLineCommentLine() throws Exception {
         Context ctx = new Context(new JavaKit(),
@@ -748,7 +748,7 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
             prefs.putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, orig);
         }
     }
-    
+
     public void testDoNotSkipWhenNotBalanced147683a() throws Exception {
         Context ctx = new Context(new JavaKit(),
                 "System.err.println((true|);"
@@ -789,6 +789,16 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         );
     }
 
+    public void testKeepBalance148878() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "Map[|] m = new HashMap[1];"
+        );
+        ctx.typeChar(']');
+        ctx.assertDocumentTextEquals(
+                "Map[]| m = new HashMap[1];"
+        );
+    }
+    
     private static final class Context {
         
         private JEditorPane pane;

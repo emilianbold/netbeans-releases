@@ -112,18 +112,22 @@ public class GenerateDOMScannerSupport implements XMLGenerateCookie {
             String rawName = primFile.getName();
             String name = rawName.substring(0,1).toUpperCase() + rawName.substring(1) + NbBundle.getMessage(GenerateDOMScannerSupport.class, "NAME_SUFFIX_Scanner");
             FileObject folder = primFile.getParent();
-            FileObject generFile = (new SelectFileDialog (folder, name, JAVA_EXT)).getFileObject();
+            FileObject generFile = (new SelectFileDialog (folder, name, JAVA_EXT)).getFileObject();            
             name = generFile.getName();
-           
+            //SelectFileDialog creates an empty file on disk but the generation 
+            //requires an empty java class file, hence it must be deleted.
+            //The createClass call will create a Java class.
+            generFile.delete();
+            generFile = GenerationUtils.createClass(folder, name, null);
             try {
                 GuiUtil.setStatusText(NbBundle.getMessage(GenerateDOMScannerSupport.class, "MSG_DOM_1"));
                 prepareDOMScannerClass(generFile);
             } finally {
-                GuiUtil.setStatusText(""); // NOI18N
-               
+                GuiUtil.setStatusText(""); // NOI18N               
             }
             GuiUtil.performDefaultAction (generFile);
-        } catch (UserCancelException e) {            
+        } catch (UserCancelException e) {
+            //ignore: user chose to cancel
         } catch (TreeException e) {
             // can not get tree representaion
            GuiUtil.notifyError(NbBundle.getMessage(GenerateDOMScannerSupport.class, "MSG_DOM_ERR_1"));

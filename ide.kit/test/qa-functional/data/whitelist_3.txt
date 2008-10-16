@@ -399,6 +399,9 @@ javax.lang.model.type.TypeVariable
 javax.lang.model.type.WildcardType
 javax.lang.model.util.Elements
 javax.lang.model.util.Types
+javax.management.NotificationEmitter
+javax.management.NotificationListener
+javax.management.StandardMBean
 javax.sql.RowSetInternal
 javax.sql.rowset.BaseRowSet
 javax.sql.rowset.CachedRowSet
@@ -812,6 +815,8 @@ org.netbeans.api.java.loaders.JavaDataSupport
 org.netbeans.api.java.platform.JavaPlatform
 org.netbeans.api.java.platform.JavaPlatformManager
 org.netbeans.api.java.platform.Specification
+org.netbeans.api.java.queries.BinaryForSourceQuery
+org.netbeans.api.java.queries.BinaryForSourceQuery$Result
 org.netbeans.api.java.queries.SourceForBinaryQuery
 org.netbeans.api.java.queries.SourceForBinaryQuery$EmptyResult
 org.netbeans.api.java.queries.SourceForBinaryQuery$Result
@@ -829,6 +834,8 @@ org.netbeans.api.java.source.CompilationController
 org.netbeans.api.java.source.CompilationInfo
 org.netbeans.api.java.source.CompilationInfoImpl
 org.netbeans.api.java.source.CompilationInfoImpl$DiagnosticListenerImpl
+org.netbeans.api.java.source.ElementHandle
+org.netbeans.api.java.source.ElementHandle$ElementHandleAccessorImpl
 org.netbeans.api.java.source.JavaSource
 org.netbeans.api.java.source.JavaSource$CompilationJob
 org.netbeans.api.java.source.JavaSource$CurrentRequestReference
@@ -1716,7 +1723,10 @@ org.netbeans.modules.editor.NbEditorKit$NbRedoAction
 org.netbeans.modules.editor.NbEditorKit$NbUndoAction
 org.netbeans.modules.editor.NbEditorUtilities
 org.netbeans.modules.editor.NbLocalizer
+org.netbeans.modules.editor.bookmarks.BookmarksPersistence
+org.netbeans.modules.editor.bookmarks.BookmarksPersistence$ProjectsListener
 org.netbeans.modules.editor.bookmarks.EditorBookmarksModule
+org.netbeans.modules.editor.bookmarks.EditorBookmarksModule$BookmarksInitializer
 org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction
 org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Next
 org.netbeans.modules.editor.bookmarks.WrapperBookmarkAction$Previous
@@ -1950,6 +1960,8 @@ org.netbeans.modules.java.api.common.queries.TemplateAttributesProviderImpl
 org.netbeans.modules.java.api.common.queries.UnitTestForSourceQueryImpl
 org.netbeans.modules.java.api.common.util.CommonProjectUtils
 org.netbeans.modules.java.classpath.ClassPathAccessor
+org.netbeans.modules.java.classpath.ProxyClassPathImplementation
+org.netbeans.modules.java.classpath.ProxyClassPathImplementation$DelegatesListener
 org.netbeans.modules.java.classpath.SimpleClassPathImplementation
 org.netbeans.modules.java.classpath.SimplePathResourceImplementation
 org.netbeans.modules.java.debug.ElementNavigatorJavaSourceFactory
@@ -2025,6 +2037,7 @@ org.netbeans.modules.java.j2seproject.classpath.SourcePathImplementation
 org.netbeans.modules.java.j2seproject.classpath.SourcePathImplementation$1PRI
 org.netbeans.modules.java.j2seproject.classpath.SourcePathImplementation$AddOnGeneratedSourceRootListner
 org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl
+org.netbeans.modules.java.j2seproject.queries.BinaryForSourceQueryImpl$R
 org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider
 org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$J2SELogicalViewRootNode
 org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider$J2SELogicalViewRootNode$BrokenLinksAction
@@ -2050,12 +2063,14 @@ org.netbeans.modules.java.project.BrokenReferencesModel$OneReference
 org.netbeans.modules.java.project.ExtraProjectJavadocForBinaryQueryImpl
 org.netbeans.modules.java.project.ExtraProjectSourceForBinaryQueryImpl
 org.netbeans.modules.java.project.JavaProjectSettings
+org.netbeans.modules.java.project.ProjectBinaryForSourceQuery
 org.netbeans.modules.java.project.ProjectClassPathProvider
 org.netbeans.modules.java.project.ProjectSourceForBinaryQuery
 org.netbeans.modules.java.project.ProjectSourceLevelQueryImpl
 org.netbeans.modules.java.project.classpath.ProjectClassPathModifierAccessor
 org.netbeans.modules.java.queries.SFBQImpl2Result
 org.netbeans.modules.java.source.ActivatedDocumentListener
+org.netbeans.modules.java.source.ElementHandleAccessor
 org.netbeans.modules.java.source.JBrowseModule
 org.netbeans.modules.java.source.JavaFileFilterQuery
 org.netbeans.modules.java.source.JavaSourceAccessor
@@ -2080,6 +2095,7 @@ org.netbeans.modules.java.source.parsing.CachingArchive
 org.netbeans.modules.java.source.parsing.CachingArchive$Folder
 org.netbeans.modules.java.source.parsing.CachingArchiveProvider
 org.netbeans.modules.java.source.parsing.CachingFileManager
+org.netbeans.modules.java.source.parsing.DocumentProvider
 org.netbeans.modules.java.source.parsing.FileObjects
 org.netbeans.modules.java.source.parsing.FileObjects$Base
 org.netbeans.modules.java.source.parsing.FileObjects$CachedZipFileObject
@@ -2094,6 +2110,7 @@ org.netbeans.modules.java.source.parsing.OutputFileManager
 org.netbeans.modules.java.source.parsing.OutputFileObject
 org.netbeans.modules.java.source.parsing.ProxyFileManager
 org.netbeans.modules.java.source.parsing.SourceFileManager
+org.netbeans.modules.java.source.parsing.SourceFileObject
 org.netbeans.modules.java.source.save.Reformatter$Factory
 org.netbeans.modules.java.source.tasklist.CompilerSettings
 org.netbeans.modules.java.source.tasklist.ErrorAnnotator
@@ -2290,6 +2307,7 @@ org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$LocalSniffing
 org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$Smell
 org.netbeans.modules.openide.filesystems.declmime.XMLMIMEComponent$SniffingParser
 org.netbeans.modules.openide.loaders.DataObjectAccessor
+org.netbeans.modules.openide.loaders.DataObjectEncodingQueryImplementation
 org.netbeans.modules.openide.loaders.RuntimeCatalog
 org.netbeans.modules.openide.util.AWTBridge
 org.netbeans.modules.openide.util.NamedServicesProvider
@@ -3369,7 +3387,10 @@ org.openide.filesystems.FileSystem$Status
 org.openide.filesystems.FileURL
 org.openide.filesystems.FileUtil
 org.openide.filesystems.JarFileSystem
+org.openide.filesystems.JarFileSystem$Cache
+org.openide.filesystems.JarFileSystem$Cache$Folder
 org.openide.filesystems.JarFileSystem$Impl
+org.openide.filesystems.JarFileSystem$Ref
 org.openide.filesystems.ListenerList
 org.openide.filesystems.LocalFileSystem
 org.openide.filesystems.LocalFileSystem$Impl

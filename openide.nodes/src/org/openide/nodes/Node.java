@@ -1085,6 +1085,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 err.finer("fireSubNodesChangeIdx() " + this); // NOI18N
                 err.finer("    added: " + added); // NOI18N
                 err.finer("    idxs: " + Arrays.toString(idxs)); // NOI18N
+                err.finer("    sourceEntry: " + sourceEntry); // NOI18N
                 err.finer("    current size: " + current.size() + "    current: " + current); // NOI18N
                 err.finer(previous != null ? ("    previous size: " + previous.size() + "    previous: " + previous) : "    null"); // NOI18N
             }

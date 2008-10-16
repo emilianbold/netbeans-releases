@@ -528,25 +528,6 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     
     private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
 
-        // for now just always returns true, it means whole tree is visited
-        // I wanted to drop visits of subtrees which don't include given offset,
-        // but several nodes return 'incorrect' coordinates. I fixed following
-        // two, but there are more of them...
-        
-//        if (node instanceof MethodCallExpression) {
-//            // in expression def tags = params.tagTokens?.trim() it returns 
-//            // position before parenthesis for both - start and also end
-//            // and so it was preventing me from visiting expression deeper
-//            return true;
-//        }
-//        
-//        if (node instanceof ClosureExpression) {
-//            // in expression  def create = { it returns 
-//            // rabge for '= '
-//            // and so it was preventing me from visiting expression deeper
-//            return true;
-//        }
-
         fixCoordinates(node);
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
@@ -592,39 +573,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private void fixCoordinates(ASTNode node) {
-        // see http://jira.codehaus.org/browse/GROOVY-3052
-        if (node instanceof RangeExpression) {
-            RangeExpression range = (RangeExpression) node;
-            Expression from = range.getFrom();
-            Expression to = range.getTo();
-            if (to.getLastLineNumber() == 0 && to.getLastColumnNumber() == 0
-                    || to.getLastLineNumber() > range.getLastLineNumber()
-                    || to.getLastColumnNumber() > range.getLastColumnNumber()) {
-                if (from.getLastLineNumber() == to.getLineNumber()
-                        && from.getLastColumnNumber() == to.getColumnNumber()) {
-                    // we need to do our best to fix it
-                    from.setLastColumnNumber(from.getColumnNumber() + from.getText().length());
-                    to.setLastColumnNumber(to.getColumnNumber() + to.getText().length());
-                    to.setLastLineNumber(to.getLineNumber());
-                }
-            }
-        // see http://jira.codehaus.org/browse/GROOVY-3049
-        } else if (node instanceof PropertyExpression) {
-            // bit suspucious, try to fix the data
-            if (node.getLineNumber() == node.getLastLineNumber()
-                    && node.getColumnNumber() == node.getLastColumnNumber()) {
-                PropertyExpression propertyExpression = (PropertyExpression) node;
-                Expression expression = propertyExpression.getProperty();
-                if (expression.getLastLineNumber() == 0 && expression.getLastColumnNumber() == 0) {
-                    if (expression.getLineNumber() > 0 && expression.getColumnNumber() > 0) {
-                        node.setLastColumnNumber(node.getLastColumnNumber() + expression.getText().length());
-                    }
-                } else {
-                    node.setLastLineNumber(expression.getLastLineNumber());
-                    node.setLastColumnNumber(expression.getLastColumnNumber());
-                }
-            }
-        }
+        // noop for Groovy 1.5.7
     }
 
 }
