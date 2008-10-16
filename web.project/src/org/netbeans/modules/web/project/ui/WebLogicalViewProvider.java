@@ -54,6 +54,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionListener;
@@ -563,9 +564,13 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 String servInstID = evaluator.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
                 brokenServer = BrokenServerSupport.isBroken(servInstID);
                 if (old != brokenServer) {
-                    fireIconChange();
-                    fireOpenedIconChange();
-                    fireDisplayNameChange(null, null);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            fireIconChange();
+                            fireOpenedIconChange();
+                            fireDisplayNameChange(null, null);
+                        }
+                    });
                 }
             }
         } 
