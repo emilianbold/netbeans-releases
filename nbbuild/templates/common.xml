@@ -72,6 +72,7 @@ made subject to such option by the copyright holder.
         </condition>
         <property name="jar-excludes" value="**/*.java,**/*.form,**/package.html,**/doc-files/"/>
         <property name="module.jar.verifylinkageignores" value=""/>
+        <property name="cp.extra" value=""/>
     </target>
 
     <target name="-release.dir">
@@ -101,6 +102,25 @@ made subject to such option by the copyright holder.
         </patternset>
     </target>
 
+    <target name="-javac-init" depends="build-init">
+        <path id="cp">
+            <pathelement path="${module.classpath}"/>
+            <pathelement path="${cp.extra}"/>
+        </path>
+        <!-- Unlike ${module.classpath}, this does not use publicPackageJarDir, since processors need not be in public packages: -->
+        <parseprojectxml project="." moduleclasspathproperty="processor.path"/>
+        <presetdef name="nb-javac">
+            <custom-javac>
+                <bootclasspath path="${nbjdk.bootclasspath}"/>
+                <javacclasspath refid="javacimpl"/>
+                <processorpath>
+                    <pathelement path="${processor.path}"/>
+                    <pathelement path="${cp.extra}"/>
+                </processorpath>
+            </custom-javac>
+        </presetdef>
+    </target>
+
     <target name="up-to-date" depends="init">
         <uptodate targetfile="${cluster}/${module.jar}" property="is.jar.uptodate">
             <srcfiles dir="${src.dir}"/>
@@ -122,13 +142,11 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <custom-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
+        <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
                 deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
-            <bootclasspath path="${nbjdk.bootclasspath}"/>
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-            <javacclasspath refid="javacimpl"/>
-        </custom-javac>
+        </nb-javac>
         <!-- Sanity check: -->
         <pathconvert pathsep=":" property="class.files.in.src">
             <path>
@@ -160,14 +178,12 @@ made subject to such option by the copyright holder.
         <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
             <classpath refid="cp"/>
         </depend>
-        <custom-javac srcdir="${src.dir}" destdir="${build.classes.dir}"
+        <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}"
                debug="${build.compiler.debug}" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                source="${javac.source}" target="${javac.target}" includes="${javac.includes}" optimize="${build.compiler.optimize}" includeantruntime="false">
-            <bootclasspath path="${nbjdk.bootclasspath}"/>
             <classpath refid="cp"/>
             <compilerarg line="${javac.compilerargs}"/>
-            <javacclasspath refid="javacimpl"/>
-        </custom-javac>
+        </nb-javac>
     </target>
 
     <target name="jar-prep" depends="init">
@@ -428,14 +444,12 @@ made subject to such option by the copyright holder.
                 <classpath refid="test.@{test.type}.cp"/>
             </depend>
             <property name="test.excludes" value=""/> <!-- # 113770 -->
-            <custom-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}"
+            <nb-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}"
                    debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
-                <bootclasspath path="${nbjdk.bootclasspath}"/>
                 <classpath refid="test.@{test.type}.cp"/>
                 <compilerarg line="${javac.compilerargs}"/>
-                <javacclasspath refid="javacimpl"/>
-            </custom-javac>
+            </nb-javac>
             <copy todir="${build.test.@{test.type}.classes.dir}">
                 <fileset dir="${test.@{test.type}.src.dir}">
                     <exclude name="**/*.java"/>
@@ -494,14 +508,12 @@ made subject to such option by the copyright holder.
                 <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
                     <classpath refid="test.@{test.type}.cp"/>
                 </depend>
-                <custom-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}"
+                <nb-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}"
                        debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
-                    <bootclasspath path="${nbjdk.bootclasspath}"/>
                     <classpath refid="test.@{test.type}.cp"/>
                     <compilerarg line="${javac.compilerargs}"/>
-                    <javacclasspath refid="javacimpl"/>
-                </custom-javac>
+                </nb-javac>
                 <copy todir="${build.test.@{test.type}.classes.dir}">
                     <fileset dir="${test.@{test.type}.src.dir}">
                         <exclude name="**/*.java"/>

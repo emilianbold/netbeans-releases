@@ -63,6 +63,11 @@ public class CustomJavac extends Javac {
         javacClasspath = cp;
     }
 
+    private Path processorPath;
+    public void addProcessorPath(Path cp) {
+        processorPath = cp;
+    }
+
     @Override
     protected void compile() {
         String specifiedCompiler = getProject().getProperty("build.compiler");
@@ -70,6 +75,10 @@ public class CustomJavac extends Javac {
             log("Warning: build.compiler=" + specifiedCompiler + " so disabling JSR 269 annotation processing", Project.MSG_WARN);
             super.compile();
             return;
+        }
+        if (processorPath != null) {
+            createCompilerArg().setValue("-processorpath");
+            createCompilerArg().setPath(processorPath);
         }
         if (compileList.length > 0) {
             log("Compiling " + compileList.length + " source file" +
