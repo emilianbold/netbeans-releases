@@ -40,7 +40,7 @@ METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
 METHOD     execute(List, File)                        Process
-METHOD     execute(String, File)                      Process
+METHOD     execute(String[], File)                    Process
 METHOD     find(Closure)                              Object
 METHOD     findAll(Closure)                           List
 METHOD     findIndexOf(Closure)                       int
@@ -161,7 +161,7 @@ METHOD     tokenize(String)                           List
 METHOD     trim()                                     String
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     valueOf(Object)                            String
 METHOD     valueOf(boolean)                           String
 METHOD     valueOf(char)                              String
