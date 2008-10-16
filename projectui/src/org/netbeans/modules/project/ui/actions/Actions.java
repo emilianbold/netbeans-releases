@@ -340,4 +340,7 @@ public class Actions implements ActionsFactory {
         return SystemAction.get(ActiveConfigAction.class);
     }
 
+    public static Action rebuildProjectAction() {
+        return new RunLastBuildAction();
+    }
 }
