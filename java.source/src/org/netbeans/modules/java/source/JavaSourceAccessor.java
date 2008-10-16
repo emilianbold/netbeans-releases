@@ -240,6 +240,13 @@ public abstract class JavaSourceAccessor {
     
     
     /**
+     * Invalidates cached ClasspathInfo in the JavaSource for file
+     * @param file for which ClasspathInfo should be invalidated.
+     */
+    public abstract void invalidateCachedClasspathInfo (final FileObject file);
+    
+    
+    /**
      * Invalidates given {@link CompilationInfo}
      * @param info
      */

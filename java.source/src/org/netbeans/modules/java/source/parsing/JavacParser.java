@@ -269,6 +269,7 @@ public class JavacParser extends Parser {
                 LOGGER.warning("ClassPath identity changed for " + this.file + ", class path owner: " +       //NOI18N
                         (owner == null ? "null" : (FileUtil.getFileDisplayName(owner.getProjectDirectory())+" ("+owner.getClass()+")")));       //NOI18N
                 cpInfo = ClasspathInfo.create(this.file);
+                JavaSourceAccessor.getINSTANCE().invalidateCachedClasspathInfo(this.file);                
             }
         }
     }

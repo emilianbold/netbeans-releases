@@ -719,7 +719,19 @@ public final class JavaSource {
             assert info != null;
             assert js != null;
             info.setJavaSource(js);
-        }        
+        }
+
+        @Override
+        public void invalidateCachedClasspathInfo(FileObject file) {
+            assert file != null;
+            final Reference<JavaSource> ref = file2JavaSource.get(file);
+            JavaSource js;
+            if (ref != null && (js=ref.get())!=null) {
+                synchronized (js) {
+                    js.cachedCpInfo = null;
+                }
+            }
+        }
     }
     
                 
