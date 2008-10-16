@@ -65,16 +65,18 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathModifier;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
@@ -142,7 +144,7 @@ public final class J2SEProject implements Project, AntProjectListener {
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
     private final ClassPathProviderImpl cpProvider;
-    private final J2SEProjectClassPathModifier cpMod;
+    private final ClassPathModifier cpMod;
 
     private AntBuildExtender buildExtender;
 
@@ -164,11 +166,29 @@ public final class J2SEProject implements Project, AntProjectListener {
         this.updateHelper = new UpdateHelper(updateProject, helper);
 
         this.cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()); //Does not use APH to get/put properties/cfgdata
-        this.cpMod = new J2SEProjectClassPathModifier(this, this.updateHelper, eval, refHelper);
+        this.cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper, null, createClassPathModifierCallback(), null);
         final J2SEActionProvider actionProvider = new J2SEActionProvider( this, this.updateHelper );
         lookup = createLookup(aux, actionProvider);
         actionProvider.startFSListener();
         helper.addAntProjectListener(this);
+    }
+    
+    private ClassPathModifier.Callback createClassPathModifierCallback() {
+        return new ClassPathModifier.Callback() {
+            public String getClassPathProperty(SourceGroup sg, String type) {
+                assert sg != null : "SourceGroup cannot be null";  //NOI18N
+                assert type != null : "Type cannot be null";  //NOI18N
+                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                if (classPathProperty == null || classPathProperty.length == 0) {
+                    throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
+                }
+                return classPathProperty[0];
+            }
+
+            public String getElementName(String classpathProperty) {
+                return null;
+            }
+        };        
     }
     
     /**
@@ -254,7 +274,7 @@ public final class J2SEProject implements Project, AntProjectListener {
             final J2SEActionProvider actionProvider) {
         final SubprojectProvider spp = refHelper.createSubprojectProvider();        
         FileEncodingQueryImplementation encodingQuery = QuerySupport.createFileEncodingQuery(evaluator(), J2SEProjectProperties.SOURCE_ENCODING);
-        @SuppressWarnings("deprecation") Object cpe = new org.netbeans.modules.java.j2seproject.classpath.J2SEProjectClassPathExtender(cpMod);
+        @SuppressWarnings("deprecation") Object cpe = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, null);
         final Lookup base = Lookups.fixed(
             J2SEProject.this,
             new Info(),
@@ -304,7 +324,7 @@ public final class J2SEProject implements Project, AntProjectListener {
         return this.cpProvider;
     }
     
-    public J2SEProjectClassPathModifier getProjectClassPathModifier () {
+    public ClassPathModifier getProjectClassPathModifier () {
         return this.cpMod;
     }
 

@@ -54,7 +54,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -92,6 +95,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
         private PropertyEvaluator evaluator;
         private UpdateHelper helper;
         private ReferenceHelper resolver;
+        private final ClassPathSupport cs;
         
         LibrariesNodeList(J2SEProject proj) {
             project = proj;
@@ -101,6 +105,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
             evaluator = logView.getEvaluator();
             helper = logView.getUpdateHelper();
             resolver = logView.getRefHelper();
+            cs = new ClassPathSupport(evaluator, resolver, helper.getAntProjectHelper(), helper, null);
         }
         
         public List<String> keys() {
@@ -138,12 +143,15 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new String[] {ProjectProperties.BUILD_CLASSES_DIR},
                         "platform.active", // NOI18N
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, true),
-                            LibrariesNode.createAddLibraryAction(project, true),
-                            LibrariesNode.createAddFolderAction(project, true),
+                            LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
+                            LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
+                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
-                            new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
-                        }
+                            new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
+                        },
+                        null,
+                        cs,
+                        null
                     );
             } else if (key == TEST_LIBRARIES) {
                 return  
@@ -156,12 +164,15 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         },
                         null,
                         new Action[] {
-                            LibrariesNode.createAddProjectAction(project, false),
-                            LibrariesNode.createAddLibraryAction(project, false),
-                            LibrariesNode.createAddFolderAction(project, false),
+                            LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
+                            LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
+                            LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
-                            new SourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
-                        }
+                            new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
+                        },
+                        null,
+                        cs,
+                        null
                     );
             }
             assert false: "No node for key: " + key;

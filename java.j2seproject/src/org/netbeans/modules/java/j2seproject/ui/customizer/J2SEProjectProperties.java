@@ -73,6 +73,7 @@ import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -294,11 +295,11 @@ public class J2SEProjectProperties {
      */
     private void init() {
         
-        CLASS_PATH_LIST_RENDERER = ClassPathListCellRenderer.createClassPathListRendered(evaluator, project.getProjectDirectory());
+        CLASS_PATH_LIST_RENDERER = ClassPathListCellRenderer.createClassPathListRenderer(evaluator, project.getProjectDirectory());
         
         // CustomizerSources
-        SOURCE_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getSourceRoots() );
-        TEST_ROOTS_MODEL = J2SESourceRootsUi.createModel( project.getTestSourceRoots() );        
+        SOURCE_ROOTS_MODEL = SourceRootsUi.createModel( project.getSourceRoots() );
+        TEST_ROOTS_MODEL = SourceRootsUi.createModel( project.getTestSourceRoots() );        
         includes = evaluator.getProperty(ProjectProperties.INCLUDES);
         if (includes == null) {
             includes = "**"; // NOI18N

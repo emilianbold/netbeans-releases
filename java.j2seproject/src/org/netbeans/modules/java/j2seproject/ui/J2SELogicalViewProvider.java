@@ -63,6 +63,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
@@ -72,7 +73,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -99,7 +99,7 @@ import org.openide.xml.XMLUtil;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class J2SELogicalViewProvider implements LogicalViewProvider {
+public class J2SELogicalViewProvider implements LogicalViewProvider2 {
     
     private static final RequestProcessor RP = new RequestProcessor("J2SEPhysicalViewProvider.RP"); // NOI18N
     
