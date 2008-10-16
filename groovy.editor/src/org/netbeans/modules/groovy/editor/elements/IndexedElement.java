@@ -136,15 +136,17 @@ public abstract class IndexedElement extends GroovyElement {
     @Override
     public final Set<Modifier> getModifiers() {
         if (modifiers == null) {
-            Modifier access = Modifier.PRIVATE;
+            Modifier access = null;
             if (isPublic()) {
                 access = Modifier.PUBLIC;
             } else if (isProtected()) {
                 access = Modifier.PROTECTED;
+            } else if (isPrivate()) {
+                access = Modifier.PRIVATE;
             }
             boolean isStatic = isStatic();
-            
-            if (access != Modifier.PRIVATE) {
+
+            if (access != null) {
                 if (isStatic) {
                     modifiers = EnumSet.of(access, Modifier.STATIC);
                 } else {
@@ -211,7 +213,7 @@ public abstract class IndexedElement extends GroovyElement {
     }
 
     public boolean isPrivate() {
-        return (flags & Opcodes.ACC_PUBLIC & Opcodes.ACC_PROTECTED) == 0;
+        return (flags & Opcodes.ACC_PRIVATE) != 0;
     }
     
     public boolean isProtected() {

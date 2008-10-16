@@ -2405,17 +2405,19 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (index != null) {
 
             String methodName = "";
-            
+
             if(request.prefix != null) {
                 methodName = request.prefix;
             }
-            
+
             Set<IndexedMethod> methods;
-            
-            if(methodName.equals("")) {
-                methods = index.getMethods(".*", declaringClass.getName(), NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+
+            if (methodName.equals("")) {
+                methods = index.getMethods(".*", declaringClass.getName(),
+                        NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
             } else {
-                methods = index.getMethods(methodName, declaringClass.getName(), NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+                methods = index.getMethods(methodName, declaringClass.getName(),
+                        NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
             }
 
             if (methods.size() == 0) {
@@ -2434,7 +2436,8 @@ public class CodeCompleter implements CodeCompletionHandler {
 //                    }
 
                     // FIXME what is this intended to do ? + modifiers
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null, Collections.<javax.lang.model.element.Modifier>emptySet(), anchor, request));
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null,
+                            GroovyCompletionItem.toModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, request));
                 }
             }
         }

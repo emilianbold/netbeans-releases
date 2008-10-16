@@ -45,7 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -65,7 +67,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
- * 
+ *
  * @author Tor Norbye
  * @author Martin Adamek
  */
@@ -110,7 +112,7 @@ public class GroovyIndexer implements Indexer {
 
         TreeAnalyzer analyzer = new TreeAnalyzer(r, factory);
         analyzer.analyze();
-        
+
         return analyzer.getDocuments();
     }
 
@@ -127,7 +129,7 @@ public class GroovyIndexer implements Indexer {
     }
 
     public String getIndexVersion() {
-        return "0.6"; // NOI18N
+        return "0.7"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -146,7 +148,7 @@ public class GroovyIndexer implements Indexer {
 //        }
         return preindexedDb;
     }
-    
+
     public boolean acceptQueryPath(String url) {
         return url.indexOf("/ruby2/") == -1 && url.indexOf("/gems/") == -1 && url.indexOf("lib/ruby/") == -1; // NOI18N
     }
@@ -158,7 +160,7 @@ public class GroovyIndexer implements Indexer {
         private BaseDocument doc;
         private IndexDocumentFactory factory;
         private List<IndexDocument> documents = new ArrayList<IndexDocument>();
-        
+
         private TreeAnalyzer(GroovyParserResult result, IndexDocumentFactory factory) {
             this.result = result;
             this.file = result.getFile();
@@ -184,7 +186,7 @@ public class GroovyIndexer implements Indexer {
                 if (fo.getSize () > 1024 * 1024) {
                     return;
                 }
-                
+
                 this.doc = AstUtilities.getBaseDocument(fo, true);
             }
 
@@ -203,16 +205,12 @@ public class GroovyIndexer implements Indexer {
             if ((children == null) || (children.size() == 0)) {
                 return;
             }
-            
-//            System.out.println("### children: " + children);
-            
+
             for (AstElement child : children) {
                 switch (child.getKind()) {
                     case CLASS:
                         analyzeClass((AstClassElement) child);
                         break;
-//                    default:
-//                        System.out.println("# analyze unxepected element: " + child);
                 }
             }
 
@@ -222,18 +220,52 @@ public class GroovyIndexer implements Indexer {
             IndexDocument document = factory.createDocument(40); // TODO - measure!
             documents.add(document);
             indexClass(element, document);
+
+            Map<String, AstElement> methods = new HashMap<String, AstElement>();
+            List<AstElement> properties = new ArrayList<AstElement>();
+
             for (AstElement child : element.getChildren()) {
                 switch (child.getKind()) {
                     case METHOD:
-                        indexMethod(child, document);
+                        indexMethod(child, document, methods);
                         break;
                     case FIELD:
-                        indexField(child, document);
+                        indexField(child, document, properties);
                         break;
                 }
             }
+
+            // FIXME (right now it generates accessors even for closures)
+            // generate property accessors
+//            for (AstElement property : properties) {
+//                String name = property.getName();
+//                if (name.length() < 1) {
+//                    continue;
+//                }
+//
+//                StringBuilder builder = new StringBuilder();
+//                builder.append(Character.toUpperCase(name.charAt(0)));
+//                if (name.length() > 2) {
+//                    builder.append(name.substring(1));
+//                }
+//
+//                StringBuilder accessor = new StringBuilder("get"); // NOI18N
+//                accessor.append(builder);
+//
+//                if (!methods.containsKey(accessor.toString())) {
+//                    document.addPair(METHOD_NAME, accessor.toString(), true);
+//                }
+//
+//                accessor.setLength(0);
+//                accessor.append("set"); // NOI18N
+//                accessor.append(builder);
+//
+//                if (!methods.containsKey(accessor.toString())) {
+//                    document.addPair(METHOD_NAME, accessor.toString(), true);
+//                }
+//            }
         }
-        
+
         private void indexClass(AstClassElement element, IndexDocument document) {
             final String name = element.getName();
             document.addPair(FQN_NAME, element.getFqn(), true);
@@ -241,7 +273,9 @@ public class GroovyIndexer implements Indexer {
             document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
         }
 
-        private void indexField(AstElement child, IndexDocument document) {
+        private void indexField(AstElement child, IndexDocument document,
+                List<AstElement> properties) {
+
             String signature = child.getName();
             int flags = getFieldModifiersFlag(child.getModifiers());
 
@@ -255,13 +289,21 @@ public class GroovyIndexer implements Indexer {
 
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_NAME, signature, true);
+
+            // property candidate
+            if (flags == 0) {
+                properties.add(child);
+            }
         }
 
-        private void indexMethod(AstElement child, IndexDocument document) {
-            MethodNode childNode = (MethodNode)child.getNode();
+        private void indexMethod(AstElement child, IndexDocument document,
+                Map<String, AstElement> methods) {
+
+            MethodNode childNode = (MethodNode) child.getNode();
             String signature = AstUtilities.getDefSignature(childNode);
+
             Set<Modifier> modifiers = child.getModifiers();
-            
+
             int flags = getMethodModifiersFlag(modifiers);
 
             if (flags != 0) {
@@ -270,8 +312,10 @@ public class GroovyIndexer implements Indexer {
                 sb.append(IndexedElement.flagToFirstChar(flags));
                 sb.append(IndexedElement.flagToSecondChar(flags));
                 signature = sb.toString();
+            } else if ((flags & Opcodes.ACC_STATIC) == 0) {
+                methods.put(childNode.getName(), child);
             }
-            
+
             document.addPair(METHOD_NAME, signature, true);
         }
 
@@ -285,7 +329,7 @@ public class GroovyIndexer implements Indexer {
         } else if (modifiers.contains(Modifier.PROTECTED)) {
             flags |= Opcodes.ACC_PROTECTED;
         }
-        
+
         return flags;
     }
 
@@ -297,7 +341,7 @@ public class GroovyIndexer implements Indexer {
         } else if (modifiers.contains(Modifier.PROTECTED)) {
             flags |= Opcodes.ACC_PROTECTED;
         }
-        
+
         return flags;
     }
 
