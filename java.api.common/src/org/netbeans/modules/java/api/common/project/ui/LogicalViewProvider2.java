@@ -39,16 +39,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
-import org.netbeans.spi.project.ui.CustomizerProvider;
+import org.netbeans.spi.project.ui.LogicalViewProvider;
 
 /**
- * CustomizerProvider enhanced with ability to open customizer on given
+ * CustomizerProvider enhanced with ability to update node state.
  * category and/or subcategory.
  */
-public interface CustomizerProvider2 extends CustomizerProvider {
+public interface LogicalViewProvider2 extends LogicalViewProvider {
 
-    void showCustomizer(String preselectedCategory, String preselectedSubCategory);
-
+    void testBroken();
+    
 }

@@ -87,10 +87,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
@@ -208,7 +208,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private final ClassPathModifier classPathModifier; 
     private PropertyChangeListener j2eePlatformListener;
     private AntBuildExtender buildExtender;
-    private final JavaClassPathProviderImpl cpProvider;
+    private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     // TODO: AB: replace the code in EjbJarProjectProperties.setNewServerInstanceValue with this 
@@ -277,7 +277,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux, genFilesHelper);
         this.updateHelper = new UpdateHelper(updateProject, helper);
-        this.cpProvider = new JavaClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+        this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                 ProjectProperties.BUILD_CLASSES_DIR, EjbJarProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"javac.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
@@ -295,7 +295,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         classPathModifier = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
-            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
+            getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
@@ -391,7 +391,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         return deployOnSaveSupport;
     }
     
-    private Lookup createLookup(AuxiliaryConfiguration aux, JavaClassPathProviderImpl cpProvider) {
+    private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
 
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
@@ -459,7 +459,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
     }
     
-    public JavaClassPathProviderImpl getClassPathProvider () {
+    public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
     

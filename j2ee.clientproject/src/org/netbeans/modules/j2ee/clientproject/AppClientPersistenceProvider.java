@@ -49,7 +49,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
 import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
@@ -78,7 +78,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
 
     private final AppClientProject project;
     private final PropertyEvaluator evaluator;
-    private final JavaClassPathProviderImpl cpProvider;
+    private final ClassPathProviderImpl cpProvider;
 
     private final ScopeImpl scopeImpl = new ScopeImpl();
     private final PersistenceScope persistenceScope = PersistenceScopeFactory.createPersistenceScope(scopeImpl);
@@ -89,7 +89,7 @@ public class AppClientPersistenceProvider implements PersistenceLocationProvider
 
     private ClassPath projectSourcesClassPath;
 
-    public AppClientPersistenceProvider(AppClientProject project, PropertyEvaluator evaluator, JavaClassPathProviderImpl cpProvider) {
+    public AppClientPersistenceProvider(AppClientProject project, PropertyEvaluator evaluator, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.evaluator = evaluator;
         this.cpProvider = cpProvider;

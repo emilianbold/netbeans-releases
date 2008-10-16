@@ -39,9 +39,8 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
-import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.beans.BeanInfo;
@@ -90,11 +89,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -112,8 +112,8 @@ import org.openide.util.lookup.Lookups;
  */
 public final class LibrariesNode extends AbstractNode {
 
-    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/j2ee/common/project/ui/resources/libraries-badge.png");    //NOI18N
-    static final RequestProcessor rp = new RequestProcessor ();
+    private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/libraries-badge.png");    //NOI18N
+    public static final RequestProcessor rp = new RequestProcessor ();
     private static Icon folderIconCache;
     private static Icon openedFolderIconCache;
 
@@ -136,10 +136,13 @@ public final class LibrariesNode extends AbstractNode {
      * @param librariesNodeActions actions which should be available on the created node.
      */
     public LibrariesNode (String displayName, Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
-                   String classPathProperty, String[] classPathIgnoreRef, String platformProperty, String j2eePlatformProperty,
-                   String j2eeClassPathProperty, Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs) {
-        super (new LibrariesChildren (eval, helper, refHelper, classPathProperty,
-                classPathIgnoreRef, platformProperty, j2eePlatformProperty, j2eeClassPathProperty, webModuleElementName, cs), Lookups.singleton(project));
+                   String classPathProperty, String[] classPathIgnoreRef, String platformProperty,
+                   Action[] librariesNodeActions, String webModuleElementName, ClassPathSupport cs,
+                   Callback extraKeys) {
+        super (new LibrariesChildren (project, eval, helper, refHelper, classPathProperty,
+                    classPathIgnoreRef, platformProperty,
+                    webModuleElementName, cs, extraKeys),
+                Lookups.singleton(project));
         this.displayName = displayName;
         this.librariesNodeActions = librariesNodeActions;
     }
@@ -240,45 +243,46 @@ public final class LibrariesNode extends AbstractNode {
          */
         private static final String REF_PREFIX = "${"; //NOI18N
         
-        private static final String LIBRARIES_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/libraries.gif"; //NOI18N
-        private static final String ARCHIVE_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/jar.gif";//NOI18N        
+        private static final String LIBRARIES_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/libraries.gif"; //NOI18N
+        private static final String ARCHIVE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif";//NOI18N        
 
         private final PropertyEvaluator eval;
         private final UpdateHelper helper;
         private final ReferenceHelper refHelper;
         private final String classPathProperty;
         private final String platformProperty;
-        private final String j2eePlatformProperty;
-        private final String j2eeClassPathProperty;
         private final Set<String> classPathIgnoreRef;
         private final String webModuleElementName;
         private final ClassPathSupport cs;
-
+        
+        private Callback extraKeys;
+        private Project project;
+        
         //XXX: Workaround: classpath is used only to listen on non existent files.
         // This should be removed when there will be API for it
         // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
         private ClassPath fsListener;
 
 
-        LibrariesChildren (PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
+        LibrariesChildren (Project project, PropertyEvaluator eval, UpdateHelper helper, ReferenceHelper refHelper,
                            String classPathProperty, String[] classPathIgnoreRef, String platformProperty, 
-                           String j2eePlatformProperty, String j2eeClassPathProperty, String webModuleElementName, 
-                           ClassPathSupport cs) {
+                           String webModuleElementName, ClassPathSupport cs, Callback extraKeys) {
             this.eval = eval;
             this.helper = helper;
             this.refHelper = refHelper;
             this.classPathProperty = classPathProperty;
             this.classPathIgnoreRef = new HashSet<String>(Arrays.asList(classPathIgnoreRef));
             this.platformProperty = platformProperty;
-            this.j2eePlatformProperty = j2eePlatformProperty;
-            this.j2eeClassPathProperty = j2eeClassPathProperty;
             this.webModuleElementName = webModuleElementName;
             this.cs = cs;
+            this.extraKeys = extraKeys;
+            this.project = project;
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
-            if (classPathProperty.equals(propName) || ClassPath.PROP_ROOTS.equals(propName)) {
+            final boolean propRoots = ClassPath.PROP_ROOTS.equals(propName);
+            if (classPathProperty.equals(propName) || propRoots || LibraryManager.PROP_LIBRARIES.equals(propName)) {
                 synchronized (this) {
                     if (fsListener!=null) {
                         fsListener.removePropertyChangeListener (this);
@@ -287,8 +291,14 @@ public final class LibrariesNode extends AbstractNode {
                 rp.post (new Runnable () {
                     public void run () {
                         setKeys(getKeys());
+                        if (propRoots) {
+                            LogicalViewProvider2 lvp = project.getLookup().lookup(LogicalViewProvider2.class);
+                            if (lvp != null) {
+                                lvp.testBroken();
+                            }
+                        }
                     }
-                });
+                });                
             }
         }
 
@@ -324,10 +334,6 @@ public final class LibrariesNode extends AbstractNode {
                 case Key.TYPE_PLATFORM:
                     result = new Node[] {PlatformNode.create(eval, platformProperty, cs)};
                     break;
-                case Key.TYPE_J2EE_PLATFORM:
-                    Project p = FileOwnerQuery.getOwner(helper.getAntProjectHelper().getProjectDirectory());
-                    result = new Node[] {J2eePlatformNode.create(p, eval, j2eePlatformProperty, cs)};
-                    break;
                 case Key.TYPE_PROJECT:
                     result = new Node[] {new ProjectNode(key.getProject(), key.getArtifactLocation(), helper, key.getClassPathId(),
                         key.getEntryId(), webModuleElementName, cs, refHelper)};
@@ -335,6 +341,9 @@ public final class LibrariesNode extends AbstractNode {
                 case Key.TYPE_LIBRARY:
                     result = new Node[] {ActionFilterNode.create(PackageView.createPackageView(key.getSourceGroup()),
                         helper, key.getClassPathId(), key.getEntryId(), webModuleElementName, cs, refHelper)};
+                    break;
+                case Key.TYPE_OTHER:
+                    result = extraKeys.createNodes(key);
                     break;
             }
             if (result == null) {
@@ -353,12 +362,6 @@ public final class LibrariesNode extends AbstractNode {
             if (platformProperty!=null) {
                 result.add (new Key());
             }
-            if (j2eePlatformProperty != null) {
-                String j2eePlatform = projectSharedProps.getProperty(j2eeClassPathProperty);
-                if (j2eePlatform == null) {
-                    result.add(new Key(true));
-                }
-            }
             //XXX: Workaround: Remove this when there will be API for listening on nonexistent files
             // See issue: http://www.netbeans.org/issues/show_bug.cgi?id=33162
             ClassPath cp = org.netbeans.spi.java.classpath.support.ClassPathSupport.createClassPath (rootsList.toArray(new URL[rootsList.size()]));
@@ -366,6 +369,9 @@ public final class LibrariesNode extends AbstractNode {
             cp.getRoots();
             synchronized (this) {
                 fsListener = cp;
+            }
+            if (extraKeys != null) {
+                result.addAll(extraKeys.getExtraKeys());
             }
             return result;
         }
@@ -494,11 +500,11 @@ public final class LibrariesNode extends AbstractNode {
         }        
     }
 
-    private static class Key {
+    public static final class Key {
         static final int TYPE_PLATFORM = 0;
         static final int TYPE_LIBRARY = 1;
         static final int TYPE_PROJECT = 2;
-        static final int TYPE_J2EE_PLATFORM = 3;
+        static final int TYPE_OTHER = 3;
 
         private int type;
         private String classPathId;
@@ -506,13 +512,16 @@ public final class LibrariesNode extends AbstractNode {
         private SourceGroup sg;
         private AntArtifact antArtifact;
         private URI uri;
+        private String anID;
         
         Key () {
-            this(false);
+            type = TYPE_PLATFORM;
         }
 
-        Key (boolean j2ee) {
-            this.type = j2ee ? TYPE_J2EE_PLATFORM : TYPE_PLATFORM;
+        public Key (String anID) {
+            this.type = TYPE_OTHER;
+            this.anID = anID;
+
         }
 
         Key (SourceGroup sg, String classPathId, String entryId) {
@@ -553,6 +562,11 @@ public final class LibrariesNode extends AbstractNode {
         public URI getArtifactLocation() {
             return this.uri;
         }
+
+        public String getID() {
+            return anID;
+        }
+
         
         public int hashCode() {
             int hashCode = this.type<<16;
@@ -563,6 +577,8 @@ public final class LibrariesNode extends AbstractNode {
                 case TYPE_PROJECT:
                     hashCode ^= this.antArtifact == null ? 0 : this.antArtifact.hashCode();
                     break;
+                case TYPE_OTHER:
+                    hashCode ^= anID.hashCode();
             }
             return hashCode;
         }
@@ -585,8 +601,9 @@ public final class LibrariesNode extends AbstractNode {
                         (this.classPathId == null ? other.classPathId == null : this.classPathId.equals (other.classPathId)) &&
                         (this.entryId == null ? other.entryId == null : this.entryId.equals (other.entryId));
                 case TYPE_PLATFORM:
-                case TYPE_J2EE_PLATFORM:
                     return true;
+                case TYPE_OTHER:
+                    return anID.equals(other.anID);
                 default:
                     throw new IllegalStateException();
             }
@@ -691,7 +708,7 @@ public final class LibrariesNode extends AbstractNode {
             FileFilter fileFilter = new SimpleFileFilter (
                     NbBundle.getMessage( LibrariesNode.class, "LBL_ZipJarFolderFilter" )); // NOI18N
             chooser.setFileFilter(fileFilter);
-            File curDir = UserProjectSettings.getDefault().getLastUsedClassPathFolder();
+            File curDir = EditMediator.getLastUsedClassPathFolder();
             chooser.setCurrentDirectory (curDir);
             int option = chooser.showOpenDialog( WindowManager.getDefault().getMainWindow() );
             if ( option == JFileChooser.APPROVE_OPTION ) {
@@ -704,7 +721,7 @@ public final class LibrariesNode extends AbstractNode {
                 }
                 addJarFiles( filePaths, chooser.getSelectedPathVariables(), fileFilter, FileUtil.toFile(helper.getProjectDirectory()));
                 curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                UserProjectSettings.getDefault().setLastUsedClassPathFolder(curDir);
+                EditMediator.setLastUsedClassPathFolder(curDir);
             }
         }
 
@@ -791,4 +808,12 @@ public final class LibrariesNode extends AbstractNode {
             return this.description;
         }
     }
+
+    public static interface Callback {
+        /** Enahnce LibrariesNode with additional node <code>Key</code>s.*/
+        List<Key> getExtraKeys();
+        /** Creates nodes for extra key. */
+        Node[] createNodes(Key key);
+    }
+
 }

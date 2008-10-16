@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
-import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -110,7 +110,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 addSourceRoot,
                 removeSourceRoot,
                 upSourceRoot,
-                downSourceRoot,false);
+                downSourceRoot,null,false);
         
         SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
                 (EjbJarProject)uiProperties.getProject(),
@@ -119,7 +119,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 addTestRoot,
                 removeTestRoot,
                 upTestRoot,
-                downTestRoot,true);
+                downTestRoot,null,true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

@@ -100,9 +100,9 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifierSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -348,8 +348,7 @@ public final class WebProject implements Project, AntProjectListener {
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback(),
-                                    new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL});
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
         lookup = createLookup(aux, cpProvider);

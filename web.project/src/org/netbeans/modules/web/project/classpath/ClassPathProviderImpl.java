@@ -50,7 +50,6 @@ import java.util.HashMap;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupportFactory;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
@@ -80,7 +79,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
     
-    private JavaClassPathProviderImpl javaClassPathProvider;
+    private org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl javaClassPathProvider;
 
     /**
      * Type of file classpath is required for.
@@ -108,7 +107,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
-        this.javaClassPathProvider = new JavaClassPathProviderImpl(
+        this.javaClassPathProvider = new org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl(
                 helper, evaluator, sourceRoots, testSourceRoots, 
                 ProjectProperties.BUILD_CLASSES_DIR, WebProjectProperties.DIST_WAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH },

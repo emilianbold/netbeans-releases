@@ -348,11 +348,11 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     private static Preferences getPreferences() {
         return NbPreferences.forModule(EditMediator.class);
     }
-    private static File getLastUsedClassPathFolder () {
+    public static File getLastUsedClassPathFolder () {
         return new File(getPreferences().get(LAST_USED_CP_FOLDER, System.getProperty("user.home")));
     }
 
-    private static void setLastUsedClassPathFolder (File folder) {
+    public static void setLastUsedClassPathFolder (File folder) {
         assert folder != null : "ClassPath root can not be null";
         String path = folder.getAbsolutePath();
         getPreferences().put(LAST_USED_CP_FOLDER, path);

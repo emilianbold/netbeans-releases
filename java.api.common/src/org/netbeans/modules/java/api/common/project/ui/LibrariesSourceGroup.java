@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
 import java.beans.PropertyChangeListener;
 import javax.swing.Icon;
@@ -56,7 +56,7 @@ import org.openide.util.Exceptions;
  * {@link org.netbeans.spi.java.project.support.ui.PackageView#createPackageView(SourceGroup)}
  * @author Tomas Zezula
  */
-final class LibrariesSourceGroup implements SourceGroup {
+public final class LibrariesSourceGroup implements SourceGroup {
 
     private final FileObject root;
     private final String displayName;
@@ -79,7 +79,7 @@ final class LibrariesSourceGroup implements SourceGroup {
      * @param icon closed icon
      * @param openIcon opened icon
      */          
-    LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
+    public LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
         assert root != null;
         this.root = root;
         this.displayName = displayName;

@@ -57,7 +57,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
@@ -104,11 +104,11 @@ public final class EjbJarProvider extends J2eeModuleProvider
     
     private PropertyChangeSupport propertyChangeSupport;
     private J2eeModule j2eeModule;
-    private JavaClassPathProviderImpl cpProvider;
+    private ClassPathProviderImpl cpProvider;
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
-    EjbJarProvider(EjbJarProject project, AntProjectHelper helper, JavaClassPathProviderImpl cpProvider) {
+    EjbJarProvider(EjbJarProject project, AntProjectHelper helper, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.helper = helper;
         this.cpProvider = cpProvider;

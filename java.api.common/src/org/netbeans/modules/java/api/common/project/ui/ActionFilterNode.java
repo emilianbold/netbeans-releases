@@ -38,22 +38,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
 
 import java.net.URL;
 import java.util.List;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Iterator;
 
 import java.util.Map;
 import javax.swing.Action;
 
-import org.openide.actions.EditAction;
-import org.openide.actions.FindAction;
 import org.openide.loaders.DataObject;
-import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -74,7 +70,9 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.openide.nodes.FilterNode.Children;
+import org.openide.actions.EditAction;
+import org.openide.actions.FindAction;
+import org.openide.actions.OpenAction;
 import org.openide.util.Exceptions;
 
 /**
@@ -84,7 +82,7 @@ import org.openide.util.Exceptions;
  * to both file and package nodes. It also adds {@link RemoveClassPathRootAction} to
  * class path roots.
  */
-class ActionFilterNode extends FilterNode {
+public class ActionFilterNode extends FilterNode {
 
     private static final int MODE_ROOT = 1;
     private static final int MODE_PACKAGE = 2;
@@ -105,7 +103,7 @@ class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
+    public static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
             ClassPathSupport cs, ReferenceHelper rh) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;
@@ -125,12 +123,12 @@ class ActionFilterNode extends FilterNode {
     }
 
     private ActionFilterNode (Node original, int mode) {
-        super (original, new ActionFilterChildren (original, mode, null));
+        super (original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren (original, mode, null));
         this.mode = mode;
     }
 
     private ActionFilterNode (Node original, int mode, FileObject root, Lookup lkp) {
-        super (original, new ActionFilterChildren (original, mode,root),lkp);
+        super (original, original.isLeaf() ? Children.LEAF : new ActionFilterChildren (original, mode,root),lkp);
         this.mode = mode;
     }
 
@@ -154,10 +152,9 @@ class ActionFilterNode extends FilterNode {
         if (actionCache == null) {
             List<Action> result = new ArrayList<Action>(2);
             if (mode == MODE_FILE) {
-                Action[] superActions = super.getActions(false);
-                for (int i=0; i<superActions.length; i++) {
-                    if (superActions[i] instanceof OpenAction || superActions[i] instanceof EditAction) {
-                        result.add (superActions[i]);
+                for (Action superAction : super.getActions(false)) {
+                    if (superAction instanceof OpenAction || superAction instanceof EditAction) {
+                        result.add(superAction);
                     }
                 }
                 result.add (SystemAction.get(ShowJavadocAction.class));
@@ -179,7 +176,7 @@ class ActionFilterNode extends FilterNode {
         return actionCache;
     }
 
-    private static class ActionFilterChildren extends Children {
+    private static class ActionFilterChildren extends FilterNode.Children {
 
         private final int mode;
         private final FileObject cpRoot;
@@ -194,7 +191,7 @@ class ActionFilterNode extends FilterNode {
             switch (mode) {
                 case MODE_ROOT:
                 case MODE_PACKAGE:
-                    DataObject dobj = (DataObject) n.getCookie(org.openide.loaders.DataObject.class);
+                    DataObject dobj = n.getCookie(DataObject.class);
                     if (dobj == null) {
                         assert false : "DataNode without DataObject in Lookup";  //NOI18N
                         return new Node[0];
@@ -246,7 +243,7 @@ class ActionFilterNode extends FilterNode {
                 }
                 else if (resource.isFolder()) {
                     //XXX Are the names the same also in the localized javadoc?                    
-                    pageURL = ShowJavadocAction.findJavadoc ("package-summary.html",urls); //NOI18N
+                    pageURL = ShowJavadocAction.findJavadoc (relativeName+"/package-summary.html",urls); //NOI18N
                 }
                 else {
                     String javadocFileName = relativeName.substring(0,relativeName.lastIndexOf('.'))+".html"; //NOI18Ns
@@ -286,12 +283,8 @@ class ActionFilterNode extends FilterNode {
         }
 
        public Project remove() {        
-           // Different implementation than j2seproject's one, because
-           // we need to remove the library entry from project.xml
-           
            // The caller has write access to ProjectManager
            // and ensures the project will be saved.           
-           
             boolean removed = false;
             EditableProperties props = helper.getProperties (AntProjectHelper.PROJECT_PROPERTIES_PATH);
             String raw = props.getProperty (classPathId);

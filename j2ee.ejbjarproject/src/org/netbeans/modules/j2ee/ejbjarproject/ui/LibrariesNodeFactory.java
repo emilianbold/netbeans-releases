@@ -52,9 +52,10 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.JavaSourceNodeFactory;
-import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
+import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries;
@@ -148,8 +149,6 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     ProjectProperties.JAVAC_CLASSPATH,
                     new String[] { ProjectProperties.BUILD_CLASSES_DIR },
                     "platform.active", //NOI18N
-                    EjbJarProjectProperties.J2EE_SERVER_INSTANCE,
-                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                             LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
@@ -158,7 +157,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs
+                    cs,
+                    new ExtraLibrariesNode(project, evaluator, EjbJarProjectProperties.J2EE_SERVER_INSTANCE, cs)
                 );
             } else if (key == TEST_LIBRARIES) {
                 return  new LibrariesNode(
@@ -174,8 +174,6 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         ProjectProperties.BUILD_CLASSES_DIR,
                     },
                     null,
-                    null,
-                    null,
                     new Action[] {
                         LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
                         LibrariesNode.createAddLibraryAction(refHelper, project.getTestSourceRoots(), null),
@@ -184,7 +182,8 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
                     null,
-                    cs
+                    cs,
+                    null
                     );
             }
             assert false: "No node for key: " + key; // NOI18N

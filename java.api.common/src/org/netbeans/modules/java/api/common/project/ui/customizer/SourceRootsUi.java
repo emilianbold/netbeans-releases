@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui.customizer;
 
 import java.awt.Component;
 import java.awt.GridBagConstraints;
@@ -55,6 +55,7 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Vector;
 import java.text.MessageFormat;
+import javax.swing.CellEditor;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JButton;
@@ -75,13 +76,17 @@ import javax.swing.event.CellEditorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.openide.DialogDisplayer;
 import org.openide.DialogDescriptor;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -115,6 +120,7 @@ public final class SourceRootsUi {
                                              JButton removeButton,
                                              JButton upButton,
                                              JButton downButton,
+                                             CellEditor rootsListEditor,
                                              boolean emptyTableIsValid) {
         
         EditMediator em = new EditMediator( master,
@@ -134,7 +140,10 @@ public final class SourceRootsUi {
         downButton.addActionListener( em );
         // On list selection
         rootsList.getSelectionModel().addListSelectionListener( em );
-        DefaultCellEditor editor = new DefaultCellEditor(new JTextField());
+        DefaultCellEditor editor = (DefaultCellEditor) rootsListEditor;
+        if (editor == null) {
+            editor = new DefaultCellEditor(new JTextField());
+        }
         editor.addCellEditorListener (em);
         rootsList.setDefaultRenderer( File.class, new FileRenderer (FileUtil.toFile(master.getProjectDirectory())));
         rootsList.setDefaultEditor(String.class, editor);
@@ -151,13 +160,24 @@ public final class SourceRootsUi {
         return em;
     }
     
+    public static EditMediator registerEditMediator( Project master,
+                                             SourceRoots sourceRoots,
+                                             JTable rootsList,
+                                             JButton addFolderButton,
+                                             JButton removeButton,
+                                             JButton upButton,
+                                             JButton downButton ) {
+        return registerEditMediator(master, sourceRoots, rootsList, addFolderButton, 
+                removeButton, upButton, downButton, null, true);
+    }
+    
     /**
      * Opens the standard dialog for warning an user about illegal source roots.
      * @param roots the set of illegal source/test roots
      */
     public static void showIllegalRootsDialog (Set/*<File>*/ roots) {
-        JButton closeOption = new JButton (NbBundle.getMessage(SourceRootsUi.class,"CTL_EjbJarSourceRootsUi_Close"));
-        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(SourceRootsUi.class,"AD_EjbJarSourceRootsUi_Close"));
+        JButton closeOption = new JButton (NbBundle.getMessage(SourceRootsUi.class,"CTL_SourceRootsUi_Close"));
+        closeOption.getAccessibleContext ().setAccessibleDescription (NbBundle.getMessage(SourceRootsUi.class,"AD_SourceRootsUi_Close"));
         JPanel warning = new WarningDlg (roots);
         String message = NbBundle.getMessage(SourceRootsUi.class,"MSG_InvalidRoot");
         JOptionPane optionPane = new JOptionPane (new Object[] {message, warning},
@@ -341,7 +361,7 @@ public final class SourceRootsUi {
             selectionModel.clearSelection();
             Set<File> rootsFromOtherProjects = new HashSet<File>();
             Set<File> rootsFromRelatedSourceRoots = new HashSet<File>();
-            for( int i = 0; i < files.length; i++ ) {
+out:            for( int i = 0; i < files.length; i++ ) {
                 File normalizedFile = FileUtil.normalizeFile(files[i]);
                 Project p;
                 if (ownedFolders.contains(normalizedFile)) {
@@ -356,16 +376,41 @@ public final class SourceRootsUi {
                 }
                 else if (this.relatedEditMediator != null && this.relatedEditMediator.ownedFolders.contains(normalizedFile)) {
                     rootsFromRelatedSourceRoots.add (normalizedFile);
+                    continue;
                 }
-                else if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
-                    rootsFromOtherProjects.add (normalizedFile);
+                if ((p=FileOwnerQuery.getOwner(normalizedFile.toURI()))!=null && !p.getProjectDirectory().equals(project.getProjectDirectory())) {
+                    final Sources sources = (Sources) p.getLookup().lookup (Sources.class);
+                    if (sources == null) {
+                        rootsFromOtherProjects.add (normalizedFile);
+                        continue;
+                    }
+                    final SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+                    final SourceGroup[] javaGroups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+                    final SourceGroup[] groups = new SourceGroup [sourceGroups.length + javaGroups.length];
+                    System.arraycopy(sourceGroups,0,groups,0,sourceGroups.length);
+                    System.arraycopy(javaGroups,0,groups,sourceGroups.length,javaGroups.length);
+                    final FileObject projectDirectory = p.getProjectDirectory();
+                    final FileObject fileObject = FileUtil.toFileObject(normalizedFile);
+                    if (projectDirectory == null || fileObject == null) {
+                        rootsFromOtherProjects.add (normalizedFile);
+                        continue;
+                    }
+                    for (int j=0; j<groups.length; j++) {
+                        final FileObject sgRoot = groups[j].getRootFolder();
+                        if (fileObject.equals(sgRoot)) {
+                            rootsFromOtherProjects.add (normalizedFile);
+                            continue out;
+                        }
+                        if (!projectDirectory.equals(sgRoot) && FileUtil.isParentOf(sgRoot, fileObject)) {
+                            rootsFromOtherProjects.add (normalizedFile);
+                            continue out;
+                        }
+                    }
                 }
-                else {
-                    int current = lastIndex + 1 + i;
-                    rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
-                    selectionModel.addSelectionInterval(current,current);
-                    this.ownedFolders.add (normalizedFile);
-                }
+                int current = lastIndex + 1 + i;
+                rootsModel.insertRow( current, new Object[] {normalizedFile, sourceRoots.createInitialDisplayName(normalizedFile)}); //NOI18N
+                selectionModel.addSelectionInterval(current,current);
+                this.ownedFolders.add (normalizedFile);
             }
             if (rootsFromOtherProjects.size() > 0 || rootsFromRelatedSourceRoots.size() > 0) {
                 rootsFromOtherProjects.addAll(rootsFromRelatedSourceRoots);

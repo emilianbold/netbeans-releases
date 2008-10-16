@@ -94,7 +94,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
@@ -922,7 +922,7 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
     public ClassPath getClassPath() {
         synchronized (this) {
             if (projectSourcesClassPath == null) {
-                JavaClassPathProviderImpl cpProvider = project.getClassPathProvider();
+                ClassPathProviderImpl cpProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
                     getJ2eePlatformClassPath(),

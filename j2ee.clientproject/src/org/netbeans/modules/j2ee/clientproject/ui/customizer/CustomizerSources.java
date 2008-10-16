@@ -62,7 +62,7 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -110,6 +110,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             removeSourceRoot, 
             upSourceRoot, 
             downSourceRoot,
+            null,
             true);
         
         SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
@@ -120,6 +121,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             removeTestRoot, 
             upTestRoot, 
             downTestRoot,
+            null,
             true);
         
         emSR.setRelatedEditMediator( emTSR );

@@ -39,10 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
 
-import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -51,7 +50,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -70,12 +68,11 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.util.ChangeSupport;
@@ -174,7 +171,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
      * @param platformPropName the name of ant property holding the platform name
      *
      */
-    static PlatformNode create (PropertyEvaluator eval, String platformPropName, ClassPathSupport cs) {
+    public static PlatformNode create (PropertyEvaluator eval, String platformPropName, ClassPathSupport cs) {
         PlatformProvider pp = new PlatformProvider (eval, platformPropName);
         return new PlatformNode (pp, cs);
     }
@@ -251,21 +248,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         
         public JavaPlatform getPlatform () {
             if (platformCache == null) {
-                String platformSystemName = getPlatformId();
-                if (platformSystemName == null) {
-                    platformCache = JavaPlatformManager.getDefault().getDefaultPlatform();
-                }
-                else {
-                    JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-                    for (int i=0; i<platforms.length; i++) {
-                        if (platformSystemName.equals(platforms[i].getProperties().get("platform.ant.name"))) { //NOI18N
-                            if (platforms[i].getInstallFolders().size()>0) {
-                                platformCache = platforms[i];
-                            }
-                            break;
-                        }
-                    }
-                }
+                platformCache = CommonProjectUtils.getActivePlatform (getPlatformId());
             }
             return platformCache;
         }
@@ -308,9 +291,9 @@ class PlatformNode extends AbstractNode implements ChangeListener {
             JavaPlatform platform = platformProvider.getPlatform();            
             if (platform != null) {                            
                 URL[] javadocRoots = getJavadocRoots(platform);
-                URL pageURL = ShowJavadocAction.findJavadoc("/overview-summary.html",javadocRoots);
+                URL pageURL = ShowJavadocAction.findJavadoc("overview-summary.html",javadocRoots);
                 if (pageURL == null) {
-                    pageURL = ShowJavadocAction.findJavadoc("/index.html",javadocRoots);
+                    pageURL = ShowJavadocAction.findJavadoc("index.html",javadocRoots);
                 }
                 ShowJavadocAction.showJavaDoc(pageURL, platform.getDisplayName());
             }

@@ -109,14 +109,15 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
         this.projectFolder = projectFolder;
     }
 
-    public static ListCellRenderer createClassPathListRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
+    public static ListCellRenderer createClassPathListRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
         return new ClassPathListCellRenderer(evaluator, projectFolder);
     }
 
-    public static TableCellRenderer createClassPathTableRendered(PropertyEvaluator evaluator, FileObject projectFolder) {
+    public static TableCellRenderer createClassPathTableRenderer(PropertyEvaluator evaluator, FileObject projectFolder) {
         return new ClassPathListCellRenderer.ClassPathTableCellRenderer(evaluator, projectFolder);
     }
 
+    @Override
     public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         if (value != null) {
             assert value instanceof ClassPathSupport.Item : value.getClass().toString();

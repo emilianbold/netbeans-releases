@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.classpath;
+package org.netbeans.modules.java.api.common.classpath;
 
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import java.io.IOException;
 import java.net.URI;
@@ -66,9 +67,9 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  */
 public final class ClassPathModifier extends ProjectClassPathModifierImplementation {
     
-    public static final int ADD = 1;
-    public static final int ADD_NO_HEURISTICS = 3;
-    public static final int REMOVE = 2;
+    public static final int ADD = ClassPathModifierSupport.ADD;
+    public static final int ADD_NO_HEURISTICS = ClassPathModifierSupport.ADD_NO_HEURISTICS;
+    public static final int REMOVE = ClassPathModifierSupport.REMOVE;
     
     private final Project project;
     private final UpdateHelper helper;
@@ -77,9 +78,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     private final AntProjectHelper antHelper;
     private ReferenceHelper refHelper;
     private ClassPathModifier.Callback cpModifierCallback;
-    private ClassPathSupport.Callback cpSupportCallback;
     private ClassPathUiSupport.Callback cpUiSupportCallback;
-    private String[] libUpdaterProperties;
     
     private static final Logger LOG = Logger.getLogger(ClassPathModifier.class.getName());
 
@@ -88,13 +87,11 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
             final PropertyEvaluator eval, final ReferenceHelper refHelper, 
             ClassPathSupport.Callback cpSupportCallback, 
             ClassPathModifier.Callback cpModifierCallback,
-            ClassPathUiSupport.Callback cpUiSupportCallback,
-            String[] libUpdaterProperties) {
+            ClassPathUiSupport.Callback cpUiSupportCallback) {
         assert project != null;
         assert helper != null;
         assert eval != null;
         assert refHelper != null;
-        assert libUpdaterProperties != null && libUpdaterProperties.length > 0;
         this.project = project;
         this.helper = helper;
         this.eval = eval;
@@ -103,9 +100,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         this.cs = new ClassPathSupport( eval, refHelper, antHelper, helper,
                                         cpSupportCallback);
         this.cpModifierCallback = cpModifierCallback;
-        this.cpSupportCallback = cpSupportCallback;
         this.cpUiSupportCallback = cpUiSupportCallback;
-        this.libUpdaterProperties = libUpdaterProperties;
     }
     
     public SourceGroup[] getExtensibleSourceGroups() {
@@ -184,7 +179,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
     }
     
     boolean handleLibraries (final Library[] libraries, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
-        return ClassPathModifierSupport.handleLibraries(project, antHelper, cs, eval, cpUiSupportCallback, refHelper, libUpdaterProperties, libraries, classPathProperty, projectXMLElementName, operation);
+        return ClassPathModifierSupport.handleLibraries(project, antHelper, cs, eval, cpUiSupportCallback, refHelper, libraries, classPathProperty, projectXMLElementName, operation);
     }
     
 

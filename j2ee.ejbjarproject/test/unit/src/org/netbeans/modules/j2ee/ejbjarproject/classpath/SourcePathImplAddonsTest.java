@@ -50,7 +50,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.TestPlatformProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;
@@ -173,7 +173,7 @@ public class SourcePathImplAddonsTest extends TestBase{
      * Test's newly added source root appears in source classpath.
      **/
     public void testAddonsCreateSourceRoot() throws Exception {
-        JavaClassPathProviderImpl cpProvider = proj.getClassPathProvider();
+        ClassPathProviderImpl cpProvider = proj.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();
@@ -203,7 +203,7 @@ public class SourcePathImplAddonsTest extends TestBase{
      * Since Deletion is recognized only after new folder creation event.
      **/
     public void testAddonsRemoveSourceRoot() throws Exception {
-        JavaClassPathProviderImpl cpProvider = proj.getClassPathProvider();
+        ClassPathProviderImpl cpProvider = proj.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         String buildDir = helper.getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.BUILD_DIR);
@@ -240,7 +240,7 @@ public class SourcePathImplAddonsTest extends TestBase{
      * Test's newly added multiple source root appears in source classpath.
      **/
     public void testAddonsMultipleSourceRoot() throws Exception {
-        JavaClassPathProviderImpl cpProvider = proj.getClassPathProvider();
+        ClassPathProviderImpl cpProvider = proj.getClassPathProvider();
         ClassPath[] cps = cpProvider.getProjectClassPaths(ClassPath.SOURCE);
         ClassPath cp = cps[0];
         List<ClassPath.Entry> entries = cp.entries();

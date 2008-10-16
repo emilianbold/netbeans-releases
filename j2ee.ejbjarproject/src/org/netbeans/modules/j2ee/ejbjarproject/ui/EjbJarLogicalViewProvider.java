@@ -74,7 +74,6 @@ import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -95,6 +94,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
@@ -106,7 +106,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class EjbJarLogicalViewProvider implements LogicalViewProvider {
+public class EjbJarLogicalViewProvider implements LogicalViewProvider2 {
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("EjbJarLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     
     private final EjbJarProject project;

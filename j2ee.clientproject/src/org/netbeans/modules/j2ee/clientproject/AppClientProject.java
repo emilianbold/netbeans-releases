@@ -75,10 +75,10 @@ import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSCli
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
@@ -175,7 +175,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
     private FileObject libFolder;
     private final ClassPathExtender classPathExtender;
     private final ClassPathModifier cpMod;
-    private final JavaClassPathProviderImpl cpProvider;
+    private final ClassPathProviderImpl cpProvider;
     private ClassPathUiSupport.Callback classPathUiSupportCallback;
     
     // use AntBuildExtender to enable Ant Extensibility
@@ -194,7 +194,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
-        this.cpProvider = new JavaClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+        this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
                 ProjectProperties.BUILD_CLASSES_DIR, AppClientProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
                 new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
                 new String[] {"javac.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
@@ -205,7 +205,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
-            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
+            getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
@@ -285,7 +285,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         return helper;
     }
     
-    private Lookup createLookup(AuxiliaryConfiguration aux, JavaClassPathProviderImpl cpProvider) {
+    private Lookup createLookup(AuxiliaryConfiguration aux, ClassPathProviderImpl cpProvider) {
         SubprojectProvider spp = refHelper.createSubprojectProvider();
 
         final SourcesHelper sourcesHelper = new SourcesHelper(helper, evaluator());
@@ -348,7 +348,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
     }
     
-    public JavaClassPathProviderImpl getClassPathProvider () {
+    public ClassPathProviderImpl getClassPathProvider () {
         return this.cpProvider;
     }
     

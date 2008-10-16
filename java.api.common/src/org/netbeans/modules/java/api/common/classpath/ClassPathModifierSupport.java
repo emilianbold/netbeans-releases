@@ -37,9 +37,8 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.j2ee.common.project.classpath;
+package org.netbeans.modules.java.api.common.classpath;
 
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -56,7 +55,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -73,6 +71,10 @@ import org.openide.util.MutexException;
  */
 public class ClassPathModifierSupport {
 
+    public static final int ADD = 1;
+    public static final int ADD_NO_HEURISTICS = 3;
+    public static final int REMOVE = 2;
+    
     private static final Logger LOG = Logger.getLogger(ClassPathModifierSupport.class.getName());
     
     public static boolean handleRoots (final Project project, final AntProjectHelper helper, final ClassPathSupport cs, final PropertyEvaluator eval,
@@ -91,7 +93,7 @@ public class ClassPathModifierSupport {
                             File projectFolderFile = FileUtil.toFile(helper.getProjectDirectory());
                             for (int i=0; i< classPathRoots.length; i++) {
                                 String filePath;
-                                if (ClassPathModifier.ADD_NO_HEURISTICS == operation || ClassPathModifier.REMOVE == operation || !classPathRoots[i].isAbsolute()) {
+                                if (ADD_NO_HEURISTICS == operation || REMOVE == operation || !classPathRoots[i].isAbsolute()) {
                                     URI toAdd = LibrariesSupport.getArchiveFile(classPathRoots[i]);
                                     if (toAdd == null) {
                                         toAdd = classPathRoots[i];
@@ -107,10 +109,10 @@ public class ClassPathModifierSupport {
                                 }
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath2, projectFolderFile, null, filePath.startsWith("${var.") ? filePath : null); // NOI18N
                                 cpUiSupportCallback.initItem(item);
-                                if ((operation == ClassPathModifier.ADD || operation == ClassPathModifier.ADD_NO_HEURISTICS) && !resources.contains(item)) {
+                                if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
-                                } else if (operation == ClassPathModifier.REMOVE) {
+                                } else if (operation == REMOVE) {
                                     if (resources.remove(item)) {
                                         changed = true;
                                     } else {
@@ -171,11 +173,11 @@ public class ClassPathModifierSupport {
                                 assert artifactElements[i] != null;
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null);
                                 cpUiSupportCallback.initItem(item);
-                                if (operation == ClassPathModifier.ADD && !resources.contains(item)) {
+                                if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
                                 }
-                                else if (operation == ClassPathModifier.REMOVE && resources.contains(item)) {
+                                else if (operation == REMOVE && resources.contains(item)) {
                                     resources.remove(item);
                                     changed = true;
                                 }
@@ -205,7 +207,7 @@ public class ClassPathModifierSupport {
     }
     
     public static boolean handleLibraries (final Project project, final AntProjectHelper helper, final ClassPathSupport cs, final PropertyEvaluator eval,
-            final ClassPathUiSupport.Callback cpUiSupportCallback, final ReferenceHelper refHelper, String[] libUpdaterProperties,
+            final ClassPathUiSupport.Callback cpUiSupportCallback, final ReferenceHelper refHelper,
             final Library[] libraries, final String classPathProperty, final String projectXMLElementName, final int operation) throws IOException, UnsupportedOperationException {
         List<ClassPathSupport.Item> items = new ArrayList<ClassPathSupport.Item>(libraries.length);
         for (int i = 0; i < libraries.length; i++) {
@@ -256,11 +258,11 @@ public class ClassPathModifierSupport {
                         for (ClassPathSupport.Item item : items) {
                             assert item != null;
                             assert item.getType() == ClassPathSupport.Item.TYPE_LIBRARY;
-                            if (operation == ClassPathModifier.ADD && !resources.contains(item)) {
+                            if (operation == ADD && !resources.contains(item)) {
                                 resources.add (item);                                
                                 changed.add(item);
                             }
-                            else if (operation == ClassPathModifier.REMOVE && resources.contains(item)) {
+                            else if (operation == REMOVE && resources.contains(item)) {
                                 resources.remove(item);
                                 changed.add(item);
                             }

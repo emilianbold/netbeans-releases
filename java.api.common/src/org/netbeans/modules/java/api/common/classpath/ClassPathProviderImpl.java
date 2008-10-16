@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.j2ee.common.project.classpath;
+package org.netbeans.modules.java.api.common.classpath;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,7 +49,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupportFactory;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -63,7 +62,7 @@ import org.openide.util.WeakListeners;
 /**
  * Defines the various class paths for a J2SE project.
  */
-public final class JavaClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
 
     private String buildClassesDir = "build.classes.dir"; // NOI18N
     private String distJar = "dist.jar"; // NOI18N
@@ -82,7 +81,7 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
-    public JavaClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
@@ -93,7 +92,7 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
         evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
     }
 
-    public JavaClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator,
+    public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator,
             SourceRoots sourceRoots, SourceRoots testSourceRoots,
             String buildClassesDir, String distJar, String buildTestClassesDir,
             String[] javacClasspath, String[] javacTestClasspath, String[] runClasspath,
@@ -112,13 +111,13 @@ public final class JavaClassPathProviderImpl implements ClassPathProvider, Prope
     private FileObject getDir(final String propname) {
         return ProjectManager.mutex().readAccess(new Mutex.Action<FileObject>() {
             public FileObject run() {
-                synchronized (JavaClassPathProviderImpl.this) {
-                    FileObject fo = (FileObject) JavaClassPathProviderImpl.this.dirCache.get (propname);
+                synchronized (ClassPathProviderImpl.this) {
+                    FileObject fo = (FileObject) ClassPathProviderImpl.this.dirCache.get (propname);
                     if (fo == null ||  !fo.isValid()) {
                         String prop = evaluator.getProperty(propname);
                         if (prop != null) {
                             fo = helper.resolveFileObject(prop);
-                            JavaClassPathProviderImpl.this.dirCache.put (propname, fo);
+                            ClassPathProviderImpl.this.dirCache.put (propname, fo);
                         }
                     }
                     return fo;

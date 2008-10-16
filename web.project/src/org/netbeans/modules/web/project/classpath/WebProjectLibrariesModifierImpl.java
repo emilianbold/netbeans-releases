@@ -50,8 +50,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifierSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -96,8 +96,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
     
     private boolean handlePackageLibraries(final Library[] libraries, final String path, final int operation) throws IOException {
         return ClassPathModifierSupport.handleLibraries(project, project.getAntProjectHelper(), cs, eval, createClassPathUiSupportCallback(path), refHelper, 
-                new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL}, libraries,
-                WebProjectProperties.WAR_CONTENT_ADDITIONAL, WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES, operation);
+                libraries, WebProjectProperties.WAR_CONTENT_ADDITIONAL, WebProjectProperties.TAG_WEB_MODULE__ADDITIONAL_LIBRARIES, operation);
     }
 
     public boolean addCompileLibraries(final Library[] libraries) throws IOException {
@@ -111,8 +110,7 @@ public class WebProjectLibrariesModifierImpl implements WebProjectLibrariesModif
     private boolean handleCompileLibraries(final Library[] libraries, final int operation) throws IOException {
         assert libraries != null : "Libraries cannot be null";  //NOI18N
         return ClassPathModifierSupport.handleLibraries(project, project.getAntProjectHelper(), cs, eval, createClassPathUiSupportCallback(null), refHelper, 
-                new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL}, libraries,
-                ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, operation);
+                libraries, ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.TAG_WEB_MODULE_LIBRARIES, operation);
     }
 
     public boolean addPackageAntArtifacts(final AntArtifact[] artifacts, final URI[] artifactElements, final String path) throws IOException {

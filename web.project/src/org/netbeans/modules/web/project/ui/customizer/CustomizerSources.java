@@ -70,7 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
-import org.netbeans.modules.j2ee.common.project.ui.SourceRootsUi;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
@@ -115,6 +115,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 removeSourceRoot,
                 upSourceRoot,
                 downSourceRoot,
+                null,
                 true);
         
         SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
@@ -125,6 +126,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
                 removeTestRoot,
                 upTestRoot,
                 downTestRoot,
+                null,
                 true);
         
         emSR.setRelatedEditMediator( emTSR );

@@ -42,6 +42,9 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.java.api.common.project.ui.ActionFilterNode;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesSourceGroup;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

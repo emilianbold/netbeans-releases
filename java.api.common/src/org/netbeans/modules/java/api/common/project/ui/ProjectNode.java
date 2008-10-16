@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.common.project.ui;
+package org.netbeans.modules.java.api.common.project.ui;
 
 import java.awt.Image;
 import java.net.URI;
@@ -60,7 +60,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.HelpCtx;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.actions.SystemAction;
@@ -92,7 +91,7 @@ class ProjectNode extends AbstractNode {
     private final URI artifactLocation;
     private Image cachedIcon;
 
-    ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, 
+    public ProjectNode (AntArtifact antArtifact, URI artifactLocation, UpdateHelper helper, 
             String classPathId, String entryId, String webModuleElementName, 
             ClassPathSupport cs, ReferenceHelper rh) {
         super (Children.LEAF, createLookup (antArtifact, artifactLocation, 

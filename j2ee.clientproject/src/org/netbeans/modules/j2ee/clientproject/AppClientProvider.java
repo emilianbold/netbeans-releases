@@ -62,7 +62,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
-import org.netbeans.modules.j2ee.common.project.classpath.JavaClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
@@ -101,7 +101,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     private final AppClientProject project;
     private final AntProjectHelper helper;
-    private final JavaClassPathProviderImpl cpProvider;
+    private final ClassPathProviderImpl cpProvider;
     
     private MetadataModel<AppClientMetadata> appClientMetadataModel;
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
@@ -111,7 +111,7 @@ public final class AppClientProvider extends J2eeModuleProvider
     
     private long notificationTimeout = 0; // used to suppress repeating the same messages
     
-    AppClientProvider(AppClientProject project, AntProjectHelper helper, JavaClassPathProviderImpl cpProvider) {
+    AppClientProvider(AppClientProject project, AntProjectHelper helper, ClassPathProviderImpl cpProvider) {
         this.project = project;
         this.helper = helper;
         this.cpProvider = cpProvider;
