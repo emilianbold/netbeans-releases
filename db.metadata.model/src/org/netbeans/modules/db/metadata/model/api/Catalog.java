@@ -54,6 +54,10 @@ public class Catalog extends MetadataElement {
         this.impl = impl;
     }
 
+    public MetadataElement getParent() {
+        return null;
+    }
+
     /**
      * Returns the name of this catalog or {@code null} if the name is not known.
      *

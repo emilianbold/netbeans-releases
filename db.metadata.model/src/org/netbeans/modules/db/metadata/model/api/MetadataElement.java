@@ -49,6 +49,14 @@ public abstract class MetadataElement {
     MetadataElement() {}
 
     /**
+     * Returns the metadata element which is the parent of this metadata
+     * element.
+     *
+     * @return the parent.
+     */
+    public abstract MetadataElement getParent();
+
+    /**
      * Returns the name of this metadata element or {@code null} if
      * this element has no name.
      *
