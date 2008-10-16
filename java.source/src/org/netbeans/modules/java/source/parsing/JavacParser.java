@@ -322,7 +322,7 @@ public class JavacParser extends Parser {
         LOGGER.fine ("getResult: task:" + task.toString());                     //NOI18N
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid) {
-            LOGGER.fine ("\t:invalid, reaprse");                                //NOI18N
+            LOGGER.fine ("\t:invalid, reparse");                                //NOI18N
             invalid = false;
             if (cachedSnapShot != null) {
                 parse (cachedSnapShot, task, event);
@@ -331,6 +331,20 @@ public class JavacParser extends Parser {
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
         final boolean isParserResultTask = task instanceof ParserResultTask;
         final boolean isUserTask = task instanceof MultiLanguageUserTask || task instanceof UserTask;
+        final boolean isClasspathInfoProvider = task instanceof ClasspathInfoProvider;
+        if (isClasspathInfoProvider) {
+            //Verify validity of explicit classpath
+            //Not sure about the parsing.api contract for multiple files
+            //maybe not needed and assertion is enough
+            final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
+            if (cpInfo != providedInfo) {
+                LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
+                cpInfo = ClasspathInfo.create(this.file);
+                if (cachedSnapShot != null) {
+                    parse (cachedSnapShot, task, event);
+                }
+            }
+        }
         JavacParserResult result = null;
         if (isParserResultTask) {
             Phase requiredPhase;
