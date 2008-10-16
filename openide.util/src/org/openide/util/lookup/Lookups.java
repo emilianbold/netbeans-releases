@@ -147,6 +147,13 @@ public class Lookups {
 
     /** Returns a lookup that implements the JDK1.3 JAR services mechanism and delegates
      * to META-INF/services/name.of.class files.
+     * <p>Some extensions to the JAR services specification are implemented:
+     * <ol>
+     * <li>An entry may be followed by a line of the form <code>#position=<i>integer</i></code>
+     *     to specify ordering. (Smaller numbers first, entries with unspecified position last.)
+     * <li>A line of the form <code>#-<i>classname</i></code> suppresses an entry registered
+     *     in another file, so can be used to supersede one implementation with another.
+     * </ol>
      * <p>Note: It is not dynamic - so if you need to change the classloader or JARs,
      * wrap it in a {@link ProxyLookup} and change the delegate when necessary.
      * Existing instances will be kept if the implementation classes are unchanged,
@@ -158,10 +165,9 @@ public class Lookups {
         return new MetaInfServicesLookup(classLoader, "META-INF/services/"); // NOI18N
     }
 
-    /** Returns a lookup that behaves exactly as the one
-     * created <code>metaInfServices(ClassLoader)</code> except that
-     * it does not read data from META-INF/services, but instead
-     * from the specified <code>prefix</code>.
+    /** Returns a lookup that behaves exactly like {@link #metaInfServices(ClassLoader)}
+     * except that it does not read data from <code>META-INF/services/</code>, but instead
+     * from the specified prefix.
      * @param classLoader class loader to use for loading
      * @param prefix prefix to prepend to the class name when searching
      * @since 7.9
@@ -170,19 +176,20 @@ public class Lookups {
         return new MetaInfServicesLookup(classLoader, prefix);
     }
     
-    /** Creates a <q>named</q> lookup. It is a lookup identified by a 
-     * given path. Two lookups with the same path are going to have 
-     * the same content. It is expected that each <q>named</q> lookup
-     * will contain a superset of what would lookup created by
-     * <code>metaInfServices(theRightLoader, "META-INF/namedservices/" + path)</code>
-     * contain. However various environments can add their own
+    /** Creates a <q>named</q> lookup.
+     * It is a lookup identified by a given path.
+     * Two lookups with the same path should have the same content.
+     * <p>It is expected that each <q>named</q> lookup
+     * will contain a superset of what would be created by:
+     * <code>{@linkplain #metaInfServices(ClassLoader,String) metaInfServices}(theRightLoader, "META-INF/namedservices/" + path + "/")</code>
+     * <p>However various environments can add their own
      * extensions to its content. For example when running inside NetBeans Runtime
      * Container, the content of system file system under the given
      * <code>path</code> is also present in the returned lookup.
      * <p>
-     * Read more about the <a href="../doc-files/api.html#folderlookup">usage of this method...</a>
+     * Read more about the <a href="../doc-files/api.html#folderlookup">usage of this method</a>.
      * 
-     * @param path the path identifying the lookup, for example <q>Databases/</q>, etc.
+     * @param path the path identifying the lookup, e.g. <code>Projects/Actions</code>
      * @return lookup associated with this path
      * @since 7.9
      */
