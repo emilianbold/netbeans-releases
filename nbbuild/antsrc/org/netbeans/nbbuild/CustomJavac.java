@@ -80,6 +80,7 @@ public class CustomJavac extends Javac {
             createCompilerArg().setValue("-processorpath");
             createCompilerArg().setPath(processorPath);
         }
+        createCompilerArg().setValue("-implicit:class");
         if (compileList.length > 0) {
             log("Compiling " + compileList.length + " source file" +
                     (compileList.length == 1 ? "" : "s") +
