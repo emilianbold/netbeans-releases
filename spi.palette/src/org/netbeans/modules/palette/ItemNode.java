@@ -71,6 +71,10 @@ class ItemNode extends FilterNode {
     public Action[] getActions(boolean context) {
         if (actions == null) {
             Node n = getParentNode();
+            if( null == n ) {
+                return new Action[0];
+            }
+
             actions = new Action[] {
                 new Utils.CutItemAction( this ),
                 new Utils.CopyItemAction( this ),

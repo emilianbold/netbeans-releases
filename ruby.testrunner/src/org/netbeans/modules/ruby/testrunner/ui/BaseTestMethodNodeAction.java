@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,32 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.fortran;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
+package org.netbeans.modules.ruby.testrunner.ui;
+
+import javax.swing.AbstractAction;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
-/** BeanInfo for plain options
-*/
-public class FPrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+/**
+ * Base class for actions associated with a test method node.
+ *
+ * @author Erno Mononen
+ */
+abstract class BaseTestMethodNodeAction extends AbstractAction {
 
-    public FPrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/fortran/FortranIcon"); //NOI18N
+    protected final Testcase testcase;
+    protected final Project project;
+    protected final String name;
+
+    public BaseTestMethodNodeAction(Testcase testcase, Project project, String name) {
+        this.testcase = testcase;
+        this.project = project;
+        this.name = name;
     }
 
-    public FPrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
+    @Override
+    public Object getValue(String key) {
+        if (NAME.equals(key)) {
+            return name;
+        }
+        return super.getValue(key);
     }
 
-
-    protected Class getBeanClass() {
-        return FPrintOptions.class;
+    protected String getTestMethod() {
+        return testcase.className + "/" + testcase.name; //NOI18N
     }
 
+    protected FileObject getTestSourceRoot() {
+        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
+        // need to use test source roots, not source roots -- see the comments in #135680
+        FileObject[] testRoots = baseProject.getTestSourceRootFiles();
+        // if there are not test roots, return the project root -- works in rails projects
+        return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
+    }
 
 }
-

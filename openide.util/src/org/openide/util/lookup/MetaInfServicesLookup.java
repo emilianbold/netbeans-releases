@@ -61,17 +61,9 @@ import org.openide.util.Lookup;
 import org.openide.util.SharedClassObject;
 import org.openide.util.WeakSet;
 
-/** A lookup that implements the JDK1.3 JAR services mechanism and delegates
- * to META-INF/services/name.of.class files.
- * <p>It is not dynamic - so if you need to change the classloader or JARs,
- * wrap it in a ProxyLookup and change the delegate when necessary.
- * Existing instances will be kept if the implementation classes are unchanged,
- * so there is "stability" in doing this provided some parent loaders are the same
- * as the previous ones.
- * <p>If this is to be made public, please move it to the org.openide.util.lookup
- * package; currently used by the core via reflection, until it is needed some
- * other way.
+/**
  * @author Jaroslav Tulach, Jesse Glick
+ * @see Lookups#metaInfServices(ClassLoader,String)
  * @see "#14722"
  */
 final class MetaInfServicesLookup extends AbstractLookup {

@@ -39,26 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.fortran;
+package org.netbeans.modules.cnd.editor.shell;
 
-import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
 
 /**
- * Default settings values for Fortran.
+ * Settings factory for shell files.
  */
-public class FSettingsDefaults extends ExtSettingsDefaults {
-    //maximum nmber of columns allowed in a line
-    public static final int maximumTextWidth = 132;    //for f95
+public class ShellSettingsFactory {
 
-    public static final Acceptor defaultIndentHotCharsAcceptor
-	= new Acceptor() {
-		public boolean accept(char ch) {
-		    switch (ch) {
-		    case '\n': //NOI18N
-			return true;
-		    }
-		    return false;
-		}
-	    };
-}//FSettingsDefaults
+    private static final Acceptor INDENT_HOT_CHARS_ACCEPTOR = new Acceptor() {
+        public boolean accept(char ch) {
+            switch (ch) {
+                case '}':
+                    return true;
+            }
+            return false;
+        }
+    };
+
+    public static Acceptor getIndentHotCharsAcceptor() {
+        return INDENT_HOT_CHARS_ACCEPTOR;
+    }
+
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.LETTER_DIGIT;
+    }
+
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
+    }
+
+}
