@@ -198,19 +198,25 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             case NEW:
                 error = validateProject();
                 if (error != null) {
-                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
                 error = validateSources(false);
                 if (error != null) {
-                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
                 break;
             case EXISTING:
+                String sourcesFolder = configureProjectPanelVisual.getSourcesFolder();
+                if (sourcesFolder == null || sourcesFolder.trim().length() == 0) {
+                    descriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
+                            NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_EmptySources"));
+                    return false;
+                }
                 error = validateSources(true);
                 if (error != null) {
-                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error); // NOI18N
+                    descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, error);
                     return false;
                 }
                 error = validateProject();

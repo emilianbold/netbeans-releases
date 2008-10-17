@@ -66,7 +66,7 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public void invokeAction(Lookup context) throws IllegalArgumentException {
-        if (!isRunConfigurationValid()) {
+        if (!isRunConfigurationValid(false)) {
             // property not set yet
             return;
         }
