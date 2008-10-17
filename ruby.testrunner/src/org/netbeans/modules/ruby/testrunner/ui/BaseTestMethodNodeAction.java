@@ -39,12 +39,19 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.util.Collection;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.util.Lookup;
 
 /**
  * Base class for actions associated with a test method node.
@@ -52,6 +59,8 @@ import org.openide.util.NbBundle;
  * @author Erno Mononen
  */
 abstract class BaseTestMethodNodeAction extends AbstractAction {
+
+    private static final Logger LOGGER = Logger.getLogger(BaseTestMethodNodeAction.class.getName());
 
     protected final Testcase testcase;
     protected final Project project;
@@ -81,6 +90,42 @@ abstract class BaseTestMethodNodeAction extends AbstractAction {
         FileObject[] testRoots = baseProject.getTestSourceRootFiles();
         // if there are not test roots, return the project root -- works in rails projects
         return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
+    }
+
+    protected TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
+    }
+    
+    protected void doRspecRun(FileObject testFile, FileLocation location){
+    }
+
+    protected final void runRspec() {
+        if (testcase.getLocation() == null) {
+            return;
+        }
+        FileLocation location = OutputUtils.getFileLocation(testcase.getLocation());
+        if (location == null) {
+            return;
+        }
+        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
+        if (testFile == null) {
+            return;
+        }
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null || platform.isJRuby()) {
+            //XXX: does not work with JRuby, more info in issue #135680
+            LOGGER.info("Rerunning an rspec test case on JRuby is currently not working");
+            return;
+        }
+        Project owner = FileOwnerQuery.getOwner(testFile);
+        assert project.equals(owner) : "Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed." + "Got " + owner + ", expected " + project;
+        doRspecRun(testFile, location);
     }
 
 }

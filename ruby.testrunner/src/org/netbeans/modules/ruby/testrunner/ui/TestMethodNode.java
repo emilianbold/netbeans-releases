@@ -167,18 +167,18 @@ final class TestMethodNode extends AbstractNode {
     @Override
     public Action getPreferredAction() {
         // the location to jump from the node
-        String testLocation = getTestLocation();
+        String testLocation = getTestLocation(testcase, project);
         String stackTrace = testcase.getTestCaseLineFromStackTrace();
         String jumpToLocation = stackTrace != null
                 ? stackTrace
                 : testLocation;
 
         return jumpToLocation == null
-                ? new JumpToTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_GoToSource"))
+                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_GoToSource"), false)
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
     
-    private String getTestLocation() {
+    static String getTestLocation(Report.Testcase testcase, Project project) {
         if (testcase.getLocation() == null) {
             return null;
         }
