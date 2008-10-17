@@ -211,9 +211,9 @@ public final class FileEntityResolver extends EntityCatalog implements Environme
 
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            ERR.log(Level.INFO, "no environment for " + obj, ex); // NOI18N
         } catch (ClassNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            ERR.log(Level.INFO, "no environment for " + obj, ex); // NOI18N
         }
         
         return null;
