@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -47,6 +47,7 @@ import org.netbeans.modules.extexecution.api.input.InputProcessor;
 import org.netbeans.modules.php.project.util.PhpInterpreter;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.actions.Command;
 import org.netbeans.modules.php.project.ui.options.PHPOptionsCategory;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.openide.awt.HtmlBrowser;
@@ -63,11 +64,10 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class RunLocalCommand extends Command implements Displayable {
-
+public class RunScript extends Command implements Displayable {
     public static final String ID = "run.local"; // NOI18N
 
-    public RunLocalCommand(PhpProject project) {
+    public RunScript(PhpProject project) {
         super(project);
     }
 
@@ -80,7 +80,7 @@ public class RunLocalCommand extends Command implements Displayable {
         }
     }
 
-    public final Callable<Cancellable> getCallable(final Lookup context)  {        
+    public final Callable<Cancellable> getCallable(final Lookup context)  {
         return new Callable<Cancellable>() {
             public Cancellable call() throws Exception {
                 PhpInterpreter phpInterpreter = ProjectPropertiesSupport.getPhpInterpreter(getProject());
@@ -136,11 +136,6 @@ public class RunLocalCommand extends Command implements Displayable {
         return ID;
     }
 
-    public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_RunLocalCommand");
-
-    }
-
     protected boolean isControllable() {
         return true;
     }
@@ -154,6 +149,10 @@ public class RunLocalCommand extends Command implements Displayable {
         File retval = File.createTempFile(scriptFile.getName(), ".html"); //NOI18N
         retval.deleteOnExit();
         return retval;
+    }
+
+    public String getDisplayName() {
+        return NbBundle.getMessage(DebugScript.class, "LBL_RunScript");
     }
 
     private static class InOutPostRedirector implements InputProcessorFactory, Runnable {
@@ -178,7 +177,7 @@ public class RunLocalCommand extends Command implements Displayable {
 
                 public void close() throws IOException {
                     getFileWriter().flush();
-                    getFileWriter().close();                    
+                    getFileWriter().close();
                 }
 
             };
