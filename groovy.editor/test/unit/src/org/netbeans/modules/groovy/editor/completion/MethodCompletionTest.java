@@ -143,6 +143,13 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionInsideFor2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
     }
-    
+
+    public void testCompletionGeneratedAccessors1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods12.groovy", "        new Test().get^", false);
+    }
+
+    public void testCompletionGeneratedAccessors2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods12.groovy", "        new Test().set^", false);
+    }
 }
 

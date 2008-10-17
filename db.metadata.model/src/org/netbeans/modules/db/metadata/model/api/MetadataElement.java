@@ -40,17 +40,25 @@
 package org.netbeans.modules.db.metadata.model.api;
 
 /**
- * Encapsulates a metadata object (catalog, schema, table, etc.).
+ * Encapsulates a metadata element (catalog, schema, table, etc.).
  *
  * @author Andrei Badea
  */
-public abstract class MetadataObject {
+public abstract class MetadataElement {
 
-    MetadataObject() {}
+    MetadataElement() {}
 
     /**
-     * Returns the name of this metadata object or {@code null} if
-     * this object has no name.
+     * Returns the metadata element which is the parent of this metadata
+     * element.
+     *
+     * @return the parent.
+     */
+    public abstract MetadataElement getParent();
+
+    /**
+     * Returns the name of this metadata element or {@code null} if
+     * this element has no name.
      *
      * @return the name.
      */

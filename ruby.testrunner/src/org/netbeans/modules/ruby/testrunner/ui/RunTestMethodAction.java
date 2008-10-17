@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.event.ActionEvent;
@@ -62,7 +61,6 @@ import org.openide.util.Lookup;
 class RunTestMethodAction extends BaseTestMethodNodeAction {
 
     private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
-
     private final boolean debug;
 
     public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
@@ -75,45 +73,14 @@ class RunTestMethodAction extends BaseTestMethodNodeAction {
             runRspec();
             return;
         }
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
         if (!(DeclarationLocation.NONE == location)) {
             getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(), testcase.name, debug);
         }
     }
 
-    private void runRspec() {
-        if (testcase.getLocation() == null) {
-            return;
-        }
-        FileLocation location = OutputUtils.getFileLocation(testcase.getLocation());
-        if (location == null) {
-            return;
-        }
-        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
-        if (testFile == null) {
-            return;
-        }
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform == null || platform.isJRuby()) {
-            //XXX: does not work with JRuby, more info in issue #135680
-            LOGGER.warning("Rerunning an rspec test case on JRuby is currently not working");
-            return;
-        }
-        Project owner = FileOwnerQuery.getOwner(testFile);
-        assert project.equals(owner) : "Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed."
-                + "Got " + owner + ", expected " + project;
+    @Override
+    protected void doRspecRun(FileObject testFile, FileLocation location) {
         getTestRunner(testcase.getType()).runSingleTest(testFile, String.valueOf(location.line), debug);
-
     }
-
-    private TestRunner getTestRunner(TestRunner.TestType testType) {
-        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
-        for (TestRunner each : testRunners) {
-            if (each.supports(testType)) {
-                return each;
-            }
-        }
-        return null;
-    }
-
 }

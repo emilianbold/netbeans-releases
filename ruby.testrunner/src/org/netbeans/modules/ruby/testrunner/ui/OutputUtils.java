@@ -65,16 +65,17 @@ final class OutputUtils {
 
     /**
      */
-    static void openCallstackFrame(Node node,
-            String frameInfo) {
+    static void openCallstackFrame(Node node, String frameInfo, int line) {
 
-        List<? extends RegexpOutputRecognizer> stdRecognizers = RubyExecution.getStandardRubyRecognizers();
         Report report = getTestsuiteNode(node).getReport();
         FileLocation location = getFileLocation(frameInfo);
         if (location != null) {
             FileObject fo = findFile(location.file, report.getFileLocator());
             if (fo != null) {
-                OutputProcessor.open(fo, location.line);
+                if (line == -1) {
+                    line = location.line;
+                }
+                OutputProcessor.open(fo, line);
                 return;
             }
         }
