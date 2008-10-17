@@ -75,7 +75,7 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
 
         //TestFoo/test_bar => test/test_foo.rb:99
-        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar");
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar", false);
         assertTrue(loc != DeclarationLocation.NONE);
         assertEquals("testfile.rb", loc.getFileObject().getNameExt());
         assertEquals(38, loc.getOffset());
@@ -89,10 +89,38 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
 
         //MosModule::TestBaz/test_qux => test/test_baz.rb:88
-        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux");
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux", false);
         assertTrue(loc != DeclarationLocation.NONE);
         assertEquals("testfile.rb", loc.getFileObject().getNameExt());
         assertEquals(119, loc.getOffset());
+    }
+
+    public void testTestClassDeclaration() throws Exception {
+        // Make sure the test file is indexed
+        FileObject fo = getTestFile("testfiles/testfile.rb");
+        GsfTestCompilationInfo info = getInfo(fo);
+        assertNotNull(AstUtilities.getRoot(info));
+        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+
+        //TestFoo/test_bar => test/test_foo.rb:99
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar", true);
+        assertTrue(loc != DeclarationLocation.NONE);
+        assertEquals("testfile.rb", loc.getFileObject().getNameExt());
+        assertEquals(0, loc.getOffset());
+    }
+
+    public void testTestClassDeclaration2() throws Exception {
+        // Make sure the test file is indexed
+        FileObject fo = getTestFile("testfiles/testfile.rb");
+        GsfTestCompilationInfo info = getInfo(fo);
+        assertNotNull(AstUtilities.getRoot(info));
+        info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
+
+        //TestFoo/test_bar => test/test_foo.rb:99
+        DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux", true);
+        assertTrue(loc != DeclarationLocation.NONE);
+        assertEquals("testfile.rb", loc.getFileObject().getNameExt());
+        assertEquals(79, loc.getOffset());
     }
 
     // I don't actually get multiple locations for a single method out of the index
