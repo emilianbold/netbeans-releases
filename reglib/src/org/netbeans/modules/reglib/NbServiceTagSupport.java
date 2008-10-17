@@ -823,7 +823,7 @@ public class NbServiceTagSupport {
             }
         } else {
             File dir = new File(USER_HOME + File.separator + DEFAULT_NETBEANS_DIR);
-            if (dir.canWrite() && (!dir.exists())) {
+            if (!dir.exists()) {
                 dir.mkdirs();
             }
             Writer w = null;
