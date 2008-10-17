@@ -495,8 +495,6 @@ public class RubyFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    // For the doc.getFormatter() part -- I need it when called from outside an indentation api context (such as in preview form)
-    // XXX: What? No!
     @SuppressWarnings("deprecation") 
     public void reindent(final Context context, Document document, int startOffset, int endOffset, CompilationInfo info,
         final boolean indentOnly) {
