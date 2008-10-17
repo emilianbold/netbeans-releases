@@ -4111,7 +4111,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (toAdd != null && ret.add(toAdd)) {
                                 TypeMirror toRemove = null;
                                 for (TypeMirror tm : ret) {
-                                    if (tm != toAdd) {
+                                    if (tm != toAdd && !tm.getKind().isPrimitive()) {
                                         TypeMirror tmErasure = types.erasure(tm);
                                         TypeMirror toAddErasure = types.erasure(toAdd);
                                         if (types.isSubtype(toAddErasure, tmErasure)) {

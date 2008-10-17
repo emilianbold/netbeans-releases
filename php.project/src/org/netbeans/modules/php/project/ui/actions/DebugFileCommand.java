@@ -41,6 +41,9 @@
 package org.netbeans.modules.php.project.ui.actions;
 
 
+import org.netbeans.modules.php.project.ui.actions.support.XDebugStarterFactory;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.DebugScript;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
@@ -48,24 +51,21 @@ import org.netbeans.modules.php.project.spi.XDebugStarter;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.netbeans.spi.project.ActionProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * @author Radek Matous
  */
-public class DebugSingleCommand extends DebugCommand {
+public class DebugFileCommand extends DebugProjectCommand {
     public static final String ID = ActionProvider.COMMAND_DEBUG_SINGLE;
-    public static String DISPLAY_NAME = DebugCommand.DISPLAY_NAME;
-    private final DebugLocalCommand debugLocalCommand;
+    public static final String DISPLAY_NAME = DebugProjectCommand.DISPLAY_NAME;
+    private final DebugScript debugScript;
 
-    public DebugSingleCommand(PhpProject project) {
+    public DebugFileCommand(PhpProject project) {
         super(project);
-        debugLocalCommand = new DebugLocalCommand(project);        
+        debugScript = new DebugScript(project);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class DebugSingleCommand extends DebugCommand {
             return;
         }
         if (isScriptSelected()) {
-            debugLocalCommand.invokeAction(context);
+            debugScript.invokeAction(context);
         } else {
             // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
             final FileObject startFile = fileForContext(context);
@@ -98,7 +98,7 @@ public class DebugSingleCommand extends DebugCommand {
                     }
                 }
             };
-            
+
             boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
             if (jsDebuggingAvailable) {
                 boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
@@ -106,16 +106,12 @@ public class DebugSingleCommand extends DebugCommand {
                     return;
                 }
             }
-            
+
             if (!jsDebuggingAvailable || WebClientToolsProjectUtils.getServerDebugProperty(getProject())) {
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
                 if (dbgStarter != null) {
                     if (dbgStarter.isAlreadyRunning()) {
-                        String message = NbBundle.getMessage(DebugSingleCommand.class, "MSG_NoMoreDebugSession");
-                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
-                                NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
-                        boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
-                        if (confirmed) {
+                        if (CommandUtils.warnNoMoreDebugSession()) {
                             dbgStarter.stop();
                             invokeAction(context);
                         }

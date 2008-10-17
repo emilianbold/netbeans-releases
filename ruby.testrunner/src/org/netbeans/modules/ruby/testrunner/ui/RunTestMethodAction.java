@@ -40,28 +40,80 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.Collection;
+import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * Jump to action for test methods.
+ * An action for running/debugging a singe test method.
  *
  * @author Erno Mononen
  */
-final class JumpToTestMethodAction extends BaseTestMethodNodeAction {
+class RunTestMethodAction extends BaseTestMethodNodeAction {
 
-    JumpToTestMethodAction(Testcase testcase, Project project, String name) {
+    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
+
+    private final boolean debug;
+
+    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
         super(testcase, project, name);
+        this.debug = debug;
     }
 
     public void actionPerformed(ActionEvent e) {
+        if (TestRunner.TestType.RSPEC == testcase.getType()) {
+            runRspec();
+            return;
+        }
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
         if (!(DeclarationLocation.NONE == location)) {
-            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
+            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(), testcase.name, debug);
         }
+    }
+
+    private void runRspec() {
+        if (testcase.getLocation() == null) {
+            return;
+        }
+        FileLocation location = OutputUtils.getFileLocation(testcase.getLocation());
+        if (location == null) {
+            return;
+        }
+        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
+        if (testFile == null) {
+            return;
+        }
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null || platform.isJRuby()) {
+            //XXX: does not work with JRuby, more info in issue #135680
+            LOGGER.warning("Rerunning an rspec test case on JRuby is currently not working");
+            return;
+        }
+        Project owner = FileOwnerQuery.getOwner(testFile);
+        assert project.equals(owner) : "Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed."
+                + "Got " + owner + ", expected " + project;
+        getTestRunner(testcase.getType()).runSingleTest(testFile, String.valueOf(location.line), debug);
+
+    }
+
+    private TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
+        }
+        return null;
     }
 
 }

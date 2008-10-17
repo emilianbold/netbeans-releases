@@ -36,7 +36,7 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -46,21 +46,23 @@ import java.util.List;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 /**
  * @author Radek Matous
  */
 public class CommandUtils {
-    // XXX maybe can be obtained somewhere
     private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
 
-    private PhpProject project;
+    private final PhpProject project;
 
     public CommandUtils(PhpProject project) {
         this.project = project;
@@ -84,7 +86,6 @@ public class CommandUtils {
     public Collection<? extends FileObject> filesForContext(Lookup context) {
         return context.lookupAll(FileObject.class);
     }
-
 
     public static FileObject[] filesForSelectedNodes() {
         Node[] nodes = getSelectedNodes();
@@ -129,7 +130,6 @@ public class CommandUtils {
         return null;
     }
 
-
     private static boolean isUnderSourceRoot(FileObject sourceRoot, FileObject file) {
         return FileUtil.isParentOf(sourceRoot, file) && FileUtil.toFile(file) != null;
     }
@@ -161,8 +161,14 @@ public class CommandUtils {
         return (dobj != null) ? dobj.getPrimaryFile() : null;
     }
 
-
     private PhpProject getProject() {
         return project;
+    }
+
+    /** Return <code>true</code> if user wants to restart the current debug session. */
+    public static boolean warnNoMoreDebugSession() {
+        String message = NbBundle.getMessage(CommandUtils.class, "MSG_NoMoreDebugSession");
+        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message, NotifyDescriptor.OK_CANCEL_OPTION);
+        return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
     }
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,37 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.openide.util.Lookup;
-import org.openide.util.Union2;
+package org.netbeans.modules.cnd.editor.makefile;
 
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.TokenContext;
+import org.openide.text.IndentEngine;
 
 /**
- * @author Radek Matous
- *
+ * Extended settings for Makefile.
  */
-public final class XDebugStarterFactory {
-    private static Union2<XDebugStarter, Boolean> INSTANCE;
+public class MakefileSettingsFactory {
 
-    private XDebugStarterFactory() {
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
-    public static XDebugStarter getInstance() {
-        boolean init;
-        synchronized (XDebugStarterFactory.class) {
-            init = (INSTANCE == null);
-        }
-        if (init) {
-            //TODO add lookup listener
-            XDebugStarter debugStarter = Lookup.getDefault().lookup(XDebugStarter.class);
-            if (debugStarter != null) {
-                INSTANCE = Union2.createFirst(debugStarter);
-            } else {
-                INSTANCE = Union2.createSecond(Boolean.FALSE);
-            }
-        }
-        return INSTANCE.hasFirst() ? INSTANCE.first() : null;
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(MakefileTokenContext.context);
     }
+
+    public static IndentEngine getIndentEngine() {
+        return new MakefileIndentEngine();
+    }
+
 }

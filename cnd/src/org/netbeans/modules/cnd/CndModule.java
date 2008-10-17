@@ -45,9 +45,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.editor.Settings;
-import org.netbeans.modules.cnd.editor.shell.ShellKit;
-import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
@@ -61,9 +58,6 @@ public class CndModule extends ModuleInstall {
     /** Module is being opened (NetBeans startup, or enable-toggled) */
     @Override public void restored() {
 
-	// Settings for editor kits
-	Settings.addInitializer(new ShellSettingsInitializer(ShellKit.class));
-	
 //	PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
 //	ps.addOption ((SystemOption) SystemOption.findObject(FPrintOptions.class, true));
 //	ps.addOption ((SystemOption) SystemOption.findObject(CCPrintOptions.class, true));
