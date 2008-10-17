@@ -40,6 +40,8 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.openide.util.Lookup;
@@ -53,11 +55,17 @@ public class JavacParserFactory extends ParserFactory {
     @Override
     public JavacParser createParser(final Collection<Snapshot> snapshots) {
         assert snapshots != null;
-        return new JavacParser(snapshots);
+        return new JavacParser(snapshots, false);
+    }
+
+    public JavacParser createPrivateParser (final Snapshot snapshot) {
+        assert snapshot != null;
+        return new JavacParser(Collections.singletonList(snapshot), true);
     }
     
     public static JavacParserFactory getDefault () {
-        return Lookup.getDefault().lookup(JavacParserFactory.class);
+        final Lookup lookup = MimeLookup.getLookup (JavacParser.MIME_TYPE);
+        return lookup.lookup (JavacParserFactory.class);       
     }
 
 }

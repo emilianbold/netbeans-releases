@@ -681,7 +681,7 @@ public final class JavaSource {
             }
             JavacParserFactory factory = JavacParserFactory.getDefault();
             final Snapshot snapshot = js.sources.iterator().next().createSnapshot();
-            final JavacParser parser = factory.createParser(Collections.singletonList(snapshot));
+            final JavacParser parser = factory.createPrivateParser(snapshot);
             final UserTask dummy = new UserTask() {
                 @Override
                 public void run(Result result, Snapshot snapshot) throws Exception {                    

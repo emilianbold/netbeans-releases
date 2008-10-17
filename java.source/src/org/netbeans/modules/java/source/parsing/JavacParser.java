@@ -177,6 +177,8 @@ public class JavacParser extends Parser {
     private final ChangeSupport listeners = new ChangeSupport(this);
     //Cancelling of parser & index
     private final AtomicBoolean canceled = new AtomicBoolean();
+    //When true the parser is a private copy not used by the parsing API, see JavaSourceAccessor.createCompilationController
+    private final boolean privateParser;
     //File processed by this javac
     private FileObject file;
     //Root owning the file
@@ -209,7 +211,8 @@ public class JavacParser extends Parser {
     //Last used snapshot
     private Snapshot cachedSnapShot;
     
-    JavacParser (final Collection<Snapshot> snapshots) {
+    JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
+        this.privateParser = privateParser;
         this.isSingleSource = snapshots.size() == 1;
         this.supportsReparse = this.isSingleSource && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
         EditorCookie.Observable ec = null;
@@ -281,7 +284,7 @@ public class JavacParser extends Parser {
     @Override
     public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
         assert task != null;
-        assert Utilities.holdsParserLock();
+        assert privateParser || Utilities.holdsParserLock();
         canceled.set(false);
         try {            
             LOGGER.fine("parse: task: " + task.toString() +"\n" + snapshot.getText());      //NOI18N
@@ -318,7 +321,7 @@ public class JavacParser extends Parser {
     @Override
     public JavacParserResult getResult (final Task task, SchedulerEvent event) throws ParseException {
         assert ciImpl != null;
-        assert Utilities.holdsParserLock();
+        assert privateParser || Utilities.holdsParserLock();
         LOGGER.fine ("getResult: task:" + task.toString());                     //NOI18N
         //Assumes that caller is synchronized by the Parsing API lock
         if (invalid) {
