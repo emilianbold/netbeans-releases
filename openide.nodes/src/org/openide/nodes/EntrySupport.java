@@ -1141,7 +1141,7 @@ abstract class EntrySupport {
                     if (!isDummyNode(node)) {
                         return node;
                     }
-                    hideEmpty(null, entry, null);
+                    hideEmpty(null, entry);
                 } finally {
                     Children.PR.exitReadAccess();
                 }
@@ -1186,7 +1186,7 @@ abstract class EntrySupport {
                     if (invalidEntries == null) {
                         return tmpNodes;
                     }
-                    hideEmpty(invalidEntries, null, null);
+                    hideEmpty(invalidEntries, null);
                 } finally {
                     Children.PR.exitReadAccess();
                 }
@@ -1253,7 +1253,14 @@ abstract class EntrySupport {
             }
 
             Node oldNode = info.currentNode();
-            Node newNode = info.getNode(true, null);
+            EntryInfo newInfo = null;
+            Node newNode = null;
+            if (info.isHidden()) {
+                newNode = info.getNode(true, null);
+            } else {
+                newInfo = info.duplicate(null);
+                newNode = newInfo.getNode(true, null);
+            }
 
             boolean newIsDummy = isDummyNode(newNode);
             if (newIsDummy && info.isHidden()) {
@@ -1266,12 +1273,16 @@ abstract class EntrySupport {
                 return;
             }
 
-            boolean oldIsDummy = info.isHidden() || (oldNode != null && isDummyNode(oldNode));
-            if ((oldNode != null && !oldIsDummy) || newIsDummy) {
-                removeEntries(null, entry, oldNode, true, false);
-                if (newIsDummy) {
-                    return;
-                }
+            if (!info.isHidden() || newIsDummy) {
+                removeEntries(null, entry, newInfo, true, true);
+            }
+
+            if (newInfo != null) {
+                info = newInfo;
+                entryToInfo.put(entry, info);
+            }
+            if (newIsDummy) {
+                return;
             }
 
             // recompute indexes
@@ -1628,25 +1639,24 @@ abstract class EntrySupport {
             }
         }     
 
-        void hideEmpty(final Set<Entry> entries, final Entry entry, final Node oldNode) {
+        void hideEmpty(final Set<Entry> entries, final Entry entry) {
             Children.MUTEX.postWriteRequest(new Runnable() {
 
                 public void run() {
-                    removeEntries(entries, entry, oldNode, true, true);
+                    removeEntries(entries, entry, null, true, true);
                 }
             });
         }
 
-        private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, Node oldNode, boolean justHide, boolean delayed) {
+        private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, EntryInfo newEntryInfo, boolean justHide, boolean delayed) {
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             if (LOG_ENABLED) {
                 LOGGER.finer("removeEntries(): " + this); // NOI18N
                 LOGGER.finer("    entriesToRemove: " + entriesToRemove); // NOI18N
                 LOGGER.finer("    entryToRemove: " +  entryToRemove); // NOI18N
-                LOGGER.finer("    oldNode: " + oldNode); // NOI18N
+                LOGGER.finer("    newEntryInfo: " + newEntryInfo); // NOI18N
                 LOGGER.finer("    justHide: " + justHide); // NOI18N
-                LOGGER.finer("    delayed: " + delayed // NOI18N
-                        );
+                LOGGER.finer("    delayed: " + delayed); // NOI18N
             }
             int index = 0;
             int removedIdx = 0;
@@ -1679,7 +1689,7 @@ abstract class EntrySupport {
                         previousInfos = new HashMap<Entry, EntryInfo>(entryToInfo);
                     }
 
-                    Node node = oldNode == null ? info.currentNode() : oldNode;
+                    Node node = info.currentNode();
                     if (!info.isHidden() && node != null && !isDummyNode(node)) {
                         if (removedNodes == null) {
                             removedNodes = new Node[expectedSize];
@@ -1688,10 +1698,10 @@ abstract class EntrySupport {
                     }
 
                     if (justHide) {
-                        EntryInfo dup = info.duplicate(oldNode);
-                        previousInfos.put(info.entry, dup);
+                        EntryInfo dup = newEntryInfo != null ? newEntryInfo : info.duplicate(null);
+                        entryToInfo.put(info.entry, dup);
                         // mark as hidden
-                        info.setIndex(-2);
+                        dup.setIndex(-2);
                     } else {
                         entryToInfo.remove(entry);
                     }
@@ -1772,7 +1782,7 @@ abstract class EntrySupport {
                 Node node = info.getNode();
                 if (isDummyNode(node)) {
                     // force new snapshot
-                    hideEmpty(null, entry, null);
+                    hideEmpty(null, entry);
                 }
                 return node;
             }

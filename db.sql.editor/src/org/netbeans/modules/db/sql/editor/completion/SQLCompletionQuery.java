@@ -208,8 +208,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (fromClause != null) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
         } else {
-            Catalog defaultCatalog = metadata.getDefaultCatalog();
-            Schema defaultSchema = metadata.getDefaultCatalog().getDefaultSchema();
+            Schema defaultSchema = metadata.getDefaultSchema();
             if (defaultSchema != null) {
                 // All columns in default schema, but only if a prefix has been typed, otherwise there
                 // would be too many columns.
@@ -222,6 +221,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
             }
             // All schemas.
+            Catalog defaultCatalog = metadata.getDefaultCatalog();
             items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
             // All catalogs.
             items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
@@ -251,13 +251,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeFromSimpleIdent(String typedPrefix, boolean quoted) {
-        Catalog defaultCatalog = metadata.getDefaultCatalog();
-        Schema schema = defaultCatalog.getDefaultSchema();
-        if (schema != null) {
+        Schema defaultSchema = metadata.getDefaultSchema();
+        if (defaultSchema != null) {
             // All tables in default schema.
-            items.addTables(schema, null, typedPrefix, quoted, substitutionOffset);
+            items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
         }
         // All schemas.
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
         items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
         // All catalogs.
         items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
@@ -299,8 +299,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             items.addColumns(table, typedPrefix, quoted, substitutionOffset);
         }
         // Tables from default schema, restricted to non-aliased table names in the FROM clause.
-        Catalog defaultCatalog = metadata.getDefaultCatalog();
-        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
             Set<String> simpleTableNames = new HashSet<String>();
             for (Table table : tables) {
@@ -325,6 +324,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
 
         }
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
         items.addSchemas(defaultCatalog, schemaNames, typedPrefix, quoted, substitutionOffset);
         items.addCatalogs(metadata, catalogNames, typedPrefix, quoted, substitutionOffset);
     }
@@ -415,14 +415,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         Table table = null;
         switch (tableName.size()) {
             case 1:
-                Catalog catalog = metadata.getDefaultCatalog();
-                Schema schema = catalog.getDefaultSchema();
+                Schema schema = metadata.getDefaultSchema();
                 if (schema != null) {
                     return schema.getTable(tableName.getSimpleName());
                 }
                 break;
             case 2:
-                catalog = metadata.getDefaultCatalog();
+                Catalog catalog = metadata.getDefaultCatalog();
                 schema = catalog.getSchema(tableName.getFirstQualifier());
                 if (schema != null) {
                     table = schema.getTable(tableName.getSimpleName());

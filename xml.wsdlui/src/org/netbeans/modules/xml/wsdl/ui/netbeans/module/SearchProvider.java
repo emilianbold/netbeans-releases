@@ -40,18 +40,17 @@
  */
 package org.netbeans.modules.xml.wsdl.ui.netbeans.module;
 
-import javax.swing.Icon;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
 import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
-import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
-import org.netbeans.modules.xml.validation.ShowCookie;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.wsdl.ui.view.treeeditor.NodesFactory;
 
 import org.netbeans.modules.xml.search.api.SearchTarget;
+import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
+import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie.View;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -91,12 +90,18 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
   protected final void gotoVisual(Component component)
   {
     highlight(component);
-    getDataObject().getCookie(ShowCookie.class).show(new ResultItem(null, null, component, null));
+    ViewComponentCookie cookie = getDataObject().getCookie(ViewComponentCookie.class);
+    if (cookie != null && cookie.canView(View.STRUCTURE, component)) {
+        cookie.view(View.STRUCTURE, component);
+    }
   }
 
   @Override
   protected void gotoSource(Component component) {
-    WSDLSourceMultiViewElement.gotoSource(component, getDataObject());
+    ViewComponentCookie cookie = getDataObject().getCookie(ViewComponentCookie.class);
+    if (cookie != null && cookie.canView(View.SOURCE, component)) {
+        cookie.view(View.SOURCE, component);
+    }
   }
 
   private WSDLModel getWSDLModel(DataObject data) {
@@ -151,3 +156,4 @@ final class SearchProvider extends org.netbeans.modules.xml.search.spi.SearchPro
     create(org.netbeans.modules.xml.wsdl.model.Types.class),
   };
 }
+

@@ -102,7 +102,10 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         } else if (o instanceof FileObject) {
             FileObject fo = (FileObject)o;
             CsmFile csmFile = CsmUtilities.getCsmFile(fo, false);
-            result = new FileTreeElement(fo, csmFile);
+            // our factory is asked about any FileObject, so check for CND ones only
+            if (csmFile != null) {
+                result = new FileTreeElement(fo, csmFile);
+            }
         }
         if (result != null) {
             map.put(o, result);

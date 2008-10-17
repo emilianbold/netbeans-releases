@@ -41,6 +41,13 @@
 
 package org.netbeans.modules.websvc.jaxrpc.project;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
@@ -48,8 +55,11 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.netbeans.spi.java.classpath.PathResourceImplementation;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -57,7 +67,7 @@ import org.openide.filesystems.FileUtil;
  */
 public class JaxRpcArtifactsClassPathProvider implements ClassPathProvider {
     private Project project;
-    private ClassPath sourceCP, compileCP, bootCP;
+    private ClassPath sourceCP, compileCP, bootCP, executeCP;
     
     private static final Logger LOG = Logger.getLogger(JaxRpcArtifactsClassPathProvider.class.getName());
     
@@ -80,10 +90,14 @@ public class JaxRpcArtifactsClassPathProvider implements ClassPathProvider {
                     compileCP = getClassPath(ClassPath.COMPILE);
                 }
                 return compileCP;
+            } else if (ClassPath.EXECUTE.equals(type)) {
+                if (executeCP == null) {
+                    executeCP = getClassPath(ClassPath.EXECUTE);
+                }
+                return executeCP;
             } else if (ClassPath.BOOT.equals(type)) {
                 if (bootCP == null) {
-                    //bootCP = getBootClassPath();
-                    bootCP = getClassPath(ClassPath.BOOT);
+                    bootCP = getBootClassPath();
                 }
                 return bootCP;
             }               
@@ -98,6 +112,27 @@ public class JaxRpcArtifactsClassPathProvider implements ClassPathProvider {
             return ClassPath.getClassPath(groups[0].getRootFolder(), classPathType);
         }
         return null;
+    }
+    
+    private ClassPath getBootClassPath() {
+        Set<URL> cp = new HashSet<URL>();
+        // use JAX-RPC API jars supplied with the IDE
+        File f = InstalledFileLocator.getDefault().locate("modules/ext/jaxrpc16", null, false); //NOI18N
+        File[] files = f.listFiles();
+        for (File file:files) {
+            try {
+                if (file.getName().contains("api") || file.getName().contains("spi")) { //NOI18N
+                    cp.add(FileUtil.getArchiveRoot(file.toURI().toURL()));
+                }
+            } catch (MalformedURLException ex) {
+                LOG.severe(ex.getMessage());
+            }
+        }
+        List<PathResourceImplementation> path = new LinkedList<PathResourceImplementation>();
+        for (URL url : cp) {
+            path.add(ClassPathSupport.createResource(url));
+        }
+        return ClassPathSupport.createClassPath(path);
     }
 
 }

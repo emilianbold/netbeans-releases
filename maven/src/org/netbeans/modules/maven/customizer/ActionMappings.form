@@ -28,17 +28,14 @@
                           <Component id="lblGoals" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblProfiles" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
+                          <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" pref="16" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="txtProfiles" alignment="0" pref="462" max="32767" attributes="2"/>
-                          <Component id="txtGoals" alignment="0" pref="462" max="32767" attributes="2"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="cbRecursively" min="-2" max="-2" attributes="1"/>
-                              <EmptySpace max="-2" attributes="0"/>
-                              <Component id="cbSkipTests" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                          <Component id="jScrollPane3" alignment="0" pref="462" max="32767" attributes="0"/>
+                          <Component id="txtProfiles" alignment="0" pref="466" max="32767" attributes="2"/>
+                          <Component id="txtGoals" alignment="0" pref="466" max="32767" attributes="2"/>
+                          <Component id="cbRecursively" alignment="0" min="-2" max="-2" attributes="1"/>
+                          <Component id="jScrollPane3" alignment="0" pref="466" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Group type="102" alignment="1" attributes="0">
@@ -98,14 +95,15 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" attributes="0">
+                      <Component id="lblProperties" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="btnAddProps" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <Component id="jScrollPane3" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="cbRecursively" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="cbSkipTests" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
+              <Component id="cbRecursively" min="-2" max="-2" attributes="0"/>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Component id="jScrollPane2" min="-2" pref="105" max="-2" attributes="0"/>
           </Group>
@@ -243,16 +241,6 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="cbSkipTests">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.cbSkipTests.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="margin" type="java.awt.Insets" editor="org.netbeans.beaninfo.editors.InsetsEditor">
-          <Insets value="[0, 0, 0, 0]"/>
-        </Property>
-      </Properties>
-    </Component>
     <Component class="javax.swing.JLabel" name="lblMappings">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -283,5 +271,15 @@
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="btnAddProps">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/maven/customizer/Bundle.properties" key="ActionMappings.btnAddProps.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnAddPropsActionPerformed"/>
+      </Events>
+    </Component>
   </SubComponents>
 </Form>

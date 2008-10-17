@@ -107,7 +107,6 @@ public class GemManagerTest extends RubyTestBase {
             List<String> errors = gm.reloadLocalIfNeeded();
             assertTrue("no errros", errors.isEmpty());
             assertTrue("local loaded", !gm.needsLocalReload());
-            gm.reset();
         } finally {
             gm.reset();
         }

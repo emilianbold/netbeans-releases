@@ -2405,17 +2405,19 @@ public class CodeCompleter implements CodeCompletionHandler {
         if (index != null) {
 
             String methodName = "";
-            
+
             if(request.prefix != null) {
                 methodName = request.prefix;
             }
-            
+
             Set<IndexedMethod> methods;
-            
-            if(methodName.equals("")) {
-                methods = index.getMethods(".*", declaringClass.getName(), NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
+
+            if (methodName.equals("")) {
+                methods = index.getMethods(".*", declaringClass.getName(),
+                        NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
             } else {
-                methods = index.getMethods(methodName, declaringClass.getName(), NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
+                methods = index.getMethods(methodName, declaringClass.getName(),
+                        NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
             }
 
             if (methods.size() == 0) {
@@ -2425,16 +2427,20 @@ public class CodeCompleter implements CodeCompletionHandler {
                 for (IndexedMethod indexedMethod : methods) {
                     LOG.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
 
-//                    List<String> params = indexedMethod.getParameters();
-//                    StringBuffer sb = new StringBuffer();
-//
-//                    for (String string : params) {
-//                        sb.append(string);
-//                        sb.append(" ");
-//                    }
+                    // FIXME move sig to method item
+                    List<String> params = indexedMethod.getParameters();
+                    StringBuffer sb = new StringBuffer();
+
+                    for (String string : params) {
+                        if (sb.length() > 0) {
+                            sb.append(", ");
+                        }
+                        sb.append(NbUtilities.stripPackage(string));
+                    }
 
                     // FIXME what is this intended to do ? + modifiers
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), "", null, Collections.<javax.lang.model.element.Modifier>emptySet(), anchor, request));
+                    proposals.add(new JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
+                            GroovyCompletionItem.toModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, request));
                 }
             }
         }

@@ -40,42 +40,23 @@
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
-import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
-import org.openide.filesystems.FileObject;
 
 /**
  * Jump to action for test methods.
  *
  * @author Erno Mononen
  */
-final class JumpToTestMethodAction extends AbstractAction {
+final class JumpToTestMethodAction extends BaseTestMethodNodeAction {
 
-    private final Report.Testcase testcase;
-    private final Project project;
-
-    JumpToTestMethodAction(Testcase testcase, Project project) {
-        this.testcase = testcase;
-        this.project = project;
+    JumpToTestMethodAction(Testcase testcase, Project project, String name) {
+        super(testcase, project, name);
     }
 
-    private String getTestMethod() {
-        return testcase.className + "/" + testcase.name; //NOI18N
-    }
-
-    private FileObject getTestSourceRoot() {
-        RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
-        // need to use test source roots, not source roots -- see the comments in #135680
-        FileObject[] testRoots = baseProject.getTestSourceRootFiles();
-        // if there are not test roots, return the project root -- works in rails projects
-        return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
-        
-    }
     public void actionPerformed(ActionEvent e) {
         DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
         if (!(DeclarationLocation.NONE == location)) {
