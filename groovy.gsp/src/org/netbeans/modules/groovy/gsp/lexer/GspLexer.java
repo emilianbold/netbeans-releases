@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.groovy.gsp.lexer;
 
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
 import org.netbeans.spi.lexer.LexerInput;

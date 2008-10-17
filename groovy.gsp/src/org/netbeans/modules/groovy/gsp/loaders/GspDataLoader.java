@@ -42,7 +42,7 @@
 package org.netbeans.modules.groovy.gsp.loaders;
 
 import java.io.IOException;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObjectExistsException;
 import org.openide.loaders.MultiDataObject;

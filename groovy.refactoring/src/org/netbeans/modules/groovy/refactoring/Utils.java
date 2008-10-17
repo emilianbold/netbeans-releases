@@ -57,7 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
+import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.support.spi.GroovyFeature;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
