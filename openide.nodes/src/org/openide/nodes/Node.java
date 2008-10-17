@@ -1085,6 +1085,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
                 err.finer("fireSubNodesChangeIdx() " + this); // NOI18N
                 err.finer("    added: " + added); // NOI18N
                 err.finer("    idxs: " + Arrays.toString(idxs)); // NOI18N
+                err.finer("    sourceEntry: " + sourceEntry); // NOI18N
                 err.finer("    current size: " + current.size() + "    current: " + current); // NOI18N
                 err.finer(previous != null ? ("    previous size: " + previous.size() + "    previous: " + previous) : "    null"); // NOI18N
             }
@@ -1257,6 +1258,14 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * If that methods returns a non-<code>null</code> value, one can serialize it,
     * and after deserialization
     * use {@link #getNode} to obtain the original node.
+    * 
+    * <b>Related documentation</b>
+    * 
+    * <ul>
+    * <li><a href="http://blogs.sun.com/geertjan/entry/serializing_nodes">Serializing Nodes</a> 
+    * <li><a href="http://blogs.sun.com/geertjan/entry/multiple_nodes_serialization">Serializing Multiple Nodes</a> 
+    * </ul>
+    * 
     */
     public static interface Handle extends java.io.Serializable {
         /** @deprecated Only public by accident. */

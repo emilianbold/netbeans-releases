@@ -149,7 +149,7 @@ public class ClassDialog {
                     String errMsg = null;
 
                     Node[] selectedNodes = sPanel.getSelectedNodes();
-                    if (selectedNodes.length > 1) {
+                    if (selectedNodes.length != 1) {
                         errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_SelectOnlyOne_msg");    //NOI18N
                     } else {
                         Node node = selectedNodes[0];

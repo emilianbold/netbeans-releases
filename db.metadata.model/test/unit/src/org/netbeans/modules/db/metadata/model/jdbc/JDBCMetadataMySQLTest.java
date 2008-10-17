@@ -101,9 +101,8 @@ public class JDBCMetadataMySQLTest extends MetadataTestBase {
         Schema syntheticSchema = informationSchema.getSyntheticSchema();
         assertNotNull(syntheticSchema);
         assertFalse("Only the default catalog should have a default schema", syntheticSchema.isDefault());
-        assertNull("Only the default catalog should have a default schema", informationSchema.getDefaultSchema());
 
-        Schema schema = defaultCatalog.getDefaultSchema();
+        Schema schema = metadata.getDefaultSchema();
         assertTrue(schema.isSynthetic());
         assertTrue(schema.isDefault());
         assertSame(schema, defaultCatalog.getSyntheticSchema());

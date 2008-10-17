@@ -51,7 +51,7 @@ import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Column;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.MetadataObject;
+import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
@@ -167,12 +167,12 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         }
     }
 
-    private static <T extends MetadataObject> void filterMetadata(Collection<T> objects, Set<String> restrict, String prefix, Handler<T> handler) {
-        for (T object : objects) {
-            String name = object.getName();
-            // The name can be null if the object is, for example, a synthetic schema.
+    private static <T extends MetadataElement> void filterMetadata(Collection<T> elements, Set<String> restrict, String prefix, Handler<T> handler) {
+        for (T element : elements) {
+            String name = element.getName();
+            // The name can be null if the element is, for example, a synthetic schema.
             if (name != null && (restrict == null || restrict.contains(name)) && filter(name, prefix)) {
-                handler.handle(object);
+                handler.handle(element);
             }
         }
     }

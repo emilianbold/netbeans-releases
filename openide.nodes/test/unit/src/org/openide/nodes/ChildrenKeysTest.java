@@ -1348,11 +1348,11 @@ public class ChildrenKeysTest extends NbTestCase {
         Listener l = new Listener ();
         n.addNodeListener (l);
         
+        // get snapshot to prevent GC
+        List<Node> snapshot = n.getChildren().snapshot();
+
         assertEquals ("No nodes", 0, n.getChildren ().getNodesCount ());
         k.setKeys (new Object[] { "Ahoj", NULL });
-
-        // get snapshot to prevent GC
-        List<Node> snapshot = k.snapshot();
 
         l.assertAddEvent("Two nodes added", 2);
         l.assertNoEvents("No more events after add");
@@ -1554,14 +1554,16 @@ public class ChildrenKeysTest extends NbTestCase {
         Listener l = new Listener();
         l.disableConsistencyCheck = true;
 
+        List<Node> snapshot = null;
         root.addNodeListener(l);
         if (initViaGetNodes) {
             Node[] nodes = root.getChildren().getNodes();
+            snapshot = root.getChildren().snapshot();
             assertEquals("Two nodes created", 2, nodes.length);
             assertEquals("1st is a", "a", nodes[0].getName());
             assertEquals("2nd is c", "c", nodes[1].getName());
         } else {
-            root.getChildren().getNodesCount();
+            snapshot = root.getChildren().snapshot();
             Node node = ch.getNodeAt(1);
             assertEquals("1st is a", "a", ch.getNodeAt(0).getName());
             assertEquals("2nd is c", "c", ch.getNodeAt(1).getName());
@@ -1719,6 +1721,79 @@ public class ChildrenKeysTest extends NbTestCase {
         if (lazy()) {
             assertEquals("", snapshot.get(2).getName());
         }
+    }
+
+    public void testSnapshotAfterRefresh() {
+        class K extends Keys {
+
+            String addToName = "";
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                AbstractNode an = new AbstractNode(Children.LEAF);
+                an.setName(key.toString() + addToName);
+                return new Node[]{an};
+            }
+        }
+
+        K ch = new K(lazy(), "a1", "a2", "a3");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+
+        List<Node> snapshot = root.getChildren().snapshot();
+        Node hold = snapshot.get(0);
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a2", snapshot.get(1).getName());
+        assertEquals("a3", snapshot.get(2).getName());
+
+        ch.addToName = "_2";
+        ch.refreshKey("a1");
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a1_2", root.getChildren().getNodeAt(0).getName());
+    }
+
+    public void testUninitedSnapshotAfterRefresh() {
+        class K extends Keys {
+
+            String app = "";
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key + app);
+            }
+        }
+
+        K ch = new K(lazy(), "a", "b", "c");
+        Node root = createNode(ch);
+        List<Node> snapshot = root.getChildren().snapshot();
+        assertEquals(3, snapshot.size());
+        Listener listener = new Listener();
+
+        root.addNodeListener(listener);
+        ch.app = "_2";
+        ch.refreshKey("b");
+        NodeMemberEvent ev = listener.assertEvents(2);
+        assertEquals("Remove event type", NodeMemberEvent.class, ev.getClass());
+        assertFalse("Remove event type", ev.isAddEvent());
+
+        ev = listener.assertEvents(1);
+        assertEquals("Add event type", NodeMemberEvent.class, ev.getClass());
+        assertTrue("Add event type", ev.isAddEvent());
+        assertEquals(3, root.getChildren().snapshot().size());
     }
 
     // test for issue #145892

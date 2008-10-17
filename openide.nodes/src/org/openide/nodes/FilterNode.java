@@ -1734,7 +1734,7 @@ public class FilterNode extends Node {
                     }
                     if (isDummyNode(node)) {
                         // force new snapshot
-                        hideEmpty(null, entry, null);
+                        hideEmpty(null, entry);
                     }
                     return node;
                 }

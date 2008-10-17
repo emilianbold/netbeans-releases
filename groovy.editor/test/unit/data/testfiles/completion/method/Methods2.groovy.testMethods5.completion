@@ -101,7 +101,7 @@ METHOD     unaryMinus()                               Number
 METHOD     upto(Number, Closure)                      void
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     valueOf(String)                            Byte
 METHOD     valueOf(String, int)                       Byte
 METHOD     valueOf(byte)                              Byte

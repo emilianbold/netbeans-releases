@@ -13,6 +13,7 @@ import java.io.File;
 import java.io.PrintStream;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.jemmy.operators.Operator.DefaultStringComparator;
 import org.netbeans.junit.NbModuleSuite;
@@ -113,7 +114,9 @@ public class SearchRevisionsTest extends JellyTestCase {
         } catch (Exception e) {
             throw new Exception("Test failed: " + e);
         } finally {
-            TestKit.closeProject(PROJECT_NAME);
+            try {
+                TestKit.closeProject(PROJECT_NAME);
+            } catch (TimeoutExpiredException e) {/* OK */}
         }   
     }
 }

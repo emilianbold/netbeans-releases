@@ -42,7 +42,7 @@ package org.netbeans.modules.groovy.editor.hints.infrastructure;
 import org.netbeans.modules.gsf.api.RuleContext;
 
 import org.codehaus.groovy.ast.ASTNode;
-import org.netbeans.modules.groovy.editor.AstPath;
+import org.netbeans.modules.groovy.editor.api.AstPath;
 
 /**
  * Information about the current context a rule is being asked to evaluate.
