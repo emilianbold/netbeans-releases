@@ -67,17 +67,15 @@ import org.openide.windows.OutputWriter;
 public abstract class FtpCommand extends Command {
     private static final char SEP_CHAR = '='; // NOI18N
     private static final int MAX_TYPE_SIZE = getFileTypeLabelMaxSize() + 2;
-    private static final RequestProcessor RP = new RequestProcessor("FTP", 1);//NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("FTP", 1); // NOI18N
     private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
-
         public void run() {
             Runnable toRun = RUNNABLES.poll();
             while (toRun != null) {
                 toRun.run();
                 toRun = RUNNABLES.poll();
             }
-
         }
     }, true);
 

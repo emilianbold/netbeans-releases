@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.php.project.ui.actions.support;
 
 import java.io.File;
 import java.util.concurrent.Callable;
@@ -33,18 +33,16 @@ import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class DebugLocalCommand  extends RunLocalCommand {
+public class DebugScript  extends RunScript {
     public static final String ID = "debug.local"; //NOI18N
 
-    public DebugLocalCommand(PhpProject project) {
+    public DebugScript(PhpProject project) {
         super(project);
     }
 
@@ -55,14 +53,10 @@ public class DebugLocalCommand  extends RunLocalCommand {
         XDebugStarter dbgStarter =  XDebugStarterFactory.getInstance();
         if (dbgStarter != null) {
             if (dbgStarter.isAlreadyRunning()) {
-                String message = NbBundle.getMessage(DebugLocalCommand.class, "MSG_NoMoreDebugSession");
-                NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
-                        NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
-                boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
-                if (confirmed) {
+                if (CommandUtils.warnNoMoreDebugSession()) {
                     dbgStarter.stop();
                     invokeAction(context);
-                } 
+                }
             } else {
                 dbgStarter.start(getProject(), callable,
                         (context == null) ? fileForProject(false) : fileForContext(context), isScriptSelected());
@@ -77,7 +71,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
     @Override
     protected String getOutputTabTitle(String command, File scriptFile) {
         return super.getOutputTabTitle(command, scriptFile) + " "+
-                NbBundle.getMessage(DebugLocalCommand.class, "MSG_Suffix_Debug");//NOI18N
+                NbBundle.getMessage(DebugScript.class, "MSG_Suffix_Debug");//NOI18N
     }
 
 
@@ -93,7 +87,7 @@ public class DebugLocalCommand  extends RunLocalCommand {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(RunCommand.class, "LBL_DebugLocalCommand");
+        return NbBundle.getMessage(DebugScript.class, "LBL_DebugScript");
     }
 
     @Override

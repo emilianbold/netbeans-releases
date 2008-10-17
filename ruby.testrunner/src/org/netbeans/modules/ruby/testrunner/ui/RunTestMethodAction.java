@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,65 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.ui.actions;
+package org.netbeans.modules.ruby.testrunner.ui;
 
-
-import java.net.MalformedURLException;
-import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.spi.project.ActionProvider;
-import org.openide.util.Exceptions;
+import java.awt.event.ActionEvent;
+import java.util.Collection;
+import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
- * @author Radek Matous
+ * An action for running/debugging a singe test method.
+ *
+ * @author Erno Mononen
  */
-public class RunCommand extends Command implements Displayable {
-    public static final String ID = ActionProvider.COMMAND_RUN;
-    public static final String DISPLAY_NAME = NbBundle.getMessage(RunCommand.class, "LBL_RunProject");
-    private final RunLocalCommand localCommand;
+class RunTestMethodAction extends BaseTestMethodNodeAction {
 
-    /**
-     * @param project
-     */
-    public RunCommand(PhpProject project) {
-        super(project);
-        localCommand = new RunLocalCommand(project);
+    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
+    private final boolean debug;
+
+    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
+        super(testcase, project, name);
+        this.debug = debug;
     }
 
-    @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
-        boolean scriptSelected = isScriptSelected();
-        if (!isRunConfigurationValid(scriptSelected)) {
-            // property not set yet
+    public void actionPerformed(ActionEvent e) {
+        if (TestRunner.TestType.RSPEC == testcase.getType()) {
+            runRspec();
             return;
         }
-        if (scriptSelected) {
-            localCommand.invokeAction(null);
-        } else {
-            eventuallyUploadFiles();
-            try {
-                showURLForProjectFile();
-            } catch (MalformedURLException ex) {
-                //TODO: improve error handling
-                Exceptions.printStackTrace(ex);
-            }
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
+        if (!(DeclarationLocation.NONE == location)) {
+            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(), testcase.name, debug);
         }
     }
 
     @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return true;
-    }
-
-    @Override
-    public String getCommandId() {
-        return ID;
-    }
-
-    public String getDisplayName() {
-        return DISPLAY_NAME;
+    protected void doRspecRun(FileObject testFile, FileLocation location) {
+        getTestRunner(testcase.getType()).runSingleTest(testFile, String.valueOf(location.line), debug);
     }
 }

@@ -40,12 +40,16 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.XDebugStarterFactory;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.DebugScript;
 import java.net.MalformedURLException;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
@@ -63,16 +67,16 @@ import org.openide.util.NbBundle;
 /**
  * @author Radek Matous
  */
-public class DebugCommand extends Command implements Displayable {
+public class DebugProjectCommand extends Command implements Displayable {
 
     public static final String ID = ActionProvider.COMMAND_DEBUG;
-    public static String DISPLAY_NAME = NbBundle.getMessage(DebugCommand.class, "LBL_DebugProject");
+    public static final String DISPLAY_NAME = NbBundle.getMessage(DebugProjectCommand.class, "LBL_DebugProject");
 
-    private final DebugLocalCommand debugLocalCommand;
+    private final DebugScript debugScript;
 
-    public DebugCommand(PhpProject project) {
+    public DebugProjectCommand(PhpProject project) {
         super(project);
-        debugLocalCommand = new DebugLocalCommand(project);        
+        debugScript = new DebugScript(project);
     }
 
     @Override
@@ -83,7 +87,7 @@ public class DebugCommand extends Command implements Displayable {
         }
         boolean scriptSelected = isScriptSelected();
         if (scriptSelected) {
-            debugLocalCommand.invokeAction(null);
+            debugScript.invokeAction(null);
         } else {
             eventuallyUploadFiles();
             Runnable runnable = new Runnable() {
@@ -96,7 +100,7 @@ public class DebugCommand extends Command implements Displayable {
                         }
                     }
             };
-            
+
             boolean jsDebuggingAvailable = WebClientToolsSessionStarterService.isAvailable();
             if (jsDebuggingAvailable) {
                 boolean keepDebugging = WebClientToolsProjectUtils.showDebugDialog(getProject());
@@ -110,11 +114,7 @@ public class DebugCommand extends Command implements Displayable {
                 XDebugStarter dbgStarter = XDebugStarterFactory.getInstance();
                 if (dbgStarter != null) {
                     if (dbgStarter.isAlreadyRunning()) {
-                        String message = NbBundle.getMessage(DebugCommand.class, "MSG_NoMoreDebugSession");
-                        NotifyDescriptor descriptor = new NotifyDescriptor.Confirmation(message,
-                                NotifyDescriptor.OK_CANCEL_OPTION); //NOI18N
-                        boolean confirmed = DialogDisplayer.getDefault().notify(descriptor).equals(NotifyDescriptor.OK_OPTION);
-                        if (confirmed) {
+                        if (CommandUtils.warnNoMoreDebugSession()) {
                             dbgStarter.stop();
                             invokeAction(context);
                         }
@@ -124,7 +124,7 @@ public class DebugCommand extends Command implements Displayable {
                             startDebugger(dbgStarter,runnable, fileForProject, scriptSelected);
                         } else {
                             String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
-                            String err = NbBundle.getMessage(DebugLocalCommand.class,
+                            String err = NbBundle.getMessage(DebugScript.class,
                                     "ERR_Missing_IndexFile", idxFileName);//NOI18N
 
                             final Message messageDecriptor = new NotifyDescriptor.Message(err,

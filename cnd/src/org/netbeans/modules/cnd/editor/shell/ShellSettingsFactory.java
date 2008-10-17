@@ -39,43 +39,36 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.makefile;
+package org.netbeans.modules.cnd.editor.shell;
 
-import java.beans.BeanDescriptor;
-import java.util.MissingResourceException;
-import org.netbeans.modules.editor.FormatterIndentEngineBeanInfo;
-import org.netbeans.modules.editor.NbEditorUtilities;
-import org.openide.util.NbBundle;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
 
 /**
-* Beaninfo for FIndentEngine.
-*
-*/
+ * Settings factory for shell files.
+ */
+public class ShellSettingsFactory {
 
-public class MakefileIndentEngineBeanInfo extends FormatterIndentEngineBeanInfo {
-
-    public MakefileIndentEngineBeanInfo() {
-    }
-
-    public BeanDescriptor getBeanDescriptor () {
-	BeanDescriptor beanDescriptor = new BeanDescriptor(getBeanClass());
-	beanDescriptor.setDisplayName(getString("LAB_MakefileIndentEngine")); // NOI18N
-	beanDescriptor.setShortDescription(getString("HINT_MakefileIndentEngine")); // NOI18N
-	beanDescriptor.setValue("global", Boolean.TRUE); // NOI18N
-        return beanDescriptor;
-    }
-
-    protected Class getBeanClass() {
-        return MakefileIndentEngine.class;
-    }
-
-    protected String getString(String key) {
-        try {
-            return NbBundle.getBundle(MakefileIndentEngineBeanInfo.class).getString(key);
-        } catch (MissingResourceException e) {
-            return super.getString(key);
+    private static final Acceptor INDENT_HOT_CHARS_ACCEPTOR = new Acceptor() {
+        public boolean accept(char ch) {
+            switch (ch) {
+                case '}':
+                    return true;
+            }
+            return false;
         }
+    };
+
+    public static Acceptor getIndentHotCharsAcceptor() {
+        return INDENT_HOT_CHARS_ACCEPTOR;
+    }
+
+    public static Acceptor getIdentifierAcceptor() {
+        return AcceptorFactory.LETTER_DIGIT;
+    }
+
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
 }
-
