@@ -39,30 +39,30 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.fortran;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.editor.makefile;
 
-/** BeanInfo for plain options
-*/
-public class FPrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.TokenContext;
+import org.openide.text.IndentEngine;
 
-    public FPrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/fortran/FortranIcon"); //NOI18N
+/**
+ * Extended settings for Makefile.
+ */
+public class MakefileSettingsFactory {
+
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
-    public FPrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(MakefileTokenContext.context);
     }
 
-
-    protected Class getBeanClass() {
-        return FPrintOptions.class;
+    public static IndentEngine getIndentEngine() {
+        return new MakefileIndentEngine();
     }
-
 
 }
-

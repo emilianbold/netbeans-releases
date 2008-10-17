@@ -1,0 +1,6 @@
+Code completion result for source line:
+new Test().set|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     setAge(Object)                             
+METHOD     setName(String)                            

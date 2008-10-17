@@ -283,9 +283,14 @@ public class ServerChooserVisual extends javax.swing.JPanel {
 
 private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_serverListBoxValueChanged
        if (!evt.getValueIsAdjusting()) {
-           Server server = ((ServerAdapter)serverListBox.getSelectedValue()).getServer();
-           if (server != null) {
-               fillDisplayName(server);
+           ServerAdapter adapter = (ServerAdapter) serverListBox.getSelectedValue();
+           if (adapter != null) {
+               Server server = adapter.getServer();
+               if (server != null) {
+                   fillDisplayName(server);
+               }
+           } else {
+               fireChange();
            }
        }
 }//GEN-LAST:event_serverListBoxValueChanged

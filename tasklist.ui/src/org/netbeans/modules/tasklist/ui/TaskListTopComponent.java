@@ -398,7 +398,7 @@ final class TaskListTopComponent extends TopComponent {
     }
     
     private void maybePopup( MouseEvent e ) {
-        if( e.isPopupTrigger() ) {
+        if( e.isPopupTrigger() && null != table ) {
             e.consume();
             JPopupMenu popup = Util.createPopup( table );
             popup.show( this, e.getX(), e.getY() );

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,36 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.editor.fortran;
-
-import org.netbeans.editor.*;
-import org.netbeans.editor.ext.ExtSettingsDefaults;
+package org.netbeans.modules.db.metadata.model.api;
 
 /**
- * Default settings values for Fortran.
+ * Encapsulates a metadata element (catalog, schema, table, etc.).
+ *
+ * @author Andrei Badea
  */
-public class FSettingsDefaults extends ExtSettingsDefaults {
-    //maximum nmber of columns allowed in a line
-    public static final int maximumTextWidth = 132;    //for f95
+public abstract class MetadataElement {
 
-    public static final Acceptor defaultIndentHotCharsAcceptor
-	= new Acceptor() {
-		public boolean accept(char ch) {
-		    switch (ch) {
-		    case '\n': //NOI18N
-			return true;
-		    }
-		    return false;
-		}
-	    };
-}//FSettingsDefaults
+    MetadataElement() {}
+
+    /**
+     * Returns the metadata element which is the parent of this metadata
+     * element.
+     *
+     * @return the parent.
+     */
+    public abstract MetadataElement getParent();
+
+    /**
+     * Returns the name of this metadata element or {@code null} if
+     * this element has no name.
+     *
+     * @return the name.
+     */
+    public abstract String getName();
+}

@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;

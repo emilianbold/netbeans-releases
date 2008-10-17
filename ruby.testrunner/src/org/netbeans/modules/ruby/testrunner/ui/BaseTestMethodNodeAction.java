@@ -39,48 +39,93 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.awt.event.ActionEvent;
+import java.util.Collection;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
 
 /**
- * Jump to action for test methods.
+ * Base class for actions associated with a test method node.
  *
  * @author Erno Mononen
  */
-final class JumpToTestMethodAction extends AbstractAction {
+abstract class BaseTestMethodNodeAction extends AbstractAction {
 
-    private final Report.Testcase testcase;
-    private final Project project;
+    private static final Logger LOGGER = Logger.getLogger(BaseTestMethodNodeAction.class.getName());
 
-    JumpToTestMethodAction(Testcase testcase, Project project) {
+    protected final Testcase testcase;
+    protected final Project project;
+    protected final String name;
+
+    public BaseTestMethodNodeAction(Testcase testcase, Project project, String name) {
         this.testcase = testcase;
         this.project = project;
+        this.name = name;
     }
 
-    private String getTestMethod() {
+    @Override
+    public Object getValue(String key) {
+        if (NAME.equals(key)) {
+            return name;
+        }
+        return super.getValue(key);
+    }
+
+    protected String getTestMethod() {
         return testcase.className + "/" + testcase.name; //NOI18N
     }
 
-    private FileObject getTestSourceRoot() {
+    protected FileObject getTestSourceRoot() {
         RubyBaseProject baseProject = project.getLookup().lookup(RubyBaseProject.class);
         // need to use test source roots, not source roots -- see the comments in #135680
         FileObject[] testRoots = baseProject.getTestSourceRootFiles();
         // if there are not test roots, return the project root -- works in rails projects
         return 0 == testRoots.length ? project.getProjectDirectory() : testRoots[0];
-        
     }
-    public void actionPerformed(ActionEvent e) {
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
-        if (!(DeclarationLocation.NONE == location)) {
-            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
+
+    protected TestRunner getTestRunner(TestRunner.TestType testType) {
+        Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
+        for (TestRunner each : testRunners) {
+            if (each.supports(testType)) {
+                return each;
+            }
         }
+        return null;
+    }
+    
+    protected void doRspecRun(FileObject testFile, FileLocation location){
+    }
+
+    protected final void runRspec() {
+        if (testcase.getLocation() == null) {
+            return;
+        }
+        FileLocation location = OutputUtils.getFileLocation(testcase.getLocation());
+        if (location == null) {
+            return;
+        }
+        FileObject testFile = OutputUtils.findFile(location.file, project.getLookup().lookup(FileLocator.class));
+        if (testFile == null) {
+            return;
+        }
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (platform == null || platform.isJRuby()) {
+            //XXX: does not work with JRuby, more info in issue #135680
+            LOGGER.info("Rerunning an rspec test case on JRuby is currently not working");
+            return;
+        }
+        Project owner = FileOwnerQuery.getOwner(testFile);
+        assert project.equals(owner) : "Resolving FileObject for " + getTestMethod() + "/" + testFile + " failed." + "Got " + owner + ", expected " + project;
+        doRspecRun(testFile, location);
     }
 
 }
