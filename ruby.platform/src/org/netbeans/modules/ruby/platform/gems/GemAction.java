@@ -53,11 +53,15 @@ import org.openide.util.actions.CallableSystemAction;
 public final class GemAction extends CallableSystemAction {
     
     public void performAction() {
-        showGemManager(null);
+        showGemManager(null, null, true);
     }
     
+    public static boolean showGemManager(final RubyPlatform preselected, final boolean canManagePlatforms) {
+        return showGemManager(null, preselected, canManagePlatforms);
+    }
+
     public static boolean showGemManager(String availableFilter) {
-        return showGemManager(availableFilter, null);
+        return showGemManager(availableFilter, null, true);
     }
 
     /**
@@ -68,8 +72,9 @@ public final class GemAction extends CallableSystemAction {
      * @param preselected the platform that should be preselected in the panel; 
      * may be <code>null</code> in which case the last selected platform is preselected.
      */
-    public static boolean showGemManager(String availableFilter, RubyPlatform preselected) {
-    
+    public static boolean showGemManager(final String availableFilter,
+            final RubyPlatform preselected,
+            final boolean canManagePlatforms) {
         // XXX: should be moved directly to GemManager panel(?)
 //        String gemProblem = GemManager.getGemProblem();
 //
@@ -81,7 +86,7 @@ public final class GemAction extends CallableSystemAction {
 //            return false;
 //        }
 
-        GemPanel customizer = new GemPanel(availableFilter, preselected);
+        GemPanel customizer = new GemPanel(availableFilter, preselected, canManagePlatforms);
         JButton close =
                 new JButton(NbBundle.getMessage(GemAction.class, "CTL_Close"));
         close.getAccessibleContext()
