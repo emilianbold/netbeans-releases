@@ -187,7 +187,7 @@ made subject to such option by the copyright holder.
 	<wsdl:portType name="I__SERVICENAME__">
 		<wsdl:operation name="IssueToken">
 			<wsdl:input wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RST/Issue" message="tns:I__SERVICENAME___IssueToken_InputMessage"/>
-			<wsdl:output wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTR/Issue" message="tns:I__SERVICENAME___IssueToken_OutputMessage"/>
+			<wsdl:output wsam:Action="http://docs.oasis-open.org/ws-sx/ws-trust/200512/RSTRC/IssueFinal" message="tns:I__SERVICENAME___IssueToken_OutputMessage"/>
 		</wsdl:operation>
 	</wsdl:portType>
 	<wsdl:binding name="I__SERVICENAME___Binding" type="tns:I__SERVICENAME__">
