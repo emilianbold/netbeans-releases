@@ -110,19 +110,39 @@ import org.openide.util.ImageUtilities;
             if (java.lang.reflect.Modifier.isSynchronized(modifiers)) {
                 ret.add(javax.lang.model.element.Modifier.SYNCHRONIZED);
             }
-//            if (java.lang.reflect.Modifier.isTransient(modifiers)) {
-//                ret.add(javax.lang.model.element.Modifier.TRANSIENT);
-//            }
-//            if (java.lang.reflect.Modifier.isVolatile(modifiers)) {
-//                ret.add(javax.lang.model.element.Modifier.VOLATILE);
-//            }
-            
+            if (java.lang.reflect.Modifier.isTransient(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.TRANSIENT);
+            }
+            if (java.lang.reflect.Modifier.isVolatile(modifiers)) {
+                ret.add(javax.lang.model.element.Modifier.VOLATILE);
+            }
             if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
                 ret.add(javax.lang.model.element.Modifier.PRIVATE);
             } else if (java.lang.reflect.Modifier.isProtected(modifiers)) {
                 ret.add(javax.lang.model.element.Modifier.PROTECTED);
             } else if (java.lang.reflect.Modifier.isPublic(modifiers)) {
                 ret.add(javax.lang.model.element.Modifier.PUBLIC);
+            }
+
+            return ret;
+        }
+
+        public static Collection<javax.lang.model.element.Modifier> toModel(Set<Modifier> modifiers,
+                javax.lang.model.element.Modifier defaultModifier) {
+
+            Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
+
+            if (modifiers.contains(Modifier.STATIC)) {
+                ret.add(javax.lang.model.element.Modifier.STATIC);
+            }
+            if (modifiers.contains(Modifier.PRIVATE)) {
+                ret.add(javax.lang.model.element.Modifier.PRIVATE);
+            } else if (modifiers.contains(Modifier.PROTECTED)) {
+                ret.add(javax.lang.model.element.Modifier.PROTECTED);
+            } else if (modifiers.contains(Modifier.PUBLIC)) {
+                ret.add(javax.lang.model.element.Modifier.PUBLIC);
+            } else if (defaultModifier != null) {
+                ret.add(defaultModifier);
             }
 
             return ret;
@@ -164,10 +184,10 @@ import org.openide.util.ImageUtilities;
         private final String simpleName;
         private final String parameterString;
         private final TypeMirror returnType;
-        private final Set<javax.lang.model.element.Modifier> modifiers;
+        private final Collection<javax.lang.model.element.Modifier> modifiers;
 
         JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType,
-                Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, CodeCompleter.CompletionRequest request) {
+                Collection<javax.lang.model.element.Modifier> modifiers, int anchorOffset, CodeCompleter.CompletionRequest request) {
             super(null, anchorOffset, request);
             this.simpleName = simpleName;
             this.parameterString = parameterString;
@@ -279,7 +299,7 @@ import org.openide.util.ImageUtilities;
                     if (buf.length() > 0) {
                         buf.append(", ");
                     }
-                    buf.append(NbUtilities.stripPackage(param));
+                    buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
                 }
 
                 String simpleSig = buf.toString();

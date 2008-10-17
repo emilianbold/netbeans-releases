@@ -29,7 +29,7 @@ METHOD     each(Closure)                              Object
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(List)                               boolean
 METHOD     equals(Object)                             boolean
-METHOD     equals(Object)                             boolean
+METHOD     equals(Object[])                           boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
@@ -142,7 +142,7 @@ METHOD     unique(Closure)                            Collection
 METHOD     unique(Comparator)                         Collection
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void

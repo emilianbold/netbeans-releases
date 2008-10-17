@@ -132,6 +132,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             if (!hasJavaSet) {
                 if (config.getProject() != null) {
+                    //TODO somehow use the config.getMavenProject() call rather than looking up the
+                    // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                     ActiveJ2SEPlatformProvider javaprov = config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
                     File path = null;
                     FileObject java = javaprov.getJavaPlatform().findTool("java"); //NOI18N

@@ -55,7 +55,9 @@ import javax.swing.JEditorPane;
 
 import javax.swing.text.Document;
 import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.cookies.CloseCookie;
@@ -63,7 +65,6 @@ import org.openide.cookies.EditCookie;
 
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -105,6 +106,15 @@ public class DataEditorSupportTest extends NbTestCase {
     @Override
     protected Level logLevel() {
         return Level.FINE;
+    }
+
+    public static Test suite() {
+        Test t = null;
+//        t = new DataEditorSupportTest("testChangeFileWhileOpen");
+        if (t == null) {
+            t = new NbTestSuite(DataEditorSupportTest.class);
+        }
+        return t;
     }
     
     @Override
@@ -199,6 +209,47 @@ public class DataEditorSupportTest extends NbTestCase {
         }
 
         
+    }
+
+    public void testChangeFileWhileOpen() throws Exception {
+        obj = DataObject.find (fileObject);
+        DES sup = support ();
+        assertFalse ("It is closed now", sup.isDocumentLoaded ());
+
+        assertNotNull ("DataObject found", obj);
+
+        {
+            Document doc = sup.openDocument ();
+            assertTrue ("It is open now", support ().isDocumentLoaded ());
+
+            doc.insertString(0, "Ahoj", null);
+
+            EditorCookie s = (EditorCookie)sup;
+            assertNotNull("Modified, so it has cookie", s);
+            assertEquals(sup, s);
+        }
+
+
+        DataFolder target = DataFolder.findFolder(fs.getRoot().createFolder("target"));
+
+
+        obj.move(target);
+
+        {
+            EditorCookie ec = (EditorCookie)sup;
+            assertNotNull("Still has EditorCookie", ec);
+            Document doc = ec.openDocument ();
+            doc.insertString(0, "NewText", null);
+
+            EditorCookie s = (EditorCookie)sup;
+            assertNotNull("Modified, so it has cookie", s);
+
+            s.saveDocument();
+
+            assertLockFree(obj.getPrimaryFile());
+        }
+
+
     }
 
 

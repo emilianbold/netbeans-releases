@@ -53,7 +53,6 @@ import org.netbeans.modules.vmd.game.model.Sprite;
 import org.netbeans.modules.vmd.game.model.TiledLayer;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	
@@ -88,6 +87,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	}
 	
 	private class GlobalRepositoryNodeRenderer extends DefaultTreeCellRenderer {
+                @Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			GlobalRepository gr = (GlobalRepository) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -99,6 +99,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	}
 	
 	private class SceneNodeRenderer extends DefaultTreeCellRenderer {
+                @Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Scene scene = (Scene) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -110,6 +111,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	}
 
 	private class TiledLayerNodeRenderer extends DefaultTreeCellRenderer {
+                @Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			TiledLayer tiledLayer = (TiledLayer) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
@@ -121,6 +123,7 @@ public class GameDesignTreeNodeRenderer implements TreeCellRenderer {
 	}
 
 	private class SpriteNodeRenderer extends DefaultTreeCellRenderer {
+                @Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			Sprite sprite = (Sprite) value;
 			DefaultTreeCellRenderer r = (DefaultTreeCellRenderer) super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);

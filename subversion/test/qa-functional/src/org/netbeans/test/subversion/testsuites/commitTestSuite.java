@@ -67,7 +67,7 @@ public class commitTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (System.getProperty("os.name").toLowerCase().contains("vista")) {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                         .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
                         .addTest(CommitUiTest.class, "testInvokeCloseCommit")
