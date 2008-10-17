@@ -77,7 +77,7 @@ Microsystems, Inc. All Rights Reserved.
 
         <exec executable="sh" failonerror="yes" dir="${basedir}/javafxtmpdir">
             <arg value="-c"/>
-            <arg value="zip -r -9 ${common.name}-javafx.zip *"/>
+            <arg value="zip -r -9 ${common.name}${ml.suffix}-javafx.zip *"/>
         </exec>      
         <delete dir="${basedir}/javafxtmpdir"/>
 
