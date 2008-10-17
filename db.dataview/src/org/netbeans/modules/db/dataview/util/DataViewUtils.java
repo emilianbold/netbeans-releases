@@ -328,6 +328,63 @@ public class DataViewUtils {
 
         return str.toString();
     }
+    
+    /** HTML_SUBSTITUTES is a list of character substitutes for XML_ILLEGALS. */
+    public static final String[] HTML_ALLOWABLES = { "&amp;", "&quot;", "&lt;", "&gt;"};
+
+    /** HTML_ILLEGALS is a list of character strings not parseable by XML. */
+    public static final String[] HTML_ILLEGALS = { "&", "\"", "<", ">"};
+
+    
+    public static String escapeHTML(String string) {
+        return replaceInString(string, HTML_ILLEGALS, HTML_ALLOWABLES);
+    }
+    
+    /**
+     * The replaceInString method is used to replace a list of strings within a string
+     * with a list of substitute strings.
+     *
+     * @param originalString is the string requiring replacements.
+     * @param victims is an array of string victims.
+     * @param replacements is an array of corresponding replacements.
+     * @return String after replacement.
+     */
+    public static String replaceInString(String originalString, String[] victims, String[] replacements) {
+
+        StringBuffer resultBuffer = new StringBuffer();
+        boolean bReplaced = false;
+
+        // For all characters in the original string
+        for (int charPosition = 0; charPosition < originalString.length(); charPosition++) {
+
+            // Walk through all the replacement candidates.
+            for (int nSelected = 0; !bReplaced && (nSelected < victims.length); nSelected++) {
+
+                // If charPosition designates a replacement.
+                if (originalString.startsWith(victims[nSelected], charPosition)) {
+
+                    // Add the new replacement.
+                    resultBuffer.append(replacements[nSelected]);
+
+                    // Mark this position as a replacement.
+                    bReplaced = true;
+
+                    // Step over the replaced string.
+                    charPosition += victims[nSelected].length() - 1;
+                }
+            }
+
+            if (!bReplaced) {
+                resultBuffer.append(originalString.charAt(charPosition));
+            } else {
+                // Reset for the next character.
+                bReplaced = false;
+            }
+        }
+
+        // Return the result as a string
+        return resultBuffer.toString();
+    }
 
     /* Private no-arg constructor; this class should not be instantiable. */
     private DataViewUtils() {
