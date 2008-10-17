@@ -596,7 +596,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public void keyPressed(KeyEvent keyEvent) {
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_END:
-                lockScroll();
+                if (keyEvent.isControlDown()) {
+                    lockScroll();
+                }
                 break;
             case KeyEvent.VK_UP:
             case KeyEvent.VK_DOWN:
