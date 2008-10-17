@@ -70,21 +70,29 @@ final class OutputUtils {
 
         List<? extends RegexpOutputRecognizer> stdRecognizers = RubyExecution.getStandardRubyRecognizers();
         Report report = getTestsuiteNode(node).getReport();
-        for (RegexpOutputRecognizer each : stdRecognizers) {
-            FileLocation location = each.processLine(frameInfo);
-            if (location != null) {
-                FileObject fo = findFile(location.file, report.getFileLocator());
-                if (fo != null) {
-                    OutputProcessor.open(fo, location.line);
-                    return;
-                } 
+        FileLocation location = getFileLocation(frameInfo);
+        if (location != null) {
+            FileObject fo = findFile(location.file, report.getFileLocator());
+            if (fo != null) {
+                OutputProcessor.open(fo, location.line);
+                return;
             }
         }
 
         LOGGER.info("Could not open a file for " + frameInfo) ;
     }
 
-    private static TestsuiteNode getTestsuiteNode(Node node) {
+    static FileLocation getFileLocation(String locationLine) {
+        for (RegexpOutputRecognizer each : RubyExecution.getStandardRubyRecognizers()) {
+            FileLocation location = each.processLine(locationLine);
+            if (location != null) {
+                return location;
+            }
+        }
+        return null;
+    }
+
+    static TestsuiteNode getTestsuiteNode(Node node) {
         while (!(node instanceof TestsuiteNode)) {
             node = node.getParentNode();
         }
@@ -93,7 +101,7 @@ final class OutputUtils {
 
     // TODO: copied from OutputUtils, should introduce this as a utility method
     // in ruby.platform
-    private static FileObject findFile(final String path, FileLocator fileLocator) {
+    static FileObject findFile(final String path, FileLocator fileLocator) {
         if (fileLocator != null) {
             FileObject fo = fileLocator.find(path);
             if (fo != null) {
