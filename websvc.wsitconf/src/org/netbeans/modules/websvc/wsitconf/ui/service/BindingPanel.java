@@ -365,8 +365,8 @@ public class BindingPanel extends SectionInnerPanel {
 
         if (source.equals(fiChBox)) {
             boolean fi = TransportModelHelper.isFIEnabled(binding);
-            if (fiChBox.isSelected() != fi) {
-                TransportModelHelper.enableFI(binding, fiChBox.isSelected());
+            if (!fiChBox.isSelected() != fi) { // fast infoset has a reverted meaning
+                TransportModelHelper.enableFI(binding, !fiChBox.isSelected());
             }
         }
 
