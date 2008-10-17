@@ -109,13 +109,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
     protected void documentChanged() {
         lastLength = -1;
-        if (pendingCaretLine != -1) {
-            if (!sendCaretToLine (pendingCaretLine, pendingCaretSelect)) {
-                ensureCaretPosition();
-            }
-        } else {
-            ensureCaretPosition();
-        }
+        ensureCaretPosition();
         if (recentlyReset && isShowing()) {
             recentlyReset = false;
         }
@@ -276,7 +270,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             doc.addDocumentListener(this);
             lockScroll();
             recentlyReset = true;
-            pendingCaretLine = -1;
         } else {
             textView.setDocument (new PlainDocument());
             textView.setEditorKit(new DefaultEditorKit());
@@ -316,50 +309,40 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return lastLength;
     }
     
-    /**
-     * If we are sending the caret to a hyperlinked line, but it is < 3 lines
-     * from the bottom, we will hold the line number in this field until there
-     * are enough lines that it will be semi-centered.
-     */
-    private int pendingCaretLine = -1;
-    private boolean pendingCaretSelect = false;
     private boolean inSendCaretToLine = false;
     
     public final boolean sendCaretToLine(int idx, boolean select) {
-        int count = getLineCount();
-        if (count - idx < 3) {
-            pendingCaretLine = idx;
-            pendingCaretSelect = select;
-            return false;
-        } else {
-            inSendCaretToLine = true;
-            pendingCaretLine = -1;
-            unlockScroll();
-            getCaret().setVisible(true);
-            getCaret().setSelectionVisible(true);
-            Element el = textView.getDocument().getDefaultRootElement().getElement(Math.min(idx, getLineCount() - 1));
-            int position = el.getStartOffset();
-            if (select) {
-                getCaret().setDot (el.getEndOffset()-1);
-                getCaret().moveDot (position);
-                getCaret().setSelectionVisible(true);
-                textView.repaint();
-            } else {
-                getCaret().setDot(position);
-            }
-            if (idx + 3 < getLineCount()) {
-                try {
-                    Rectangle r = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement(idx + 3).getStartOffset());
-                    if (r != null) { //Will be null if maximized - no parent, no coordinate space
-                        textView.scrollRectToVisible(r);
-                    }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
-            }
-            inSendCaretToLine = false;
-            return true;
+        int lastLine = getLineCount() - 1;
+        if (idx > lastLine) {
+            idx = lastLine;
         }
+        inSendCaretToLine = true;
+        unlockScroll();
+        getCaret().setVisible(true);
+        getCaret().setSelectionVisible(true);
+        Element el = textView.getDocument().getDefaultRootElement().getElement(idx);
+        int position = el.getStartOffset();
+        if (select) {
+            getCaret().setDot(el.getEndOffset() - 1);
+            getCaret().moveDot(position);
+            getCaret().setSelectionVisible(true);
+            textView.repaint();
+        } else {
+            getCaret().setDot(position);
+        }
+        int newIdx = Math.min(idx + 3, lastLine);
+        if (idx != newIdx) {
+            try {
+                Rectangle r = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement(newIdx).getStartOffset());
+                if (r != null) { //Will be null if maximized - no parent, no coordinate space
+                    textView.scrollRectToVisible(r);
+                }
+            } catch (BadLocationException ble) {
+                Exceptions.printStackTrace(ble);
+            }
+        }
+        inSendCaretToLine = false;
+        return true;
     }
 
 
