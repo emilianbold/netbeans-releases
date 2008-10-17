@@ -773,6 +773,18 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
         performTest("Switch", 131, null, "methodBodyContentAfterCase.pass");
     }
     
+    public void testEmptyFileAfterTypingVarInCaseBlock() throws Exception {
+        performTest("SimpleMethodBodyStart", 98, "switch (a) {\ncase 0:\nboolean b;\n", "methodBodyContentAfterCaseAndVar.pass");
+    }
+
+    public void testAfterTypingVarInCaseBlock() throws Exception {
+        performTest("SimpleEmptyMethodBody", 98, "switch (a) {\ncase 0:\nboolean b;\n", "methodBodyContentAfterCaseAndVar.pass");
+    }
+
+    public void testAfterVarInCaseBlock() throws Exception {
+        performTest("Switch", 158, null, "methodBodyContentAfterCaseAndVar.pass");
+    }
+
     public void testEmptyFileAfterTypingBreakKeyword() throws Exception {
         performTest("SimpleMethodBodyStart", 98, "switch (a) {\ncase 0:\nbreak", "breakKeyword.pass");
     }
@@ -782,7 +794,7 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testAfterBreakKeyword() throws Exception {
-        performTest("Switch", 152, null, "breakKeyword.pass");
+        performTest("Switch", 179, null, "breakKeyword.pass");
     }
     
     public void testEmptyFileAfterTypingDefaultKeyword() throws Exception {
@@ -794,7 +806,7 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testAfterDefaultKeyword() throws Exception {
-        performTest("Switch", 173, null, "defaultKeyword.pass");
+        performTest("Switch", 200, null, "defaultKeyword.pass");
     }
     
     public void testEmptyFileAfterTypingDefaultKeywordAndSpace() throws Exception {
@@ -806,7 +818,7 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testAfterDefaultKeywordAndSpace() throws Exception {
-        performTest("Switch", 173, " ", "empty.pass");
+        performTest("Switch", 200, " ", "empty.pass");
     }
     
     public void testEmptyFileAfterTypingDefaultKeywordAndColon() throws Exception {
@@ -818,7 +830,7 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testAfterDefaultKeywordAndColon() throws Exception {
-        performTest("Switch", 174, null, "methodBodyContentAfterDefault.pass");
+        performTest("Switch", 201, null, "methodBodyContentAfterDefault.pass");
     }
     
     public void testEmptyFileAfterTypingDefaultKeywordAndColonAndSpace() throws Exception {
@@ -830,7 +842,7 @@ public class JavaCompletionProviderAdvancedTest extends CompletionTestBase {
     }
     
     public void testAfterDefaultKeywordAndColonAndSpace() throws Exception {
-        performTest("Switch", 175, null, "methodBodyContentAfterDefault.pass");
+        performTest("Switch", 201, null, "methodBodyContentAfterDefault.pass");
     }
     
     // Static initializer tests ------------------------------------------------

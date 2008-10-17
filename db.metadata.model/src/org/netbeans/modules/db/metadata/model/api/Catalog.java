@@ -46,12 +46,16 @@ import org.netbeans.modules.db.metadata.model.spi.CatalogImplementation;
  *
  * @author Andrei Badea
  */
-public class Catalog extends MetadataObject {
+public class Catalog extends MetadataElement {
 
     final CatalogImplementation impl;
 
     Catalog(CatalogImplementation impl) {
         this.impl = impl;
+    }
+
+    public MetadataElement getParent() {
+        return null;
     }
 
     /**
@@ -70,15 +74,6 @@ public class Catalog extends MetadataObject {
      */
     public boolean isDefault() {
         return impl.isDefault();
-    }
-
-    // XXX this probably belongs in Metadata.
-    /**
-     * @return the default schema or {@code null}.
-     * @throws MetadataException if an error occurs while retrieving the metadata.
-     */
-    public Schema getDefaultSchema() {
-        return impl.getDefaultSchema();
     }
 
     /**
@@ -102,7 +97,7 @@ public class Catalog extends MetadataObject {
      * <p>If the database does not supports schemas, this method always returns
      * an empty collection. In that case, a synthetic schema available
      * through {@link #getSyntheticSchema} provides access to the tables and
-     * other objects in the catalog.</p>
+     * other metadata elements in the catalog.</p>
      *
      * @return the schemas.
      * @throws MetadataException if an error occurs while retrieving the metadata.

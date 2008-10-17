@@ -87,11 +87,6 @@ public class JDBCCatalog extends CatalogImplementation {
         return _default;
     }
 
-    public final Schema getDefaultSchema() {
-        initSchemas();
-        return defaultSchema;
-    }
-
     public final Schema getSyntheticSchema() {
         initSchemas();
         return syntheticSchema;
@@ -108,6 +103,11 @@ public class JDBCCatalog extends CatalogImplementation {
     @Override
     public String toString() {
         return "JDBCCatalog[name='" + name + "',default=" + _default + "]"; // NOI18N
+    }
+
+    public final Schema getDefaultSchema() {
+        initSchemas();
+        return defaultSchema;
     }
 
     protected JDBCSchema createJDBCSchema(String name, boolean _default, boolean synthetic) {

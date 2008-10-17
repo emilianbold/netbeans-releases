@@ -58,11 +58,26 @@ final class JumpToCallStackAction extends AbstractAction {
     /** */
     private final String callstackFrameInfo;
 
+    private int line;
+
     /** Creates a new instance of JumpAction */
     JumpToCallStackAction(Node node, String callstackFrameInfo) {
+        this(node, callstackFrameInfo, -1);
+    }
+
+    /**
+     * @param node
+     * @param callstackFrameInfo a line in call stack representing the location 
+     * to jump
+     * @param line the line where to jump, if <code>line == -1</code>, then 
+     * the line will be computed from the given <code>callstackFrameInfo</code>.
+     */
+    JumpToCallStackAction(Node node, String callstackFrameInfo, int line) {
         this.node = node;
         this.callstackFrameInfo = callstackFrameInfo;
+        this.line = line;
     }
+
 
     @Override
     public Object getValue(String key) {
@@ -81,7 +96,7 @@ final class JumpToCallStackAction extends AbstractAction {
             return;
         }
         
-        OutputUtils.openCallstackFrame(node, callstackFrameInfo);
+        OutputUtils.openCallstackFrame(node, callstackFrameInfo, line);
     }
 
 }

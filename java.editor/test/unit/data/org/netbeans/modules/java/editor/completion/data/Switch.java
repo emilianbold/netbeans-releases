@@ -7,6 +7,7 @@ public class Test {
     public void op(int a) {
         switch (a) {
             case 0:
+                boolean b;
                 break;
             default:
 	}

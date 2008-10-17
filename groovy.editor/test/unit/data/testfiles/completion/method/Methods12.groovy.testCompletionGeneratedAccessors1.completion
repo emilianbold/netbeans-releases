@@ -1,0 +1,7 @@
+Code completion result for source line:
+new Test().get|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     getAge()                                   
+METHOD     getName()                                  
+METHOD     getSomething()                             

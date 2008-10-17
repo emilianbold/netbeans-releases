@@ -1258,6 +1258,14 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * If that methods returns a non-<code>null</code> value, one can serialize it,
     * and after deserialization
     * use {@link #getNode} to obtain the original node.
+    * 
+    * <b>Related documentation</b>
+    * 
+    * <ul>
+    * <li><a href="http://blogs.sun.com/geertjan/entry/serializing_nodes">Serializing Nodes</a> 
+    * <li><a href="http://blogs.sun.com/geertjan/entry/multiple_nodes_serialization">Serializing Multiple Nodes</a> 
+    * </ul>
+    * 
     */
     public static interface Handle extends java.io.Serializable {
         /** @deprecated Only public by accident. */
