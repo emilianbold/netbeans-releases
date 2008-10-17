@@ -67,11 +67,15 @@ public class JavaFormatterUnitTestCase extends JavaBaseDocumentUnitTestCase {
         // hooked through the ExtKit.ExtDefaultKeyTypedAction.checkIndentHotChars(),
         // which calls f.getReformatBlock and f.reformat
         // IMO this should just be replaced by simple doc.insertString(getCaretOffset(), "\n", null)
+        Indent indenter = Indent.get(getDocument());
+        indenter.lock();
         try {
-            int offset = Indent.get(getDocument()).indentNewLine(getCaretOffset());
+            int offset = indenter.indentNewLine(getCaretOffset());
             getCaret().setDot(offset);
         } catch (BadLocationException ble) {
             throw new IllegalStateException(ble);
+        } finally {
+            indenter.unlock();
         }
     }
     
