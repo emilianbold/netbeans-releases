@@ -155,7 +155,7 @@ public final class RubyPlatform {
             }
             return false;
         }
-        return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
+        return platform.isValid(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
     }
 
     public String getID() {
@@ -333,12 +333,27 @@ public final class RubyPlatform {
         return sitedir;
     }
 
-    public boolean isValidRuby(boolean warn) {
-        String rp = getBinDir();
-        boolean valid = false;
-        if (rp != null) {
-            File file = new File(rp);
-            valid = file.exists() && getHome() != null;
+    /**
+     * Calls {@link #isValid(boolean)} with <code>false</code>.
+     */
+    public boolean isValid() {
+        return isValid(false);
+    }
+
+    /**
+     * Test whether the platform is valid, i.e. has appropriate interpreter,
+     * <em>lib</em> and <em>bin</em> directories.
+     *
+     * @param warn whether to show the dialog to the user if platform is invalid
+     * @return whether the platform is valid
+     */
+    public boolean isValid(final boolean warn) {
+        boolean valid = new File(interpreter).isFile() && getLibDir() != null;
+        if (valid) {
+            String binDir = getBinDir();
+            if (binDir != null) {
+                valid = new File(binDir).isDirectory();
+            }
         }
 
         if (warn && !valid) {
@@ -424,10 +439,6 @@ public final class RubyPlatform {
 
     public boolean isRubinius() {
         return info.isRubinius();
-    }
-
-    public boolean isValid() {
-        return new File(interpreter).isFile() && getLibDir() != null;
     }
 
     /**

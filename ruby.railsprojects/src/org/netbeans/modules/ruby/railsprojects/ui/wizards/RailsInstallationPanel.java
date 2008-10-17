@@ -171,7 +171,7 @@ public class RailsInstallationPanel extends JPanel {
     }
 
     boolean valid (WizardDescriptor settings) {
-        if (!platform().isValidRuby(false)) {
+        if (!platform().isValid(false)) {
             wizardDescriptor.putProperty( WizardDescriptor.PROP_ERROR_MESSAGE, 
                     NbBundle.getMessage(RailsInstallationPanel.class, "NoRuby"));
             return false;
