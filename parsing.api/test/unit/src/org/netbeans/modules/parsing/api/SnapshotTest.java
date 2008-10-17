@@ -44,6 +44,7 @@ import java.io.OutputStreamWriter;
 import java.util.Arrays;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -227,7 +228,7 @@ public class SnapshotTest extends NbTestCase {
                     public void run () throws ParseException {
 
                     }
-                });
+                }, Collections.singletonList(src));
         }
         Utilities.removeParserResultTask(pr, src);
     }
