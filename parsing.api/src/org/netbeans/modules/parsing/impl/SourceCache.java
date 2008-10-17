@@ -102,12 +102,22 @@ public final class SourceCache {
     //@GuardedBy(this)
     private Snapshot        snapshot;
 
-    public synchronized Snapshot getSnapshot () {
-        if (snapshot == null) {
-            final boolean _isembedding = embedding != null;
-            snapshot = _isembedding ? embedding.getSnapshot () : source.createSnapshot ();
-        }            
-        return snapshot;
+    public Snapshot getSnapshot () {
+        boolean _isembedding;
+        synchronized (this) {
+            if (snapshot != null) {
+                return snapshot;
+            }
+            _isembedding = embedding != null;
+        }
+
+        final Snapshot _snapshot = _isembedding ? embedding.getSnapshot () : source.createSnapshot ();
+        synchronized (this) {
+            if (snapshot == null) {
+                snapshot = _snapshot;
+            }
+            return snapshot;
+        }
     }
 
     //@GuarderBy(this)
