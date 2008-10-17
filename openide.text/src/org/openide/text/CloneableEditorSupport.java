@@ -2663,6 +2663,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         /** Listener to changes in the Env.
         */
         public void propertyChange(PropertyChangeEvent ev) {
+            if ("expectedTime".equals(ev.getPropertyName())) { // NOI18N
+                lastSaveTime = ((Date)ev.getNewValue()).getTime();
+            }
             if (Env.PROP_TIME.equals(ev.getPropertyName())) {
                 // empty new value means to force reload all the time
                 final Date time = (Date) ev.getNewValue();

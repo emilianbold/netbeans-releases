@@ -39,98 +39,54 @@
 
 package org.netbeans.modules.maven.execute;
 
+import java.util.Collection;
+import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import java.io.File;
-import java.util.List;
-import java.util.Properties;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.cos.CosChecker;
+import org.netbeans.spi.project.LookupMerger;
+import org.openide.util.Lookup;
 
 /**
- *
+ * a PrerequisitesChecker lookupMerger, for now will just put the CoS implementation at the end
+ * of the list.
  * @author mkleint
  */
-public class ProxyRunConfig implements RunConfig {
+public class PrereqCheckerMerger implements LookupMerger<PrerequisitesChecker> {
 
-    private RunConfig delegate;
-    
-    /** Creates a new instance of ProxyRunConfig */
-    public ProxyRunConfig(RunConfig delegate) {
-        this.delegate = delegate;
+    public Class<PrerequisitesChecker> getMergeableClass() {
+        return PrerequisitesChecker.class;
     }
 
-    public File getExecutionDirectory() {
-        return delegate.getExecutionDirectory();
+    public PrerequisitesChecker merge(Lookup lookup) {
+        Lookup.Result<PrerequisitesChecker> res = lookup.lookupResult(PrerequisitesChecker.class);
+        return new Impl(res);
     }
 
-    public Project getProject() {
-        return delegate.getProject();
+    private static class Impl implements PrerequisitesChecker {
+
+        Lookup.Result<PrerequisitesChecker> checkers;
+        public Impl(Lookup.Result<PrerequisitesChecker> res) {
+            checkers = res;
+        }
+
+        public boolean checkRunConfig(RunConfig config) {
+            Collection<? extends PrerequisitesChecker> all = checkers.allInstances();
+            PrerequisitesChecker cos = null;
+            for (PrerequisitesChecker check : all) {
+                if (check instanceof CosChecker) {
+                    cos = check;
+                    continue;
+                }
+                if (!check.checkRunConfig(config)) {
+                    return false;
+                }
+            }
+            if (cos != null && !cos.checkRunConfig(config)) {
+                return false;
+            }
+            return true;
+        }
+
     }
 
-    public List getGoals() {
-        return delegate.getGoals();
-    }
-
-    public String getExecutionName() {
-        return delegate.getExecutionName();
-    }
-
-    public Properties getProperties() {
-        return delegate.getProperties();
-    }
-    
-    public  String removeProperty(String key) {
-        return delegate.removeProperty(key);
-    }
-
-    public  String setProperty(String key, String value) {
-        return delegate.setProperty(key, value);
-    }
-    public void setProperties(Properties properties){
-      delegate.setProperties(properties);
-    }
-    public boolean isShowDebug() {
-        return delegate.isShowDebug();
-    }
-
-    public boolean isShowError() {
-        return delegate.isShowError();
-    }
-
-    public Boolean isOffline() {
-        return delegate.isOffline();
-    }
-
-    public List getActivatedProfiles() {
-        return delegate.getActivatedProfiles();
-    }
-    
-    public void setActivatedProfiles(List<String> activeteProfiles) {
-        delegate.setActivatedProfiles(activeteProfiles);
-    }
-    
-
-    public boolean isRecursive() {
-        return delegate.isRecursive();
-    }
-
-    public boolean isUpdateSnapshots() {
-        return delegate.isUpdateSnapshots();
-    }
-    
-    public void setOffline(Boolean off) {
-        delegate.setOffline(off);
-    }
-
-    public String getTaskDisplayName() {
-        return delegate.getTaskDisplayName();
-    }
-
-    public boolean isInteractive() {
-        return delegate.isInteractive();
-    }
-
-    public String getActionName() {
-        return delegate.getActionName();
-    }
-    
 }
