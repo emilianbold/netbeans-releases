@@ -74,6 +74,8 @@ public final class JSPColoringData extends PropertyChangeSupport {
     private boolean elIgnored = false;
     
     private boolean xmlSyntax = false;
+
+    private boolean initialized = false;
     
     /** Creates a new instance of JSPColoringData. */
     public JSPColoringData(Object sourceBean) {
@@ -110,7 +112,12 @@ public final class JSPColoringData extends PropertyChangeSupport {
         }
         return prefixMapper.containsKey(prefix);
     }
-    
+
+    /** returns true if the JspColoringInfo has already been updated based on parser result. */
+    public boolean isInitialized() {
+        return initialized;
+    }
+
     /** Returns true if the EL is ignored in this page.
      */
     public boolean isELIgnored() {
@@ -136,6 +143,9 @@ public final class JSPColoringData extends PropertyChangeSupport {
      * @param parseSuccessful wherher parsing was successful. If false, then the new information is partial only
      */
     public void applyParsedData(Map newTaglibs, Map newPrefixMapper, boolean newELIgnored, boolean newXMLSyntax, boolean parseSuccessful) {
+
+        initialized = true;
+
         // check whether coloring has not changed
         boolean coloringSame = equalsColoringInformation(taglibs, prefixMapper, newTaglibs, newPrefixMapper);
         
