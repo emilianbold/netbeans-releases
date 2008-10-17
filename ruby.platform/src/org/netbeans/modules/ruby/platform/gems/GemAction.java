@@ -56,13 +56,18 @@ public final class GemAction extends CallableSystemAction {
         showGemManager(null, null, true);
     }
     
-    public static boolean showGemManager(final RubyPlatform preselected, final boolean canManagePlatforms) {
-        return showGemManager(null, preselected, canManagePlatforms);
+    public static boolean showGemManager(final String availableFilter) {
+        return showGemManager(null, availableFilter);
     }
 
-    public static boolean showGemManager(String availableFilter) {
-        return showGemManager(availableFilter, null, true);
+    public static boolean showGemManager(final RubyPlatform platform, final boolean canManagePlatforms) {
+        return showGemManager(null, platform, canManagePlatforms);
     }
+
+    public static boolean showGemManager(final RubyPlatform platform, final String availableFilter) {
+        return showGemManager(availableFilter, platform, true);
+    }
+    
 
     /**
      * Displays the gem manager panel.
