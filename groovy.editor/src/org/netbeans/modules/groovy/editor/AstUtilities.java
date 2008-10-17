@@ -41,9 +41,11 @@
 
 package org.netbeans.modules.groovy.editor;
 
+import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -325,21 +327,39 @@ public class AstUtilities {
             children.add(moduleNode.getStatementBlock());
         } else if (root instanceof ClassNode) {
             ClassNode classNode = (ClassNode) root;
+
+            Set<String> possibleMethods = new HashSet<String>();
+            for (Object object : classNode.getFields()) {
+                FieldNode field = (FieldNode) object;
+                if (field.getLineNumber() >= 0) {
+                    children.add(field);
+                    String name = field.getName();
+                    if (name.length() > 0 && (field.getModifiers() & Opcodes.ACC_STATIC) == 0
+                            && (field.getModifiers() & Opcodes.ACC_PRIVATE) != 0) {
+
+                        // this is the groovy way, they don't specify en locale :(
+                        name = name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
+                        if ((field.getModifiers() & Opcodes.ACC_FINAL) == 0) {
+                            possibleMethods.add("set" + name); // NOI18N
+                        }
+                        possibleMethods.add("get" + name); // NOI18N
+                    }
+                }
+            }
+
             for (Object object : classNode.getMethods()) {
                 MethodNode method = (MethodNode) object;
                 // getMethods() returns all methods also from superclasses
                 // how to get only methods from source?
                 // for now, just check line number, if < 0 it is not from source
-                if (method.getLineNumber() >= 0) {
+                // Second part of condition is for generated accessors
+                if (method.getLineNumber() >= 0
+                        || (method.isSynthetic() && possibleMethods.contains(method.getName()))) {
                     children.add(method);
                 }
+
             }
-            for (Object object : classNode.getFields()) {
-                FieldNode field = (FieldNode) object;
-                if (field.getLineNumber() >= 0) {
-                    children.add(field);
-                }
-            }
+
 
             for (Object object : classNode.getDeclaredConstructors()) {
                 ConstructorNode constructor = (ConstructorNode) object;

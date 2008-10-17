@@ -36,32 +36,45 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.openide.filesystems.FileObject;
 
 /**
- * Jump to action for test methods.
+ * Action for running all tests in a file.
  *
  * @author Erno Mononen
  */
-final class JumpToTestMethodAction extends BaseTestMethodNodeAction {
+final class RunTestSuiteAction extends BaseTestMethodNodeAction {
 
-    JumpToTestMethodAction(Testcase testcase, Project project, String name) {
+    private final boolean debug;
+
+    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
         super(testcase, project, name);
+        this.debug = debug;
     }
 
     public void actionPerformed(ActionEvent e) {
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod());
-        if (!(DeclarationLocation.NONE == location)) {
-            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
+        if (TestRunner.TestType.RSPEC == testcase.getType()) {
+            runRspec();
+            return;
         }
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
+        if (!(DeclarationLocation.NONE == location)) {
+            getTestRunner(testcase.getType()).runTest(location.getFileObject(), debug);
+        }
+
     }
 
+    protected void doRspecRun(FileObject testFile, FileLocation location) {
+        getTestRunner(testcase.getType()).runTest(testFile, debug);
+
+    }
 }

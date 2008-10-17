@@ -36,51 +36,35 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.ruby.testrunner.ui;
 
 import java.awt.event.ActionEvent;
-import java.util.Collection;
-import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyDeclarationFinder;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
-import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
- * An action for running/debugging a singe test method.
+ * Jump to action for test methods.
  *
  * @author Erno Mononen
  */
-class RunTestMethodAction extends BaseTestMethodNodeAction {
+final class JumpToTestAction extends BaseTestMethodNodeAction {
 
-    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
-    private final boolean debug;
+    private final boolean jumpToClass;
 
-    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
+    JumpToTestAction(Testcase testcase, Project project, String name, boolean clazz) {
         super(testcase, project, name);
-        this.debug = debug;
+        this.jumpToClass = clazz;
     }
 
     public void actionPerformed(ActionEvent e) {
-        if (TestRunner.TestType.RSPEC == testcase.getType()) {
-            runRspec();
-            return;
-        }
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), jumpToClass);
         if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(), testcase.name, debug);
+            GsfUtilities.open(location.getFileObject(), location.getOffset(), null);
         }
     }
 
-    @Override
-    protected void doRspecRun(FileObject testFile, FileLocation location) {
-        getTestRunner(testcase.getType()).runSingleTest(testFile, String.valueOf(location.line), debug);
-    }
 }
