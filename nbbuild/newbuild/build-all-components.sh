@@ -49,7 +49,7 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
-cp -rp nbbuild/netbeans nbbuild/netbeans.orig
+cp -rp nbbuild/netbeans nbbuild/netbeans.before
 
 ###############  Commit validation tests  ##########################
 #cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-PRISTINE
@@ -173,6 +173,8 @@ if [ $TEST_CODE = 1 ]; then
     echo "ERROR: At least one of validation tests failed"
     exit 1;
 fi
+
+cp -rp nbbuild/netbeans nbbuild/netbeans.after
 
 #Build UML modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.uml -Dbuild.compiler.debuglevel=source,lines
