@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
 
@@ -103,7 +104,7 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
+            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
             testcase.timeMillis = toMillis(matcher.group(1));
             testcase.name = matcher.group(2);
             testcase.className = matcher.group(3);
@@ -147,7 +148,7 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
+            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
             testcase.timeMillis = toMillis(matcher.group(1));
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
@@ -198,7 +199,7 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
+            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
             testcase.timeMillis = toMillis(matcher.group(1));
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);

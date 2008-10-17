@@ -39,26 +39,37 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.editor.shell;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.cnd.editor.fortran;
 
-/** BeanInfo for plain options
-*/
-public class ShellPrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.editor.Acceptor;
+import org.netbeans.editor.AcceptorFactory;
+import org.netbeans.editor.TokenContext;
+import org.openide.text.IndentEngine;
 
-    public ShellPrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/shell/ShellIcon"); //NOI18N
+/**
+ * Extended settings for Fortran.
+ */
+public class FSettingsFactory {
+
+    public static int MAXIMUM_TEXT_WIDTH = 132;
+
+    public static Acceptor getAbbrevResetAcceptor() {
+        return AcceptorFactory.NON_JAVA_IDENTIFIER;
     }
 
-    public ShellPrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
+    public static Acceptor getIndentHotCharsAcceptor() {
+        return AcceptorFactory.NL;
     }
 
-    protected Class getBeanClass() {
-        return ShellPrintOptions.class;
+    public static List<? extends TokenContext> getTokenContext() {
+        return Collections.singletonList(FTokenContext.context);
     }
+
+    public static IndentEngine getIndentEngine() {
+        return new FIndentEngine();
+    }
+
 }
+ 

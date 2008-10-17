@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.testrunner.ui;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.openide.nodes.Node;
+import org.openide.util.NbBundle;
 
 /**
  * Jump to action for call stack lines.
@@ -61,6 +62,14 @@ final class JumpToCallStackAction extends AbstractAction {
     JumpToCallStackAction(Node node, String callstackFrameInfo) {
         this.node = node;
         this.callstackFrameInfo = callstackFrameInfo;
+    }
+
+    @Override
+    public Object getValue(String key) {
+        if (NAME.equals(key)) {
+            return NbBundle.getMessage(JumpToCallStackAction.class, "LBL_GoToSource");
+        }
+        return super.getValue(key);
     }
 
     /**

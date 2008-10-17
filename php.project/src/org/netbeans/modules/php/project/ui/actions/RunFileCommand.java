@@ -40,6 +40,8 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.RunScript;
 import java.net.MalformedURLException;
 import java.net.URL;
 import org.netbeans.modules.php.project.PhpProject;
@@ -51,17 +53,17 @@ import org.openide.util.Lookup;
 /**
  * @author Radek Matous
  */
-public class RunSingleCommand extends RunCommand {
+public class RunFileCommand extends RunProjectCommand {
     public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
-    public static final String DISPLAY_NAME = RunCommand.DISPLAY_NAME;
-    private final RunLocalCommand localCommand;
-    
+    public static final String DISPLAY_NAME = RunProjectCommand.DISPLAY_NAME;
+    private final RunScript runScript;
+
     /**
      * @param project
      */
-    public RunSingleCommand(PhpProject project) {
+    public RunFileCommand(PhpProject project) {
         super(project);
-        localCommand = new RunLocalCommand(project);        
+        runScript = new RunScript(project);
     }
 
     @Override
@@ -71,7 +73,7 @@ public class RunSingleCommand extends RunCommand {
             return;
         }
         if (isScriptSelected()) {
-            localCommand.invokeAction(context);
+            runScript.invokeAction(context);
         } else {
             try {
                 // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
@@ -102,6 +104,6 @@ public class RunSingleCommand extends RunCommand {
 
     @Override
     public String getDisplayName() {
-        return RunSingleCommand.DISPLAY_NAME;
+        return RunFileCommand.DISPLAY_NAME;
     }
 }

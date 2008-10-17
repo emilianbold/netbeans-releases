@@ -47,7 +47,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -175,6 +177,9 @@ final class Report {
     /**
      */
     static final class Testcase {
+
+        private final TestType type;
+
         String className;
         String name;
         int timeMillis;
@@ -184,6 +189,14 @@ final class Report {
          * The location, i.e. the file and line number of this test case. 
          */
         private String location;
+
+        public Testcase(TestType type) {
+            this.type = type;
+        }
+
+        TestType getType() {
+            return type;
+        }
 
         void setLocation(String location) {
             this.location = location;
@@ -210,6 +223,34 @@ final class Report {
                 return Status.PASSED;
             }
             return trouble.isError() ? Status.ERROR : Status.FAILED;
+        }
+        /**
+         * Gets the line from the stack trace representing the last line in the test class.
+         * If that can't be resolved
+         * then returns the second line of the stack trace (the
+         * first line represents the error message) or <code>null</code> if there
+         * was no (usable) stack trace attached.
+         *
+         * @return
+         */
+        String getTestCaseLineFromStackTrace() {
+            if (trouble == null) {
+                return null;
+            }
+            String[] stacktrace = trouble.stackTrace;
+            if (stacktrace == null || stacktrace.length <= 1) {
+                return null;
+            }
+            if (stacktrace.length > 2) {
+                String underscoreName = RubyUtils.camelToUnderlinedName(className);
+                for (int i = 0; i < stacktrace.length; i++) {
+                    if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(name)) {
+                        return stacktrace[i];
+                    }
+                }
+            }
+            return stacktrace[1];
+
         }
     }
     
@@ -250,7 +291,7 @@ final class Report {
         boolean isFakeError() {
             return error && isComparisonFailure();
         }
-        
+
     }
     
 }
