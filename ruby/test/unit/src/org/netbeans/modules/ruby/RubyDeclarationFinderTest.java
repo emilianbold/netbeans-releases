@@ -102,7 +102,7 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         assertNotNull(AstUtilities.getRoot(info));
         info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
 
-        //TestFoo/test_bar => test/test_foo.rb:99
+        //TestFoo/test_bar => test/test_foo.rb:0 (offset for the class declaration)
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "TestFoo/test_bar", true);
         assertTrue(loc != DeclarationLocation.NONE);
         assertEquals("testfile.rb", loc.getFileObject().getNameExt());
@@ -116,7 +116,6 @@ public class RubyDeclarationFinderTest extends RubyTestBase {
         assertNotNull(AstUtilities.getRoot(info));
         info.getIndex(RubyInstallation.RUBY_MIME_TYPE);
 
-        //TestFoo/test_bar => test/test_foo.rb:99
         DeclarationLocation loc = RubyDeclarationFinder.getTestDeclaration(fo, "MosModule::TestBaz/test_qux", true);
         assertTrue(loc != DeclarationLocation.NONE);
         assertEquals("testfile.rb", loc.getFileObject().getNameExt());
