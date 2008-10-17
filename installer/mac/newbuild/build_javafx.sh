@@ -20,16 +20,28 @@
 set -x -e 
 
 if [ -z "$1" ] || [ -z "$2" ]|| [ -z "$3" ]; then
-    echo "usage: $0 zipdir prefix buildnumber"
+    echo "usage: $0 zipdir prefix buildnumber [ml_build] [nb_locales]"
     echo ""
     echo "zipdir is the dir which contains the zip/modulclusters and zip-ml/moduleclusters"
     echo "prefix-buildnumber is the distro filename prefix, e.g. netbeans-hudson-trunk-2464"
+    echo "ml_build is 1 if ml builds are requared and 0 if not"
+    echo "nb_locales is the string with the list of locales (for ml builds)"  
     exit 1
 fi
 
 work_dir=$1
 prefix=$2
 buildnumber=$3
+
+if [ -n "$4" ] ; then
+    ml_build=$4
+    if [ -n "$5" ] ; then
+      nb_locales="$5"
+    fi
+else 
+    ml_build=0
+fi
+
   
 basename=`dirname "$0"`
 . "$basename"/build-private.sh
@@ -42,3 +54,8 @@ ant -v -f $basename/build_javafx.xml build-all-dmg -Dcommon.name=$commonname -Dp
 
 rm -rf "$basename"/dist_en
 mv -f "$basename"/dist "$basename"/dist_en
+
+if [ 1 -eq $ml_build ] ; then
+commonname_ml=$work_dir/zip-ml/moduleclusters/$prefix-$buildnumber
+ant -v -f $basename/build_javafx.xml build-all-dmg -Dnb.locales=$nb_locales -Dcommon.name=$commonname_ml -Dprefix=$prefix -Dbuildnumber=$buildnumber -Dmlbuild='true' -Dgf_builds_host=$GLASSFISH_BUILDS_HOST -Dopenesb_builds_host=$OPENESB_BUILDS_HOST -Dbinary_cache_host=$BINARY_CACHE_HOST  -Djavafx_builds_host=$JAVAFX_BUILDS_HOST
+fi
