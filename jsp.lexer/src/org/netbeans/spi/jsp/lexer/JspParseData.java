@@ -42,7 +42,6 @@
 
 package org.netbeans.spi.jsp.lexer;
 
-import java.util.Collections;
 import java.util.Map;
 
 
@@ -54,13 +53,26 @@ public final class JspParseData {
     
     private Map<String, String> prefixMap;
     private boolean isELIgnored, isXMLSyntax;
-    
-    public JspParseData() {
-        prefixMap = Collections.emptyMap();
-        isELIgnored = false;
-        isXMLSyntax = false;
+
+    private boolean initialized;
+
+    public JspParseData(Map<String,String> prefixMap, boolean isELIgnored, boolean isXMLSyntax, boolean isInitialized) {
+        this.prefixMap = prefixMap;
+        this.isELIgnored = isELIgnored;
+        this.isXMLSyntax = isXMLSyntax;
+        this.initialized = isInitialized;
     }
-    
+
+    public boolean isInitialized() {
+        return initialized;
+    }
+
+    public boolean initialized() {
+        boolean oldVal = initialized;
+        this.initialized = true;
+        return oldVal;
+    }
+
     /** Updates coloring data. The update is initiated by parser successfuly finished parsing. */
     public void updateParseData(Map<String,String> prefixMap, boolean isELIgnored, boolean isXMLSyntax) {
         this.prefixMap = prefixMap;

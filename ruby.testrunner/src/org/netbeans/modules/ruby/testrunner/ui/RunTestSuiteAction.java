@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,28 +31,50 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.testrunner.ui;
 
-package org.netbeans.modules.cnd.editor.makefile;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
-import org.openide.util.NbBundle;
+import java.awt.event.ActionEvent;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
+import org.netbeans.modules.ruby.RubyDeclarationFinder;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
+import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
+import org.openide.filesystems.FileObject;
 
-/** BeanInfo for plain options
-*/
-public class MakefilePrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+/**
+ * Action for running all tests in a file.
+ *
+ * @author Erno Mononen
+ */
+final class RunTestSuiteAction extends BaseTestMethodNodeAction {
 
-    public MakefilePrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/makefile/MakefileIcon"); //NOI18N
+    private final boolean debug;
+
+    public RunTestSuiteAction(Testcase testcase, Project project, String name, boolean debug) {
+        super(testcase, project, name);
+        this.debug = debug;
     }
 
-    public MakefilePrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
+    public void actionPerformed(ActionEvent e) {
+        if (TestRunner.TestType.RSPEC == testcase.getType()) {
+            runRspec();
+            return;
+        }
+        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), true);
+        if (!(DeclarationLocation.NONE == location)) {
+            getTestRunner(testcase.getType()).runTest(location.getFileObject(), debug);
+        }
+
     }
 
-    protected Class getBeanClass() {
-        return MakefilePrintOptions.class;
+    protected void doRspecRun(FileObject testFile, FileLocation location) {
+        getTestRunner(testcase.getType()).runTest(testFile, debug);
+
     }
 }

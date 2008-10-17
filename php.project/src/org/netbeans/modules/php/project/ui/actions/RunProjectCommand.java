@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.php.project.ui.actions;
 
-package org.netbeans.modules.cnd.editor.fortran;
 
-import org.netbeans.editor.ext.ExtSettingsNames;
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.RunScript;
+import java.net.MalformedURLException;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
-* Names of the Fortran editor settings.
-*/
+ * @author Radek Matous
+ */
+public class RunProjectCommand extends Command implements Displayable {
+    public static final String ID = ActionProvider.COMMAND_RUN;
+    public static final String DISPLAY_NAME = NbBundle.getMessage(RunProjectCommand.class, "LBL_RunProject");
+    private final RunScript runScript;
 
-public class FSettingsNames extends ExtSettingsNames {
-
-    /** Determins if a space is inserted after the comma inside the parameter
-     * list in a function call.
-     * Values: java.lang.Boolean instances
-     * Effect: function(a,b)
-     *           becomes
-     *         function(a, b)
+    /**
+     * @param project
      */
-    //public static final String FORMAT_SPACE_AFTER_COMMA
-    //                   = "fortran-format-space-after-comma"; //NOI18N
+    public RunProjectCommand(PhpProject project) {
+        super(project);
+        runScript = new RunScript(project);
+    }
 
-    /** Determines if the Fortran coding style is Free Format or Fixed Format
-    * Values: java.lang.Boolean instances
-    * Effect: Free format when set to true allows code to be placed in columns
-    *         1 thru 132, a comment is designated by a "!" before the comment,
-    *         etc. Fortran 90 and up style.
-    */
-    //public static final String FREE_FORMAT
-    //                   = "fortran-free-format"; //NOI18N
+    @Override
+    public void invokeAction(Lookup context) throws IllegalArgumentException {
+        boolean scriptSelected = isScriptSelected();
+        if (!isRunConfigurationValid(scriptSelected)) {
+            // property not set yet
+            return;
+        }
+        if (scriptSelected) {
+            runScript.invokeAction(null);
+        } else {
+            eventuallyUploadFiles();
+            try {
+                showURLForProjectFile();
+            } catch (MalformedURLException ex) {
+                //TODO: improve error handling
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
 
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        return true;
+    }
+
+    @Override
+    public String getCommandId() {
+        return ID;
+    }
+
+    public String getDisplayName() {
+        return DISPLAY_NAME;
+    }
 }

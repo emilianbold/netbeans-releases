@@ -40,35 +40,70 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
-import org.netbeans.modules.php.project.spi.XDebugStarter;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.RunScript;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.Union2;
-
 
 /**
  * @author Radek Matous
- *
  */
-public final class XDebugStarterFactory {
-    private static Union2<XDebugStarter, Boolean> INSTANCE;
+public class RunFileCommand extends RunProjectCommand {
+    public static final String ID = ActionProvider.COMMAND_RUN_SINGLE;
+    public static final String DISPLAY_NAME = RunProjectCommand.DISPLAY_NAME;
+    private final RunScript runScript;
 
-    private XDebugStarterFactory() {
+    /**
+     * @param project
+     */
+    public RunFileCommand(PhpProject project) {
+        super(project);
+        runScript = new RunScript(project);
     }
 
-    public static XDebugStarter getInstance() {
-        boolean init;
-        synchronized (XDebugStarterFactory.class) {
-            init = (INSTANCE == null);
+    @Override
+    public void invokeAction(Lookup context) throws IllegalArgumentException {
+        if (!isRunConfigurationValid(false)) {
+            // property not set yet
+            return;
         }
-        if (init) {
-            //TODO add lookup listener
-            XDebugStarter debugStarter = Lookup.getDefault().lookup(XDebugStarter.class);
-            if (debugStarter != null) {
-                INSTANCE = Union2.createFirst(debugStarter);
-            } else {
-                INSTANCE = Union2.createSecond(Boolean.FALSE);
+        if (isScriptSelected()) {
+            runScript.invokeAction(context);
+        } else {
+            try {
+                // need to fetch these vars _before_ focus changes (can happen in eventuallyUploadFiles() method)
+                final URL url = urlForContext(context, true);
+
+                eventuallyUploadFiles(CommandUtils.filesForSelectedNodes());
+                showURL(url);
+            } catch (MalformedURLException ex) {
+                //TODO: improve error handling
+                Exceptions.printStackTrace(ex);
             }
         }
-        return INSTANCE.hasFirst() ? INSTANCE.first() : null;
+    }
+
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        FileObject file = fileForContext(context);
+        if (isScriptSelected()) {
+            return isPhpFileSelected(file);
+        }
+        return file != null;
+    }
+
+    @Override
+    public String getCommandId() {
+        return ID;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return RunFileCommand.DISPLAY_NAME;
     }
 }

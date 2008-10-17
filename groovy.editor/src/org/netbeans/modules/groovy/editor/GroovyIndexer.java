@@ -45,9 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.MethodNode;
@@ -221,53 +219,16 @@ public class GroovyIndexer implements Indexer {
             documents.add(document);
             indexClass(element, document);
 
-            Map<String, AstElement> methods = new HashMap<String, AstElement>();
-            List<AstElement> properties = new ArrayList<AstElement>();
-
             for (AstElement child : element.getChildren()) {
                 switch (child.getKind()) {
                     case METHOD:
-                        indexMethod(child, document, methods);
+                        indexMethod(child, document);
                         break;
                     case FIELD:
-                        indexField(child, document, properties);
+                        indexField(child, document);
                         break;
                 }
             }
-
-            // FIXME final field does not generate setter
-            // generate property accessors
-//            for (AstElement property : properties) {
-//                String name = property.getName();
-//                if (name.length() < 1) {
-//                    continue;
-//                }
-//
-//                StringBuilder builder = new StringBuilder();
-//                builder.append(Character.toUpperCase(name.charAt(0)));
-//                if (name.length() > 2) {
-//                    builder.append(name.substring(1));
-//                }
-//
-//                StringBuilder accessor = new StringBuilder("get"); // NOI18N
-//                accessor.append(builder);
-//
-//                if (!methods.containsKey(accessor.toString())) {
-//                    document.addPair(METHOD_NAME, accessor.toString(), true);
-//                }
-//
-//                accessor.setLength(0);
-//                accessor.append("set"); // NOI18N
-//                accessor.append(builder);
-//                accessor.append("(");
-//                accessor.append(Utilities.translateClassLoaderTypeName(
-//                        ((FieldNode) property.getNode()).getType().getName()));
-//                accessor.append(")");
-//
-//                if (!methods.containsKey(accessor.toString())) {
-//                    document.addPair(METHOD_NAME, accessor.toString(), true);
-//                }
-//            }
         }
 
         private void indexClass(AstClassElement element, IndexDocument document) {
@@ -277,8 +238,7 @@ public class GroovyIndexer implements Indexer {
             document.addPair(CASE_INSENSITIVE_CLASS_NAME, name.toLowerCase(), true);
         }
 
-        private void indexField(AstElement child, IndexDocument document,
-                List<AstElement> properties) {
+        private void indexField(AstElement child, IndexDocument document) {
 
             String signature = child.getName();
             int flags = getFieldModifiersFlag(child.getModifiers());
@@ -293,16 +253,9 @@ public class GroovyIndexer implements Indexer {
 
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_NAME, signature, true);
-
-            // FIXME check final fields
-            // property candidate
-            if (flags == 0) {
-                properties.add(child);
-            }
         }
 
-        private void indexMethod(AstElement child, IndexDocument document,
-                Map<String, AstElement> methods) {
+        private void indexMethod(AstElement child, IndexDocument document) {
 
             MethodNode childNode = (MethodNode) child.getNode();
             String signature = AstUtilities.getDefSignature(childNode);
@@ -317,8 +270,6 @@ public class GroovyIndexer implements Indexer {
                 sb.append(IndexedElement.flagToFirstChar(flags));
                 sb.append(IndexedElement.flagToSecondChar(flags));
                 signature = sb.toString();
-            } else if ((flags & Opcodes.ACC_STATIC) == 0) {
-                methods.put(childNode.getName(), child);
             }
 
             document.addPair(METHOD_NAME, signature, true);
