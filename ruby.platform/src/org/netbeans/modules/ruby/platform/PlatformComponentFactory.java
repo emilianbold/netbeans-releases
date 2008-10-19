@@ -318,7 +318,8 @@ public final class PlatformComponentFactory {
             } else {
                 RubyPlatform plaf = ((RubyPlatform) value);
                 if (plaf == null || !plaf.isValid()) {
-                    label = NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.select.valid.platform");
+                    label = plaf != null ? plaf.getLabel()
+                            : NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.invalid.platform");
                     setForeground(INVALID_PLAF_COLOR);
                 } else {
                     label = plaf.getLabel();

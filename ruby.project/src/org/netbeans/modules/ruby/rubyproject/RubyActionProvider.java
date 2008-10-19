@@ -379,7 +379,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         
         // TODO Check for valid installation of Ruby and Rake
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
-            if (!platform.isValidRuby(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 
@@ -469,7 +469,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             
             return;
         } else if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
-            if (!platform.isValidRuby(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 
@@ -584,7 +584,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
-            if (!platform.isValidRuby(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 

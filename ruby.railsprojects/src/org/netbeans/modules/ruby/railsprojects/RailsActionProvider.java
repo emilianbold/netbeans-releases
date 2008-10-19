@@ -265,7 +265,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             }
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
-            if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
+            if (!RubyPlatform.platformFor(project).isValid(true)) {
                 return;
             }
 
@@ -313,7 +313,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return;
 
         } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
-            if (!RubyPlatform.platformFor(project).isValidRuby(true)) {
+            if (!RubyPlatform.platformFor(project).isValid(true)) {
                 return;
             }
 
