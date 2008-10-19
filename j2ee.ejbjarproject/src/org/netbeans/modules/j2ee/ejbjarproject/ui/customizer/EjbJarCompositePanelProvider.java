@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
@@ -193,7 +193,7 @@ public class EjbJarCompositePanelProvider implements ProjectCustomizer.Composite
     
     private static boolean showWebServicesCategory(EjbJarProjectProperties uiProperties) {
         EjbJarProject project = (EjbJarProject) uiProperties.getProject();
-        if(ProjectProperties.J2EE_1_4.equals(project.getEjbModule().getJ2eePlatformVersion())) {
+        if(J2EEProjectProperties.J2EE_1_4.equals(project.getEjbModule().getJ2eePlatformVersion())) {
             return WebServicesSupport.getWebServicesSupport(project.getProjectDirectory())!=null;
         }
         return false;

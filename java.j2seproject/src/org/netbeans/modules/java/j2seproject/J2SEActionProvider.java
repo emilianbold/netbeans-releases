@@ -76,11 +76,9 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -90,8 +88,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.applet.AppletSupport;
-import org.netbeans.modules.java.j2seproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.modules.java.j2seproject.ui.customizer.MainClassChooser;
@@ -742,7 +741,7 @@ class J2SEActionProvider implements ActionProvider {
     }
     private void prepareDirtyList(Properties p, boolean isExplicitBuildTarget) {
         String doDepend = project.evaluator().getProperty(J2SEProjectProperties.DO_DEPEND);
-        String buildClassesDirValue = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
+        String buildClassesDirValue = project.evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
         File buildClassesDir = project.getAntProjectHelper().resolveFile(buildClassesDirValue);
         synchronized (this) {
             if (dirty == null) {
@@ -772,7 +771,7 @@ class J2SEActionProvider implements ActionProvider {
                     }
                     dirtyList.append(f);
                 }
-                p.setProperty(J2SEProjectProperties.INCLUDES, dirtyList.toString());
+                p.setProperty(ProjectProperties.INCLUDES, dirtyList.toString());
             }
             dirty.clear();
         }
@@ -872,7 +871,7 @@ class J2SEActionProvider implements ActionProvider {
     }
 
     private boolean allowAntBuild() {
-        String buildClasses = project.evaluator().getProperty(J2SEProjectProperties.BUILD_CLASSES_DIR);
+        String buildClasses = project.evaluator().getProperty(ProjectProperties.BUILD_CLASSES_DIR);
         File buildClassesFile = this.updateHelper.getAntProjectHelper().resolveFile(buildClasses);
 
         return !new File(buildClassesFile, AUTOMATIC_BUILD_TAG).exists();

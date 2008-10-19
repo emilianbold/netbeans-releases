@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 
@@ -246,6 +247,17 @@ public class Util {
             return false;
         }
         return Deployment.getDefault().getServerID(serverInstanceID) != null;
+    }
+    
+    /**
+     * Default implementation of ServerStatusProvider.
+     */
+    public static ServerStatusProvider createServerStatusProvider(final J2eeModuleProvider j2eeModuleProvider) {
+        return new ServerStatusProvider() {
+            public boolean validServerInstancePresent() {
+                return isValidServerInstance(j2eeModuleProvider);
+            }
+        };
     }
     
     public static File[] getJ2eePlatformClasspathEntries(Project project) {

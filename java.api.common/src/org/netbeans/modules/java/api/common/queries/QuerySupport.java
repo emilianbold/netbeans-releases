@@ -40,6 +40,7 @@
 package org.netbeans.modules.java.api.common.queries;
 
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
@@ -239,4 +240,47 @@ public final class QuerySupport {
         Parameters.notNull("encodingQuery", encodingQuery);
         return new TemplateAttributesProviderImpl(helper, encodingQuery);
     }
+    
+    /**
+     * Creates an implementation of {@link BinaryForSourceQueryImplementation} 
+     * which maps given project source roots and test roots to given folders
+     * with built classes and built test classes.
+     *
+     * @param src project source roots
+     * @param test project test roots
+     * @param helper AntProjectHelper
+     * @param eval PropertyEvaluator
+     * @param sourceProp name of property pointing to a folder with built classes
+     * @param testProp name of property pointing to a folder with built test classes
+     * @return BinaryForSourceQueryImplementation
+     * @since X.X
+     */
+    public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(
+            SourceRoots src, SourceRoots test, AntProjectHelper helper, 
+            PropertyEvaluator eval, String sourceProp, String testProp) {
+        return new BinaryForSourceQueryImpl(src, test, helper, eval, 
+                new String[]{sourceProp}, new String[]{testProp});
+    }
+    
+    /**
+     * Shortcut version of {@link #createBinaryForSourceQueryImplementation(org.netbeans.modules.java.api.common.SourceRoots, org.netbeans.modules.java.api.common.SourceRoots, org.netbeans.spi.project.support.ant.AntProjectHelper, org.netbeans.spi.project.support.ant.PropertyEvaluator, java.lang.String, java.lang.String) }
+     * which assumes that build classes folder is stored in property <code>build.classes.dir</code> and
+     * built test classes folder is stored in property <code>build.test.classes.dir</code>.
+     *
+     * @param src project source roots
+     * @param test project test roots
+     * @param helper AntProjectHelper
+     * @param eval PropertyEvaluator
+     * @param sourceProps array of properties pointing to source folders
+     * @param testProps array of properties pointing to test folders
+     * @return BinaryForSourceQueryImplementation
+     * @since X.X
+     */
+    public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(SourceRoots src, SourceRoots test, 
+            AntProjectHelper helper, PropertyEvaluator eval) {
+        return createBinaryForSourceQueryImplementation(src, test, helper, eval, 
+                "build.classes.dir", "build.test.classes.dir"); // NOI18N
+    }
+    
+    
 }
