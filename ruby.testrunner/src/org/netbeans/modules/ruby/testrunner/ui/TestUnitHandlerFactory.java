@@ -66,9 +66,12 @@ public class TestUnitHandlerFactory {
         result.add(new SuiteFinishedHandler());
         result.add(new SuiteErrorOutputHandler());
         result.add(new TestStartedHandler());
+        result.add(new ShouldaTestStartedHandler());
+        result.add(new ShouldaTestFailedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
+        result.add(new ShouldaTestFinishedHandler());
         result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
@@ -97,6 +100,10 @@ public class TestUnitHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         private List<String> output;
+
+        public TestFailedHandler(String regex) {
+            super(regex);
+        }
 
         public TestFailedHandler() {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
@@ -135,6 +142,16 @@ public class TestUnitHandlerFactory {
         @Override
         RecognizedOutput getRecognizedOutput() {
             return new FilteredOutput(output.toArray(new String[output.size()]));
+        }
+    }
+
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestFailedHandler extends TestFailedHandler {
+
+        public ShouldaTestFailedHandler() {
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=test:\\s(.*)\\.\\s\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
     }
 
@@ -191,7 +208,25 @@ public class TestUnitHandlerFactory {
         }
     }
 
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestStartedHandler extends TestRecognizerHandler {
+
+        public ShouldaTestStartedHandler() {
+            super("%TEST_STARTED%\\stest:\\s(.*)\\.\\s\\((.+)\\)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+        }
+    }
+
     static class TestFinishedHandler extends TestRecognizerHandler {
+
+        public TestFinishedHandler(String regex) {
+            super(regex);
+        }
 
         public TestFinishedHandler() {
             super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
@@ -205,6 +240,17 @@ public class TestUnitHandlerFactory {
             testcase.name = matcher.group(2);
             session.addTestCase(testcase);
         }
+    }
+
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestFinishedHandler extends TestFinishedHandler {
+
+        public ShouldaTestFinishedHandler() {
+            super("%TEST_FINISHED%\\stime=(.+)\\stest:\\s(.*)\\.\\s\\((.+)\\)"); //NOI18N
+        }
+
     }
 
     /**
