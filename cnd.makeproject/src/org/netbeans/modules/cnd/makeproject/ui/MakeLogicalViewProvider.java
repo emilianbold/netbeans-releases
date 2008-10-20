@@ -751,7 +751,15 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
 
         protected Collection getKeys() {
             Collection collection = getFolder().getElements();
-
+            switch (getFolder().getConfigurationDescriptor().getState()){
+                case READING:
+                    if(collection.size() == 0) {
+                        collection = Collections.singletonList(new LoadingNode());
+                    }
+                    break;
+                case BROKEN:
+                    // TODO show broken node
+            }
             if ("root".equals(getFolder().getName())) { // NOI18N
                 LogicalViewNodeProvider[] providers = LogicalViewNodeProviders.getInstance().getProvidersAsArray();
                 if (providers.length > 0) {
