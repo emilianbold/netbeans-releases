@@ -33,8 +33,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.groovy.editor.completion.CodeCompleter;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 
@@ -44,7 +44,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionResult;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class GspCompleter extends CodeCompleter {
+public class GspCompleter extends GroovyCompletionHandler {
     /**
      *  @todo Pass in the completion type? (Smart versus documentation etc.)
      *  @todo Pass in the line offsets? Nah, just make the completion provider figure those out.

@@ -181,7 +181,7 @@ public class RunFocusedTest extends BaseAction {
         
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
-        if (!platform.isValidRuby(warn)) {
+        if (!platform.isValid(warn)) {
             return;
         }
 

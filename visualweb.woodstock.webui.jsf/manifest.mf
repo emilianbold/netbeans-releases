@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.visualweb.woodstock.webui.jsf
 OpenIDE-Module-Layer: org/netbeans/modules/visualweb/woodstock/webui/jsf/designtime/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/visualweb/woodstock/webui/jsf/Bundle.properties
-OpenIDE-Module-Specification-Version: 2.3
+OpenIDE-Module-Specification-Version: 2.5
 

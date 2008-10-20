@@ -49,11 +49,15 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.xml.sax.Attributes;
 
 /**
@@ -62,42 +66,61 @@ import org.xml.sax.Attributes;
 
 public class ConfigurationXMLReader extends XMLDocReader {
     private static int DEPRECATED_VERSIONS = 26;
-    
-    
+
+
     private FileObject projectDirectory;
-    
+
     public ConfigurationXMLReader(FileObject projectDirectory) {
         this.projectDirectory = projectDirectory;
         // LATER configurationDescriptor = new
     }
-    
-    
+
+
     /*
      * was: readFromDisk
      */
-    
-    public ConfigurationDescriptor read(String relativeOffset) throws IOException {
-        
-        String tag = null;
-        
+
+    public ConfigurationDescriptor read(final String relativeOffset) throws IOException {
+        final String tag;
+        final FileObject xml;
         // Try first new style file
-        tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
-        FileObject xml = projectDirectory.getFileObject("nbproject/configurations.xml"); // NOI18N
-        if (xml == null) {
+        FileObject fo = projectDirectory.getFileObject("nbproject/configurations.xml"); // NOI18N
+        if (fo == null){
             // then try old style file....
             tag = CommonConfigurationXMLCodec.PROJECT_DESCRIPTOR_ELEMENT;
             xml = projectDirectory.getFileObject("nbproject/projectDescriptor.xml"); // NOI18N
+        } else {
+            tag = CommonConfigurationXMLCodec.CONFIGURATION_DESCRIPTOR_ELEMENT;
+            xml = fo;
         }
-        
+
         if (xml == null) {
             displayErrorDialog();
             return null;
         }
-        
-        boolean success;
-        
         String path = FileUtil.toFile(projectDirectory).getPath();
         final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(path);
+        Task task = RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    if (_read(relativeOffset, tag, xml, configurationDescriptor) == null){
+                        // TODO configurationDescriptor is broken
+                        configurationDescriptor.setState(State.BROKEN);
+                    }
+                } catch (IOException ex) {
+                    configurationDescriptor.setState(State.BROKEN);
+                }
+            }
+        });
+        configurationDescriptor.setInitTask(task);
+        return configurationDescriptor;
+    }
+
+    public ConfigurationDescriptor _read(String relativeOffset,
+            String tag, FileObject xml, final MakeConfigurationDescriptor configurationDescriptor) throws IOException {
+
+        boolean success;
+
         XMLDecoder decoder =
                 new ConfigurationXMLCodec(tag,
                 projectDirectory,
@@ -107,17 +130,17 @@ public class ConfigurationXMLReader extends XMLDocReader {
         InputStream inputStream = xml.getInputStream();
         success = read(inputStream, FileUtil.toFile(xml).getPath());
         deregisterXMLDecoder(decoder);
-        
+
         if (!success) {
             displayErrorDialog();
             return null;
         }
-        
-        
+
+
         //
         // Now for the auxiliary/private entry
         //
-        
+
         xml = projectDirectory.getFileObject("nbproject/private/configurations.xml"); // NOI18N
         if (xml != null) {
             // Don't post an error.
@@ -133,12 +156,13 @@ public class ConfigurationXMLReader extends XMLDocReader {
                 return configurationDescriptor;
             }
         }
-        
+        configurationDescriptor.setState(State.READY);
+
         // Some samples are generated without generated makefile. Don't mark these 'not modified'. Then
         // the makefiles will be generated before the project is being built
         FileObject makeImpl = projectDirectory.getFileObject("nbproject/Makefile-impl.mk"); // NOI18N
         configurationDescriptor.setModified(makeImpl == null || relativeOffset != null);
-        
+
         // Check version and display deprecation warning if too old
         if (configurationDescriptor.getVersion() >= 0 && configurationDescriptor.getVersion() <= DEPRECATED_VERSIONS) {
             File projectFile = FileUtil.toFile(projectDirectory);
@@ -157,38 +181,38 @@ public class ConfigurationXMLReader extends XMLDocReader {
             };
             SwingUtilities.invokeLater(warning);
         }
-        
+
         if (configurationDescriptor.getModified()) {
             // Project is modified and will be saved with current version. This includes samples.
             configurationDescriptor.setVersion(CommonConfigurationXMLCodec.CURRENT_VERSION);
         }
-        
+        ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_OPEN_CND, configurationDescriptor);
         return configurationDescriptor;
     }
-    
+
     private void displayErrorDialog() {
         //String errormsg = NbBundle.getMessage(ConfigurationXMLReader.class, "CANTREADDESCRIPTOR", projectDirectory.getName());
         //DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
     }
-    
-    
+
+
     // interface XMLDecoder
     protected String tag() {
         return null;
     }
-    
+
     // interface XMLDecoder
     public void start(Attributes atts) {
     }
-    
+
     // interface XMLDecoder
     public void end() {
     }
-    
+
     // interface XMLDecoder
     public void startElement(String name, Attributes atts) {
     }
-    
+
     // interface XMLDecoder
     public void endElement(String name, String currentText) {
     }

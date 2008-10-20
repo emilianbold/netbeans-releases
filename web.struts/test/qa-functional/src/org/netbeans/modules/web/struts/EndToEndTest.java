@@ -88,14 +88,14 @@ import org.openide.util.Exceptions;
  * @author Jiri Skrivanek
  */
 public class EndToEndTest extends J2eeTestCase {
-    
+
     public static final String PROJECT_NAME = "StrutsWebApplication";
-    
+
     /** Constructor required by JUnit */
     public EndToEndTest(String name) {
         super(name);
     }
-    
+
     /** Creates suite from particular test cases. You can define order of testcases here. */
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(EndToEndTest.class);
@@ -104,7 +104,7 @@ public class EndToEndTest extends J2eeTestCase {
                 "testCreateLogoutPage","testCreateForwardInclude","testRunApplication");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);
-        
+
         /*
         return NbModuleSuite.create(
             NbModuleSuite.createConfiguration(EndToEndTest.class)
@@ -123,18 +123,18 @@ public class EndToEndTest extends J2eeTestCase {
         );
         */
     }
-    
+
     /** Called before every test case. */
     @Override
     public void setUp() {
         System.out.println("########  "+getName()+"  #######");
     }
-    
+
     /** Called after every test case. */
     @Override
     public void tearDown() {
     }
-    
+
     /** Create web application with struts support and check correctness. */
     public void testSetupStrutsProject() throws IOException {
         // "Web"
@@ -197,7 +197,7 @@ public class EndToEndTest extends J2eeTestCase {
         webXMLEditor.replace("index.jsp", "login.jsp");
         webXMLEditor.save();
     }
-    
+
     /** Create login.jsp and insert prepared source code to it. */
     public void testCreateLoginPage() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
@@ -219,7 +219,7 @@ public class EndToEndTest extends J2eeTestCase {
         loginEditorOper.replace(loginEditorOper.getText(), sourceCode);
         loginEditorOper.save();
     }
-    
+
     /** Create bean which handles login form. */
     public void testCreateLoginBean() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
@@ -241,7 +241,7 @@ public class EndToEndTest extends J2eeTestCase {
         String expected = "<form-bean name=\"LoginForm\" type=\"com.mycompany.eshop.struts.forms.LoginForm\"/>";
         assertTrue("form-bean record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
     }
-    
+
     /** Create struts action which verify input fields in login form. */
     public void testCreateLoginAction() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
@@ -265,14 +265,14 @@ public class EndToEndTest extends J2eeTestCase {
         EditorOperator loginEditorOper = new EditorOperator("LoginVerifyAction.java");
         Properties properties = new Properties();
         properties.load(this.getClass().getResourceAsStream("Bundle.properties"));
-        String sourceCode = properties.getProperty("LoginVerifyAction");
-        loginEditorOper.replace("return mapping.findForward(SUCCESS);", sourceCode);
+        //String sourceCode = properties.getProperty("LoginVerifyAction");
+        //loginEditorOper.replace("return mapping.findForward(SUCCESS);", sourceCode);
         loginEditorOper.save();
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
         String expected = "<action input=\"/login.jsp\" name=\"LoginForm\" path=\"/Login/Verify\" scope=\"request\" type=\"com.mycompany.eshop.struts.actions.LoginVerifyAction\"/>";
         assertTrue("action record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
     }
-    
+
     /** Create SecurityManager class.  */
     public void testCreateSecurityManager() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
@@ -293,7 +293,7 @@ public class EndToEndTest extends J2eeTestCase {
         editorOper.replace(editorOper.getText(), sourceCode);
         editorOper.save();
     }
-    
+
     /** Call "Add Forward" action in struts-config.xml and fill in the dialog values. */
     public void testCreateForward() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
@@ -320,7 +320,7 @@ public class EndToEndTest extends J2eeTestCase {
         assertTrue("forward record should be added to struts-config.xml.", strutsConfigEditor.getText().indexOf(expected) > -1);
         strutsConfigEditor.save();
     }
-    
+
     /** Create shop.jsp and insert prepared source code to it. */
     public void testCreateShopPage() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
@@ -342,7 +342,7 @@ public class EndToEndTest extends J2eeTestCase {
         editorOper.replace(editorOper.getText(), sourceCode);
         editorOper.save();
     }
-    
+
     /** Create logout.jsp and insert prepared source code to it. */
     public void testCreateLogoutPage() throws IOException {
         NewFileWizardOperator newWizardOper = NewFileWizardOperator.invoke();
@@ -364,7 +364,7 @@ public class EndToEndTest extends J2eeTestCase {
         editorOper.replace(editorOper.getText(), sourceCode);
         editorOper.save();
     }
-    
+
     /** Call "Add Forward/Include" action in struts-config.xml and fill in the dialog values. */
     public void testCreateForwardInclude() {
         EditorOperator strutsConfigEditor = new EditorOperator("struts-config.xml");
@@ -402,7 +402,7 @@ public class EndToEndTest extends J2eeTestCase {
         new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
         // confirm properties dialog
         propertiesDialogOper.ok();
-        
+
         try {
             // "Run Project"
             String runProjectItem = Bundle.getString("org.netbeans.modules.web.project.ui.Bundle", "LBL_RunAction_Name");
@@ -414,7 +414,7 @@ public class EndToEndTest extends J2eeTestCase {
             getLog("ServerLog").print(new OutputTabOperator("GlassFish").getText());
           }
     }
-    
+
     /** Opens URL connection and waits for given text. It thows TimeoutExpiredException
      * if timeout expires.
      * @param urlSuffix suffix added to server URL
