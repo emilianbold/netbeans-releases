@@ -56,7 +56,6 @@ import org.netbeans.jellytools.modules.debugger.actions.NewBreakpointAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -160,7 +159,7 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             try {
                 Utilities.waitStatusText("Thread breakpoint hit by thread ");
             } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                if (!Utilities.checkConsoleForText("Thread breakpoint hit by thread ", 1)) {
                     System.err.println(e.getMessage());
                     throw e;
                 }

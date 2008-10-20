@@ -51,7 +51,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.DebugProjectAction;
@@ -505,6 +504,7 @@ public class ActionsTest extends JellyTestCase {
             //continue
             new ContinueAction().performMenu();
             //remove breakpoint
+            new EventTool().waitNoEvent(300);
             Utilities.toggleBreakpoint(eo, 80, false);
             //continue
             new ContinueAction().performMenu();

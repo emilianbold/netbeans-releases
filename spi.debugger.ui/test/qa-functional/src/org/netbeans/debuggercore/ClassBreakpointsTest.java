@@ -59,7 +59,6 @@ import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JEditorPaneOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -308,7 +307,7 @@ public class ClassBreakpointsTest extends JellyTestCase {
             try {
                 Utilities.waitStatusText("Class breakpoint hit for class examples.advanced.MemoryView$1.");
             } catch (Throwable e) {
-                if (!Utilities.checkConsoleLastLineForText("Class breakpoint hit for class examples.advanced.MemoryView$1.")) {
+                if (!Utilities.checkConsoleForText("Class breakpoint hit for class examples.advanced.MemoryView$1.", 4)) {
                     System.err.println(e.getMessage());
                     throw e;
                 }
