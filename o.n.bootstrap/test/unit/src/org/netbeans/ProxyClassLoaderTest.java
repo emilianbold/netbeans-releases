@@ -52,6 +52,41 @@ public class ProxyClassLoaderTest extends TestCase {
     }
 
     public void testAmbiguousDelegation() throws Exception {
+        class CL extends ProxyClassLoader {
+            final Class[] owned;
+            final String name;
+            CL(ClassLoader[] parents, String name, Class... owned) {
+                super(parents, false);
+                addCoveredPackages(Collections.singleton("org.netbeans"));
+                this.name = name;
+                this.owned = owned;
+            }
+            protected @Override Class doLoadClass(String pkg, String name) {
+                for (Class c : owned) {
+                    if (name.equals(c.getName())) {
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        InputStream is = CL.class.getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
+                        byte[] buf = new byte[4096];
+                        int read;
+                        try {
+                            while ((read = is.read(buf)) != -1) {
+                                baos.write(buf, 0, read);
+                            }
+                        } catch (IOException x) {
+                            assert false : x;
+                        }
+                        return defineClass(name, baos.toByteArray(), 0, baos.size());
+                    }
+                }
+                return null;
+            }
+            protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
+                return parent != null || !pkg.equals("org/netbeans/");
+            }
+            public @Override String toString() {
+                return name;
+            }
+        }
         ClassLoader l1 = new CL(new ClassLoader[0], "l1", A.class);
         ClassLoader l2 = new CL(new ClassLoader[0], "l2", A.class);
         ClassLoader l3 = new CL(new ClassLoader[] {l1}, "l3", B.class);
@@ -74,42 +109,6 @@ public class ProxyClassLoaderTest extends TestCase {
         assertEquals(l3, l5.loadClass(B.class.getName()).getClassLoader());
         assertEquals(l5, l5.loadClass(C.class.getName()).getClassLoader());
         assertEquals(l1, l5.loadClass(C.class.getName()).getMethod("a").invoke(null).getClass().getClassLoader());
-    }
-
-    static class CL extends ProxyClassLoader {
-        final Class[] owned;
-        final String name;
-        CL(ClassLoader[] parents, String name, Class... owned) {
-            super(parents, false);
-            addCoveredPackages(Collections.singleton("org.netbeans"));
-            this.name = name;
-            this.owned = owned;
-        }
-        protected @Override Class doLoadClass(String pkg, String name) {
-            for (Class c : owned) {
-                if (name.equals(c.getName())) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    InputStream is = CL.class.getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
-                    byte[] buf = new byte[4096];
-                    int read;
-                    try {
-                        while ((read = is.read(buf)) != -1) {
-                            baos.write(buf, 0, read);
-                        }
-                    } catch (IOException x) {
-                        assert false : x;
-                    }
-                    return defineClass(name, baos.toByteArray(), 0, baos.size());
-                }
-            }
-            return null;
-        }
-        protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
-            return parent != null || !pkg.equals("org/netbeans/");
-        }
-        public @Override String toString() {
-            return name;
-        }
     }
 
     public static class A {}
