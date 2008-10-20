@@ -47,11 +47,9 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.CharBuffer;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
@@ -255,8 +253,8 @@ public final class Source {
     static {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
     }
-    
-    private final Set<SourceFlags> 
+        
+    private final Set<SourceFlags>
                             flags = EnumSet.noneOf(SourceFlags.class);
     private int taskCount;
     private volatile Parser cachedParser;
@@ -266,11 +264,56 @@ public final class Source {
     
     
     private static class MySourceAccessor extends SourceAccessor {
+        
+        @Override
+        public void setFlags (final Source source, final Set<SourceFlags> flags)  {
+            assert source != null;
+            assert flags != null;
+            synchronized (source) {
+                source.flags.addAll(flags);
+            }
+        }
 
         @Override
-        public Set<SourceFlags> getFlags(Source source) {
+        public boolean testFlag (final Source source, final SourceFlags flag) {
             assert source != null;
-            return source.flags;
+            assert flag != null;
+            synchronized (source) {
+                return source.flags.contains(flag);
+            }
+        }
+
+        @Override
+        public boolean cleanFlag (final Source source, final SourceFlags flag) {
+            assert source != null;
+            assert flag != null;
+            synchronized (source) {        
+                return source.flags.remove(flag);
+            }
+        }
+
+        @Override
+        public boolean testAndCleanFlags (final Source source, final SourceFlags test, final Set<SourceFlags> clean) {
+            assert source != null;
+            assert test != null;
+            assert clean != null;
+            synchronized (source) {
+                boolean res = source.flags.contains(test);
+                source.flags.removeAll(clean);
+                return res;
+            }
+        }
+
+        @Override
+        public void invalidate (final Source source, final boolean force) {
+            assert source != null;
+            synchronized (source) {
+                if (force || source.flags.remove(SourceFlags.INVALID)) {
+                    final SourceCache cache = getCache(source);
+                    assert cache != null;
+                    cache.invalidate();
+                }
+            }
         }
         
         @Override

@@ -44,6 +44,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -171,12 +172,11 @@ public class TaskProcessor {
             }            
             parserLock.lock();
             try {
-                if (lockCount < 1)
-                    for (Source source : sources) 
-                        if (SourceAccessor.getINSTANCE ().getFlags (source).contains (SourceFlags.INVALID)) {
-                            SourceAccessor.getINSTANCE ().getCache (source).invalidate ();
-                            SourceAccessor.getINSTANCE ().getFlags (source).remove (SourceFlags.INVALID);
-                        }
+                if (lockCount < 1) {
+                    for (Source source : sources) {
+                        SourceAccessor.getINSTANCE ().invalidate(source,false);
+                    }
+                }
                 lockCount++;
                 task.run ();
             } catch (final Exception e) {
@@ -325,11 +325,9 @@ public class TaskProcessor {
         synchronized (INTERNAL_LOCK) {
             boolean reschedule;
             synchronized (source) {
-                Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(source);
-                reschedule = flags.contains(SourceFlags.RESCHEDULE_FINISHED_TASKS);
-                flags.remove(SourceFlags.RESCHEDULE_FINISHED_TASKS);
-                flags.remove(SourceFlags.CHANGE_EXPECTED);
-            }            
+                reschedule = SourceAccessor.getINSTANCE().testAndCleanFlags(source,SourceFlags.RESCHEDULE_FINISHED_TASKS,
+                        EnumSet.of(SourceFlags.RESCHEDULE_FINISHED_TASKS, SourceFlags.CHANGE_EXPECTED));
+            }
             Collection<Request> cr;            
             if (reschedule) {                
                 if ((cr=finishedRequests.remove(source)) != null && cr.size()>0)  {
@@ -508,27 +506,24 @@ public class TaskProcessor {
                                         if (toRemove.remove(r.task)) {
                                             continue;
                                         }                                        
-                                        synchronized (source) {
-                                            boolean changeExpected = SourceAccessor.getINSTANCE().getFlags(source).contains(SourceFlags.CHANGE_EXPECTED);
-                                            if (changeExpected) {
-                                                //Skeep the task, another invalidation is comming
-                                                Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
-                                                if (rc == null) {
-                                                    rc = new LinkedList<Request> ();
-                                                    waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
-                                                }
-                                                rc.add(r);
-                                                continue;
-                                            }                                            
+                                        
+                                        boolean changeExpected = SourceAccessor.getINSTANCE().testFlag(source,SourceFlags.CHANGE_EXPECTED);
+                                        if (changeExpected) {
+                                            //Skeep the task, another invalidation is comming
+                                            Collection<Request> rc = waitingRequests.get (r.cache.getSnapshot().getSource());
+                                            if (rc == null) {
+                                                rc = new LinkedList<Request> ();
+                                                waitingRequests.put (r.cache.getSnapshot ().getSource (), rc);
+                                            }
+                                            rc.add(r);
+                                            continue;
                                         }
+                                        
                                     }
                                     
                                     parserLock.lock();                                    
-                                    try {                   
-                                        if (SourceAccessor.getINSTANCE ().getFlags (source).contains (SourceFlags.INVALID)) {
-                                            SourceAccessor.getINSTANCE ().getCache (source).invalidate ();
-                                            SourceAccessor.getINSTANCE ().getFlags (source).remove (SourceFlags.INVALID);
-                                        }
+                                    try {
+                                        SourceAccessor.getINSTANCE ().invalidate(source,false);
                                         lockCount++;
                                         if (r.task instanceof EmbeddingProvider) {
                                             sourceCache.refresh ((EmbeddingProvider) r.task, r.schedulerType);

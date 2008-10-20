@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl.event;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.EnumSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -56,7 +57,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.ParserManagerImpl;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
@@ -130,14 +130,12 @@ public final class EventSupport {
     }   
     
     public void resetState (final boolean invalidate) {
-        synchronized (this.source) {
-            final Set<SourceFlags> flags = SourceAccessor.getINSTANCE().getFlags(this.source);
-            flags.add(SourceFlags.CHANGE_EXPECTED);
-            if (invalidate) {
-                flags.add(SourceFlags.INVALID);
-                flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
-            }
+        final Set<SourceFlags> flags = EnumSet.of(SourceFlags.CHANGE_EXPECTED);
+        if (invalidate) {
+            flags.add(SourceFlags.INVALID);
+            flags.add(SourceFlags.RESCHEDULE_FINISHED_TASKS);
         }
+        SourceAccessor.getINSTANCE().setFlags(this.source, flags);
         TaskProcessor.resetState (this.source,invalidate,true);
         
         if (!k24) {

@@ -70,15 +70,46 @@ public abstract class SourceAccessor {
     }
     
     private static volatile SourceAccessor INSTANCE;
+    
+    /**
+     * Sets given {@link SourceFlags} of given {@link Source}
+     * @param source
+     * @param flags
+     */
+    public abstract void setFlags (Source source, Set<SourceFlags> flags);
 
     /**
-     * Returns flags of given {@link Source}
+     * Tests if given {@link Source} has a given {@link SourceFlags}
      * @param source
-     * @return
+     * @param flag
+     * @return true if the source has given flag
      */
-    public abstract Set<SourceFlags> getFlags (Source source);
-       
-    
+    public abstract boolean testFlag (Source source, SourceFlags flag);
+
+    /**
+     * Removes a given {@link SourceFlags} from a given {@link Source}
+     * @param source
+     * @param flag
+     * @return true if the source had given flag and it was removed
+     */
+    public abstract boolean cleanFlag (Source source, SourceFlags flag);
+
+    /**
+     * Tests if a given {@link Source} has a given {@link SourceFlags} and cleans the
+     * clean flags.
+     * @param source
+     * @param flag
+     * @return true if the source had given flag
+     */
+    public abstract boolean testAndCleanFlags (Source source, SourceFlags test, Set<SourceFlags> clean);
+
+    /**
+     * Invalidates given {@link Source}
+     * @param source to be invalidated
+     * @param force if true source is always invalidated
+     */
+    public abstract void invalidate (Source source, boolean force);
+
     public abstract void setEvent (Source source, SchedulerEvent event);
     
     public abstract SchedulerEvent getEvent (Source source);

@@ -42,6 +42,7 @@ package org.netbeans.modules.parsing.impl;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -79,7 +80,7 @@ public final class SourceCache {
     private final Source    source;
     //@GuardedBy(this)
     private Embedding       embedding;
-    private final String    mimeType;
+    private final String    mimeType;    
 
     public SourceCache (
         Source              source,
@@ -184,7 +185,7 @@ public final class SourceCache {
     synchronized boolean isValid () {
         return snapshot != null;
     }
-    
+        
     //@GuardedBy(this)
     private Collection<Embedding> 
                             embeddings;
