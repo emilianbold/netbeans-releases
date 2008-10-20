@@ -48,6 +48,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManagerEvents;
 
 public class Configurations {
 
@@ -55,7 +56,8 @@ public class Configurations {
     public static final String PROP_ACTIVE_CONFIGURATION = "activeconfiguration"; // NOI18N
 
     private PropertyChangeSupport pcs;
-    private List<Configuration> configurations;
+    private List<Configuration> configurations = new ArrayList<Configuration>();
+    private List<Runnable> tasks = new ArrayList<Runnable>();
 
     public Configurations() {
         pcs = new PropertyChangeSupport(this);
@@ -99,15 +101,38 @@ public class Configurations {
 	return this;
     }
     */
-    public Configurations init(Configuration[] confs, int defaultConf) {
-	configurations = new ArrayList();
-	for (int i = 0; i < confs.length; i ++)
+    public synchronized Configurations init(Configuration[] confs, int defaultConf) {
+	configurations.clear();
+	for (int i = 0; i < confs.length; i ++) {
 	    configurations.add(confs[i]);
-	if (defaultConf >= 0 && confs != null && confs.length > 0)
+        }
+	if (defaultConf >= 0 && confs != null && confs.length > 0) {
 	    setActive(defaultConf);
+            if (tasks.size() > 0) {
+                for(Runnable task : tasks) {
+                    runOnCodeModelReadiness(task, false);
+                }
+                tasks.clear();
+            }
+        }
 	return this;
     }
 
+    public void runOnCodeModelReadiness(Runnable task){
+        runOnCodeModelReadiness(task, true);
+    }
+
+    private synchronized void runOnCodeModelReadiness(Runnable task, boolean postpone){
+        MakeConfiguration active = (MakeConfiguration)getActive();
+        if (active != null) {
+            DevelopmentHostConfiguration host = active.getDevelopmentHost();
+            CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+        } else {
+            if (postpone) {
+                tasks.add(task);
+            }
+        }
+    }
 
     public int size() {
 	return configurations.size();
@@ -279,8 +304,8 @@ public class Configurations {
      */
     private void checkValidIndex(int index) {
 	if (index < 0 || index >= size()) {
-	    ;// Error ???
-	    ;// FIXUP ???
+	    // Error ???
+	    // FIXUP ???
 	}
     }
 
