@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module-Specification-Version: 6.5
+OpenIDE-Module-Specification-Version: 6.6
 OpenIDE-Module: org.netbeans.modules.bpel.samples
 OpenIDE-Module-Layer: org/netbeans/modules/bpel/samples/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/bpel/samples/resources/Bundle.properties
