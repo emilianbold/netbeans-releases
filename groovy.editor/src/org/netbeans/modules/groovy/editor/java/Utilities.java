@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.groovy.editor.java;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.ArrayType;
@@ -53,6 +56,7 @@ import javax.lang.model.type.TypeVariable;
 import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.SimpleTypeVisitor6;
 import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.modules.gsf.api.Modifier;
 
 /**
  * This was copied from org.netbeans.modules.editor.java.Utilities.
@@ -101,7 +105,66 @@ public final class Utilities {
 
         return type;
     }
-    
+
+    public static Collection<javax.lang.model.element.Modifier> reflectionModifiersToModel(int modifiers) {
+        Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
+
+        if (java.lang.reflect.Modifier.isAbstract(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.ABSTRACT);
+        }
+        if (java.lang.reflect.Modifier.isFinal(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.FINAL);
+        }
+        if (java.lang.reflect.Modifier.isNative(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.NATIVE);
+        }
+        if (java.lang.reflect.Modifier.isStatic(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.STATIC);
+        }
+        if (java.lang.reflect.Modifier.isStrict(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.STRICTFP);
+        }
+        if (java.lang.reflect.Modifier.isSynchronized(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.SYNCHRONIZED);
+        }
+        if (java.lang.reflect.Modifier.isTransient(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.TRANSIENT);
+        }
+        if (java.lang.reflect.Modifier.isVolatile(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.VOLATILE);
+        }
+        if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.PRIVATE);
+        } else if (java.lang.reflect.Modifier.isProtected(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.PROTECTED);
+        } else if (java.lang.reflect.Modifier.isPublic(modifiers)) {
+            ret.add(javax.lang.model.element.Modifier.PUBLIC);
+        }
+
+        return ret;
+    }
+
+    public static Collection<javax.lang.model.element.Modifier> gsfModifiersToModel(Set<Modifier> modifiers,
+            javax.lang.model.element.Modifier defaultModifier) {
+
+        Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
+
+        if (modifiers.contains(Modifier.STATIC)) {
+            ret.add(javax.lang.model.element.Modifier.STATIC);
+        }
+        if (modifiers.contains(Modifier.PRIVATE)) {
+            ret.add(javax.lang.model.element.Modifier.PRIVATE);
+        } else if (modifiers.contains(Modifier.PROTECTED)) {
+            ret.add(javax.lang.model.element.Modifier.PROTECTED);
+        } else if (modifiers.contains(Modifier.PUBLIC)) {
+            ret.add(javax.lang.model.element.Modifier.PUBLIC);
+        } else if (defaultModifier != null) {
+            ret.add(defaultModifier);
+        }
+
+        return ret;
+    }
+
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
         return getTypeName(type, fqn, false);
     }

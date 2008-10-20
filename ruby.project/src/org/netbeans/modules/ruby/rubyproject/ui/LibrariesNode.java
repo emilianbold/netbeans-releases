@@ -129,7 +129,7 @@ public final class LibrariesNode extends AbstractNode {
     /**
      * So far only Ruby platform node.
      */
-    private final static class LibrariesChildren extends Children.Keys {
+    private final static class LibrariesChildren extends Children.Keys<Object> {
 
         private final RubyBaseProject project;
 

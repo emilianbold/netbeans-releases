@@ -68,7 +68,7 @@ class RailsInstallationValidator {
                     NbBundle.getMessage(RailsInstallationValidator.class, "GemProblem")); 
         }
         
-        if (!platform.isValidRuby(false)) {
+        if (!platform.isValid(false)) {
             return new RailsInstallationInfo(null, 
                     false, 
                     NbBundle.getMessage(RailsInstallationValidator.class, "NoRuby")); 

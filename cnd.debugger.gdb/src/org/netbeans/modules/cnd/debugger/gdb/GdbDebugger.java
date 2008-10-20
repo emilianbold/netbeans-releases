@@ -203,6 +203,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private Map<String, ShareInfo> shareTab;
     private String sig = null;
     private IOProxy ioProxy = null;
+    private GdbVersionPeculiarity versionPeculiarity = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -280,7 +281,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String cspath = getCompilerSetPath(pae);
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
                     runDirectory, termpath, cspath);
-            gdb.gdb_version();
+            // we should not continue until gdb version is initialized
+            initGdbVersion();
+
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
@@ -463,6 +466,25 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
+    private final void initGdbVersion() {
+        CommandBuffer cb = new CommandBuffer(gdb);
+        gdb.gdb_version(cb);
+        cb.waitForCompletion();
+        String message = cb.toString();
+
+        if (startupTimer != null) {
+            // Cancel the startup timer - we've got our first response from gdb
+            startupTimer.cancel();
+            startupTimer = null;
+        }
+
+        gdbVersion = parseGdbVersionString(message.substring(8));
+        versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
+        if (message.contains("cygwin")) { // NOI18N
+            cygwin = true;
+        }
+    }
+
     private String win2UnixPath(String path) {
         String res = path;
         if (isCygwin()) {
@@ -514,6 +536,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public String getSignal() {
         return sig;
+    }
+
+    public GdbVersionPeculiarity getVersionPeculiarity() {
+        return versionPeculiarity;
     }
 
     private String getFullPath(String rundir, String path) {
@@ -613,8 +639,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return pathMap.getRemotePath(programName.toString());
     }
 
-    /** Get the gdb version */
-    public double getGdbVersion() {
+    /**
+     * Get the gdb version
+     * Should not be used directly, 
+     * use versionPeculiarity for action dependent on gdb version
+     */
+    private double getGdbVersion() {
         return gdbVersion;
     }
 
@@ -627,8 +657,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue().equals(STATE_READY)) {
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
-                } else if (gdbVersion < 6.8) {
-                    gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
+                } else {
+                    setStopOnSolibEvents(true);
                 }
                 if (continueAfterFirstStop) {
                     continueAfterFirstStop = false;
@@ -1157,18 +1187,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
-            if (startupTimer != null) {
-                // Cancel the startup timer - we've got our first response from gdb
-                startupTimer.cancel();
-                startupTimer = null;
-            }
-
-            // Now process the version information
-            gdbVersion = parseGdbVersionString(msg.substring(8));
-            if (msg.contains("cygwin")) { // NOI18N
-                cygwin = true;
-            }
         } else if (msg.toLowerCase().contains("mingw")) { // NOI18N
             mingw = true;
         } else if (msg.startsWith("Breakpoint ") && msg.contains(" at 0x")) { // NOI18N
@@ -1845,13 +1863,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     checkNextFrame = true;
                 } else {
                     gdb.stack_select_frame(i);
-                    if (gdbVersion < 6.8) {
-                        gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
-                        gdb.exec_finish();
-                        gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
-                    } else {
-                        gdb.exec_finish();
-                    }
+                    setStopOnSolibEvents(false);
+                    gdb.exec_finish();
+                    setStopOnSolibEvents(true);
                     gdb.exec_next();
                     state = oldState;
                 return;
@@ -1885,6 +1899,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.exec_continue();
         }
         state = oldState;
+    }
+
+    private void setStopOnSolibEvents(boolean enable) {
+        if (gdbVersion < 6.8) {
+            gdb.gdb_set("stop-on-solib-event", enable ? "1" : "0"); // NOI18N
+        }
     }
 
     private String getOSPath(String path) {

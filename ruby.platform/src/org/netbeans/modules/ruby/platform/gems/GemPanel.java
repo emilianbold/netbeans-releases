@@ -229,10 +229,11 @@ public final class GemPanel extends JPanel {
         cancelRunningTasks();
         
         boolean paltformsAreBeingLoaded = PlatformComponentFactory.isLoadingPlatforms(platforms);
-        if (paltformsAreBeingLoaded || getSelectedPlatform() == null || !getSelectedPlatform().hasRubyGemsInstalled()) {
+        RubyPlatform platform = getSelectedPlatform();
+        if (paltformsAreBeingLoaded || platform == null || !platform.isValid() || !platform.hasRubyGemsInstalled()) {
             if (!paltformsAreBeingLoaded) {
                 gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
-                gemHomeValue.setText(getSelectedPlatform() == null
+                gemHomeValue.setText(platform == null
                         ? getMessage("GemPanel.select.valid.platform")
                         : GemManager.getNotInstalledMessage());
             }

@@ -331,7 +331,7 @@ public final class RubyDebuggerTest extends TestBase {
     }
 
     public void testRubiniusDebugging() throws IOException {
-        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        RubyPlatform rubinius = setUpRubinius();
         ExecutionDescriptor descriptor = new ExecutionDescriptor(rubinius);
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         RubyDebuggerImplementation rdi = new RubyDebugger();

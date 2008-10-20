@@ -43,6 +43,8 @@ package org.netbeans.modules.db.dataview.meta;
 import java.sql.Connection;
 import java.util.Iterator;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.spi.ServiceRegistry;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -62,6 +64,7 @@ public final class DBConnectionFactory {
 
     private static volatile DBConnectionFactory INSTANCE = null;
     private volatile Throwable ex = null;
+    private static Logger mLogger = Logger.getLogger(DBConnectionFactory.class.getName());
 
     public static DBConnectionFactory getInstance() {
         synchronized (DBConnectionFactory.class) {
@@ -94,6 +97,7 @@ public final class DBConnectionFactory {
                 return showConnectionDialog(dbConn);
             }
         } catch (Exception ex) {
+            mLogger.log(Level.WARNING, "Failed to set connection:" + ex);
             this.ex = ex;
             return null;
         }

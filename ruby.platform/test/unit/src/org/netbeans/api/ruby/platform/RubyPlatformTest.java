@@ -67,36 +67,33 @@ public class RubyPlatformTest extends RubyTestBase {
 
     public void testHasRubyGemsInstalled() throws Exception {
         assertTrue(RubyPlatformManager.getDefaultPlatform().hasRubyGemsInstalled());
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
-        assertFalse(ruby.hasRubyGemsInstalled());
+        assertFalse(setUpPlatform().hasRubyGemsInstalled());
     }
 
     public void testFindGemExecutableInRubyBin() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         touch(platform.getBinDir(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
     public void testFindGemExecutableInGemRepo() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         GemManager gemManager = platform.getGemManager();
         touch(new File(gemManager.getGemHome(), "bin").getPath(), "rdebug-ide");
         assertNotNull(platform.findExecutable("rdebug-ide"));
     }
 
     public void testFindRDoc() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        assertNotNull("rdoc found", platform.getRDoc());
+        assertNotNull("rdoc found", setUpPlatformWithRubyGems().getRDoc());
     }
 
     public void testFindRDocWithSuffix() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.7-p72"));
+        RubyPlatform platform = setUpPlatform(false, "1.8.7-p72");
         assertNotNull("rdoc found", platform.getRDoc());
     }
 
     public void testFindIRB() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
-        assertNotNull("irb found", platform.getIRB());
+        assertNotNull("irb found", setUpPlatformWithRubyGems().getIRB());
     }
 
     public void testFindJIRB() throws Exception {
@@ -104,20 +101,19 @@ public class RubyPlatformTest extends RubyTestBase {
     }
 
     public void testFindIRBWithSuffix() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRuby(false, "1.8.7-p72"));
+        RubyPlatform platform = setUpPlatform(false, "1.8.7-p72");
         assertNotNull("irb found", platform.getIRB());
     }
 
     public void testLongDescription() throws Exception {
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
-        assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]", ruby.getInfo().getLongDescription());
+        assertEquals("right long description without patchlevel", "Ruby 0.1 (2000-01-01) [abcd]",
+                setUpPlatform().getInfo().getLongDescription());
     }
 
     public void testLabel() throws Exception {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
         assertEquals("right label for build-in JRuby", "Built-in JRuby 1.1.4", jruby.getLabel());
-        RubyPlatform ruby = RubyPlatformManager.addPlatform(setUpRuby());
-        assertEquals("right label for Ruby", "Ruby 0.1", ruby.getLabel());
+        assertEquals("right label for Ruby", "Ruby 0.1", setUpPlatform().getLabel());
     }
 
     public void testHasFastDebuggerInstalled() throws IOException {
@@ -180,7 +176,7 @@ public class RubyPlatformTest extends RubyTestBase {
     }
 
     public void testRubinius() throws IOException {
-        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        RubyPlatform rubinius = setUpRubinius();
         assertNotNull("rubinius supported", rubinius);
         assertTrue("is Rubinius", rubinius.isRubinius());
         assertNotNull("has label", rubinius.getLabel());

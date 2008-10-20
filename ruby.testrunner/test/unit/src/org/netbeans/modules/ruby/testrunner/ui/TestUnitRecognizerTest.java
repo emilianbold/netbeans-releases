@@ -65,6 +65,17 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("Foo::Bar::TestFooBar", matcher.group(2));
     }
 
+    public void testShouldaTestStarted() {
+        String output = "%TEST_STARTED% test: when index is called should respond with success. (MainControllerTest)";
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.ShouldaTestStartedHandler();
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(2, matcher.groupCount());
+        assertEquals("when index is called should respond with success", matcher.group(1));
+        assertEquals("MainControllerTest", matcher.group(2));
+
+    }
+
     public void testTestFinished() {
         TestRecognizerHandler handler = new TestUnitHandlerFactory.TestFinishedHandler();
         String output = "%TEST_FINISHED% time=0.008765 test_foo(TestFooBar)";
@@ -82,6 +93,17 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("0.008765", matcher.group(1));
         assertEquals("test_foo", matcher.group(2));
         assertEquals("FooModule::TestFooBar", matcher.group(3));
+    }
+
+    public void testShouldaTestFinished() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.ShouldaTestFinishedHandler();
+        String output = "%TEST_FINISHED% time=0.105651 test: when index is called should respond with success. (MainControllerTest)";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+        assertEquals(3, matcher.groupCount());
+        assertEquals("0.105651", matcher.group(1));
+        assertEquals("when index is called should respond with success", matcher.group(2));
+        assertEquals("MainControllerTest", matcher.group(3));
     }
 
     public void testTestFinished2() {
@@ -124,6 +146,19 @@ public class TestUnitRecognizerTest extends TestCase {
         assertEquals("TestSomething::TestNotExecuted", matcher.group(3));
         assertEquals("this test is not executed.", matcher.group(4));
         assertEquals("/a/path/to/somewhere/test/test_something.rb:21:in `test_foo'", matcher.group(5));
+    }
+
+    public void testShouldaTestFailed() {
+        TestRecognizerHandler handler = new TestUnitHandlerFactory.ShouldaTestFailedHandler();
+        String output = "%TEST_FAILED% time=0.041676 testname=test: when index is called should respond with forbidden. (MainControllerTest) message=Expected response to be a <:forbidden>, but was <200> location=/home/erno/NetBeansProjects/nb_shoulda/vendor/plugins/shoulda/lib/shoulda/controller/macros.rb:177";
+        Matcher matcher = handler.match(output);
+        assertTrue(matcher.matches());
+
+        assertEquals(5, matcher.groupCount());
+        assertEquals("0.041676", matcher.group(1));
+        assertEquals("when index is called should respond with forbidden", matcher.group(2));
+        assertEquals("MainControllerTest", matcher.group(3));
+        assertEquals("Expected response to be a <:forbidden>, but was <200>", matcher.group(4));
     }
 
     public void testTestError() {

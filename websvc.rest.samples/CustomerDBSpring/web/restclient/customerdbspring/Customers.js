@@ -43,6 +43,8 @@
 * Support js for Customers
 */
 
+var useWrapCustomers = true;
+
 function Customers(uri_) {
     this.uri = uri_;
     this.items = new Array();
@@ -62,12 +64,12 @@ Customers.prototype = {
    },
 
    addItem : function(item) {
-      this.items[this.items.length+1] = item;
+      this.items.push(item);
    },
 
    removeItem : function(item) {
       var status = item.delete_();
-      if(status != '-1')
+      if(status)
         this.init(); //re-read items
       return status;
    },
@@ -79,9 +81,10 @@ Customers.prototype = {
          var myObj = eval('('+c+')');
          var customers = myObj.customers;
          if(customers == null || customers == undefined) {
-            rjsSupport.debug('customers is undefined, so skipping init of Customers');
-            return;
+            customers = myObj;
+            useWrapCustomers = false;
          }
+         this.items = new Array();
          var refs = customers.customer;
          if(refs != undefined) {
              if(refs.length == undefined) {
@@ -107,12 +110,18 @@ Customers.prototype = {
 
    flush : function() {
       var remote = new CustomersRemote(this.uri);
-      remote.postJson_('{'+this.toString()+'}');
+      if(useWrapCustomers)
+         return remote.postJson_('{'+this.toString()+'}');
+      else
+         return remote.postJson_(this.toString());
    },
 
    flush : function(customer) {
       var remote = new CustomersRemote(this.uri);
-      return remote.postJson_('{'+customer.toString()+'}');
+      if(useWrapCustomers)
+         return remote.postJson_('{'+customer.toString()+'}');
+      else
+         return remote.postJson_(customer.toString());
    },
 
    toString : function() {
@@ -133,10 +142,13 @@ Customers.prototype = {
           s = s + ']';
       var myObj = '';
       if(s == '') {
-          myObj = '"customers":{"@uri":"'+this.getUri()+'"}';
+          myObj = '{"@uri":"'+this.getUri()+'"}';
       } else {
           myObj = 
-            '"customers":{'+'"@uri":"'+this.getUri()+'",'+'"customer":'+s+''+'}';
+            '{'+'"@uri":"'+this.getUri()+'",'+'"customer":'+s+''+'}';
+      }
+      if(useWrapCustomers) {
+          myObj = '"customers":'+myObj;
       }
       return myObj;
    }
@@ -144,7 +156,7 @@ Customers.prototype = {
 }
 
 function CustomersRemote(uri_) {
-    this.uri = uri_+'?expandLevel=0';
+    this.uri = uri_+'?expandLevel=0&start=0&max=50';
 }
 
 CustomersRemote.prototype = {

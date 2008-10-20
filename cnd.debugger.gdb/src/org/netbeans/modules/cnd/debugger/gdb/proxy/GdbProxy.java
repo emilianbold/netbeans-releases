@@ -52,6 +52,7 @@ package org.netbeans.modules.cnd.debugger.gdb.proxy;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -166,8 +167,8 @@ public class GdbProxy implements GdbMiDefinitions {
     }
 
     /** Ask gdb for its version */
-    public int gdb_version() {
-        return engine.sendCommand("-gdb-version"); // NOI18N
+    public int gdb_version(CommandBuffer cb) {
+        return engine.sendCommand(cb, "-gdb-version"); // NOI18N
     }
 
     /** Ask gdb about a variable (currently used to find the current language) */
@@ -183,12 +184,15 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param path The directory we want to run from
      */
     public int environment_cd(String dir) {
-        double ver = debugger.getGdbVersion();
-        if (ver > 6.3) {
-            return engine.sendCommand("-environment-cd  \"" + dir + "\""); // NOI18N
-        } else {
-            return engine.sendCommand("cd \"" + dir + "\""); // NOI18N
-        }
+        StringBuilder cmd = new StringBuilder();
+
+        cmd.append(debugger.getVersionPeculiarity().environmentCdCommand());
+
+        cmd.append(" \""); // NOI18N
+        cmd.append(dir);
+        cmd.append("\""); // NOI18N
+        
+        return engine.sendCommand(cmd.toString());
     }
 
     /**
@@ -199,12 +203,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param path The directory we want to run from
      */
     public int environment_directory(String dir) {
-        double ver = debugger.getGdbVersion();
-        if (ver > 6.3 || debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-            return engine.sendCommand("-environment-directory  \"" + dir + "\""); // NOI18N
-        } else {
-            return engine.sendCommand("directory \"" + dir + "\""); // NOI18N
-        }
+        return environment_directory(Collections.singletonList(dir));
     }
 
     /**
@@ -215,15 +214,11 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param path The directory we want to run from
      */
     public int environment_directory(List<String> dirs) {
-        StringBuilder cmd = new StringBuilder();
-        double ver = debugger.getGdbVersion();
-        
         assert dirs.size() > 0;
-        if (ver > 6.3 || debugger.getPlatform() == PlatformTypes.PLATFORM_MACOSX) {
-            cmd.append("-environment-directory"); // NOI18N
-        } else {
-            cmd.append("directory"); // NOI18N
-        }
+        StringBuilder cmd = new StringBuilder();
+        
+        cmd.append(debugger.getVersionPeculiarity().environmentDirectoryCommand());
+        
         for (String dir : dirs) {
             cmd.append(" \""); // NOI18N
             cmd.append(dir);
@@ -444,15 +439,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command kills the inferior program.
      */
     public int exec_abort() {
-        String cmd;
-
-        // -exec-abort isn't implemented yet (as of gdb 6.6)
-        if (debugger.getGdbVersion() > 6.6) {
-            cmd = "-exec-abort "; // NOI18N
-        } else {
-            cmd = "kill "; // NOI18N
-        }
-        return engine.sendCommand(cmd);
+        return engine.sendCommand(debugger.getVersionPeculiarity().execAbortCommand());
     }
     
 
@@ -479,9 +466,9 @@ public class GdbProxy implements GdbMiDefinitions {
             cmd.append("-break-insert "); // NOI18N
             if (temporary) {
                 cmd.append("-t "); // NOI18N
-            } else if (debugger.getGdbVersion() >= 6.8) {
-                cmd.append("-f "); // NOI18N
             }
+            // This will make pending breakpoint if specified location can not be parsed now
+            cmd.append(debugger.getVersionPeculiarity().breakPendingFlag());
         }
 
         // Temporary fix for Windows

@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.text.Collator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -75,7 +76,7 @@ import org.openide.util.Utilities;
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
  */
-public final class RubyPlatform {
+public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatform.class.getName());
 
@@ -155,7 +156,7 @@ public final class RubyPlatform {
             }
             return false;
         }
-        return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
+        return platform.isValid(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
     }
 
     public String getID() {
@@ -333,12 +334,27 @@ public final class RubyPlatform {
         return sitedir;
     }
 
-    public boolean isValidRuby(boolean warn) {
-        String rp = getBinDir();
-        boolean valid = false;
-        if (rp != null) {
-            File file = new File(rp);
-            valid = file.exists() && getHome() != null;
+    /**
+     * Calls {@link #isValid(boolean)} with <code>false</code>.
+     */
+    public boolean isValid() {
+        return isValid(false);
+    }
+
+    /**
+     * Test whether the platform is valid, i.e. has appropriate interpreter,
+     * <em>lib</em> and <em>bin</em> directories.
+     *
+     * @param warn whether to show the dialog to the user if platform is invalid
+     * @return whether the platform is valid
+     */
+    public boolean isValid(final boolean warn) {
+        boolean valid = new File(interpreter).isFile() && getLibDir() != null;
+        if (valid) {
+            String binDir = getBinDir();
+            if (binDir != null) {
+                valid = new File(binDir).isDirectory();
+            }
         }
 
         if (warn && !valid) {
@@ -424,10 +440,6 @@ public final class RubyPlatform {
 
     public boolean isRubinius() {
         return info.isRubinius();
-    }
-
-    public boolean isValid() {
-        return new File(interpreter).isFile() && getLibDir() != null;
     }
 
     /**
@@ -825,6 +837,16 @@ public final class RubyPlatform {
         int hash = 7;
         hash = 59 * hash + (this.id != null ? this.id.hashCode() : 0);
         return hash;
+    }
+
+    public int compareTo(final RubyPlatform other) {
+        int result = Collator.getInstance().compare(
+                getInfo().getLongDescription(), other.getInfo().getLongDescription());
+        if (result != 0) {
+            result = getInterpreter().compareTo(other.getInterpreter());
+        }
+        assert result != 0 : "same platform cannot be added twice: " + this + " vs. " + other;
+        return result;
     }
 
     public @Override String toString() {

@@ -188,7 +188,7 @@ public class RSpecSupport {
         }
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (!platform.isValidRuby(warn)) {
+        if (!platform.isValid(warn)) {
             return;
         }
 

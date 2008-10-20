@@ -58,7 +58,6 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
 import org.netbeans.modules.cnd.loaders.HDataLoader;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManagerEvents;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
@@ -71,7 +70,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
-import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FolderConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
@@ -92,8 +90,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     public void runOnCodeModelReadiness(Runnable task) {
         if (getMakeConfigurationDescriptor() != null) {
-            DevelopmentHostConfiguration host = ((MakeConfiguration)getMakeConfigurationDescriptor().getConfs().getActive()).getDevelopmentHost();
-            CompilerSetManagerEvents.get(host.getName()).runOnCodeModelReadiness(task);
+            getMakeConfigurationDescriptor().getConfs().runOnCodeModelReadiness(task);
         }
     }
 
