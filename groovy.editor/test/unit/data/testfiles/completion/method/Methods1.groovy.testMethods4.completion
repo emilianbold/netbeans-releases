@@ -12,7 +12,9 @@ METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachByte(Closure)                          void
 METHOD     eachLine(Closure)                          Object
+METHOD     eachLine(String,  int, Closure             Object
 METHOD     eachLine(String, Closure)                  Object
+METHOD     eachLine(int, Closure)                     Object
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(Object)                             boolean
 METHOD     every()                                    boolean
@@ -80,7 +82,7 @@ METHOD     toString()                                 String
 METHOD     toURI()                                    URI
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void

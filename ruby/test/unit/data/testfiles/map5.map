@@ -1,0 +1,14 @@
+
+attrs=|CLASS|
+class=Token
+class-ig=token
+filename=ruby:lib/ruby/1.8/irb/ruby-token.rb
+fqn=RubyToken::Token
+in=RubyToken
+require=irb/ruby-token
+attribute=char_no
+attribute=line_no
+attribute=seek
+method=new(seek,line_no,char_no);|PRIVATE|STATIC|
+
+

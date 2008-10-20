@@ -82,7 +82,7 @@ import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
-import org.netbeans.modules.cnd.debugger.gdb.proxy.InputProxy;
+import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
@@ -202,7 +202,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private PathMap pathMap;
     private Map<String, ShareInfo> shareTab;
     private String sig = null;
-    private InputProxy inputProxy = null;
+    private IOProxy ioProxy = null;
+    private GdbVersionPeculiarity versionPeculiarity = null;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -280,7 +281,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             String cspath = getCompilerSetPath(pae);
             gdb = new GdbProxy(this, gdbCommand, pae.getProfile().getEnvironment().getenv(),
                     runDirectory, termpath, cspath);
-            gdb.gdb_version();
+            // we should not continue until gdb version is initialized
+            initGdbVersion();
+
             gdb.environment_directory(runDirectory);
             gdb.gdb_show("language"); // NOI18N
             gdb.gdb_set("print repeat",  // NOI18N
@@ -387,7 +390,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                     // disabled on windows because of the issue 148204
                     if (platform != PlatformTypes.PLATFORM_WINDOWS) {
-                        inputProxy = InputProxy.create(hkey, iotab);
+                        ioProxy = IOProxy.create(hkey, iotab);
                     }
                 }
 
@@ -407,12 +410,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gdb.data_list_register_names("");
                 try {
                     String inRedir = "";
-                    if (inputProxy != null) {
-                        String inFile = inputProxy.getFilename();
+                    if (ioProxy != null) {
+                        String inFile = ioProxy.getInFilename();
+                        String outFile = ioProxy.getOutFilename();
                         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                             inFile = win2UnixPath(inFile);
+                            outFile = win2UnixPath(outFile);
                         }
-                        inRedir = " < " + inFile; // NOI18N
+                        // csh (tcsh also) does not support 2>&1 stream redirection, see issue 147872
+                        String shell = HostInfoProvider.getDefault().getEnv(hkey).get("SHELL"); // NOI18N
+                        if (shell != null && shell.endsWith("csh")) { // NOI18N
+                            inRedir = " < " + inFile + " >& " + outFile; // NOI18N
+                        } else {
+                            inRedir = " < " + inFile + " > " + outFile + " 2>&1"; // NOI18N
+                        }
                     }
                     gdb.exec_run(pae.getProfile().getArgsFlat() + inRedir);
                 } catch (Exception ex) {
@@ -452,6 +463,25 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg));
             setExited();
             finish(false);
+        }
+    }
+
+    private final void initGdbVersion() {
+        CommandBuffer cb = new CommandBuffer(gdb);
+        gdb.gdb_version(cb);
+        cb.waitForCompletion();
+        String message = cb.toString();
+
+        if (startupTimer != null) {
+            // Cancel the startup timer - we've got our first response from gdb
+            startupTimer.cancel();
+            startupTimer = null;
+        }
+
+        gdbVersion = parseGdbVersionString(message.substring(8));
+        versionPeculiarity = GdbVersionPeculiarity.create(gdbVersion, platform);
+        if (message.contains("cygwin")) { // NOI18N
+            cygwin = true;
         }
     }
 
@@ -506,6 +536,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public String getSignal() {
         return sig;
+    }
+
+    public GdbVersionPeculiarity getVersionPeculiarity() {
+        return versionPeculiarity;
     }
 
     private String getFullPath(String rundir, String path) {
@@ -605,8 +639,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return pathMap.getRemotePath(programName.toString());
     }
 
-    /** Get the gdb version */
-    public double getGdbVersion() {
+    /**
+     * Get the gdb version
+     * Should not be used directly, 
+     * use versionPeculiarity for action dependent on gdb version
+     */
+    private double getGdbVersion() {
         return gdbVersion;
     }
 
@@ -619,8 +657,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (evt.getNewValue().equals(STATE_READY)) {
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
-                } else if (gdbVersion < 6.8) {
-                    gdb.gdb_set("stop-on-solib-events", "1"); // NOI18N
+                } else {
+                    setStopOnSolibEvents(true);
                 }
                 if (continueAfterFirstStop) {
                     continueAfterFirstStop = false;
@@ -867,8 +905,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 gah.executionFinished(0);
             }
             Disassembly.close();
-            if (inputProxy != null) {
-                inputProxy.stop();
+            if (ioProxy != null) {
+                ioProxy.stop();
             }
             if (iotab != null) {
                 iotab.getOut().close();
@@ -1149,18 +1187,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
         if (cb != null) {
             cb.append(omsg);
-        } else if (msg.startsWith("GNU gdb ")) { // NOI18N
-            if (startupTimer != null) {
-                // Cancel the startup timer - we've got our first response from gdb
-                startupTimer.cancel();
-                startupTimer = null;
-            }
-
-            // Now process the version information
-            gdbVersion = parseGdbVersionString(msg.substring(8));
-            if (msg.contains("cygwin")) { // NOI18N
-                cygwin = true;
-            }
         } else if (msg.toLowerCase().contains("mingw")) { // NOI18N
             mingw = true;
         } else if (msg.startsWith("Breakpoint ") && msg.contains(" at 0x")) { // NOI18N
@@ -1837,13 +1863,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     checkNextFrame = true;
                 } else {
                     gdb.stack_select_frame(i);
-                    if (gdbVersion < 6.8) {
-                        gdb.gdb_set("stop-on-solib-event"  , "0"); // NOI18N
-                        gdb.exec_finish();
-                        gdb.gdb_set("stop-on-solib-event"  , "1"); // NOI18N
-                    } else {
-                        gdb.exec_finish();
-                    }
+                    setStopOnSolibEvents(false);
+                    gdb.exec_finish();
+                    setStopOnSolibEvents(true);
                     gdb.exec_next();
                     state = oldState;
                 return;
@@ -1877,6 +1899,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             gdb.exec_continue();
         }
         state = oldState;
+    }
+
+    private void setStopOnSolibEvents(boolean enable) {
+        if (gdbVersion < 6.8) {
+            gdb.gdb_set("stop-on-solib-event", enable ? "1" : "0"); // NOI18N
+        }
     }
 
     private String getOSPath(String path) {

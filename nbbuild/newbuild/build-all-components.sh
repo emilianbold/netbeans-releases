@@ -49,6 +49,8 @@ if [ $ERROR_CODE != 0 ]; then
     exit $ERROR_CODE;
 fi
 
+cp -rp nbbuild/netbeans nbbuild/netbeans.before
+
 ###############  Commit validation tests  ##########################
 #cp -r $NB_ALL/nbbuild/netbeans $NB_ALL/nbbuild/netbeans-PRISTINE
 
@@ -172,6 +174,8 @@ if [ $TEST_CODE = 1 ]; then
     exit 1;
 fi
 
+cp -rp nbbuild/netbeans nbbuild/netbeans.after
+
 #Build UML modules
 ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.uml -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
@@ -179,6 +183,15 @@ ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Can't build UML modules"
     exit $ERROR_CODE;
+fi
+
+#Build Maven modules
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.maven -Dbuild.compiler.debuglevel=source,lines
+ERROR_CODE=$?
+
+if [ $ERROR_CODE != 0 ]; then
+    echo "ERROR: $ERROR_CODE - Can't build Maven modules"
+    #exit $ERROR_CODE;
 fi
 
 #Build the NB stableuc modules

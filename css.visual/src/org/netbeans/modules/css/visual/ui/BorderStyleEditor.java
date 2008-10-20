@@ -60,6 +60,7 @@ import javax.swing.table.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
 import javax.swing.*;
+import org.netbeans.modules.css.editor.CssEditorSupport;
 import org.netbeans.modules.css.visual.model.PropertyData;
 import org.openide.util.NbBundle;
 
@@ -243,11 +244,13 @@ public class BorderStyleEditor extends StyleEditor {
             allStyleCombo.addItemListener(new ItemListener() {
 
                 public void itemStateChanged(ItemEvent evt) {
+                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
                     //cssPropertyChangeSupport().firePropertyChange(CssStyleData.BORDER_STYLE, null, allStyleCombo.getSelectedItem().toString());
                     topStyleCombo.setSelectedIndex(allStyleCombo.getSelectedIndex());
                     bottomStyleCombo.setSelectedIndex(allStyleCombo.getSelectedIndex());
                     leftStyleCombo.setSelectedIndex(allStyleCombo.getSelectedIndex());
                     rightStyleCombo.setSelectedIndex(allStyleCombo.getSelectedIndex());
+                    CssEditorSupport.getDefault().lastAggregatedEventFired();
                 }
             });
 
@@ -260,11 +263,13 @@ public class BorderStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
+                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
                     //cssPropertyChangeSupport().firePropertyChange(CssStyleData.BORDER_WIDTH, null, evt.getNewValue().toString());
                     topWidthField.setWidthString(evt.getNewValue().toString());
                     bottomWidthField.setWidthString(evt.getNewValue().toString());
                     leftWidthField.setWidthString(evt.getNewValue().toString());
                     rightWidthField.setWidthString(evt.getNewValue().toString());
+                    CssEditorSupport.getDefault().lastAggregatedEventFired();
                 }
             });
 
@@ -275,11 +280,13 @@ public class BorderStyleEditor extends StyleEditor {
 
                 //NOI18N
                 public void propertyChange(PropertyChangeEvent evt) {
+                    CssEditorSupport.getDefault().firstAggregatedEventWillFire();
                     //cssPropertyChangeSupport().firePropertyChange(CssStyleData.BORDER_COLOR, null, allColorField.getColorString());
                     topColorField.setColorString(allColorField.getColorString());
                     bottomColorField.setColorString(allColorField.getColorString());
                     leftColorField.setColorString(allColorField.getColorString());
                     rightColorField.setColorString(allColorField.getColorString());
+                    CssEditorSupport.getDefault().lastAggregatedEventFired();
                 }
             });
 

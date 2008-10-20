@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -56,14 +55,19 @@ import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -92,6 +96,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.NodeOp;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -117,6 +122,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
     private final List<? extends Action> specialActions =
             Collections.singletonList(SystemAction.get(AddModuleAction.class));
     private final AntBasedProjectType abpt;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
     
     public J2eeArchiveLogicalViewProvider(EarProject project, UpdateHelper helper,
             PropertyEvaluator evaluator, ReferenceHelper resolver,
@@ -184,6 +190,23 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         return result;
     }
     
+    public void addChangeListener (ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+    
+    public void removeChangeListener (ChangeListener l) {
+        changeSupport.removeChangeListener(l);
+    }
+
+    /**
+     * Used by EarProjectCustomizer to mark the project as broken when it warns user
+     * about project's broken references and advices him to use BrokenLinksAction to correct it.
+     *
+     */
+    public void testBroken () {
+        changeSupport.fireChange();
+    }
+    
     private static Lookup createLookup( Project project, AntProjectHelper c ) {
         DataFolder rootFolder = DataFolder.findFolder( project.getProjectDirectory() );
         // XXX Remove root folder after FindAction rewrite
@@ -215,12 +238,33 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 : ibp.getIconBase();
     }
     
+    private boolean isDeployOnSaveSupportedAndDisabled() {
+        boolean deployOnSaveEnabled = Boolean.valueOf(project.evaluator().getProperty(
+                EarProjectProperties.J2EE_DEPLOY_ON_SAVE));
+        if (deployOnSaveEnabled) {
+            return false;
+        }
+
+        boolean deployOnSaveSupported = false;
+        try {
+            String instanceId = project.evaluator().getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
+            if (instanceId != null) {
+                deployOnSaveSupported = Deployment.getDefault().getServerInstance(instanceId)
+                        .isDeployOnSaveSupported();
+            }
+        } catch (InstanceRemovedException ex) {
+            // false
+        }
+        return deployOnSaveSupported;
+    }
+    
     /** Package private for unit test only. */
     final class ArchiveLogicalViewRootNode extends AbstractNode {
         
         private Action brokenLinksAction;
         private final BrokenServerAction brokenServerAction;
         private boolean broken;
+        private boolean deployOnSaveDisabled;
         
         public ArchiveLogicalViewRootNode() {
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-j2ee-earproject/Nodes"), // NOI18N
@@ -231,8 +275,10 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 broken = true;
             }
             brokenServerAction = new BrokenServerAction();
+            brokenLinksAction = new BrokenLinksAction();
             J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             moduleProvider.addInstanceListener(WeakListeners.create(InstanceListener.class, brokenServerAction, moduleProvider));
+            deployOnSaveDisabled = isDeployOnSaveSupportedAndDisabled();
         }
         
         private synchronized void checkProjectValidity() {
@@ -244,12 +290,15 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 fireOpenedIconChange();
                 fireDisplayNameChange(null, null);
             }
+            
+            old = ArchiveLogicalViewRootNode.this.deployOnSaveDisabled;
+            boolean dosDisabled = isDeployOnSaveSupportedAndDisabled();
+            if (old != dosDisabled) {
+                setDeployOnSaveDisabled(dosDisabled);
+            }
         }
         
         public Action getBrokenLinksAction() {
-            if (broken && brokenLinksAction == null) {
-                brokenLinksAction = new BrokenLinksAction();
-            }
             return brokenLinksAction;
         }
         
@@ -280,19 +329,29 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         public void setName(String s) {
             DefaultProjectOperations.performDefaultRenameOperation(project, s);
         }
-        
+
+        @Override
         public Image getIcon(int type) {
             Image original = super.getIcon( type );
-            return broken || brokenServerAction.isEnabled()
-            ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
-            : original;
+            if (broken || brokenServerAction.isEnabled()) {
+                return ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0);
+            } else if (deployOnSaveDisabled) {
+                return DeployOnSaveUtils.badgeDisabledDeployOnSave(original);
+            } else {
+                return original;
+            }
         }
         
+        @Override
         public Image getOpenedIcon(int type) {
             Image original = super.getOpenedIcon(type);
-            return broken || brokenServerAction.isEnabled()
-            ? ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0)
-            : original;
+            if (broken || brokenServerAction.isEnabled()) {
+                return ImageUtilities.mergeImages(original, ProjectProperties.ICON_BROKEN_BADGE.getImage(), 8, 0);
+            } else if (deployOnSaveDisabled) {
+                return DeployOnSaveUtils.badgeDisabledDeployOnSave(original);
+            } else {
+                return original;
+            }
         }
         
         public HelpCtx getHelpCtx() {
@@ -300,6 +359,13 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         }
         
         // Private methods -------------------------------------------------
+        
+        private void setDeployOnSaveDisabled (boolean value) {
+            this.deployOnSaveDisabled = value;
+            fireIconChange();
+            fireOpenedIconChange();
+            fireDisplayNameChange(null, null);
+        }
         
         private Action[] getAdditionalActions() {
             
@@ -359,7 +425,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
         /** This action is created only when project has broken references.
          * Once these are resolved the action is disabled.
          */
-        private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener, Runnable {
+        private class BrokenLinksAction extends AbstractAction implements PropertyChangeListener, ChangeListener, Runnable {
             private static final long serialVersionUID = 1L;
             
             private RequestProcessor.Task task = null;
@@ -370,6 +436,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 putValue(Action.NAME, NbBundle.getMessage(J2eeArchiveLogicalViewProvider.class, "LBL_Fix_Broken_Links_Action"));
                 weakPCL = WeakListeners.propertyChange( this, JavaPlatformManager.getDefault() );
                 JavaPlatformManager.getDefault().addPropertyChangeListener( weakPCL );
+                J2eeArchiveLogicalViewProvider.this.addChangeListener ((ChangeListener)WeakListeners.change(this,J2eeArchiveLogicalViewProvider.this));
             }
             
             public void actionPerformed(ActionEvent e) {
@@ -378,6 +445,18 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
             }
             
             public void propertyChange(PropertyChangeEvent evt) {
+                refsMayChanged();
+            }
+            
+            public void run() {
+                checkProjectValidity();
+            }
+
+            public void stateChanged(ChangeEvent e) {
+                refsMayChanged();
+            }
+            
+            public void refsMayChanged() {
                 // check project state whenever there was a property change
                 // or change in list of platforms.
                 // Coalesce changes since they can come quickly:
@@ -385,11 +464,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                     task = RequestProcessor.getDefault().create(this);
                 }
                 task.schedule(100);
-            }
-            
-            public void run() {
-                checkProjectValidity();
-            }
+            }            
             
         }
         

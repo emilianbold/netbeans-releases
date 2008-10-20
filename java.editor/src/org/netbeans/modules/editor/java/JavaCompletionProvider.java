@@ -257,12 +257,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                     toolTip = null;
                     anchorOffset = -1;
                     JavaSource js = JavaSource.forDocument(doc);
+                    if (js != null && queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
+                        FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
+                        if (fo != null)
+                            js = JavaSource.forFileObject(fo);
+                    }
                     if (js != null) {
-                        if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
-                            FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
-                            if (fo != null)
-                                js = JavaSource.forFileObject(fo);
-                        }
                         Future<Void> f = js.runWhenScanFinished(this, true);
                         if (!f.isDone()) {
                             component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
@@ -1685,7 +1685,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void insideSwitch(Env env) throws IOException {
             int offset = env.getOffset();
-            String prefix = env.getPrefix();
             TreePath path = env.getPath();
             SwitchTree st = (SwitchTree)path.getLeaf();
             SourcePositions sourcePositions = env.getSourcePositions();
@@ -1731,7 +1730,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             } else {
                 TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, cst, offset);
-                if (ts != null && ts.token().id() == JavaTokenId.COLON) {
+                if (ts != null && ts.token().id() != JavaTokenId.DEFAULT) {
                     localResult(env);
                     addKeywordsForBlock(env);
                 }
@@ -4123,7 +4122,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         }
                                     }
                                 }
-                                if (toRemove != null)
+                                if (toRemove != null && !toRemove.getKind().isPrimitive() &&
+                                        !"java.lang.String".equals(toRemove.toString()) && !"char[]".equals(toRemove.toString())) //NOI18N
                                     ret.remove(toRemove);
                             }
                             break;
@@ -4287,6 +4287,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                             break;
                         case METHOD:
                             stmts = ((MethodTree)path.getLeaf()).getParameters();
+                            break;
+                        case SWITCH:
+                            CaseTree lastCase = null;
+                            for (CaseTree caseTree : ((SwitchTree)path.getLeaf()).getCases())
+                                lastCase = caseTree;
+                            if (lastCase != null)
+                                stmts = lastCase.getStatements();
+                            break;
+                        case CASE:
+                            stmts = ((CaseTree)path.getLeaf()).getStatements();
                             break;
                     }
                     if (stmts != null) {

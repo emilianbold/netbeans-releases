@@ -43,7 +43,6 @@ package org.netbeans.modules.ruby.debugger;
 
 import java.io.File;
 import java.io.IOException;
-import junit.framework.AssertionFailedError;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -70,6 +69,11 @@ public final class RubyDebuggerTest extends TestBase {
         clearWorkDir();
         super.setUp();
         watchStepping = false;
+    }
+
+    @Override
+    protected boolean runInEQ() {
+        return false;
     }
 
     public void testBasics() throws Exception {
@@ -327,7 +331,7 @@ public final class RubyDebuggerTest extends TestBase {
     }
 
     public void testRubiniusDebugging() throws IOException {
-        RubyPlatform rubinius = RubyPlatformManager.addPlatform(setUpRubinius());
+        RubyPlatform rubinius = setUpRubinius();
         ExecutionDescriptor descriptor = new ExecutionDescriptor(rubinius);
         // DialogDisplayerImpl.createDialog() assertion would fail if dialog is shown
         RubyDebuggerImplementation rdi = new RubyDebugger();

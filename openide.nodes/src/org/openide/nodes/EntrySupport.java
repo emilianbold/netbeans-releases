@@ -104,7 +104,7 @@ abstract class EntrySupport {
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
-    abstract List<Node> createSnapshot();
+    abstract List<Node> snapshot();
 
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -134,7 +134,18 @@ abstract class EntrySupport {
             return inited;
         }
 
-        protected List<Node> createSnapshot() {
+        @Override
+        List<Node> snapshot() {
+            Node[] nodes = getNodes();
+            try {
+                Children.PR.enterReadAccess();
+                return createSnapshot();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+        }
+
+        DefaultSnapshot createSnapshot() {
             return new DefaultSnapshot(getNodes(), array.get());
         }
 
@@ -202,6 +213,7 @@ abstract class EntrySupport {
                 if (LOG_ENABLED) {
                     LOGGER.finer("Find child got: " + find); // NOI18N
                 }
+                Children.LOG.log(Level.FINEST,"after findChild: {0}", optimalResult);
             }
 
             return getNodes();
@@ -1057,6 +1069,17 @@ abstract class EntrySupport {
             return true;
         }
 
+        @Override
+        List<Node> snapshot() {
+            checkInit();
+            try {
+                Children.PR.enterReadAccess();
+                return createSnapshot();
+            } finally {
+                Children.PR.exitReadAccess();
+            }
+        }
+
         final void registerNode(int delta, EntryInfo who) {
             if (delta == -1) {
                 try {
@@ -1118,7 +1141,7 @@ abstract class EntrySupport {
                     if (!isDummyNode(node)) {
                         return node;
                     }
-                    hideEmpty(null, entry, null);
+                    hideEmpty(null, entry);
                 } finally {
                     Children.PR.exitReadAccess();
                 }
@@ -1133,9 +1156,12 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return new Node[0];
             }
+            Node holder = null;
             if (optimalResult) {
-                children.findChild(null);
+                holder = children.findChild(null);
             }
+            Children.LOG.log(Level.FINEST, "findChild returns: {0}", holder); // NOI18N
+            Children.LOG.log(Level.FINEST, "after findChild: {0}", optimalResult); // NOI18N
             while (true) {
                 Set<Entry> invalidEntries = null;
                 Node[] tmpNodes = null;
@@ -1160,7 +1186,7 @@ abstract class EntrySupport {
                     if (invalidEntries == null) {
                         return tmpNodes;
                     }
-                    hideEmpty(invalidEntries, null, null);
+                    hideEmpty(invalidEntries, null);
                 } finally {
                     Children.PR.exitReadAccess();
                 }
@@ -1202,7 +1228,7 @@ abstract class EntrySupport {
             return null;
         }
         
-        final boolean isDummyNode(Node node) {
+        static final boolean isDummyNode(Node node) {
             return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode"); // NOI18N
         }
 
@@ -1227,7 +1253,14 @@ abstract class EntrySupport {
             }
 
             Node oldNode = info.currentNode();
-            Node newNode = info.getNode(true, null);
+            EntryInfo newInfo = null;
+            Node newNode = null;
+            if (info.isHidden()) {
+                newNode = info.getNode(true, null);
+            } else {
+                newInfo = info.duplicate(null);
+                newNode = newInfo.getNode(true, null);
+            }
 
             boolean newIsDummy = isDummyNode(newNode);
             if (newIsDummy && info.isHidden()) {
@@ -1240,12 +1273,16 @@ abstract class EntrySupport {
                 return;
             }
 
-            boolean oldIsDummy = info.isHidden() || (oldNode != null && isDummyNode(oldNode));
-            if ((oldNode != null && !oldIsDummy) || newIsDummy) {
-                removeEntries(null, entry, oldNode, true, false);
-                if (newIsDummy) {
-                    return;
-                }
+            if (!info.isHidden() || newIsDummy) {
+                removeEntries(null, entry, newInfo, true, true);
+            }
+
+            if (newInfo != null) {
+                info = newInfo;
+                entryToInfo.put(entry, info);
+            }
+            if (newIsDummy) {
+                return;
             }
 
             // recompute indexes
@@ -1483,7 +1520,7 @@ abstract class EntrySupport {
                 return getNode(false, null);
             }
             
-            private boolean creatingNode = false;
+            private Thread creatingNodeThread = null;
             public final Node getNode(boolean refresh, Object source) {
                 while (true) {
                     Node node = null;
@@ -1498,13 +1535,17 @@ abstract class EntrySupport {
                                 return node;
                             }
                         }
-                        if (creatingNode) {
+                        if (creatingNodeThread != null) {
+                            if (creatingNodeThread == Thread.currentThread()) {
+                                return new DummyNode();
+                            }
                             try {
                                 LOCK.wait();
                             } catch (InterruptedException ex) {
                             }
                         } else {
-                            creatingNode = creating = true;
+                            creatingNodeThread = Thread.currentThread();
+                            creating = true;
                         }
                     }
                     Collection<Node> nodes = Collections.emptyList();
@@ -1536,7 +1577,7 @@ abstract class EntrySupport {
                         }
                         refNode = new NodeRef(node, this);
                         if (creating) {
-                            creatingNode = false;
+                            creatingNodeThread = null;
                             LOCK.notifyAll();
                         }
                     }
@@ -1598,25 +1639,24 @@ abstract class EntrySupport {
             }
         }     
 
-        void hideEmpty(final Set<Entry> entries, final Entry entry, final Node oldNode) {
+        void hideEmpty(final Set<Entry> entries, final Entry entry) {
             Children.MUTEX.postWriteRequest(new Runnable() {
 
                 public void run() {
-                    removeEntries(entries, entry, oldNode, true, true);
+                    removeEntries(entries, entry, null, true, true);
                 }
             });
         }
 
-        private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, Node oldNode, boolean justHide, boolean delayed) {
+        private void removeEntries(Set<Entry> entriesToRemove, Entry entryToRemove, EntryInfo newEntryInfo, boolean justHide, boolean delayed) {
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
             if (LOG_ENABLED) {
                 LOGGER.finer("removeEntries(): " + this); // NOI18N
                 LOGGER.finer("    entriesToRemove: " + entriesToRemove); // NOI18N
                 LOGGER.finer("    entryToRemove: " +  entryToRemove); // NOI18N
-                LOGGER.finer("    oldNode: " + oldNode); // NOI18N
+                LOGGER.finer("    newEntryInfo: " + newEntryInfo); // NOI18N
                 LOGGER.finer("    justHide: " + justHide); // NOI18N
-                LOGGER.finer("    delayed: " + delayed // NOI18N
-                        );
+                LOGGER.finer("    delayed: " + delayed); // NOI18N
             }
             int index = 0;
             int removedIdx = 0;
@@ -1649,7 +1689,7 @@ abstract class EntrySupport {
                         previousInfos = new HashMap<Entry, EntryInfo>(entryToInfo);
                     }
 
-                    Node node = oldNode == null ? info.currentNode() : oldNode;
+                    Node node = info.currentNode();
                     if (!info.isHidden() && node != null && !isDummyNode(node)) {
                         if (removedNodes == null) {
                             removedNodes = new Node[expectedSize];
@@ -1658,10 +1698,10 @@ abstract class EntrySupport {
                     }
 
                     if (justHide) {
-                        EntryInfo dup = info.duplicate(oldNode);
-                        previousInfos.put(info.entry, dup);
+                        EntryInfo dup = newEntryInfo != null ? newEntryInfo : info.duplicate(null);
+                        entryToInfo.put(info.entry, dup);
                         // mark as hidden
-                        info.setIndex(-2);
+                        dup.setIndex(-2);
                     } else {
                         entryToInfo.remove(entry);
                     }
@@ -1713,12 +1753,11 @@ abstract class EntrySupport {
             return newArray;
         }
 
-        @Override
-        List<Node> createSnapshot() {
+        LazySnapshot createSnapshot() {
             return createSnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo), false);
         }
         
-        protected List<Node> createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
+        protected LazySnapshot createSnapshot(List<Entry> entries, Map<Entry,EntryInfo> e2i, boolean delayed) {
             return delayed ? new DelayedLazySnapshot(entries, e2i) : new LazySnapshot(entries, e2i);
         }
         
@@ -1743,7 +1782,7 @@ abstract class EntrySupport {
                 Node node = info.getNode();
                 if (isDummyNode(node)) {
                     // force new snapshot
-                    hideEmpty(null, entry, null);
+                    hideEmpty(null, entry);
                 }
                 return node;
             }

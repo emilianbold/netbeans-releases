@@ -273,12 +273,18 @@ public class ModulesNodeFactory implements NodeFactory {
             setDisplayName(info.getDisplayName());
             setIconBaseWithExtension(NbModuleProject.NB_PROJECT_ICON_PATH);
             info.addPropertyChangeListener(new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
-                        SuiteComponentNode.this.setDisplayName((String) evt.getNewValue());
-                    } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {
-                        SuiteComponentNode.this.setName((String) evt.getNewValue());
-                    }
+
+                public void propertyChange(final PropertyChangeEvent evt) {
+                    ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
+
+                        public void run() {
+                            if (ProjectInformation.PROP_DISPLAY_NAME.equals(evt.getPropertyName())) {
+                                SuiteComponentNode.this.setDisplayName((String) evt.getNewValue());
+                            } else if (ProjectInformation.PROP_NAME.equals(evt.getPropertyName())) {
+                                SuiteComponentNode.this.setName((String) evt.getNewValue());
+                            }
+                        }
+                    });
                 }
             });
         }

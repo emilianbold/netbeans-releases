@@ -408,7 +408,6 @@ public class WrappedTextView extends View {
             for (int k = 1; k < lenToDraw; k++) {
                 if (Character.isWhitespace(seg.array[charpos + k])) {
                     underlineStart += charWidth;
-                    underlineEnd -= charWidth;
                 } else {
                     break;
                 }

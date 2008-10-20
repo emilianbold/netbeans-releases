@@ -56,7 +56,6 @@ import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
 import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -66,6 +65,7 @@ public class TestMetadata extends MetadataImplementation {
 
     private final Map<String, Catalog> catalogs = new TreeMap<String, Catalog>(new NullStringComparator());
     private Catalog defaultCatalog;
+    private TestCatalog defaultCatalogImpl;
 
     public static Metadata create(List<String> spec) {
         return new TestMetadata(spec).getMetadata();
@@ -80,7 +80,7 @@ public class TestMetadata extends MetadataImplementation {
         if (defaultCatalog == null) {
             throw new IllegalArgumentException();
         }
-        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        Schema defaultSchema = getDefaultSchema();
         if (defaultSchema != null) {
             if (!defaultCatalog.getSchemas().contains(defaultSchema)) {
                 Schema syntheticSchema = defaultCatalog.getSyntheticSchema();
@@ -126,6 +126,7 @@ public class TestMetadata extends MetadataImplementation {
                             throw new IllegalArgumentException(line);
                         }
                         defaultCatalog = catalog;
+                        defaultCatalogImpl = catalogImpl;
                     }
                     break;
                 case 2:
@@ -186,6 +187,10 @@ public class TestMetadata extends MetadataImplementation {
         return catalogs.get(name);
     }
 
+    public Schema getDefaultSchema() {
+        return defaultCatalogImpl.getDefaultSchema();
+    }
+
     public void refresh() {
     }
 
@@ -210,10 +215,6 @@ public class TestMetadata extends MetadataImplementation {
             return _default;
         }
 
-        public Schema getDefaultSchema() {
-            return defaultSchema;
-        }
-
         public Schema getSyntheticSchema() {
             return syntheticSchema;
         }
@@ -224,6 +225,10 @@ public class TestMetadata extends MetadataImplementation {
 
         public Schema getSchema(String name) {
             return schemas.get(name);
+        }
+
+        public Schema getDefaultSchema() {
+            return defaultSchema;
         }
     }
 

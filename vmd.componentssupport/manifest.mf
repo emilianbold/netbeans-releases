@@ -2,5 +2,5 @@ Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.vmd.componentssupport
 OpenIDE-Module-Layer: org/netbeans/modules/vmd/componentssupport/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/vmd/componentssupport/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.1
+OpenIDE-Module-Specification-Version: 1.2
 

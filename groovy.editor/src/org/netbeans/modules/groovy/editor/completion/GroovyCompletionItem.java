@@ -39,10 +39,10 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
+import org.netbeans.modules.groovy.editor.api.completion.*;
 import groovy.lang.MetaMethod;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.ImageIcon;
@@ -51,16 +51,19 @@ import org.netbeans.modules.gsf.api.ElementHandle;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.gsf.api.HtmlFormatter;
 import org.netbeans.modules.gsf.api.Modifier;
-import org.netbeans.modules.groovy.editor.elements.KeywordElement;
+import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import javax.lang.model.type.TypeMirror;
 import org.codehaus.groovy.ast.Variable;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.groovy.editor.NbUtilities;
-import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
-import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
-import org.netbeans.modules.groovy.editor.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.api.NbUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
+import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
+import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.support.api.GroovySources;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.spi.DefaultCompletionProposal;
 import org.openide.util.ImageUtilities;
 
@@ -69,114 +72,69 @@ import org.openide.util.ImageUtilities;
  *
  * @author schmidtm
  */
-    abstract class GroovyCompletionItem extends DefaultCompletionProposal {
+// FIXME static accessors
+public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
 
-        protected CodeCompleter.CompletionRequest request;
-        protected GroovyElement element;
-        final Logger LOG = Logger.getLogger(GroovyCompletionItem.class.getName());
-        
-        static ImageIcon groovyIcon;
-        static ImageIcon javaIcon;
-        static ImageIcon newConstructorIcon;
+    private static final Logger LOG = Logger.getLogger(GroovyCompletionItem.class.getName());
 
-        GroovyCompletionItem(GroovyElement element, int anchorOffset, CodeCompleter.CompletionRequest request) {
-            this.element = element;
-            this.anchorOffset = anchorOffset;
-            this.request = request;
-            
-            LOG.setLevel(Level.OFF);
-        }
+    protected final GroovyElement element;
 
-        public static Collection<javax.lang.model.element.Modifier> toModel(int modifiers) {
-            Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
-            
-            if (java.lang.reflect.Modifier.isAbstract(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.ABSTRACT);
-            }
-            if (java.lang.reflect.Modifier.isFinal(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.FINAL);
-            }
-            if (java.lang.reflect.Modifier.isNative(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.NATIVE);
-            }
-            if (java.lang.reflect.Modifier.isStatic(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.STATIC);
-            }
-            if (java.lang.reflect.Modifier.isStrict(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.STRICTFP);
-            }
-            if (java.lang.reflect.Modifier.isSynchronized(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.SYNCHRONIZED);
-            }
-//            if (java.lang.reflect.Modifier.isTransient(modifiers)) {
-//                ret.add(javax.lang.model.element.Modifier.TRANSIENT);
-//            }
-//            if (java.lang.reflect.Modifier.isVolatile(modifiers)) {
-//                ret.add(javax.lang.model.element.Modifier.VOLATILE);
-//            }
-            
-            if (java.lang.reflect.Modifier.isPrivate(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.PRIVATE);
-            } else if (java.lang.reflect.Modifier.isProtected(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.PROTECTED);
-            } else if (java.lang.reflect.Modifier.isPublic(modifiers)) {
-                ret.add(javax.lang.model.element.Modifier.PUBLIC);
-            }
+    private static volatile ImageIcon groovyIcon;
 
-            return ret;
-        }
-        
-    @Override
-        public String getName() {
-            return element.getName();
-        }
+    private static volatile ImageIcon javaIcon;
+    
+    private static volatile ImageIcon newConstructorIcon;
 
-        public ElementHandle getElement() {
-            LOG.log(Level.FINEST, "getElement() request.info : {0}", request.info);
-            LOG.log(Level.FINEST, "getElement() element : {0}", element);
+    private GroovyCompletionItem(GroovyElement element, int anchorOffset) {
+        this.element = element;
+        this.anchorOffset = anchorOffset;
 
-            return null;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return element.getKind();
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return element.getModifiers();
-        }
-
-        @Override
-        public String toString() {
-            String cls = getClass().getName();
-            cls = cls.substring(cls.lastIndexOf('.') + 1);
-
-            return cls + "(" + getKind() + "): " + getName();
-        }
+        LOG.setLevel(Level.OFF);
     }
 
-    
+    @Override
+    public String getName() {
+        return element.getName();
+    }
 
+    public ElementHandle getElement() {
+        LOG.log(Level.FINEST, "getElement() element : {0}", element);
 
+        return null;
+    }
 
+    @Override
+    public ElementKind getKind() {
+        return element.getKind();
+    }
 
-/**
-     * 
-     */
-    class JavaMethodItem extends GroovyCompletionItem {
+    @Override
+    public Set<Modifier> getModifiers() {
+        return element.getModifiers();
+    }
+
+    @Override
+    public String toString() {
+        String cls = getClass().getName();
+        cls = cls.substring(cls.lastIndexOf('.') + 1);
+
+        return cls + "(" + getKind() + "): " + getName();
+    }
+
+    public static class JavaMethodItem extends GroovyCompletionItem {
 
         private final String simpleName;
         private final String parameterString;
-        private final String returnType;
-        
+        private final TypeMirror returnType;
+        private final Collection<javax.lang.model.element.Modifier> modifiers;
 
-        JavaMethodItem(String simpleName, String parameterString, String returnType, int anchorOffset, CodeCompleter.CompletionRequest request) {
-            super(null, anchorOffset, request);
+        public JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType,
+                Collection<javax.lang.model.element.Modifier> modifiers, int anchorOffset) {
+            super(null, anchorOffset);
             this.simpleName = simpleName;
             this.parameterString = parameterString;
             this.returnType = returnType;
+            this.modifiers = modifiers;
         }
 
         @Override
@@ -197,21 +155,26 @@ import org.openide.util.ImageUtilities;
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
             // FIXME
-            String retType = NbUtilities.stripPackage(returnType);
+            String retType = "";
+            if (returnType != null) {
+                retType = Utilities.getTypeName(returnType, false).toString();
+            }
 
             formatter.appendText(retType);
 
             return formatter.getText();
         }
-        
-        
+
+
         @Override
         public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD, null);
+            return (ImageIcon) ElementIcons.getElementIcon(
+                    javax.lang.model.element.ElementKind.METHOD, modifiers);
         }
 
         @Override
         public Set<Modifier> getModifiers() {
+            // FIXME update
             return Collections.emptySet();
         }
 
@@ -219,17 +182,18 @@ import org.openide.util.ImageUtilities;
         public ElementHandle getElement() {
             return null;
         }
-
-
     }
-    class MethodItem extends GroovyCompletionItem {
 
-        MetaMethod method;
-        boolean isGDK;
-        AstMethodElement methodElement;
+    public static class MetaMethodItem extends GroovyCompletionItem {
 
-        MethodItem(Class clz, MetaMethod method, int anchorOffset, CodeCompleter.CompletionRequest request, boolean isGDK) {
-            super(null, anchorOffset, request);
+        private final MetaMethod method;
+
+        private final boolean isGDK;
+
+        private final AstMethodElement methodElement;
+
+        public MetaMethodItem(Class clz, MetaMethod method, int anchorOffset, boolean isGDK) {
+            super(null, anchorOffset);
             this.method = method;
             this.isGDK = isGDK;
 
@@ -241,7 +205,7 @@ import org.openide.util.ImageUtilities;
         public MetaMethod getMethod() {
             return method;
         }
-        
+
         @Override
         public String getName() {
             return method.getName() + "()";
@@ -276,13 +240,13 @@ import org.openide.util.ImageUtilities;
                     if (buf.length() > 0) {
                         buf.append(", ");
                     }
-                    buf.append(NbUtilities.stripPackage(param));
+                    buf.append(NbUtilities.stripPackage(Utilities.translateClassLoaderTypeName(param)));
                 }
 
                 String simpleSig = buf.toString();
                 formatter.appendText("(" + simpleSig + ")");
             } else {
-                formatter.appendText(CodeCompleter.getMethodSignature(method, false, isGDK));
+                formatter.appendText(GroovyCompletionHandler.getMethodSignature(method, false, isGDK));
             }
 
 
@@ -295,7 +259,7 @@ import org.openide.util.ImageUtilities;
         public String getRhsHtml(HtmlFormatter formatter) {
             // no FQN return types but only the classname, please:
 
-            String retType = method.getReturnType().toString();
+            String retType = method.getReturnType().getSimpleName();
             retType = NbUtilities.stripPackage(retType);
 
             formatter.appendText(retType);
@@ -307,7 +271,7 @@ import org.openide.util.ImageUtilities;
         public ImageIcon getIcon() {
             if (!isGDK) {
                 return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD,
-                        GroovyCompletionItem.toModel(method.getModifiers()));
+                        Utilities.reflectionModifiersToModel(method.getModifiers()));
             }
 
             if (groovyIcon == null) {
@@ -333,17 +297,19 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    class KeywordItem extends GroovyCompletionItem {
+    public static class KeywordItem extends GroovyCompletionItem {
 
         private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
         private final String keyword;
         private final String description;
         private final boolean isGroovy;
+        private final CompilationInfo info;
 
-        KeywordItem(String keyword, String description, int anchorOffset, CodeCompleter.CompletionRequest request, boolean isGroovy) {
-            super(null, anchorOffset, request);
+        public KeywordItem(String keyword, String description, int anchorOffset, CompilationInfo info, boolean isGroovy) {
+            super(null, anchorOffset);
             this.keyword = keyword;
             this.description = description;
+            this.info = info;
             this.isGroovy = isGroovy;
         }
 
@@ -371,7 +337,7 @@ import org.openide.util.ImageUtilities;
 
         @Override
         public ImageIcon getIcon() {
-            
+
             if (isGroovy) {
                 if (groovyIcon == null) {
                     groovyIcon = new ImageIcon(ImageUtilities.loadImage(GroovySources.GROOVY_FILE_ICON_16x16));
@@ -393,20 +359,20 @@ import org.openide.util.ImageUtilities;
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(info, new KeywordElement(keyword));
         }
     }
 
-    /**
-     * 
-     */
-    class PackageItem extends GroovyCompletionItem {
+    public static class PackageItem extends GroovyCompletionItem {
 
         private final String keyword;
 
-        PackageItem(String keyword, int anchorOffset, CodeCompleter.CompletionRequest request) {
-            super(null, anchorOffset, request);
+        private final CompilationInfo info;
+
+        public PackageItem(String keyword, int anchorOffset, CompilationInfo info) {
+            super(null, anchorOffset);
             this.keyword = keyword;
+            this.info = info;
         }
 
         @Override
@@ -437,20 +403,17 @@ import org.openide.util.ImageUtilities;
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(info, new KeywordElement(keyword));
         }
     }
 
-    /**
-     * 
-     */
-    class TypeItem extends GroovyCompletionItem {
+    public static class TypeItem extends GroovyCompletionItem {
 
         private final String name;
         private final javax.lang.model.element.ElementKind ek;
 
-        TypeItem(String name, int anchorOffset, CodeCompleter.CompletionRequest request, javax.lang.model.element.ElementKind ek) {
-            super(null, anchorOffset, request);
+        public TypeItem(String name, int anchorOffset, javax.lang.model.element.ElementKind ek) {
+            super(null, anchorOffset);
             this.name = name;
             this.ek = ek;
         }
@@ -488,16 +451,16 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    class ConstructorItem extends GroovyCompletionItem {
+    public static class ConstructorItem extends GroovyCompletionItem {
 
         private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
         private boolean expand; // should this item expand to a constructor body?
         private final String paramListString;
-        private final List<CodeCompleter.ParamDesc> paramList;
+        private final List<ParameterDescriptor> paramList;
 
-        ConstructorItem(String name, String paramListString, List<CodeCompleter.ParamDesc> paramList, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
-            super(null, anchorOffset, request);
+        public ConstructorItem(String name, String paramListString, List<ParameterDescriptor> paramList, int anchorOffset, boolean expand) {
+            super(null, anchorOffset);
             this.name = name;
             this.expand = expand;
             this.paramListString = paramListString;
@@ -510,7 +473,7 @@ import org.openide.util.ImageUtilities;
                 return name + " - generate"; // NOI18N
             } else {
                 return name + "(" + paramListString +  ")";
-            }            
+            }
         }
 
         @Override
@@ -552,7 +515,7 @@ import org.openide.util.ImageUtilities;
             // return ElementHandleSupport.createHandle(request.info, new ClassElement(name));
             return null;
         }
-        
+
         // Constructors are smart by definition (have to be place above others)
         @Override
         public boolean isSmart() {
@@ -565,28 +528,28 @@ import org.openide.util.ImageUtilities;
         public String getCustomInsertTemplate() {
 
             StringBuilder sb = new StringBuilder();
-            
+
             sb.append(getInsertPrefix());
             sb.append("(");
-            
+
             int id = 1;
-            
+
             // sb.append("${cursor}"); // NOI18N
 
-            for (CodeCompleter.ParamDesc paramDesc : paramList) {
-                
+            for (ParameterDescriptor paramDesc : paramList) {
+
                 LOG.log(Level.FINEST, "-------------------------------------------------------------------");
-                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
-                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.typeName);
-                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.name);
-                
+                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
+                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
+                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
+
                 sb.append("${"); //NOI18N
 
                 sb.append("groovy-cc-"); // NOI18N
                 sb.append(Integer.toString(id));
-                
+
                 sb.append(" default=\""); // NOI18N
-                sb.append(paramDesc.name);
+                sb.append(paramDesc.getName());
                 sb.append("\""); // NOI18N
 
                 sb.append("}"); //NOI18N
@@ -601,30 +564,31 @@ import org.openide.util.ImageUtilities;
 
                 id++;
             }
-            
+
             sb.append(")");
-            
+
             LOG.log(Level.FINEST, "Template returned : {0}", sb.toString());
             return sb.toString();
 
         }
     }
 
-
-    /**
-     * 
-     */
-    class FieldItem extends GroovyCompletionItem {
+    public static class FieldItem extends GroovyCompletionItem {
 
         private final String name;
-        private final javax.lang.model.element.ElementKind ek;
+
+        private final CompilationInfo info;
+
         private final String typeName;
 
-        FieldItem(String name, int anchorOffset, CodeCompleter.CompletionRequest request, javax.lang.model.element.ElementKind ek, String typeName) {
-            super(null, anchorOffset, request);
+        private final int modifiers;
+
+        public FieldItem(String name, int modifiers, int anchorOffset, CompilationInfo info, String typeName) {
+            super(null, anchorOffset);
             this.name = name;
-            this.ek = ek;
+            this.info = info;
             this.typeName = typeName;
+            this.modifiers = modifiers;
         }
 
         @Override
@@ -645,7 +609,8 @@ import org.openide.util.ImageUtilities;
         @Override
         public ImageIcon getIcon() {
             // todo: what happens, if i get a CCE here?
-            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD,
+                    Utilities.reflectionModifiersToModel(modifiers));
         }
 
         @Override
@@ -656,19 +621,16 @@ import org.openide.util.ImageUtilities;
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(info, new KeywordElement(name));
         }
     }
 
-    /**
-     * 
-     */
-    class LocalVarItem extends GroovyCompletionItem {
+    public static class LocalVarItem extends GroovyCompletionItem {
 
         private final Variable var;
 
-        LocalVarItem(Variable var, int anchorOffset, CodeCompleter.CompletionRequest request) {
-            super(null, anchorOffset, request);
+        public LocalVarItem(Variable var, int anchorOffset) {
+            super(null, anchorOffset);
             this.var = var;
         }
 
@@ -704,15 +666,12 @@ import org.openide.util.ImageUtilities;
         }
     }
 
-    /**
-     *
-     */
-    class NewVarItem extends GroovyCompletionItem {
+    public static class NewVarItem extends GroovyCompletionItem {
 
         private final String var;
 
-        NewVarItem(String var, int anchorOffset, CodeCompleter.CompletionRequest request) {
-            super(null, anchorOffset, request);
+        public NewVarItem(String var, int anchorOffset) {
+            super(null, anchorOffset);
             this.var = var;
         }
 
@@ -746,3 +705,33 @@ import org.openide.util.ImageUtilities;
             return null;
         }
     }
+
+    // This is from JavaCompletionItem
+    public static class ParameterDescriptor {
+
+        private final String fullTypeName;
+
+        private final String typeName;
+
+        private final String name;
+
+        public ParameterDescriptor(String fullTypeName, String typeName, String name) {
+            this.fullTypeName = fullTypeName;
+            this.typeName = typeName;
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getTypeName() {
+            return typeName;
+        }
+
+        public String getFullTypeName() {
+            return fullTypeName;
+        }
+    }
+}
+

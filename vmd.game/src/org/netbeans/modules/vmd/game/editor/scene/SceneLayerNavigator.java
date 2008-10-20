@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.vmd.game.editor.scene;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -57,9 +58,13 @@ import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.io.IOException;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JComponent;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -124,16 +129,19 @@ public class SceneLayerNavigator extends JTable {
 		this.setDefaultRenderer(Boolean.class, new BooleanTableCellRenderer(PAD_X, PAD_Y));
 		
 		this.setDefaultRenderer(Layer.class, new LayerTableCellRenderer());
+                
+                this.setDefaultEditor(String.class, new NonEmptyStringTableCellEditor());
 
 		this.setDefaultRenderer(Integer.class, new DefaultTableCellRenderer() {
+                        @Override
 			public Component getTableCellRendererComponent(JTable table, Object value,
 					boolean isSelected, boolean hasFocus, int row, int column) {
 				this.setHorizontalAlignment(SwingConstants.CENTER);
 				return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 			}
-		});
-		
-		TableColumn posXColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_X);
+                });
+
+                TableColumn posXColumn = this.getColumnModel().getColumn(SceneLayerTableAdapter.COL_INDEX_LAYER_POS_X);
 		posXColumn.setPreferredWidth(width + 10);
 		posXColumn.setMaxWidth(width + 10);
 		posXColumn.setMinWidth(width + 10);
@@ -149,12 +157,41 @@ public class SceneLayerNavigator extends JTable {
 		
 	}
 	
+        @Override
 	public Dimension getPreferredScrollableViewportSize() {
 		return super.getPreferredSize();
 	}
 	
 	
-	private class SceneTableSelectionListener implements ListSelectionListener {
+        static class NonEmptyStringTableCellEditor extends DefaultCellEditor {
+            
+            private final static Color ERROR_COLOR = Color.red;
+            private final static Color CORRECT_COLOR = Color.black;
+
+            public NonEmptyStringTableCellEditor() {
+                super(new JTextField());
+            }
+
+            @Override
+            public boolean stopCellEditing() {
+                String s = (String) super.getCellEditorValue();
+                if ("".equals(s)) {
+                    ((JComponent) getComponent()).setBorder(new LineBorder(ERROR_COLOR));
+                    return false;
+                }
+                return super.stopCellEditing();
+            }
+
+            @Override
+            public Component getTableCellEditorComponent(JTable table, Object value,
+                    boolean isSelected, int row, int column) {
+                ((JComponent) getComponent()).setBorder(new LineBorder(CORRECT_COLOR));
+                return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+            }
+
+        }
+
+        private class SceneTableSelectionListener implements ListSelectionListener {
 		
 		public void valueChanged(ListSelectionEvent e) {
 			if (e.getValueIsAdjusting()){
@@ -184,6 +221,7 @@ public class SceneLayerNavigator extends JTable {
 			dge.startDrag(null, payload, this);
 		}
 		
+        @Override
 		public void dragDropEnd(DragSourceDropEvent dsde) {
 			super.dragDropEnd(dsde);
 			if (dsde.getDropSuccess()) {
@@ -223,6 +261,7 @@ public class SceneLayerNavigator extends JTable {
 				dtde.dropComplete(false);
 			}
 		}
+        @Override
 		public void dragExit(DropTargetEvent dte) {
 			if (DEBUG) System.out.println("dragExit"); // NOI18N
 		}

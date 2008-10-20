@@ -60,8 +60,8 @@ import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.netbeans.modules.groovy.editor.actions.FixImportsHelper.ImportCandidate;
-import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.parser.SourceUtils;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.gsf.api.CancellableTask;
 import org.openide.util.Exceptions;
 
@@ -76,12 +76,7 @@ public class FixImportsAction extends BaseAction implements Runnable {
     private FixImportsHelper helper = new FixImportsHelper();
 
     public FixImportsAction() {
-        super("fix-groovy-imports", 0); // NOI18N
-    }
-
-    @Override
-    public Class getShortDescriptionBundleClass() {
-        return FixImportsAction.class;
+        super(NbBundle.getMessage(FixImportsAction.class, "fix-groovy-imports"), 0); // NOI18N
     }
 
     @Override

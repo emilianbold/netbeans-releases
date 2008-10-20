@@ -76,7 +76,7 @@ import org.netbeans.editor.BaseKit.DeleteCharAction;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
 import org.netbeans.editor.ext.html.*;
 import org.netbeans.editor.ext.html.parser.SyntaxParser;
-import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
 import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
@@ -374,7 +374,7 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
     }
 
-    public static class HTMLDeleteCharAction extends DeleteCharAction {
+    public static class HTMLDeleteCharAction extends DeleteCharAction implements NextCharProvider {
 
         private JTextComponent currentTarget;
         
@@ -384,9 +384,14 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            currentTarget = target;
-            super.actionPerformed(evt, target);
-            currentTarget = null;
+            target.putClientProperty(NextCharProvider.class, this);
+            try {
+                currentTarget = target;
+                super.actionPerformed(evt, target);
+            } finally {
+                currentTarget = null;
+                target.putClientProperty(NextCharProvider.class, null);
+            }
         }
 
         @Override
@@ -403,6 +408,10 @@ public class HTMLKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             
             super.charBackspaced(doc, dotPos, caret, ch);
             HTMLAutoCompletion.charDeleted(doc, dotPos, caret, ch);
+        }
+
+        public boolean getNextChar() {
+            return nextChar;
         }
     }
 

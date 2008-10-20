@@ -53,9 +53,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.api.Index;
 import org.netbeans.modules.ruby.elements.IndexedField;
 import static org.netbeans.modules.gsf.api.Index.*;
@@ -100,14 +101,20 @@ public final class RubyIndex {
     private static final String GEM_URL = "gem:"; // NOI18N
 
     private final Index index;
+    private FileObject context;
 
     /** Creates a new instance of RubyIndex */
-    public RubyIndex(Index index) {
+    private RubyIndex(Index index, FileObject context) {
         this.index = index;
+        this.context = context;
     }
 
     public static RubyIndex get(Index index) {
-        return new RubyIndex(index);
+        return new RubyIndex(index, null);
+    }
+
+    public static RubyIndex get(Index index, FileObject context) {
+        return new RubyIndex(index, context);
     }
 
     private boolean search(String key, String name, NameKind kind, Set<SearchResult> result) {
@@ -537,7 +544,7 @@ public final class RubyIndex {
         return methods;
     }
 
-    private IndexedMethod createMethod(String signature, SearchResult map, boolean inherited) {
+    public IndexedMethod createMethod(String signature, SearchResult map, boolean inherited) {
         String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
         String module = map.getValue(RubyIndexer.FIELD_IN);
 
@@ -569,13 +576,13 @@ public final class RubyIndex {
         }
 
         IndexedMethod m =
-            IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags);
+            IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
 
         m.setInherited(inherited);
         return m;
     }
 
-    private IndexedField createField(String signature, SearchResult map, boolean isInstance, boolean inherited) {
+    public IndexedField createField(String signature, SearchResult map, boolean isInstance, boolean inherited) {
         String clz = map.getValue(RubyIndexer.FIELD_CLASS_NAME);
         String module = map.getValue(RubyIndexer.FIELD_IN);
 
@@ -606,13 +613,13 @@ public final class RubyIndex {
         }
 
         IndexedField m =
-            IndexedField.create(this, signature, fqn, clz, fileUrl, require, attributes, flags);        
+            IndexedField.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
         m.setInherited(inherited);
 
         return m;
     }
     
-    private IndexedClass createClass(String fqn, String clz, SearchResult map) {
+    public IndexedClass createClass(String fqn, String clz, SearchResult map) {
         String require = map.getValue(RubyIndexer.FIELD_REQUIRE);
 
         // TODO - how do I determine -which- file to associate with the file?
@@ -631,7 +638,7 @@ public final class RubyIndex {
         }
 
         IndexedClass c =
-            IndexedClass.create(this, clz, fqn, fileUrl, require, attrs, flags);
+            IndexedClass.create(this, clz, fqn, fileUrl, require, attrs, flags, context);
 
         return c;
     }
@@ -1218,7 +1225,7 @@ public final class RubyIndex {
                     int flags = 0;
                     
                     IndexedMethod method =
-                        IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags);
+                        IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
                     method.setMethodType(IndexedMethod.MethodType.DBCOLUMN);
                     method.setSmart(true);
                     methods.add(method);
@@ -1257,7 +1264,7 @@ public final class RubyIndex {
                             String signature = methodOneName+"(" + column + ",*options)";
                             String fqn = tableName+"#"+signature;
                             IndexedMethod method =
-                                IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags);
+                                IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
                             method.setInherited(false);
                             method.setSmart(true);
                             methods.add(method);
@@ -1266,7 +1273,7 @@ public final class RubyIndex {
                             String signature = methodAllName+"(" + column + ",*options)";
                             String fqn = tableName+"#"+signature;
                             IndexedMethod method =
-                                IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags);
+                                IndexedMethod.create(this, signature, fqn, clz, fileUrl, require, attributes, flags, context);
                             method.setInherited(false);
                             method.setSmart(true);
                             methods.add(method);
@@ -1356,7 +1363,7 @@ public final class RubyIndex {
                 String fileUrl = map.getPersistentUrl();
                 for (String name : names) {
                     int flags = 0;
-                    IndexedVariable var = IndexedVariable.create(this, name, name, null, fileUrl, null, name, flags, ElementKind.GLOBAL);
+                    IndexedVariable var = IndexedVariable.create(this, name, name, null, fileUrl, null, name, flags, ElementKind.GLOBAL, context);
                     globals.add(var);
                 }
             }
@@ -1747,8 +1754,23 @@ public final class RubyIndex {
     }
 
     static String getPreindexUrl(String url) {
+        return getPreindexUrl(url, null);
+    }
+    static String getPreindexUrl(String url, FileObject context) {
         if (RubyIndexer.PREINDEXING) {
-            Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
+            Iterator<RubyPlatform> it = null;
+            if (context != null && context.isValid()) {
+                Project project = FileOwnerQuery.getOwner(context);
+                if (project != null) {
+                    RubyPlatform platform = RubyPlatform.platformFor(project);
+                    if (platform != null) {
+                        it = Collections.singleton(platform).iterator();
+                    }
+                }
+            }
+            if (it == null) {
+                it = RubyPlatformManager.platformIterator();
+            }
             while (it.hasNext()) {
                 RubyPlatform platform = it.next();
                 String s = getGemHomeURL(platform);
@@ -1795,11 +1817,24 @@ public final class RubyIndex {
 
     /** Get the FileObject corresponding to a URL returned from the index */
     public static FileObject getFileObject(String url) {
+        return getFileObject(url, null);
+    }
+    public static FileObject getFileObject(String url, FileObject context) {
         try {
             if (url.startsWith(RUBYHOME_URL)) {
-                // TODO - resolve to correct platform
-                // FIXME: per-platform now
-                Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
+                Iterator<RubyPlatform> it = null;
+                if (context != null) {
+                    Project project = FileOwnerQuery.getOwner(context);
+                    if (project != null) {
+                        RubyPlatform platform = RubyPlatform.platformFor(project);
+                        if (platform != null) {
+                            it = Collections.singleton(platform).iterator();
+                        }
+                    }
+                }
+                if (it == null) {
+                    it = RubyPlatformManager.platformIterator();
+                }
                 while (it.hasNext()) {
                     RubyPlatform platform = it.next();
                     String u = platform.getHomeUrl() + url.substring(RUBYHOME_URL.length());
@@ -1811,8 +1846,19 @@ public final class RubyIndex {
                 
                 return null;
             } else if (url.startsWith(GEM_URL)) {
-                // FIXME: per-platform now
-                Iterator<RubyPlatform> it = RubyPlatformManager.platformIterator();
+                Iterator<RubyPlatform> it = null;
+                if (context != null) {
+                    Project project = FileOwnerQuery.getOwner(context);
+                    if (project != null) {
+                        RubyPlatform platform = RubyPlatform.platformFor(project);
+                        if (platform != null) {
+                            it = Collections.singleton(platform).iterator();
+                        }
+                    }
+                }
+                if (it == null) {
+                    it = RubyPlatformManager.platformIterator();
+                }
                 while (it.hasNext()) {
                     RubyPlatform platform = it.next();
                     if (!platform.hasRubyGemsInstalled()) {

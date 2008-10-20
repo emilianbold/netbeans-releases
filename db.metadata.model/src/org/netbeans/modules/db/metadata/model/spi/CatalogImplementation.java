@@ -63,8 +63,6 @@ public abstract class CatalogImplementation {
 
     public abstract boolean isDefault();
 
-    public abstract Schema getDefaultSchema();
-
     public abstract Schema getSyntheticSchema();
 
     public abstract Collection<Schema> getSchemas();

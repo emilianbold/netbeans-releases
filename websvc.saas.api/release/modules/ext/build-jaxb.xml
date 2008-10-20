@@ -87,7 +87,7 @@ made subject to such option by the copyright holder.
                destdir="${jaxb.base}/build" 
                classpath="${platform.home}/lib/tools.jar:${libs.jaxb.classpath}" 
                executable="${platform.javac}"
-               debug="on" source="1.5" fork="true" verbose="true">               
+               debug="on" source="1.5" fork="true">               
         </javac>
     </target>
     

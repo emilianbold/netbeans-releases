@@ -1407,7 +1407,7 @@ public class FilterNode extends Node {
             }
 
             if (init && parent != null) {
-                List<Node> snapshot = entrySupport().createSnapshot();
+                List<Node> snapshot = entrySupport().snapshot();
                 if (snapshot.size() > 0) {
                     int[] idxs = getSnapshotIdxs(snapshot);
                     if (newOriginal != null) {
@@ -1633,8 +1633,8 @@ public class FilterNode extends Node {
             }
 
             @Override
-            protected List<Node> createSnapshot() {
-                DefaultSnapshot snapshot = (DefaultSnapshot) super.createSnapshot();
+            protected DefaultSnapshot createSnapshot() {
+                DefaultSnapshot snapshot = super.createSnapshot();
                 Object[] newHolder = new Object[]{snapshot.holder, origSupport.createSnapshot()};
                 snapshot.holder = newHolder;
                 return snapshot;
@@ -1734,7 +1734,7 @@ public class FilterNode extends Node {
                     }
                     if (isDummyNode(node)) {
                         // force new snapshot
-                        hideEmpty(null, entry, null);
+                        hideEmpty(null, entry);
                     }
                     return node;
                 }
@@ -1748,7 +1748,7 @@ public class FilterNode extends Node {
             }
 
             @Override
-            protected List<Node> createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
+            protected LazySnapshot createSnapshot(List<Entry> entries, java.util.Map<Entry, EntryInfo> e2i, boolean delayed) {
                 return delayed ? new FilterDelayedLazySnapshot(entries, e2i) : new FilterLazySnapshot(entries, e2i);
             }
         
@@ -1863,7 +1863,7 @@ public class FilterNode extends Node {
                     }
 
                     key = node;
-                    if (node == null) {
+                    if (node == null || isDummyNode(node)) {
                         return Collections.emptyList();
                     }
                     Node[] nodes = createNodes(node);

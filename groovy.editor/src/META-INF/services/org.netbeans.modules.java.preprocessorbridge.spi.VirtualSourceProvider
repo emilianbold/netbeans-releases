@@ -1,1 +1,1 @@
-org.netbeans.modules.groovy.editor.parser.GroovyVirtualSourceProvider
+org.netbeans.modules.groovy.editor.api.parser.GroovyVirtualSourceProvider

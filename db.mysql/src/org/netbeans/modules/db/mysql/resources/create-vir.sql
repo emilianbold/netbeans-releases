@@ -42,7 +42,7 @@
 CREATE TABLE vir.validation (
   id CHAR(1) NOT NULL,
   CONSTRAINT vir_validation_pk PRIMARY KEY  ( id )
-);
+) Engine = "InnoDB";
 
 -- Create employee table
 CREATE TABLE vir.employee (
@@ -51,7 +51,7 @@ CREATE TABLE vir.employee (
   lastname  VARCHAR(40) NOT NULL,
   email     VARCHAR(40) NOT NULL,
   CONSTRAINT vir_employee_pk PRIMARY KEY  ( id )
-);
+) Engine = "InnoDB";
 
 -- Create password table
 CREATE TABLE vir.password (
@@ -60,14 +60,14 @@ CREATE TABLE vir.password (
   CONSTRAINT vir_password_pk PRIMARY KEY  ( id ),
   CONSTRAINT vir_password_id_fk FOREIGN KEY ( id )
         REFERENCES vir.employee ( id ) 
-);
+) Engine = "InnoDB";
 
 -- Create state table
 CREATE TABLE vir.state (
   stateid   CHAR(2)     NOT NULL,
   statename VARCHAR(40) NOT NULL,
   CONSTRAINT vir_state_pk PRIMARY KEY  ( stateid )
-);
+) Engine = "InnoDB";
 
 -- Create vehicle table
 CREATE TABLE vir.vehicle (
@@ -79,7 +79,7 @@ CREATE TABLE vir.vehicle (
   CONSTRAINT vir_vehicle_pk PRIMARY KEY  ( stateid, licenseplate ),
   CONSTRAINT vir_vehicle_stateid_fk_vehicle FOREIGN KEY ( stateid )
         REFERENCES vir.state ( stateid )
-);
+) Engine = "InnoDB";
 
 -- Create owner table
 CREATE TABLE vir.owner (
@@ -90,7 +90,7 @@ CREATE TABLE vir.owner (
         REFERENCES vir.state ( stateid ),
   CONSTRAINT vir_vehicle_employeeid_fk FOREIGN KEY ( employeeid )
         REFERENCES vir.employee ( id )
-);
+) Engine = "InnoDB";
 
 -- insert data into tables
 

@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                    <specification-version>1.27</specification-version>
+                        <specification-version>1.27</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -134,10 +134,11 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.html.editor.lib</friend>
+                <friend>org.netbeans.modules.javafx.fxd</friend>
+                <friend>org.netbeans.modules.languages.php</friend>
                 <friend>org.netbeans.modules.mobility.svgcore</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <friend>org.netbeans.modules.xml.text</friend>
-                <friend>org.netbeans.modules.languages.php</friend>
                 <package>org.netbeans.modules.editor.structure.api</package>
                 <package>org.netbeans.modules.editor.structure.formatting</package>
                 <package>org.netbeans.modules.editor.structure.spi</package>

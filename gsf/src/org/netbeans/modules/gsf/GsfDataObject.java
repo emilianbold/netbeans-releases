@@ -62,7 +62,6 @@ import org.openide.loaders.MultiFileLoader;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node;
 import org.openide.nodes.Node.Cookie;
-import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
@@ -243,11 +242,12 @@ public class GsfDataObject extends MultiDataObject {
 
         @Override
         protected StyledDocument createStyledDocument (EditorKit kit) {
+            org.netbeans.api.lexer.Language lexerlanguage = language.getGsfLanguage().getLexerLanguage();
             StyledDocument doc = super.createStyledDocument(kit);
             // Enter the file object in to InputAtrributes. It can be used by lexer.
             InputAttributes attributes = new InputAttributes();
             FileObject fileObject = NbEditorUtilities.getFileObject(doc);
-            attributes.setValue(language.getGsfLanguage().getLexerLanguage(), FileObject.class, fileObject, false);
+            attributes.setValue(lexerlanguage, FileObject.class, fileObject, false);
             doc.putProperty(InputAttributes.class, attributes);
             return doc;
         }
