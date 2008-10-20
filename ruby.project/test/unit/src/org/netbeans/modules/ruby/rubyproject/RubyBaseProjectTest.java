@@ -40,7 +40,6 @@
 package org.netbeans.modules.ruby.rubyproject;
 
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
 
 public final class RubyBaseProjectTest extends RubyProjectTestBase {
 
@@ -51,7 +50,7 @@ public final class RubyBaseProjectTest extends RubyProjectTestBase {
     public void testChangeAndStorePlatform() throws Exception {
         RubyBaseProject project = createTestProject();
         RubyPlatform platform = project.getPlatform();
-        project.changeAndStorePlatform(RubyPlatformManager.addPlatform(setUpRuby()));
+        project.changeAndStorePlatform(setUpPlatform());
         assertFalse("platform changed (from:\n " + platform + "\nto:\n " + project.getPlatform(),
                 platform.equals(project.getPlatform()));
     }
