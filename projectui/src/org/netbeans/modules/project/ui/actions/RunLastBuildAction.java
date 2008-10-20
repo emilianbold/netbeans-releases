@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /**
- * An action to run the last Ant build.
+ * An action to run the last build execution.
  * @see "#47925"
  */
 public final class RunLastBuildAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
