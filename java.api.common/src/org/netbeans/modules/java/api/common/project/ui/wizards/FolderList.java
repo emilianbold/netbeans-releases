@@ -268,7 +268,7 @@ public final class FolderList extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_addButtonActionPerformed
     
-    static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {
+    public static boolean isValidRoot (File file, File[] relatedRoots, File projectFolder) {
         Project p;
         if ((p = FileOwnerQuery.getOwner(file.toURI()))!=null 
             && !file.getAbsolutePath().startsWith(projectFolder.getAbsolutePath()+File.separatorChar)) {

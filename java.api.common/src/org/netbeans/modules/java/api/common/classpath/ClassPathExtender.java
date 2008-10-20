@@ -44,14 +44,12 @@ package org.netbeans.modules.java.api.common.classpath;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.ant.AntArtifact;
-import org.openide.util.Exceptions;
 
 @Deprecated
 @SuppressWarnings("deprecation")
