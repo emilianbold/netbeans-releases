@@ -139,7 +139,9 @@ public class CustomizationWSEditor implements WSEditor {
                         if (wsdlIsDirty || jaxwsDirty) {
                             JaxWsRefreshCookie refreshCookie =
                                     (JaxWsRefreshCookie) node.getCookie(JaxWsRefreshCookie.class);
-                            refreshCookie.refreshService(false);
+                            if (refreshCookie != null) { 
+                                refreshCookie.refreshService(false);
+                            }
                         }
                     } finally {
                         handle.finish();
