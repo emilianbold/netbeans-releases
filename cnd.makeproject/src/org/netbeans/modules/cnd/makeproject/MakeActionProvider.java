@@ -619,7 +619,7 @@ public class MakeActionProvider implements ActionProvider {
                 String args;
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                     buildCommand = "cmd.exe"; // NOI18N
-                    args = "/c sh"; // NOI18N
+                    args = "/c sh "; // NOI18N
                 } else {
                     buildCommand = "bash"; // NOI18N
                     args = "";
