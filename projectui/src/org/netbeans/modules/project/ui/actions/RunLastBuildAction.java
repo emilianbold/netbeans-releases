@@ -67,8 +67,7 @@ import org.openide.util.actions.Presenter;
 public final class RunLastBuildAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
     
     public RunLastBuildAction() {
-        super(NbBundle.getMessage(RunLastBuildAction.class, "LBL_RunLastBuildAction_general")/*,
-                new ImageIcon(Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif", true))*/);
+        super(NbBundle.getMessage(RunLastBuildAction.class, "LBL_RunLastBuildAction_general"));
         BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImplementation.class));
     }
     
