@@ -55,7 +55,7 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
-import org.openide.modules.Service;
+import org.openide.util.lookup.Service;
 import org.openide.modules.SpecificationVersion;
 
 /**

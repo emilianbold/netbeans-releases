@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.openide.modules;
+package org.netbeans.modules.openide.util;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -68,10 +68,10 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import org.openide.modules.Service;
+import org.openide.util.lookup.Service;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.openide.modules.Service")
+@SupportedAnnotationTypes("org.openide.util.lookup.Service")
 public class ServiceProcessor extends AbstractProcessor {
 
     /** public for ServiceLoader */

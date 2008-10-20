@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.openide.modules;
+package org.openide.util.lookup;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
