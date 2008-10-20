@@ -118,6 +118,8 @@ import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedMethod;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.completion.GroovyCompletionItem;
+import org.netbeans.modules.groovy.editor.completion.GroovyElementHandler;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
@@ -784,7 +786,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         for (GroovyKeyword groovyKeyword : keywords) {
             LOG.log(Level.FINEST, "Adding keyword proposal : {0}", groovyKeyword.name); // NOI18N
-            proposals.add(new KeywordItem(groovyKeyword.name, null, anchor, request, groovyKeyword.isGroovy));
+            proposals.add(new GroovyCompletionItem.KeywordItem(groovyKeyword.name, null, anchor, request.info, groovyKeyword.isGroovy));
         }
 
         return true;
@@ -946,7 +948,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         for (String var : newVars) {
             LOG.log(Level.FINEST, "Variable candidate: {0}", var); // NOI18N
             if (var.startsWith(request.prefix)) {
-                proposals.add(new NewVarItem(var, anchor, request));
+                proposals.add(new GroovyCompletionItem.NewVarItem(var, anchor));
                 stuffAdded = true;
             }
         }
@@ -1055,7 +1057,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
 
             if (field.getName().startsWith(fieldName)) {
-                proposals.add(new FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request, fieldTypeAsString));
+                proposals.add(new GroovyCompletionItem.FieldItem(field.getName(), field.getModifiers(), anchor + anchorShift, request.info, fieldTypeAsString));
             }
 
         }
@@ -1101,10 +1103,10 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                 LOG.log(Level.FINEST, "Node found: {0}", varName); // NOI18N
 
                 if (request.prefix.length() < 1) {
-                    proposals.add(new LocalVarItem((Variable) node, anchor, request));
+                    proposals.add(new GroovyCompletionItem.LocalVarItem((Variable) node, anchor));
                 } else {
                     if (varName.compareTo(request.prefix) != 0 && varName.startsWith(request.prefix)) {
-                        proposals.add(new LocalVarItem((Variable) node, anchor, request));
+                        proposals.add(new GroovyCompletionItem.LocalVarItem((Variable) node, anchor));
                     }
                 }
 
@@ -1683,7 +1685,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
 
             if (singlePackage.startsWith(packageRequest.prefix) && singlePackage.length() > 0) {
-                PackageItem item = new PackageItem(singlePackage, anchor, request);
+                GroovyCompletionItem.PackageItem item = new GroovyCompletionItem.PackageItem(singlePackage, anchor, request.info);
 
                 if (request.behindImport) {
                     item.setSmart(true);
@@ -1985,7 +1987,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         if (typeName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
             // LOG.log(Level.FINEST, "Filter, Adding Type : {0}", type.getName());
-            proposals.add(new TypeItem(typeName, anchor, request, type.getKind()));
+            proposals.add(new GroovyCompletionItem.TypeItem(typeName, anchor, type.getKind()));
         }
 
 
@@ -2177,9 +2179,9 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
      * @param exe
      * @return
      */
-    private static List<ParameterDescriptor> getParameterList(ExecutableElement exe) {
+    private static List<GroovyCompletionItem.ParameterDescriptor> getParameterList(ExecutableElement exe) {
 
-        List<ParameterDescriptor> paramList = new ArrayList<ParameterDescriptor>();
+        List<GroovyCompletionItem.ParameterDescriptor> paramList = new ArrayList<GroovyCompletionItem.ParameterDescriptor>();
 
         if (exe != null) {
             // generate a list of parameters
@@ -2204,7 +2206,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                     // todo: this needs to be replaced with values from the JavaDoc
                     String varName = "param" + String.valueOf(i);
 
-                    paramList.add(new ParameterDescriptor(fullName, name, varName));
+                    paramList.add(new GroovyCompletionItem.ParameterDescriptor(fullName, name, varName));
 
                     i++;
                 }
@@ -2333,9 +2335,9 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
 
                                                     String paramListString = getParameterListForMethod((ExecutableElement)encl);
-                                                    List<GroovyCompletionHandler.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
+                                                    List<GroovyCompletionItem.ParameterDescriptor> paramList = getParameterList((ExecutableElement)encl);
 
-                                                    proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, request, false));
+                                                    proposals.add(new GroovyCompletionItem.ConstructorItem(constructorName, paramListString, paramList, anchor, false));
                                                 }
                                             }
                                         }
@@ -2403,51 +2405,10 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         }
 
         // 2.3  Get apropriate groovy-methods from index.
-
-        GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
-
-        if (index != null) {
-
-            String methodName = "";
-
-            if(request.prefix != null) {
-                methodName = request.prefix;
-            }
-
-            Set<IndexedMethod> methods;
-
-            if (methodName.equals("")) {
-                methods = index.getMethods(".*", declaringClass.getName(),
-                        NameKind.REGEXP, EnumSet.allOf(SearchScope.class));
-            } else {
-                methods = index.getMethods(methodName, declaringClass.getName(),
-                        NameKind.PREFIX, EnumSet.allOf(SearchScope.class));
-            }
-
-            if (methods.size() == 0) {
-                LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
-            } else {
-                LOG.log(Level.FINEST, "Found this number of methods : {0} ", methods.size());
-                for (IndexedMethod indexedMethod : methods) {
-                    LOG.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
-
-                    // FIXME move sig to method item
-                    List<String> params = indexedMethod.getParameters();
-                    StringBuffer sb = new StringBuffer();
-
-                    for (String string : params) {
-                        if (sb.length() > 0) {
-                            sb.append(", ");
-                        }
-                        sb.append(NbUtilities.stripPackage(string));
-                    }
-
-                    // FIXME what is this intended to do ? + modifiers
-                    proposals.add(new JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
-                            GroovyCompletionItem.toModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, request));
-                }
-            }
-        }
+        // FIXME we should ask for this first
+        List<? extends GroovyCompletionItem> items = GroovyElementHandler.forCompilationInfo(request.info)
+                .getMethods(declaringClass.getName(), request.prefix, anchor);
+        proposals.addAll(items);
 
         return true;
     }
@@ -2493,8 +2454,8 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                             if (LOG.isLoggable(Level.FINEST)) {
                                 LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
                             }
-                            proposals.add(new JavaMethodItem(simpleName, parameterString,
-                                    returnType, element.getModifiers(), anchor, request));
+                            proposals.add(new GroovyCompletionItem.JavaMethodItem(simpleName, parameterString,
+                                    returnType, element.getModifiers(), anchor));
                         }
                     }
                 }
@@ -2556,7 +2517,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
             if (metaClz != null) {
 
-                List<MethodItem> result = new ArrayList<MethodItem>();
+                List<GroovyCompletionItem.MetaMethodItem> result = new ArrayList<GroovyCompletionItem.MetaMethodItem>();
 
                 LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
                 for (Object method : metaClz.getMetaMethods()) {
@@ -2572,7 +2533,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                         populateProposal(clz, method, request, result, false);
                     }
                 }
-                for (MethodItem methodItem : result) {
+                for (GroovyCompletionItem.MetaMethodItem methodItem : result) {
                     proposals.add(methodItem);
                 }
             }
@@ -2580,7 +2541,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
     }
 
-    private void populateProposal(Class clz, Object method, CompletionRequest request, List<MethodItem> methodList, boolean isGDK) {
+    private void populateProposal(Class clz, Object method, CompletionRequest request, List<GroovyCompletionItem.MetaMethodItem> methodList, boolean isGDK) {
         if (method != null && (method instanceof MetaMethod)) {
             MetaMethod mm = (MetaMethod) method;
 
@@ -2590,14 +2551,14 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             if (mm.getName().startsWith(request.prefix)) {
                 LOG.log(Level.FINEST, "Found matching method: {0}", mm.getName()); // NOI18N
 
-                MethodItem item = new MethodItem(clz, mm, anchor, request, isGDK);
+                GroovyCompletionItem.MetaMethodItem item = new GroovyCompletionItem.MetaMethodItem(clz, mm, anchor, isGDK);
                 addOrReplaceItem(methodList, item);
             }
 
         }
     }
 
-    private void addOrReplaceItem(List<MethodItem> methodItemList, MethodItem itemToStore) {
+    private void addOrReplaceItem(List<GroovyCompletionItem.MetaMethodItem> methodItemList, GroovyCompletionItem.MetaMethodItem itemToStore) {
 
         // if we have a method in-store which has the same name and same signature
         // then replace it if we have a method with a higher distance to the super-class.
@@ -2607,7 +2568,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         MetaMethod methodToStore = itemToStore.getMethod();
         int toStoreDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
 
-        for (MethodItem methodItem : methodItemList) {
+        for (GroovyCompletionItem.MetaMethodItem methodItem : methodItemList) {
             MetaMethod listMethod = methodItem.getMethod();
 
             // FIXME return types subtype
@@ -2696,7 +2657,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
             if (camelCaseSignature.startsWith(prefix)) {
                 LOG.log(Level.FINEST, "Prefix matches Class's CamelCase signature. Adding."); // NOI18N
-                proposals.add(new ConstructorItem(requestedClass.getName(), null, null, anchor, request, true));
+                proposals.add(new GroovyCompletionItem.ConstructorItem(requestedClass.getName(), null, null, anchor, true));
                 return true;
             }
 
@@ -2870,7 +2831,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
      * flat on our face.
      *
      */
-    static String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
+    public static String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
         String methodSignature = method.getSignature();
         methodSignature = methodSignature.trim();
 
@@ -3180,34 +3141,6 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         AstPath path;
         AstPath beforeDotPath;
         ClassNode declaringClass;
-    }
-
-    // This is from JavaCompletionItem
-    static class ParameterDescriptor {
-
-        private final String fullTypeName;
-
-        private final String typeName;
-
-        private final String name;
-
-        public ParameterDescriptor(String fullTypeName, String typeName, String name) {
-            this.fullTypeName = fullTypeName;
-            this.typeName = typeName;
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getTypeName() {
-            return typeName;
-        }
-
-        public String getFullTypeName() {
-            return fullTypeName;
-        }
     }
 
     private static class TypeHolder {
