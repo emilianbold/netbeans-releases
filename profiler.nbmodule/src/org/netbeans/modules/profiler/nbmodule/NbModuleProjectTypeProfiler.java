@@ -60,6 +60,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.common.integration.IntegrationUtils;
 import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 
 /**
@@ -210,34 +212,74 @@ public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfil
                 // create temporary link in /tmp directory and use it instead of directory with space
                 String libsDir = Profiler.getDefault().getLibsDir();
                 props.setProperty("profiler.info.jvmargs.agent", IntegrationUtils.fixLibsDirPath(libsDir, agentArg)); //NOI18N
-            } else if (Utilities.isWindows()) {
+            } else if (Utilities.isWindows() && isNbSourceModule(project)) {
                 // Profiler is installed in directory with space on Windows
-                // surround the whole -agentpath argument with quotes
+                // surround the whole -agentpath argument with quotes for NB source module
                 agentArg = "\"" + agentArg + "\""; //NOI18N
                 props.setProperty("profiler.info.jvmargs.agent", agentArg); //NOI18N
             }
         }
     }
     
-    private static JavaPlatform getJavaPlatformFromAntName(Project project, Properties props) {
-        String javaPlatformAntName = props.getProperty("profiler.info.javaPlatform"); // NOI18N
-        JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-
-        if (javaPlatformAntName.equals("default_platform")) { //NOI18N
-            return jpm.getDefaultPlatform();
+    /**
+     * Returns true if the provided Project is a NB source module, false otherwise.
+     * 
+     * @param project Project to be checked.
+     * @return true if the provided Project is a NB source module, false otherwise.
+     */
+    private boolean isNbSourceModule(Project project) {
+        // Resolve project.xml
+        AuxiliaryConfiguration aux = ProjectUtils.getAuxiliaryConfiguration(project);
+        
+        // Guess the namespace
+        String namespace = NBMODULE_PROJECT_NAMESPACE_3;
+        // Try to resolve nb-module-project/3 (current version in NB sources)
+        Element e = aux.getConfigurationFragment("data", namespace, true); // NOI18N
+        // Not a nb-module-project/3, can still be nb-module-project/2 or a suite
+        if (e == null) {
+            // Try to resolve nb-module-project/2 (just for compatibility)
+            namespace = NBMODULE_PROJECT_NAMESPACE_2;
+            e = aux.getConfigurationFragment("data", namespace, true); // NOI18N
+            // Project is a NB module suite - not a NB source module
+            if (e == null) return false;
         }
-
-        JavaPlatform[] platforms = jpm.getPlatforms(null, new Specification("j2se", null)); //NOI18N
-
-        for (int i = 0; i < platforms.length; i++) {
-            JavaPlatform platform = platforms[i];
-            String antName = platform.getProperties().get("platform.ant.name"); // NOI18N
-
-            if (antName.equals(javaPlatformAntName)) {
-                return platform;
+        
+        // Module is a NB module suite component, not a NB source module
+        if (findElement(e, "suite-component", namespace) != null) return false; // NOI18N
+        
+        // Module is a NB module suite component, not a NB source module
+        if (findElement(e, "standalone", namespace) != null) return false; // NOI18N
+        
+        // Module is a NB source module (neither suite component nor standalone)
+        return true;
+    }
+    
+    // COPIED FROM org.netbeans.modules.project.ant:
+    // (except for namespace == null support in findElement)
+    // (and support for comments in findSubElements)
+    
+    /**
+     * Search for an XML element in the direct children of a parent.
+     * DOM provides a similar method but it does a recursive search
+     * which we do not want. It also gives a node list and we want
+     * only one result.
+     * @param parent a parent element
+     * @param name the intended local name
+     * @param namespace the intended namespace (or null)
+     * @return the first child element with that name, or null if none
+     */
+    private static Element findElement(Element parent, String name, String namespace) {
+        NodeList l = parent.getChildNodes();
+        for (int i = 0; i < l.getLength(); i++) {
+            if (l.item(i).getNodeType() == Node.ELEMENT_NODE) {
+                Element el = (Element)l.item(i);
+                if ((namespace == null && name.equals(el.getTagName())) ||
+                        (namespace != null && name.equals(el.getLocalName()) &&
+                        namespace.equals(el.getNamespaceURI()))) {
+                    return el;
+                }
             }
         }
-
         return null;
     }
 }
