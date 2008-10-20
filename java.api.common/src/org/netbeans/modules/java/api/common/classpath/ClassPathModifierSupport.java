@@ -108,7 +108,9 @@ public class ClassPathModifierSupport {
                                     filePath2 = eval.evaluate(filePath);
                                 }
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( filePath2, projectFolderFile, null, filePath.startsWith("${var.") ? filePath : null); // NOI18N
-                                cpUiSupportCallback.initItem(item);
+                                if (cpUiSupportCallback != null) {
+                                    cpUiSupportCallback.initItem(item);
+                                }
                                 if ((operation == ADD || operation == ADD_NO_HEURISTICS) && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
@@ -172,7 +174,9 @@ public class ClassPathModifierSupport {
                                 assert artifacts[i] != null;
                                 assert artifactElements[i] != null;
                                 ClassPathSupport.Item item = ClassPathSupport.Item.create( artifacts[i], artifactElements[i], null);
-                                cpUiSupportCallback.initItem(item);
+                                if (cpUiSupportCallback != null) {
+                                    cpUiSupportCallback.initItem(item);
+                                }
                                 if (operation == ADD && !resources.contains(item)) {
                                     resources.add (item);
                                     changed = true;
@@ -213,7 +217,9 @@ public class ClassPathModifierSupport {
         for (int i = 0; i < libraries.length; i++) {
             Library lib = checkLibrarySharability(project, helper, refHelper, libraries[i]);
             ClassPathSupport.Item item = ClassPathSupport.Item.create(lib, null);
-            cpUiSupportCallback.initItem(item);
+            if (cpUiSupportCallback != null) {
+                cpUiSupportCallback.initItem(item);
+            }
             items.add(item);
         }
         return handleLibraryClassPathItems(project, helper, cs, items, classPathProperty, projectXMLElementName, operation, true);
