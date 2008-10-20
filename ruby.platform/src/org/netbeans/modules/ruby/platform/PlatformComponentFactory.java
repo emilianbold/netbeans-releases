@@ -49,9 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.Collator;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -207,22 +204,11 @@ public final class PlatformComponentFactory {
             implements ComboBoxModel {
 
         private static RubyPlatform[] getSortedPlatforms(RubyPlatform extra) {
-            Set<RubyPlatform> _platforms = RubyPlatformManager.getPlatforms();
+            Set<RubyPlatform> platforms = RubyPlatformManager.getSortedPlatforms();
             if (extra != null) {
-                _platforms.add(extra);
+                platforms.add(extra);
             }
-            RubyPlatform[] platforms = _platforms.toArray(new RubyPlatform[_platforms.size()]);
-            Arrays.sort(platforms, new Comparator<RubyPlatform>() {
-                public int compare(RubyPlatform p1, RubyPlatform p2) {
-                    int res = Collator.getInstance().compare(p1.getInfo().getLongDescription(), p2.getInfo().getLongDescription());
-                    if (res != 0) {
-                        return res;
-                    } else {
-                        return System.identityHashCode(p1) - System.identityHashCode(p2);
-                    }
-                }
-            });
-            return platforms;
+            return platforms.toArray(new RubyPlatform[platforms.size()]);
         }
         private RubyPlatform[] nbPlafs;
         private Object selectedPlaf;

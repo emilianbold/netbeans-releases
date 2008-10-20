@@ -57,6 +57,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
@@ -116,11 +118,20 @@ public final class RubyPlatformManager {
         platforms = null;
         firePlatformsChanged();
     }
+
     /**
      * Get a set of all registered platforms.
      */
     public static synchronized Set<RubyPlatform> getPlatforms() {
         return new HashSet<RubyPlatform>(getPlatformsInternal());
+    }
+
+    /**
+     * Get a set of all registered platforms, sorted alphabetically by long
+     * description.
+     */
+    public static synchronized SortedSet<RubyPlatform> getSortedPlatforms() {
+        return new TreeSet<RubyPlatform>(getPlatformsInternal());
     }
 
     /**
