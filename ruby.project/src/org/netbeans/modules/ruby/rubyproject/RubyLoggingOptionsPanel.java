@@ -36,13 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
-/*
- * RubyLoggingOptionsPanel.java
- *
- * Created on Oct 17, 2008, 3:29:56 PM
- */
-
 package org.netbeans.modules.ruby.rubyproject;
 
 import java.util.logging.Level;
