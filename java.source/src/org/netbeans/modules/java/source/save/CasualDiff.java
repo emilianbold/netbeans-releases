@@ -342,6 +342,7 @@ public class CasualDiff {
     
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer = bounds[0];
+        final Name origOuterClassName = origClassName;
         int insertHint = localPointer;
         // skip the section when printing anonymous class
         if (anonClass == false) {
@@ -451,8 +452,7 @@ public class CasualDiff {
             copyTo(localPointer, insertHint);
         localPointer = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
         printer.enclClassName = origName;
-        // the reference is no longer needed.
-        origClassName = null;
+        origClassName = origOuterClassName;
         printer.undent(old);
         if (localPointer != -1 && localPointer < origText.length()) {
             if (origText.charAt(localPointer) == '}') {
