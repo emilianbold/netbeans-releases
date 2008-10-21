@@ -529,97 +529,93 @@ public class MessageConfigurationController extends EditorLifeCycleAdapter
     }
     
     @Override
-    public boolean applyNewValues() {
-        try {
-            Node node = myEditor.getEditedNode();
-            Object omRef = myEditor.getEditedObject();
-            assert omRef instanceof ReferenceCollection;
-            ReferenceCollection refColl = (ReferenceCollection)omRef;
-            Property prop = null;
-            //
-            PartnerLink pLink = (PartnerLink)cbxPartnerLink.getSelectedItem();
-            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.PARTNER_LINK);
-            if ( prop != null ) {
-                if (pLink != null) {
-                    BpelReference<PartnerLink> pLinkRef =
-                            refColl.createReference(pLink, PartnerLink.class);
-                    prop.setValue(pLinkRef);
+    public boolean applyNewValues() throws Exception {
+        Node node = myEditor.getEditedNode();
+        Object omRef = myEditor.getEditedObject();
+        assert omRef instanceof ReferenceCollection;
+        ReferenceCollection refColl = (ReferenceCollection)omRef;
+        Property prop = null;
+        //
+        PartnerLink pLink = (PartnerLink)cbxPartnerLink.getSelectedItem();
+        prop = PropertyUtils.lookForPropertyByType(node, PropertyType.PARTNER_LINK);
+        if ( prop != null ) {
+            if (pLink != null) {
+                BpelReference<PartnerLink> pLinkRef =
+                        refColl.createReference(pLink, PartnerLink.class);
+                prop.setValue(pLinkRef);
+            } else {
+                // prop.setValue(null);
+            }
+        }
+        //
+        Operation operation = (Operation)cbxOperation.getSelectedItem();
+        prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OPERATION);
+        if ( prop != null ) {
+            if (operation != null) {
+                WSDLReference<Operation> operRef =
+                        refColl.createWSDLReference(operation, Operation.class);
+                prop.setValue(operRef);
+            } else {
+                // prop.setValue(null);
+            }
+        }
+        //
+        prop = PropertyUtils.lookForPropertyByType(node, PropertyType.PORT_TYPE);
+        if ( prop != null ) {
+            if (currPortType != null){
+                WSDLReference<PortType> pTypeRef =
+                        refColl.createWSDLReference(currPortType,
+                        PortType.class);
+                prop.setValue(pTypeRef);
+            } else {
+                prop.setValue(null);
+            }
+        }
+        //
+        //
+        if (declarationVisible) {
+            prop = PropertyUtils.lookForPropertyByType(
+                    node, PropertyType.EVENT_VARIABLE_NAME);
+            if (prop != null) {
+                String varName = fldVariableName.getText();
+                if (varName == null || varName.length() == 0) {
+                    prop.setValue(null);
                 } else {
-                    // prop.setValue(null);
+                    prop.setValue(varName);
                 }
             }
-            //
-            Operation operation = (Operation)cbxOperation.getSelectedItem();
-            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OPERATION);
+        }
+        //
+        if (inputVisible) {
+            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.INPUT);
             if ( prop != null ) {
-                if (operation != null) {
-                    WSDLReference<Operation> operRef =
-                            refColl.createWSDLReference(operation, Operation.class);
-                    prop.setValue(operRef);
-                } else {
-                    // prop.setValue(null);
-                }
-            }
-            //
-            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.PORT_TYPE);
-            if ( prop != null ) {
-                if (currPortType != null){
-                    WSDLReference<PortType> pTypeRef =
-                            refColl.createWSDLReference(currPortType,
-                            PortType.class);
-                    prop.setValue(pTypeRef);
+                if (currInputVar != null) {
+                    VariableDeclaration varDecl = currInputVar.createNewVariable();
+                    BpelReference<VariableDeclaration> varRef =
+                            refColl.createReference(varDecl,
+                            VariableDeclaration.class);
+                    prop.setValue(varRef);
                 } else {
                     prop.setValue(null);
                 }
             }
-            //
-            //
-            if (declarationVisible) {
-                prop = PropertyUtils.lookForPropertyByType(
-                        node, PropertyType.EVENT_VARIABLE_NAME);
-                if (prop != null) {
-                    String varName = fldVariableName.getText();
-                    if (varName == null || varName.length() == 0) {
-                        prop.setValue(null);
-                    } else {
-                        prop.setValue(varName);
-                    }
-                }
-            }
-            //
-            if (inputVisible) {
-                prop = PropertyUtils.lookForPropertyByType(node, PropertyType.INPUT);
-                if ( prop != null ) {
-                    if (currInputVar != null) {
-                        VariableDeclaration varDecl = currInputVar.createNewVariable();
-                        BpelReference<VariableDeclaration> varRef =
-                                refColl.createReference(varDecl,
-                                VariableDeclaration.class);
-                        prop.setValue(varRef);
-                    } else {
-                        prop.setValue(null);
-                    }
-                }
-            }
-            //
-            if (outputVisible) {
-                prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OUTPUT);
-                if ( prop != null ){
-                    if (currOutputVar != null && isOutputVarEnabled) {
-                        VariableDeclaration varDecl = currOutputVar.createNewVariable();
-                        BpelReference<VariableDeclaration> varRef =
-                                refColl.createReference(varDecl,
-                                VariableDeclaration.class);
-                        prop.setValue(varRef);
-                    } else {
-                        prop.setValue(null);
-                    }
-                }
-            }
-            //
-        } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
         }
+        //
+        if (outputVisible) {
+            prop = PropertyUtils.lookForPropertyByType(node, PropertyType.OUTPUT);
+            if ( prop != null ){
+                if (currOutputVar != null && isOutputVarEnabled) {
+                    VariableDeclaration varDecl = currOutputVar.createNewVariable();
+                    BpelReference<VariableDeclaration> varRef =
+                            refColl.createReference(varDecl,
+                            VariableDeclaration.class);
+                    prop.setValue(varRef);
+                } else {
+                    prop.setValue(null);
+                }
+            }
+        }
+        //
         return true;
     }
     

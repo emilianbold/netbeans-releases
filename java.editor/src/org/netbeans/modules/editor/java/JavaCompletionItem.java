@@ -91,8 +91,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new KeywordItem(kwd, 0, postfix, substitutionOffset, smartType);
     }
     
-    public static final JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
-        return new PackageItem(pkgFQN, substitutionOffset, isDeprecated);
+    public static final JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
+        return new PackageItem(pkgFQN, substitutionOffset, inPackageStatement);
     }
 
     public static final JavaCompletionItem createTypeItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
@@ -534,14 +534,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
         private static ImageIcon icon;
         
-        private boolean isDeprecated;
+        private boolean inPackageStatement;
         private String simpleName;
         private String sortText;
         private String leftText;
 
-        private PackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
+        private PackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
             super(substitutionOffset);
-            this.isDeprecated = isDeprecated;
+            this.inPackageStatement = inPackageStatement;
             int idx = pkgFQN.lastIndexOf('.');
             this.simpleName = idx < 0 ? pkgFQN : pkgFQN.substring(idx + 1);
             this.sortText = this.simpleName + "#" + pkgFQN; //NOI18N
@@ -568,15 +568,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(PACKAGE_COLOR);
-                if (isDeprecated)
-                    sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated)
-                    sb.append(STRIKE_END);
                 sb.append(COLOR_END);
                 leftText = sb.toString();
             }
             return leftText;
+        }
+
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            super.substituteText(c, offset, len, inPackageStatement || toAdd != null ? toAdd : "."); //NOI18N
         }
         
         public String toString() {

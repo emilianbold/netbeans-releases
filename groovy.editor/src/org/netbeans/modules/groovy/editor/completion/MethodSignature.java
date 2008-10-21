@@ -37,60 +37,58 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.groovy.editor.api.completion;
+package org.netbeans.modules.groovy.editor.completion;
 
-import org.netbeans.modules.groovy.editor.api.completion.GroovyCompletionHandler;
-import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.Arrays;
 
 /**
  *
- * @author schmidtm
+ * @author Petr Hejl
  */
-public class CollectionsTest extends GroovyTestBase {
+public final class MethodSignature {
 
-    String TEST_BASE = "testfiles/completion/collections/";
+    private final String name;
 
-    public CollectionsTest(String testName) {
-        super(testName);
-        Logger.getLogger(GroovyCompletionHandler.class.getName()).setLevel(Level.FINEST);
+    private final String[] parameters;
+
+    public MethodSignature(String name, String[] parameters) {
+        this.name = name;
+        this.parameters = parameters;
     }
 
-    // uncomment this to have logging from GroovyLexer
-    protected Level logLevel() {
-        // enabling logging
-        return Level.INFO;
-        // we are only interested in a single logger, so we set its level in setUp(),
-        // as returning Level.FINEST here would log from all loggers
+    public String getName() {
+        return name;
     }
 
-    // testing proper creation of constructor-call proposals
-
-    //     * groovy.lang.*
-    //     * groovy.util.*
-
-    public void testCollections1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
+    public String[] getParameters() {
+        return parameters;
     }
 
-    public void testCollections2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MethodSignature other = (MethodSignature) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.parameters != other.parameters && (this.parameters == null
+                || !Arrays.equals(this.parameters, other.parameters))) {
+            return false;
+        }
+        return true;
     }
 
-    public void testCollections3() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).a^", false);
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 41 * hash + (this.parameters != null ? Arrays.hashCode(this.parameters) : 0);
+        return hash;
     }
 
-    public void testCollections4() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    1..10.d^", false);
-    }
-
-    public void testCollections5() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "    (1..10).^", false);
-    }
-
-    public void testCollections6() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].it^", false);
-    }
 }

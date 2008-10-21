@@ -3,5 +3,8 @@ new Test().get|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
 METHOD     getAge()                                   
+METHOD     getClass()                                 Class<? extends Object>
+METHOD     getMetaClass()                             MetaClass
 METHOD     getName()                                  
+METHOD     getProperty(String)                        Object
 METHOD     getSomething()                             

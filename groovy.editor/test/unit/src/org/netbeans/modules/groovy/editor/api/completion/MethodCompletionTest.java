@@ -152,5 +152,10 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionGeneratedAccessors2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods12.groovy", "        new Test().set^", false);
     }
+
+    public void testCompletionGroovyClass1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods13.groovy", "        new Test1().^", false);
+    }
+
 }
 
