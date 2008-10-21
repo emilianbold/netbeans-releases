@@ -50,6 +50,13 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testDerefArrayByArrow() throws Exception {
+        //IZ#149783: IDE does not recognize array as pointer
+        performTest("iz149783.c", 9, 10, "iz149783.c", 2, 5);
+        performTest("iz149783.c", 10, 15, "iz149783.c", 2, 5);
+        performTest("iz149783.c", 11, 15, "iz149783.c", 2, 5);
+    }
+    
     public void testOperatorsInBaseClasses() throws Exception {
         // IZ#147312: Code completion issue with operator-> and operator*
         performTest("iz147312_operators_in_base_cls.cc", 85, 10, // o.myMethod1();

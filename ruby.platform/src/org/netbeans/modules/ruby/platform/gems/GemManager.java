@@ -67,7 +67,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -127,7 +126,6 @@ public final class GemManager {
 
     private String gemTool;
     private String gemHomeUrl;
-    private String rake;
     private String rails;
 
     private final RubyPlatform platform;
@@ -852,79 +850,11 @@ public final class GemManager {
         return gemTool;
     }
 
-    public String getRake() {
-        if (rake == null) {
-            rake = platform.findExecutable("rake"); // NOI18N
-
-            if (rake != null && !(new File(rake).exists()) && getLatestVersion("rake") != null) { // NOI18N
-                // On Windows, rake does funny things - you may only get a rake.bat
-                InstalledFileLocator locator = InstalledFileLocator.getDefault();
-                File f =
-                        locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
-                        null, false); // NOI18N
-
-                if (f == null) {
-                    throw new RuntimeException("Can't find cluster"); // NOI18N
-                }
-
-                f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator +
-                        "rake"); // NOI18N
-
-                try {
-                    rake = f.getCanonicalPath();
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-        }
-
-        return rake;
-    }
-
-    public boolean isValidRake(boolean warn) {
-        String rakePath = getRake();
-        boolean valid = (rakePath != null) && new File(rakePath).exists();
-        possiblyNotifyUser(warn, valid, "rake"); // NOI18N
-        return valid;
-    }
-
-    public String getRails() {
-        if (rails == null) {
-            rails = platform.findExecutable("rails"); // NOI18N
-        }
-        return rails;
-    }
-
-    public boolean isValidRails(boolean warn) {
-        String railsPath = getRails();
-        boolean valid = (railsPath != null) && new File(railsPath).exists();
-        possiblyNotifyUser(warn, valid, "rails"); // NOI18N
-        return valid;
-    }
-
-    public String getAutoTest() {
-        return platform.findExecutable("autotest"); // NOI18N
-    }
-
-    public boolean isValidAutoTest(boolean warn) {
-        String autoTest = getAutoTest();
-        boolean valid = (autoTest != null) && new File(autoTest).exists();
-        possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
-        return valid;
-    }
-
-    private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
-        if (warn && !valid) {
-            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, platform.getLabel());
-            NotifyDescriptor nd =
-                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notify(nd);
-        }
-    }
-
-    /** Return other load path URLs (than the gem ones returned by {@link #getGemUrls} to add for the platform
-     * such as the basic ruby 1.8 libraries, the site_ruby libraries, and the stub libraries for
-     * the core/builtin classes.
+    /**
+     * Return other load path URLs (than the gem ones returned by {@link
+     * #getGemUrls} to add for the platform such as the basic ruby 1.8
+     * libraries, the site_ruby libraries, and the stub libraries for the
+     * core/builtin classes.
      *
      * @return a set of URLs
      */
