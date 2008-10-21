@@ -91,13 +91,25 @@ public final class WsDesignerUtilities {
     public static TopComponentOperator design(String wsName) {
         TopComponentOperator tco = new TopComponentOperator(wsName);
         new JToggleButtonOperator(tco, designLabel).pushNoBlock();
-        return tco;
+        try {
+            //slow down a bit
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        return new TopComponentOperator(wsName);
     }
 
     public static TopComponentOperator source(String wsName) {
         TopComponentOperator tco = new TopComponentOperator(wsName);
         new JToggleButtonOperator(tco, sourceLabel).pushNoBlock();
-        return tco;
+        try {
+            //slow down a bit
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        return new TopComponentOperator(wsName);
     }
 
     public static int operationsCount(String wsName) {
