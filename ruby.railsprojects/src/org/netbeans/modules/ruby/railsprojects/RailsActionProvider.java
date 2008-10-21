@@ -168,6 +168,9 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         // TODO Check for valid installation of Ruby and Rake
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        assert platform != null : "Action '" + command + "' should be disabled when platform is invalid";
+
         boolean debugCommand = COMMAND_DEBUG.equals(command);
         boolean debugSingleCommand = COMMAND_DEBUG_SINGLE.equals(command);
         if (COMMAND_RUN.equals(command) || debugCommand) {
@@ -191,7 +194,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             }
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
-            if (!RubyPlatform.platformFor(project).isValid(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 
@@ -239,7 +242,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             return;
 
         } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
-            if (!RubyPlatform.platformFor(project).isValid(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 
@@ -393,7 +396,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         }
         
         if (COMMAND_RDOC.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
+            if (!platform.hasValidRake(true)) {
                 return;
             }
 
@@ -425,7 +428,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             RailsFileLocator fileLocator = new RailsFileLocator(context, project);
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
  
-            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
+            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, platform.getRake()).
                     additionalArgs("appdoc"). // NOI18N
                     postBuild(showBrowser).
                     fileLocator(fileLocator).

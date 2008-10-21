@@ -63,7 +63,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
@@ -285,7 +284,6 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
         assert platform != null : "Action '" + command + "' should be disabled when platform is invalid";
-        GemManager gemManager = platform.getGemManager();
         
         // TODO Check for valid installation of Ruby and Rake
         if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
@@ -359,14 +357,14 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             }
 
             // Default to running rake
-            if (!platform.hasRubyGemsInstalled(true) || !gemManager.isValidRake(true)) {
+            if (!platform.hasRubyGemsInstalled(true) || !platform.hasValidRake(true)) {
                 return;
             }
             
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
             File pwd = getSourceFolder(); // Or project directory?
             String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, gemManager.getRake()).
+            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, platform.getRake()).
                     fileLocator(fileLocator).
                     allowInput().
                     classPath(classPath).
@@ -386,7 +384,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             FileObject file = getCurrentFile(context);
 
             if (RakeSupport.isRakeFile(file)) {
-                if (!platform.hasRubyGemsInstalled(true) || !gemManager.isValidRake(true)) {
+                if (!platform.hasValidRake(true)) {
                     return;
                 }
 
@@ -471,7 +469,6 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             String displayName = NbBundle.getMessage(RubyActionProvider.class, "RubyDocumentation");
 
             new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd).
-                    //gemManager.getRDoc()).
                     additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end"). // NOI18N
                     fileLocator(fileLocator).
                     postBuild(showBrowser).

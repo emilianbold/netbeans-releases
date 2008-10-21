@@ -102,7 +102,7 @@ public class RailsProjectGenerator {
         RailsDatabaseConfiguration railsDb = data.getDatabase();
         // Run Rails to generate the appliation skeleton
         if (data.isCreate()) {
-            final String rails = platform.getGemManager().getRails();
+            final String rails = platform.getRails();
             final File railsF = new File(rails);
             final FileObject railsFO = FileUtil.toFileObject(railsF);
             boolean runThroughRuby = railsFO != null ? RubyUtils.isRubyFile(railsFO) : false;
