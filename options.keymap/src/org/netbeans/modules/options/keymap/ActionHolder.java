@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,73 +31,43 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.options.keymap;
 
-import java.beans.PropertyChangeListener;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-
+import org.netbeans.core.options.keymap.api.ShortcutAction;
+import org.openide.util.NbBundle;
 
 /**
- * Implementation of one panel in Options Dialog.
- *
- * @author Jan Jancura
+ * Class holding an action instance and providing displayname
+ * Stored in keymap table
+ * @author Max Sauer
  */
-public final class KeymapPanelController extends OptionsPanelController {
+public class ActionHolder {
+    private ShortcutAction action;
+    private boolean isAlternative;
 
-
-    public void update () {
-        getKeymapPanel ().update ();
+    public ActionHolder(ShortcutAction action, boolean isAlternative) {
+        this.action = action;
+        this.isAlternative = isAlternative;
     }
 
-    public void applyChanges() {
-        getKeymapPanel ().applyChanges ();
+    public ShortcutAction getAction() {
+        return action;
     }
-    
-    public void cancel () {
-        getKeymapPanel ().cancel ();
+
+    public boolean isAlternative() {
+        return isAlternative;
     }
-    
-    public boolean isValid () {
-        return getKeymapPanel ().dataValid ();
-    }
-    
-    public boolean isChanged () {
-        return getKeymapPanel ().isChanged ();
-    }
-    
-    public HelpCtx getHelpCtx () {
-        return new HelpCtx ("netbeans.optionsDialog.keymaps");
-    }
-    
+
     @Override
-    public Lookup getLookup () {
-        return Lookups.singleton (getKeymapPanel ().getModel ());
-    }
-    
-    public JComponent getComponent (Lookup masterLookup) {
-        return getKeymapPanel ();
+    public String toString() {
+        String displayName = action.getDisplayName();
+        return isAlternative ? displayName + " " + NbBundle.getMessage(ActionHolder.class, "Alternative_Shortcut") : displayName; //NOI18N
     }
 
-    public void addPropertyChangeListener (PropertyChangeListener l) {
-        getKeymapPanel ().addPropertyChangeListener (l);
-    }
-
-    public void removePropertyChangeListener (PropertyChangeListener l) {
-        getKeymapPanel ().removePropertyChangeListener (l);
-    }
-    
-
-    private KeymapPanel keymapPanel;
-
-    private synchronized KeymapPanel getKeymapPanel () {
-        if (keymapPanel == null)
-            keymapPanel = new KeymapPanel ();
-        return keymapPanel;
-    }
 }
