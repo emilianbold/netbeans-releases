@@ -50,11 +50,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -65,7 +61,6 @@ import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -74,7 +69,6 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassChooser;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.MainClassWarning;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
@@ -84,48 +78,20 @@ import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.MouseUtils;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
- * Action provider of the Ruby project. This is the place where to do
- * strange things to Ruby actions. E.g. compile-single.
+ * Action provider of the Ruby project.
  */
-public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
+public final class RubyActionProvider extends RubyBaseActionProvider {
     
-    /**
-     * Standard command for running rdoc on a project.
-     * @see org.netbeans.spi.project.ActionProvider
-     */
-    public static final String COMMAND_RDOC = "rdoc"; // NOI18N
-    
-    /**
-     * Command for running auto test on this project (if installed)
-     */
-    public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
-
-    /**
-     * Command for running RSpec tests on this project (if installed)
-     */
-    public static final String COMMAND_RSPEC = "rspec"; //NOI18N
     /**
      * Standard command for running the IRB console on a project
      */
     public static final String COMMAND_IRB_CONSOLE = "irb-console"; // NOI18N
-    /**
-     * The name of the test rake task.
-     */
-    private static final String TEST_TASK_NAME = "test"; //NOI18N
-    /**
-     * The name of the spec rake task.
-     */
-    private static final String RSPEC_TASK_NAME = "spec";//NOI18N
     
     // Commands available from Ruby project
     private static final String[] supportedActions = {
@@ -148,47 +114,35 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_MOVE,
         COMMAND_RENAME,
     };
+
+    private final static String[] MIME_TYPES = new String[] {
+        RubyInstallation.RUBY_MIME_TYPE
+    };
     
+    final RubyProject project;
     
-    // Project
-    RubyProject project;
-    
-    // Ant project helper of the project
-    private final UpdateHelper updateHelper;
-    
-        
-    /**Set of commands which are affected by background scanning*/
-    final Set<String> bkgScanSensitiveActions;
-    
-    public RubyActionProvider( RubyProject project, UpdateHelper updateHelper ) {
-        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
-            COMMAND_RUN,
-            COMMAND_RUN_SINGLE,
-            COMMAND_DEBUG,
-            COMMAND_DEBUG_SINGLE,
-        }));
-            
-        this.updateHelper = updateHelper;
+    public RubyActionProvider(RubyProject project, UpdateHelper updateHelper) {
+        super(project, updateHelper);
         this.project = project;
     }
-    
+
+    @Override
+    protected FileObject[] getSourceRoots() {
+        return project.getSourceRoots().getRoots();
+    }
+
+    @Override
+    protected FileObject[] getTestSourceRoots() {
+        return project.getTestSourceRoots().getRoots();
+    }
+
+    @Override
+    protected String[] getMimeTypes() {
+        return MIME_TYPES;
+    }
+
     public String[] getSupportedActions() {
         return supportedActions;
-    }
-
-    private String getSourceEncoding() {
-        return project.evaluator().getProperty(RubyProjectProperties.SOURCE_ENCODING);
-    }
-
-    private void runRubyScript(FileObject fileObject, String target, 
-            String displayName, final Lookup context, final boolean debug,
-            OutputRecognizer[] extraRecognizers) {
-        if (!getPlatform().showWarningIfInvalid()) {
-            return;
-        }
-        ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-        RubyExecution service = new RubyExecution(desc, getSourceEncoding());
-        service.run();
     }
 
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
@@ -287,50 +241,6 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return target;
     }
 
-    private FileObject getCurrentFile(Lookup context) {
-        FileObject[] fos = findSources(context);
-        if (fos == null) {
-            fos = findTestSources(context, false);
-        }
-        if (fos == null || fos.length == 0) {
-            for (DataObject d : context.lookupAll(DataObject.class)) {
-                FileObject fo = d.getPrimaryFile();
-                if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
-                    return fo;
-                }
-            }
-            return null;
-        }
-        
-        return fos[0];
-    }
-
-    private void saveFile(FileObject file) {
-        // Save the file
-        try {
-            DataObject dobj = DataObject.find(file);
-            if (dobj != null) {
-                SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-                if (saveCookie != null) {
-                    saveCookie.save();
-                }
-            }
-        } catch (DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
-    }
-    
-    private RubyPlatform getPlatform() {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform == null) {
-            platform = RubyPlatformManager.getDefaultPlatform();
-        }
-        
-        return platform;
-    }
-
     private void openIrbConsole(Lookup context) {
         RubyPlatform platform = getPlatform();
         String irbPath = platform.findExecutable("irb"); // NOI18N
@@ -391,7 +301,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                 // Set main class for a particular config only.
                 path = "nbproject/configs/" + config + ".properties"; // NOI18N
             }
-            EditableProperties ep = updateHelper.getProperties(path);
+            EditableProperties ep = getUpdateHelper().getProperties(path);
 
             // check project's main class
             // Check whether main class is defined in this config. Note that we use the evaluator,
@@ -417,8 +327,8 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
                     result=isSetMainClass (project.getSourceRoots().getRoots(), mainClass);
                 } while (result != MainClassStatus.SET_AND_VALID);
                 try {
-                    if (updateHelper.requestSave()) {
-                        updateHelper.putProperties(path, ep);
+                    if (getUpdateHelper().requestSave()) {
+                        getUpdateHelper().putProperties(path, ep);
                         ProjectManager.getDefault().saveProject(project);
                     }
                     else {
@@ -449,7 +359,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             }
 
             // Default to running rake
-            if (!gemManager.isValidRake(true)) {
+            if (!platform.hasRubyGemsInstalled(true) || !gemManager.isValidRake(true)) {
                 return;
             }
             
@@ -476,7 +386,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             FileObject file = getCurrentFile(context);
 
             if (RakeSupport.isRakeFile(file)) {
-                if (!gemManager.isValidRake(true)) {
+                if (!platform.hasRubyGemsInstalled(true) || !gemManager.isValidRake(true)) {
                     return;
                 }
 
@@ -690,71 +600,6 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
     }    
     
-//    /**
-//     * @return array of targets or null to stop execution; can return empty array
-//     */
-//    private String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
-//        String[] targetNames = new String[0];
-//        if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-//            throw new RuntimeException("Not yet implemented");
-//            FileObject[] sourceRoots = project.getSourceRoots().getRoots();
-//            FileObject[] files = findSourcesAndPackages( context, sourceRoots);
-//            boolean recursive = (context.lookup(NonRecursiveFolder.class) == null);
-//            if (files != null) {
-//                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(sourceRoots,files[0]), recursive)); // NOI18N
-//                targetNames = new String[] {"compile-single"}; // NOI18N
-//            } 
-//            else {
-//                FileObject[] testRoots = project.getTestSourceRoots().getRoots();
-//                files = findSourcesAndPackages(context, testRoots);
-//                p.setProperty("javac.includes", ActionUtils.antIncludesList(files, getRoot(testRoots,files[0]), recursive)); // NOI18N
-//                targetNames = new String[] {"compile-test-single"}; // NOI18N
-//            }
-//        } 
-//        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-//            FileObject[] files = findTestSourcesForSources(context);
-//            targetNames = setupTestSingle(p, files);
-//        } 
-//        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-//            FileObject[] files = findTestSourcesForSources(context);
-//            targetNames = setupDebugTestSingle(p, files);
-//        } else if (command.equals (COMMAND_RUN_SINGLE) || command.equals (COMMAND_DEBUG_SINGLE)) {
-//            FileObject[] files = findTestSources(context, false);
-//            if (files != null) {
-//                if (command.equals(COMMAND_RUN_SINGLE)) {
-//                    targetNames = setupTestSingle(p, files);
-//                } else {
-//                    targetNames = setupDebugTestSingle(p, files);
-//                }
-//            } else {
-//                FileObject file = findSources(context)[0];
-//                String clazz = FileUtil.getRelativePath(getRoot(project.getSourceRoots().getRoots(),file), file);
-////                p.setProperty("javac.includes", clazz); // NOI18N
-//                // Convert foo/FooTest.java -> foo.FooTest
-//                // XXX What about Ruby?
-//                if (clazz.endsWith(".java")) { // NOI18N
-//                    clazz = clazz.substring(0, clazz.length() - 5);
-//                }
-//                clazz = clazz.replace('/','.');
-//
-//                if (!RubyProjectUtil.hasMainMethod (file)) {
-//                        NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(RubyActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
-//                        DialogDisplayer.getDefault().notify(nd);
-//                        return null;
-//                } else {
-//                    if (command.equals (COMMAND_RUN_SINGLE)) {
-//                        p.setProperty("run.class", clazz); // NOI18N
-//                        targetNames = (String[])commands.get(COMMAND_RUN_SINGLE);
-//                    } else {
-//                        p.setProperty("debug.class", clazz); // NOI18N
-//                        targetNames = (String[])commands.get(COMMAND_DEBUG_SINGLE);
-//                    }
-//                }
-//            }
-//        }
-//        return targetNames;
-//    }
-    
     public boolean isActionEnabled( String command, Lookup context ) {
         if (getPlatform() == null) {
             return false;
@@ -762,13 +607,6 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
             return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
                     || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
-//        }
-//        else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-//            return findTestSourcesForSources(context) != null;
-//        }
-//        else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-//            FileObject[] files = findTestSourcesForSources(context);
-//            return files != null && files.length == 1;
         } else if (command.equals(COMMAND_RUN_SINGLE) ||
                 command.equals(COMMAND_DEBUG_SINGLE)) {
             if (RakeSupport.isRakeFileSelected(context)) {
@@ -779,7 +617,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
             if (fos != null && fos.length == 1) {
                 return true;
             }
-            fos = findTestSources(context, false);
+            fos = findTestSources(context);
             return fos != null && fos.length == 1;
         } else {
             // other actions are global
@@ -787,25 +625,7 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
     }
 
-    // Private methods -----------------------------------------------------------------
-    
-    
-    /** Find selected sources, the sources has to be under single source root,
-     *  @param context the lookup in which files should be found
-     * @return The file objects in the sources folder
-     */
-    private FileObject[] findSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = findSelectedFiles(context, srcPath[i], RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
-
-    private FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
+    protected FileObject[] findSourcesAndPackages (Lookup context, FileObject srcDir) {
         if (srcDir != null) {
             FileObject[] files = findSelectedFiles(context, srcDir, null, true); // NOI18N
             //Check if files are either packages or Ruby files
@@ -832,57 +652,6 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         return null;
     }
     
-    /** Find either selected tests or tests which belong to selected source files
-     */
-    private FileObject[] findTestSources(Lookup context, boolean checkInSrcDir) {
-        //XXX: Ugly, should be rewritten
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        for (int i=0; i< testSrcPath.length; i++) {
-            FileObject[] files = findSelectedFiles(context, testSrcPath[i], RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-//        if (checkInSrcDir && testSrcPath.length>0) {
-//            FileObject[] files = findSources (context);
-//            if (files != null) {
-//                //Try to find the test under the test roots
-//                FileObject srcRoot = getRoot(project.getSourceRoots().getRoots(),files[0]);
-//                for (int i=0; i<testSrcPath.length; i++) {
-//                    FileObject[] files2 = ActionUtils.regexpMapFiles(files,srcRoot, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-//                    if (files2 != null) {
-//                        return files2;
-//                    }
-//                }
-//            }
-//        }
-        return null;
-    }
-   
-
-    /** Find tests corresponding to selected sources.
-     */
-    private FileObject[] findTestSourcesForSources(Lookup context) {
-        FileObject[] sourceFiles = findSources(context);
-        if (sourceFiles == null) {
-            return null;
-        }
-        FileObject[] testSrcPath = project.getTestSourceRoots().getRoots();
-        if (testSrcPath.length == 0) {
-            return null;
-        }
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        FileObject srcDir = getRoot(srcPath, sourceFiles[0]);
-//        for (int i=0; i<testSrcPath.length; i++) {
-//            FileObject[] files2 = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcPath[i], SUBST, true);
-//            if (files2 != null) {
-//                return files2;
-//            }
-//        }
-//        return null;
-        return new FileObject[] { srcDir }; // XXX This is bogus
-    }      
-    
     private FileObject getRoot (FileObject[] roots, FileObject file) {
         assert file != null : "File can't be null";   //NOI18N
         FileObject srcDir = null;
@@ -903,7 +672,8 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     }
 
     /**
-     * Tests if the main class is set
+     * Tests if the main class is set.
+     *
      * @param sourcesRoots source roots
      * @param mainClass main class name
      * @return status code
@@ -927,7 +697,8 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     }
     
     /**
-     * Asks user for name of main class
+     * Asks user for name of main class.
+     *
      * @param mainClass current main class
      * @param projectName the name of project
      * @param ep project.properties to possibly edit
@@ -993,40 +764,10 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
     }    
     
     // From the ant module - ActionUtils.
-    // However, I've modified it to do its search based on mime type rather than file suffixes
-    // (since some Ruby files do not use a .rb extension and are discovered based on the initial shebang line)
+    // However, I've modified it to do its search based on mime type rather than
+    // file suffixes (since some Ruby files do not use a .rb extension and are
+    // discovered based on the initial shebang line)
     
-    public static FileObject[] findSelectedFiles(Lookup context, FileObject dir, String mimeType, boolean strict) {
-        if (dir != null && !dir.isFolder()) {
-            throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
-        }
-        Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
-        // XXX this should perhaps also check for FileObject's...
-        for (DataObject d : context.lookupAll(DataObject.class)) {
-            FileObject f = d.getPrimaryFile();
-            boolean matches = FileUtil.toFile(f) != null;
-            if (dir != null) {
-                matches &= (FileUtil.isParentOf(dir, f) || dir == f);
-            }
-            if (mimeType != null) {
-                matches &= f.getMIMEType().equals(mimeType);
-            }
-            // Generally only files from one project will make sense.
-            // Currently the action UI infrastructure (PlaceHolderAction)
-            // checks for that itself. Should there be another check here?
-            if (matches) {
-                files.add(f);
-            } else if (strict) {
-                return null;
-            }
-        }
-        if (files.isEmpty()) {
-            return null;
-        }
-        return files.toArray(new FileObject[files.size()]);
-    }
-    
-
     private File getSourceFolder() {
         // Default to using the project source directory
         FileObject[] srcPath = project.getSourceRoots().getRoots();
@@ -1037,12 +778,6 @@ public class RubyActionProvider implements ActionProvider, ScriptDescProvider {
         }
     }
     
-    private String[] getApplicationArguments() {
-        String applicationArgs = project.evaluator().getProperty(RubyProjectProperties.APPLICATION_ARGS);
-        return (applicationArgs == null || applicationArgs.trim().length() == 0)
-                ? null : Utilities.parseParameters(applicationArgs);
-    }
-
     private TestRunner getTestRunner(TestRunner.TestType testType) {
         Collection<? extends TestRunner> testRunners = Lookup.getDefault().lookupAll(TestRunner.class);
         for (TestRunner each : testRunners) {
