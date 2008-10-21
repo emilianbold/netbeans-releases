@@ -54,14 +54,11 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
@@ -143,7 +140,9 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                             }
                             files.add(name);
                         }
-                        processingEnv.getMessager().printMessage(Kind.NOTE, "generated layer entries: " + files);
+                        for (String file : files) {
+                            processingEnv.getMessager().printMessage(Kind.NOTE, "generated layer entry: " + file);
+                        }
                     }
                 } catch (IOException x) {
                     processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to write generated-layer.xml: " + x.toString());
@@ -205,83 +204,6 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
             generatedLayerByProcessor.put(processingEnv, doc);
         }
         return doc;
-    }
-
-    /**
-     * Generate an instance file whose {@code InstanceCookie} would load a given class or method.
-     * Useful for processors which define layer fragments which instantiate Java objects from the annotated code.
-     * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
-     * as using the generated name will help avoid accidental name collisions between annotations.
-     * @param builder a builder to add a file to
-     * @param annotationTarget an annotated {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
-     * @param path path to folder of instance file, e.g. {@code "Menu/File"}
-     * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
-     * @param type a type to which the instance ought to be assignable, or null to skip this check
-     * @return an instance file (call {@link LayerBuilder.File#write} to finalize)
-     * @throws IllegalArgumentException if the annotationTarget is not of a suitable sort
-     *                                  (detail message can be reported as a {@link Kind#ERROR})
-     */
-    protected final LayerBuilder.File instanceFile(LayerBuilder builder, Element annotationTarget,
-            String path, String name, Class type) throws IllegalArgumentException {
-        String clazz, method;
-        TypeMirror typeMirror = type != null ? processingEnv.getElementUtils().getTypeElement(type.getName()).asType() : null;
-        switch (annotationTarget.getKind()) {
-            case CLASS: {
-                clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) annotationTarget).toString();
-                method = null;
-                if (annotationTarget.getModifiers().contains(Modifier.ABSTRACT)) {
-                    throw new IllegalArgumentException(clazz + " must not be abstract");
-                }
-                {
-                    boolean hasDefaultCtor = false;
-                    for (ExecutableElement constructor : ElementFilter.constructorsIn(annotationTarget.getEnclosedElements())) {
-                        if (constructor.getParameters().isEmpty()) {
-                            hasDefaultCtor = true;
-                            break;
-                        }
-                    }
-                    if (!hasDefaultCtor) {
-                        throw new IllegalArgumentException(clazz + " must have a no-argument constructor");
-                    }
-                }
-                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(annotationTarget.asType(), typeMirror)) {
-                    throw new IllegalArgumentException(clazz + " is not assignable to " + typeMirror);
-                }
-                break;
-            }
-            case METHOD: {
-                clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) annotationTarget.getEnclosingElement()).toString();
-                method = annotationTarget.getSimpleName().toString();
-                if (!annotationTarget.getModifiers().contains(Modifier.STATIC)) {
-                    throw new IllegalArgumentException(clazz + "." + method + " must be static");
-                }
-                if (!((ExecutableElement) annotationTarget).getParameters().isEmpty()) {
-                    throw new IllegalArgumentException(clazz + "." + method + " must not take arguments");
-                }
-                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement) annotationTarget).getReturnType(), typeMirror)) {
-                    throw new IllegalArgumentException(clazz + "." + method + " is not assignable to " + typeMirror);
-                }
-                break;
-            }
-            default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + annotationTarget);
-        }
-        String basename;
-        if (name == null) {
-            basename = clazz.replace('.', '-');
-            if (method != null) {
-                basename += "-" + method;
-            }
-        } else {
-            basename = name;
-        }
-        LayerBuilder.File f = builder.file(path + "/" + basename + ".instance");
-        if (method != null) {
-            f.methodvalue("instanceCreate", clazz, method);
-        } else if (name != null) {
-            f.stringvalue("instanceClass", clazz);
-        } // else name alone suffices
-        return f;
     }
 
 }

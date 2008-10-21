@@ -43,6 +43,13 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic.Kind;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -71,6 +78,83 @@ public final class LayerBuilder {
      */
     public File file(String path) {
         return new File(path);
+    }
+
+    /**
+     * Generate an instance file whose {@code InstanceCookie} would load a given class or method.
+     * Useful for {@link LayerGeneratingProcessor}s which define layer fragments which instantiate Java objects from the annotated code.
+     * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
+     * as using the generated name will help avoid accidental name collisions between annotations.
+     * @param annotationTarget an annotated {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+     * @param path path to folder of instance file, e.g. {@code "Menu/File"}
+     * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
+     * @param type a type to which the instance ought to be assignable, or null to skip this check
+     * @param processingEnv a processor environment used for {@link ProcessingEnvironment#getElementUtils} and {@link ProcessingEnvironment#getTypeUtils}
+     * @return an instance file (call {@link File#write} to finalize)
+     * @throws IllegalArgumentException if the annotationTarget is not of a suitable sort
+     *                                  (detail message can be reported as a {@link Kind#ERROR})
+     */
+    public File instanceFile(javax.lang.model.element.Element annotationTarget, String path, String name, Class type,
+            ProcessingEnvironment processingEnv) throws IllegalArgumentException {
+        String clazz, method;
+        TypeMirror typeMirror = type != null ? processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.')).asType() : null;
+        switch (annotationTarget.getKind()) {
+            case CLASS: {
+                clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) annotationTarget).toString();
+                method = null;
+                if (annotationTarget.getModifiers().contains(Modifier.ABSTRACT)) {
+                    throw new IllegalArgumentException(clazz + " must not be abstract");
+                }
+                {
+                    boolean hasDefaultCtor = false;
+                    for (ExecutableElement constructor : ElementFilter.constructorsIn(annotationTarget.getEnclosedElements())) {
+                        if (constructor.getParameters().isEmpty()) {
+                            hasDefaultCtor = true;
+                            break;
+                        }
+                    }
+                    if (!hasDefaultCtor) {
+                        throw new IllegalArgumentException(clazz + " must have a no-argument constructor");
+                    }
+                }
+                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(annotationTarget.asType(), typeMirror)) {
+                    throw new IllegalArgumentException(clazz + " is not assignable to " + typeMirror);
+                }
+                break;
+            }
+            case METHOD: {
+                clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) annotationTarget.getEnclosingElement()).toString();
+                method = annotationTarget.getSimpleName().toString();
+                if (!annotationTarget.getModifiers().contains(Modifier.STATIC)) {
+                    throw new IllegalArgumentException(clazz + "." + method + " must be static");
+                }
+                if (!((ExecutableElement) annotationTarget).getParameters().isEmpty()) {
+                    throw new IllegalArgumentException(clazz + "." + method + " must not take arguments");
+                }
+                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement) annotationTarget).getReturnType(), typeMirror)) {
+                    throw new IllegalArgumentException(clazz + "." + method + " is not assignable to " + typeMirror);
+                }
+                break;
+            }
+            default:
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + annotationTarget);
+        }
+        String basename;
+        if (name == null) {
+            basename = clazz.replace('.', '-');
+            if (method != null) {
+                basename += "-" + method;
+            }
+        } else {
+            basename = name;
+        }
+        LayerBuilder.File f = file(path + "/" + basename + ".instance");
+        if (method != null) {
+            f.methodvalue("instanceCreate", clazz, method);
+        } else if (name != null) {
+            f.stringvalue("instanceClass", clazz);
+        } // else name alone suffices
+        return f;
     }
 
     /**
