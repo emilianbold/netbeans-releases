@@ -401,7 +401,8 @@ made subject to such option by the copyright holder.
                 <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-Rerun.instance"/>
                 <attr name="position" intvalue="1000"/>
             </file>
-            <file name="org-netbeans-modules-project-ui-actions.StopBuildingAction.instance">
+            <file name="org-netbeans-modules-project-ui-actions.StopBuildingAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-actions.StopBuildingAction.instance"/>
                 <attr name="position" intvalue="1100"/>
             </file>
         </folder>
