@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,47 +36,59 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.designer.operators;
 
-import java.awt.EventQueue;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.websvc.design.view.widget.ButtonWidget;
+package org.netbeans.modules.groovy.editor.completion;
+
+import java.util.Arrays;
 
 /**
  *
- * @author lukas
+ * @author Petr Hejl
  */
-public class ButtonWidgetOperator extends ImageLabelWidgetOperator {
+public final class MethodSignature {
 
-    private ButtonWidget widget;
+    private final String name;
 
-    ButtonWidgetOperator(Widget w) {
-        super(w);
-        this.widget = (ButtonWidget) w;
+    private final String[] parameters;
+
+    public MethodSignature(String name, String[] parameters) {
+        this.name = name;
+        this.parameters = parameters;
     }
 
-    public boolean isButtonEnabled() {
-        return widget.isButtonEnabled();
+    public String getName() {
+        return name;
     }
 
-    public void setButtonEnabled(boolean enabled) {
-        widget.setButtonEnabled(enabled);
+    public String[] getParameters() {
+        return parameters;
     }
 
-    public boolean isButtonSelected() {
-        return widget.isSelected();
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final MethodSignature other = (MethodSignature) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.parameters != other.parameters && (this.parameters == null
+                || !Arrays.equals(this.parameters, other.parameters))) {
+            return false;
+        }
+        return true;
     }
 
-    public void setButtonSelected(boolean flag) {
-        widget.setSelected(flag);
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 41 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 41 * hash + (this.parameters != null ? Arrays.hashCode(this.parameters) : 0);
+        return hash;
     }
 
-    public void performAction() {
-        EventQueue.invokeLater(new Runnable() {
-
-            public void run() {
-                widget.performAction();
-            }
-        });
-    }
 }

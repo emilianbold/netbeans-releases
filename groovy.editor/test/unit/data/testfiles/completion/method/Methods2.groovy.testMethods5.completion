@@ -14,7 +14,6 @@ METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(Byte)                            int
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Number)                          int
-METHOD     compareTo(Object)                          int
 METHOD     decode(String)                             Byte
 METHOD     div(Character)                             Number
 METHOD     div(Number)                                Number
@@ -36,7 +35,7 @@ METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     floatValue()                               float
 METHOD     getAt(String)                              Object
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
