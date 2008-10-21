@@ -173,6 +173,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
             Arrays.asList('=', ';', '+', '-', '*', '/',
                 '%', '(', ')', '[', ']', '{', '}', '?'));
+    
+    private final static Collection<PHPTokenId> TOKENS_TRIGGERING_AUTOPUP_B4_WS = 
+            Arrays.asList(PHPTokenId.PHP_NEW, PHPTokenId.PHP_EXTENDS, PHPTokenId.PHP_IMPLEMENTS);
 
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
             Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
@@ -1390,7 +1393,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             Token t = ts.token();
 
             if (lastChar == ' ' || lastChar == '\t'){
-                if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_NEW){
+                if (ts.movePrevious()
+                        && TOKENS_TRIGGERING_AUTOPUP_B4_WS.contains(ts.token().id())){
+                    
                     return QueryType.ALL_COMPLETION;
                 } else {
                     return QueryType.STOP;
