@@ -89,6 +89,42 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         removeOperation("WsImpl", 2, true); //NOI18N
     }
 
+    public void testGoToSource() {
+        String wsName = "EmptyWs"; //NOI18N
+        String opName = "test1"; //NOI18N
+        openFileInEditor(wsName);
+        WsDesignerUtilities.invokeGoToSource(wsName, opName);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        EditorOperator eo = new EditorOperator(wsName);
+        assertEquals(24, eo.getLineNumber());
+//      see: http://www.netbeans.org/issues/show_bug.cgi?id=150923
+//        wsName = "WsImpl"; //NOI18N
+//        openFileInEditor(wsName);
+//        WsDesignerUtilities.invokeGoToSource(wsName, opName);
+//        try {
+//            Thread.sleep(1000);
+//        } catch (InterruptedException ex) {
+//            //ignore
+//        }
+//        eo = new EditorOperator(wsName);
+//        assertEquals(18, eo.getLineNumber());
+        wsName = "SampleWs"; //NOI18N
+        opName = "sayHi"; //NOI18N
+        openFileInEditor(wsName);
+        WsDesignerUtilities.invokeGoToSource(wsName, opName);
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        eo = new EditorOperator(wsName);
+        assertEquals(33, eo.getLineNumber());
+    }
+
     private void addOperation(String wsName, int opCount, boolean hasInterface) {
         openFileInEditor(wsName);
         assertEquals(opCount, WsDesignerUtilities.operationsCount(wsName));
@@ -133,7 +169,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
 
     private void removeOperation(String wsName, int opCount, boolean hasInterface) {
         openFileInEditor(wsName);
-        WsDesignerUtilities.invokeRemoveOperation(wsName, "test1"); //NOI18N
+        WsDesignerUtilities.invokeRemoveOperation(wsName, "test1", opCount % 2 == 0); //NOI18N
         NbDialogOperator ndo = new NbDialogOperator("Question"); //NOI18N
         ndo.yes();
         //see: http://www.netbeans.org/issues/show_bug.cgi?id=150896
@@ -182,10 +218,11 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         return NbModuleSuite.create(addServerTests(
                 NbModuleSuite.createConfiguration(WebServiceDesignerTest.class),
                 "testAddOperation", //NOI18N
-                "testRemoveOperation", //NOI18N
                 "testAddOperation2", //NOI18N
-                "testRemoveOperation2", //NOI18N
                 "testAddOperationToIntf", //NOI18N
+                "testGoToSource", //NOI18N
+                "testRemoveOperation", //NOI18N
+                "testRemoveOperation2", //NOI18N
                 "testRemoveOperationFromIntf" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
     }
