@@ -54,6 +54,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -67,7 +68,6 @@ import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -138,8 +138,8 @@ public final class GenerateAction extends NodeAction {
 
         // #141908 -- check whether rails is installed in vendor/
         FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
-        GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        if (railsInstall == null && (gemManager == null || !gemManager.isValidRails(true))) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (railsInstall == null && !platform.hasValidRails(true)) {
             LOGGER.warning("No valid Rails installation found, platform is:" + RubyPlatform.platformFor(project));
             return;
         }
@@ -193,9 +193,10 @@ public final class GenerateAction extends NodeAction {
 
         okButton.setEnabled(initialEnabled);
 
+        String projectName = ProjectUtils.getInformation(project).getDisplayName();
         DialogDescriptor desc =
             new DialogDescriptor(panel,
-                NbBundle.getMessage(GenerateAction.class, "GeneratorTitle"), true, options,
+                NbBundle.getMessage(GenerateAction.class, "GeneratorTitle", projectName), true, options,
                 options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
         desc.setMessageType(DialogDescriptor.PLAIN_MESSAGE);
 

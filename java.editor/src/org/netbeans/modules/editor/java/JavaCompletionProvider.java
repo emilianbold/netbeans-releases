@@ -686,7 +686,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             }
             if (offset <= sourcePositions.getStartPosition(root, pkg)) {
-                addPackages(env, env.getPrefix());
+                addPackages(env, env.getPrefix(), true);
             } else {
                 TokenSequence<JavaTokenId> first = findFirstNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, pkg), offset);
                 if (first != null && first.token().id() == JavaTokenId.SEMICOLON)
@@ -704,7 +704,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, im, offset);
                 if (last != null && last.token().id() == JavaTokenId.IMPORT && Utilities.startsWith(STATIC_KEYWORD, prefix))
                     addKeyword(env, STATIC_KEYWORD, SPACE, false);
-                addPackages(env, prefix);
+                addPackages(env, prefix, false);
             }            
         }
         
@@ -1306,7 +1306,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                                     }
                                     if (el instanceof PackageElement)
-                                        addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false);
+                                        addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false, false);
                                     else if (type.getKind() == TypeKind.DECLARED)
                                         addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                                     return;
@@ -1320,7 +1320,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                         }
                         if (el instanceof PackageElement)
-                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false);
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false, false);
                         else if (type.getKind() == TypeKind.DECLARED)
                             addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                         return;
@@ -1352,7 +1352,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                         }
                         if (el instanceof PackageElement)
-                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false);
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false, false);
                         else if (type.getKind() == TypeKind.DECLARED)
                             addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                         return;
@@ -1438,7 +1438,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), false, true));
                                         }
                                 }
-                                addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew);
+                                addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew, false);
                                 if (results.isEmpty() && ((PackageElement)el).getQualifiedName() == el.getSimpleName()) {
                                     // no package content? Check for unimported class
                                     ClassIndex ci = controller.getClasspathInfo().getClassIndex();
@@ -1457,7 +1457,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else if (parent.getKind() == Tree.Kind.COMPILATION_UNIT && ((CompilationUnitTree)parent).getPackageName() == fa) {
                     PackageElement pe = controller.getElements().getPackageElement(fullName(exp));
                     if (pe != null)
-                        addPackageContent(env, pe, EnumSet.of(ElementKind.PACKAGE), null, false);
+                        addPackageContent(env, pe, EnumSet.of(ElementKind.PACKAGE), null, false, true);
                 }
             }
         }
@@ -2004,7 +2004,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     default:
                         Element el = controller.getTrees().getElement(expPath);
                         if (el instanceof PackageElement) {
-                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT), null, false);
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT), null, false, false);
                         }
                 }
             } else {
@@ -2648,7 +2648,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, boolean insideNew) throws IOException {
+        private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, boolean insideNew, boolean insidePkgStmt) throws IOException {
             Set<? extends TypeMirror> smartTypes = queryType == COMPLETION_QUERY_TYPE ? env.getSmartTypes() : null;
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
@@ -2667,15 +2667,15 @@ public class JavaCompletionProvider implements CompletionProvider {
             String pkgName = pe.getQualifiedName() + "."; //NOI18N
             if (prefix != null && prefix.length() > 0)
                 pkgName += prefix;
-            addPackages(env, pkgName);
+            addPackages(env, pkgName, insidePkgStmt);
         }
         
-        private void addPackages(Env env, String fqnPrefix) {
+        private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
                 if (pkgName.length() > 0)
-                    results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, false));
+                    results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         
         private void addTypes(Env env, EnumSet<ElementKind> kinds, DeclaredType baseType, Set<? extends Element> toExclude, boolean insideNew) throws IOException {
@@ -2694,7 +2694,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 addLocalAndImportedTypes(env, kinds, baseType, toExclude, insideNew);
                 hasAdditionalItems = true;
             }
-            addPackages(env, env.getPrefix());
+            addPackages(env, env.getPrefix(), false);
         }
         
         private void addLocalAndImportedTypes(final Env env, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final Set<? extends Element> toExclude, boolean insideNew) throws IOException {
