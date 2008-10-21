@@ -59,7 +59,7 @@ var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
 
 function add_download_tabs() {
 	add_download_tab("6.1", "http://www.netbeans.org/downloads");
-	add_download_tab("6.5 Beta", "http://download.netbeans.org/netbeans/6.5/beta/");
+	add_download_tab("6.5 RC", "http://download.netbeans.org/netbeans/6.5/rc/");
 	add_download_tab(DEVELOPMENT_TITLE /*,DEVELOPMENT_BUILDS_LINK*/);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
