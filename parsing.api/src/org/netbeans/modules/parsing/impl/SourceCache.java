@@ -112,13 +112,28 @@ public final class SourceCache {
             _isembedding = embedding != null;
         }
 
-        final Snapshot _snapshot = _isembedding ? embedding.getSnapshot () : source.createSnapshot ();
+        final Snapshot _snapshot = createSnapshot(_isembedding);
         synchronized (this) {
             if (snapshot == null) {
                 snapshot = _snapshot;
             }
             return snapshot;
         }
+    }
+
+    Snapshot createSnapshot (long[] idHolder) {
+        assert idHolder != null;
+        assert idHolder.length == 1;
+        boolean _isembedding;
+        synchronized (this) {
+            _isembedding = embedding != null;
+        }
+        idHolder[0] = SourceAccessor.getINSTANCE().getLastEventId(this.source);
+        return createSnapshot(_isembedding);
+    }
+
+    private Snapshot createSnapshot (boolean isEmbedding) {
+        return isEmbedding ? embedding.getSnapshot () : source.createSnapshot ();
     }
 
     //@GuarderBy(this)
@@ -180,6 +195,11 @@ public final class SourceCache {
         upToDateEmbeddingProviders.clear();
         for (SourceCache sourceCache : embeddingToCache.values ())
             sourceCache.invalidate ();
+    }
+
+    public synchronized void invalidate (final Snapshot preRendered) {
+        invalidate();
+        snapshot = preRendered;
     }
                 
     //@GuardedBy(this)

@@ -261,6 +261,8 @@ public final class Source {
     private SchedulerEvent  schedulerEvent;
     //GuardedBy(this)
     private SourceCache     cache;
+    //GuardedBy(this)
+    private volatile long eventId;
     
     
     private static class MySourceAccessor extends SourceAccessor {
@@ -271,6 +273,7 @@ public final class Source {
             assert flags != null;
             synchronized (source) {
                 source.flags.addAll(flags);
+                source.eventId++;
             }
         }
 
@@ -315,6 +318,28 @@ public final class Source {
                 }
             }
         }
+
+        @Override
+        public boolean invalidate(Source source, long id, Snapshot snapshot) {
+            assert source != null;
+            synchronized (source) {
+                if (snapshot == null) {
+                    return !source.flags.contains(SourceFlags.INVALID);
+                }
+                else {
+                    if (id != source.eventId) {
+                        return false;
+                    }
+                    else {
+                        source.flags.remove(SourceFlags.INVALID);
+                        final SourceCache cache = getCache(source);
+                        assert cache != null;
+                        cache.invalidate();
+                        return true;
+                    }
+                }
+            }
+        }
         
         @Override
         public Parser getParser(Source source) {
@@ -344,6 +369,12 @@ public final class Source {
         public EventSupport getEventSupport (final Source source) {
             assert source != null;
             return source.support;
+        }
+
+        @Override
+        public long getLastEventId (final Source source) {
+            assert source != null;
+            return source.eventId;
         }
 
         @Override

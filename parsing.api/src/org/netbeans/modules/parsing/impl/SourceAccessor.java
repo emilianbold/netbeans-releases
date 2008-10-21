@@ -40,6 +40,7 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Set;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -110,6 +111,15 @@ public abstract class SourceAccessor {
      */
     public abstract void invalidate (Source source, boolean force);
 
+    /**
+     * Invalidates given {@link Source}
+     * @param source to be invalidated
+     * @param id
+     * @param snapshot
+     * @return true if the snapshot is up to date and was refreshed
+     */
+    public abstract boolean invalidate (Source source, long id, Snapshot snapshot);
+
     public abstract void setEvent (Source source, SchedulerEvent event);
     
     public abstract SchedulerEvent getEvent (Source source);
@@ -145,6 +155,8 @@ public abstract class SourceAccessor {
      * @return EventSupport
      */
     public abstract EventSupport getEventSupport (Source source);
+
+    public abstract long getLastEventId (Source source);
     
     public abstract SourceCache getCache (Source source);
 
