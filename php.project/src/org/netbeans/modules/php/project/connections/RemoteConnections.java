@@ -99,6 +99,8 @@ public final class RemoteConnections {
 
     private static final ConnectionType DEFAULT_TYPE = ConnectionType.FTP;
     private static final int DEFAULT_PORT = 21;
+    private static final int MINIMUM_PORT = 0;
+    private static final int MAXIMUM_PORT = 65535;
     private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
     private static final String DEFAULT_PATH_SEPARATOR = "/"; // NOI18N
     private static final int DEFAULT_TIMEOUT = 30;
@@ -472,8 +474,8 @@ public final class RemoteConnections {
         String err = null;
         try {
             int port = Integer.parseInt(panel.getPort());
-            if (port < 1) {
-                err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortNotPositive");
+            if (port < MINIMUM_PORT || port > MAXIMUM_PORT) { // see InetSocketAddress
+                err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
             }
         } catch (NumberFormatException nfe) {
             err = NbBundle.getMessage(RemoteConnections.class, "MSG_PortNotNumeric");
