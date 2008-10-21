@@ -157,6 +157,9 @@ class CategoryNode extends FilterNode {
     public Action[] getActions(boolean context) {
         if (actions == null) {
             Node n = getParentNode();
+            if( null == n ) {
+                return new Action[0];
+            }
             List<Action> actionList = new ArrayList<Action>(12);
             actionList.add( new Utils.PasteItemAction( this ) );
             actionList.add( null );

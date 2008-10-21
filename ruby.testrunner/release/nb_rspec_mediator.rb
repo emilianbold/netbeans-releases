@@ -100,22 +100,17 @@ class Reporter < Spec::Runner::Reporter
   def failure(example, error)
     backtrace_tweaker.tweak_backtrace(error)
     error_msg = error.message != nil ? error.message : ""
-    puts "%RSPEC_TEST_FAILED% #{example.description} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
+    puts "%RSPEC_TEST_FAILED% file=#{location(example)} description=#{example.description} time=#{elapsed_time} message=#{error_msg.to_s.gsub($/, " ")} location=#{error.backtrace[0]}"
     super
   end
   alias_method :example_failed, :failure
 
   private
   def example_passed(example)
-    location = ''
-    backtrace = example.implementation_backtrace
-    if (backtrace != nil)
-      location = backtrace[0] unless backtrace.length == 0
-    end
-    puts "%RSPEC_TEST_FINISHED% file=#{location} description=#{example.description} time=#{elapsed_time}"
+    puts "%RSPEC_TEST_FINISHED% file=#{location(example)} description=#{example.description} time=#{elapsed_time}"
     super
   end
-      
+
   # need to use varargs since rspec 1.1.3 and 1.1.4 have different number of params
   def example_pending(*args)
     msg = "Not Yet Implemented"
@@ -128,10 +123,10 @@ class Reporter < Spec::Runner::Reporter
     case args[1]
     when String
       # 1.1.4
-      puts "%RSPEC_TEST_PENDING% #{args[0].description} time=#{elapsed_time} message=#{args[1]}"
+      puts "%RSPEC_TEST_PENDING% file=#{location(args[0])} description=#{args[0].description} time=#{elapsed_time} message=#{args[1]}"
     else
       # 1.1.3 or older
-      puts "%RSPEC_TEST_PENDING% #{args[1].description} time=#{elapsed_time} message=#{args[2]}"
+      puts "%RSPEC_TEST_PENDING% file=#{location(args[1])} description=#{args[1].description} time=#{elapsed_time} message=#{args[2]}"
     end
   end
 
@@ -141,6 +136,15 @@ class Reporter < Spec::Runner::Reporter
   
   def elapsed_time
     Time.now - @start_time
+  end
+
+  def location(example)
+    location = ''
+    backtrace = example.implementation_backtrace
+    if (backtrace != nil)
+      location = backtrace[0] unless backtrace.length == 0
+    end
+    location
   end
 
 end

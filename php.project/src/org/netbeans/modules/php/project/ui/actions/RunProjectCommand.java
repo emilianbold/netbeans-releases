@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,27 +38,65 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.php.project.ui.actions;
 
-package org.netbeans.modules.cnd.editor.makefile;
-import java.beans.*;
-import java.awt.Image;
-import java.util.ResourceBundle;
-import org.netbeans.modules.editor.options.*;
+
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.RunScript;
+import java.net.MalformedURLException;
+import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
-/** BeanInfo for plain options
-*/
-public class MakefilePrintOptionsBeanInfo extends BasePrintOptionsBeanInfo {
+/**
+ * @author Radek Matous
+ */
+public class RunProjectCommand extends Command implements Displayable {
+    public static final String ID = ActionProvider.COMMAND_RUN;
+    public static final String DISPLAY_NAME = NbBundle.getMessage(RunProjectCommand.class, "LBL_RunProject");
+    private final RunScript runScript;
 
-    public MakefilePrintOptionsBeanInfo() {
-        super("/org/netbeans/modules/cnd/editor/makefile/MakefileIcon"); //NOI18N
+    /**
+     * @param project
+     */
+    public RunProjectCommand(PhpProject project) {
+        super(project);
+        runScript = new RunScript(project);
     }
 
-    public MakefilePrintOptionsBeanInfo(String iconPrefix) {
-        super(iconPrefix);
+    @Override
+    public void invokeAction(Lookup context) throws IllegalArgumentException {
+        boolean scriptSelected = isScriptSelected();
+        if (!isRunConfigurationValid(scriptSelected)) {
+            // property not set yet
+            return;
+        }
+        if (scriptSelected) {
+            runScript.invokeAction(null);
+        } else {
+            eventuallyUploadFiles();
+            try {
+                showURLForProjectFile();
+            } catch (MalformedURLException ex) {
+                //TODO: improve error handling
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
 
-    protected Class getBeanClass() {
-        return MakefilePrintOptions.class;
+    @Override
+    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
+        return true;
+    }
+
+    @Override
+    public String getCommandId() {
+        return ID;
+    }
+
+    public String getDisplayName() {
+        return DISPLAY_NAME;
     }
 }
