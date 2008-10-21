@@ -171,7 +171,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     };
 
     private final static Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<Character>(
-            Arrays.asList(' ', '=', ';', '+', '-', '*', '/',
+            Arrays.asList('=', ';', '+', '-', '*', '/',
                 '%', '(', ')', '[', ']', '{', '}', '?'));
 
     private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
@@ -1388,6 +1388,15 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         int diff = ts.move(offset);
         if(diff > 0 && ts.moveNext() || ts.movePrevious()) {
             Token t = ts.token();
+
+            if (lastChar == ' ' || lastChar == '\t'){
+                if (ts.movePrevious() && ts.token().id() == PHPTokenId.PHP_NEW){
+                    return QueryType.ALL_COMPLETION;
+                } else {
+                    return QueryType.STOP;
+                }
+            }
+            
             if(t.id() == PHPTokenId.PHP_OBJECT_OPERATOR
                     || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM
                     || t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$'
