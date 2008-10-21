@@ -54,6 +54,7 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -192,9 +193,10 @@ public final class GenerateAction extends NodeAction {
 
         okButton.setEnabled(initialEnabled);
 
+        String projectName = ProjectUtils.getInformation(project).getDisplayName();
         DialogDescriptor desc =
             new DialogDescriptor(panel,
-                NbBundle.getMessage(GenerateAction.class, "GeneratorTitle"), true, options,
+                NbBundle.getMessage(GenerateAction.class, "GeneratorTitle", projectName), true, options,
                 options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);
         desc.setMessageType(DialogDescriptor.PLAIN_MESSAGE);
 
