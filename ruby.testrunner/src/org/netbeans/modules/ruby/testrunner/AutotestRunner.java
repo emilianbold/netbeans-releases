@@ -48,7 +48,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
@@ -98,8 +97,7 @@ public class AutotestRunner implements TestRunner {
     public void runAllTests(Project project, boolean debug) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-        if (!gemManager.isValidAutoTest(true)) {
+        if (!platform.hasValidAutoTest(true)) {
             return;
         }
 
@@ -109,7 +107,7 @@ public class AutotestRunner implements TestRunner {
         ExecutionDescriptor desc = new ExecutionDescriptor(platform,
                 displayName,
                 FileUtil.toFile(project.getProjectDirectory()),
-                gemManager.getAutoTest());
+                platform.getAutoTest());
 
         desc.initialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
         Map<String, String> env = new HashMap<String, String>(2);

@@ -29,7 +29,7 @@ METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     getAt(String)                              Object
 METHOD     getAuthority()                             String
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getContent()                               Object
 METHOD     getContent(Class[])                        Object
 METHOD     getDefaultPort()                           int

@@ -364,7 +364,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             PHPTokenId.PHP_IF,PHPTokenId.PHP_ELSE,PHPTokenId.PHP_ELSEIF, PHPTokenId.PHP_PRINT,
             PHPTokenId.PHP_FOR, PHPTokenId.PHP_FOREACH,PHPTokenId.PHP_WHILE,
             PHPTokenId.PHPDOC_COMMENT_END, PHPTokenId.PHP_COMMENT_END, PHPTokenId.PHP_LINE_COMMENT,
-            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
+            PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING, PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE,
+            PHPTokenId.T_OPEN_TAG_WITH_ECHO, PHPTokenId.PHP_OPENTAG
             );
 
     private String findLHSExpressionType(TokenSequence<PHPTokenId> tokenSequence,

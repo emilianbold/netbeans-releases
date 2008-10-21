@@ -785,6 +785,19 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort);
         }
 
+        private CsmClassifier extractLastTypeClassifier(ExprKind expKind) {
+            // Found type
+            CsmClassifier cls;
+            if (lastType.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {
+                // Not array or deref array with arrow
+                cls = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
+            } else {
+                // Array of some depth
+                cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
+            }
+            return cls;
+        }
+
         /*private CsmClassifier resolveTemplateParameter(CsmClassifier cls, CsmType type) {
             if (cls instanceof CsmClassifierBasedTemplateParameter) {
                 CsmClassifierBasedTemplateParameter tp = (CsmClassifierBasedTemplateParameter) cls;
@@ -848,8 +861,8 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         break;
                     }
                 }
+                ExprKind kind = ExprKind.NONE;
                 for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in a dot exp
-                    ExprKind kind;
                     if (i < exp.getTokenCount()) {
                         kind = exp.getTokenID(i) == CppTokenId.ARROW ? ExprKind.ARROW : ExprKind.DOT;
                     } else {
@@ -880,12 +893,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     int tokenCntM1 = exp.getTokenCount() - 1;
                     int substPos = exp.getTokenOffset(tokenCntM1) + exp.getTokenLength(tokenCntM1);
                     if (lastType != null) { // Found type
-                        CsmClassifier cls;
-                        if (lastType.getArrayDepth() == 0) { // Not array
-                            cls = lastType.getClassifier();
-                        } else { // Array of some depth
-                            cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
-                        }
+                        CsmClassifier cls = extractLastTypeClassifier(kind);
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
@@ -958,12 +966,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     int tokenCntM1 = exp.getTokenCount() - 1;
                     int substPos = exp.getTokenOffset(tokenCntM1) + exp.getTokenLength(tokenCntM1);
                     if (lastType != null) { // Found type
-                        CsmClassifier cls;
-                        if (lastType.getArrayDepth() == 0) { // Not array
-                            cls = lastType.getClassifier();
-                        } else { // Array of some depth
-                            cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
-                        }
+                        CsmClassifier cls = extractLastTypeClassifier(ExprKind.SCOPE);
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
@@ -1223,7 +1226,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     }
 
                                     if (!inner) { // not inner class name
-                                        if (ad == 0) { // zero array depth
+                                        if (ad == 0 || (kind == ExprKind.ARROW)) { // zero array depth or deref array as pointer
                                             CsmClassifier classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
                                             if (CsmKindUtilities.isClass(classifier)) {
                                                 CsmClass clazz = (CsmClass)classifier;
@@ -1263,12 +1266,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                 } else { // last and searching for completion output
                                     scopeAccessedClassifier = (kind == ExprKind.SCOPE);
 //                                    CsmClass curCls = sup.getClass(varPos);
-                                    CsmClassifier cls;
-                                    if (lastType.getArrayDepth() == 0) { // Not array
-                                        cls = lastType.getClassifier();
-                                    } else { // Array of some depth
-                                        cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
-                                    }
+                                    CsmClassifier cls = extractLastTypeClassifier(kind);
                                     if (cls == null) {
                                         lastType = null;
                                         cont = false;
@@ -1699,12 +1697,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                         } else {
                             // if prev expression was resolved => get it's class
                             if (lastType != null) {
-                                CsmClassifier classifier;
-                                if (lastType.getArrayDepth() == 0) { // Not array
-                                    classifier = CsmBaseUtilities.getOriginalClassifier(lastType.getClassifier());
-                                } else { // Array of some depth
-                                    classifier = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
-                                }
+                                CsmClassifier classifier = extractLastTypeClassifier(kind);
                                 // try to find method in last resolved class appropriate for current context
                                 if (CsmKindUtilities.isClass(classifier)) {
                                     mtdList = finder.findMethods(this.contextElement, (CsmClass)classifier, mtdName, true, false, first, true,scopeAccessedClassifier, this.sort);

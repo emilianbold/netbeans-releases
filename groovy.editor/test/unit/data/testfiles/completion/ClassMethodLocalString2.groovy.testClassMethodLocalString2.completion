@@ -13,7 +13,7 @@ METHOD     getBytes(String)                           byte[]
 METHOD     getBytes(int, int, byte[], int             void
 METHOD     getChars()                                 char[]
 METHOD     getChars(int, int, char[], int             void
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map

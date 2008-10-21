@@ -82,7 +82,7 @@ class RailsInstallationValidator {
         if (version == null) {
             message = NbBundle.getMessage(RailsInstallationValidator.class, "NoRails");
         } else {
-            valid = gemManager.getRails() != null;
+            valid = platform.getRails() != null;
             message = valid 
                     ? NbBundle.getMessage(RailsInstallationValidator.class, "RailsOk") 
                     : NbBundle.getMessage(RailsInstallationValidator.class, "NotFound", RAILS_COMMAND_NAME);
