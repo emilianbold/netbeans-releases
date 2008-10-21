@@ -58,6 +58,7 @@ public final class WsDesignerUtilities {
     private static final String designLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.multiview.Bundle", "LBL_designView_name");
     private static final String addOpLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.view.actions.Bundle", "LBL_AddOperation");
     private static final String gotoLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.view.actions.Bundle", "LBL_GotoSource");
+    private static final String advancedLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.view.Bundle", "LBL_Wsit_Advanced");
     private static final String removeOpLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.view.actions.Bundle", "LBL_RemoveOperation");
     private static final String opsLabel = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.view.widget.Bundle", "LBL_Operations");
 
@@ -100,6 +101,16 @@ public final class WsDesignerUtilities {
         TopComponentOperator tco = design(wsName);
         final LabelWidgetOperator lwo = new LabelWidgetOperator(tco, opName);
         lwo.performPopupActionNoBlock(gotoLabel);
+    }
+
+    public static void invokeAdvanced(String wsName) {
+        final LabelWidgetOperator lwo = new LabelWidgetOperator(design(wsName), advancedLabel);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                lwo.clickMouse(1);
+            }
+        });
     }
 
     /**
@@ -156,7 +167,7 @@ public final class WsDesignerUtilities {
             }
         });
         try {
-            Thread.sleep(1500);
+            Thread.sleep(500);
         } catch (InterruptedException ex) {
             //ignore
         }
