@@ -177,8 +177,9 @@ public class OutputWindowWriter extends Writer {
         }
         
         public void outputLineSelected(OutputEvent ev) {
-            //next action:
-            showLine();
+            //We should not handle outputLineSelected the same way as outputLineAction
+            //see issue 128785
+            //showLine();
         }
         
         public void outputLineAction(OutputEvent ev) {

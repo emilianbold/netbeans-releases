@@ -42,16 +42,11 @@
 package org.netbeans.modules.ruby.railsprojects;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
@@ -62,17 +57,16 @@ import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectPropert
 import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
-import org.netbeans.modules.ruby.rubyproject.ScriptDescProvider;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -81,16 +75,12 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
 import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
-import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.ErrorManager;
 import org.openide.LifecycleManager;
 import org.openide.awt.HtmlBrowser;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -98,40 +88,17 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /** 
- * Action provider of the Ruby project. This is the place where to do
- * strange things to Ruby actions. E.g. compile-single.
+ * Action provider of the Ruby project.
  */
-public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
+public final class RailsActionProvider extends RubyBaseActionProvider {
 
-    /**
-     * Standard command for running rdoc on a project.
-     * @see org.netbeans.spi.project.ActionProvider
-     */
-    public static final String COMMAND_RDOC = "rdoc"; // NOI18N
-    
-    /**
-     * Command for running auto test on this project (if installed)
-     */
-    public static final String COMMAND_AUTOTEST = "autotest"; // NOI18N
+    private static final Logger LOGGER = Logger.getLogger(RailsActionProvider.class.getName());
     
     /**
      * Standard command for running the Rails console for a project
      */
     public static final String COMMAND_RAILS_CONSOLE = "rails-console"; // NOI18N
 
-    /**
-     * Command for running RSpec tests on this project (if installed)
-     */
-    public static final String COMMAND_RSPEC = "rspec"; //NOI18N
-    /**
-     * The name of the test rake task.
-     */
-    private static final String TEST_TASK_NAME = "test"; //NOI18N
-    /**
-     * The name of the spec rake task.
-     */
-    private static final String RSPEC_TASK_NAME = "spec";//NOI18N
-    
     // Commands available from Ruby project
     private static final String[] supportedActions = {
         COMMAND_AUTOTEST,
@@ -151,42 +118,36 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         COMMAND_RENAME,
     };
     
+    private final static String[] MIME_TYPES = new String[] {
+        RubyInstallation.RUBY_MIME_TYPE,
+        RhtmlTokenId.MIME_TYPE
+    };
+
     
-    // Project
-    RailsProject project;
+    final RailsProject project;
     
-    // Ant project helper of the project
-    private final UpdateHelper updateHelper;
-    
-        
-    /**Set of commands which are affected by background scanning*/
-    final Set<String> bkgScanSensitiveActions;
-    
-    private static final Logger LOGGER = Logger.getLogger(RailsActionProvider.class.getName());
-    
-    public RailsActionProvider( RailsProject project, UpdateHelper updateHelper ) {
-        this.bkgScanSensitiveActions = new HashSet<String>(Arrays.asList(new String[] {
-            COMMAND_RUN, 
-            COMMAND_RUN_SINGLE, 
-            COMMAND_DEBUG, 
-            COMMAND_DEBUG_SINGLE,
-        }));
-            
-        this.updateHelper = updateHelper;
+    public RailsActionProvider(RailsProject project, UpdateHelper updateHelper) {
+        super(project, updateHelper);
         this.project = project;
+    }
+
+    @Override
+    protected FileObject[] getSourceRoots() {
+        return project.getSourceRoots().getRoots();
+    }
+
+    @Override
+    protected FileObject[] getTestSourceRoots() {
+        return project.getTestSourceRoots().getRoots();
+    }
+
+    @Override
+    protected String[] getMimeTypes() {
+        return MIME_TYPES;
     }
     
     public String[] getSupportedActions() {
         return supportedActions;
-    }
-
-    private RubyPlatform getPlatform() {
-        RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (platform == null) {
-            platform = RubyPlatformManager.getDefaultPlatform();
-        }
-        
-        return platform;
     }
 
     /** Return true iff the given file is a migration file */
@@ -205,43 +166,11 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         return MigrateAction.getMigrationVersion(file.getName()) != null;
     }
     
-    private FileObject getCurrentFile(Lookup context) {
-        FileObject file = null;
-        FileObject[] files = findSources(context);
-        if (files != null && files.length > 0) {
-            file = files[0];
-        } else {
-            for (DataObject d : context.lookupAll(DataObject.class)) {
-                FileObject fo = d.getPrimaryFile();
-                if (fo.getMIMEType().equals(RubyInstallation.RUBY_MIME_TYPE)) {
-                    file = fo;
-                    break;
-                }
-            }
-        }
-        
-        return file;
-    }
-    
-    private void saveFile(FileObject file) {
-        // Save the file
-        try {
-            DataObject dobj = DataObject.find(file);
-            if (dobj != null) {
-                SaveCookie saveCookie = dobj.getCookie(SaveCookie.class);
-                if (saveCookie != null) {
-                    saveCookie.save();
-                }
-            }
-        } catch (DataObjectNotFoundException donfe) {
-            ErrorManager.getDefault().notify(donfe);
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ioe);
-        }
-    }
-    
     public void invokeAction( final String command, final Lookup context ) throws IllegalArgumentException {
         // TODO Check for valid installation of Ruby and Rake
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        assert platform != null : "Action '" + command + "' should be disabled when platform is invalid";
+
         boolean debugCommand = COMMAND_DEBUG.equals(command);
         boolean debugSingleCommand = COMMAND_DEBUG_SINGLE.equals(command);
         if (COMMAND_RUN.equals(command) || debugCommand) {
@@ -265,7 +194,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             }
             return;
         } else if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
-            if (!RubyPlatform.platformFor(project).isValid(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 
@@ -313,7 +242,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             return;
 
         } else if (COMMAND_RUN_SINGLE.equals(command) || debugSingleCommand) {
-            if (!RubyPlatform.platformFor(project).isValid(true)) {
+            if (!platform.isValid(true)) {
                 return;
             }
 
@@ -467,7 +396,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
         
         if (COMMAND_RDOC.equals(command)) {
-            if (!RubyPlatform.hasValidRake(project, true)) {
+            if (!platform.hasValidRake(true)) {
                 return;
             }
 
@@ -499,12 +428,12 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
             RailsFileLocator fileLocator = new RailsFileLocator(context, project);
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
  
-            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, RubyPlatform.gemManagerFor(project).getRake()).
+            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, platform.getRake()).
                     additionalArgs("appdoc"). // NOI18N
                     postBuild(showBrowser).
                     fileLocator(fileLocator).
                     addStandardRecognizers(),
-                    project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
+                    getSourceEncoding()
                     ).
                     run();
             
@@ -530,8 +459,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
 
         if (COMMAND_AUTOTEST.equals(command)) {
             if (AutoTestSupport.isInstalled(project)) {
-                AutoTestSupport support = new AutoTestSupport(context, project,
-                        project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
+                AutoTestSupport support = new AutoTestSupport(context, project, getSourceEncoding());
                 support.setClassPath(project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH));
                 support.start();
             }
@@ -596,7 +524,7 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
                 additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()])). //NOI18N
                 fileLocator(new RailsFileLocator(context, project)).
                 addStandardRecognizers(),
-                project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING)
+                getSourceEncoding()
                 ).
                 run();
                 
@@ -612,17 +540,6 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         }
     }
     
-    private void runRubyScript(FileObject fileObject, String target, String displayName, final Lookup context, final boolean debug,
-            OutputRecognizer[] extraRecognizers) {
-        if (!getPlatform().showWarningIfInvalid()) {
-            return;
-        }
-        ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
-        RubyExecution service = new RubyExecution(desc,
-                project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING));
-        service.run();
-    }
-
     public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
@@ -699,98 +616,15 @@ public class RailsActionProvider implements ActionProvider, ScriptDescProvider {
         // for example, in Rails you may want to switch to the Files view and execute
         // some of the files in scripts/, even though these are not considered sources
         // (and don't have a source root)
-        //FileObject buildXml = findBuildXml();
-        //if (  buildXml == null || !buildXml.isValid()) {
-        //    return false;
-        //}
-        //if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
-        //    return findSourcesAndPackages( context, project.getSourceRoots().getRoots()) != null
-        //            || findSourcesAndPackages( context, project.getTestSourceRoots().getRoots()) != null;
-        //}
-        //else if ( command.equals( COMMAND_TEST_SINGLE ) ) {
-        //    return findTestSourcesForSources(context) != null;
-        //}
-        //else if ( command.equals( COMMAND_DEBUG_TEST_SINGLE ) ) {
-        //    FileObject[] files = findTestSourcesForSources(context);
-        //    return files != null && files.length == 1;
-        //} else if (command.equals(COMMAND_RUN_SINGLE) ||
-        //        command.equals(COMMAND_DEBUG_SINGLE)) {
-        //    FileObject fos[] = findSources(context);
-        //    if (fos != null && fos.length == 1) {
-        //        return true;
-        //    }
-        //    fos = findTestSources(context, false);
-        //    return fos != null && fos.length == 1;
-        //} else {
-        //    // other actions are global
-        //    return true;
-        //}
-        
         return true;
     }
     
-    
    
-    // Private methods -----------------------------------------------------------------
-    
-    /** Find selected sources, the sources has to be under single source root,
-     *  @param context the lookup in which files should be found
-     */
-    private FileObject[] findSources(Lookup context) {
-        FileObject[] srcPath = project.getSourceRoots().getRoots();
-        for (int i=0; i< srcPath.length; i++) {
-            FileObject[] files = findSelectedFiles(context, srcPath[i], RubyInstallation.RUBY_MIME_TYPE, true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-            files = findSelectedFiles(context, srcPath[i], RhtmlTokenId.MIME_TYPE, true); // NOI18N
-            if (files != null) {
-                return files;
-            }
-        }
-        return null;
-    }
-
     // From the ant module - ActionUtils.
-    // However, I've modified it to do its search based on mime type rather than file suffixes
-    // (since some Ruby files do not use a .rb extension and are discovered based on the initial shebang line)
+    // However, I've modified it to do its search based on mime type rather than
+    // file suffixes (since some Ruby files do not use a .rb extension and are
+    // discovered based on the initial shebang line)
     
-    static FileObject[] findSelectedFiles(Lookup context, FileObject dir, String mimeType, boolean strict) {
-        if (dir != null && !dir.isFolder()) {
-            throw new IllegalArgumentException("Not a folder: " + dir); // NOI18N
-        }
-        Collection<FileObject> files = new LinkedHashSet<FileObject>(); // #50644: remove dupes
-        // XXX this should perhaps also check for FileObject's...
-        for (DataObject d : context.lookupAll(DataObject.class)) {
-            FileObject f = d.getPrimaryFile();
-            boolean matches = FileUtil.toFile(f) != null;
-            if (dir != null) {
-                matches &= (FileUtil.isParentOf(dir, f) || dir == f);
-            }
-            if (mimeType != null) {
-                matches &= f.getMIMEType().equals(mimeType);
-            }
-            // Generally only files from one project will make sense.
-            // Currently the action UI infrastructure (PlaceHolderAction)
-            // checks for that itself. Should there be another check here?
-            if (matches) {
-                files.add(f);
-            } else if (strict) {
-                return null;
-            }
-        }
-        if (files.isEmpty()) {
-            return null;
-        }
-        return files.toArray(new FileObject[files.size()]);
-    }
-    
-    private String[] getApplicationArguments() {
-        String applicationArgs = project.evaluator().getProperty(RailsProjectProperties.APPLICATION_ARGS);
-        return (applicationArgs == null || applicationArgs.trim().length() == 0)
-                ? null : Utilities.parseParameters(applicationArgs);
-    }    
-
     private void runServer(final String path, final boolean debug) {
         if (!debug) {
             runServer(path, false, false);
