@@ -57,6 +57,7 @@ public class CreateProjectTest extends ExtJellyTestCaseForJunit4 {
         newOp.next();
         new JTextFieldOperator(newOp, 0).typeText(TEST_PROJECT_NAME);
         newOp.finish();
+        ProjectSupport.waitScanFinished();
         new EventTool().waitNoEvent(5000);
 
         // select source packages node
