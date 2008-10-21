@@ -74,7 +74,6 @@ import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -107,7 +106,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 * @version 1.00
 */
 
-abstract public class CsmCompletionQuery implements CompletionQuery {
+abstract public class CsmCompletionQuery {
 
     private BaseDocument baseDocument;
 
@@ -148,7 +147,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         setCsmItemFactory(new CsmCompletionQuery.DefaultCsmItemFactory());
     }
 
-    public CompletionQuery.Result query(JTextComponent component, int offset,
+    public CsmCompletionResult query(JTextComponent component, int offset,
                                         SyntaxSupport support) {
         boolean sort = false; // TODO: review
         return query(component, offset, support, false, sort);
@@ -168,7 +167,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
      *  The query tries to return exact matches if this flag is true
      * @return result of the query or null if there's no result.
      */
-    public CompletionQuery.Result query(JTextComponent component, int offset,
+    public CsmCompletionResult query(JTextComponent component, int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {
         BaseDocument doc = (BaseDocument)component.getDocument();
         return query(component, doc, offset, support, openingSource, sort);
@@ -200,14 +199,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 //        return processedToken;
 //    }
 
-    public CompletionQuery.Result query(JTextComponent component, final BaseDocument doc, final int offset,
+    public CsmCompletionResult query(JTextComponent component, final BaseDocument doc, final int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
         // method for subclasses of JavaCompletionQuery, ie. NbJavaCompletionQuery
         baseDocument = doc;
 
-        CompletionQuery.Result ret = null;
+        CsmCompletionResult ret = null;
 
         CsmSyntaxSupport sup = (CsmSyntaxSupport)support.get(CsmSyntaxSupport.class);
 
@@ -289,7 +288,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
 
-    protected CompletionQuery.Result getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
+    protected CsmCompletionResult getResult(JTextComponent component, CsmSyntaxSupport sup, boolean openingSource, int offset, CsmCompletionExpression exp, boolean sort, boolean inIncludeDirective) {
         CompletionResolver resolver = getCompletionResolver(openingSource, sort, inIncludeDirective);
         if (resolver != null) {
             CsmOffsetableDeclaration context = sup.getDefinition(offset, getFileReferencesContext());
@@ -299,7 +298,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                 ctx.result.setSimpleVariableExpression(isSimpleVariableExpression(exp));
             }
             if (TRACE_COMPLETION) {
-                CompletionItem[] array =  ctx.result == null ? new CompletionItem[0] : (CompletionItem[])ctx.result.getData().toArray(new CompletionItem[ctx.result.getData().size()]);
+                CompletionItem[] array =  ctx.result == null ? new CompletionItem[0] : (CompletionItem[])ctx.result.getItems().toArray(new CompletionItem[ctx.result.getItems().size()]);
                 //Arrays.sort(array, CompletionItemComparator.BY_PRIORITY);
                 System.err.println("Completion Items " + array.length);
                 for (int i = 0; i < array.length; i++) {
@@ -312,7 +311,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             boolean isProjectBeeingParsed = isProjectBeeingParsed(openingSource);
             return new CsmCompletionResult(component, getBaseDocument(), Collections.EMPTY_LIST, "", exp, 0, isProjectBeeingParsed, null);
         }
-//	CompletionQuery.Result result = null;
+//	CsmCompletionResult result = null;
 //
 //	// prepare input values
 //	String title = "*";
@@ -764,24 +763,12 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             this.sort = sort;
         }
 
-//        public Context(JTextComponent component,
-//                       CsmSyntaxSupport sup, boolean openingSource, int endOffset,
-//                       JCFinder jcFinder, CsmFinder finder) {
-//            this.component = component;
-//            this.sup = sup;
-//            this.openingSource = openingSource;
-//            this.endOffset = endOffset;
-////            this.jcFinder= jcFinder;
-//	    this.finder = finder;
-//        }
-
         public void setFindType(boolean findType) {
             this.findType = findType;
         }
 
         @Override
         protected Object clone() {
-//            return new Context(component, sup, openingSource, endOffset, jcFinder, finder);
             return new Context(component, sup, openingSource, endOffset, finder, compResolver, contextElement, sort);
         }
 
@@ -1889,7 +1876,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return sb.toString();
     }
 
-    public static class CsmCompletionResult extends CompletionQuery.DefaultResult {
+    public static class CsmCompletionResult {
 
         /** First offset in the name of the (inner) class
         * to be displayed. It's used to display the inner classes
@@ -1913,6 +1900,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
          * baseDocument to work with
          */
         private BaseDocument baseDocument;
+        private List<CompletionItem> items;
 
         public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, String title,
                    CsmCompletionExpression substituteExp, int classDisplayOffset, boolean isProjectBeeingParsed, CsmOffsetableDeclaration contextElement) {
@@ -1947,14 +1935,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                     substituteLength, classDisplayOffset, isProjectBeeingParsed);
         }
 
-        public CsmCompletionResult(JTextComponent component, BaseDocument doc, List data, boolean updateTitle, String title,
+        public CsmCompletionResult(JTextComponent component, BaseDocument doc, List<CompletionItem> data, boolean updateTitle, String title,
                    CsmCompletionExpression substituteExp, int substituteOffset,
                    int substituteLength, int classDisplayOffset, boolean isProjectBeeingParsed) {
-            super(component,
-                    updateTitle ? getTitle(data, title, isProjectBeeingParsed) : title,
-                    data,
-                    substituteOffset,
-                    substituteLength);
+//            super(component,
+//                    updateTitle ? getTitle(data, title, isProjectBeeingParsed) : title,
+//                    data,
+//                    substituteOffset,
+//                    substituteLength);
 
             this.component = component;
             this.baseDocument = doc;
@@ -1962,8 +1950,13 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
             this.substituteOffset = substituteOffset;
             this.substituteLength = substituteLength;
             this.classDisplayOffset = classDisplayOffset;
+            this.items = data;
         }
 
+        public List<CompletionItem> getItems() {
+            return Collections.unmodifiableList(items);
+        }
+        
         private static String getTitle(List data, String origTitle, boolean isProjectBeeingParsed) {
             if (CsmUtilities.DEBUG) System.out.println("original title (resolved type) was " + origTitle); //NOI18N
             String out = NO_SUGGESTIONS;
@@ -2212,13 +2205,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         List ret = new ArrayList();
         while (iter.hasNext()){
             Object obj = iter.next();
-            CsmResultItem item;
-            if (obj instanceof CompletionQuery.ResultItem){
-                assert false : " why item element here?";
-                item = (CsmResultItem)obj;
-            }else{
-                item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement);
-            }
+            CsmResultItem item = createResultItem(obj, classDisplayOffset, substituteExp, contextElement);
             assert item != null : "why null item? object " + obj;
             if (item != null) {
                 item.setSubstituteOffset(substituteOffset);
