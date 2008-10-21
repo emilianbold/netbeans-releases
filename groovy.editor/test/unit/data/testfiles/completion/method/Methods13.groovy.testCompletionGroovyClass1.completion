@@ -1,0 +1,22 @@
+Code completion result for source line:
+new Test1().|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     equals(Object)                             boolean
+METHOD     getClass()                                 Class<? extends Object>
+METHOD     getMetaClass()                             MetaClass
+METHOD     getProperty(String)                        Object
+METHOD     getX()                                     
+METHOD     hashCode()                                 int
+METHOD     invokeMethod(String, Object)               Object
+METHOD     notify()                                   void
+METHOD     notifyAll()                                void
+METHOD     setMetaClass(MetaClass)                    void
+METHOD     setProperty(String, Object)                void
+METHOD     setX(String)                               
+METHOD     toString()                                 String
+METHOD     wait()                                     void
+METHOD     wait(long)                                 void
+METHOD     wait(long, int)                            void
+FIELD      metaClass                                  MetaClass
+FIELD      x                                          String
