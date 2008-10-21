@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript.editing;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Stack;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
@@ -67,6 +68,8 @@ import org.openide.util.Exceptions;
  */
 public class JsPretty {
 
+    private final Logger LOG = Logger.getLogger(JsFormatter.class.getName());
+    
     private final CompilationInfo info;
     private final BaseDocument doc;
     private final TokenSequence<? extends JsTokenId> ts;
@@ -579,7 +582,11 @@ public class JsPretty {
     }
     
     private void decrease(String caller) {
-        StackItem stackItem = stack.pop();
+        StackItem stackItem = stack.empty() ? null : stack.pop();
+        if (stackItem == null) {
+            LOG.warning("Stack empty for decrease to " + indent + " - " + caller + ", " + ts.offset());
+            return;
+        }
         if (isIncreasingLine) {
             indent -= stackItem.indent;
             assert indent >= 0;
