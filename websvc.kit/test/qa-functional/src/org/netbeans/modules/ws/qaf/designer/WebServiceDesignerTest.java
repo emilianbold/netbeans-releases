@@ -244,7 +244,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
                 NbModuleSuite.createConfiguration(WebServiceDesignerTest.class),
                 "testAddOperation", //NOI18N
                 "testAddOperation2", //NOI18N
