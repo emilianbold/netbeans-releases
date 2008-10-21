@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,56 +38,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.microedition.svg.input;
 
-package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
-
-import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
-* Implementation of breakpoint on method.
-*
-* @author   Gordon Prieur (copied from Jan Jancura's JPDA implementation)
-*/
-public class LineBreakpointImpl extends BreakpointImpl {
+ * @author ads
+ *
+ */
+public interface PointerListener {
 
-    private String lastPath;
+    void pointerPressed(int x, int y);
     
-    public LineBreakpointImpl(LineBreakpoint breakpoint, GdbDebugger debugger) {
-        super(breakpoint, debugger);
-	lastPath = null;
-        set();
-    }
-
-    @Override
-    protected String getBreakpointCommand() {
-        int lineNumber = getBreakpoint().getLineNumber();
-	String bppath = getBreakpoint().getPath();
-	String path = null;
-
-	if (lastPath == null && bppath.indexOf(' ') == -1) {
-	    path = bppath;
-	} else if (lastPath == null) {
-	    path = debugger.getBestPath(bppath);
-	} else if (lastPath.length() > 0) {
-	    if (lastPath.equals(bppath)) {
-		path = debugger.getBestPath(bppath);
-	    } else {
-		int pos = lastPath.lastIndexOf('/');
-		if (pos >= 0) {
-		    path = lastPath.substring(pos + 1);
-		}
-	    }
-	}
-        lastPath = path;
-	if (path == null) {
-	    return null;
-	} else {
-	    return path + ':' + lineNumber;
-	}
-    }
-
-    @Override
-    protected boolean alternateSourceRootAvailable() {
-	return err != null && err.startsWith("No source file named ") && lastPath != null && lastPath.length() > 0; // NOI18N
-    }
+    void pointerReleased(int x, int y);
+    
 }
