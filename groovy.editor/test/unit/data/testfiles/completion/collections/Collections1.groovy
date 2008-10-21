@@ -11,6 +11,7 @@ def rangeTest() {
 def listTest() {
     // "java.util.List"
    ["one","two"].listIter
+   ["one","two"].it
 }
 
 def mapTest() {

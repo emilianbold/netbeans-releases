@@ -384,10 +384,12 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
     
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         int index = fontFaceList.getSelectedIndex();
-        if (index == 0) return;
+        if (index <= 0)
+            return;
         fontFamilies.remove(index);
-        if(!fontFamilies.isEmpty()){
-            if (index == fontFamilies.getSize()) index--;
+        if (!fontFamilies.isEmpty()) {
+            if (index == fontFamilies.getSize())
+                index--;
             fontFaceList.setSelectedIndex(index);
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
@@ -442,7 +444,7 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
             currentIndex = fontFaceList.getSelectedIndex();
             selectedFonts.removeAllElements();
             // Do not show the <NOT SET> in the selected fonts
-            if(currentIndex != 0){
+            if (currentIndex > 0) {
                 addButton.setEnabled(true);
                 deleteButton.setEnabled(true);
                 upButton.setEnabled(true);
@@ -462,7 +464,7 @@ public class FontFamilyEditorDialog extends javax.swing.JPanel {
                     removeButton.setEnabled(true);
                     selectedFontList.setSelectedIndex(0);
                 }
-            }else{
+            } else {
                 addButton.setEnabled(false);
                 removeButton.setEnabled(false);
                 deleteButton.setEnabled(false);
