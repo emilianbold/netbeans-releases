@@ -242,12 +242,9 @@ public class OutputWindowWriter extends Writer {
                     fileName = fileName.replace('/', '\\');
                 }
             }
-
             fileName = HostInfoProvider.getDefault().getMapper(hkey).getLocalPath(fileName);
-
-            File directory = FileUtil.normalizeFile(new File(fileName));
-
-            return FileUtil.toFileObject(directory);
+            File file = FileUtil.normalizeFile(new File(fileName));
+            return FileUtil.toFileObject(file);
         }
 
         protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
@@ -282,12 +279,16 @@ public class OutputWindowWriter extends Writer {
                         }
                     }
                 }
+                FileObject myObj = resolveFile(relativePath);
+                if (myObj != null) {
+                    return myObj;
+                }
                 if (relativePath.startsWith(File.separator)){ // NOI18N
                     relativePath = relativePath.substring(1);
                 }
                 try {
                     FileSystem fs = relativeDir.getFileSystem();
-                    FileObject myObj = fs.findResource(relativePath);
+                    myObj = fs.findResource(relativePath);
                     if (myObj != null) {
                         return myObj;
                     }
