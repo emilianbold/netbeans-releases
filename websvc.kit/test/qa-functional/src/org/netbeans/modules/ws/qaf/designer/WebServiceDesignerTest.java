@@ -125,6 +125,22 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         assertEquals(33, eo.getLineNumber());
     }
 
+    //only sanity test (see if there's no exception)
+    //some checks can be added later
+    public void testOperationButtons() {
+        String wsName = "SampleWs"; //NOI18N
+        String opName = "voidOperation"; //NOI18N
+        WsDesignerUtilities.clickOnButton(wsName, opName, 0);
+        WsDesignerUtilities.clickOnButton(wsName, opName, 2);
+        WsDesignerUtilities.clickOnButton(wsName, opName, 1);
+        opName = "sayHi"; //NOI18N
+        WsDesignerUtilities.clickOnButton(wsName, opName, 1);
+        WsDesignerUtilities.clickOnButton(wsName, opName, 0);
+        WsDesignerUtilities.clickOnButton(wsName, opName, 0);
+        WsDesignerUtilities.clickOnButton(wsName, opName, 2);
+        WsDesignerUtilities.clickOnButton(wsName, opName, 0);
+    }
+
     private void addOperation(String wsName, int opCount, boolean hasInterface) {
         openFileInEditor(wsName);
         assertEquals(opCount, WsDesignerUtilities.operationsCount(wsName));
@@ -220,6 +236,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
                 "testAddOperation", //NOI18N
                 "testAddOperation2", //NOI18N
                 "testAddOperationToIntf", //NOI18N
+                "testOperationButtons", //NOI18N
                 "testGoToSource", //NOI18N
                 "testRemoveOperation", //NOI18N
                 "testRemoveOperation2", //NOI18N

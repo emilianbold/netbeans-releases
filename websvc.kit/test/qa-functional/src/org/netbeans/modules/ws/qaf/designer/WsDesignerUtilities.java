@@ -39,10 +39,15 @@
 package org.netbeans.modules.ws.qaf.designer;
 
 import javax.swing.SwingUtilities;
+import org.netbeans.api.visual.widget.ImageWidget;
+import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.widgets.LabelWidgetOperator;
+import org.netbeans.jellytools.widgets.WidgetOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.modules.websvc.design.view.widget.ButtonWidget;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -96,6 +101,40 @@ public final class WsDesignerUtilities {
         TopComponentOperator tco = design(wsName);
         final LabelWidgetOperator lwo = new LabelWidgetOperator(tco, opName);
         lwo.performPopupActionNoBlock(gotoLabel);
+    }
+
+    /**
+     *
+     * @param wsName
+     * @param opName
+     * @param index button position
+     */
+    public static void clickOnButton(String wsName, String opName, int index) {
+        TopComponentOperator tco = design(wsName);
+        final LabelWidgetOperator lwo = new LabelWidgetOperator(tco, opName);
+        Widget w = WidgetOperator.findWidget(lwo.getParent().getParent().getWidget(), new WidgetOperator.WidgetChooser() {
+
+            public boolean checkWidget(Widget widget) {
+                return widget instanceof ButtonWidget;
+            }
+
+            public String getDescription() {
+                return "Button Chooser"; //NOI18N
+            }
+        }, index);
+        final WidgetOperator wo = new WidgetOperator(w);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                wo.clickMouse(1);
+            }
+
+        });
+        try {
+            Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
     }
 
     public static TopComponentOperator design(String wsName) {
