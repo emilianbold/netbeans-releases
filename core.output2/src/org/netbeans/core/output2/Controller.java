@@ -1220,7 +1220,7 @@ public class Controller { //XXX public only for debug access to logging code
     }
 
     void hasOutputListenersChanged(OutputWindow win, OutputTab tab, boolean hasOutputListeners) {
-        if (hasOutputListeners && win.getSelectedTab() == tab && tab.isShowing()) {
+        if (hasOutputListeners && tab.getOutputPane().isScrollLocked()) {
             navigateToFirstErrorLine(tab);
         }
     }
