@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
@@ -115,7 +116,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         class Queri extends Thread 
         implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
             public volatile boolean stop;
-            private List deleted = Collections.synchronizedList(new ArrayList());
+            private List<FileObject> deleted = new CopyOnWriteArrayList<FileObject>();
             public Exception problem;
             
             public Queri() {
@@ -145,7 +146,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
             @Override
             public void run () {
                 while(!stop) {
-                    FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
+                    FileObject[] arr = deleted.toArray(new FileObject[0]);
                     DataLoader loader = SimpleLoader.getLoader(SimpleLoader.class);
                     err.info("Next round, for " + arr.length);
                     for (int i = 0; i < arr.length; i++) {
@@ -209,7 +210,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         
         err.info("waiting for 10s");
         int cnt = 0;
-        while (cnt++ < 10) {
+        while (cnt++ < 10 && (snd.isAlive() || que.isAlive())) {
             Thread.sleep(1000);
         }
         err.info("10s is over");
@@ -224,14 +225,14 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
     }
 
     public static final class Pool extends DataLoaderPool {
-        protected Enumeration loaders() {
-            return Enumerations.singleton(SimpleLoader.getLoader(SimpleLoader.class));
+        protected Enumeration<DataLoader> loaders() {
+            return Enumerations.<DataLoader>singleton(SimpleLoader.getLoader(SimpleLoader.class));
         }
     }
     
     public static final class SimpleLoader extends MultiFileLoader {
         public SimpleLoader() {
-            super(SimpleObject.class);
+            super(SimpleObject.class.getName());
         }
         protected String displayName() {
             return "SimpleLoader";
