@@ -374,7 +374,7 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
 
         destinationText.setEditable(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, "Connection Factory:");
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(SendJmsMessagePanel.class, "LBL_ConnectionFactory")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -394,11 +394,11 @@ public class SendJmsMessagePanel extends javax.swing.JPanel {
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, destinationLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(destinationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, mdbCombo, 0, 321, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverDestinationsCombo, 0, 321, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectDestinationsCombo, 0, 321, Short.MAX_VALUE)
-                            .add(connectionFactoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 321, Short.MAX_VALUE))
+                            .add(destinationText, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, mdbCombo, 0, 338, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, serverDestinationsCombo, 0, 338, Short.MAX_VALUE)
+                            .add(org.jdesktop.layout.GroupLayout.TRAILING, projectDestinationsCombo, 0, 338, Short.MAX_VALUE)
+                            .add(connectionFactoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(addButton)
                         .addContainerGap())
