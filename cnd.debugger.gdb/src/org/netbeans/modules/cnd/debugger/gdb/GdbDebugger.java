@@ -167,6 +167,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String state = STATE_NONE;
     private final PropertyChangeSupport pcs;
     private String runDirectory;
+    private String baseDir;
     private final ArrayList<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
     private final GdbEngineProvider gdbEngineProvider;
     private CallStackFrame currentCallStackFrame;
@@ -252,6 +253,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 iotab.setErrSeparated(false);
             }
             runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
+            baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = hkey.equals(CompilerSetManager.LOCALHOST) ?
                 pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
@@ -1143,7 +1145,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
                 BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
-                if (platform == PlatformTypes.PLATFORM_MACOSX && breakpoint != null) {
+                if (breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
                 }
@@ -2403,8 +2405,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public String getBestPath(String path) {
         path = pathMap.getRemotePath(path);
-        if (path.startsWith(runDirectory)) {
-            return (path.substring(runDirectory.length()));
+        if (path.startsWith(baseDir + '/')) {
+            return path.substring(baseDir.length() + 1);
         } else {
             int pos = path.lastIndexOf('/');
             if (pos != -1) {
