@@ -67,7 +67,6 @@ import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -138,8 +137,8 @@ public final class GenerateAction extends NodeAction {
 
         // #141908 -- check whether rails is installed in vendor/
         FileObject railsInstall = project.getProjectDirectory().getFileObject("vendor/rails/railties"); // NOI18N
-        GemManager gemManager = RubyPlatform.gemManagerFor(project);
-        if (railsInstall == null && (gemManager == null || !gemManager.isValidRails(true))) {
+        RubyPlatform platform = RubyPlatform.platformFor(project);
+        if (railsInstall == null && !platform.hasValidRails(true)) {
             LOGGER.warning("No valid Rails installation found, platform is:" + RubyPlatform.platformFor(project));
             return;
         }

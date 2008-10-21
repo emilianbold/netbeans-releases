@@ -54,7 +54,6 @@ import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
@@ -250,8 +249,7 @@ public final class RakeRunner {
     List<ExecutionDescriptor> getExecutionDescriptors(List<? extends RakeTask> tasks) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-        String rake = gemManager.getRake();
+        String rake = platform.getRake();
         Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
         List<ExecutionDescriptor> result = new ArrayList<ExecutionDescriptor>(5);
 
