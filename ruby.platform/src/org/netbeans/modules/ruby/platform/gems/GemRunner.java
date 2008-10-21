@@ -83,6 +83,7 @@ final class GemRunner {
 
     GemRunner(final RubyPlatform platform) {
         this.platform = platform;
+        assert platform.hasRubyGemsInstalled() : "GemRunner cannot be used fro platform without RubyGems: " + platform;
     }
 
     /**
@@ -326,14 +327,15 @@ final class GemRunner {
         argList.addAll(RubyExecution.getRubyArgs(platform));
 
         GemManager gemManager = platform.getGemManager();
+        assert gemManager != null : "gemManager cannot be null";
 
         // be sure gem tool finds RubyGems libraries. Seems that sudo tools have
         // problem with inheriting the process environment (RUBYLIB)
         // I've not found any switches to force the RUBYLIB to be inherited.
-        File gemToolDir = new File(gemManager.getGemTool()).getParentFile().getParentFile();
+        File gemToolDir = new File(platform.getGemTool()).getParentFile().getParentFile();
         argList.add("-I" + gemToolDir + File.separator + "lib"); // NOI18N
 
-        argList.add(gemManager.getGemTool());
+        argList.add(platform.getGemTool());
         argList.add(gemCommand);
 
         for (String arg : commandArgs) {
