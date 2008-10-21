@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -59,47 +59,47 @@ import org.w3c.dom.NodeList;
  */
 public class PersistenceHelper {
     private static final String PERSISTENCE_UNIT_TAG = "persistence-unit";      //NOI18N
-    
+
     private static final String PROPERTIES_TAG = "properties";      //NOI18N
-    
+
     private static final String NAME_ATTR = "name";                 //NOI18N
-    
+
     private static final String EXCLUDE_UNLISTED_CLASSES_TAG = "exclude-unlisted-classes";      //NOI18N
-    
+
     private static final String TRANSACTION_TYPE_ATTR = "transaction-type";         //NOI18N
-    
+
     private static final String RESOURCE_LOCAL_VALUE = "RESOURCE_LOCAL";        //NOI18N
-    
+
     private static final String JTA_DATA_SOURCE_TAG = "jta-data-source";        //NOI18N
-    
+
     private static final String NON_JTA_DATA_SOURCE_TAG = "non-jta-data-source";        //NOI18N
-    
+
     private static final String CLASS_TAG = "class";    //NOI18N
-    
+
     private static final String PROVIDER_TAG = "provider";  //NOI18N
-    
+
     private static final String DEFAULT_PROVIDER = "oracle.toplink.essentials.PersistenceProvider"; //NOI18N
-   
+
     private Project project;
     private DOMHelper helper;
-    
+
     public PersistenceHelper(Project project) {
         this.project = project;
-        
+
         FileObject fobj = getPersistenceXML();
-        
+
         if (fobj != null) {
             helper = new DOMHelper(fobj);
         }
     }
-    
+
     public PersistenceUnit getPersistenceUnit() {
         if (helper != null) {
-            Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);  
-            
+            Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
+
             if (puElement != null) {
                 String puName = puElement.getAttribute(NAME_ATTR);
-                
+
                 String provider;
                 NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
                 if (nodes.getLength() > 0) {
@@ -107,46 +107,48 @@ public class PersistenceHelper {
                 } else {
                     provider = DEFAULT_PROVIDER;
                 }
-                
+
                 Datasource datasource = null;
-                
+
                 NodeList nodeList = puElement.getElementsByTagName(JTA_DATA_SOURCE_TAG);
                 if (nodeList.getLength() > 0) {
                     Element dsElement = (Element) nodeList.item(0);
-                    String jndiName = helper.getValue(dsElement);      
+                    String jndiName = helper.getValue(dsElement);
                     datasource = RestUtils.getDatasource(project, jndiName);
                 }
-                
+
                 return new PersistenceUnit(puName, provider, datasource);
             }
         }
-        
+
         return null;
     }
-    
-    
+
+
     public void configure(Collection<String> classNames, boolean useResourceLocalTx) throws IOException {
         if (helper == null) return;
-        
+
         // Required by Spring
         setDefaultProvider();
-        
-        // Required for Spring + Hibernate
-        addEntityClasses(classNames);
-        
+
+
         // Need to do this for Tomcat
         unsetExcludeEnlistedClasses();
-        
+
+         // Required for Spring + Hibernate
+        addEntityClasses(classNames);
+
+
         if (useResourceLocalTx)
             switchToResourceLocalTransaction();
-       
+
         helper.save();
     }
-    
+
     private void unsetExcludeEnlistedClasses() throws IOException {
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         NodeList nodes = puElement.getElementsByTagName(EXCLUDE_UNLISTED_CLASSES_TAG);
-    
+
         if (nodes.getLength() > 0) {
             helper.setValue((Element) nodes.item(0), "false");  //NOI18N
         } else {
@@ -154,14 +156,14 @@ public class PersistenceHelper {
                     helper.findElement(PROPERTIES_TAG));
         }
     }
-     
+
     private void switchToResourceLocalTransaction()  throws IOException {
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         puElement.setAttribute(TRANSACTION_TYPE_ATTR, RESOURCE_LOCAL_VALUE);
-        
+
         NodeList nodes = puElement.getElementsByTagName(JTA_DATA_SOURCE_TAG);
         String dataSource = null;
-        
+
         if (nodes.getLength() > 0) {
             Element oldElement = (Element) nodes.item(0);
             dataSource = helper.getValue(oldElement);
@@ -169,33 +171,33 @@ public class PersistenceHelper {
             puElement.replaceChild(newElement, oldElement);
         }
     }
-    
+
     private void addEntityClasses(Collection<String> classNames) throws IOException {
-        List<String> toAdd = new ArrayList<String>(classNames);   
+        List<String> toAdd = new ArrayList<String>(classNames);
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         NodeList nodes = puElement.getElementsByTagName(CLASS_TAG);
         int length = nodes.getLength();
-        
+
         for (int i = 0; i < length; i++) {
             toAdd.remove(helper.getValue((Element) nodes.item(i)));
         }
-        
-        for (String className : toAdd) {   
+
+        for (String className : toAdd) {
             puElement.insertBefore(helper.createElement(CLASS_TAG, className),
-                    helper.findElement(PROPERTIES_TAG));
+                    helper.findElement(EXCLUDE_UNLISTED_CLASSES_TAG));
         }
     }
-    
+
     private void setDefaultProvider() throws IOException {
         Element puElement = helper.findElement(PERSISTENCE_UNIT_TAG);
         NodeList nodes = puElement.getElementsByTagName(PROVIDER_TAG);
-        
+
         if (nodes.getLength() == 0) {
             puElement.insertBefore(helper.createElement(PROVIDER_TAG, DEFAULT_PROVIDER),
                     puElement.getFirstChild());
         }
     }
-    
+
     private FileObject getPersistenceXML() {
         RestSupport rs = RestUtils.getRestSupport(project);
         if (rs != null) {
@@ -203,26 +205,26 @@ public class PersistenceHelper {
         }
         return null;
     }
-    
+
     public static class PersistenceUnit {
         private String name;
         private String provider;
         private Datasource datasource;
-        
+
         public PersistenceUnit(String name, String provider, Datasource datasource) {
             this.name = name;
             this.provider = provider;
             this.datasource = datasource;
         }
-        
+
         public String getName() {
             return name;
         }
-        
+
         public String getProvider() {
             return provider;
         }
-        
+
         public Datasource getDatasource() {
             return datasource;
         }
