@@ -241,7 +241,7 @@ public class ReplyMainPanel extends EditorLifeCycleAdapter
     }
 
     @Override
-    public boolean applyNewValues() throws VetoException {
+    public boolean applyNewValues() throws Exception {
         mcc.applyNewValues();
         mec.applyNewValues();
         //

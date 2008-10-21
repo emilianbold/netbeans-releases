@@ -912,7 +912,9 @@ public class IpeUtils {
         } catch (IOException e) {
             return false;
         }
-        
+        if (fo == null) { // 149058
+            return false;
+        }
         DataObject dataObject = null;
         try {
             dataObject = DataObject.find(fo);
