@@ -111,7 +111,7 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         DataObject[] to1 = to.getChildren();
         err.info(" getting children of from");
         DataObject[] from1 = from.getChildren();
-        
+
         class Queri extends Thread 
         implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
             public volatile boolean stop;
@@ -172,30 +172,52 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
             }
         }
         
-        Queri que = new Queri();
+        final Queri que = new Queri();
         
         to.getPrimaryFile().addFileChangeListener(que);
         from.getPrimaryFile().addFileChangeListener(que);
         
-        que.start();
-        try {
-            for (int i = 0; i < 10; i++) {
-                err.info(i + " moving the object");
-                one.move(to);
-                err.info(i + " moving back");
-                one.move(from);
-                err.info(i + " end of cycle");
+
+        class Snd extends Thread {
+            private IOException io;
+
+            public Snd() {
+                super("moving thread");
             }
-        } finally {
-            que.stop = true;
-            err.info("stopping the que");
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < 10; i++) {
+                        err.info(i + " moving the object");
+                        one.move(to);
+                        err.info(i + " moving back");
+                        one.move(from);
+                        err.info(i + " end of cycle");
+                    }
+                } catch (IOException ex) {
+                    io = ex;
+                } finally {
+                    que.stop = true;
+                    err.info("stopping the que");
+                }
+            }
         }
+        Snd snd = new Snd();
+
+        que.start();
+        snd.start();
         
-        err.info("waiting for join");
-        que.join(10000);
-        err.info("joined");
+        err.info("waiting for 10s");
+        int cnt = 0;
+        while (cnt++ < 10) {
+            Thread.sleep(1000);
+        }
+        err.info("10s is over");
         if (que.problem != null) {
             throw que.problem;
+        }
+        if (snd.io != null) {
+            throw snd.io;
         }
         
         assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
