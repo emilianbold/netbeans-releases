@@ -132,10 +132,14 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         String opName = "voidOperation"; //NOI18N
         WsDesignerUtilities.clickOnButton(wsName, opName, 0);
         WsDesignerUtilities.clickOnButton(wsName, opName, 2);
+        WsDesignerUtilities.clickOnExpander(wsName, opName);
+        WsDesignerUtilities.clickOnExpander(wsName, opName);
         WsDesignerUtilities.clickOnButton(wsName, opName, 1);
         opName = "sayHi"; //NOI18N
         WsDesignerUtilities.clickOnButton(wsName, opName, 1);
         WsDesignerUtilities.clickOnButton(wsName, opName, 0);
+        WsDesignerUtilities.clickOnExpander(wsName, opName);
+        WsDesignerUtilities.clickOnExpander(wsName, opName);
         WsDesignerUtilities.clickOnButton(wsName, opName, 0);
         WsDesignerUtilities.clickOnButton(wsName, opName, 2);
         WsDesignerUtilities.clickOnButton(wsName, opName, 0);

@@ -39,7 +39,6 @@
 package org.netbeans.modules.ws.qaf.designer;
 
 import javax.swing.SwingUtilities;
-import org.netbeans.api.visual.widget.ImageWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.TopComponentOperator;
@@ -47,7 +46,7 @@ import org.netbeans.jellytools.widgets.LabelWidgetOperator;
 import org.netbeans.jellytools.widgets.WidgetOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.modules.websvc.design.view.widget.ButtonWidget;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.websvc.design.view.widget.ExpanderWidget;
 
 /**
  *
@@ -128,10 +127,36 @@ public final class WsDesignerUtilities {
             public void run() {
                 wo.clickMouse(1);
             }
-
         });
         try {
             Thread.sleep(200);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+    }
+
+    public static void clickOnExpander(String wsName, String opName) {
+        TopComponentOperator tco = design(wsName);
+        final LabelWidgetOperator lwo = new LabelWidgetOperator(tco, opName);
+        Widget w = WidgetOperator.findWidget(lwo.getParent().getParent().getWidget(), new WidgetOperator.WidgetChooser() {
+
+            public boolean checkWidget(Widget widget) {
+                return widget instanceof ExpanderWidget;
+            }
+
+            public String getDescription() {
+                return "Expander Chooser"; //NOI18N
+            }
+        }, 0);
+        final WidgetOperator wo = new WidgetOperator(w);
+        SwingUtilities.invokeLater(new Runnable() {
+
+            public void run() {
+                wo.clickMouse(1);
+            }
+        });
+        try {
+            Thread.sleep(1500);
         } catch (InterruptedException ex) {
             //ignore
         }
