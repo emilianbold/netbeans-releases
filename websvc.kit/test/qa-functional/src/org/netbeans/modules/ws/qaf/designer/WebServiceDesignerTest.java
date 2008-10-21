@@ -40,18 +40,15 @@
 package org.netbeans.modules.ws.qaf.designer;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
-import junit.textui.TestRunner;
 import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
-import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
-import org.netbeans.modules.ws.qaf.designer.operators.WsDesignerOperator;
 
 /**
  *
@@ -69,30 +66,41 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
     }
     
     public void testAddOperation() {
-        String wsName = "EmptyWs";
+        String wsName = "EmptyWs"; //NOI18N
         openFileInEditor(wsName);
-        WsDesignerOperator wdo = new WsDesignerOperator(wsName);
-        wdo.addOperation();
-        
+        assertEquals(0, WsDesignerUtilities.operationsCount(wsName));
+        WsDesignerUtilities.invokeAddOperation(wsName);
         //Add Operation...
         String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.webservices.action.Bundle", "LBL_OperationAction");
         NbDialogOperator dialog = new NbDialogOperator(actionName);
-        new JTextFieldOperator(dialog, 2).setText("test1");
-        new JTextFieldOperator(dialog, 1).setText("String");
+        new JTextFieldOperator(dialog, 2).setText("test1"); //NOI18N
+        new JTextFieldOperator(dialog, 1).setText("String"); //NOI18N
         dialog.ok();
-//        eo.save();
-//        waitForTextInEditor(eo, opName);
+        try {
+            //slow down a bit
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        assertEquals(1, WsDesignerUtilities.operationsCount(wsName));
+        WsDesignerUtilities.source(wsName);
+        EditorOperator eo = new EditorOperator(wsName);
+        assertTrue(eo.contains("@WebMethod(operationName = \"test1\")")); //NOI18N
+        assertTrue(eo.contains("public String test1() {")); //NOI18N
+        assertTrue(eo.contains("import javax.jws.WebMethod;")); //NOI18N
     }
     
     public void testRemoveOperation() {
-        String wsName = "EmptyWs";
+        String wsName = "EmptyWs"; //NOI18N
         openFileInEditor(wsName);
-        WsDesignerOperator wdo = new WsDesignerOperator(wsName);
-        wdo.design();
-        wdo.selectOperation("test1");
-        wdo.removeOperation();
-        NbDialogOperator ndo = new NbDialogOperator("Question");
+        WsDesignerUtilities.invokeRemoveOperation(wsName, "test1"); //NOI18N
+        NbDialogOperator ndo = new NbDialogOperator("Question"); //NOI18N
         ndo.yes();
+        assertEquals(0, WsDesignerUtilities.operationsCount(wsName));
+        WsDesignerUtilities.source(wsName);
+        EditorOperator eo = new EditorOperator(wsName);
+        assertFalse(eo.contains("@WebMethod(operationName = \"test1\")")); //NOI18N
+        assertFalse(eo.contains("public String test1() {")); //NOI18N
     }
     
     private void openFileInEditor(String fileName) {
@@ -107,24 +115,15 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
         }
         //end
         SourcePackagesNode spn = new SourcePackagesNode(getProjectRootNode());
-        Node n = new Node(spn, "samples|" + fileName);
+        Node n = new Node(spn, "samples|" + fileName); //NOI18N
         new OpenAction().perform(n);
     }
     
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(WebServiceDesignerTest.class), "testAddOperation", "testRemoveOperation").enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(addServerTests(
+                NbModuleSuite.createConfiguration(WebServiceDesignerTest.class),
+                "testAddOperation", //NOI18N
+                "testRemoveOperation").enableModules(".*").clusters(".*")); //NOI18N
     }
     
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-//    public static Test suite() {
-//        TestSuite suite = new NbTestSuite();
-//        suite.addTest(new WebServiceDesignerTest("testAddOperation"));
-//        suite.addTest(new WebServiceDesignerTest("testRemoveOperation"));
-//        return suite;
-//    }
-//
-//    /* Method allowing test execution directly from the IDE. */
-//    public static void main(java.lang.String[] args) {
-//        TestRunner.run(suite());
-//    }
 }
