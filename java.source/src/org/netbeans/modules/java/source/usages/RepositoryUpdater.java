@@ -1624,7 +1624,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 Exceptions.printStackTrace(e);
             }
             finally {
-                ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
+                ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N                
             }
         }
         

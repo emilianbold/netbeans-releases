@@ -533,7 +533,7 @@ public class TaskProcessor {
                                             Parser.Result currentResult;
                                             currentRequest.setCurrentParser(sourceCache.getParser());
                                             currentResult = sourceCache.getResult (r.task, event);                                            
-                                            boolean shouldCall = currentResult != null && sourceCache.isValid();
+                                            boolean shouldCall = currentResult != null && !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
                                             if (shouldCall) {
                                                 try {
                                                     final long startTime = System.currentTimeMillis();
@@ -576,7 +576,7 @@ public class TaskProcessor {
                                         synchronized (INTERNAL_LOCK) {
                                             boolean canceled = currentRequest.setCurrentTask(null);
                                             synchronized (source) {
-                                                if (canceled || !SourceAccessor.getINSTANCE().getCache (source).isValid ()) {
+                                                if (canceled || SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID)) {
                                                     //The JavaSource was changed or canceled rechedule it now
                                                     requests.add(r);
                                                 }

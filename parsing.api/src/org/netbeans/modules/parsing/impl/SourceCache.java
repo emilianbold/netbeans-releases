@@ -181,11 +181,7 @@ public final class SourceCache {
         for (SourceCache sourceCache : embeddingToCache.values ())
             sourceCache.invalidate ();
     }
-    
-    synchronized boolean isValid () {
-        return snapshot != null;
-    }
-        
+                
     //@GuardedBy(this)
     private Collection<Embedding> 
                             embeddings;
