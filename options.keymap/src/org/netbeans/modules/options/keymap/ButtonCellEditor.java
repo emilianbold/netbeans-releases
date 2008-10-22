@@ -91,12 +91,14 @@ public class ButtonCellEditor extends DefaultCellEditor {
             }
             model.removeShortcut(sca, orig);
             model.addShortcut(sca ,s);
-            model.update();
+            
         } catch (Exception e) {
             ((JComponent) getComponent()).setBorder(new LineBorder(Color.red));
             return false;
         }
-        return super.stopCellEditing();
+        boolean stopCellEditing = super.stopCellEditing();
+        model.update();
+        return stopCellEditing;
     }
 
     @Override
