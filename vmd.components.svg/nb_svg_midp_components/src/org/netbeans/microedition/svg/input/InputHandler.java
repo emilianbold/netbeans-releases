@@ -58,6 +58,19 @@ public abstract class InputHandler {
             }
             return false;
         }
+        
+
+        public void handlePointerPress( SVGComponent comp, int arg1, int arg2 )
+        {
+            ((SVGAbstractButton)comp).pressButton();
+            super.handlePointerPress(comp, arg1, arg2);
+        }
+        
+        public void handlePointerRelease( SVGComponent comp, int arg1, int arg2 )
+        {
+            ((SVGAbstractButton)comp).releaseButton();
+            super.handlePointerPress(comp, arg1, arg2);
+        }
     };
     
     public interface CaretVisibilityListener {
@@ -66,6 +79,50 @@ public abstract class InputHandler {
     
     public abstract boolean handleKeyPress(SVGComponent comp, int nKeyCode);
     public abstract boolean handleKeyRelease(SVGComponent comp, int nKeyCode);
+    
+    /**
+     * Invoked when the pointer device (if any), is pressed over the SVG 
+     * component <code>comp</code>.
+     * Coordinates are determined via bounding rectangle for <code>comp</code>
+     * ( method is called when bounding rectangle contains point).
+     * These coordinates <code>x</code> and <code>y</code> are absolute screen
+     * coordinates. They are not translated into "component" coordinates.
+     *  Method implementation could decide how this 
+     * event should be handled based on underlying SVG element 
+     * ( f.e. ellipse should not react on corner coordinates of bounding rectangle).   
+     * Default implementation send event to all listeners. 
+     * @param comp SVG component 
+     * @param x x-coordinate relative to bounding rectangle
+     * @param y y-coordinate relative to bounding rectangle
+     */
+    public void handlePointerPress(SVGComponent comp, int x, int y){
+        PointerListener[] listeners = comp.getPointerListeners();
+        for (int i = 0; i < listeners.length; i++) {
+            listeners[i].pointerPressed(x, y);
+        }
+    }
+    
+    /**
+     * Invoked when the pointer device (if any), is released over the SVG 
+     * component <code>comp</code>.
+     * Coordinates are determined via bounding rectangle for <code>comp</code>
+     * ( method is called when bounding rectangle contains point).
+     * These coordinates <code>x</code> and <code>y</code> are absolute screen
+     * coordinates. They are not translated into "component" coordinates.
+     *  Method implementation could decide how this 
+     * event should be handled based on underlying SVG element 
+     * ( f.e. ellipse should not react on corner coordinates of bounding rectangle).    
+     * Default implementation send event to all listeners. 
+     * @param comp SVG component 
+     * @param x x-coordinate relative to bounding rectangle
+     * @param y y-coordinate relative to bounding rectangle
+     */
+    public void handlePointerRelease(SVGComponent comp, int x, int y){
+        PointerListener[] listeners = comp.getPointerListeners();
+        for (int i = 0; i < listeners.length; i++) {
+            listeners[i].pointerReleased(x, y);
+        }
+    }
     
     public void addVisibilityListener( CaretVisibilityListener listener) {
         caretListeners.addElement( listener);

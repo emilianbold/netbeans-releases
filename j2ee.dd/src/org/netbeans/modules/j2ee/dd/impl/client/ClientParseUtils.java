@@ -74,10 +74,11 @@ public class ClientParseUtils {
     }
     
     private static class VersionHandler extends DefaultHandler {
+        @Override
         public void startElement(String uri, String localName, String rawName, Attributes atts) throws SAXException {
             if ("application-client".equals(rawName)) { //NOI18N
                 String version = parseVersion(atts.getValue("version")); //NOI18N
-                String msg = version != null ? ParseUtils.EXCEPTION_PREFIX + version : "Invalid version " +version; //NO18N
+                String msg = version != null ? ParseUtils.EXCEPTION_PREFIX + version : "Invalid version: null"; //NO18N
                 throw new SAXException(msg);
             }
         }

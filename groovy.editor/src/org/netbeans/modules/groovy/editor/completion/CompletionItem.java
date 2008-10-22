@@ -73,9 +73,9 @@ import org.openide.util.ImageUtilities;
  * @author schmidtm
  */
 // FIXME static accessors
-public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
+public abstract class CompletionItem extends DefaultCompletionProposal {
 
-    private static final Logger LOG = Logger.getLogger(GroovyCompletionItem.class.getName());
+    private static final Logger LOG = Logger.getLogger(CompletionItem.class.getName());
 
     protected final GroovyElement element;
 
@@ -85,7 +85,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
     
     private static volatile ImageIcon newConstructorIcon;
 
-    private GroovyCompletionItem(GroovyElement element, int anchorOffset) {
+    private CompletionItem(GroovyElement element, int anchorOffset) {
         this.element = element;
         this.anchorOffset = anchorOffset;
 
@@ -121,7 +121,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         return cls + "(" + getKind() + "): " + getName();
     }
 
-    public static class JavaMethodItem extends GroovyCompletionItem {
+    public static class JavaMethodItem extends CompletionItem {
 
         private final String simpleName;
         private final String parameterString;
@@ -184,7 +184,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class MetaMethodItem extends GroovyCompletionItem {
+    public static class MetaMethodItem extends CompletionItem {
 
         private final MetaMethod method;
 
@@ -297,7 +297,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class KeywordItem extends GroovyCompletionItem {
+    public static class KeywordItem extends CompletionItem {
 
         private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
         private final String keyword;
@@ -363,7 +363,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class PackageItem extends GroovyCompletionItem {
+    public static class PackageItem extends CompletionItem {
 
         private final String keyword;
 
@@ -407,7 +407,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class TypeItem extends GroovyCompletionItem {
+    public static class TypeItem extends CompletionItem {
 
         private final String name;
         private final javax.lang.model.element.ElementKind ek;
@@ -451,7 +451,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class ConstructorItem extends GroovyCompletionItem {
+    public static class ConstructorItem extends CompletionItem {
 
         private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
@@ -573,7 +573,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class FieldItem extends GroovyCompletionItem {
+    public static class FieldItem extends CompletionItem {
 
         private final String name;
 
@@ -625,7 +625,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class LocalVarItem extends GroovyCompletionItem {
+    public static class LocalVarItem extends CompletionItem {
 
         private final Variable var;
 
@@ -666,7 +666,7 @@ public abstract class GroovyCompletionItem extends DefaultCompletionProposal {
         }
     }
 
-    public static class NewVarItem extends GroovyCompletionItem {
+    public static class NewVarItem extends CompletionItem {
 
         private final String var;
 

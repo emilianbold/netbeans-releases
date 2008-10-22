@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -452,14 +453,21 @@ public class GdbProxyEngine {
         }
     }
 
+    private static final String TIME_PREFIX = ",time="; // NOI18N
     /**
      * Cut timing information if any
      * @param msg
      */
-    private static String stripTiming(String msg) {
-        int pos = msg.indexOf(",time="); // NOI18N
-        if (pos != -1 ) {
-            msg = msg.substring(0, pos);
+    private String stripTiming(String msg) {
+        int pos = msg.indexOf(TIME_PREFIX);
+        if (pos != -1) {
+            // time= prefix may appear not only in the end of the message, see issue 147938
+            int endPos = GdbUtils.findMatchingCurly(msg, pos + TIME_PREFIX.length());
+            if (endPos != -1) {
+                return msg.substring(0, pos) + msg.substring(endPos+1);
+            } else {
+                log.warning("Matching curly not found in timing info: " + msg); // NOI18N
+            }
         }
         return msg;
     }

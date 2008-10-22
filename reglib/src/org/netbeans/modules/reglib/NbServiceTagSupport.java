@@ -56,7 +56,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.io.Writer;
 import java.util.Collection;
 import java.util.Locale;
@@ -430,18 +432,20 @@ public class NbServiceTagSupport {
         } else {
             targetFile = regXmlFileHome;
         }
-        BufferedOutputStream out = null;
+
         try {
-            out = new BufferedOutputStream(new FileOutputStream(targetFile));
-            getRegistrationData().storeToXML(out);
+            OutputStream os = new FileOutputStream(targetFile);
+            try {
+                BufferedOutputStream out = new BufferedOutputStream(os);
+                getRegistrationData().storeToXML(out);
+                out.close();
+            } finally {
+                os.close();
+            }
         } catch (IOException ex) {
             LOG.log(Level.INFO,
             "Error: Cannot save registration data to \"" + targetFile + "\":" + ex.getMessage());
             throw ex;
-        } finally {
-            if (out != null) {
-                out.close();
-            }
         }
     }
     
@@ -473,18 +477,19 @@ public class NbServiceTagSupport {
             return registration;
         }
         
-        BufferedInputStream in = null;
         try {
-            in = new BufferedInputStream(new FileInputStream(srcFile));
-            registration = RegistrationData.loadFromXML(in);
+            InputStream is = new FileInputStream(srcFile);
+            try {
+                BufferedInputStream in = new BufferedInputStream(is);
+                registration = RegistrationData.loadFromXML(in);
+                in.close();
+            } finally {
+                is.close();
+            }
         } catch (IOException ex) {
             LOG.log(Level.INFO,"Error: Bad registration data \"" +
             srcFile + "\":" + ex.getMessage());
             throw ex;
-        } finally {
-            if (in != null) {
-                in.close();
-            }
         }
         return registration;
     }
@@ -806,41 +811,35 @@ public class NbServiceTagSupport {
         File f = new File(USER_HOME + File.separator + DEFAULT_NETBEANS_DIR + File.separator + SUPER_IDENTITY_FILE_NAME);
         if (f.exists()) {
             // read existing super Id
-            BufferedReader r = null;
             try {
-                r = new BufferedReader(new FileReader(f));
-                superId = r.readLine().trim();
+                Reader r = new FileReader(f);
+                try {
+                    BufferedReader br = new BufferedReader(r);
+                    superId = br.readLine().trim();
+                    br.close();
+                } finally {
+                    r.close();
+                }
             } catch (IOException ex) {
                 LOG.log(Level.INFO,"Error: Cannot read from file:" + f, ex);
-            } finally {
-                try {
-                    if (r != null) {
-                        r.close();
-                    }
-                } catch (IOException ex) {
-                    LOG.log(Level.INFO,"Error: Cannot close input stream of file:" + f, ex);
-                }
             }
         } else {
             File dir = new File(USER_HOME + File.separator + DEFAULT_NETBEANS_DIR);
             if (!dir.exists()) {
                 dir.mkdirs();
             }
-            Writer w = null;
             try {
-                w = new BufferedWriter(new FileWriter(f));
-                superId = UUID.randomUUID().toString();
-                w.write(superId);
+                Writer w = new FileWriter(f);
+                try {
+                    BufferedWriter bw = new BufferedWriter(w);
+                    superId = UUID.randomUUID().toString();
+                    bw.write(superId);
+                    bw.close();
+                } finally {
+                    w.close();
+                }
             } catch (IOException ex) {
                 LOG.log(Level.INFO,"Error: Cannot write to file:" + f, ex);
-            } finally {
-                try {
-                    if (w != null) {
-                        w.close ();
-                    }
-                } catch (IOException ex) {
-                    LOG.log(Level.INFO,"Error: Cannot close writer to file:" + f, ex);
-                }
             }
         }
         return superId;
@@ -913,9 +912,9 @@ public class NbServiceTagSupport {
             } else if (serviceTagFileHome.exists()) {
                 srcFile = serviceTagFileHome;
             }
-            BufferedReader in = null;
+            Reader r = new FileReader(srcFile);
             try {
-                in = new BufferedReader(new FileReader(srcFile));
+                BufferedReader in = new BufferedReader(r);
                 String line = in.readLine();
                 while (line != null) {
                     if (urn.equals(line.trim())) {
@@ -923,11 +922,10 @@ public class NbServiceTagSupport {
                     }
                     line = in.readLine();
                 }
+                in.close();
                 return "";
             } finally {
-                if (in != null) {
-                    in.close();
-                }
+                r.close();
             }
         }
         return "";
@@ -971,31 +969,15 @@ public class NbServiceTagSupport {
             Registry.getSystemRegistry().addServiceTag(st);
 
             // Write (append if any presents) the instance_run to the servicetag file            
-            BufferedWriter out = null;
+            Writer w = new FileWriter(targetFile, true);
             try {
                 LOG.log(Level.FINE,"Creating file: " + targetFile);
-                out = new BufferedWriter(new FileWriter(targetFile, true));
+                BufferedWriter out = new BufferedWriter(w);
                 out.write(st.getInstanceURN());
                 out.newLine();
+                out.close();
             } finally {
-                if (out != null) {
-                    out.close();
-                }
-            }
-            //For NB 6.0 save file 'servicetag' to user dir to avoid creating new ST
-            //by code in IDE launcher
-            if ("6.0".equals(NB_VERSION)) {
-                targetFile = new File(USER_DIR + File.separator + ST_FILE);
-                try {
-                    LOG.log(Level.FINE,"Creating file: " + targetFile + " Specific for 6.0.");
-                    out = new BufferedWriter(new FileWriter(targetFile));
-                    out.write(st.getInstanceURN());
-                    out.newLine();
-                } finally {
-                    if (out != null) {
-                        out.close();
-                    }
-                }
+                w.close();
             }
         }
     }
@@ -1069,21 +1051,35 @@ public class NbServiceTagSupport {
             // if the resource file is missing
             LOG.log(Level.FINE,"Missing resource file: " + resource);
         } else {
-            LOG.log(Level.FINE,"Generating " + img + " from " + resource);
-            BufferedInputStream bis = new BufferedInputStream(in);
-            FileOutputStream fos = new FileOutputStream(img);
             try {
-                int c;
-                while ((c = bis.read()) != -1) {
-                    fos.write(c);
+                LOG.log(Level.FINE,"Generating " + img + " from " + resource);
+                BufferedInputStream bis = null;
+                FileOutputStream fos = null;
+                try {
+                    bis = new BufferedInputStream(in);
+                    fos = new FileOutputStream(img);
+                    int c;
+                    while ((c = bis.read()) != -1) {
+                        fos.write(c);
+                    }
+                } finally {
+                    IOException exc = null;
+                    try {
+                        if (bis != null) {
+                            bis.close();
+                        }
+                    } catch (IOException ex) {
+                        exc = ex;
+                    }
+                    if (fos != null) {
+                        fos.close();
+                    }
+                    if (exc != null) {
+                        throw exc;
+                    }
                 }
             } finally {
-                if (bis != null) {
-                    bis.close();
-                }
-                if (fos != null) {
-                    fos.close();
-                }
+                in.close();
             }
         }
         // Format the registration data in one single line
@@ -1109,42 +1105,58 @@ public class NbServiceTagSupport {
            if (in != null) {
                break;
            }
-        } 
-        LOG.log(Level.FINE,"Found html in: " + resource);
-        LOG.log(Level.FINE,"Generating " + f);
-        
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
-        PrintWriter pw = new PrintWriter(f,"UTF-8");
-        String line = null;
-        String productName = "", productNameTitle = "";
-        for (int i = 0; i < productNames.length; i++) {
-            if (i > 0) {
-                productName +=
-                " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
-                productNameTitle +=
-                " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
-            }
-            productName += "<strong>" + productNames[i] + "</strong>";
-            productNameTitle += productNames[i];
         }
-        while ((line = reader.readLine()) != null) {
-            String output = line;
-            if (line.contains(PRODUCT_KEY)) {
-                output = line.replace(PRODUCT_KEY, productName);
-            } else if (line.contains(PRODUCT_TITLE_KEY)) {
-                output = line.replace(PRODUCT_TITLE_KEY, productNameTitle);
-            } else if (line.contains(NB_HEADER_PNG_KEY)) {
-                output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
-            } else if (line.contains(REGISTRATION_URL_KEY)) {
-                output = line.replace(REGISTRATION_URL_KEY, registerURL);
-            } else if (line.contains(REGISTRATION_PAYLOAD_KEY)) {
-                output = line.replace(REGISTRATION_PAYLOAD_KEY, payload);
+        if (in != null) {
+            try {
+                LOG.log(Level.FINE,"Found html in: " + resource);
+                LOG.log(Level.FINE,"Generating " + f);
+
+                BufferedReader reader = null;
+                PrintWriter pw = null;
+                try {
+                    reader = new BufferedReader(new InputStreamReader(in,"UTF-8"));
+                    pw = new PrintWriter(f,"UTF-8");
+                    String line = null;
+                    String productName = "", productNameTitle = "";
+                    for (int i = 0; i < productNames.length; i++) {
+                        if (i > 0) {
+                            productName +=
+                            " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
+                            productNameTitle +=
+                            " " + NbBundle.getMessage(NbServiceTagSupport.class,"MSG_junction") + " ";
+                        }
+                        productName += "<strong>" + productNames[i] + "</strong>";
+                        productNameTitle += productNames[i];
+                    }
+                    while ((line = reader.readLine()) != null) {
+                        String output = line;
+                        if (line.contains(PRODUCT_KEY)) {
+                            output = line.replace(PRODUCT_KEY, productName);
+                        } else if (line.contains(PRODUCT_TITLE_KEY)) {
+                            output = line.replace(PRODUCT_TITLE_KEY, productNameTitle);
+                        } else if (line.contains(NB_HEADER_PNG_KEY)) {
+                            output = line.replace(NB_HEADER_PNG_KEY, headerImageSrc);
+                        } else if (line.contains(REGISTRATION_URL_KEY)) {
+                            output = line.replace(REGISTRATION_URL_KEY, registerURL);
+                        } else if (line.contains(REGISTRATION_PAYLOAD_KEY)) {
+                            output = line.replace(REGISTRATION_PAYLOAD_KEY, payload);
+                        }
+                        pw.println(output);
+                    }
+                } finally {
+                    //PrintWriter.close does not throw IOException so no need to catch it here
+                    //to perform next close
+                    if (pw != null) {
+                        pw.close();
+                    }
+                    if (reader != null) {
+                        reader.close();
+                    }
+                }
+            } finally {
+                in.close();
             }
-            pw.println(output);
         }
-        pw.flush();
-        pw.close();
-        in.close();
     }
     
 }
