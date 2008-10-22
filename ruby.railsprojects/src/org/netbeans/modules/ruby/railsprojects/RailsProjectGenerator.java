@@ -182,13 +182,18 @@ public class RailsProjectGenerator {
                 platform.getInfo().getKind(),
                 platform.getInfo().getPlatformVersion(),
                 platform.getInfo().getGemVersion(),
-                data.getServerInstanceId(),
+                getServerIdForLogging(data.getServerInstanceId(), platform),
                 data.getDatabase().getDisplayName(),
                 railsVersion);
 
         return h;
     }
 
+    // see #150975
+    private static String getServerIdForLogging(String serverURI, RubyPlatform platform) {
+        RubyInstance serverInstance = ServerRegistry.getDefault().getServer(serverURI, platform);
+        return serverInstance != null ? serverInstance.getDisplayName() : "";
+    }
 
     private static void runWarblePluginize(RubyPlatform platform, Project project) {
         String warble = platform.findExecutable("warble"); //NOI18N

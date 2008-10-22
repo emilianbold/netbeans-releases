@@ -45,6 +45,7 @@ import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
@@ -113,18 +114,25 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
             privateProperties.setProperty(RAILS_ENV, getRailsEnvironment());
         }
         Info info = getPlatform().getInfo();
-        String serverURI = server == null
-                ? evaluator.getProperty(RAILS_SERVERTYPE)
-                : server.getServerUri();
         Util.logUsage(RailsProjectProperties.class, "USG_PROJECT_CONFIG_RAILS", // NOI18N
                 info.getKind(),
                 info.getPlatformVersion(),
                 info.getGemVersion(),
-                serverURI,
+                getServerIdForLogging(),
                 "", // XXX database seems to not be configurable, so this attribute does not make sense here?
                 ""); // XXX rails version - the same as above 'database' attribute?
     }
     
+    // see #150975
+    private String getServerIdForLogging() {
+        if (server != null) {
+            return server.getDisplayName();
+        }
+        String serverURI = evaluator.getProperty(RAILS_SERVERTYPE);
+        RubyInstance serverInstance = ServerRegistry.getDefault().getServer(serverURI, getPlatform());
+        return serverInstance != null ? serverInstance.getDisplayName() : "";
+    }
+
     RubyInstance getServer() {
         return this.server;
     }
