@@ -164,16 +164,16 @@ public abstract class AbstractMavenActionsProvider implements MavenActionsProvid
             }
 
         }
-        if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName()) &&
-                ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
-            //TODO how to allow running main() in tests?
-            actionName = ActionProvider.COMMAND_TEST_SINGLE;
-        }
-        if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName()) &&
-                ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
-            //TODO how to allow running main() in tests?
-            actionName = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
-        }
+//        if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName()) &&
+//                ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
+//            //TODO how to allow running main() in tests?
+//            actionName = ActionProvider.COMMAND_TEST_SINGLE;
+//        }
+//        if (group != null && MavenSourcesImpl.NAME_TESTSOURCE.equals(group.getName()) &&
+//                ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
+//            //TODO how to allow running main() in tests?
+//            actionName = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+//        }
         if (group != null && MavenSourcesImpl.NAME_SOURCE.equals(group.getName()) &&
                 (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                 ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName))) {
