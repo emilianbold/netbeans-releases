@@ -89,7 +89,7 @@ public final class JavaElementHandler {
     }
 
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor, String[] typeParameters, ClassType type) {
+            String prefix, int anchor, String[] typeParameters, boolean emphasise) {
         JavaSource javaSource = createJavaSource();
 
         if (javaSource == null) {
@@ -101,7 +101,7 @@ public final class JavaElementHandler {
         Map<MethodSignature, CompletionItem> result = Collections.synchronizedMap(new HashMap<MethodSignature, CompletionItem>());
         try {
             javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, typeParameters,
-                    Collections.singleton(AccessLevel.PUBLIC), prefix, anchor, result), true);
+                    Collections.singleton(AccessLevel.PUBLIC), prefix, anchor, result, emphasise), true);
         } catch (IOException ex) {
             LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
             return Collections.emptyMap();
@@ -210,11 +210,13 @@ public final class JavaElementHandler {
 
         private final int anchor;
 
+        private final boolean emphasise;
+
         private final Map<MethodSignature, CompletionItem> proposals;
 
         public MethodCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className,
                 String[] typeParameters, Set<AccessLevel> levels, String prefix, int anchor,
-                Map<MethodSignature, CompletionItem> proposals) {
+                Map<MethodSignature, CompletionItem> proposals, boolean emphasise) {
 
             this.cnt = cnt;
             this.javaSource = javaSource;
@@ -224,6 +226,7 @@ public final class JavaElementHandler {
             this.prefix = prefix;
             this.anchor = anchor;
             this.proposals = proposals;
+            this.emphasise = emphasise;
         }
 
         public void run(CompilationController info) throws Exception {
@@ -263,7 +266,7 @@ public final class JavaElementHandler {
                             }
 
                             proposals.put(getSignature(te, element, typeParameters, info.getTypes()), new CompletionItem.JavaMethodItem(simpleName, parameterString,
-                                    returnType, element.getModifiers(), anchor));
+                                    returnType, element.getModifiers(), anchor, emphasise));
                         }
                     }
                 }

@@ -1641,7 +1641,7 @@ public class FilterNode extends Node {
             }
 
             public Node[] callGetNodes(boolean optimalResult) {
-                Node[] hold;
+                Node[] hold = null;
                 if (optimalResult) {
                     hold = original.getChildren().getNodes(true);
                 }
@@ -1650,7 +1650,7 @@ public class FilterNode extends Node {
             }
 
             public int callGetNodesCount(boolean optimalResult) {
-                Node[] hold;
+                Node[] hold = null;
                 if (optimalResult) {
                     hold = original.getChildren().getNodes(optimalResult);
                 }
@@ -1753,7 +1753,12 @@ public class FilterNode extends Node {
             }
         
             public Node[] callGetNodes(boolean optimalResult) {
-                return Children.this.getNodes();
+                Node[] hold = null;
+                if (optimalResult) {
+                    hold = original.getChildren().getNodes(true);
+                }
+                hold = Children.this.getNodes();
+                return hold;
             }
 
             public int callGetNodesCount(boolean optimalResult) {
