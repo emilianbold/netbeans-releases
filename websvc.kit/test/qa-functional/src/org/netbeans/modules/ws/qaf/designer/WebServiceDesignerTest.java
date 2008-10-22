@@ -129,6 +129,15 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
     //some checks can be added later
     public void testOperationButtons() {
         String wsName = "SampleWs"; //NOI18N
+        WsDesignerUtilities.invokeAdvanced(wsName);
+        try {
+            //slow down a bit
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        NbDialogOperator o = new NbDialogOperator(wsName);
+        o.cancel();
         String opName = "voidOperation"; //NOI18N
         WsDesignerUtilities.clickOnButton(wsName, opName, 0);
         WsDesignerUtilities.clickOnButton(wsName, opName, 2);
@@ -235,7 +244,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(
+        return NbModuleSuite.create(addServerTests(Server.GLASSFISH,
                 NbModuleSuite.createConfiguration(WebServiceDesignerTest.class),
                 "testAddOperation", //NOI18N
                 "testAddOperation2", //NOI18N
