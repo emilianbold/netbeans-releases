@@ -62,7 +62,7 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
 
     @Override
     protected String getProjectName() {
-        return "60_webapp"; //NOI18N
+        return getName().indexOf("Ejb") < 0 ? "60_webapp" : "65_ejbmodule"; //NOI18N
     }
 
     public void testAddOperation() {
@@ -87,6 +87,46 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
 
     public void testRemoveOperationFromIntf() {
         removeOperation("WsImpl", 2, true); //NOI18N
+    }
+
+    public void testEjbAddOperation() {
+        String wsName = "FromWSDL";
+        int opCount = 2;
+        openFileInEditor(wsName);
+        assertEquals(opCount, WsDesignerUtilities.operationsCount(wsName));
+        WsDesignerUtilities.invokeAddOperation(wsName);
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+        //Add Operation...
+        String actionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.design.view.actions.Bundle", "TTL_AddWsOperation");
+        NbDialogOperator dialog = new NbDialogOperator(actionName);
+        JTextFieldOperator jtfo = new JTextFieldOperator(dialog, "operation");
+        jtfo.clearText();
+        jtfo.typeText("addedOp");
+        dialog.ok();
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
+//        new JTextFieldOperator(dialog, 2).setText("test1"); //NOI18N
+//        new JTextFieldOperator(dialog, 1).setText("String"); //NOI18N
+    }
+
+    public void testEjbRemoveOperation() {
+        String wsName = "FromWSDL";
+        openFileInEditor(wsName);
+        WsDesignerUtilities.invokeRemoveOperation(wsName, "addedOp", false); //NOI18N
+        NbDialogOperator ndo = new NbDialogOperator("Question"); //NOI18N
+        ndo.yes();
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
     }
 
     public void testGoToSource() {
@@ -254,6 +294,8 @@ public class WebServiceDesignerTest extends WebServicesTestBase {
                 "testRemoveOperation", //NOI18N
                 "testRemoveOperation2", //NOI18N
                 "testRemoveOperationFromIntf" //NOI18N
+//                "testEjbAddOperation", //NOI18N
+//                "testEjbRemoveOperation" //NOI18N
                 ).enableModules(".*").clusters(".*")); //NOI18N
     }
 }
