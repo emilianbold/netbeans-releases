@@ -54,12 +54,12 @@ var USE_BOUNCER = 0;
 
 var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
-//var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
-var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
+var SOURCES_AND_BINARIES_URL = "javascript: open_zip_link()";
+//var SOURCES_AND_BINARIES_URL = BUILD_LOCATION + "zip/";
 
 function add_download_tabs() {
 	add_download_tab("6.1", "http://www.netbeans.org/downloads/");
-	add_download_tab("6.5 RC1");
+	add_download_tab("6.5 RC2");
 	add_download_tab(DEVELOPMENT_TITLE, DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }

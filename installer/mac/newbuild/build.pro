@@ -7,15 +7,15 @@
     <property name="install.dir" value="/Applications/NetBeans"/>
     
     <!-- Base IDE properties   -->       
-    <property name="baseide.version" value="6.5 RC1"/>
-    <property name="appname" value="NetBeans 6.5 RC1"/> 
-    <property name="mpkg.name_nb" value="NetBeans 6.5 RC1"/> 
+    <property name="baseide.version" value="6.5 RC2"/>
+    <property name="appname" value="NetBeans 6.5 RC2"/> 
+    <property name="mpkg.name_nb" value="NetBeans 6.5 RC2"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
     <property name="nbClusterDir" value="nb6.5"/>      
 
-    <property name="appversion" value="6.5 RC1"/>
-    <property name="nb.display.version.long"  value="6.5 RC1"/>
-    <property name="nb.display.version.short" value="6.5 RC1"/>
+    <property name="appversion" value="6.5 RC2"/>
+    <property name="nb.display.version.long"  value="6.5 RC2"/>
+    <property name="nb.display.version.short" value="6.5 RC2"/>
     
     <!-- Tomcat properties   -->    
     <property name="tomcat.version" value="6.0.18"/>
