@@ -84,7 +84,15 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         assertTrue("Not existing directory" + srcDir, srcDir.exists());
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
-
+/*
+    public void testStructFromSystemDir() throws Exception {
+        performTest("src/testTdClassFwdResolve1.c", 7, 15, "sys_include2/addrinfo.h", 5, 5);
+    }
+    
+    public void testStructFromUserDir() throws Exception {
+        performTest("src/testTdClassFwdResolve2.c", 6, 20, "src/audio_format_t.h", 17, 5);
+    }
+*/    
     public void testDuplicationConstructions_0() throws Exception {
         // IZ#145982: context of code changes unexpectedly
         performTest("src/testDup1.cc", 5, 15, "src/dup1.h", 12, 5); // duplicationFoo
