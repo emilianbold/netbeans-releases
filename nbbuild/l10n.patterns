@@ -18,7 +18,7 @@
 **/docs/syntaxref20.zip:
 **/docs/GUIExamplesDescription.html:
 **/org-netbeans-modules-apisupport-ant.jar:org/netbeans/modules/apisupport/ant/TemplateNames.properties
-**/modules/ext/debugger.html
+**/modules/ext/debugger.html:
 profiler*/**/config/Services/filtersets-default.xml:
 profiler*/**/config/Services/filters-default.xml:
 exclude **/*.jar:**/Bundle_noi18n.properties
