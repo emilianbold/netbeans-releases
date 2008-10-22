@@ -169,6 +169,7 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
         return null;
     }
     
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         if (comp==displayNameTF) {
             String val = (String)value;
@@ -221,6 +222,7 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
         }
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
         if (source == displayNameTF) {
             displayNameTF.setText(constraint.getDefaultDisplayName());
@@ -229,12 +231,14 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);
@@ -538,7 +542,6 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
     }// </editor-fold>//GEN-END:initComponents
     
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-// TODO add your handling code here:
         SecurityRolesEditorPanel dialogPanel = new SecurityRolesEditorPanel(
                 getAllRoleNames(), getSelectedRoleNames());
         EditDialog dialog = new EditDialog(dialogPanel,
@@ -549,7 +552,6 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
             }
         };
               
-        javax.swing.event.DocumentListener docListener = new EditDialog.DocListener(dialog);
         java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
         d.setVisible(true);
         
@@ -564,12 +566,10 @@ public class SecurityConstraintPanel extends SectionInnerPanel {
     }//GEN-LAST:event_editButtonActionPerformed
     
     private void userDataConstraintCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userDataConstraintCBActionPerformed
-// TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_userDataConstraintCBActionPerformed
     
     private void authConstraintCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_authConstraintCBActionPerformed
-// TODO add your handling code here:
         updateVisualState();
     }//GEN-LAST:event_authConstraintCBActionPerformed
     
