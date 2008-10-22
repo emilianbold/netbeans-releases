@@ -42,6 +42,7 @@ package org.netbeans.modules.projectimport.eclipse.gui;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 
 /**
@@ -64,6 +65,25 @@ public class ImportAppRunParams extends ProjectImporterTestCase {
         importProject(projectName);
         validateProjectJavaVMParams(projectName);
     }
+
+    public void testImportMultipleJavaVMParams() {
+        String projectName = "MultipleRunConfigs";
+        importProject(projectName);
+        validateRunConfigs(projectName);
+    }
+    private void validateRunConfigs(String projectName) {
+        NbDialogOperator propsDialog = invokeProjectPropertiesDialog(projectName,"Run");
+        JComboBoxOperator configs =new JComboBoxOperator(propsDialog,0);
+        int listLength = configs.getModel().getSize();
+        log("Found "+listLength+" items");
+        if(listLength != 3) {
+            fail("Some Run configurations not imported");
+        }
+        configs.selectItem("Run Configuration One");
+        configs.selectItem("Run Configuration One");
+        propsDialog.close();
+    }
+    
     private void validateProjectJavaVMParams(String projectName) {
         NbDialogOperator propsDialog = invokeProjectPropertiesDialog(projectName,"Run");
         
