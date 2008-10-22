@@ -63,79 +63,85 @@ import org.openide.util.NbBundle;
  * @author  kherink
  */
 public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerListener, PropertyChangeListener {
-	
+        
     public static final int MAX_COMPILABLE_CELLS = 8000;
     
-	private TiledLayer tiledLayer;
-	private TiledLayerEditorComponent editorComponent;
-	private JScrollPane editorScroll;
-	
-	/**
+        private TiledLayer tiledLayer;
+        private TiledLayerEditorComponent editorComponent;
+        private JScrollPane editorScroll;
+        
+        /**
      * Creates new form TiledLayerEditor
      */
-	public TiledLayerEditor(final TiledLayer tiledLayer) {
-		this.tiledLayer = tiledLayer;
-		this.tiledLayer.addTiledLayerListener(this);
-		this.tiledLayer.addPropertyChangeListener(this);
-		this.editorComponent = new TiledLayerEditorComponent(this.tiledLayer);
-		initComponents();
-		
-		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.name"));
-		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.description"));
-		
-		this.toggleButtonPaint.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-				if (toggleButtonPaint.isSelected()) {
-					editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_PAINT);
-				}
-            }
-		});
-		this.toggleButtonSelect.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-				if (toggleButtonSelect.isSelected()) {
-					editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_SELECT);
-				}
-            }
-		});
-		
-		this.toggleButtonPaint.setSelected(true);
-		
-		this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
-				DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimatedTileButton.txt"));
-				dd.setButtonListener(dialog);
-				dd.setValid(false);
-				dialog.setDialogDescriptor(dd);
-				Dialog d = DialogDisplayer.getDefault().createDialog(dd);
-				d.setVisible(true);
-			}
-		});
-		this.textFieldName.setBackground(this.textFieldName.getParent().getBackground());
-		this.textFieldRows.setBackground(this.textFieldRows.getParent().getBackground());
-		this.textFieldCols.setBackground(this.textFieldCols.getParent().getBackground());
-		
-		this.editorScroll = new JScrollPane();
-		this.editorScroll.getViewport().setBackground(Color.WHITE);
-		this.editorScroll.setViewportView(this.editorComponent);
-		this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
-		this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
-		this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());
-		this.jPanel2.add(this.editorScroll, BorderLayout.CENTER);
-		
-		JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
-		scrollAnimTiles.setBorder(null);
-		this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
+        public TiledLayerEditor(final TiledLayer tiledLayer) {
+                this.tiledLayer = tiledLayer;
+                this.tiledLayer.addTiledLayerListener(this);
+                this.tiledLayer.addPropertyChangeListener(this);
+                this.editorComponent = new TiledLayerEditorComponent(this.tiledLayer);
+                initComponents();
+                
+                this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.name"));
+                this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.accessible.description"));
+                
+                this.toggleButtonPaint.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (toggleButtonPaint.isSelected()) {
+                            editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_PAINT);
+                        }
+                    }
+                });
+                this.toggleButtonSelect.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        if (toggleButtonSelect.isSelected()) {
+                            editorComponent.setEditMode(TiledLayerEditorComponent.EDIT_MODE_SELECT);
+                        }
+                    }
+                });
+                this.resizableModeButton.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        editorComponent.setAutoResizable(resizableModeButton.isSelected());
+                    }
+                });
+                
+                this.toggleButtonPaint.setSelected(true);
+                this.resizableModeButton.setSelected(true);
+                
+                this.buttonAddAnimatedTile.addActionListener(new ActionListener() {
+                        public void actionPerformed(ActionEvent e) {
+                                NewAnimatedTileDialog dialog = new NewAnimatedTileDialog(tiledLayer.getImageResource(), tiledLayer.getTileWidth(), tiledLayer.getTileHeight());
+                                DialogDescriptor dd = new DialogDescriptor(dialog, NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.newAnimatedTileButton.txt"));
+                                dd.setButtonListener(dialog);
+                                dd.setValid(false);
+                                dialog.setDialogDescriptor(dd);
+                                Dialog d = DialogDisplayer.getDefault().createDialog(dd);
+                                d.setVisible(true);
+                        }
+                });
+                this.textFieldName.setBackground(this.textFieldName.getParent().getBackground());
+                this.textFieldRows.setBackground(this.textFieldRows.getParent().getBackground());
+                this.textFieldCols.setBackground(this.textFieldCols.getParent().getBackground());
+                
+                this.editorScroll = new JScrollPane();
+                this.editorScroll.getViewport().setBackground(Color.WHITE);
+                this.editorScroll.setViewportView(this.editorComponent);
+                this.editorScroll.setColumnHeaderView(this.editorComponent.rulerHorizontal);
+                this.editorScroll.setRowHeaderView(this.editorComponent.rulerVertical);
+                this.editorScroll.setCorner(JScrollPane.UPPER_LEFT_CORNER, this.editorComponent.getGridButton());
+                this.jPanel2.add(this.editorScroll, BorderLayout.CENTER);
+                
+                JScrollPane scrollAnimTiles = new JScrollPane(new AnimatedTileList(editorComponent));
+                scrollAnimTiles.setBorder(null);
+                this.panelAnimatedTiles.add(scrollAnimTiles, BorderLayout.CENTER);
         
         this.updateTextLabels();
-	}
-	
-	/** This method is called from within the constructor to
-	 * initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is
-	 * always regenerated by the Form Editor.
-	 */
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+        }
+        
+        /** This method is called from within the constructor to
+         * initialize the form.
+         * WARNING: Do NOT modify this code. The content of this method is
+         * always regenerated by the Form Editor.
+         */
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         buttonGroupMouseMode = new javax.swing.ButtonGroup();
@@ -148,10 +154,11 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         textFieldRows = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
         textFieldCols = new javax.swing.JTextField();
+        resizableModeButton = new javax.swing.JToggleButton();
         jSplitPane1 = new javax.swing.JSplitPane();
-        jPanel2 = new javax.swing.JPanel();
         panelAnimatedTiles = new javax.swing.JPanel();
         buttonAddAnimatedTile = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -165,14 +172,12 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         buttonGroupMouseMode.add(toggleButtonPaint);
         toggleButtonPaint.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/drawing_mode_16.png"))); // NOI18N
         toggleButtonPaint.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.paintModeButton.tooltip")); // NOI18N
-        toggleButtonPaint.setBorder(null);
         toggleButtonPaint.setBorderPainted(false);
         toggleButtonPaint.setRolloverEnabled(true);
 
         buttonGroupMouseMode.add(toggleButtonSelect);
         toggleButtonSelect.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/selection_mode_16.png"))); // NOI18N
         toggleButtonSelect.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.selectModeButton.tooltip")); // NOI18N
-        toggleButtonSelect.setBorder(null);
         toggleButtonSelect.setBorderPainted(false);
         toggleButtonSelect.setRolloverEnabled(true);
 
@@ -190,6 +195,11 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
         textFieldCols.setBorder(null);
 
+        resizableModeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/vmd/game/editor/tiledlayer/res/resizable_mode_16.png"))); // NOI18N
+        resizableModeButton.setToolTipText(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "TiledLayerEditor.resizableModeButton.tooltip")); // NOI18N
+        resizableModeButton.setBorderPainted(false);
+        resizableModeButton.setRolloverEnabled(true);
+
         org.jdesktop.layout.GroupLayout jPanel1Layout = new org.jdesktop.layout.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -199,11 +209,13 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
                 .add(toggleButtonPaint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 26, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(toggleButtonSelect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel1)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 0, Short.MAX_VALUE)
-                .add(36, 36, 36)
+                .add(textFieldName, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 289, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(resizableModeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 23, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(10, 10, 10)
                 .add(jLabel2)
                 .add(6, 6, 6)
                 .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 41, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -218,27 +230,20 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(jLabel2))
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(jLabel3))
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-            .add(jPanel1Layout.createSequentialGroup()
-                .add(5, 5, 5)
-                .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, textFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, jLabel1)))
-            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+            .add(jPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.CENTER)
+                .add(jLabel1)
+                .add(textFieldName, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(toggleButtonPaint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .add(toggleButtonSelect, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .add(toggleButtonPaint, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(jLabel2)
+                .add(textFieldRows, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(jLabel3)
+                .add(textFieldCols, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .add(resizableModeButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
         );
+
+        resizableModeButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "ACSN_resizableModeButton")); // NOI18N
+        resizableModeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(TiledLayerEditor.class, "ACSD_resizableModeButton")); // NOI18N
 
         add(jPanel1, java.awt.BorderLayout.NORTH);
 
@@ -246,12 +251,6 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
         jSplitPane1.setDividerSize(5);
         jSplitPane1.setResizeWeight(1.0);
         jSplitPane1.setContinuousLayout(true);
-
-        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
-        jPanel2.setToolTipText("");
-        jPanel2.setPreferredSize(new java.awt.Dimension(10000, 10000));
-        jPanel2.setLayout(new java.awt.BorderLayout());
-        jSplitPane1.setLeftComponent(jPanel2);
 
         panelAnimatedTiles.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         panelAnimatedTiles.setLayout(new java.awt.BorderLayout());
@@ -263,10 +262,16 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
 
         jSplitPane1.setRightComponent(panelAnimatedTiles);
 
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+        jPanel2.setToolTipText("");
+        jPanel2.setPreferredSize(new java.awt.Dimension(10000, 10000));
+        jPanel2.setLayout(new java.awt.BorderLayout());
+        jSplitPane1.setLeftComponent(jPanel2);
+
         add(jSplitPane1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
-	
-	
+        
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JButton buttonAddAnimatedTile;
     public javax.swing.ButtonGroup buttonGroupMouseMode;
@@ -277,28 +282,29 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
     private javax.swing.JPanel jPanel2;
     public javax.swing.JSplitPane jSplitPane1;
     public javax.swing.JPanel panelAnimatedTiles;
+    public javax.swing.JToggleButton resizableModeButton;
     public javax.swing.JTextField textFieldCols;
     public javax.swing.JTextField textFieldName;
     public javax.swing.JTextField textFieldRows;
     public javax.swing.JToggleButton toggleButtonPaint;
     public javax.swing.JToggleButton toggleButtonSelect;
     // End of variables declaration//GEN-END:variables
-	
-	public void setPaintTile(Tile tile) {
-		this.editorComponent.setPaintTileIndex(tile.getIndex());
-	}
-	
+        
+        public void setPaintTile(Tile tile) {
+                this.editorComponent.setPaintTileIndex(tile.getIndex());
+        }
+        
     public void propertyChange(PropertyChangeEvent evt) {
-		if (evt.getSource() == this.tiledLayer) {
-			if (evt.getPropertyName().equals(Editable.PROPERTY_NAME)) {
-				textFieldName.setText(this.tiledLayer.getName());
-			}
-		}
+                if (evt.getSource() == this.tiledLayer) {
+                        if (evt.getPropertyName().equals(Editable.PROPERTY_NAME)) {
+                                textFieldName.setText(this.tiledLayer.getName());
+                        }
+                }
     }
 
     public void updateTextLabels() {
-		textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
-		textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
+                textFieldRows.setText(Integer.toString(this.tiledLayer.getRowCount()));
+                textFieldCols.setText(Integer.toString(this.tiledLayer.getColumnCount()));
         Color textColor = null;
         if (this.tiledLayer.getRowCount() * this.tiledLayer.getColumnCount() > MAX_COMPILABLE_CELLS) {
             textColor = Color.RED;
@@ -317,24 +323,24 @@ public class TiledLayerEditor extends javax.swing.JPanel implements TiledLayerLi
     public void tilesChanged(TiledLayer t, Set positions) {
     }
 
-	public void tilesStructureChanged(TiledLayer source) {
-		this.updateTextLabels();
-	}
+        public void tilesStructureChanged(TiledLayer source) {
+                this.updateTextLabels();
+        }
 
     public void columnsInserted(TiledLayer t, int index, int count) {
-		this.updateTextLabels();
+                this.updateTextLabels();
     }
 
     public void columnsRemoved(TiledLayer t, int index, int count) {
-		this.updateTextLabels();
+                this.updateTextLabels();
     }
 
     public void rowsInserted(TiledLayer t, int index, int count) {
-		this.updateTextLabels();
+                this.updateTextLabels();
     }
 
     public void rowsRemoved(TiledLayer t, int index, int count) {
-		this.updateTextLabels();
+                this.updateTextLabels();
     }
 
 }

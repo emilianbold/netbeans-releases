@@ -47,10 +47,8 @@ import org.netbeans.modules.j2ee.dd.api.ejb.EjbRelation;
 import org.netbeans.modules.j2ee.dd.api.ejb.Entity;
 import org.netbeans.modules.j2ee.dd.api.ejb.Relationships;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.CmpRelationshipsForm;
-import org.netbeans.modules.j2ee.ejbcore.api.methodcontroller.EntityMethodController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -90,11 +88,8 @@ public class CmpRelationshipsDialogHelper {
         private String origEjbName;
         private String origFieldName;
         private String origFieldType;
-        private EntityHelper origEntityHelper;
         protected boolean origGetter;
         protected boolean origSetter;
-
-        private String opositeEjbName;
 
         private String lastFieldName;
         private String lastFieldType = CLASS_COLLECTION;
@@ -192,8 +187,6 @@ public class CmpRelationshipsDialogHelper {
         private void populateFormFields(RelationshipHelper.RelationshipRoleHelper helper) {
             setRoleName(helper.getRoleName());
             origEjbName = helper.getEjbName();
-            Entity entity = getEntity(origEjbName);
-            origEntityHelper = entity == null ? null : dataObject.getEntityHelper(entity);
             setEjbName(origEjbName);
             setMultiple(helper.isMultiple());
             setCascadeDelete(helper.isCascadeDelete());
@@ -208,8 +201,6 @@ public class CmpRelationshipsDialogHelper {
             } else {
                 origFieldName = field.getCmrFieldName();
                 origFieldType = field.getCmrFieldType();
-                if (origEntityHelper != null) {
-                }
                 setCreateCmrField(true);
                 setFieldName(origFieldName);
                 setFieldType(origFieldType);
@@ -264,7 +255,6 @@ public class CmpRelationshipsDialogHelper {
                 setFieldType(null);
                 fieldTypeComboBox.setEnabled(false);
             }
-            opositeEjbName = opositeRole.getEjbName();
         }
 
         private String validateFieldName() {
@@ -424,17 +414,11 @@ public class CmpRelationshipsDialogHelper {
 
         private final JLabel errorLabel;
         private final DialogDescriptor dialogDescriptor;
-//        protected JMIUtils.ClassPathScanHelper classPathScanHelper;
 
         public DialogListener(JLabel errorLabel, DialogDescriptor dialogDescriptor) {
             this.errorLabel = errorLabel;
             this.dialogDescriptor = dialogDescriptor;
-//                classPathScanHelper = new JMIUtils.ClassPathScanHelper() {
-//                    public void scanFinished() {
-//                        validateFields();
-//                    }
-//                };
-            }
+        }
 
         public void changedUpdate(DocumentEvent e) {
             validateFields();

@@ -149,6 +149,8 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     public static final String PAINT_CURSOR_NAME = "CUSTOM_PAINT_CURSOR"; // NOI18N
     
     private int editMode;
+    // layer size can be extended by mouse dragging in paint mode
+    private boolean autoResizable;
     
     private static Cursor paintCursor;
     private static Cursor selectionCursor;
@@ -196,6 +198,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         this.rulerVertical = new RulerVertical();
         
         this.setEditMode(EDIT_MODE_PAINT);
+        this.setAutoResizable(true);
     
         // vlv: print
         putClientProperty("print.printable", Boolean.TRUE); // NOI18N
@@ -446,6 +449,14 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         return this.editMode == EDIT_MODE_SELECT;
     }
     
+    public void setAutoResizable(boolean isAutoResizable){
+        autoResizable = isAutoResizable;
+    }
+    
+    private boolean isAutoResizable(){
+        return autoResizable;
+    }
+    
     //MouseListener
     public void mouseClicked(MouseEvent e) {
         this.handleMouseClicked(e);
@@ -556,96 +567,40 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
             Position cell = TiledLayerEditorComponent.this.getCellAtPoint(point);
 
             
+            if (!isAutoResizable()){
+                // do not work outside of existing layer
+                int colCount = TiledLayerEditorComponent.this.tiledLayer.getColumnCount();
+                int rowCount = TiledLayerEditorComponent.this.tiledLayer.getRowCount();
+                if (cell.getCol() < 0 || cell.getCol() >= colCount
+                        || cell.getRow() < 0 || cell.getRow() >= rowCount)
+                {
+                    return;
+                }
+            }
+            
             if (TiledLayerEditorComponent.this.isSelectMode()) {
                 if (cell.equals(lastDraggedCell)) {
                     return;
                 }
-                if (DEBUG) System.out.println("Drag from " + lastDraggedCell + " to " + cell); // NOI18N
-                
                 synchronized (TiledLayerEditorComponent.this.cellsSelected) {
-                    if (false) {
-                        TiledLayerEditorComponent.this.cellsSelected.remove(cell);
-                    }
-                    if (false) {
-                        int rowStep = firstDraggedCell.getRow() <= cell.getRow() ? 1 : -1;
-                        if (DEBUG) System.out.println("row step : " + rowStep); // NOI18N
-                        int colStep = firstDraggedCell.getCol() <= cell.getCol() ? 1 : -1;
-                        if (DEBUG) System.out.println("col step : " + colStep); // NOI18N
-                        
-                        //if drag change in colls
-                        if (cell.getCol() != lastDraggedCell.getCol()) {
-                            
-                            int dcOld = Math.abs(lastDraggedCell.getCol() - firstDraggedCell.getCol());
-                            int dcNew = Math.abs(cell.getCol() - firstDraggedCell.getCol());
-                            if (DEBUG) System.out.println("COL dcOld: " + dcOld + ", dcNew: " + dcNew); // NOI18N
-                            
-                            Set<Position> deltaNewSet = new HashSet<Position>();
-                            for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c+=colStep) {
-                                if (DEBUG) System.out.print("c = " + c);
-                                for (int r = firstDraggedCell.getRow(); r != cell.getRow(); r+=rowStep) {                               
-                                    if (DEBUG) System.out.println(" r = " + r);// NOI18N
-                                    Position pos = new Position(r, c);
-                                    if (DEBUG) System.out.println("\tadd to delta " + pos); // NOI18N
-                                    deltaNewSet.add(pos);
-                                }
-                            }
-                            
-                            //if shrinking selection - remove the deltaSet
-                            if (dcOld > dcNew) {
-                                if (DEBUG) System.out.println("remove delta"); // NOI18N
-                                cellsSelected.removeAll(deltaNewSet);
-                            }
-                            //else growing selection - add the deltaSet
-                            else {
-                                if (DEBUG) System.out.println("add delta"); // NOI18N
-                                cellsSelected.addAll(deltaNewSet);
-                            }
-                        }
-                        
-                        //change in rows
-                        if (cell.getRow() != lastDraggedCell.getRow()) {
-                            int dcOld = Math.abs(lastDraggedCell.getRow() - firstDraggedCell.getRow());
-                            int dcNew = Math.abs(cell.getRow() - firstDraggedCell.getRow());
-                            if (DEBUG) System.out.println("ROW dcOld: " + dcOld + ", dcNew: " + dcNew); // NOI18N
-                            
-                            Set<Position> deltaSet = new HashSet<Position>();
-                            for (int r = lastDraggedCell.getRow(); r != cell.getRow(); r-=rowStep) {
-                                for (int c = lastDraggedCell.getCol(); c != cell.getCol(); c-=colStep) {
-                                    Position pos = new Position(r, c);
-                                    if (DEBUG) System.out.println("\tadd to delta " + pos); // NOI18N
-                                    deltaSet.add(pos);
-                                }
-                            }
-                            
-                            //if shrinking selection - remove the deltaSet
-                            if (dcOld > dcNew) {
-                                if (DEBUG) System.out.println("remove delta"); // NOI18N
-                                cellsSelected.removeAll(deltaSet);
-                            }
-                            //else growing selection - add the deltaSet
-                            else {
-                                if (DEBUG) System.out.println("add delta"); // NOI18N
-                                cellsSelected.addAll(deltaSet);
-                            }
-                        }
-                        
-                        TiledLayerEditorComponent.this.lastDraggedCell = cell;
-                    }
-                    else {
-                        TiledLayerEditorComponent.this.cellsSelected.add(cell);
-                    }
+                    TiledLayerEditorComponent.this.cellsSelected.add(cell);
                 }
-            }
-            else if (TiledLayerEditorComponent.this.isPaintMode()) {
+            } else if (TiledLayerEditorComponent.this.isPaintMode()) {
                 int tileIndex = TiledLayerEditorComponent.this.paintTileIndex;
-                //if we are on the same tile and trying to paint the same index then we aren't really changing anything :)
-                if (cell.equals(lastDraggedCell) && (tileIndex == TiledLayerEditorComponent.this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()).getIndex()))
+                int oldTileIndex = TiledLayerEditorComponent.this.tiledLayer.
+                        getTileAt(cell.getRow(), cell.getCol()).getIndex();
+
+                // do nothing if painting the same index on the same tile
+                if (cell.equals(lastDraggedCell) && (tileIndex == oldTileIndex)) {
                     return;
-                if (lastDraggedCell != null)
-                    TiledLayerEditorComponent.this.repaint(TiledLayerEditorComponent.this.getCellArea(lastDraggedCell));
+                }
+                if (lastDraggedCell != null){
+                    TiledLayerEditorComponent.this.repaint(
+                            TiledLayerEditorComponent.this.getCellArea(lastDraggedCell));
+                }
                 TiledLayerEditorComponent.this.cellHiLited = cell;
-                //if (DEBUG) System.out.println("tile index = " + tileIndex);
-                TiledLayerEditorComponent.this.tiledLayer.setTileAt(tileIndex, cell.getRow(), cell.getCol());
+                TiledLayerEditorComponent.this.tiledLayer.
+                        setTileAt(tileIndex, cell.getRow(), cell.getCol());
             }
             
             
@@ -1133,7 +1088,6 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         Position cell = this.getCellAtPoint(point);
         if (cell == null)
             return;
-        //if (DEBUG) System.out.println("dragOver " + cell);
         if (!cell.equals(oldHilited)) {
             this.cellHiLited = cell;
             if (oldHilited != null) {

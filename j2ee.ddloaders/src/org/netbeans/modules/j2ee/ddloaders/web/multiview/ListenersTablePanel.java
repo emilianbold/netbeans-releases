@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
@@ -130,7 +132,9 @@ public class ListenersTablePanel extends DefaultTablePanel {
                             String className = DDUtils.getResourcePath(groups,fo);
                             dialogPanel.getTextComponents()[0].setText(className);
                         }
-                    } catch (java.io.IOException ex) {}
+                    } catch (java.io.IOException ex) {
+                        Logger.getLogger("ListenersTablePanel").log(Level.FINE, "ignored exception", ex); //NOI18N
+                    }
                 }
             });
             EditDialog dialog = new EditDialog(dialogPanel,NbBundle.getMessage(ListenersTablePanel.class,"TTL_Listener"),add) {
