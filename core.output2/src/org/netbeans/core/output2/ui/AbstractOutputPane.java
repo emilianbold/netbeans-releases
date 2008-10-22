@@ -353,6 +353,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             rect = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement(lineIdx).getStartOffset());
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
+        }
+
+        if (rect == null) {
             return false;
         }
 
