@@ -245,19 +245,27 @@ public class NativeExecutor implements Runnable {
             executionFinished(-1);
             out.close();
             throw td;
+        } catch (IOException ex) {
+            // command not found, normal exit
+            StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
+            rc = -1;
+        } catch (InterruptedException ex) {
+            // interrupted, normal exit
+            StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
+            rc = -1;
         } catch (Throwable t) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
             ErrorManager.getDefault().notify(t);
             rc = -1;
         } finally {
-	    if (showInput) {
-		io.setInputVisible(false);
-		try {
-		    io.getIn().close();
-		} catch (IOException ex) {
-		    ex.printStackTrace();
-		}
-	    }
+            if (showInput) {
+                io.setInputVisible(false);
+                try {
+                    io.getIn().close();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
         }
         if (rcfile != null) {
             File file = null;
