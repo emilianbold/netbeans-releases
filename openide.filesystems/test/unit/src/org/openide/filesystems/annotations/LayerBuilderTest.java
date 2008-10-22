@@ -112,4 +112,9 @@ public class LayerBuilderTest extends NbTestCase {
                 "</filesystem>", dump());
     }
 
+    public void testSerialValue() throws Exception {
+        b.file("x").serialvalue("a", new byte[] {0, 10, 100, (byte) 200}).write();
+        assertEquals("<filesystem><file name='x'><attr name='a' serialvalue='000A64C8'/></file></filesystem>", dump());
+    }
+
 }

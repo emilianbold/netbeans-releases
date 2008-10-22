@@ -39,17 +39,27 @@
 
 package org.openide.filesystems.annotations;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
+import javax.tools.StandardLocation;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -395,7 +405,73 @@ public final class LayerBuilder {
             return this;
         }
 
-        // XXX do we want/need serialvalue? passed as String, or byte[], or Object?
+        /**
+         * Adds an attribute for a possibly localized string.
+         * @param attr the attribute name
+         * @param label either a general string to store as is, or a resource bundle reference
+         *              such as {@code "my.module.Bundle#some_key"},
+         *              or just {@code "#some_key"} to load from a {@code "Bundle"} in the same package
+         * @param referenceElement if not null, a source element to determine the package
+         * @param filer if not null, a way to look up the source bundle to verify that it exists and has the specified key
+         * @return this builder
+         * @throws IllegalArgumentException if a bundle key is requested but it cannot be found in sources
+         *                                  (detail message can be reported as a {@link Kind#ERROR})
+         */
+        public File bundlevalue(String attr, String label, javax.lang.model.element.Element referenceElement, Filer filer) throws IllegalArgumentException {
+            String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)";
+            Matcher m = Pattern.compile("((?:" + javaIdentifier + "\\.)+[^\\s.#]+)?#(\\S+)").matcher(label);
+            if (m.matches()) {
+                String bundle = m.group(1);
+                String key = m.group(2);
+                if (bundle == null) {
+                    while (referenceElement != null && referenceElement.getKind() != ElementKind.PACKAGE) {
+                        referenceElement = referenceElement.getEnclosingElement();
+                    }
+                    if (referenceElement == null) {
+                        throw new IllegalArgumentException("No reference element to determine package in '" + label + "'");
+                    }
+                    bundle = ((PackageElement) referenceElement).getQualifiedName() + ".Bundle";
+                }
+                if (filer != null) {
+                    try {
+                        InputStream is = filer.getResource(StandardLocation.SOURCE_PATH, "", bundle.replace('.', '/') + ".properties").openInputStream();
+                        try {
+                            Properties p = new Properties();
+                            p.load(is);
+                            if (p.getProperty(key) == null) {
+                                throw new IllegalArgumentException("No key '" + key + "' found in " + bundle);
+                            }
+                        } finally {
+                            is.close();
+                        }
+                    } catch (IOException x) {
+                        throw new IllegalArgumentException("Could not open " + bundle + ": " + x);
+                    }
+                }
+                bundlevalue(attr, bundle, key);
+            } else {
+                stringvalue(attr, label);
+            }
+            return this;
+        }
+
+        /**
+         * Adds an attribute which deserializes a Java value.
+         * @param attr the attribute name
+         * @param data the serial data as created by {@link ObjectOutputStream}
+         * @return this builder
+         */
+        public File serialvalue(String attr, byte[] data) {
+            StringBuilder buf = new StringBuilder(data.length * 2);
+            for (byte b : data) {
+                if (b >= 0 && b < 16) {
+                    buf.append('0');
+                }
+                buf.append(Integer.toHexString(b < 0 ? b + 256 : b));
+            }
+            attrs.put(attr, new String[] {"serialvalue", buf.toString().toUpperCase(Locale.ENGLISH)});
+            return this;
+        }
 
         /**
          * Sets a position attribute.
