@@ -2422,16 +2422,34 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         return true;
     }
 
+    // FIXME configure acess levels
     private Map<MethodSignature, ? extends CompletionItem> completeMethods(CompletionRequest request,
             ClassNode node, ClassType type) {
+
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
+        ClassNode typeNode = node;
 
-        result.putAll(GroovyElementHandler.forCompilationInfo(request.info)
-                .getMethods(node.getName(), request.prefix, anchor));
+        // FIXME optimize this search if we are inside definition (this)
+        GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
-        String[] typeParameters = new String[node.isUsingGenerics() ? node.getGenericsTypes().length : 0];
+        if (index == null) {
+            return Collections.emptyMap();
+        }
+        Set<IndexedClass> classes = index.getClasses(typeNode.getName(), NameKind.EXACT_NAME, true, false, false);
+
+        if (!classes.isEmpty()) {
+            ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
+            if (astNode instanceof ClassNode) {
+                typeNode = (ClassNode) astNode;
+            }
+
+            result.putAll(GroovyElementHandler.forCompilationInfo(request.info)
+                    .getMethods(typeNode.getName(), request.prefix, anchor));
+        }
+
+        String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
         for (int i = 0; i < typeParameters.length; i++) {
-            GenericsType genType = node.getGenericsTypes()[i];
+            GenericsType genType = typeNode.getGenericsTypes()[i];
             if (genType.getUpperBounds() != null) {
                 typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
             } else {
@@ -2440,24 +2458,24 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         }
 
         for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
-                .getMethods(node.getName(), request.prefix, anchor, typeParameters, type).entrySet()) {
+                .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type).entrySet()) {
             if (!result.containsKey(entry.getKey())) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
 
-        if (type == ClassType.CLASS) {
+        //if (type == ClassType.CLASS) {
             for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : MetaElementHandler.forCompilationInfo(request.info)
-                    .getMethods(node.getName(), request.prefix, anchor).entrySet()) {
+                    .getMethods(typeNode.getName(), request.prefix, anchor).entrySet()) {
                 if (!result.containsKey(entry.getKey())) {
                     result.put(entry.getKey(), entry.getValue());
                 }
             }
-        }
+        //}
 
-        if (node.getSuperClass() != null) {
+        if (typeNode.getSuperClass() != null) {
             for (Map.Entry<MethodSignature, ? extends CompletionItem> entry
-                    : completeMethods(request, node.getSuperClass(), ClassType.SUPERCLASS).entrySet()) {
+                    : completeMethods(request, typeNode.getSuperClass(), ClassType.SUPERCLASS).entrySet()) {
                 if (!result.containsKey(entry.getKey())) {
                     result.put(entry.getKey(), entry.getValue());
                 }
@@ -2471,7 +2489,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        for (ClassNode inter : node.getInterfaces()) {
+        for (ClassNode inter : typeNode.getInterfaces()) {
             for (Map.Entry<MethodSignature, ? extends CompletionItem> entry
                     : completeMethods(request, inter, ClassType.SUPERINTERFACE).entrySet()) {
                 if (!result.containsKey(entry.getKey())) {

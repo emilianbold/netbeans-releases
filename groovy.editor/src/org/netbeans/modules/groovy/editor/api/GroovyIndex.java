@@ -117,19 +117,17 @@ public final class GroovyIndex {
 
         switch (kind) {
         case EXACT_NAME:
+            field = GroovyIndexer.FQN_NAME;
+            break;
         case PREFIX:
         case CAMEL_CASE:
         case REGEXP:
             field = GroovyIndexer.CLASS_NAME;
-
             break;
-
         case CASE_INSENSITIVE_PREFIX:
         case CASE_INSENSITIVE_REGEXP:
             field = GroovyIndexer.CASE_INSENSITIVE_CLASS_NAME;
-
             break;
-
         default:
             throw new UnsupportedOperationException(kind.toString());
         }
