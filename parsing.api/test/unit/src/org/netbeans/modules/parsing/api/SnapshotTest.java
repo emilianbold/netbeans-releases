@@ -88,8 +88,9 @@ public class SnapshotTest extends NbTestCase {
         Snapshot originalSnapshot = source.createSnapshot ();
         assertEquals (0, originalSnapshot.getOriginalOffset (0));
         assertEquals (10, originalSnapshot.getOriginalOffset (10));
+        assertEquals(originalSnapshot.getText ().length (),originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()));
         try {
-            originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ());
+            originalSnapshot.getOriginalOffset (originalSnapshot.getText ().length ()+1);
             assert (false);
         } catch (ArrayIndexOutOfBoundsException ex) {
         }
@@ -117,8 +118,9 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (-1, languageJednaSnapshot.getOriginalOffset (12));
         assertEquals (30, languageJednaSnapshot.getOriginalOffset (20));
         assertEquals (33, languageJednaSnapshot.getOriginalOffset (23));
+        assertEquals (40, languageJednaSnapshot.getOriginalOffset (30));
         try {
-            languageJednaSnapshot.getOriginalOffset (30);
+            languageJednaSnapshot.getOriginalOffset (31);
             assert (false);
         } catch (ArrayIndexOutOfBoundsException ex) {
         }
@@ -146,8 +148,9 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (-1, petaSnapshot.getOriginalOffset (10));
         assertEquals (30, petaSnapshot.getOriginalOffset (15));
         assertEquals (34, petaSnapshot.getOriginalOffset (19));
+        assertEquals (35, petaSnapshot.getOriginalOffset (20));
         try {
-            petaSnapshot.getOriginalOffset (20);
+            petaSnapshot.getOriginalOffset (21);
             assert (false);
         } catch (ArrayIndexOutOfBoundsException ex) {
         }
