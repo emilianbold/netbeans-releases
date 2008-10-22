@@ -76,7 +76,7 @@ public class CustomJavac extends Javac {
             super.compile();
             return;
         }
-        if (processorPath != null) {
+        if (processorPath != null && processorPath.size() > 0) {
             createCompilerArg().setValue("-processorpath");
             createCompilerArg().setPath(processorPath);
         }
