@@ -44,12 +44,12 @@ package org.netbeans.modules.openide.filesystems;
 import java.net.URL;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-import org.openide.util.lookup.Service;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Default URLMapper for public lookup.
  */
-@Service(URLMapper.class)
+@ServiceProvider(service=URLMapper.class)
 public final class DefaultURLMapperProxy extends URLMapper {
 
     private static URLMapper DEFAULT;

@@ -75,6 +75,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Convenience base class for an annotation processor which creates XML layer entries.
  * @see XMLFileSystem
+ * @since XXX #150447
  */
 public abstract class LayerGeneratingProcessor extends AbstractProcessor {
 
@@ -108,7 +109,7 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
     @Override
     public final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         boolean ret = doProcess(annotations, roundEnv);
-        if (roundEnv.processingOver()) {
+        if (roundEnv.processingOver() && !roundEnv.errorRaised()) {
             Document doc = generatedLayerByProcessor.remove(processingEnv);
             if (doc != null) {
                 Element[] originatingElementsA = new Element[0];

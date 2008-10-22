@@ -43,60 +43,18 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
- * Declarative registration of a singleton service.
- * By marking an implementation class with this annotation,
- * you automatically register that implementation, normally in {@link Lookup#getDefault}.
- * The class must be public and have a public no-argument constructor.
- * <p>Example of usage:
- * <pre>
- * package my.module;
- * import org.netbeans.spi.whatever.Thing;
- * &#64;Service(Thing.class)
- * public class MyThing implements Thing {...}
- * </pre>
- * <p>would result in a resource file <code>META-INF/services/org.netbeans.spi.whatever.Thing</code>
- * containing the single line of text: <code>my.module.MyThing</code>
- * @see Lookups#metaInfServices(ClassLoader)
+ * Similar to {@link ServiceProvider} but permits multiple registrations of one class.
  * @since XXX #150447
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
-public @interface Service {
+public @interface ServiceProviders {
 
     /**
-     * The interface to register this implementation under.
-     * You must supply at least one interface (or abstract class); rarely you might want more than one.
-     * It is an error if the implementation class is not in fact assignable to the interface.
-     * <p>Requests to look up the specified interface should result in this implementation.
-     * Requests for any other types may or may not result in this implementation even if the
-     * implementation is assignable to those types.
+     * List of service provider registrations.
      */
-    Class[] value();
-
-    /**
-     * An optional position in which to register this service relative to others.
-     * Lower-numbered services are returned in the lookup result first.
-     * Services with no specified position are returned last.
-     */
-    int position() default Integer.MAX_VALUE;
-
-    /**
-     * An optional list of implementations (given as fully-qualified class names) which this implementation supersedes.
-     * If specified, those implementations will not be loaded even if they were registered.
-     * Useful on occasion to cancel a generic implementation and replace it with a more advanced one.
-     */
-    String[] supersedes() default {};
-
-    /**
-     * An optional path to register this implementation in.
-     * For example, <code>Projects/sometype/Nodes</code> could be used.
-     * This style of registration would be recognized by {@link Lookups#forPath}
-     * rather than {@link Lookup#getDefault}.
-     */
-    String path() default "";
+    ServiceProvider[] value();
 
 }

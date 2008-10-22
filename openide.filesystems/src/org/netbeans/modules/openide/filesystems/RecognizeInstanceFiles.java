@@ -58,13 +58,13 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.openide.util.lookup.Service;
+import org.openide.util.lookup.ServiceProvider;
 
 /** Interface for core/startup to provide lookup overt system filesystem.
  *
  * @author Jaroslav Tulach
  */
-@Service(value=NamedServicesProvider.class, position=500)
+@ServiceProvider(service=NamedServicesProvider.class, position=500)
 public final class RecognizeInstanceFiles extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceFiles.class.getName());
     

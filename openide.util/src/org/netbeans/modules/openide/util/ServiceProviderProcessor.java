@@ -57,91 +57,69 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.type.MirroredTypeException;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.FileObject;
 import javax.tools.StandardLocation;
-import org.openide.util.lookup.Service;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 @SupportedSourceVersion(SourceVersion.RELEASE_6)
-@SupportedAnnotationTypes("org.openide.util.lookup.Service")
-public class ServiceProcessor extends AbstractProcessor {
+@SupportedAnnotationTypes({"org.openide.util.lookup.ServiceProvider", "org.openide.util.lookup.ServiceProviders"})
+public class ServiceProviderProcessor extends AbstractProcessor {
 
     /** public for ServiceLoader */
-    public ServiceProcessor() {}
+    public ServiceProviderProcessor() {}
+
+    private final Map<String, List<String>> outputFiles = new HashMap<String,List<String>>();
+    private final Map<String, List<Element>> originatingElements = new HashMap<String,List<Element>>();
 
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        if (roundEnv.processingOver()) {
+        if (roundEnv.errorRaised()) {
             return false;
         }
-        Map<String,List<String>> outputFiles = new HashMap<String,List<String>>();
-        Map<String,List<Element>> originatingElements = new HashMap<String,List<Element>>();
-        for (Element el : roundEnv.getElementsAnnotatedWith(Service.class)) {
-            TypeElement clazz = (TypeElement) el;
-            if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public");
-                continue;
-            }
-            if (clazz.getModifiers().contains(Modifier.ABSTRACT)) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract");
-                continue;
-            }
-            {
-                boolean hasDefaultCtor = false;
-                for (ExecutableElement constructor : ElementFilter.constructorsIn(clazz.getEnclosedElements())) {
-                    if (constructor.getModifiers().contains(Modifier.PUBLIC) && constructor.getParameters().isEmpty()) {
-                        hasDefaultCtor = true;
-                        break;
-                    }
-                }
-                if (!hasDefaultCtor) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must have a public no-argument constructor");
+        if (roundEnv.processingOver()) {
+            writeServices();
+            return false;
+        } else {
+            for (Element el : roundEnv.getElementsAnnotatedWith(ServiceProvider.class)) {
+                TypeElement clazz = (TypeElement) el;
+                if (!verifyServiceProviderSignature(clazz)) {
                     continue;
                 }
+                ServiceProvider sp = clazz.getAnnotation(ServiceProvider.class);
+                register(clazz, sp);
             }
-            for (AnnotationMirror ann : clazz.getAnnotationMirrors()) {
-                if (ann.getAnnotationType().asElement().equals(processingEnv.getElementUtils().getTypeElement(Service.class.getName()))) {
-                    for (Map.Entry<? extends ExecutableElement,? extends AnnotationValue> entry : ann.getElementValues().entrySet()) {
-                        if (entry.getKey().getSimpleName().contentEquals("value")) {
-                            for (Object val : (List) entry.getValue().getValue()) {
-                                register(clazz, (TypeMirror) ((AnnotationValue) val).getValue(), outputFiles, originatingElements);
-                            }
-                        }
-                    }
+            for (Element el : roundEnv.getElementsAnnotatedWith(ServiceProviders.class)) {
+                TypeElement clazz = (TypeElement) el;
+                if (!verifyServiceProviderSignature(clazz)) {
+                    continue;
+                }
+                ServiceProviders spp = clazz.getAnnotation(ServiceProviders.class);
+                for (ServiceProvider sp : spp.value()) {
+                    register(clazz, sp);
                 }
             }
+            return true;
         }
-        for (Map.Entry<String,List<String>> entry : outputFiles.entrySet()) {
-            try {
-                FileObject out = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", entry.getKey(),
-                        originatingElements.get(entry.getKey()).toArray(new Element[0]));
-                OutputStream os = out.openOutputStream();
-                try {
-                    PrintWriter w = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
-                    for (String line : entry.getValue()) {
-                        w.println(line);
-                    }
-                    w.flush();
-                    w.close();
-                } finally {
-                    os.close();
-                }
-            } catch (IOException x) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to write to " + entry.getKey() + ": " + x.toString());
-            }
-        }
-        return true;
     }
 
-    private void register(TypeElement clazz, TypeMirror type, Map<String,List<String>> outputFiles, Map<String,List<Element>> originatingElements) {
+    private void register(TypeElement clazz, ServiceProvider svc) {
+        TypeMirror type;
+        try {
+            svc.service();
+            assert false;
+            return;
+        } catch (MirroredTypeException e) {
+            type = e.getTypeMirror();
+        }
         String impl = processingEnv.getElementUtils().getBinaryName(clazz).toString();
         String xface = processingEnv.getElementUtils().getBinaryName((TypeElement) processingEnv.getTypeUtils().asElement(type)).toString();
         if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), type)) {
@@ -149,7 +127,6 @@ public class ServiceProcessor extends AbstractProcessor {
             return;
         }
         processingEnv.getMessager().printMessage(Kind.NOTE, impl + " to be registered as a " + xface);
-        Service svc = clazz.getAnnotation(Service.class);
         String rsrc = (svc.path().length() > 0 ? "META-INF/namedservices/" + svc.path() + "/" : "META-INF/services/") + xface;
         {
             List<Element> origEls = originatingElements.get(rsrc);
@@ -166,7 +143,8 @@ public class ServiceProcessor extends AbstractProcessor {
                 try {
                     FileObject in = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", rsrc);
                     in.openInputStream().close();
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Cannot generate " + rsrc + " because it already exists in sources: " + in.toUri());
+                    processingEnv.getMessager().printMessage(Kind.ERROR,
+                            "Cannot generate " + rsrc + " because it already exists in sources: " + in.toUri());
                     return;
                 } catch (FileNotFoundException x) {
                     // Good.
@@ -205,6 +183,53 @@ public class ServiceProcessor extends AbstractProcessor {
         }
         for (String exclude : svc.supersedes()) {
             lines.add("#-" + exclude);
+        }
+    }
+
+    private boolean verifyServiceProviderSignature(TypeElement clazz) {
+        if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public");
+            return false;
+        }
+        if (clazz.getModifiers().contains(Modifier.ABSTRACT)) {
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract");
+            return false;
+        }
+        {
+            boolean hasDefaultCtor = false;
+            for (ExecutableElement constructor : ElementFilter.constructorsIn(clazz.getEnclosedElements())) {
+                if (constructor.getModifiers().contains(Modifier.PUBLIC) && constructor.getParameters().isEmpty()) {
+                    hasDefaultCtor = true;
+                    break;
+                }
+            }
+            if (!hasDefaultCtor) {
+                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must have a public no-argument constructor");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void writeServices() {
+        for (Map.Entry<String, List<String>> entry : outputFiles.entrySet()) {
+            try {
+                FileObject out = processingEnv.getFiler().createResource(StandardLocation.CLASS_OUTPUT, "", entry.getKey(),
+                        originatingElements.get(entry.getKey()).toArray(new Element[0]));
+                OutputStream os = out.openOutputStream();
+                try {
+                    PrintWriter w = new PrintWriter(new OutputStreamWriter(os, "UTF-8"));
+                    for (String line : entry.getValue()) {
+                        w.println(line);
+                    }
+                    w.flush();
+                    w.close();
+                } finally {
+                    os.close();
+                }
+            } catch (IOException x) {
+                processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to write to " + entry.getKey() + ": " + x.toString());
+            }
         }
     }
 
