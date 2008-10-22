@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+import java.util.logging.Level;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.DocumentFactory;
@@ -106,6 +107,7 @@ import org.netbeans.modules.uml.core.preferenceframework.IPreferenceAccessor;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguage;
 import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframework.ILanguageManager;
+import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
@@ -121,6 +123,8 @@ import org.netbeans.modules.uml.core.typemanagement.ITypeManager;
 import org.netbeans.modules.uml.core.typemanagement.TypeManager;
 import org.netbeans.modules.uml.core.workspacemanagement.IWSProject;
 import org.netbeans.modules.uml.core.workspacemanagement.IWorkspace;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class Project extends Model implements IProject, IElementModifiedEventsSink, IDocumentationModifiedEventsSink, IElementLifeTimeEventsSink, ICoreProductInitEventsSink
 {
@@ -1669,6 +1673,7 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 			{
                                 if (m_IsDirty)
                                 {
+                                    backupCopy();
                                     internalSave(fileName);
                                     // Now save the TypeManager
                                     if (m_TypeManager != null)
@@ -1742,6 +1747,42 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
                 }
 	}
         
+        protected void backupCopy()
+        {
+            try {
+                String fileName = getCurFile();   //<project folder>\*.etd file
+                if ((fileName != null) && (fileName.length() > 0))
+                {
+                    File modelFile = new File(fileName);
+                    FileObject modelFO = FileUtil.toFileObject(modelFile);
+                    if (modelFO != null) 
+                    {
+                        FileObject parentFolderFO = modelFO.getParent(); 
+                        String fileNameWithoutExt = modelFO.getName(); 
+                        FileObject destFolderFO = FileUtil.createFolder(parentFolderFO, "DiagramBackup"); //NOI18N
+
+                        String[] exts = new String[]{modelFO.getExt(), "ettm", "etup"}; //NOI18N
+                        for(String ext : exts) 
+                        {
+                            FileObject srcFO = parentFolderFO.getFileObject(fileNameWithoutExt, ext); 
+                            if (srcFO != null) 
+                            {
+                                FileObject destFO = destFolderFO.getFileObject(fileNameWithoutExt, ext);
+                                if (destFO != null) 
+                                {
+                                    destFO.delete();
+                                }                                
+                                FileUtil.copyFile(srcFO, destFolderFO, fileNameWithoutExt);
+                            }
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                UMLLogger.logException(ex, Level.WARNING);
+            }
+        }
+
+    
 	public void close()
 	{
 		ICoreProduct prod = ProductRetriever.retrieveProduct();

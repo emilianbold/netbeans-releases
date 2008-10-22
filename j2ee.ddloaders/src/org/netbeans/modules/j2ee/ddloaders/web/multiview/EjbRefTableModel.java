@@ -68,6 +68,7 @@ public class EjbRefTableModel extends DDBeanTableModel
             return columnNames;
         }
 
+    @Override
 	public void setValueAt(Object value, int row, int column)
 	{
 		CommonDDBean ref = getEjbRef(row);
@@ -119,11 +120,9 @@ public class EjbRefTableModel extends DDBeanTableModel
                         return desc==null?null:desc.trim();
                     }
                 }
-
 	}
         
-	public CommonDDBean addRow(Object[] values)
-	{
+	public CommonDDBean addRow(Object[] values) {
             try {
                 CommonDDBean param=null;
                 WebApp webApp = (WebApp)getParent();
@@ -164,74 +163,33 @@ public class EjbRefTableModel extends DDBeanTableModel
 
 	public void editRow(int row, Object[] values)
 	{
-            //try {
-                CommonDDBean ref = getEjbRef(row);
-                WebApp webApp = (WebApp)getParent();
-                String interfaceType = (String)values[2];
-                if (ref instanceof EjbRef) {
-                    EjbRef param = (EjbRef)ref;
-                    //if ("Remote".equals(interfaceType)) { //NOI18N
-                        param.setEjbRefName((String)values[0]);
-                        param.setEjbRefType((String)values[1]);
-                        param.setHome((String)values[3]);
-                        param.setRemote((String)values[4]);
-                        String ejbLink = (String)values[5];
-                        param.setEjbLink(ejbLink.length()>0?ejbLink:null);
-                        String desc = (String)values[6];
-                        param.setDescription(desc.length()>0?desc:null);
-                        fireTableRowsUpdated(row,row);
-                    /*} else {
-                        webApp.removeEjbRef(param);
-                        getChildren().remove(row);
-                        //fireTableRowsDeleted(row, row);
-                        EjbLocalRef localRef = (EjbLocalRef)webApp.createBean("EjbLocalRef"); //NOI18N
-                        localRef.setEjbRefName((String)values[0]);
-                        localRef.setEjbRefType((String)values[1]);
-                        localRef.setLocalHome((String)values[3]);
-                        localRef.setLocal((String)values[4]);
-                        localRef.setEjbLink((String)values[5]);
-                        String desc = (String)values[6];
-                        localRef.setDescription(desc.length()>0?desc:null);
-                        webApp.addEjbLocalRef(localRef);
-                        getChildren().add(row,param);
-                        //fireTableRowsInserted(row, row);
-                        fireTableRowsUpdated(row,row);
-                    }*/
-                } else {
-                    EjbLocalRef param = (EjbLocalRef)ref;
-                    //if ("Local".equals(interfaceType)) { //NOI18N
-                        param.setEjbRefName((String)values[0]);
-                        param.setEjbRefType((String)values[1]);
-                        param.setLocalHome((String)values[3]);
-                        param.setLocal((String)values[4]);
-                        String ejbLink = (String)values[5];
-                        param.setEjbLink(ejbLink.length()>0?ejbLink:null);
-                        String desc = (String)values[6];
-                        param.setDescription(desc.length()>0?desc:null);
-                        fireTableRowsUpdated(row,row);
-                    /*} else {
-                        webApp.removeEjbLocalRef(param);
-                        getChildren().remove(row);
-                        //fireTableRowsDeleted(row, row);
-                        EjbRef remoteRef = (EjbRef)webApp.createBean("EjbRef"); //NOI18N
-                        remoteRef.setEjbRefName((String)values[0]);
-                        remoteRef.setEjbRefType((String)values[1]);
-                        remoteRef.setHome((String)values[3]);
-                        remoteRef.setRemote((String)values[4]);
-                        remoteRef.setEjbLink((String)values[5]);
-                        String desc = (String)values[6];
-                        remoteRef.setDescription(desc.length()>0?desc:null);
-                        webApp.addEjbRef(remoteRef);
-                        getChildren().add(row,param);
-                        //fireTableRowsInserted(getRowCount() - 1, getRowCount() - 1);
-                        fireTableRowsUpdated(row,row);
-                    }*/
-                }    
-            //} catch (ClassNotFoundException ex) {}
+            CommonDDBean ref = getEjbRef(row);
+            if (ref instanceof EjbRef) {
+                EjbRef param = (EjbRef)ref;
+                param.setEjbRefName((String)values[0]);
+                param.setEjbRefType((String)values[1]);
+                param.setHome((String)values[3]);
+                param.setRemote((String)values[4]);
+                String ejbLink = (String)values[5];
+                param.setEjbLink(ejbLink.length()>0?ejbLink:null);
+                String desc = (String)values[6];
+                param.setDescription(desc.length()>0?desc:null);
+                fireTableRowsUpdated(row,row);
+            } else {
+                EjbLocalRef param = (EjbLocalRef)ref;
+                param.setEjbRefName((String)values[0]);
+                param.setEjbRefType((String)values[1]);
+                param.setLocalHome((String)values[3]);
+                param.setLocal((String)values[4]);
+                String ejbLink = (String)values[5];
+                param.setEjbLink(ejbLink.length()>0?ejbLink:null);
+                String desc = (String)values[6];
+                param.setDescription(desc.length()>0?desc:null);
+                fireTableRowsUpdated(row,row);
+            }    
 	}
         
-	public void removeRow(int row)
-	{
+	public void removeRow(int row) {
             WebApp webApp = (WebApp)getParent();
             CommonDDBean ref = getEjbRef(row);
             if (ref instanceof EjbRef) {
