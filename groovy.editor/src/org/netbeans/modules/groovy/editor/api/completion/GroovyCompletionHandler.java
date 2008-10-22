@@ -59,7 +59,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CountDownLatch;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -78,7 +77,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
@@ -103,7 +101,6 @@ import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Token;
@@ -2154,10 +2151,21 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
         }
 
+        // type inferred
         if (declClass != null) {
-            // type inferred
             request.declaringClass = declClass;
-        } else if (dotCompletionContext.getAstPath().leaf() instanceof Expression) {
+            return request.declaringClass;
+        }
+
+        if (dotCompletionContext.getAstPath().leaf() instanceof VariableExpression) {
+            VariableExpression variable = (VariableExpression) dotCompletionContext.getAstPath().leaf();
+            if ("this".equals(variable.getName())) { // NOI18N
+                request.declaringClass = getSurroundingClassNode(request);
+                return request.declaringClass;
+            }
+        }
+
+        if (dotCompletionContext.getAstPath().leaf() instanceof Expression) {
             Expression expression = (Expression) dotCompletionContext.getAstPath().leaf();
 
             // see http://jira.codehaus.org/browse/GROOVY-3050
@@ -2437,30 +2445,35 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         }
         Set<IndexedClass> classes = index.getClasses(typeNode.getName(), NameKind.EXACT_NAME, true, false, false);
 
+        boolean groovyClass = false;
         if (!classes.isEmpty()) {
             ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
             if (astNode instanceof ClassNode) {
                 typeNode = (ClassNode) astNode;
+                groovyClass = true;
             }
 
             result.putAll(GroovyElementHandler.forCompilationInfo(request.info)
                     .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS));
         }
 
-        String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
-        for (int i = 0; i < typeParameters.length; i++) {
-            GenericsType genType = typeNode.getGenericsTypes()[i];
-            if (genType.getUpperBounds() != null) {
-                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
-            } else {
-                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getName());
+        // optimized - if it is groovy class don't ask java index
+        if (!groovyClass) {
+            String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
+            for (int i = 0; i < typeParameters.length; i++) {
+                GenericsType genType = typeNode.getGenericsTypes()[i];
+                if (genType.getUpperBounds() != null) {
+                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
+                } else {
+                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getName());
+                }
             }
-        }
 
-        for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
-                .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS).entrySet()) {
-            if (!result.containsKey(entry.getKey())) {
-                result.put(entry.getKey(), entry.getValue());
+            for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
+                    .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS).entrySet()) {
+                if (!result.containsKey(entry.getKey())) {
+                    result.put(entry.getKey(), entry.getValue());
+                }
             }
         }
 
