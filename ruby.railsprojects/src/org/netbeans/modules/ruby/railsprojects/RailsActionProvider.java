@@ -64,7 +64,7 @@ import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.rubyproject.TestNotifier;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
@@ -428,7 +428,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             RailsFileLocator fileLocator = new RailsFileLocator(context, project);
             String displayName = NbBundle.getMessage(RailsActionProvider.class, "RakeDoc");
  
-            new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, platform.getRake()).
+            new RubyExecution(new RubyExecutionDescriptor(getPlatform(), displayName, pwd, platform.getRake()).
                     additionalArgs("appdoc"). // NOI18N
                     postBuild(showBrowser).
                     fileLocator(fileLocator).
@@ -515,7 +515,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
             additionalArgs.add(railsEnv);
         } 
         
-        new RubyExecution(new ExecutionDescriptor(getPlatform(), displayName, pwd, script).
+        new RubyExecution(new RubyExecutionDescriptor(getPlatform(), displayName, pwd, script).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
@@ -540,7 +540,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         }
     }
     
-    public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
+    public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
         String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
@@ -586,7 +586,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         String classPath = project.evaluator().getProperty(RailsProjectProperties.JAVAC_CLASSPATH);
         String jvmArgs = project.evaluator().getProperty(RailsProjectProperties.JVM_ARGS);
         
-        ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();

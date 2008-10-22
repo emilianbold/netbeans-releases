@@ -50,7 +50,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
 import org.netbeans.spi.project.ActionProvider;
@@ -147,7 +147,7 @@ public abstract class RubyBaseActionProvider implements ActionProvider, ScriptDe
         if (!getPlatform().showWarningIfInvalid()) {
             return;
         }
-        ExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
+        RubyExecutionDescriptor desc = getScriptDescriptor(null, fileObject, target, displayName, context, debug, extraRecognizers);
         RubyExecution service = new RubyExecution(desc, getSourceEncoding());
         service.run();
     }

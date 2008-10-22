@@ -52,13 +52,13 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
 
 /**
- * An ExecutionDescriptor describes a program to be executed, the arguments
+ * A RubyExecutionDescriptor describes a program to be executed, the arguments
  * and environment to be used, as well as preferences such as whether the
  * running process should be in the background (no progress bar), and so on.
  *
  * @author Tor Norbye
  */
-public class ExecutionDescriptor {
+public class RubyExecutionDescriptor {
     
     File pwd;
     File cmd;
@@ -100,15 +100,15 @@ public class ExecutionDescriptor {
     private int readMaxWaitTime = 50;
 
 
-    public ExecutionDescriptor(final RubyPlatform platform) {
+    public RubyExecutionDescriptor(final RubyPlatform platform) {
         this(platform, null, null);
     }
 
-    public ExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd) {
+    public RubyExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd) {
         this(platform, displayName, pwd, null);
     }
     
-    public ExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd, final String script) {
+    public RubyExecutionDescriptor(final RubyPlatform platform, final String displayName, final File pwd, final String script) {
         this.platform = platform;
         this.displayName = displayName;
         this.pwd = pwd;
@@ -131,18 +131,18 @@ public class ExecutionDescriptor {
         }
     }
     
-    public ExecutionDescriptor cmd(final File cmd) {
+    public RubyExecutionDescriptor cmd(final File cmd) {
         this.cmd = cmd;
         assert (cmd != null) && cmd.isFile() : cmd + " must be a file";
         return this;
     }
 
-    public ExecutionDescriptor postBuild(Runnable postBuildAction) {
+    public RubyExecutionDescriptor postBuild(Runnable postBuildAction) {
         this.postBuildAction = postBuildAction;
         return this;
     }
 
-    public ExecutionDescriptor fileLocator(FileLocator fileLocator) {
+    public RubyExecutionDescriptor fileLocator(FileLocator fileLocator) {
         this.fileLocator = fileLocator;
         return this;
     }
@@ -151,32 +151,32 @@ public class ExecutionDescriptor {
      * This is not injected in the argument list in any way, but for example
      * the Rerun action will get disabled if this file is deleted.
      */
-    public ExecutionDescriptor fileObject(FileObject fileObject) {
+    public RubyExecutionDescriptor fileObject(FileObject fileObject) {
         this.fileObject = fileObject;
         return this;
     }
 
-    public ExecutionDescriptor addStandardRecognizers() {
+    public RubyExecutionDescriptor addStandardRecognizers() {
         outputRecognizers.addAll(RubyExecution.getStandardRubyRecognizers());
         return this;
     }
 
-    public ExecutionDescriptor addOutputRecognizer(OutputRecognizer recognizer) {
+    public RubyExecutionDescriptor addOutputRecognizer(OutputRecognizer recognizer) {
         outputRecognizers.add(recognizer);
         return this;
     }
 
-    public ExecutionDescriptor allowInput() {
+    public RubyExecutionDescriptor allowInput() {
         this.inputVisible = true;
         return this;
     }
 
-    public ExecutionDescriptor showProgress(boolean showProgress) {
+    public RubyExecutionDescriptor showProgress(boolean showProgress) {
         this.showProgress = showProgress;
         return this;
     }
 
-    public ExecutionDescriptor showSuspended(boolean showSuspended) {
+    public RubyExecutionDescriptor showSuspended(boolean showSuspended) {
         this.showSuspended = showSuspended;
         return this;
     }
@@ -186,7 +186,7 @@ public class ExecutionDescriptor {
      * arguments and options to the Ruby script (target, application, ..)
      * itself.
      */
-    public ExecutionDescriptor additionalArgs(final String... additionalArgs) {
+    public RubyExecutionDescriptor additionalArgs(final String... additionalArgs) {
         this.additionalArgs = additionalArgs;
         return this;
     }
@@ -195,32 +195,32 @@ public class ExecutionDescriptor {
      * Arguments that will be parsed and prepended <em>BEFORE</em> the target.
      * Usually arguments and options for the Ruby interpreter.
      */
-    public ExecutionDescriptor initialArgs(String initialArgs) {
+    public RubyExecutionDescriptor initialArgs(String initialArgs) {
         this.initialArgs = initialArgs;
         return this;
     }
     
-    public ExecutionDescriptor jvmArguments(final String jvmArgs) {
+    public RubyExecutionDescriptor jvmArguments(final String jvmArgs) {
         this.jvmArgs = jvmArgs;
         return this;
     }
 
-    public ExecutionDescriptor addBinPath(boolean addBinPath) {
+    public RubyExecutionDescriptor addBinPath(boolean addBinPath) {
         this.addBinPath = addBinPath;
         return this;
     }
     
-    public ExecutionDescriptor frontWindow(boolean frontWindow) {
+    public RubyExecutionDescriptor frontWindow(boolean frontWindow) {
         this.frontWindow = frontWindow;
         return this;
     }
     
-    public ExecutionDescriptor debug(boolean debug) {
+    public RubyExecutionDescriptor debug(boolean debug) {
         this.debug = debug;
         return this;
     }
     
-    public ExecutionDescriptor fastDebugRequired(boolean fastDebugRequired) {
+    public RubyExecutionDescriptor fastDebugRequired(boolean fastDebugRequired) {
         this.fastDebugRequired = fastDebugRequired;
         return this;
     }
@@ -232,13 +232,13 @@ public class ExecutionDescriptor {
      * precedence.
      * @param addJdkToPath Whether the JDK should be appended to the path.
      */
-    public ExecutionDescriptor appendJdkToPath(boolean appendJdkToPath) {
+    public RubyExecutionDescriptor appendJdkToPath(boolean appendJdkToPath) {
         this.appendJdkToPath = appendJdkToPath;
         return this;
     }
 
     /** Extra class path to be used in case the execution process is a VM */
-    public ExecutionDescriptor classPath(String classPath) {
+    public RubyExecutionDescriptor classPath(String classPath) {
         this.classPath = classPath;
         return this;
     }
