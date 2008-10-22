@@ -75,7 +75,7 @@ public final class GroovyElementHandler {
     }
 
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
-            String prefix, int anchor) {
+            String prefix, int anchor, boolean emphasise) {
 
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
@@ -122,7 +122,7 @@ public final class GroovyElementHandler {
 
             // FIXME what is this intended to do ? + modifiers
             result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
-                    org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor));
+                    org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor, emphasise));
         }
 
         return result;

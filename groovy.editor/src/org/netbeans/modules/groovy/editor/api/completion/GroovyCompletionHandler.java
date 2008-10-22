@@ -2444,7 +2444,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
 
             result.putAll(GroovyElementHandler.forCompilationInfo(request.info)
-                    .getMethods(typeNode.getName(), request.prefix, anchor));
+                    .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS));
         }
 
         String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
@@ -2458,13 +2458,14 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         }
 
         for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
-                .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type).entrySet()) {
+                .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS).entrySet()) {
             if (!result.containsKey(entry.getKey())) {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
 
         //if (type == ClassType.CLASS) {
+            // FIXME aggregate this, but use as last
             for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : MetaElementHandler.forCompilationInfo(request.info)
                     .getMethods(typeNode.getName(), request.prefix, anchor).entrySet()) {
                 if (!result.containsKey(entry.getKey())) {
@@ -2482,7 +2483,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
         } else if (type == ClassType.CLASS) {
             for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
-                    .getMethods("java.lang.Object", request.prefix, anchor, new String[]{}, type).entrySet()) { // NOI18N
+                    .getMethods("java.lang.Object", request.prefix, anchor, new String[]{}, false).entrySet()) { // NOI18N
                 if (!result.containsKey(entry.getKey())) {
                     result.put(entry.getKey(), entry.getValue());
                 }
@@ -2500,211 +2501,211 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         return result;
     }
 
-    private class MethodCompletionHelper implements Task<CompilationController> {
-
-        private final CountDownLatch cnt;
-        private final JavaSource javaSource;
-        private final String className;
-        private final CompletionRequest request;
-        private final List<CompletionProposal> proposals;
-
-        public MethodCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className, CompletionRequest request, List<CompletionProposal> proposals) {
-            this.cnt = cnt;
-            this.javaSource = javaSource;
-            this.className = className;
-            this.request = request;
-            this.proposals = proposals;
-        }
-
-        public void run(CompilationController info) throws Exception {
-
-            Elements elements = info.getElements();
-            if (elements != null) {
-                // FIXME private static field
-                ElementAcceptor acceptor = new ElementAcceptor() {
-
-                    public boolean accept(Element e, TypeMirror type) {
-                        return e.getKind() == ElementKind.METHOD;
-                    }
-                };
-
-                TypeElement te = elements.getTypeElement(className);
-                if (te != null) {
-                    for (Element element : info.getElementUtilities().getMembers(te.asType(), acceptor)) {
-
-                        String simpleName = element.getSimpleName().toString();
-                        String parameterString = getParameterListForMethod((ExecutableElement) element);
-                        // FIXME this should be more accurate
-                        TypeMirror returnType = ((ExecutableElement) element).getReturnType();
-
-                        if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
-                            if (LOG.isLoggable(Level.FINEST)) {
-                                LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
-                            }
-                            proposals.add(new CompletionItem.JavaMethodItem(simpleName, parameterString,
-                                    returnType, element.getModifiers(), anchor));
-                        }
-                    }
-                }
-            }
-
-            cnt.countDown();
-        }
-    }
+//    private class MethodCompletionHelper implements Task<CompilationController> {
+//
+//        private final CountDownLatch cnt;
+//        private final JavaSource javaSource;
+//        private final String className;
+//        private final CompletionRequest request;
+//        private final List<CompletionProposal> proposals;
+//
+//        public MethodCompletionHelper(CountDownLatch cnt, JavaSource javaSource, String className, CompletionRequest request, List<CompletionProposal> proposals) {
+//            this.cnt = cnt;
+//            this.javaSource = javaSource;
+//            this.className = className;
+//            this.request = request;
+//            this.proposals = proposals;
+//        }
+//
+//        public void run(CompilationController info) throws Exception {
+//
+//            Elements elements = info.getElements();
+//            if (elements != null) {
+//                // FIXME private static field
+//                ElementAcceptor acceptor = new ElementAcceptor() {
+//
+//                    public boolean accept(Element e, TypeMirror type) {
+//                        return e.getKind() == ElementKind.METHOD;
+//                    }
+//                };
+//
+//                TypeElement te = elements.getTypeElement(className);
+//                if (te != null) {
+//                    for (Element element : info.getElementUtilities().getMembers(te.asType(), acceptor)) {
+//
+//                        String simpleName = element.getSimpleName().toString();
+//                        String parameterString = getParameterListForMethod((ExecutableElement) element);
+//                        // FIXME this should be more accurate
+//                        TypeMirror returnType = ((ExecutableElement) element).getReturnType();
+//
+//                        if (simpleName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))) {
+//                            if (LOG.isLoggable(Level.FINEST)) {
+//                                LOG.log(Level.FINEST, simpleName + " " + parameterString + " " + returnType.toString());
+//                            }
+//                            proposals.add(new CompletionItem.JavaMethodItem(simpleName, parameterString,
+//                                    returnType, element.getModifiers(), anchor));
+//                        }
+//                    }
+//                }
+//            }
+//
+//            cnt.countDown();
+//        }
+//    }
 
 
     /**
      * Populate the completion-proposal with all methods (groovy +  java)
      * on class named given in className
      */
-    private void populateProposalWithMethodsFromClass(List<CompletionProposal> proposals, CompletionRequest request, String className, boolean withJavaTypes) {
+//    private void populateProposalWithMethodsFromClass(List<CompletionProposal> proposals, CompletionRequest request, String className, boolean withJavaTypes) {
+//
+//        LOG.log(Level.FINEST, "populateProposalWithMethodsFromClass(): {0}", className); // NOI18N
+//
+//        // getting methods on types the javac way
+//
+//        if (withJavaTypes) {
+//            JavaSource javaSource = getJavaSourceFromRequest(request);
+//
+//            if(javaSource != null ){
+//
+//                CountDownLatch cnt = new CountDownLatch(1);
+//
+//                try {
+//                    javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, request, proposals), true);
+//                } catch (IOException ex) {
+//                    LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
+//                    return;
+//                }
+//
+//                try {
+//                    cnt.await();
+//                } catch (InterruptedException ex) {
+//                    LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
+//                    return;
+//                }
+//
+//            }
+//
+//        }
+//
+//        // getting the methods the groovy way
+//
+//        Class clz;
+//
+//        try {
+//            clz = Class.forName(className);
+//        } catch (ClassNotFoundException e) {
+//            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
+//            return;
+//        }
+//
+//        if (clz != null) {
+//            MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
+//
+//            if (metaClz != null) {
+//
+//                List<CompletionItem.MetaMethodItem> result = new ArrayList<CompletionItem.MetaMethodItem>();
+//
+//                LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
+//                for (Object method : metaClz.getMetaMethods()) {
+//                    LOG.log(Level.FINEST, method.toString());
+//                    populateProposal(clz, method, request, result, true);
+//                }
+//
+//                // FIXME could we remove this in favor of java types ?
+//                LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
+//                if (!withJavaTypes) {
+//                    for (Object method : metaClz.getMethods()) {
+//                        LOG.log(Level.FINEST, method.toString());
+//                        populateProposal(clz, method, request, result, false);
+//                    }
+//                }
+//
+//                for (CompletionItem.MetaMethodItem methodItem : result) {
+//                    proposals.add(methodItem);
+//                }
+//            }
+//        }
+//
+//    }
 
-        LOG.log(Level.FINEST, "populateProposalWithMethodsFromClass(): {0}", className); // NOI18N
-
-        // getting methods on types the javac way
-
-        if (withJavaTypes) {
-            JavaSource javaSource = getJavaSourceFromRequest(request);
-
-            if(javaSource != null ){
-
-                CountDownLatch cnt = new CountDownLatch(1);
-
-                try {
-                    javaSource.runUserActionTask(new MethodCompletionHelper(cnt, javaSource, className, request, proposals), true);
-                } catch (IOException ex) {
-                    LOG.log(Level.FINEST, "Problem in runUserActionTask :  {0}", ex.getMessage());
-                    return;
-                }
-
-                try {
-                    cnt.await();
-                } catch (InterruptedException ex) {
-                    LOG.log(Level.FINEST, "InterruptedException while waiting on latch :  {0}", ex.getMessage());
-                    return;
-                }
-
-            }
-
-        }
-
-        // getting the methods the groovy way
-
-        Class clz;
-
-        try {
-            clz = Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            LOG.log(Level.FINEST, "Class.forName() failed: {0}", e.getMessage()); // NOI18N
-            return;
-        }
-
-        if (clz != null) {
-            MetaClass metaClz = GroovySystem.getMetaClassRegistry().getMetaClass(clz);
-
-            if (metaClz != null) {
-
-                List<CompletionItem.MetaMethodItem> result = new ArrayList<CompletionItem.MetaMethodItem>();
-
-                LOG.log(Level.FINEST, "Adding groovy methods --------------------------"); // NOI18N
-                for (Object method : metaClz.getMetaMethods()) {
-                    LOG.log(Level.FINEST, method.toString());
-                    populateProposal(clz, method, request, result, true);
-                }
-
-                // FIXME could we remove this in favor of java types ?
-                LOG.log(Level.FINEST, "Adding JDK methods --------------------------"); // NOI18N
-                if (!withJavaTypes) {
-                    for (Object method : metaClz.getMethods()) {
-                        LOG.log(Level.FINEST, method.toString());
-                        populateProposal(clz, method, request, result, false);
-                    }
-                }
-
-                for (CompletionItem.MetaMethodItem methodItem : result) {
-                    proposals.add(methodItem);
-                }
-            }
-        }
-
-    }
-
-    private void populateProposal(Class clz, Object method, CompletionRequest request, List<CompletionItem.MetaMethodItem> methodList, boolean isGDK) {
-        if (method != null && (method instanceof MetaMethod)) {
-            MetaMethod mm = (MetaMethod) method;
-
-//            LOG.log(Level.FINEST, "Looking for Method: {0}", mm.getName()); // NOI18N
-//            printMethod(mm);
-
-            if (mm.getName().startsWith(request.prefix)) {
-                LOG.log(Level.FINEST, "Found matching method: {0}", mm.getName()); // NOI18N
-
-                CompletionItem.MetaMethodItem item = new CompletionItem.MetaMethodItem(clz, mm, anchor, isGDK);
-                addOrReplaceItem(methodList, item);
-            }
-
-        }
-    }
-
-    private void addOrReplaceItem(List<CompletionItem.MetaMethodItem> methodItemList, CompletionItem.MetaMethodItem itemToStore) {
-
-        // if we have a method in-store which has the same name and same signature
-        // then replace it if we have a method with a higher distance to the super-class.
-        // For example: toString() is defined in java.lang.Object and java.lang.String
-        // therefore take the one from String.
-
-        MetaMethod methodToStore = itemToStore.getMethod();
-        int toStoreDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
-
-        for (CompletionItem.MetaMethodItem methodItem : methodItemList) {
-            MetaMethod listMethod = methodItem.getMethod();
-
-            // FIXME return types subtype
-            if (listMethod.getName().equals(methodToStore.getName())
-                    /*&& listMethod.isSame(methodToStore)*/ && isSame(listMethod, methodToStore)) {
-
-                if (listMethod.getReturnType().isAssignableFrom(methodToStore.getReturnType())
-                        && listMethod.getDeclaringClass().getSuperClassDistance() <= toStoreDistance) {
-                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
-                    methodItemList.remove(methodItem);
-                    break; // it's unlikely that we have more then one Method with a smaller distance
-                } else {
-                    LOG.log(Level.FINEST, "Not removing existing method: {0}", listMethod.getName()); // NOI18N
-                    return;
-                }
-            }
-        }
-
-        methodItemList.add(itemToStore);
-    }
-
-    private static boolean isSame(MetaMethod listMethod, MetaMethod methodToStore) {
-        if (!listMethod.getName().equals(methodToStore.getName())) {
-            return false;
-        }
-        int mask = java.lang.reflect.Modifier.PRIVATE | java.lang.reflect.Modifier.PROTECTED
-                | java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC;
-        if ((listMethod.getModifiers() & mask) != (methodToStore.getModifiers() & mask)) {
-            return false;
-        }
-        if (!isSame(listMethod.getParameterTypes(), methodToStore.getParameterTypes())) {
-            return false;
-        }
-
-        return true;
-    }
-
-    private static boolean isSame(CachedClass[] parameters1, CachedClass[] parameters2) {
-        if (parameters1.length == parameters2.length) {
-            for (int i = 0, size = parameters1.length; i < size; i++) {
-                if (parameters1[i] != parameters2[i]) {
-                    return false;
-                }
-            }
-            return true;
-        }
-        return false;
-    }
+//    private void populateProposal(Class clz, Object method, CompletionRequest request, List<CompletionItem.MetaMethodItem> methodList, boolean isGDK) {
+//        if (method != null && (method instanceof MetaMethod)) {
+//            MetaMethod mm = (MetaMethod) method;
+//
+////            LOG.log(Level.FINEST, "Looking for Method: {0}", mm.getName()); // NOI18N
+////            printMethod(mm);
+//
+//            if (mm.getName().startsWith(request.prefix)) {
+//                LOG.log(Level.FINEST, "Found matching method: {0}", mm.getName()); // NOI18N
+//
+//                CompletionItem.MetaMethodItem item = new CompletionItem.MetaMethodItem(clz, mm, anchor, isGDK);
+//                addOrReplaceItem(methodList, item);
+//            }
+//
+//        }
+//    }
+//
+//    private void addOrReplaceItem(List<CompletionItem.MetaMethodItem> methodItemList, CompletionItem.MetaMethodItem itemToStore) {
+//
+//        // if we have a method in-store which has the same name and same signature
+//        // then replace it if we have a method with a higher distance to the super-class.
+//        // For example: toString() is defined in java.lang.Object and java.lang.String
+//        // therefore take the one from String.
+//
+//        MetaMethod methodToStore = itemToStore.getMethod();
+//        int toStoreDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
+//
+//        for (CompletionItem.MetaMethodItem methodItem : methodItemList) {
+//            MetaMethod listMethod = methodItem.getMethod();
+//
+//            // FIXME return types subtype
+//            if (listMethod.getName().equals(methodToStore.getName())
+//                    /*&& listMethod.isSame(methodToStore)*/ && isSame(listMethod, methodToStore)) {
+//
+//                if (listMethod.getReturnType().isAssignableFrom(methodToStore.getReturnType())
+//                        && listMethod.getDeclaringClass().getSuperClassDistance() <= toStoreDistance) {
+//                    LOG.log(Level.FINEST, "Remove existing method: {0}", methodToStore.getName()); // NOI18N
+//                    methodItemList.remove(methodItem);
+//                    break; // it's unlikely that we have more then one Method with a smaller distance
+//                } else {
+//                    LOG.log(Level.FINEST, "Not removing existing method: {0}", listMethod.getName()); // NOI18N
+//                    return;
+//                }
+//            }
+//        }
+//
+//        methodItemList.add(itemToStore);
+//    }
+//
+//    private static boolean isSame(MetaMethod listMethod, MetaMethod methodToStore) {
+//        if (!listMethod.getName().equals(methodToStore.getName())) {
+//            return false;
+//        }
+//        int mask = java.lang.reflect.Modifier.PRIVATE | java.lang.reflect.Modifier.PROTECTED
+//                | java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC;
+//        if ((listMethod.getModifiers() & mask) != (methodToStore.getModifiers() & mask)) {
+//            return false;
+//        }
+//        if (!isSame(listMethod.getParameterTypes(), methodToStore.getParameterTypes())) {
+//            return false;
+//        }
+//
+//        return true;
+//    }
+//
+//    private static boolean isSame(CachedClass[] parameters1, CachedClass[] parameters2) {
+//        if (parameters1.length == parameters2.length) {
+//            for (int i = 0, size = parameters1.length; i < size; i++) {
+//                if (parameters1[i] != parameters2[i]) {
+//                    return false;
+//                }
+//            }
+//            return true;
+//        }
+//        return false;
+//    }
 
     /**
      * This should complete CamelCaseTypes. Simply type SB for StringBuilder.
