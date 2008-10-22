@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -67,7 +67,7 @@ made subject to such option by the copyright holder.
 
         <center>
             <h1>NetBeans API List</h1>
-            <h3>Current Development Version</h3>
+            <h3>Version 6.5</h3>
             <xsl:if test="$date" >
                 <xsl:value-of select="$date" />
                 <p/>
@@ -101,10 +101,11 @@ made subject to such option by the copyright holder.
         <em>NetBeans</em> one is free to choose the set of modules and their APIs 
         to satisfy one's needs.
         <p>
-        This is a list of APIs for development version, if you want to see
+        This is a list of APIs for NetBeans 6.5, if you want to see
         a list of APIs for a particular version, you may want to go to:
         </p>
         <ul>
+            <li><a href="http://bits.netbeans.org/dev/javadoc/" target="_top">Dev</a> - Javadoc as released for development version</li>
             <li><a href="http://bits.netbeans.org/6.1/javadoc/" target="_top">6.1</a> - Javadoc as released for NetBeans IDE 6.1</li>
             <li><a href="http://bits.netbeans.org/6.0/javadoc/" target="_top">6.0</a> - Javadoc as released for NetBeans IDE 6.0</li>
             <li><a href="http://www.netbeans.org/download/5_5_1/javadoc/" target="_top">5.5.1</a> - Javadoc as released for NetBeans IDE 5.5.1</li>
