@@ -98,4 +98,18 @@ public class LayerBuilderTest extends NbTestCase {
                 "</folder></filesystem>", dump());
     }
 
+    public void testShadows() throws Exception {
+        LayerBuilder.File orig = b.file("Actions/System/some-Action.instance");
+        orig.write();
+        b.shadowFile(orig.getPath(), "Menu/File", null).write();
+        b.shadowFile(orig.getPath(), "Shortcuts", "C-F6").write();
+        assertEquals("<filesystem>" +
+                "<folder name='Actions'><folder name='System'><file name='some-Action.instance'/></folder></folder>" +
+                "<folder name='Menu'><folder name='File'><file name='some-Action.shadow'>" +
+                "<attr name='originalFile' stringvalue='Actions/System/some-Action.instance'/></file></folder></folder>" +
+                "<folder name='Shortcuts'><file name='C-F6.shadow'>" +
+                "<attr name='originalFile' stringvalue='Actions/System/some-Action.instance'/></file></folder>" +
+                "</filesystem>", dump());
+    }
+
 }
