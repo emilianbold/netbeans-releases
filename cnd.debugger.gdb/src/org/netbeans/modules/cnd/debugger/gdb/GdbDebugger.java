@@ -80,7 +80,6 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
-import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.IOProxy;
 import org.netbeans.modules.cnd.debugger.gdb.timer.GdbTimer;
@@ -116,7 +115,7 @@ import org.openide.windows.InputOutput;
  *    GdbDebugger cndDebugger = (GdbDebugger) debuggerEngine.lookup
  *        (GdbDebugger.class);</pre>
  */
-public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
+public class GdbDebugger implements PropertyChangeListener {
 
     public static final String          PROP_STATE = "state"; // NOI18N
     public static final String          PROP_CURRENT_THREAD = "currentThread"; // NOI18N
@@ -959,7 +958,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
             gdb.stack_select_frame(frame);
             gdb.stack_list_arguments(1, frame, frame);
-            gdb.stack_list_locals(ALL_VALUES);
+            gdb.stack_list_locals("--all-values"); // NOI18N
         }
     }
 

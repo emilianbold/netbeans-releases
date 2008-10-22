@@ -79,7 +79,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
  *    tell low level to send a signal to the application to interrupt the execution
  *    tell low level to kill the debugger
  */
-public class GdbProxy implements GdbMiDefinitions {
+public class GdbProxy {
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
@@ -622,7 +622,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command tells gdb to execute inferior program with console.
      */
     public int set_new_console() {
-        return engine.sendCommand(CLI_CMD_SET_NEW_CONSOLE);
+        return engine.sendCommand("set new-console"); // NOI18N
     }
 
     /**
