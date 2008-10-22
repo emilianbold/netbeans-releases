@@ -221,7 +221,7 @@ public class RubyPlatformCustomizer extends JPanel {
         if (gemsInstalled) {
             gemHomeValue.setText(plaf.getGemManager().getGemHome());
             gemPathList.setModel(createGemPathsModel(plaf));
-            gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
+            gemToolValue.setText(plaf.getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
             color = UIManager.getColor("Label.foreground");
         } else {
             color = PlatformComponentFactory.INVALID_PLAF_COLOR;
