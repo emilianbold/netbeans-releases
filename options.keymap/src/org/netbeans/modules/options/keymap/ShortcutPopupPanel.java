@@ -42,6 +42,7 @@ package org.netbeans.modules.options.keymap;
 import java.awt.Point;
 import java.awt.event.KeyEvent;
 import javax.swing.AbstractListModel;
+import javax.swing.DefaultListModel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
@@ -55,24 +56,10 @@ import org.openide.util.NbBundle;
  */
 public class ShortcutPopupPanel extends javax.swing.JPanel {
 
-    private static final AbstractListModel model = new AbstractListModel() {
+    private static final AbstractListModel modelWithAddAlternative = new Model(true);
+    private static final AbstractListModel modelWithoutAddAltenrnative = new Model(false);
+    private static AbstractListModel model = new DefaultListModel();
 
-        String[] elms = {
-            NbBundle.getMessage(ShortcutPopupPanel.class, "Edit"), //NOI18N
-            NbBundle.getMessage(ShortcutPopupPanel.class, "Add_Alternative"), //NOI18N
-            NbBundle.getMessage(ShortcutPopupPanel.class, "Reset_to_Default"), //NOI18N
-            NbBundle.getMessage(ShortcutPopupPanel.class, "Clear") //NOI18N
-        };
-
-        public int getSize() {
-            return elms.length;
-        }
-
-        public Object getElementAt(int index) {
-            return elms[index];
-        }
-    };
-    
     private int row;
     private JTable table;
     private JPopupMenu pm;
@@ -84,9 +71,17 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         this.pm = pm;
     }
 
-
     public void setRow(int row) {
         this.row = row;
+    }
+
+    /**
+     * Set whether 'Add Alternative' menu item should be displayed
+     */
+    void setDisplayAddAlternative(boolean shortcutSet) {
+        model = shortcutSet ? modelWithAddAlternative : modelWithoutAddAltenrnative;
+        list.setModel(model);
+        this.setPreferredSize(list.getPreferredSize());
     }
 
     /** This method is called from within the constructor to
@@ -129,7 +124,7 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 74, Short.MAX_VALUE)
+            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 70, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -197,4 +192,32 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     private javax.swing.JList list;
     // End of variables declaration//GEN-END:variables
 
+
+    private static class Model extends AbstractListModel {
+        private boolean displayAlternative;
+
+        public Model(boolean displayAlternative) {
+            this.displayAlternative = displayAlternative;
+        }
+
+        String[] elms = {
+            NbBundle.getMessage(ShortcutPopupPanel.class, "Edit"), //NOI18N
+            NbBundle.getMessage(ShortcutPopupPanel.class, "Add_Alternative"), //NOI18N
+            NbBundle.getMessage(ShortcutPopupPanel.class, "Reset_to_Default"), //NOI18N
+            NbBundle.getMessage(ShortcutPopupPanel.class, "Clear") //NOI18N
+        };
+
+        String[] elms0 = {
+            elms[0], elms[2], elms[3]
+        };
+
+        public int getSize() {
+            return displayAlternative == true ? elms.length : elms0.length;
+        }
+
+        public Object getElementAt(int index) {
+            return displayAlternative == true ? elms[index] : elms0[index];
+        }
+
+    }
 }
