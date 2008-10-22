@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -36,50 +36,23 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.designer.operators;
 
-import java.awt.Image;
-import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.websvc.design.view.widget.ImageLabelWidget;
+package org.netbeans.lib.profiler.tests.jfluid;
+
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
- * @author lukas
+ * @author tester
  */
-public class ImageLabelWidgetOperator extends WidgetOperator {
+public class ProfilerStableTestSuite {
+    public static Test suite() {
+    return NbModuleSuite.create(
+      NbModuleSuite.emptyConfiguration()
+        .addTest(org.netbeans.lib.profiler.tests.jfluid.BasicTest.class)
+    );
+  }
 
-    private ImageLabelWidget widget;
 
-    ImageLabelWidgetOperator(Widget w) {
-        super(w);
-        widget = (ImageLabelWidget) w;
-    }
-
-    public String getComment() {
-        return widget.getComment();
-    }
-
-    public Image getImage() {
-        return widget.getImage();
-    }
-
-    public String getLabel() {
-        return widget.getLabel();
-    }
-
-    public void setComment(String comment) {
-        widget.setComment(comment);
-    }
-
-    public void setImage(Image image) {
-        widget.setImage(image);
-    }
-
-    public void setImage(Widget image) {
-        widget.setImage(image);
-    }
-
-    public void setLabel(String label) {
-        widget.setLabel(label);
-    }
 }

@@ -243,6 +243,17 @@ public class PHPCodeCompletionTest extends PHPTestBase {
         checkCompletion("testfiles/completion/lib/issue147575.php",
                 "if(1) $this->factory()->^", false);
     }
+    
+    public void test147179_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147179.php",
+                "<? Test147179::^", false);
+    }
+    
+    public void test147179_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue147179.php",
+                "<?= Test147179::^", false);
+    }
+    
     public void test2i147575() throws Exception {
         checkCompletion("testfiles/completion/lib/issue147575.php",
                 "if(1) $this->factory()->^", false);

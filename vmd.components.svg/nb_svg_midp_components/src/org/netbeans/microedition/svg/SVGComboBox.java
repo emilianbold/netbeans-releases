@@ -52,6 +52,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -234,6 +235,15 @@ public class SVGComboBox extends SVGComponent implements
     
     public void setSelectedItem( Object value ){
         setSelected(value);
+    }
+    
+    public SVGRectangle getBounds(){
+       SVGRectangle rectangle = super.getBounds();
+        if ( isListShown ){
+            SVGRectangle rect = myList.getBounds();
+            return rectangle.union( rect );
+        }
+        return rectangle;
     }
     
     /* (non-Javadoc)
@@ -546,6 +556,53 @@ public class SVGComboBox extends SVGComponent implements
                 }
             }
             return ret;
+        }
+        
+        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+            requestFocus();
+            SVGLocatableElement button = (SVGLocatableElement)myButton;
+            SVGRect rect = button.getScreenBBox();
+            if (rect != null) {
+                SVGRectangle rectangle = new SVGRectangle(rect);
+                if (rectangle.contains(x, y)) {
+                    getForm().invokeLaterSafely(new Runnable() {
+
+                        public void run() {
+                            myPressedAnimation.beginElementAt(0);
+                        }
+                    });
+                }
+            }
+            if ( myList.getBounds()!= null && myList.getBounds().contains(x, y)){
+                myList.getInputHandler().handlePointerPress( myList, x, y);
+            }
+            super.handlePointerPress(comp, x, y);
+        }
+        
+        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+            SVGLocatableElement button = (SVGLocatableElement)myButton;
+            SVGRect rect = button.getScreenBBox();
+            if (rect != null) {
+                SVGRectangle rectangle = new SVGRectangle(rect);
+                if (rectangle.contains(x, y)) {
+                    getForm().invokeLaterSafely(new Runnable() {
+
+                        public void run() {
+                            myReleasedAnimation.beginElementAt(0);
+                        }
+                    });
+                    if (isListShown) {
+                        hideList();
+                    }
+                    else {
+                        showList();
+                    }
+                }
+            }
+            if ( myList.getBounds()!= null && myList.getBounds().contains(x, y)){
+                myList.getInputHandler().handlePointerRelease( myList, x, y);
+            }
+            super.handlePointerRelease(comp, x, y);
         }
         
     }

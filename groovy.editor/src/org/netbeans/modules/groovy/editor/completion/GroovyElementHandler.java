@@ -39,10 +39,11 @@
 
 package org.netbeans.modules.groovy.editor.completion;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,11 +74,13 @@ public final class GroovyElementHandler {
         return new GroovyElementHandler(info);
     }
 
-    public List<? extends GroovyCompletionItem> getMethods(String className, String prefix, int anchor) {
+    public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
+            String prefix, int anchor) {
+
         GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
 
         if (index == null) {
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
 
         String methodName = "";
@@ -97,12 +100,12 @@ public final class GroovyElementHandler {
 
         if (methods.size() == 0) {
             LOGGER.log(Level.FINEST, "Nothing found in GroovyIndex");
-            return Collections.emptyList();
+            return Collections.emptyMap();
         }
 
         LOGGER.log(Level.FINEST, "Found this number of methods : {0} ", methods.size());
 
-        List<GroovyCompletionItem.JavaMethodItem> proposals = new ArrayList<GroovyCompletionItem.JavaMethodItem>();
+        Map<MethodSignature, CompletionItem.JavaMethodItem> result = new HashMap<MethodSignature, CompletionItem.JavaMethodItem>();
         for (IndexedMethod indexedMethod : methods) {
             LOGGER.log(Level.FINEST, "method from index : {0} ", indexedMethod.getName());
 
@@ -118,10 +121,15 @@ public final class GroovyElementHandler {
             }
 
             // FIXME what is this intended to do ? + modifiers
-            proposals.add(new GroovyCompletionItem.JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
+            result.put(getSignature(indexedMethod), new CompletionItem.JavaMethodItem(indexedMethod.getName(), sb.toString(), null,
                     org.netbeans.modules.groovy.editor.java.Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC), anchor));
         }
 
-        return proposals;
+        return result;
+    }
+
+    private MethodSignature getSignature(IndexedMethod method) {
+        String[] parameters = method.getParameters().toArray(new String[method.getParameters().size()]);
+        return new MethodSignature(method.getName(), parameters);
     }
 }

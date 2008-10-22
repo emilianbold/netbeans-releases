@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.api.utils;
 
 import java.awt.Component;
@@ -74,15 +73,14 @@ import org.openide.util.Utilities;
  * Miscellaneous utility classes useful for the Ipe module
  */
 public class IpeUtils {
-    
+
     /** Store the real environment here */
 //    static private WeakReference wrEnv;
-    
     /**
      * Global flag which when set, generated additional diagnostic messages
      * on standard output. Used for development purposes only.
      */
-    static public final boolean IfdefDiagnostics = Boolean.getBoolean( "ifdef.debug.diagnostics"); // NOI18N
+    static public final boolean IfdefDiagnostics = Boolean.getBoolean("ifdef.debug.diagnostics"); // NOI18N
 
     /** Same as the C library dirname function: given a path, return
      * its directory name. Unlike dirname, however, return null if
@@ -90,27 +88,29 @@ public class IpeUtils {
      */
     public static final String getDirName(String path) {
         int sep = path.lastIndexOf('/');
-        if (sep == -1)
+        if (sep == -1) {
             sep = path.lastIndexOf('\\');
+        }
         if (sep != -1) {
             return path.substring(0, sep);
         }
         return null;
     }
-    
+
     /** Same as the C library basename function: given a path, return
      * its filename.
      */
     public static final String getBaseName(String path) {
         int sep = path.lastIndexOf('/');
-        if (sep == -1)
+        if (sep == -1) {
             sep = path.lastIndexOf('\\');
+        }
         if (sep != -1) {
-            return path.substring(sep+1);
+            return path.substring(sep + 1);
         }
         return path;
     }
-    
+
     /**
      *  Given a path and a base directory, return a relative path equivalent to
      *  the the original path and relative to the base directory.
@@ -124,13 +124,16 @@ public class IpeUtils {
      */
     static public final String getRelativePath(String base, String path) {
         // Convert both to canonical paths first
-        File baseFile = new File(base);
-        if (baseFile.exists()) {
-            try {
-                base = baseFile.getCanonicalPath();
-            } catch (Exception e) {}
-        }
-        
+        // Using getCanonicalPath has problems on Mac where /tmp is being converted to /private/tmp.
+        // Not sure it is really needed. Using trimDotDot instead.
+//        File baseFile = new File(base);
+//        if (baseFile.exists()) {
+//            try {
+//                base = baseFile.getCanonicalPath();
+//            } catch (Exception e) {}
+//        }
+        base = trimDotDot(base);
+
         if (path.equals(base)) {
             return new String(path);
         } else if (path.startsWith(base + '/')) {
@@ -156,24 +159,25 @@ public class IpeUtils {
                     break;
                 }
             }
-            
+
             if (match > 1 && match == pnames.length && bnames.length > pnames.length) {
                 // path is a substring of
                 StringBuilder s = new StringBuilder();
-                for (int cnt = 0; cnt < (bnames.length - match-1); cnt++) {
+                for (int cnt = 0; cnt < (bnames.length - match - 1); cnt++) {
                     s.append(".." + File.separator);					// NOI18N
                 }
                 s.append("..");					// NOI18N
                 return s.toString();
             } else if (match > 1) {
                 StringBuilder s = new StringBuilder();
-                
+
                 for (int cnt = bnames.length - match; cnt > 0; cnt--) {
                     s.append(".." + File.separator);					// NOI18N
                 }
                 for (int i = match; i < pnames.length; i++) {
-                    if (s.charAt(s.length()-1) != File.separatorChar)
+                    if (s.charAt(s.length() - 1) != File.separatorChar) {
                         s.append(File.separator);
+                    }
                     s.append(pnames[i].toString());
                 }
                 return s.toString();
@@ -182,14 +186,15 @@ public class IpeUtils {
             }
         }
     }
-    
+
     /*
      * From PicklistUtils
      */
     public static String toAbsolutePath(String base, String path) {
         String newPath = path;
-        if (newPath == null || newPath.length() == 0)
+        if (newPath == null || newPath.length() == 0) {
             newPath = "."; // NOI18N
+        } // NOI18N
         if (!isPathAbsolute(newPath)) {
             // it is a relative path
             //RemoteUtils ru = RemoteUtils.getInstance();
@@ -204,29 +209,32 @@ public class IpeUtils {
                 } catch (Exception e) {
                 }
             }
-            // newPath = ru.getLocalToRemoteMapping(newPath);
+        // newPath = ru.getLocalToRemoteMapping(newPath);
         }
         return newPath;
     }
-    
+
     /*
      * From PicklistUtils
      */
     public static String toRelativePath(String base, String path) {
         String relPath = path;
-        if (relPath == null || relPath.length() == 0)
+        if (relPath == null || relPath.length() == 0) {
             relPath = "."; // NOI18N
+        } // NOI18N
         if (isPathAbsolute(relPath)) {
-            if (relPath.equals(base))
+            if (relPath.equals(base)) {
                 relPath = "."; // NOI18N
-            else if (isPathAbsolute(base))
+            } // NOI18N
+            else if (isPathAbsolute(base)) {
                 relPath = IpeUtils.getRelativePath(base, relPath);
-            else
+            } else {
                 relPath = path;
+            }
         }
         return relPath;
     }
-    
+
     public static String toAbsoluteOrRelativePath(String base, String path) {
         String resRel = toRelativePath(base, path);
         String res;
@@ -234,38 +242,40 @@ public class IpeUtils {
             res = path;
         } else {
             String dotSlash = "." + File.separatorChar; // NOI18N
-            if (resRel.startsWith(dotSlash))
+            if (resRel.startsWith(dotSlash)) {
                 res = resRel.substring(2);
-            else
+            } else {
                 res = resRel;
+            }
         }
         return res;
     }
-    
+
     /*
      * From PicklistUtils
      */
     public static String subPath(String path, int levels) {
-        if (path == null || path.length() == 0)
+        if (path == null || path.length() == 0) {
             return path;
+        }
         String newPath = null;
-        
+
         Vector separators = new Vector();
         for (int i = 0; i < path.length(); i++) {
-            if (path.charAt(i) == '/')
+            if (path.charAt(i) == '/') {
                 separators.add(0, new Integer(i));
-            else if (path.charAt(i) == '\\')
+            } else if (path.charAt(i) == '\\') {
                 separators.add(0, new Integer(i));
+            }
         }
         if (separators.size() > levels) {
-            newPath =  "..." + // NOI18N
-		path.substring(((Integer)separators.get(levels)).intValue(), path.length());
+            newPath = "..." + // NOI18N
+                    path.substring(((Integer) separators.get(levels)).intValue(), path.length());
         } else {
             newPath = path;
         }
         return newPath;
     }
-
 
     /**
      *  Compute an array of the individual path elements of a pathname.
@@ -285,8 +295,9 @@ public class IpeUtils {
         if (isPathAbsolute(path)) {
             while (pos >= 0) {
                 next = path.indexOf('/', pos);
-                if (next < 0)
+                if (next < 0) {
                     next = path.indexOf('\\', pos);
+                }
                 if (next > 0) {		    // another '/' found
                     l.add(path.substring(pos, next));
                     pos = next + 1;
@@ -333,12 +344,12 @@ public class IpeUtils {
         int beginIndex;
         int endIndex;
         StringBuilder dp = new StringBuilder(256); // Result buffer
-        
+
         // Skip leading whitespace
         while (si < max && Character.isSpaceChar(filename.charAt(si))) {
             si++;
         }
-        
+
         // Expand ~ and ~user
         if (si < max && filename.charAt(si) == '~') {
             if (si++ < max && (si == max || filename.charAt(si) == '/')) {
@@ -350,19 +361,19 @@ public class IpeUtils {
                 PasswordEntry pent = new PasswordEntry();
                 beginIndex = si;
                 while (si < max && filename.charAt(si) != '/') {
-                    si++;
+                si++;
                 }
-                 
+
                 if (pent.fillFor(filename.substring(beginIndex, si))) {
-                    dp.append(pent.getHomeDirectory());
+                dp.append(pent.getHomeDirectory());
                 } else {
-                    // lookup failed - use raw string
-                    dp.append(filename.substring(beginIndex, si));
+                // lookup failed - use raw string
+                dp.append(filename.substring(beginIndex, si));
                 }
                  */
             }
         }
-        
+
         /* Expand inline environment variables */
         while (si < max) {
             char c = filename.charAt(si++);
@@ -392,11 +403,11 @@ public class IpeUtils {
             } else if (c == '$' && si < max) {
                 // An environment variable!
                 boolean braces = (filename.charAt(si) == '{');
-                
+
                 if (braces) { // skip over left brace
                     si++;
                 }
-                
+
                 // Find end of environment variable
                 beginIndex = si;
                 while (si < max) {
@@ -409,15 +420,15 @@ public class IpeUtils {
                     }
                     si++;
                 }
-                
+
                 endIndex = si;
                 if ((si < max) && braces) {
                     si++; // skip over right brace
                 }
-                
+
                 if (endIndex > beginIndex) {
                     String value = System.getenv(filename.substring(beginIndex, endIndex));
-                    
+
                     if (value != null) {
                         dp.append(value);
                     } else {
@@ -444,11 +455,10 @@ public class IpeUtils {
                 dp.append(c);
             }
         }
-        
+
         return dp.toString();
     }
-    
-    
+
 //    /** Get the value of an environment variable */
 //    public static String getenv(String name) {
 //        return getUnixEnv().getenv(name);
@@ -505,11 +515,10 @@ public class IpeUtils {
 //        }
 //        return env;
 //    }
-    
     /** Trim trailing slashes */
     public static String trimSlashes(String dir) {
         int trim = 0;
-        
+
         int i = dir.length();
         while (i > 0 && (dir.charAt(i - 1) == '/' || dir.charAt(i - 1) == '\\')) {
             trim++;
@@ -521,16 +530,17 @@ public class IpeUtils {
             return dir;
         }
     }
-    
+
     /** Trim surrounding white space and trailing slashes */
     public static String trimpath(String dir) {
         return trimSlashes(dir.trim());
     }
-    
+
     // Utility to request focus for a component by using the
     // swing utilities to invoke it at a later
     public static void requestFocus(final Component c) {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 if (c != null) {
                     if (c.getParent() != null) {
@@ -548,11 +558,12 @@ public class IpeUtils {
             }
         });
     }
-    
+
     // Utility to request focus for a component by using the
     // swing utilities to invoke it at a later
     public static void setDefaultButton(final JRootPane rootPane, final JButton button) {
         SwingUtilities.invokeLater(new Runnable() {
+
             public void run() {
                 if (button != null) {
                     if (button.getParent() != null && button.isVisible()) {
@@ -570,7 +581,7 @@ public class IpeUtils {
             }
         });
     }
-    
+
     /** Add quotes around the string if necessary.
      * This is the case when the string contains space or meta characters.
      * For now, we only worry about space, tab, *, [, ], ., ( and )
@@ -583,10 +594,10 @@ public class IpeUtils {
         }
         // A quoted string in the first place?
         if ((s.charAt(0) == '"') ||
-                (s.charAt(n-1) == '"')) {
+                (s.charAt(n - 1) == '"')) {
             return s;
         }
-        
+
         for (int i = 0; i < n; i++) {
             char c = s.charAt(i);
             if ((c == ' ') || (c == '\t') || (c == '*') ||
@@ -599,86 +610,98 @@ public class IpeUtils {
         }
         return s;
     }
-    
+
     public static boolean isPathAbsolute(String path) {
-        if (path == null || path.length() == 0)
+        if (path == null || path.length() == 0) {
             return false;
-        else if (path.charAt(0) == '/')
+        } else if (path.charAt(0) == '/') {
             return true;
-        else if (path.charAt(0) == '\\')
+        } else if (path.charAt(0) == '\\') {
             return true;
-        else if (path.indexOf(':') > 0)
+        } else if (path.indexOf(':') > 0) {
             return true;
-        else
+        } else {
             return false;
+        }
     }
-    
+
     public static Node findNode(String filePath) {
         FileObject fo = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath)));
-        if (fo == null)
+        if (fo == null) {
             return null; // FIXUP
-        
+        }
         DataObject dataObject = null;
         try {
             dataObject = DataObject.find(fo);
         } catch (Exception e) {
             // FIXUP
         }
-        if (dataObject == null)
+        if (dataObject == null) {
             return null; // FIXUP
-        
+        }
         Node node = dataObject.getNodeDelegate();
-        if (node == null)
+        if (node == null) {
             return null; // FIXUP
-        
+        }
         return node;
     }
-    
+
     public static DataNode findCorefileNode(String filePath) {
-        if (filePath == null)
+        if (filePath == null) {
             return null;
+        }
         Node node = findNode(filePath);
-        if (node == null)
+        if (node == null) {
             return null;
-        if (!(node instanceof DataNode))
+        }
+        if (!(node instanceof DataNode)) {
             return null;
-        DataObject dataObject = (DataObject)node.getCookie(DataObject.class);
-        if (!(dataObject instanceof CoreElfObject))
+        }
+        DataObject dataObject = (DataObject) node.getCookie(DataObject.class);
+        if (!(dataObject instanceof CoreElfObject)) {
             return null;
-        
-        return (DataNode)node;
+        }
+
+        return (DataNode) node;
     }
-    
+
     // From PicklistUtils. FIXUP: probably not really needed anymore
     public static ExecutionSupport findExecutionSupport(DataNode executionNode) {
-        if (executionNode == null)
+        if (executionNode == null) {
             return null;
-        if (executionNode.getDataObject() instanceof CDataObject)
+        }
+        if (executionNode.getDataObject() instanceof CDataObject) {
             return null;
-        if (executionNode.getDataObject() instanceof CoreElfObject)
+        }
+        if (executionNode.getDataObject() instanceof CoreElfObject) {
             return null;
-        if (executionNode.getDataObject() instanceof MakefileDataObject)
+        }
+        if (executionNode.getDataObject() instanceof MakefileDataObject) {
             return null;
+        }
         ExecutionSupport bes = (ExecutionSupport) executionNode.getCookie(ExecutionSupport.class);
         return bes;
     }
-    
+
     public static DataNode findDebuggableNode(String filePath) {
-        if (filePath == null)
+        if (filePath == null) {
             return null;
+        }
         Node node = findNode(filePath);
-        if (node == null)
+        if (node == null) {
             return null;
-        if (!(node instanceof DataNode))
+        }
+        if (!(node instanceof DataNode)) {
             return null;
+        }
         /*
         if (node.getCookie(DebuggerCookie.class) == null)
-            return null;
+        return null;
          */
-        
-        return (DataNode)node;
+
+        return (DataNode) node;
     }
-    
+
     /**
      * Same as String.equals, but allows arguments to be null
      */
@@ -691,24 +714,28 @@ public class IpeUtils {
             return a.equals(b);
         }
     }
-    
+
     /**
      * Apply 'equals' to two arrays of Strings
      */
     public static boolean sameStringArray(String[] a, String[] b) {
-        if (a == b)
+        if (a == b) {
             return true;
-        if (a == null || b == null)
+        }
+        if (a == null || b == null) {
             return false;
-        if (a.length != b.length)
+        }
+        if (a.length != b.length) {
             return false;
+        }
         for (int x = 0; x < a.length; x++) {
-            if (!IpeUtils.sameString(a[x], b[x]))
+            if (!IpeUtils.sameString(a[x], b[x])) {
                 return false;
+            }
         }
         return true;
     }
-    
+
     public static String escapeOddCharacters(String s) {
         int n = s.length();
         StringBuilder ret = new StringBuilder(n);
@@ -719,14 +746,14 @@ public class IpeUtils {
                     (c == '*') || (c == '\"') ||
                     (c == '[') || (c == ']') ||
                     (c == '(') || (c == ')') ||
-                    (c == ';')){
+                    (c == ';')) {
                 ret.append('\\');
             }
             ret.append(c);
         }
         return ret.toString();
     }
-    
+
     public static String replaceOddCharacters(String s, char replaceChar) {
         int n = s.length();
         StringBuilder ret = new StringBuilder(n);
@@ -738,46 +765,46 @@ public class IpeUtils {
                     (c == '[') || (c == ']') ||
                     (c == '(') || (c == ')')) {
                 ret.append(replaceChar);
-            }
-            else
+            } else {
                 ret.append(c);
+            }
         }
         return ret.toString();
     }
 
     public static String escapeQuotes(String s) {
-        if (s.indexOf('"') < 0)
+        if (s.indexOf('"') < 0) {
             return s;
-        else {
+        } else {
             //return s.replace(" ", "\\ "); // NOI18N JDK1.5
             return s.replaceAll("\"", "\\\\\""); // NOI18N
         }
     }
-    
+
     /*
      * Check for special charaters not allowed in a make target.
      */
     public static boolean hasMakeSpecialCharacters(String string) {
-	if (string == null || string.length() == 0)
-	    return false;
-	for (int i = 0; i < string.length(); i++) {
-	    if (Character.isLetterOrDigit(string.charAt(i)) ||
-		string.charAt(i) == '_' ||
-		string.charAt(i) == '-' ||
-		string.charAt(i) == '.' ||
-		string.charAt(i) == '/' ||
-		string.charAt(i) == '$' ||
-		string.charAt(i) == '{' ||
-		string.charAt(i) == '}' ||
-		string.charAt(i) == '\\') {
+        if (string == null || string.length() == 0) {
+            return false;
+        }
+        for (int i = 0; i < string.length(); i++) {
+            if (Character.isLetterOrDigit(string.charAt(i)) ||
+                    string.charAt(i) == '_' ||
+                    string.charAt(i) == '-' ||
+                    string.charAt(i) == '.' ||
+                    string.charAt(i) == '/' ||
+                    string.charAt(i) == '$' ||
+                    string.charAt(i) == '{' ||
+                    string.charAt(i) == '}' ||
+                    string.charAt(i) == '\\') {
+            } else {
+                return true;
             }
-            else {
-		return true;
-	    }
-	}
-	return false;
+        }
+        return false;
     }
-    
+
     /**
      * Trims .. from a file path.
      * NOTE: This is not safe to use on Unix if any of the directories are softlinks in
@@ -786,14 +813,13 @@ public class IpeUtils {
     public static String trimDotDot(String path) {
         Stack stack = new Stack();
         String absPrefix = null;
-        
+
         if (isPathAbsolute(path)) {
             if (path.charAt(0) == '/') {
                 absPrefix = "/"; // NOI18N
                 path = path.substring(1);
-}
-            else if (path.charAt(1) == ':') {
-                absPrefix = path.substring(0,3);
+            } else if (path.charAt(1) == ':') {
+                absPrefix = path.substring(0, 3);
                 path = path.substring(3);
             }
         }
@@ -806,60 +832,61 @@ public class IpeUtils {
                 if (down > 0) {
                     stack.pop();
                     down--;
-}
-                else {
+                } else {
                     stack.push(token);
                 }
-            }
-            else {
+            } else {
                 stack.push(token);
                 down++;
             }
         }
         String retpath = ""; // NOI18N
-        if (absPrefix != null)
+        if (absPrefix != null) {
             retpath = absPrefix; // NOI18N
+        }
         for (int i = 0; i < stack.size(); i++) {
             retpath = retpath + stack.elementAt(i);
-            if (i < (stack.size() - 1))
-            retpath = retpath + "/"; // NOI18N
+            if (i < (stack.size() - 1)) {
+                retpath = retpath + "/"; // NOI18N
+            }
         }
 
         return retpath;
     }
-    
+
     public static String createUniqueFileName(String folder, String name, String ext) {
         if (folder == null || folder.length() == 0 || !isPathAbsolute(folder) || name == null || name.length() == 0) {
             assert false;
             return null;
         }
-        
+
         String newPath;
         String newName = name;
-        for (int i = 0;;i++) {
-            if (i > 0)
+        for (int i = 0;; i++) {
+            if (i > 0) {
                 newName = name + "_" + i; // NOI18N
+            }
             newPath = folder + "/" + newName; // NOI18N
-            if (ext != null && ext.length() > 0)
+            if (ext != null && ext.length() > 0) {
                 newPath = newPath + "." + ext; // NOI18N
+            }
             if (!new File(newPath).exists()) {
                 break;
             }
         }
         return newName;
     }
-    
     private static final boolean CASE_INSENSITIVE =
-        (Utilities.isWindows () || (Utilities.getOperatingSystem () == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
+            (Utilities.isWindows() || (Utilities.getOperatingSystem() == Utilities.OS_OS2)) || Utilities.getOperatingSystem() == Utilities.OS_VMS;
 
     public static boolean isSystemCaseInsensitive() {
         return CASE_INSENSITIVE;
     }
-    
+
     public static boolean areFilenamesEqual(String firstFile, String secondFile) {
         return isSystemCaseInsensitive() ? firstFile.equalsIgnoreCase(secondFile) : firstFile.equals(secondFile);
     }
-    
+
     /**
      * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
      *
@@ -895,18 +922,17 @@ public class IpeUtils {
         }
         return false;
     }
-    
-    
+
     /*
      * Return true if file is an executable
      */
     public static boolean isExecutable(File file) {
         FileObject fo = null;
-        
+
         if (file.getName().endsWith(".exe")) { //NOI18N
             return true;
         }
-        
+
         try {
             fo = FileUtil.toFileObject(file.getCanonicalFile());
         } catch (IOException e) {
@@ -929,14 +955,13 @@ public class IpeUtils {
         }
         return false;
     }
-    
+
     public static String expandMacro(String string, String macro, String value) {
         // Substitute macro
         int i = string.indexOf((macro));
         if (i == 0) {
             string = value + string.substring(macro.length());
-        }
-        else if (i > 0) {
+        } else if (i > 0) {
             string = string.substring(0, i) + value + string.substring(i + macro.length());
         }
         return string;
