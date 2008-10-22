@@ -133,14 +133,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
         // Remember all buttons
 
         this.list = list;
-
-        if ( !( list.getModel() instanceof DefaultListModel ) ) {
-            throw new IllegalArgumentException( "The list's model has to be of class DefaultListModel" ); // NOI18N
-        }
-
         this.listModel = (DefaultListModel)list.getModel();
         this.selectionModel = list.getSelectionModel();
-
         this.addJar = addJar;
         this.addLibrary = addLibrary;
         this.addAntArtifact = addAntArtifact;

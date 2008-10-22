@@ -50,37 +50,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.event.ChangeListener;
-
 import org.openide.DialogDescriptor;
 import org.openide.filesystems.*;
 import org.openide.loaders.*;
 import org.openide.nodes.*;
 import org.openide.util.HelpCtx;
 import org.openide.util.RequestProcessor;
-
 import org.xml.sax.*;
 import org.openide.util.NbBundle;
-
 import org.netbeans.modules.j2ee.ddloaders.common.xmlutils.SAXParseError;
 import org.netbeans.modules.j2ee.dd.api.application.*;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.j2ee.dd.impl.application.ApplicationProxy;
-
-//////////import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ProjectInformation;
-
-/////////////ludo  import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.ddloaders.common.DD2beansDataObject;
 import org.openide.util.Exceptions;
-
 
 /** Represents a DD object in the Repository.
  *
@@ -104,7 +96,6 @@ public class EarDataObject extends DD2beansDataObject
     private Vector updates;
     
     private RequestProcessor.Task updateTask;
-    private FileObjectObserver fileListener;
 
     private static final int HOME = 10;
     private static final int REMOTE = 20;
@@ -115,6 +106,7 @@ public class EarDataObject extends DD2beansDataObject
         super (pf, loader);
         init (pf,loader);
     }
+    @Override
     public boolean isRenameAllowed(){
         return false;
     }
@@ -127,10 +119,6 @@ public class EarDataObject extends DD2beansDataObject
         InputSource in = DataObjectAdapters.inputSource(this);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-        
-
-
-        fileListener = new FileObjectObserver(fo);
         
         Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
         if (project != null) {
@@ -193,6 +181,7 @@ public class EarDataObject extends DD2beansDataObject
         return DDProvider.getDefault().getDDRoot(getPrimaryFile());
     }
     
+    @Override
     protected org.openide.nodes.Node createNodeDelegate () {
         return new EarDataNode(this);
     }
@@ -320,37 +309,14 @@ public class EarDataObject extends DD2beansDataObject
         return null;
     }
     
-    /**
-     * Adds Ejb
-     *
-     * One ejb element element. The ejb-name is
-     * set to Ejb_&lt clazz&gt by default.
-     *
-     * @param clazz class name of ejb
-     * @param pathName path to ejb class (pkg/foo/Bar)
-     */
-//   public void createDefaultEJBConfiguration (String clazz, String urlPattern) {
-//        // PENDING: should be synchronized
-//        EnterpriseBeans a = getEjbJar ().getEnterpriseBeans();
-//        try {
-//            Session newEjb = a.newSession();//Ludo todo add more ejb type cmp, mdb.
-//            newEjb.setEjbClass (clazz);
-//            String name = "Ludo was there Name123";//DDUtils.findFreeName (a.getServlet (), "EjbName" , "Ejb_"+clazz); // NOI18N
-//            newEjb.setEjbName (name);
-//            newEjb.setDescription (NbBundle.getMessage (EarDataObject.class, "TXT_newEjbElementDescription"));
-//            newEjb.setDisplayName ("Session "+clazz); // NOI18N
-//            a.addSession (newEjb);
-//
-//            setNodeDirty (true);
-//        } catch (Exception ex) {}
-//    }
-    
+    @Override
     protected DataObject handleCopy(DataFolder f) throws IOException {
         DataObject dObj = super.handleCopy(f);
         try { dObj.setValid(false); }catch(java.beans.PropertyVetoException e){}
         return dObj;
     }
 
+    @Override
     protected void dispose () {
         // no more changes in DD
         synchronized (this) {
@@ -362,24 +328,11 @@ public class EarDataObject extends DD2beansDataObject
         super.dispose ();
     }
     
-    /** Getter for property documentDTD.
-     * @return Value of property documentDTD or <CODE>null</CODE> if documentDTD cannot be obtained.
-     */
-  /***  public String getDocumentDTD () {
-        if (documentDTD == null) {
-            EjbJar wa = getEjbJar ();
-        }
-        return documentDTD;
-    }***/
 
     /** This methods gets called when servlet is changed
      * @param evt - object that describes the change.
      */
     public void deploymentChange (DDChangeEvent evt) {
-        // fix of #28542, don't add ejb, if it's already defined in DD
-//        if ( evt.getType() == DDChangeEvent.EJB_ADDED && EjbDefined( evt.getNewValue() ) )
-//            return;
-        
         synchronized (this) {
             if (updates == null) {
                 updates = new Vector ();
@@ -410,18 +363,6 @@ public class EarDataObject extends DD2beansDataObject
         }
     }
     
-//    private boolean EjbDefined(String classname) {
-//        EjbJar ejbJar = getEjbJar();
-//        if (ejbJar==null) return true;
-//        Ejb[] ejbs = ejbJar.getEnterpriseBeans(). getEjbs();
-//        for ( int i = 0; i < ejbs.length; i++ ) {
-//            //Ludo TODO need to check the other class names: remote, home....depending on the ejb type
-//            if ( ejbs[i].getEjbClass() != null && ejbs[i].getEjbClass().equals( classname ) )
-//                return true;
-//        }
-//        return false;
-//    }
-    
     private void showDDChangesDialog (List changes) {
         final JButton processButton;
         final JButton processAllButton;
@@ -450,17 +391,12 @@ public class EarDataObject extends DD2beansDataObject
         String fsname = "";                                             //NOI18N
         Project project = FileOwnerQuery.getOwner (getPrimaryFile ());
         if (project != null) {
-            String projectName = null;
             ProjectInformation projectInfo = ProjectUtils.getInformation(project);
             if(projectInfo != null){
                 fsname = projectInfo.getName();
             }
         }
 
-    ///LUDO    WebModule wm = WebModule.getWebModule(getPrimaryFile ());
-    ///    if (wm!=null) {
-    ///        fsname=wm.getContextPath();
-    ///    }
         String caption = NbBundle.getMessage (EarDataObject.class, "MSG_SynchronizeCaption", fsname);
         connectionPanel = new DDChangesPanel (caption, processButton);
         confirmChangesDescriptor = new DialogDescriptor (
@@ -532,17 +468,12 @@ public class EarDataObject extends DD2beansDataObject
         if (!isValid())
             return;
        
-        if (evt.getType () == DDChangeEvent.EJB_ADDED) {
-            String clz = evt.getNewValue ();
-
-            // new from template or copy of another servlet
-            String urimapping = "/servlet/"+clz;    // NOI18N
-            //createDefaultEJBConfiguration (clz, urimapping);
-        } else {
+        if (evt.getType () != DDChangeEvent.EJB_ADDED) {
             updateDD(evt.getOldValue(), (String)evt.getNewValue (), evt.getType());
         }
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(EarDataObject.class);
     }
@@ -610,9 +541,6 @@ public class EarDataObject extends DD2beansDataObject
     }
 
     public void fileRenamed(org.openide.filesystems.FileRenameEvent fileRenameEvent) {
-//        System.out.println("fileRenamed");                              //NOI18N
-//        System.out.println("fileRenameEvent : " + fileRenameEvent);     //NOI18N
-
         FileObject fo = fileRenameEvent.getFile();
         String resourceName = getPackageName (fo);
         if (resourceName != null) {
@@ -622,20 +550,6 @@ public class EarDataObject extends DD2beansDataObject
             Application ejbJar = getApplication();
             if (ejbJar.getStatus()==Application.STATE_VALID) {
                 fireEvent(oldResourceName, resourceName, DDChangeEvent.EJB_CHANGED);
-                ///Ejb ejb = (Ejb)ejbJar.findBeanByName("Session","EjbClass",oldResourceName); //NOI18N
-                /****  
-                Listener listener = (Listener)ejbJar.findBeanByName("Listener","ListenerClass",oldResourceName); //NOI18N
-                if (listener!=null) {
-                    DDChangeEvent ddEvent = 
-                        new DDChangeEvent(this,this,oldResourceName,resourceName,DDChangeEvent.LISTENER_CHANGED);
-                    deploymentChange (ddEvent);
-                }
-                Filter filter = (Filter)ejbJar.findBeanByName("Filter","FilterClass",oldResourceName); //NOI18N
-                if (filter!=null) {
-                    DDChangeEvent ddEvent = 
-                        new DDChangeEvent(this,this,oldResourceName,resourceName,DDChangeEvent.FILTER_CHANGED);
-                    deploymentChange (ddEvent);
-                }***********/
             }
         }
     }
@@ -644,78 +558,11 @@ public class EarDataObject extends DD2beansDataObject
     }
     
     public void fileDeleted(org.openide.filesystems.FileEvent fileEvent) {
-//        System.out.println("fileDeleted");                              //NOI18N
-//        System.out.println("fileEvent : " + fileEvent);                 //NOI18N
-
         FileObject fo = fileEvent.getFile();
         String resourceName = getPackageName (fo);
         if (resourceName != null) {
-            boolean foundElement=false;
             if (newFileNames==null) {
-                foundElement = 
-                    fireEvent(null, resourceName, DDChangeEvent.EJB_DELETED);
-                
-                /*if (foundElement) return;
-                Filter[] filters = getEjbJar().getFilter();
-                for (int i=0;i<filters.length;i++) {
-                    if (resourceName.equals(filters[i].getFilterClass())) {
-                        DDChangeEvent ddEvent = new DDChangeEvent(this,this,null,resourceName,DDChangeEvent.FILTER_DELETED);
-                        deploymentChange (ddEvent);
-                        foundElement=true;
-                        break;
-                    }
-                }
-                if (foundElement) return;
-                Listener[] listeners = getEjbJar().getListener();
-                for (int i=0;i<listeners.length;i++) {
-                    if (resourceName.equals(listeners[i].getListenerClass())) {
-                        DDChangeEvent ddEvent = new DDChangeEvent(this,this,null,resourceName,DDChangeEvent.LISTENER_DELETED);
-                        deploymentChange (ddEvent);
-                        break; // listener with that class should be only one
-                    }
-                }*/
-            } else {
-//                Ejb[] ejbs = getEjbJar().getEnterpriseBeans(). getEjbs();
-//                for (int i=0;i<ejbs.length;i++) {
-//                    if (resourceName.equals(ejbs[i].getEjbClass())) {
-//                        synchronized (this) {
-//                            if (deletedEjbNames==null) {
-//                                deletedEjbNames=new ArrayList();
-//                            }
-//                            deletedEjbNames.add(resourceName);
-//                        }
-//                        foundElement=true;
-//                        break;
-//                    }
-//                }
-                if (foundElement) return;
-
-               /* Filter[] filters = getEjbJar().getFilter();
-                for (int i=0;i<filters.length;i++) {
-                    if (resourceName.equals(filters[i].getFilterClass())) {
-                        synchronized (this) {
-                            if (deletedFilterNames==null) {
-                                deletedFilterNames=new ArrayList();
-                            }
-                            deletedFilterNames.add(resourceName);
-                        }
-                        foundElement=true;
-                        break;
-                    }
-                }
-                if (foundElement) return;
-                Listener[] listeners = getEjbJar().getListener();
-                for (int i=0;i<listeners.length;i++) {
-                    if (resourceName.equals(listeners[i].getListenerClass())) {
-                        synchronized (this) {
-                            if (deletedListenerNames==null) {
-                                deletedListenerNames=new ArrayList();
-                            }
-                            deletedListenerNames.add(resourceName);
-                        }
-                        break;
-                    }
-                }*/
+                fireEvent(null, resourceName, DDChangeEvent.EJB_DELETED);
             }
         }
     }
@@ -737,187 +584,12 @@ public class EarDataObject extends DD2beansDataObject
     public void stateChanged (javax.swing.event.ChangeEvent e) {
         refreshSourceFolders ();
     }
-    
-    /** WeakListener for accepting external changes to web.xml
-    */
-    private class FileObjectObserver implements FileChangeListener {
-        FileObjectObserver (FileObject fo) {
-            fo.addFileChangeListener((FileChangeListener)org.openide.util.WeakListeners.create(
-                                        FileChangeListener.class, this, fo));
-        }
-        
-        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
-        }
-        
-        public void fileChanged(FileEvent fileEvent) {
-            ApplicationProxy ejbJar = (ApplicationProxy) EarDataObject.this.getApplication();
-            boolean needRewriting = true;
-            if (ejbJar!= null && ejbJar.isWriting()) { // change from outside
-                ejbJar.setWriting(false);
-                needRewriting=false;
-            }
-            if (isSavingDocument()) {// document is being saved
-                setSavingDocument(false);
-                needRewriting=false;
-            }
-            if (needRewriting) getEditorSupport().restartTimer();
-        }
-        
-        public void fileDataCreated(FileEvent fileEvent) {
-        }
-        
-        public void fileDeleted(FileEvent fileEvent) {
-        }
-        
-        public void fileFolderCreated(FileEvent fileEvent) {
-        }
-        
-        public void fileRenamed(FileRenameEvent fileRenameEvent) {
-        }
-        
-    }
-
-//    private Application getEjbFromEjbClass(String ejbClassName){
-//        Ejb returnValue = null;
-//        Ejb[] ejbs = getEjbJar().getEnterpriseBeans(). getEjbs();
-//        for ( int i = 0; i < ejbs.length; i++ ) {
-//            if ( ejbs[i].getEjbClass() != null && 
-//                    ejbs[i].getEjbClass().equals( ejbClassName ) ){
-//                returnValue = ejbs[i];
-//                break;
-//            }
-//        }
-//        return returnValue;
-//    }
-//
-//    private int getBeanInterfaceType(String interfaceName){
-//        int interfaceType =  -1;
-//        EntityAndSession[] beans = ejbJar.getEnterpriseBeans().getSession();
-//        for ( int i = 0; i < beans.length; i++ ) {
-//            if ( beans[i].getHome() != null && 
-//                    beans[i].getHome().equals( interfaceName ) ){
-//                interfaceType = HOME;
-//                break;
-//            }
-//            if ( beans[i].getRemote() != null &&
-//                    beans[i].getRemote().equals( interfaceName ) ){
-//                interfaceType = REMOTE;
-//                break;
-//            }
-//            if ( beans[i].getLocalHome() != null && 
-//                    beans[i].getLocalHome().equals( interfaceName ) ){
-//                interfaceType = LOCAL_HOME;
-//                break;
-//            }
-//            if ( beans[i].getLocal() != null && 
-//                    beans[i].getLocal().equals( interfaceName ) ){
-//                interfaceType = LOCAL;
-//                break;
-//            }
-//        }
-//        return interfaceType;
-//    }
-//    
-//    private EntityAndSession getBeanFromInterface(String interfaceName){
-//        EntityAndSession returnValue =  null;
-//        EntityAndSession[] beans = ejbJar.getEnterpriseBeans().getSession();
-//        for ( int i = 0; i < beans.length; i++ ) {
-//            if ( beans[i].getHome() != null && 
-//                    beans[i].getHome().equals( interfaceName ) ){
-//                returnValue = beans[i];
-//                break;
-//            }
-//            if ( beans[i].getRemote() != null &&
-//                    beans[i].getRemote().equals( interfaceName ) ){
-//                returnValue = beans[i];
-//                break;
-//            }
-//            if ( beans[i].getLocalHome() != null && 
-//                    beans[i].getLocalHome().equals( interfaceName ) ){
-//                returnValue = beans[i];
-//                break;
-//            }
-//            if ( beans[i].getLocal() != null && 
-//                    beans[i].getLocal().equals( interfaceName ) ){
-//                returnValue = beans[i];
-//                break;
-//            }
-//        }
-//        return returnValue;
-//    }
-
-    private int getSpecificEvent(int eventType, int interfaceType){
-        if(eventType == DDChangeEvent.EJB_CHANGED){
-            switch(interfaceType){
-                case HOME :{
-                    return DDChangeEvent.EJB_HOME_CHANGED;
-                }
-                case REMOTE :{
-                    return DDChangeEvent.EJB_REMOTE_CHANGED;
-                }
-                case LOCAL_HOME :{
-                    return DDChangeEvent.EJB_LOCAL_HOME_CHANGED;
-                }
-                case LOCAL :{
-                    return DDChangeEvent.EJB_LOCAL_CHANGED;
-                }
-            }
-        }
-        if(eventType == DDChangeEvent.EJB_DELETED){
-            switch(interfaceType){
-                case HOME :{
-                    return DDChangeEvent.EJB_HOME_DELETED;
-                }
-                case REMOTE :{
-                    return DDChangeEvent.EJB_REMOTE_DELETED; 
-                }
-                case LOCAL_HOME :{
-                    return DDChangeEvent.EJB_LOCAL_HOME_DELETED;
-                }
-                case LOCAL :{
-                    return DDChangeEvent.EJB_LOCAL_DELETED;
-                }
-            }
-        }
-        ///assert(false : "control should never reach here -unsupported event type detected"); //NOI18N
-        return -1 ;
-    }
 
     private boolean fireEvent(String oldResourceName, String resourceName,
                 int eventType){
-//            System.out.println("fireEvent");                            //NOI18N
-//            System.out.println("oldResourceName : " + oldResourceName); //NOI18N
-//            System.out.println("resourceName : " + resourceName);       //NOI18N
-//            System.out.println("eventType : " + eventType);             //NOI18N
 
             boolean elementFound = false;
-            String resource = null;
             int specificEventType = -1;
-            if(eventType == DDChangeEvent.EJB_CHANGED){
-                resource = oldResourceName;
-            } else {
-                resource = resourceName;
-            }
-//            Ejb ejb = getEjbFromEjbClass(resource);
-//
-//            if(ejb != null){
-//                if(eventType == DDChangeEvent.EJB_CHANGED){
-//                    specificEventType = DDChangeEvent.EJB_CLASS_CHANGED;
-//                } else {
-//                    specificEventType = DDChangeEvent.EJB_CLASS_DELETED;
-//                }
-//                elementFound = true;
-//            }
-//
-//            if(!elementFound){
-//                int interfaceType = getBeanInterfaceType(resource);
-//
-//                if(interfaceType > 0 ){
-//                    specificEventType = 
-//                        getSpecificEvent(eventType, interfaceType);
-//                    elementFound = true;
-//                }
-//            }
             if (elementFound) {
                 assert(specificEventType > 0);
                 DDChangeEvent ddEvent = 
@@ -930,11 +602,6 @@ public class EarDataObject extends DD2beansDataObject
 
     private void updateDD(String oldResourceName, String resourceName,
                 int eventType){
-//        System.out.println("updateDD");                                 //NOI18N
-//        System.out.println("oldResourceName : " + oldResourceName);     //NOI18N
-//        System.out.println("resourceName : " + resourceName);           //NOI18N
-//        System.out.println("eventType : " + eventType);                 //NOI18N
-
         boolean ddModified = false;
 
         switch(eventType){
@@ -942,12 +609,6 @@ public class EarDataObject extends DD2beansDataObject
                 // update ejb-class
                 if (oldResourceName == null)
                     return;
-
-//                Ejb ejb = getEjbFromEjbClass(oldResourceName);
-//                if(ejb != null){
-//                    ejb.setEjbClass(resourceName);
-//                    ddModified = true;
-//                }
                 break;
             }
             case DDChangeEvent.EJB_CLASS_DELETED :  {
@@ -955,68 +616,30 @@ public class EarDataObject extends DD2beansDataObject
                 if (resourceName == null){
                     return;
                 }
-
-//                Ejb ejb = getEjbFromEjbClass(resourceName);
-//                if(ejb != null){
-//                    EjbJar ejbJar = getEjbJar ();
-//                    EnterpriseBeans enterpriseBeans = ejbJar.getEnterpriseBeans();
-//                    if(enterpriseBeans != null){
-//                        enterpriseBeans.removeEjb (ejb);
-//                        ddModified = true;
-//                    }
-//                }
                 break;
             }
 
             case DDChangeEvent.EJB_HOME_CHANGED :  {
                 if (oldResourceName == null)
                     return;
-
-//                EntityAndSession bean = getBeanFromInterface(oldResourceName);
-//                if(bean != null){
-//                    assert(oldResourceName.equals (bean.getHome()));
-//                    bean.setHome(resourceName);
-//                    ddModified = true;
-//                }
                 break;
             }
 
             case DDChangeEvent.EJB_REMOTE_CHANGED :  {
                 if (oldResourceName == null)
                     return;
-
-//                EntityAndSession bean = getBeanFromInterface(oldResourceName);
-//                if(bean != null){
-//                    assert(oldResourceName.equals (bean.getRemote()));
-//                    bean.setRemote(resourceName);
-//                    ddModified = true;
-//                }
                 break;
             }
 
             case DDChangeEvent.EJB_LOCAL_HOME_CHANGED :  {
                 if (oldResourceName == null)
                     return;
-
-//                EntityAndSession bean = getBeanFromInterface(oldResourceName);
-//                if(bean != null){
-//                    assert(oldResourceName.equals (bean.getLocalHome()));
-//                    bean.setLocalHome(resourceName);
-//                    ddModified = true;
-//                }
                 break;
             }
 
             case DDChangeEvent.EJB_LOCAL_CHANGED :  {
                 if (oldResourceName == null)
                     return;
-
-//                EntityAndSession bean = getBeanFromInterface(oldResourceName);
-//                if(bean != null){
-//                    assert(oldResourceName.equals (bean.getLocal()));
-//                    bean.setLocal(resourceName);
-//                    ddModified = true;
-//                }
                 break;
             }
 
@@ -1024,13 +647,6 @@ public class EarDataObject extends DD2beansDataObject
                 if (resourceName == null){
                     return;
                 }
-
-//                EntityAndSession bean = getBeanFromInterface(resourceName);
-//                if(bean != null){
-//                    assert(resourceName.equals (bean.getHome()));
-//                    bean.setHome(null);
-//                    ddModified = true;
-//                }
                 break;
             }
             
@@ -1038,13 +654,6 @@ public class EarDataObject extends DD2beansDataObject
                 if (resourceName == null){
                     return;
                 }
-
-//                EntityAndSession bean = getBeanFromInterface(resourceName);
-//                if(bean != null){
-//                    assert(resourceName.equals (bean.getRemote()));
-//                    bean.setRemote(null);
-//                    ddModified = true;
-//                }
                 break;
             }
 
@@ -1052,13 +661,6 @@ public class EarDataObject extends DD2beansDataObject
                 if (resourceName == null){
                     return;
                 }
-
-//                EntityAndSession bean = getBeanFromInterface(resourceName);
-//                if(bean != null){
-//                    assert(resourceName.equals (bean.getLocalHome()));
-//                    bean.setLocalHome(null);
-//                    ddModified = true;
-//                }
                 break;
             }
 
@@ -1066,13 +668,6 @@ public class EarDataObject extends DD2beansDataObject
                 if (resourceName == null){
                     return;
                 }
-
-//                EntityAndSession bean = getBeanFromInterface(resourceName);
-//                if(bean != null){
-//                    assert(resourceName.equals (bean.getLocal()));
-//                    bean.setLocal(null);
-//                    ddModified = true;
-//                }
                 break;
             }
         }
@@ -1080,23 +675,5 @@ public class EarDataObject extends DD2beansDataObject
         if(ddModified){
             setNodeDirty (true);
         }
-            /*
-            EjbJar a = getEjbJar ();
-            Ejb[] ejbs = a.getEnterpriseBeans(). getEjbs();
-            java.util.Vector EJBNames = new java.util.Vector ();
-            for (int i=0; i<ejbs.length; i++) {
-                if (clz.equals (ejbs[i].getEjbClass ())) {
-                    EJBNames.addElement (ejbs[i].getEjbName ());
-                    a.getEnterpriseBeans().removeEjb (ejbs[i]);
-                }
-            }
-           */
-           //delete other elements, if any, refering to this ejb
-           // ServletMapping [] mappings = wa.getServletMapping ();
-           // for (int i=0; i<mappings.length; i++) {
-           //     if (EJBNames.contains (mappings[i].getServletName ())) {
-           //         wa.removeEJBMapping (mappings[i]);
-           //     }
-           // }
     }
 }
