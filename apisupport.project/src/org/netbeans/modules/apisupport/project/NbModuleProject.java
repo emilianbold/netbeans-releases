@@ -67,7 +67,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider.NbModuleType;
-import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler;
 import org.netbeans.modules.apisupport.project.queries.ModuleProjectClassPathExtender;
 import org.netbeans.modules.apisupport.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
@@ -92,7 +91,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.netbeans.modules.apisupport.project.queries.AccessibilityQueryImpl;
@@ -118,7 +116,6 @@ import org.netbeans.spi.project.ui.RecommendedTemplates;
 import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.Exceptions;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * A NetBeans module project.
@@ -246,7 +243,6 @@ public final class NbModuleProject implements Project {
             new ModuleProjectClassPathExtender(this),
             new LocalizedBundleInfoProvider(),
             new ModuleOperations(this),
-            new ServiceNodeHandler(this, typeProvider),
             LookupProviderSupport.createSourcesMerger(),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),

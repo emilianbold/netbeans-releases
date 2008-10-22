@@ -102,7 +102,12 @@ made subject to such option by the copyright holder.
                 <os family="mac"/>
             </and>
         </condition>
-        <condition property="nbjdk.bootclasspath" value="${nbjdk.home}/jre/lib/rt.jar">
+        <pathconvert property="nbjdk.bootclasspath.standard">
+            <path>
+                <fileset dir="${nbjdk.home}/jre/lib" erroronmissingdir="false" includes="*.jar"/>
+            </path>
+        </pathconvert>
+        <condition property="nbjdk.bootclasspath" value="${nbjdk.bootclasspath.standard}">
             <equals arg1="${nbjdk.bootclasspath.tmp}" arg2="$${platforms.${nbjdk.active}.bootclasspath}"/>
         </condition>
         <property name="nbjdk.bootclasspath" value="${nbjdk.bootclasspath.tmp}"/>
