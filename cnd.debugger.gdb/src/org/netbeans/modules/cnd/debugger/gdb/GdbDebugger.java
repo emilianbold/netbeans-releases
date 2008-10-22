@@ -471,8 +471,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private final void initGdbVersion() {
         CommandBuffer cb = new CommandBuffer(gdb);
         gdb.gdb_version(cb);
-        cb.waitForCompletion();
-        String message = cb.toString();
+        String message = cb.waitForCompletion();
 
         if (startupTimer != null) {
             // Cancel the startup timer - we've got our first response from gdb
@@ -1073,7 +1072,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
             disassembly.updateRegModified(msg);
             GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, disassembly.getRegisterValues());
-        } else if (msg.equals("^done")) { // NOI18N
+        } else if (msg.startsWith("^done")) { // NOI18N
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
                 cb.done();

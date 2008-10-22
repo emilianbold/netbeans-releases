@@ -149,11 +149,13 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
 
         addRefreshable(new ItemEditorHelper(jTxtName, new EndpointTextFieldEditorModel(synchronizer, WebserviceEndpoint.PORT_COMPONENT_NAME)));
         addRefreshable(new ItemEditorHelper(jTxtEndpointAddressURI, new EndpointTextFieldEditorModel(synchronizer, WebserviceEndpoint.ENDPOINT_ADDRESS_URI)));
-        if(!isWebApp && as90FeaturesVisible) {
-            addRefreshable(new ItemEditorHelper(jTxtRealm, new RealmTextFieldEditorModel(synchronizer)));
+        if(!isWebApp) {
+            addRefreshable(new AuthMethodComboBoxHelper(synchronizer, jCbxAuthentication));
+            if(as90FeaturesVisible) {
+                addRefreshable(new ItemEditorHelper(jTxtRealm, new RealmTextFieldEditorModel(synchronizer)));
+            }
         }
         addRefreshable(new TransportComboBoxHelper(synchronizer, jCbxTransportGuarantee));
-        addRefreshable(new AuthMethodComboBoxHelper(synchronizer, jCbxAuthentication));
         if(as90FeaturesVisible) {
             addRefreshable(new DebugEnabledCheckboxHelper(synchronizer, jChkDebugEnabled));
         }
@@ -555,7 +557,10 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
                     try {
                         startUIChange();
                         savedLoginConfig.setRealm(newRealm);
-                        endpoint.getLoginConfig().setRealm(newRealm);
+                        LoginConfig lc = endpoint.getLoginConfig();
+                        if(lc != null) {
+                            lc.setRealm(newRealm);
+                        }
                     } finally {
                         endUIChange();
                         synchronizer.requestUpdateData();
@@ -576,7 +581,10 @@ public class EndpointPanel extends BaseSectionNodeInnerPanel {
                 try {
                     startUIChange();
                     savedLoginConfig.setAuthMethod(newAuthMethod);
-                    endpoint.getLoginConfig().setAuthMethod(newAuthMethod);
+                    LoginConfig lc = endpoint.getLoginConfig();
+                    if(lc != null) {
+                        lc.setAuthMethod(newAuthMethod);
+                    }
                 } finally {
                     endUIChange();
                     synchronizer.requestUpdateData();

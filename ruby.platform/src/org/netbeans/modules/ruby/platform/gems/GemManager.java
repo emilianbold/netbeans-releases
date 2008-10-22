@@ -124,9 +124,7 @@ public final class GemManager {
     /** Share over invocations of the dialog since these are ESPECIALLY slow to compute */
     private List<Gem> remote;
 
-    private String gemTool;
     private String gemHomeUrl;
-    private String rails;
 
     private final RubyPlatform platform;
 
@@ -138,43 +136,6 @@ public final class GemManager {
         this.platform = platform;
         this.runnerLocalLock = new ReentrantLock(true);
         this.runnerRemoteLock = new ReentrantLock(true);
-    }
-
-    private String getGemMissingMessage() {
-        if (Utilities.isMac() && "/usr/bin/ruby".equals(platform.getInterpreter())) { // NOI18N
-            String version = System.getProperty("os.version"); // NOI18N
-            if (version == null || version.startsWith("10.4")) { // Only a problem on Tiger // NOI18N
-                return NbBundle.getMessage(GemManager.class, "GemMissingMac");
-            }
-        }
-        return NbBundle.getMessage(GemManager.class, "GemMissing");
-    }
-
-    /**
-     * Return null if there are no problems running gem. Otherwise return
-     * an error message which describes the problem.
-     */
-    public String getGemProblem() {
-        String gem = getGemTool();
-
-        if (gem == null) {
-            return getGemMissingMessage();
-        }
-
-        String gemHomePath = getGemHome();
-        if (gemHomePath == null) {
-            // edge case, misconfiguration? gem tool is installed but repository is not found
-            return NbBundle.getMessage(GemManager.class, "CannotFindGemRepository");
-        }
-
-        File gemHome = new File(gemHomePath);
-
-        if (!gemHome.exists()) {
-            // Is this possible? (Installing gems, but no gems installed yet
-            return null;
-        }
-
-        return null;
     }
 
     String getRubyGemsVersion() {
@@ -198,7 +159,7 @@ public final class GemManager {
             String gksu = Util.findOnPath("gksu"); // NOI18N
             if (gksu == null) {
                 NotifyDescriptor nd = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(GemManager.class, "GemNotWritable", getGemHome()),
+                        NbBundle.getMessage(GemManager.class, "GemManager.GemNotWritable", getGemHome()),
                         NotifyDescriptor.Message.ERROR_MESSAGE);
                 DialogDisplayer.getDefault().notifyLater(nd);
                 return false;
@@ -571,22 +532,6 @@ public final class GemManager {
         return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
-    public boolean haveGemTool() {
-        return getGemTool() != null;
-    }
-
-    /** Returns false if check fails. True in success case. */
-    private boolean checkGemProblem() {
-        String gemProblem = getGemProblem();
-        if (gemProblem != null) {
-            NotifyDescriptor nd = new NotifyDescriptor.Message(gemProblem,
-                    NotifyDescriptor.Message.ERROR_MESSAGE);
-            DialogDisplayer.getDefault().notifyLater(nd);
-            return false;
-        }
-        return true;
-    }
-
     boolean needsLocalReload() {
         return local == null;
     }
@@ -610,7 +555,7 @@ public final class GemManager {
      */
     public void reloadIfNeeded(final List<? super String> errors) {
         assert !EventQueue.isDispatchThread() : "do not call from EDT!";
-        if (!checkGemProblem()) {
+        if (!platform.checkAndReportRubyGemsProblems()) {
             return;
         }
         Collection<? super String> c = errors;
@@ -621,7 +566,7 @@ public final class GemManager {
     }
 
     List<String> reloadLocalIfNeeded() {
-        if (!checkGemProblem()) {
+        if (!platform.checkAndReportRubyGemsProblems()) {
             return Collections.emptyList();
         }
         List<String> errors = new ArrayList<String>();
@@ -644,7 +589,7 @@ public final class GemManager {
     }
 
     List<String> reloadRemoteIfNeeded() {
-        if (!checkGemProblem()) {
+        if (!platform.checkAndReportRubyGemsProblems()) {
             return Collections.emptyList();
         }
         List<String> errors = new ArrayList<String>();
@@ -823,31 +768,6 @@ public final class GemManager {
             resetLocal();
             return ok;
         }
-    }
-
-    /**
-     * Return path to the <em>gem</em> tool if it does exist.
-     *
-     * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
-     *         found.
-     */
-    public String getGemTool() {
-        if (!platform.hasRubyGemsInstalled()) {
-            return null;
-        }
-        if (gemTool == null) {
-            String bin = platform.getBinDir();
-            if (bin != null) {
-                gemTool = bin + File.separator + "gem"; // NOI18N
-                if (!new File(gemTool).isFile()) {
-                    gemTool = null;
-                }
-            }
-        }
-        if (gemTool == null) {
-            gemTool = Util.findOnPath("gem"); // NOI18N
-        }
-        return gemTool;
     }
 
     /**

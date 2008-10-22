@@ -54,6 +54,8 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxEditor;
@@ -70,6 +72,7 @@ import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
+import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
 import org.openide.util.NbBundle;
 
 /**
@@ -96,6 +99,7 @@ public final class ReturnTypeUIHelper {
     
     static final Separator SEPARATOR_ITEM = new Separator();
     static final Object NEW_ITEM = new Object() {
+        @Override
         public String toString() {
             return NbBundle.getMessage(ReturnTypeUIHelper.class, "LBL_Choose"); // NOI18N
         }
@@ -173,8 +177,8 @@ public final class ReturnTypeUIHelper {
     
     private static class ReturnTypeListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-
             if (isSelected) {
                 setBackground(list.getSelectionBackground());
                 setForeground(list.getSelectionForeground());
@@ -190,7 +194,6 @@ public final class ReturnTypeUIHelper {
                 setText(value != null ? value.toString() : ""); // NOI18N
                 setToolTipText(""); // NOI18N
             }
-            
             return this;
         }
 
@@ -244,6 +247,7 @@ public final class ReturnTypeUIHelper {
                         newValue = method.invoke(oldValue, new Object[] { editor.getText() });
                     } catch (Exception ex) {
                         // Fail silently and return the newValue (a String object)
+                        Logger.getLogger("ReturnTypeUIHelper").log(Level.FINE, "ignored excep[tion", ex);  //NOI18N
                     }
                 }
             }

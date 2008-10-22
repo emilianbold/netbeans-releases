@@ -108,6 +108,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
@@ -172,6 +173,10 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             return ;
         }
 
+        if (TokenHierarchy.get(doc).tokenSequence() == null) {
+            return ;
+        }
+        
         if (process(info, doc) && fact != null) {
             fact.rescheduleImpl(file);
         }

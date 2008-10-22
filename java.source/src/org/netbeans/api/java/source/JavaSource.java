@@ -1223,6 +1223,7 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
+        options.add("-proc:none"); // NOI18N, Disable annotation processors
 
         //for dev builds, fill stack trace for CompletionFailures (see #146026):
         boolean assertsEnabled = false;
