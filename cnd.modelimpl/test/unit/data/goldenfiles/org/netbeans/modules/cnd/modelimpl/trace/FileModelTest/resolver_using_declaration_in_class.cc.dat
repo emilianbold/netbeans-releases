@@ -20,7 +20,7 @@ CLASS Base (Base ) [1:1/0-6:2/81] lcurly=11 SCOPE: $Global$
             UNIQUE NAME F:Base::convert(const char*)
             PARAMETERS:
                  [3:37/44-3:48/55]  TYPE: const *char TEXT=const char*  [3:37/44-3:42/49]  INIT: null  SCOPE: convert 
-            RETURNS Base TEXT=Base  [3:17/24-3:28/35]
+            RETURNS Base TEXT=Base  [3:24/31-3:28/35]
         CLASS Helper (Base::Helper ) [4:17/60-5:18/78] lcurly=73 SCOPE: Base 
             BASE CLASSES:
             MEMBERS:
@@ -54,7 +54,7 @@ CLASS Base (Base ) [1:1/0-6:2/81] lcurly=11 SCOPE: $Global$
             UNIQUE NAME F:Base::convert(const char*)
             PARAMETERS:
                  [3:37/44-3:48/55]  TYPE: const *char TEXT=const char*  [3:37/44-3:42/49]  INIT: null  SCOPE: convert 
-            RETURNS Base TEXT=Base  [3:17/24-3:28/35]
+            RETURNS Base TEXT=Base  [3:24/31-3:28/35]
         CLASS Helper (Base::Helper ) [4:17/60-5:18/78] lcurly=73 SCOPE: Base 
             BASE CLASSES:
             MEMBERS:

@@ -90,6 +90,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     private final Info info;
 
+    private final RubyPlatformValidator validator;
+
     private final String id;
     private final String interpreter;
     private File home;
@@ -99,6 +101,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     private static FileObject stubsFO;
     private boolean indexInitialized;
 
+    // Platform tools
+    private String gemTool;
     private String rdoc;
     private String irb;
 
@@ -117,6 +121,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         this.id = id;
         this.interpreter = interpreterPath;
         this.info = info;
+        this.validator = new RubyPlatformValidator(this);
     }
 
     /**
@@ -573,6 +578,10 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return rubybin;
     }
 
+    public String findExecutable(final String toFind) {
+        return findExecutable(toFind, true);
+    }
+
     /**
      * Try to find a path to the <tt>toFind</tt> executable in the "Ruby
      * specific" manner.
@@ -581,7 +590,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @return path to the found executable; might be <tt>null</tt> if not
      *         found.
      */
-    public String findExecutable(final String toFind) {
+    private String findExecutable(final String toFind, final boolean searchInRubyGems) {
         String exec = null;
         boolean canonical = true; // default
         do {
@@ -592,8 +601,8 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             } else {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
             }
-            if (exec == null && hasRubyGemsInstalled()) {
-                for (File repo : gemManager.getRepositories()) {
+            if (exec == null && searchInRubyGems && hasRubyGemsInstalled()) {
+                for (File repo : getGemManager().getRepositories()) {
                     String libGemBinDir = repo.getAbsolutePath() + File.separator + "bin"; // NOI18N
                     exec = RubyPlatform.findExecutable(libGemBinDir, toFind);
                     if (exec != null) {
@@ -609,7 +618,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         }
         // try *.bat commands on Windows
         if (exec == null && !toFind.endsWith(".bat") && Utilities.isWindows()) { // NOI18N
-            exec = findExecutable(toFind + ".bat"); // NOI18N
+            exec = findExecutable(toFind + ".bat", searchInRubyGems); // NOI18N
         }
         if (exec != null) {
             LOGGER.finer("Found '" + toFind + "': '" + exec + "'");
@@ -627,14 +636,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @param withSuffix whether to try also suffix version when non-suffix is not found
      * @return see {@link #findExecutable(String)}
      */
-    public String findExecutable(final String toFind, final boolean withSuffix) {
-        String exec = findExecutable(toFind);
+    private String findExecutable(final String toFind, final boolean searchInRubyGems, final boolean withSuffix) {
+        String exec = findExecutable(toFind, searchInRubyGems);
         if (exec == null && withSuffix && !isJRuby()) { // JRuby is not compiled with custom suffix
             String name = new File(getInterpreter(true)).getName();
             if (name.startsWith("ruby")) { // NOI18N
                 String suffix = name.substring(4);
                 // Try to find with suffix (#120441)
-                exec = findExecutable(toFind + suffix);
+                exec = findExecutable(toFind + suffix, searchInRubyGems);
             }
         }
         return exec;
@@ -649,16 +658,29 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         return exec;
     }
 
+    /**
+     * Return path to the <em>gem</em> tool if it does exist.
+     *
+     * @return path to the <em>gem</em> tool; might be <tt>null</tt> if not
+     *         found.
+     */
+    public String getGemTool() {
+        if (gemTool == null) {
+            gemTool = findExecutable("gem", false, true); // NOI18N
+        }
+        return gemTool;
+    }
+
     public String getRDoc() {
         if (rdoc == null) {
-            rdoc = findExecutable("rdoc", true); // NOI18N
+            rdoc = findExecutable("rdoc", false, true); // NOI18N
         }
         return rdoc;
     }
 
     public String getIRB() {
         if (irb == null) {
-            irb = findExecutable(isJRuby() ? "jirb" : "irb", true); // NOI18N
+            irb = findExecutable(isJRuby() ? "jirb" : "irb", false, true); // NOI18N
         }
         return irb;
     }
@@ -696,14 +718,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      */
     public boolean hasFastDebuggerInstalled() {
         // no usable version of Fast Debugger for Rubinius is available yet
-        return gemManager != null && !isRubinius() && getFastDebuggerProblemsInHTML() == null;
+        return getGemManager() != null && !isRubinius() && getFastDebuggerProblemsInHTML() == null;
     }
 
     /**
      * @return null if everthing is OK or errors in String
      */
     public String getFastDebuggerProblemsInHTML() {
-        assert gemManager != null : "has gemManager when asking whether Fast Debugger is installed";
+        assert getGemManager() != null : "has gemManager when asking whether Fast Debugger is installed";
         StringBuilder errors = new StringBuilder();
         checkAndReport(RUBY_DEBUG_IDE_NAME, getRequiredRDebugIDEVersionPattern(), errors);
         return errors.length() == 0 ? null : errors.toString();
@@ -723,10 +745,27 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
                 return gemVersion.matcher(version).matches();
             }
         };
-        if (!gemManager.isGemInstalledForPlatform(gemName, predicate)) {
+        if (!getGemManager().isGemInstalledForPlatform(gemName, predicate)) {
             errors.append(NbBundle.getMessage(RubyPlatform.class, "RubyPlatform.GemInVersionMissing", gemName, gemVersion.toString()));
             errors.append("<br>"); // NOI18N
         }
+    }
+
+    public void reportRubyGemsProblem() {
+        validator.reportRubyGemsProblem();
+    }
+
+    /** Returns false if check fails. True in success case. */
+    public boolean checkAndReportRubyGemsProblems() {
+        return validator.checkAndReportRubyGemsProblems();
+    }
+    
+    /**
+     * Return <tt>null</tt> if there are no problems running gem. Otherwise
+     * return an error message which describes the problem.
+     */
+    public String getRubyGemsProblems() {
+        return validator.getRubyGemsProblems();
     }
 
     /**
@@ -739,7 +778,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      *         version is found
      */
     public String getLatestAvailableValidRDebugIDEVersions() {
-        List<GemInfo> versions = gemManager.getVersions(RUBY_DEBUG_IDE_NAME);
+        List<GemInfo> versions = getGemManager().getVersions(RUBY_DEBUG_IDE_NAME);
         for (GemInfo getInfo : versions) {
             String version = getInfo.getVersion();
             if (getRequiredRDebugIDEVersionPattern().matcher(version).matches()) {
@@ -756,12 +795,12 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
      * @return <tt>true</tt> whether the installation succeed; <tt>false</tt> otherwise
      */
     public boolean installFastDebugger() {
-        assert gemManager != null : "has gemManager when trying to install fast debugger";
+        assert getGemManager() != null : "has gemManager when trying to install fast debugger";
         Runnable installer = new Runnable() {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.3.1");
+                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.3.1");
             }
         };
         if (!EventQueue.isDispatchThread()) {
@@ -789,7 +828,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         // See if the file is under the Ruby libraries
         FileObject rubyLibFo = isRubinius() ? null : getLibDirFO();
         FileObject rubyStubs = getRubyStubs();
-        FileObject gemHome = gemManager != null ? gemManager.getGemHomeFO() : null;
+        FileObject gemHome = getGemManager() != null ? getGemManager().getGemHomeFO() : null;
 
         //        FileObject jar = FileUtil.getArchiveFile(file);
         //        if (jar != null) {
@@ -871,7 +910,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         } catch (IOException ioe) {
             LOGGER.log(Level.SEVERE, ioe.getLocalizedMessage(), ioe);
         }
-        gemManager.reset();
+        getGemManager().reset();
     }
 
     /**
@@ -883,18 +922,14 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * Check for RubyGems installation for this platform.
+     * Check whether RubyGems are correctly installed for this platform.
      *
-     * @param warn whether to show warning if RubyGems are not installed
-     * @return whether the RubyGems are installed for this platform.
+     * @param warn whether to show warning if RubyGems are not installed or
+     *        installation is broken
+     * @return whether the RubyGems are correctly installed for this platform
      */
     public boolean hasRubyGemsInstalled(boolean warn) {
-        boolean hasRubyGems = info.getGemHome() != null;
-        if (!hasRubyGems && warn) {
-            Util.notifyLocalized(RubyPlatform.class, "RubyPlatform.DoesNotHaveRubyGems", // NOI18N
-                    NotifyDescriptor.WARNING_MESSAGE, this.getLabel());
-        }
-        return hasRubyGems;
+        return validator.hasRubyGemsInstalled(warn);
     }
 
     /**

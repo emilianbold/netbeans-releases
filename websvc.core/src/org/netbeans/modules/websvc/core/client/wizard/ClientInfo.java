@@ -1188,7 +1188,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         }
         
         WSStackUtils wsStackUtils = new WSStackUtils(project);
-        if (ServerType.GLASSFISH_V3 == wsStackUtils.getServerType() && !wsStackUtils.isJsr109Supported()) {
+        if (ServerType.GLASSFISH_V3 == wsStackUtils.getServerType() && !wsStackUtils.isWsitSupported()) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(ClientInfo.class, "LBL_NoMetroInstalled")); //NOI18N            
         } else {        
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); //NOI18N

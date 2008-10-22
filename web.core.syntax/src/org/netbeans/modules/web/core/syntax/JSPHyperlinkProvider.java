@@ -181,7 +181,7 @@ public class JSPHyperlinkProvider implements HyperlinkProvider {
                 int endOfEL = elTokenSequence.offset() + elTokenSequence.token().length();
                 int res = exp.parse(endOfEL);
                 if (res == ELExpression.EL_START) {
-                    res = res = exp.parse(endOfEL + 1);
+                    res = exp.parse(endOfEL + 1);
                 }
                 return res == ELExpression.EL_BEAN;
             }
