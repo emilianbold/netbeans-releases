@@ -550,7 +550,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 }
                 
                 sources.add(source); // now register the newly opened
-                LOGGER.log(Level.FINE, "Opening module JAR {0}", source.file);
+                LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});
                 LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
             }
         }
