@@ -235,7 +235,9 @@ public class AddOperationAction extends AbstractAction implements AddOperationCo
     private void saveWsdlFile(FileObject wsdlFile) throws DataObjectNotFoundException, IOException{
         DataObject wsdlDO = DataObject.find(wsdlFile);
         SaveCookie saveCookie = wsdlDO.getCookie(SaveCookie.class);
-        saveCookie.save();
+        if (saveCookie != null) {
+            saveCookie.save();
+        }
     }
     
     private void changeSchemaLocation(Set<Schema> newSchemas, WSDLModel wsdlModel)

@@ -323,6 +323,7 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
                 <friend>org.nbheaven.sqe.core.maven</friend>

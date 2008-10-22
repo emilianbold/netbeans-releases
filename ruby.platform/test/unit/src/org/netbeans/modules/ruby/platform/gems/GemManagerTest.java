@@ -68,13 +68,13 @@ public class GemManagerTest extends RubyTestBase {
     }
 
     public void testGetRubyLibGemDir() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         GemManager gemManager = platform.getGemManager();
         assertEquals("righ gem dir", new File(platform.getLibDir(), "ruby/gems/1.8"), new File(gemManager.getGemHome()));
     }
 
     public void testGetGem() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         GemManager gemManager = platform.getGemManager();
         assertEquals("righ gem dir", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }
@@ -107,7 +107,6 @@ public class GemManagerTest extends RubyTestBase {
             List<String> errors = gm.reloadLocalIfNeeded();
             assertTrue("no errros", errors.isEmpty());
             assertTrue("local loaded", !gm.needsLocalReload());
-            gm.reset();
         } finally {
             gm.reset();
         }
@@ -131,9 +130,8 @@ public class GemManagerTest extends RubyTestBase {
         assertFalse("not valid", GemManager.isValidGemHome(getWorkDir()));
         assertTrue("valid", GemManager.isValidGemHome(
                 new File(RubyPlatformManager.getDefaultPlatform().getInfo().getGemHome())));
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
         assertTrue("valid", GemManager.isValidGemHome(
-                new File(platform.getInfo().getGemHome())));
+                new File(setUpPlatformWithRubyGems().getInfo().getGemHome())));
     }
 
     public void testGetRepositories() throws Exception {
@@ -201,7 +199,7 @@ public class GemManagerTest extends RubyTestBase {
     }
 
     public void testIsGemInstalledForPlatform() throws IOException {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         for (String version : new String[]{"0.10.0", "0.10.1"}) {
             installFakeGem("ruby-debug-base", version, platform);
         }
@@ -213,7 +211,7 @@ public class GemManagerTest extends RubyTestBase {
     }
 
     public void testChooseGems() throws Exception {
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         GemManager gemManager = platform.getGemManager();
 
         String gemLibs = gemManager.getGemHome();
@@ -312,7 +310,7 @@ public class GemManagerTest extends RubyTestBase {
 
     public void testEqualsAndHashCode() throws IOException {
         GemManager jGemManager = getSafeJRuby().getGemManager();
-        RubyPlatform platform = RubyPlatformManager.addPlatform(setUpRubyWithGems());
+        RubyPlatform platform = setUpPlatformWithRubyGems();
         GemManager cGemManager = platform.getGemManager();
         assertFalse("equals", jGemManager.equals(cGemManager));
         assertNotSame("hashCode", jGemManager.hashCode(), cGemManager.hashCode());

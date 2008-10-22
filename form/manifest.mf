@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.form/2
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/form/Bundle2.properties
-OpenIDE-Module-Specification-Version: 1.24
+OpenIDE-Module-Specification-Version: 1.25
 OpenIDE-Module-Implementation-Version: 2
 OpenIDE-Module-Install: org/netbeans/modules/form/FormEditorModule.class
 OpenIDE-Module-Package-Dependencies: [javax.swing.JComponentBeanInfo]

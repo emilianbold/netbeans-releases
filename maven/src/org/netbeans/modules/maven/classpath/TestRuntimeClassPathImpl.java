@@ -42,7 +42,6 @@ package org.netbeans.modules.maven.classpath;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
@@ -54,7 +53,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author  Milos Kleint 
  */
-class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
+public class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
     
     /**
      * Creates a new instance of TestRuntimeClassPathImpl
@@ -62,11 +61,18 @@ class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
     public TestRuntimeClassPathImpl(NbMavenProjectImpl proj) {
         super(proj);
     }
-    
+
    URI[] createPath() {
+        List<URI> lst = createPath(getMavenProject().getOriginalMavenProject());
+        URI[] uris = new URI[lst.size()];
+        uris = lst.toArray(uris);
+        return uris;
+   }
+    
+   public static List<URI>createPath(MavenProject prj) {
+       assert prj != null;
         List<URI> lst = new ArrayList<URI>();
-        MavenProject prj = getMavenProject().getOriginalMavenProject();
-        if (prj != null && prj.getBuild() != null) {
+        if (prj.getBuild() != null) {
             File fil = new File(prj.getBuild().getOutputDirectory());
             fil = FileUtil.normalizeFile(fil);
             lst.add(fil.toURI());
@@ -75,28 +81,16 @@ class TestRuntimeClassPathImpl extends AbstractProjectClassPathImpl {
             lst.add(fil.toURI());
         }
         @SuppressWarnings("unchecked")
-        List<Artifact> arts = getMavenProject().getOriginalMavenProject().getTestArtifacts();
-        List<File> assemblies = new ArrayList<File>();
+        List<Artifact> arts = prj.getTestArtifacts();
         for (Artifact art : arts) {
             if (art.getFile() != null) {
                 File fil = FileUtil.normalizeFile(art.getFile());
-                // the assemblied jars go as last ones, otherwise source for binaries don't really work.
-                // unless one has the assembled source jar s well?? is it possible?
-                if (art.getClassifier() != null) {
-                    assemblies.add(0, fil);
-                } else {
-                    lst.add(fil.toURI());
-                }
+                lst.add(fil.toURI());
             } else {
-                //null means dependencies were not resolved..
-            } //NOPMD
+              //NOPMD   //null means dependencies were not resolved..
+            }
         }
-        for (File ass : assemblies) {
-            lst.add(ass.toURI());
-        }
-        URI[] uris = new URI[lst.size()];
-        uris = lst.toArray(uris);
-        return uris;
+        return lst;
     }    
     
 }

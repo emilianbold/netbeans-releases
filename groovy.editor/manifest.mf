@@ -1,5 +1,5 @@
 Manifest-Version: 1.0
 AutoUpdate-Show-In-Client: false
-OpenIDE-Module: org.netbeans.modules.groovy.editor
+OpenIDE-Module: org.netbeans.modules.groovy.editor/2
 OpenIDE-Module-Layer: org/netbeans/modules/groovy/editor/resources/layer.xml
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/groovy/editor/Bundle.properties

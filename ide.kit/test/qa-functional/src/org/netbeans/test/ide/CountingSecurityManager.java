@@ -85,6 +85,7 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
         allowed = allowedFiles;
 
         Logger.getLogger("org.netbeans.TopSecurityManager").setLevel(Level.OFF);
+        System.setProperty("org.netbeans.TopSecurityManager.level", "3000");
     }
 
     static void assertReflection(int maxCount, String whitelist) {
@@ -300,6 +301,29 @@ final class CountingSecurityManager extends SecurityManager implements Callable<
                 }
                 if (stackTraceElement.getClassName().equals("java.lang.Class")) {
                     continue;
+                }
+                if (stackTraceElement.getClassName().startsWith("java.lang.Thread")) {
+                    if (stackTraceElement.getMethodName().equals("auditSubclass")) {
+                        return true;
+                    }
+                    continue;
+                }
+                if (stackTraceElement.getClassName().startsWith("java.security.AccessController")) {
+                    continue;
+                }
+                if (stackTraceElement.getClassName().equals("sun.swing.SwingLazyValue")) {
+                    // ignore createValue method
+                    return true;
+                }
+                if (
+                        stackTraceElement.getClassName().equals("java.awt.Component") &&
+                        stackTraceElement.getMethodName().equals("isCoalesceEventsOverriden")
+                ) {
+                    return true;
+                }
+                if (stackTraceElement.getClassName().startsWith("java.util.ResourceBundle")) {
+                    // ignore these invocations
+                    return true;
                 }
                 if (stackTraceElement.getClassName().equals("org.netbeans.jellytools")) {
                     // ignore these invocations

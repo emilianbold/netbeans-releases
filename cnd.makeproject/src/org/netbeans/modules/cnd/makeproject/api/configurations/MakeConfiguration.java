@@ -502,7 +502,9 @@ public class MakeConfiguration extends Configuration {
             // Base it on actual files added to project
             for (int x = 0; x < items.length; x++) {
                 ItemConfiguration itemConfiguration = items[x].getItemConfiguration(this);
-                if (itemConfiguration.getExcluded().getValue()) {
+                if (itemConfiguration == null || 
+                    itemConfiguration.getExcluded() == null || 
+                    itemConfiguration.getExcluded().getValue()) {
                     continue;
                 }
                 if (itemConfiguration.getTool() == Tool.CCompiler) {

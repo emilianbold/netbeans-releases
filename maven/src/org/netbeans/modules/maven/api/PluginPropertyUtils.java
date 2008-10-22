@@ -82,6 +82,7 @@ public class PluginPropertyUtils {
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginProperty(project.getOriginalMavenProject(), groupId, artifactId, property, goal);
     }
+
     /**
      * tries to figure out if the property of the given plugin is customized in the
      * current project and returns it's value if so, otherwise null
@@ -130,6 +131,44 @@ public class PluginPropertyUtils {
         }
         return toRet;
     }
+
+    /**
+     * tries to figure out if the a plugin is defined in the project
+     * and return the version declared.
+     * @return version string or null
+     */
+    public static String getPluginVersion(MavenProject prj, String groupId, String artifactId) {
+        String toRet = null;
+        if (prj.getBuildPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getBuildPlugins()) {
+            Plugin plug = (Plugin)obj;
+            if (artifactId.equals(plug.getArtifactId()) &&
+                   groupId.equals(plug.getGroupId())) {
+                toRet = plug.getVersion();
+            }
+        }
+        if (toRet == null &&
+                //TODO - the plugin configuration probably applies to
+                //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
+                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+            if (prj.getPluginManagement() != null) {
+                for (Object obj : prj.getPluginManagement().getPlugins()) {
+                    Plugin plug = (Plugin)obj;
+                    if (artifactId.equals(plug.getArtifactId()) &&
+                        groupId.equals(plug.getGroupId())) {
+                        toRet = plug.getVersion();
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
+
     
     private static String checkConfiguration(MavenProject prj, Object conf, String property) {
         if (conf != null && conf instanceof Xpp3Dom) {
@@ -160,7 +199,7 @@ public class PluginPropertyUtils {
         assert project != null : "Requires a maven project instance"; //NOI18N
         return getPluginPropertyList(project.getOriginalMavenProject(), groupId, artifactId, multiproperty, singleproperty, goal);
     }
-    
+
     /**
      * gets the list of values for the given property, if configured in the current project.
      * @param multiproperty list's root element (eg. "sourceRoots")
@@ -191,8 +230,8 @@ public class PluginPropertyUtils {
                 }
             }
         }
-        if (toRet == null && 
-                //TODO - the plugin configuration probably applies to 
+        if (toRet == null &&
+                //TODO - the plugin configuration probably applies to
                 //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
                 (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
                  Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
@@ -210,7 +249,7 @@ public class PluginPropertyUtils {
         }
         return toRet;
     }
-    
+
     private static String[] checkListConfiguration(MavenProject prj, Object conf, String multiproperty, String singleproperty) {
         if (conf != null && conf instanceof Xpp3Dom) {
             Xpp3Dom dom = (Xpp3Dom)conf;
@@ -231,8 +270,83 @@ public class PluginPropertyUtils {
             }
         }
         return null;
-    }    
+    }
+
+
+
+    public static Properties getPluginPropertyParameter(Project prj, String groupId, String artifactId, String propertyParameter, String goal) {
+        NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
+        assert project != null : "Requires a maven project instance"; //NOI18N
+        return getPluginPropertyParameter(project.getOriginalMavenProject(), groupId, artifactId, propertyParameter, goal);
+    }
     
+    public static Properties getPluginPropertyParameter(MavenProject prj, String groupId, String artifactId, String propertyParameter, String goal) {
+        Properties toRet = null;
+        if (prj.getBuildPlugins() == null) {
+            return toRet;
+        }
+        for (Object obj : prj.getBuildPlugins()) {
+            Plugin plug = (Plugin)obj;
+            if (artifactId.equals(plug.getArtifactId()) &&
+                   groupId.equals(plug.getGroupId())) {
+                if (plug.getExecutions() != null) {
+                    for (Object obj2 : plug.getExecutions()) {
+                        PluginExecution exe = (PluginExecution)obj2;
+                        if (exe.getGoals().contains(goal)) {
+                            toRet = checkPropertiesConfiguration(prj, exe.getConfiguration(), propertyParameter);
+                            if (toRet != null) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (toRet == null) {
+                    toRet = checkPropertiesConfiguration(prj, plug.getConfiguration(), propertyParameter);
+                }
+            }
+        }
+        if (toRet == null && 
+                //TODO - the plugin configuration probably applies to 
+                //lifecycle plugins only. always checking is wrong, how to get a list of lifecycle plugins though?
+                (Constants.PLUGIN_COMPILER.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_SUREFIRE.equals(artifactId) || //NOI18N
+                 Constants.PLUGIN_RESOURCES.equals(artifactId))) {  //NOI18N
+            if (prj.getPluginManagement() != null) {
+                for (Object obj : prj.getPluginManagement().getPlugins()) {
+                    Plugin plug = (Plugin)obj;
+                    if (artifactId.equals(plug.getArtifactId()) &&
+                        groupId.equals(plug.getGroupId())) {
+                        toRet = checkPropertiesConfiguration(prj, plug.getConfiguration(), propertyParameter);
+                        break;
+                    }
+                }
+            }
+        }
+        return toRet;
+    }
+    
+    private static Properties checkPropertiesConfiguration(MavenProject prj, Object conf, String propertyParameter) {
+        if (conf != null && conf instanceof Xpp3Dom) {
+            Xpp3Dom dom = (Xpp3Dom)conf;
+            Xpp3Dom source = dom.getChild(propertyParameter);
+            if (source != null) {
+                Properties toRet = new Properties();
+                Xpp3Dom[] childs = source.getChildren();
+                NBPluginParameterExpressionEvaluator eval = new NBPluginParameterExpressionEvaluator(prj, EmbedderFactory.getProjectEmbedder().getSettings(), new Properties());
+                for (Xpp3Dom ch : childs) {
+                    try {
+                        Object evaluated = eval.evaluate(ch.getValue().trim());
+                        toRet.put(ch.getName(), evaluated != null ? ("" + evaluated) : ch.getValue().trim());  //NOI18N
+                    } catch (ExpressionEvaluationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return toRet;
+            }
+        }
+        return null;
+    }
+
     
     /**
      * 

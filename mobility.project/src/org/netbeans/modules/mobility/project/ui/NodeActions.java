@@ -617,34 +617,17 @@ static class AddConfigurationAction extends ContextAction
     
     protected void performAction(final Node[] activatedNodes) 
     {
-        ProjectManager.mutex().postWriteRequest( new Runnable() 
-        {
-            public void run()
-            {                
-                final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
-                if (addNewConfig(project)) 
-                {
-                    // And save the project
-                    try {
-                        ProjectManager.getDefault().saveProject(project);
-                    }
-                    catch ( IOException ex ) {
-                        ErrorManager.getDefault().notify( ex );
-                    }                        
-                }
-            }
-        });
-    }
-
-
-    private boolean addNewConfig( J2MEProject project ) 
-    {
-        final J2MEProjectProperties j2meProperties = new J2MEProjectProperties( project, 
+        final J2MEProject project=activatedNodes[0].getLookup().lookup(J2MEProject.class);
+        final J2MEProjectProperties j2meProperties = new J2MEProjectProperties( project,
                 project.getLookup().lookup(AntProjectHelper.class),
-                project.getLookup().lookup(ReferenceHelper.class), 
+                project.getLookup().lookup(ReferenceHelper.class),
                 project.getConfigurationHelper() );
         final ArrayList<ProjectConfiguration> allNames=new ArrayList<ProjectConfiguration>();
-        allNames.addAll(Arrays.asList(j2meProperties.getConfigurations()));
+        ProjectManager.mutex().postReadRequest(new Runnable() {
+                public void run() {
+                    allNames.addAll(Arrays.asList(j2meProperties.getConfigurations()));
+                }
+            });
         final ArrayList<String> names = new ArrayList<String>(allNames.size());
         for ( ProjectConfiguration cfg : allNames )
             names.add(cfg.getDisplayName());
@@ -652,6 +635,29 @@ static class AddConfigurationAction extends ContextAction
         final DialogDescriptor dd = new DialogDescriptor(ncp, NbBundle.getMessage(VisualConfigSupport.class, "LBL_VCS_AddConfiguration"), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null); //NOI18N
         ncp.setDialogDescriptor(dd);
         final String newName = NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd)) ? ncp.getName() : null;
+        if (newName != null) {
+            ProjectManager.mutex().postWriteRequest( new Runnable()
+            {
+                public void run()
+                {
+                    if (addNewConfig(project, newName, j2meProperties, ncp, allNames))
+                    {
+                        // And save the project
+                        try {
+                            ProjectManager.getDefault().saveProject(project);
+                        }
+                        catch ( IOException ex ) {
+                            ErrorManager.getDefault().notify( ex );
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+
+    private boolean addNewConfig( J2MEProject project, final String newName, J2MEProjectProperties j2meProperties, NewConfigurationPanel ncp, List <ProjectConfiguration> allNames )
+    {
         if (newName != null) 
         {
             final ProjectConfiguration cfg = new ProjectConfiguration() 

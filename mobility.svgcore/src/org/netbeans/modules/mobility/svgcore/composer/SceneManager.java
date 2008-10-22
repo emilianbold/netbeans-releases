@@ -628,7 +628,14 @@ public final class SceneManager {
     public void deleteObject(SVGObject svgObj) {
         SVGObject [] oldSelection = getSelected();
         svgObj.delete();
-        SVGObject [] newSelection = getSelected();
+        // fix for #150324. 
+        // clear selection manually by setting new value to null.
+        // removing transaction is started in separate thread and 
+        //  can be in process at this moment. 
+        // So have two options - wait for it to finish (to use getSelected()) 
+        //  or clear selection manually.
+        //SVGObject [] newSelection = getSelected();
+        SVGObject [] newSelection = null;
         if (!SVGObject.areSame(newSelection, oldSelection)) {
             selectionChanged(newSelection, oldSelection);
         }                    

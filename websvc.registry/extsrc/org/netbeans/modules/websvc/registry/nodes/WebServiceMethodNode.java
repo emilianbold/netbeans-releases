@@ -152,10 +152,6 @@ public class WebServiceMethodNode extends AbstractNode implements WebServiceMeth
             SystemAction.get(TestWebServiceMethodAction.class)
         };
 	}
-	
-	public Action getPreferredAction() {
-		return SystemAction.get(TestWebServiceMethodAction.class);
-	}
     
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;

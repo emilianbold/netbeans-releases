@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.editor.shell;
 
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.editor.*;
 import org.netbeans.modules.editor.*;
@@ -55,22 +54,21 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 
 public class ShellKit extends NbEditorKit {
 
+    @Override
     public String getContentType() {
         return MIMENames.SHELL_MIME_TYPE;
-    }
-
-    public void install(JEditorPane c) {
-        super.install(c);
     }
 
     /** Create new instance of syntax coloring scanner
     * @param doc document to operate on. It can be null in the cases the syntax
     *   creation is not related to the particular document
     */
+    @Override
     public Syntax createSyntax(Document doc) {
         return new ShellSyntax();
     }
 
+    @Override
     public Document createDefaultDocument() {
         Document doc = super.createDefaultDocument();
         doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);

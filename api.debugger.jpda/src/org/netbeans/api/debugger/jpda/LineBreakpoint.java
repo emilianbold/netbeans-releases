@@ -433,7 +433,9 @@ public class LineBreakpoint extends JPDABreakpoint {
                     DataObject.getRegistry().addChangeListener(registryListener);
                 }
             } catch (MalformedURLException ex) {
-                ErrorManager.getDefault().notify(ex);
+                ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
+            } catch (IllegalArgumentException ex) {
+                ErrorManager.getDefault().notify(new IllegalArgumentException("URL = '"+url+"'", ex));
             }
         }
         

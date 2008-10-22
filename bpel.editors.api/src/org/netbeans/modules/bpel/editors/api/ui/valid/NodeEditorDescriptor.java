@@ -36,6 +36,9 @@ public class NodeEditorDescriptor extends AbstractDialogDescriptor {
     
     private Callable<Boolean> okButtonProcessor;
     private boolean subscribed = true; // intended to prevent double unsubscription;
+
+    private static java.lang.Exception cancelationException = 
+            new java.lang.Exception("cancelation"); // NOI18N
     
     public NodeEditorDescriptor(CustomNodeEditor editor, String title) {
         super(editor, title);
@@ -49,21 +52,34 @@ public class NodeEditorDescriptor extends AbstractDialogDescriptor {
                 //
                 // Save changes to the BPEL model
                 BpelModel model = ((BpelEntity)modelEntity).getBpelModel();
-                model.invoke(new Callable<Object>() {
-                    public Object call() throws java.lang.Exception {
-                        processOkButtonImpl(editor);
-                        return null;
+                try {
+                    model.invoke(new Callable<Object>() {
+                        public Object call() throws java.lang.Exception {
+                            if (!processOkButtonImpl(editor)) {
+                                throw cancelationException;
+                            }
+                            return null;
+                        }
+                    }, this);
+                } catch (java.lang.Exception ex) {
+                    // don't promote the cancelation exception futher
+                    if (ex != cancelationException) {
+                        throw ex;
                     }
-                }, this);
+                }
             } else if (modelEntity instanceof WSDLComponent){
                 //
                 // Save changes to the WSDL model
                 WSDLModel model = ((WSDLComponent)modelEntity).getModel();
                 model.startTransaction();
                 try {
-                    processOkButtonImpl(editor);
-                } finally {
-                    model.endTransaction();
+                    if (processOkButtonImpl(editor)) {
+                        model.endTransaction();
+                    } else {
+                        model.rollbackTransaction();
+                    }
+                } catch (java.lang.Exception ex) {
+                    model.rollbackTransaction();
                 }
             } else {
                 processOkButtonImpl(editor);
@@ -73,7 +89,7 @@ public class NodeEditorDescriptor extends AbstractDialogDescriptor {
         }
     }
     
-    private void processOkButtonImpl(CustomNodeEditor editor) {
+    private boolean processOkButtonImpl(CustomNodeEditor editor) {
         boolean success = false;
         //
         // Stop listening events
@@ -98,6 +114,7 @@ public class NodeEditorDescriptor extends AbstractDialogDescriptor {
                 subscribed = true;
             }
         }
+        return success;
     }
     
     public void processWindowClose() {
@@ -121,6 +138,7 @@ public class NodeEditorDescriptor extends AbstractDialogDescriptor {
         this.okButtonProcessor = processor;
     }
     
+    @Override
     public void setMessage(Object innerPane) {
         assert innerPane instanceof CustomNodeEditor;
         //

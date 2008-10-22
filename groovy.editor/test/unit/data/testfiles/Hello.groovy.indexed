@@ -30,7 +30,13 @@ Searchable Keys:
   field : publicField;01
   fqn : foo.Hello1
   method : dynamicmethod
-  method : main(args);08
+  method : getField1
+  method : getGreeting
+  method : getName
+  method : main(java.lang.String[]);08
+  method : setField1(int)
+  method : setGreeting(java.lang.Object)
+  method : setName(java.lang.Object)
 
 Not Searchable Keys:
 

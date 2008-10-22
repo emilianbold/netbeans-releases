@@ -41,14 +41,18 @@ package org.netbeans.modules.maven.runjar;
 import java.awt.Dialog;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
@@ -59,10 +63,14 @@ import org.netbeans.modules.maven.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.maven.execute.ActionToGoalUtils;
 import org.netbeans.modules.maven.execute.UserActionGoalProvider;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.project.runner.JavaRunner;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.maven.api.execute.RunUtils;
+import org.netbeans.modules.maven.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
@@ -92,6 +100,8 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
                 // project j2seplaform's java.exe
                 String val = (String) str.getValue();
                 if ("java".equals(val)) { //NOI18N
+                    //TODO somehow use the config.getMavenProject() call rather than looking up the
+                    // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                     ActiveJ2SEPlatformProvider plat = config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
                     assert plat != null;
                     FileObject fo = plat.getJavaPlatform().findTool(val);
@@ -125,6 +135,22 @@ public class RunJarPrereqChecker implements PrerequisitesChecker {
             }
         }
         return true;
+    }
+
+    private String action2Quick(String actionName) {
+        if (ActionProvider.COMMAND_CLEAN.equals(actionName)) {
+            return JavaRunner.QUICK_CLEAN;
+        } else if (ActionProvider.COMMAND_RUN.equals(actionName) || ActionProvider.COMMAND_RUN_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_RUN;
+        } else if (ActionProvider.COMMAND_DEBUG.equals(actionName) || ActionProvider.COMMAND_DEBUG_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_DEBUG;
+        } else if (ActionProvider.COMMAND_TEST.equals(actionName) || ActionProvider.COMMAND_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST;
+        } else if (ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName)) {
+            return JavaRunner.QUICK_TEST_DEBUG;
+        }
+        assert false: "Cannot convert " + actionName + " to quick actions.";
+        return null;
     }
 
     private String eventuallyShowDialog(Project project, String actionName) {

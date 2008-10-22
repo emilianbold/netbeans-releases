@@ -478,7 +478,7 @@ public final class EarProjectGenerator {
      * @throws java.io.IOException if any error occurs.
      */
     public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
-            final EarProject earProject, boolean force) throws IOException {
+            final Project earProject, boolean force) throws IOException {
         FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
         if (dd != null) {
             return dd; // already created
@@ -515,8 +515,8 @@ public final class EarProjectGenerator {
             // API for retrieval of getJarContentAdditional() not present.
             EarProject defInst = earProject.getLookup().lookup(EarProject.class);
             if (defInst != null) {
-                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(earProject)) {
-                    EarProjectProperties.addItemToAppDD(earProject, app, vcpi);
+                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(defInst)) {
+                    EarProjectProperties.addItemToAppDD(defInst, app, vcpi);
                 }
             }
             app.write(dd);

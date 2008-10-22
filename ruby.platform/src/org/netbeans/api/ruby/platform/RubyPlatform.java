@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
+import java.text.Collator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -75,7 +76,7 @@ import org.openide.util.Utilities;
 /**
  * Represents one Ruby platform, i.e. installation of a Ruby interpreter.
  */
-public final class RubyPlatform {
+public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatform.class.getName());
 
@@ -102,6 +103,15 @@ public final class RubyPlatform {
     private String irb;
 
     private PropertyChangeSupport pcs;
+    
+    /** 'rake' executable for this platform. */
+    private String rake;
+
+    /** 'rails' executable for this platform. */
+    private String rails;
+
+    /** 'autotest' executable for this platform. */
+    private String autotest;
 
     RubyPlatform(String id, String interpreterPath, Info info) {
         this.id = id;
@@ -141,6 +151,46 @@ public final class RubyPlatform {
     }
 
     /**
+     * Checks whether the platform has a valid Rake installed.
+     *
+     * @param warn whether to show warning message to the user if ther is no
+     *        valid Rake installed
+     */
+    public boolean hasValidRake(boolean warn) {
+        boolean valid = isValid(warn) && hasRubyGemsInstalled(warn);
+        String rakePath = getRake();
+        valid = (rakePath != null) && new File(rakePath).exists();
+        possiblyNotifyUser(warn, valid, "rake"); // NOI18N
+        return valid;
+    }
+
+    /**
+     * Checks whether the platform has a valid Rails installed.
+     *
+     * @param warn whether to show warning message to the user if ther is no
+     *        valid Rails installed
+     */
+    public boolean hasValidRails(boolean warn) {
+        String railsPath = getRails();
+        boolean valid = (railsPath != null) && new File(railsPath).exists();
+        possiblyNotifyUser(warn, valid, "rails"); // NOI18N
+        return valid;
+    }
+
+    /**
+     * Checks whether the platform has a valid autotest installed.
+     *
+     * @param warn whether to show warning message to the user if ther is no
+     *        valid autotest installed
+     */
+    public boolean hasValidAutoTest(boolean warn) {
+        String autoTest = getAutoTest();
+        boolean valid = (autoTest != null) && new File(autoTest).exists();
+        possiblyNotifyUser(warn, valid, "autotest"); // NOI18N
+        return valid;
+    }
+
+    /**
      * Checks whether project has a valid platform and in turn whether the
      * platform has a valid Rake installed.
      *
@@ -155,7 +205,48 @@ public final class RubyPlatform {
             }
             return false;
         }
-        return platform.isValidRuby(warn) && platform.hasRubyGemsInstalled(warn) && platform.getGemManager().isValidRake(warn);
+        return platform.hasValidRake(warn);
+    }
+
+    public String getRake() {
+        if (rake == null) {
+            rake = findExecutable("rake"); // NOI18N
+
+            if (rake != null && !(new File(rake).exists()) && getGemManager().getLatestVersion("rake") != null) { // NOI18N
+                // On Windows, rake does funny things - you may only get a rake.bat
+                InstalledFileLocator locator = InstalledFileLocator.getDefault();
+                File f = locator.locate("modules/org-netbeans-modules-ruby-project.jar", // NOI18N
+                        null, false);
+
+                if (f == null) {
+                    throw new RuntimeException("Can't find cluster"); // NOI18N
+                }
+
+                f = new File(f.getParentFile().getParentFile().getAbsolutePath() + File.separator + "rake"); // NOI18N
+
+                try {
+                    rake = f.getCanonicalPath();
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
+                }
+            }
+        }
+
+        return rake;
+    }
+
+    public String getRails() {
+        if (rails == null) {
+            rails = findExecutable("rails"); // NOI18N
+        }
+        return rails;
+    }
+
+    public String getAutoTest() {
+        if (autotest == null) {
+            autotest = findExecutable("autotest"); // NOI18N
+        }
+        return autotest;
     }
 
     public String getID() {
@@ -333,12 +424,27 @@ public final class RubyPlatform {
         return sitedir;
     }
 
-    public boolean isValidRuby(boolean warn) {
-        String rp = getBinDir();
-        boolean valid = false;
-        if (rp != null) {
-            File file = new File(rp);
-            valid = file.exists() && getHome() != null;
+    /**
+     * Calls {@link #isValid(boolean)} with <code>false</code>.
+     */
+    public boolean isValid() {
+        return isValid(false);
+    }
+
+    /**
+     * Test whether the platform is valid, i.e. has appropriate interpreter,
+     * <em>lib</em> and <em>bin</em> directories.
+     *
+     * @param warn whether to show the dialog to the user if platform is invalid
+     * @return whether the platform is valid
+     */
+    public boolean isValid(final boolean warn) {
+        boolean valid = new File(interpreter).isFile() && getLibDir() != null;
+        if (valid) {
+            String binDir = getBinDir();
+            if (binDir != null) {
+                valid = new File(binDir).isDirectory();
+            }
         }
 
         if (warn && !valid) {
@@ -424,10 +530,6 @@ public final class RubyPlatform {
 
     public boolean isRubinius() {
         return info.isRubinius();
-    }
-
-    public boolean isValid() {
-        return new File(interpreter).isFile() && getLibDir() != null;
     }
 
     /**
@@ -827,8 +929,27 @@ public final class RubyPlatform {
         return hash;
     }
 
+    public int compareTo(final RubyPlatform other) {
+        int result = Collator.getInstance().compare(
+                getInfo().getLongDescription(), other.getInfo().getLongDescription());
+        if (result != 0) {
+            result = getInterpreter().compareTo(other.getInterpreter());
+        }
+        assert result != 0 : "same platform cannot be added twice: " + this + " vs. " + other;
+        return result;
+    }
+
     public @Override String toString() {
         return "RubyPlatform[id:" + getID() + ", label:" + getLabel() + ", " + getInterpreter() + ", info: " + info + "]"; // NOI18N
+    }
+
+    private void possiblyNotifyUser(boolean warn, boolean valid, String cmd) {
+        if (warn && !valid) {
+            String msg = NbBundle.getMessage(GemManager.class, "GemManager.NotInstalledCmd", cmd, getLabel());
+            NotifyDescriptor nd =
+                    new NotifyDescriptor.Message(msg, NotifyDescriptor.Message.ERROR_MESSAGE);
+            DialogDisplayer.getDefault().notify(nd);
+        }
     }
 
     public static class Info {

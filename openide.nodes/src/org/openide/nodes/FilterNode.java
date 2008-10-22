@@ -1658,7 +1658,7 @@ public class FilterNode extends Node {
             }
 
             public Node findChild(String name) {
-                original.getChildren().findChild(name);
+                Node dontGC = original.getChildren().findChild(name);
                 return Children.super.findChild(name);
             }
 
