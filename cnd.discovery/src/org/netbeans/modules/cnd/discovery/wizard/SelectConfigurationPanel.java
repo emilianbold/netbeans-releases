@@ -58,9 +58,12 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
@@ -75,7 +78,6 @@ import org.netbeans.modules.cnd.discovery.wizard.tree.ProjectConfigurationNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -303,7 +305,7 @@ public final class SelectConfigurationPanel extends JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
     
-    private String getString(String key) {
+    private static String getString(String key) {
         return NbBundle.getBundle(SelectConfigurationPanel.class).getString(key);
     }
     
@@ -388,7 +390,7 @@ public final class SelectConfigurationPanel extends JPanel {
             public String getWorkingFolder() {
                 return null;
             }
-        });
+        }, new MyProgress());
         List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
         List<String> includedFiles = new ArrayList<String>();
         wizardDescriptor.setIncludedFiles(includedFiles);
@@ -488,6 +490,28 @@ public final class SelectConfigurationPanel extends JPanel {
             //System.out.println("End analyzing");
             if (!isStoped){
                 wasTerminated = false;
+            }
+        }
+    }
+
+    private static class MyProgress implements Progress {
+        private ProgressHandle handle;
+        private int done;
+        public void start(int length) {
+            handle = ProgressHandleFactory.createHandle(getString("AnalyzingProjectProgress"));
+            handle.start(length);
+        }
+
+        public void increment() {
+            if (handle != null) {
+                done++;
+                handle.progress(done);
+            }
+        }
+
+        public void done() {
+            if (handle != null) {
+                handle.finish();
             }
         }
     }
