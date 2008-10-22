@@ -231,6 +231,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                 }
             }
         }
+        fireTableDataChanged();
     }
 
     private boolean searched(String displayName, String searchText) {
