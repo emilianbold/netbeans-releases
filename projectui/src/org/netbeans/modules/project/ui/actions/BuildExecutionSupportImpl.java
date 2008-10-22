@@ -59,9 +59,8 @@ public class BuildExecutionSupportImpl implements BuildExecutionSupportImplement
     private final List<BuildExecutionSupport.Item> runningItems = new ArrayList<BuildExecutionSupport.Item>();
     private BuildExecutionSupport.Item lastFinishedItem;
 
-    public static BuildExecutionSupportImpl getInstance() {
-        BuildExecutionSupportImplementation im = Lookup.getDefault().lookup(BuildExecutionSupportImplementation.class);
-        return (BuildExecutionSupportImpl)im;
+    public static BuildExecutionSupportImplementation getInstance() {
+        return Lookup.getDefault().lookup(BuildExecutionSupportImplementation.class);
     }
 
     public void registerFinishedItem(Item item) {
@@ -91,13 +90,13 @@ public class BuildExecutionSupportImpl implements BuildExecutionSupportImplement
         }
     }
 
-    BuildExecutionSupport.Item getLastItem() {
+    public BuildExecutionSupport.Item getLastItem() {
         synchronized (runningItems) {
             return lastFinishedItem;
         }
     }
 
-    List<BuildExecutionSupport.Item> getRunningItems() {
+    public List<BuildExecutionSupport.Item> getRunningItems() {
         List<BuildExecutionSupport.Item> items = new ArrayList<BuildExecutionSupport.Item>();
         synchronized (runningItems) {
             items.addAll(runningItems);

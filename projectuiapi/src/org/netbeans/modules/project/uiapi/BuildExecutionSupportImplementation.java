@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 
@@ -55,5 +56,9 @@ public interface BuildExecutionSupportImplementation {
     void addChangeListener(ChangeListener listener);
 
     void removeChangeListener(ChangeListener listener);
+
+    BuildExecutionSupport.Item getLastItem();
+
+    List<BuildExecutionSupport.Item> getRunningItems();
 
 }
