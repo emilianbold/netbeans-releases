@@ -822,7 +822,7 @@ public class Util {
     }
     
     public static final boolean isGlassfish(String serverID) {
-        if ((serverID != null) && (serverID.toLowerCase().contains("appserv"))) {     //NOI18N
+        if ((serverID != null) && ((serverID.toLowerCase().contains("appserv")) || (serverID.toLowerCase().contains("gfv3")))) {     //NOI18N
             return true;
         }
         return false;
