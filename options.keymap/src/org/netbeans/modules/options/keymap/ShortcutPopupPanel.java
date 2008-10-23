@@ -40,11 +40,8 @@
 package org.netbeans.modules.options.keymap;
 
 import java.awt.Point;
-import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
-import java.beans.PropertyChangeListener;
 import javax.swing.AbstractListModel;
-import javax.swing.Action;
 import javax.swing.DefaultListModel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
@@ -91,7 +88,6 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     }
 
     private void addAlternative() {
-        //add alternative
         String category = (String) table.getValueAt(row, 2);
         ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
         Object[] newRow = new Object[]{new ActionHolder(action, true), new ShortcutCell("", action), category, ""};
@@ -101,7 +97,6 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     }
 
     private void clear() {
-        //clear
         pm.setVisible(false);
         ShortcutCell name = (ShortcutCell) table.getValueAt(row, 1);
         String scText = name.getTextField().getText();
@@ -115,6 +110,14 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         else
             name.getTextField().setText("");
         return;
+    }
+
+    private void resetToDefault() {
+        pm.setVisible(false);
+        ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
+        KeymapViewModel mod = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
+        mod.revertShortcutsToDefault(action);
+        mod.fireTableDataChanged();
     }
 
     /** This method is called from within the constructor to
@@ -194,11 +197,11 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
                 pm.setVisible(false);
                 table.editCellAt(row, 1);
                 break;
-            case 1: {//reset to default
+            case 1: {
                 resetToDefault();
                 break;
             }
-            case 2: {//clear
+            case 2: {
                 clear();
                 break;
             }
@@ -256,12 +259,4 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
 
     }
 
-    private void resetToDefault() {
-        //reset to default
-        pm.setVisible(false);
-        ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
-        KeymapViewModel mod = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
-        mod.revertShortcutsToDefault(action);
-        mod.fireTableDataChanged();
-    }
 }
