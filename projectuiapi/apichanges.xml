@@ -115,7 +115,7 @@ is the proper place.
            <description>
                <p>
                     Added spi for plugging into the Repeat Build/Run and Stop Build/Run
-                    actions that were previsouly accessible to ant based projects only.
+                    actions that were previously accessible by ant based projects only.
                </p>
            </description>
            <class package="org.netbeans.spi.project.ui.support" name="BuildExecutionSupport"/>
