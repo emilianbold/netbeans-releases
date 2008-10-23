@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
 final class ParsingProgress {
     
     private ProgressHandle handle;
+    private int originalWorkedUnits = 0;
     private int curWorkedUnits = 0;
     private int maxWorkUnits = 0; // for testing only
     private boolean started = false;
@@ -116,17 +117,39 @@ final class ParsingProgress {
             if( ! started ) {
                 return;
             }
+            originalWorkedUnits++;
             if( curWorkedUnits >= maxWorkUnits ) {
                 return;
             }
-            try {
-                handle.progress(file.getName().toString(), curWorkedUnits++);
-                //assert(curWorkedUnits <= maxWorkUnits);
-            } catch (NullPointerException ex) {
-                // very strange... but do not interrupt process
-                DiagnosticExceptoins.register(ex);
+            if (isIncrement()){
+                try {
+                    curWorkedUnits++;
+                    handle.progress(file.getName().toString(), curWorkedUnits);
+                    //assert(curWorkedUnits <= maxWorkUnits);
+                } catch (NullPointerException ex) {
+                    // very strange... but do not interrupt process
+                    DiagnosticExceptoins.register(ex);
+                }
             }
         }
+    }
+
+    private boolean isIncrement(){
+        if (maxWorkUnits > 0) {
+            int ratio = curWorkedUnits * 100 / maxWorkUnits;
+            if (ratio < 50) {
+                return true;
+            } else if (ratio < 75) {
+                return (originalWorkedUnits%2) == 0;
+            } else if (ratio < 88) {
+                return (originalWorkedUnits%4) == 0;
+            } else if (ratio < 94) {
+                return (originalWorkedUnits%8) == 0;
+            } else {
+                return (originalWorkedUnits%16) == 0;
+            }
+        }
+        return true;
     }
 
     /**

@@ -28,7 +28,7 @@ FUNCTION DEFINITION foo_149506  [8:37/282-8:64/309] FunctionDDImpl SCOPE: func_d
     UNIQUE NAME f:foo_149506()
     DECLARATION: foo_149506  [8:37/282-8:64/309]
     PARAMETERS:
-    RETURNS void TEXT=void  [8:37/282-8:48/293]
+    RETURNS void TEXT=void  [8:44/289-8:48/293]
     STATEMENT COMPOUND  [8:62/307-8:64/309] SCOPE: foo_149506 
 
 ========== Dumping model of PROJECT DummyProject

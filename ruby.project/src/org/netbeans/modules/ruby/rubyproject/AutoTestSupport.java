@@ -45,7 +45,7 @@ import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -103,7 +103,7 @@ public class AutoTestSupport {
 
         RubyFileLocator fileLocator = new RubyFileLocator(context, project);
         String displayName = NbBundle.getMessage(AutoTestSupport.class, "AutoTest");
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, pwd, platform.getAutoTest());
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, platform.getAutoTest());
         desc.additionalArgs("-v"); // NOI18N
         desc.fileLocator(fileLocator);
         desc.classPath(classPath); // Applies only to JRuby

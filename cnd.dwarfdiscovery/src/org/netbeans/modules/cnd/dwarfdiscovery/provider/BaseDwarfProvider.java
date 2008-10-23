@@ -51,6 +51,7 @@ import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
@@ -83,7 +84,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         isStoped = true;
     }
     
-    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName){
+    protected List<SourceFileProperties> getSourceFileProperties(String[] objFileName, Progress progress){
         try{
             HashMap<String,SourceFileProperties> map = new HashMap<String,SourceFileProperties>();
             for (String file : objFileName) {
@@ -123,6 +124,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else {
                         if (FULL_TRACE) System.out.println("Not Exist "+name); //NOI18N
                     }
+                }
+                if (progress != null) {
+                    progress.increment();
                 }
             }
             List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();

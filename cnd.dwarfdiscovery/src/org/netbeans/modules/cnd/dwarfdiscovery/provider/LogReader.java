@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,7 +79,7 @@ public class LogReader {
         setWorkingDir(root);
     }
     
-    private void run() {
+    private void run(Progress progress) {
         if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
@@ -86,12 +87,22 @@ public class LogReader {
         if (file.exists() && file.canRead()){
             try {
                 BufferedReader in = new BufferedReader(new FileReader(file));
+                long length = file.length();
+                long read = 0;
+                int done = 0;
+                if (length <= 0){
+                    progress = null;
+                }
+                if (progress != null) {
+                    progress.start(100);
+                }
                 int nFoundFiles = 0;
                 while(true){
                     String line = in.readLine();
                     if (line == null){
                         break;
                     }
+                    read += line.length()+1;
                     line = line.trim();
                     while (line.endsWith("\\")) { // NOI18N
                         String oneMoreLine = in.readLine();
@@ -108,7 +119,15 @@ public class LogReader {
                             nFoundFiles++;
                         }
                     }
-
+                    if (read*100/length > done && done < 100){
+                        done++;
+                        if (progress != null) {
+                            progress.increment();
+                        }
+                    }
+                }
+                if (progress != null) {
+                    progress.done();
                 }
                 if (TRACE) {
                     System.out.println("Files found: " + nFoundFiles); //NOI18N
@@ -121,9 +140,9 @@ public class LogReader {
         }
     }
     
-    public List<SourceFileProperties> getResults() {
+    public List<SourceFileProperties> getResults(Progress progress) {
         if (result == null) {
-            run();
+            run(progress);
         }
         return result;
     }
@@ -472,7 +491,7 @@ public class LogReader {
         String root = args[1];
         LogReader.TRACE = true;
         LogReader clrf = new LogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults();
+        List<SourceFileProperties> list = clrf.getResults(null);
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();

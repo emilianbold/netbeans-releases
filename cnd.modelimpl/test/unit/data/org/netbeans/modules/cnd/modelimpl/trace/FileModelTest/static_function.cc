@@ -41,3 +41,6 @@ namespace NS {
 	void foo6() {}
 }
 
+static inline char *func_iz149125() {
+    return 0;
+}

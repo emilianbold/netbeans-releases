@@ -445,7 +445,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 //                    button.dispatchEvent(buttonEvent);
                     button.doClick();
 
-                    ((ShortcutPopupPanel) popup.getComponents()[0]).setRow(row);
+                    boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
+                    ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];
+                    panel.setDisplayAddAlternative(isShortcutSet);
+                    panel.setRow(row);
                     popup.show(table, e.getX(), e.getY());
                 }
             }

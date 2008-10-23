@@ -452,7 +452,7 @@ public class AstUtilities {
 
         if (signature.equals(root.getSignature())) {
             return root.getNode();
-        } else{
+        } else {
             for (AstElement element : root.getChildren()) {
                 ASTNode node = findBySignature(element, signature);
                 if (node != null) {

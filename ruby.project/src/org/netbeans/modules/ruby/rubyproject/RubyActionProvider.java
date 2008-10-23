@@ -57,7 +57,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -144,7 +144,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         return supportedActions;
     }
 
-    public ExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target, 
+    public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
             OutputRecognizer[] extraRecognizers) {
     
@@ -190,7 +190,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
         String jvmArgs = project.evaluator().getProperty(RubyProjectProperties.JVM_ARGS);
 
-        ExecutionDescriptor desc = new ExecutionDescriptor(getPlatform(), displayName, pwd, target);
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(getPlatform(), displayName, pwd, target);
         desc.debug(debug);
         desc.showSuspended(true);
         desc.allowInput();
@@ -252,7 +252,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
 
-        new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, irbPath).
+        new RubyExecution(new RubyExecutionDescriptor(platform, displayName, pwd, irbPath).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
@@ -364,7 +364,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
             File pwd = getSourceFolder(); // Or project directory?
             String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd, platform.getRake()).
+            new RubyExecution(new RubyExecutionDescriptor(platform, displayName, pwd, platform.getRake()).
                     fileLocator(fileLocator).
                     allowInput().
                     classPath(classPath).
@@ -468,7 +468,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
             String displayName = NbBundle.getMessage(RubyActionProvider.class, "RubyDocumentation");
 
-            new RubyExecution(new ExecutionDescriptor(platform, displayName, pwd).
+            new RubyExecution(new RubyExecutionDescriptor(platform, displayName, pwd).
                     additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end"). // NOI18N
                     fileLocator(fileLocator).
                     postBuild(showBrowser).

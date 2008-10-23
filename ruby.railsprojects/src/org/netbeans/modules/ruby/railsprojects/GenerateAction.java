@@ -62,7 +62,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputProcessor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
@@ -272,7 +272,7 @@ public final class GenerateAction extends NodeAction {
                                 FileLocator locator = new DirectoryFileLocator(dir);
                                 String displayName = NbBundle.getMessage(GenerateAction.class, "RailsGenerator");
                                 Task task =
-                                    new RubyExecution(new ExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script).
+                                    new RubyExecution(new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script).
                                             additionalArgs(argv).fileLocator(locator).
                                             addOutputRecognizer(recognizer), charsetName).run();
 

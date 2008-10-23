@@ -127,14 +127,16 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         private final String parameterString;
         private final TypeMirror returnType;
         private final Collection<javax.lang.model.element.Modifier> modifiers;
+        private final boolean emphasise;
 
         public JavaMethodItem(String simpleName, String parameterString, TypeMirror returnType,
-                Collection<javax.lang.model.element.Modifier> modifiers, int anchorOffset) {
+                Collection<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
             super(null, anchorOffset);
             this.simpleName = simpleName;
             this.parameterString = parameterString;
             this.returnType = returnType;
             this.modifiers = modifiers;
+            this.emphasise = emphasise;
         }
 
         @Override
@@ -149,7 +151,14 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            return simpleName + "(" + parameterString + ")";
+            if (emphasise) {
+                formatter.emphasis(true);
+            }
+            formatter.appendText(simpleName + "(" + parameterString + ")");
+            if (emphasise) {
+                formatter.emphasis(false);
+            }
+            return formatter.getText();
         }
 
         @Override
@@ -469,7 +478,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            if(expand){
+            if (expand) {
                 return name + " - generate"; // NOI18N
             } else {
                 return name + "(" + paramListString +  ")";
@@ -478,7 +487,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public String getName() {
-            if(expand){
+            if (expand) {
                 return name  + "()\n{\n}";
             } else {
                 return name;
