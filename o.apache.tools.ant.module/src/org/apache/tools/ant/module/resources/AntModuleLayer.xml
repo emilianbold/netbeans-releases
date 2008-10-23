@@ -43,24 +43,6 @@ made subject to such option by the copyright holder.
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
 
-    <folder name="Actions">
-        <folder name="Build">
-            <file name="org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
-            <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance"/>
-        </folder>
-    </folder>
-
-    <folder name="Menu">
-        <folder name="BuildProject">
-            <file name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow">
-                <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
-                <attr name="position" intvalue="1000"/>
-            </file>
-            <file name="org-apache-tools-ant-module-run-StopBuildingAction.instance">
-                <attr name="position" intvalue="1100"/>
-            </file>
-        </folder>
-    </folder>
 
     <folder name="Templates">
  
@@ -193,13 +175,6 @@ made subject to such option by the copyright holder.
             <file name="Ant.instance">
                 <attr name="instanceClass" stringvalue="org.apache.tools.ant.module.AntOption"/>
             </file>
-        </folder>
-        <folder name="Actions"> <!-- XXX #71280: should not be necessary but currently is -->
-            <folder name="Build">
-                <file name="org-apache-tools-ant-module-run-RunLastTargetAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Build/org-apache-tools-ant-module-run-RunLastTargetAction.instance"/>
-                </file>
-            </folder>
         </folder>
    </folder>
 
