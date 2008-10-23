@@ -47,6 +47,15 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.editor.indent</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.editor.lib2</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.editor.mimelookup</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -159,6 +168,7 @@ made subject to such option by the copyright holder.
             <public-packages>
                 <package>org.netbeans.modules.editor.indent.api</package>
                 <package>org.netbeans.modules.editor.indent.spi</package>
+                <package>org.netbeans.modules.editor.indent.spi.support</package>
             </public-packages>
         </data>
     </configuration>
