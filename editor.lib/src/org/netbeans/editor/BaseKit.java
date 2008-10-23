@@ -65,7 +65,6 @@ import javax.swing.text.ViewFactory;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
 import java.lang.reflect.Method;
-import java.util.Formatter;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
@@ -91,6 +90,7 @@ import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -1041,15 +1041,13 @@ public class BaseKit extends DefaultEditorKit {
     /** Default typed action */
     public static class DefaultKeyTypedAction extends LocalBaseAction {
 
-        static final long serialVersionUID =3069164318144463899L;
+        static final long serialVersionUID = 3069164318144463899L;
 
         public DefaultKeyTypedAction() {
             super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
             LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
         }
-
-        private static final boolean isMac = System.getProperty("mrj.version") != null; //NOI18N
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if ((target != null) && (evt != null)) {
@@ -1059,7 +1057,7 @@ public class BaseKit extends DefaultEditorKit {
                 boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
                 // On the mac, norwegian and french keyboards use Alt to do bracket characters.
                 // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
-                boolean alt = isMac ? ((mod & ActionEvent.META_MASK) != 0) : 
+                boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
                     ((mod & ActionEvent.ALT_MASK) != 0);
                 
                 
@@ -1073,67 +1071,34 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
-                final Caret caret = target.getCaret();
-                final BaseDocument doc = (BaseDocument)target.getDocument();
-                final EditorUI editorUI = Utilities.getEditorUI(target);
                 // determine if typed char is valid
                 final String cmd = evt.getActionCommand();
-                if ((cmd != null) && (cmd.length() == 1)) {
-                    //          Utilities.clearStatusText(target);
-
-                    try {
-                        NavigationHistory.getEdits().markWaypoint(target, caret.getDot(), false, true);
-                    } catch (BadLocationException e) {
-                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Processing command char: " + Integer.toHexString(cmd.charAt(0))); //NOI18N
                     }
-                    
-                    doc.runAtomicAsUser (new Runnable () {
-                        public void run () {
-                            DocumentUtilities.setTypingModification(doc, true);
-                            try {
-                                char ch = cmd.charAt(0);
-                                if ((ch >= 0x20) && (ch != 0x7F)) { // valid character
-                                    LOG.fine("Processing command char: " + Integer.toHexString(ch)); //NOI18N
 
-                                    editorUI.getWordMatch().clear(); // reset word matching
-                                    Boolean overwriteMode = (Boolean)editorUI.getProperty(
-                                                                EditorUI.OVERWRITE_MODE_PROPERTY);
-                                    try {
-                                        boolean doInsert = true; // editorUI.getAbbrev().checkAndExpand(ch, evt);
-                                        if (doInsert) {
-                                            if (Utilities.isSelectionShowing(caret)) { // valid selection
-                                                boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
-                                                try {
-                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
-                                                    replaceSelection(target, caret.getDot(), caret, cmd, ovr);
-                                                } finally {
-                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
-                                                }
-                                            } else { // no selection
-                                                int dotPos = caret.getDot();
-                                                if (overwriteMode != null && overwriteMode.booleanValue()
-                                                        && dotPos < doc.getLength() && doc.getChars(dotPos, 1)[0] != '\n'
-                                                   ) { // overwrite current char
-                                                    insertString(doc, dotPos, caret, cmd, true); 
-                                                } else { // insert mode
-                                                    insertString(doc, dotPos, caret, cmd, false);
-                                                }
-                                            }
-                                        }
-                                    } catch (BadLocationException e) {
-                                        LOG.log(Level.FINE, null, e);
-                                        target.getToolkit().beep();
-                                    }
-                                } else {
-                                    LOG.fine("Invalid command char: " + Integer.toHexString(ch)); //NOI18N
-                                }
+                    int insertionOffset = computeInsertionOffset(target.getCaret());
+                    TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
+                            target, insertionOffset, cmd);
+                    try {
+                        if (!transaction.beforeInsertion()) {
+                            Object [] result = transaction.textTyped();
+                            String insertionText = result == null ? cmd : (String) result[0];
+                            int caretPosition = result == null ? -1 : (Integer) result[1];
 
-                                checkIndent(target, cmd);
-                            } finally {
-                                DocumentUtilities.setTypingModification(doc, false);
-                            }
+                            if (performTextInsertion(target, insertionOffset, insertionText, caretPosition)) {
+                                transaction.afterInsertion();
+
+                                // XXX: this is potentially wrong and we may need to call this with
+                                // the original cmd; or maybe only if insertionText == cmd; but maybe
+                                // it does not matter, because nobody seems to be overwriting this method anyway
+                                checkIndent(target, insertionText);
+                            } // else text insertion failed
                         }
-                    });
+                    } finally {
+                        transaction.close();
+                    }
                 } else {
                     if (LOG.isLoggable(Level.FINE)) {
                         StringBuilder sb = new StringBuilder();
@@ -1150,47 +1115,128 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
 
-      /** 
-       * Hook to insert the given string at the given position into
-       * the given document in insert-mode, no selection, writeable
-       * document. Designed to be overridden by subclasses that want
-       * to intercept inserted characters.
-       */
-      protected void insertString(BaseDocument doc,  
+        // --------------------------------------------------------------------
+        // SPI
+        // --------------------------------------------------------------------
+
+        /**
+         * Hook to insert the given string at the given position into
+         * the given document in insert-mode, no selection, writeable
+         * document. Designed to be overridden by subclasses that want
+         * to intercept inserted characters.
+         *
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void insertString(BaseDocument doc,
 				  int dotPos, 
 				  Caret caret,
 				  String str, 
-				  boolean overwrite) 
-	throws BadLocationException 
-      {
-	if (overwrite) doc.remove(dotPos, 1);
-	doc.insertString(dotPos, str, null);
-      }
+				  boolean overwrite) throws BadLocationException 
+        {
+            if (overwrite) {
+                doc.remove(dotPos, 1);
+            }
+            
+            doc.insertString(dotPos, str, null);
+        }
 
-      /** 
-       * Hook to insert the given string at the given position into
-       * the given document in insert-mode with selection visible
-       * Designed to be overridden by subclasses that want
-       * to intercept inserted characters.
-       */
-      protected void replaceSelection(JTextComponent target,  
-				  int dotPos, 
-				  Caret caret,
-				  String str, 
-				  boolean overwrite) 
-	throws BadLocationException 
-      {
-          target.replaceSelection(str);
-      }
+        /**
+         * Hook to insert the given string at the given position into
+         * the given document in insert-mode with selection visible
+         * Designed to be overridden by subclasses that want
+         * to intercept inserted characters.
+         *
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void replaceSelection(
+                JTextComponent target,
+                int dotPos,
+                Caret caret,
+                String str,
+                boolean overwrite) throws BadLocationException
+        {
+            target.replaceSelection(str);
+        }
 
-
-        /** Check whether there was any important character typed
-        * so that the line should be possibly reformatted.
-        */
+        /**
+         * Check whether there was any important character typed
+         * so that the line should be possibly reformatted.
+         *
+         * @deprecated Please use <a href="@org-netbeans-modules-editor-indent@/org/netbeans/modules/editor/indent/spi/AutomatedIndenting.html">AutomatedIndentig</a>
+         *   or Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
         protected void checkIndent(JTextComponent target, String typedText) {
         }
 
-    }
+        // --------------------------------------------------------------------
+        // Private implementation
+        // --------------------------------------------------------------------
+
+        private boolean performTextInsertion(final JTextComponent target, final int insertionOffset, final String insertionText, final int caretPosition) {
+            final BaseDocument doc = (BaseDocument)target.getDocument();
+            
+            try {
+                NavigationHistory.getEdits().markWaypoint(target, insertionOffset, false, true);
+            } catch (BadLocationException e) {
+                LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+            }
+
+            final boolean [] ret = new boolean [] { false };
+            doc.runAtomicAsUser (new Runnable () {
+                public void run () {
+                    DocumentUtilities.setTypingModification(doc, true);
+                    try {
+                        EditorUI editorUI = Utilities.getEditorUI(target);
+                        Caret caret = target.getCaret();
+
+                        editorUI.getWordMatch().clear(); // reset word matching
+                        Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                        if (Utilities.isSelectionShowing(caret)) { // valid selection
+                            try {
+                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                replaceSelection(target, insertionOffset, caret, insertionText, ovr);
+                            } finally {
+                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                            }
+                        } else { // no selection
+                            if (ovr && insertionOffset < doc.getLength() && doc.getChars(insertionOffset, 1)[0] != '\n') { //NOI18N
+                                // overwrite current char
+                                insertString(doc, insertionOffset, caret, insertionText, true);
+                            } else { // insert mode
+                                insertString(doc, insertionOffset, caret, insertionText, false);
+                            }
+                        }
+
+                        if (caretPosition != -1) {
+                            assert caretPosition >= 0 && caretPosition < insertionText.length();
+                            caret.setDot(insertionOffset + caretPosition);
+                        }
+
+                        ret[0] = true;
+                    } catch (Exception e) {
+                        LOG.log(Level.FINE, null, e);
+                        target.getToolkit().beep();
+                    } finally {
+                        DocumentUtilities.setTypingModification(doc, false);
+                    }
+                }
+            });
+
+            return ret[0];
+        }
+
+        private int computeInsertionOffset(Caret caret) {
+            if (Utilities.isSelectionShowing(caret)) {
+                return Math.min(caret.getMark(), caret.getDot());
+            } else {
+                return caret.getDot();
+            }
+        }
+    } // End of DefaultKeyTypedAction class
 
     public static class InsertBreakAction extends LocalBaseAction {
 
