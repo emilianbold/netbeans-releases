@@ -117,4 +117,22 @@ public class LayerBuilderTest extends NbTestCase {
         assertEquals("<filesystem><file name='x'><attr name='a' serialvalue='000A64C8'/></file></filesystem>", dump());
     }
 
+    public void testURIs() throws Exception {
+        LayerBuilder.File f = b.file("x").urlvalue("a", "../rel").urlvalue("b", "/abs").urlvalue("c", "nbresloc:/proto");
+        try {
+            f.urlvalue("bogus", ":not:a:URI");
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
+        try {
+            f.urlvalue("bogus", "something:opaque");
+            fail();
+        } catch (IllegalArgumentException x) {/* right */}
+        f.write();
+        assertEquals("<filesystem><file name='x'>" +
+                "<attr name='a' urlvalue='../rel'/>" +
+                "<attr name='b' urlvalue='/abs'/>" +
+                "<attr name='c' urlvalue='nbresloc:/proto'/>" +
+                "</file></filesystem>", dump());
+    }
+
 }

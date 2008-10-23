@@ -41,7 +41,8 @@ package org.openide.filesystems.annotations;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
+import java.io.ObjectOutputStream;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Locale;
@@ -340,12 +341,31 @@ public final class LayerBuilder {
         /**
          * Adds a URL-valued attribute.
          * @param attr the attribute name
-         * @param value the attribute value
+         * @param value the attribute value, e.g. {@code "/my/module/resource.html"}
+         *              or {@code "nbresloc:/my/module/resource.html"}; relative values permitted
+         *              but not likely useful as base URL would be e.g. {@code "jar:...!/META-INF/"}
          * @return this builder
+         * @throws IllegalArgumentException in case an opaque URI is passed as {@code value}
          */
-        public File urlvalue(String attr, URL value) {
+        public File urlvalue(String attr, URI value) throws IllegalArgumentException {
+            if (value.isOpaque()) {
+                throw new IllegalArgumentException("Cannot use an opaque URI: " + value);
+            }
             attrs.put(attr, new String[] {"urlvalue", value.toString()});
             return this;
+        }
+
+        /**
+         * Adds a URL-valued attribute.
+         * @param attr the attribute name
+         * @param value the attribute value, e.g. {@code "/my/module/resource.html"}
+         *              or {@code "nbresloc:/my/module/resource.html"}; relative values permitted
+         *              but not likely useful as base URL would be e.g. {@code "jar:...!/META-INF/"}
+         * @return this builder
+         * @throws IllegalArgumentException in case {@code value} cannot be passed as a URI or is opaque
+         */
+        public File urlvalue(String attr, String value) throws IllegalArgumentException {
+            return urlvalue(attr, URI.create(value));
         }
 
         /**
