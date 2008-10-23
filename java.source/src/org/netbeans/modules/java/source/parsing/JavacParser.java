@@ -1019,6 +1019,17 @@ public class JavacParser extends Parser {
         }        
     }
 
+
+    /**
+     * For unit tests only
+     * Used by JavaSourceTest.testIncrementalReparse
+     * @param changedMethod
+     */
+    public synchronized void setChangedMethod (final Pair<DocPositionRegion,MethodTree> changedMethod) {
+        assert changedMethod != null;
+        this.changedMethod = changedMethod;
+    }
+
     
     /**
      * Filter listener to listen on j2me preprocessor

@@ -94,6 +94,7 @@ import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
+import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
@@ -118,6 +119,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.classpath.CacheClassPath;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.java.source.parsing.JavacParserTestUtil;
@@ -1399,10 +1401,7 @@ public class JavaSourceTest extends NbTestCase {
         JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL);
         assertTrue(latch2.await(10, TimeUnit.SECONDS));
     }
-
-<<<<<<< local
-    private static class TestProvider implements JavaFileObjectProvider {
-=======
+    
     public void testIncrementalReparse () throws Exception {
         final FileObject testFile = createTestFile ("Test");
         final ClassPath bootPath = createBootPath ();
@@ -1465,7 +1464,7 @@ public class JavaSourceTest extends NbTestCase {
                 }
             });
             //Workaround, in test lexer events return wrong affected range
-            impls[0].setChangedMethod(res[0]);
+            impls[0].getParser().setChangedMethod(res[0]);
             //Run sync task
             js.runUserActionTask(new Task<CompilationController> () {
                 public void run (final CompilationController c) throws IOException {
@@ -1475,10 +1474,6 @@ public class JavaSourceTest extends NbTestCase {
             //Check that there was an incremental reparse
             assertTrue(loggerResult[0]);
             loggerResult[0] = false;
->>>>>>> other
-
-<<<<<<< local
-=======
             //Do modification
             NbDocument.runAtomic (doc,
             new Runnable () {
@@ -1573,7 +1568,7 @@ public class JavaSourceTest extends NbTestCase {
         final String methodName;
         CompilationUnitTree cu;
 
-        Pair<JavaSource.DocPositionRegion,MethodTree> result;
+        Pair<DocPositionRegion,MethodTree> result;
 
         public FindMethodRegionsVisitor (final Document doc, final SourcePositions pos, String methodName) {
             assert doc != null;
@@ -1608,7 +1603,7 @@ public class JavaSourceTest extends NbTestCase {
             int endPos = (int) pos.getEndPosition(cu, node.getBody());
             if (methodName.equals(node.getName().toString()) && startPos >=0) {
                 try {
-                    result = Pair.<JavaSource.DocPositionRegion,MethodTree>of(new JavaSource.DocPositionRegion(doc,startPos,endPos),node);
+                    result = Pair.<DocPositionRegion,MethodTree>of(new DocPositionRegion(doc,startPos,endPos),node);
                 } catch (BadLocationException e) {
                     //todo: reocvery
                     e.printStackTrace();
@@ -1618,10 +1613,8 @@ public class JavaSourceTest extends NbTestCase {
         }
 
     }
-    
-    private static class TestProvider implements JavaSource.JavaFileObjectProvider {
-        
->>>>>>> other
+
+    private static class TestProvider implements JavaFileObjectProvider {
         private Object lock;
 
         public TestProvider (Object lock) {
