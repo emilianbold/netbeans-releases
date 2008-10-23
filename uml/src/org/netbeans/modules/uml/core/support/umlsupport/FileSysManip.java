@@ -303,40 +303,5 @@ public class FileSysManip
       return file.getName();
    }
 
-   public static void backupCopy(String fileName)
-   {
-       try {
-           if ((fileName != null) && (fileName.length() > 0))
-           {
-               File srcFile = new File(fileName);
-               FileObject srcFO = FileUtil.toFileObject(srcFile);
-               backupCopy(srcFO);
-           }
-       } catch (Exception ex) {
-           UMLLogger.logException(ex, Level.WARNING);
-       }
-   }
-
-   public static void backupCopy(FileObject srcFO)
-   {
-       try {
-           if (srcFO != null) 
-           {
-               FileObject parentFolderFO = srcFO.getParent(); 
-               String fileNameWithoutExt = srcFO.getName(); 
-               
-               FileObject destFolderFO = FileUtil.createFolder(parentFolderFO, "DiagramBackup"); //NOI18N
-               FileObject destFO = destFolderFO.getFileObject(fileNameWithoutExt, srcFO.getExt());
-               if (destFO != null) 
-               {
-                   destFO.delete();
-               }                                
-               FileUtil.copyFile(srcFO, destFolderFO, fileNameWithoutExt);
-           }
-       } catch (Exception ex) {
-           UMLLogger.logException(ex, Level.WARNING);
-       }
-   }
-
 
 }
