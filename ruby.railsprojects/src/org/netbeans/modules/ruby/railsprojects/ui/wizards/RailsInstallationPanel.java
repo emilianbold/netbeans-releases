@@ -54,8 +54,6 @@ import org.netbeans.modules.ruby.platform.gems.Gem;
 import org.netbeans.modules.ruby.platform.gems.GemInfo;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.railsprojects.ui.wizards.RailsInstallationValidator.RailsInstallationInfo;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -106,7 +104,7 @@ public class RailsInstallationPanel extends JPanel {
     }
     
     private void updateGemProblem() {
-        String gemProblem = gemManager().getGemProblem();
+        String gemProblem = platform().getRubyGemsProblems();
         if (gemProblem != null) {
             String msg = NbBundle.getMessage(RailsInstallationPanel.class,"GemProblem");
             descLabel.setText(msg);
@@ -338,11 +336,7 @@ public class RailsInstallationPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void railsDetailButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_railsDetailButtonActionPerformed
-        String gemProblem = gemManager().getGemProblem();
-        assert gemProblem != null;
-        NotifyDescriptor nd =
-            new NotifyDescriptor.Message(gemProblem, NotifyDescriptor.Message.ERROR_MESSAGE);
-        DialogDisplayer.getDefault().notify(nd);
+        platform().reportRubyGemsProblem();
     }//GEN-LAST:event_railsDetailButtonActionPerformed
 
     private void proxyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyButtonActionPerformed

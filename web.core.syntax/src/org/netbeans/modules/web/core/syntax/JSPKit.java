@@ -89,7 +89,6 @@ import org.netbeans.editor.ext.html.parser.SyntaxParser;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.web.core.syntax.formatting.JSPLexerFormatter;
 import org.netbeans.spi.lexer.MutableTextInput;
-import org.openide.util.Mutex;
 
 /**
  * Editor kit implementation for JSP content type
@@ -151,7 +150,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         FileObject fobj = (dobj != null) ? dobj.getPrimaryFile() : null;
 
         // tag library coloring data stuff
-        JSPColoringData data = data = JspUtils.getJSPColoringData(doc, fobj);
+        JSPColoringData data = JspUtils.getJSPColoringData(doc, fobj);
         // construct the listener
         PropertyChangeListener pList = new ColoringListener(doc, data, newSyntax);
         // attach the listener
@@ -164,6 +163,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         return newSyntax;
     }
 
+    @Override
     protected Action[] createActions() {
         Action[] javaActions = new Action[] {
             new JspInsertBreakAction(),
@@ -202,21 +202,12 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            //            System.out.println("**************** PCHL - propertyChange()");
             if (syntax == null)
                 return;
             if (syntax.listenerReference != this) {
                 syntax = null; // should help garbage collection
                 return;
             }
-           /* if (JspDataObject.PROP_CONTENT_LANGUAGE.equals(evt.getPropertyName())) {
-                syntax.setContentSyntax(JSPKit.getSyntaxForLanguage(doc, jspdo.getContentLanguage()));
-                recolor();
-            }
-            if (JspDataObject.PROP_SCRIPTING_LANGUAGE.equals(evt.getPropertyName())) {
-                syntax.setScriptingSyntax(JSPKit.getSyntaxForLanguage(doc, jspdo.getScriptingLanguage()));
-                recolor();
-            }*/
             if (JSPColoringData.PROP_COLORING_CHANGE.equals(evt.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
@@ -229,7 +220,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                         }
                     }
                 });
-
             }
         }
     }
@@ -302,6 +292,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
         }
     }
 
+    @Override
     protected void initDocument(BaseDocument doc) {
         doc.addLayer(new ELDrawLayerFactory.ELLayer(),
                 ELDrawLayerFactory.EL_LAYER_VISIBILITY);
@@ -367,6 +358,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
     public static class JspInsertBreakAction extends InsertBreakAction {
 
+        @Override
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             if (target != null) {
                 TokenSequence javaTokenSequence;
@@ -410,7 +402,6 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                 }
             }
 
-            // return Boolean.TRUE;
             return null;
         }
 
@@ -439,6 +430,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
 
         private JTextComponent currentTarget;
 
+        @Override
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             currentTarget = target;
             if (target != null) {
@@ -526,7 +518,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
                             }
 
                             if (!handled) {
-                                if ((str != null) && (str.length() > 0)) {
+                                if (str.length() > 0) {
                                     doc.insertString(p0, str, null);
                                 }
 
@@ -609,6 +601,7 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             super(nm, nextChar);
         }
 
+        @Override
         public void actionPerformed(ActionEvent e, JTextComponent target) {
             currentTarget = target;
             if (target!=null){
@@ -632,12 +625,13 @@ public class JSPKit extends NbEditorKit implements org.openide.util.HelpCtx.Prov
             currentTarget = null;
         }
 
+        @Override
          protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
               if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
-                    boolean success = bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
+                    bracketCompletion.charBackspaced(doc, dotPos, currentTarget, ch);
                     return;
                 }
             }

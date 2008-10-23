@@ -71,6 +71,7 @@ public final class ModelHandle {
     public static final String PANEL_MAPPING = "MAPPING"; //NOI18N
     public static final String PANEL_LIBRARIES = "LIBRARIES"; //NOI18N
     public static final String PANEL_SOURCES = "SOURCES"; //NOI18N
+    public static final String PANEL_COMPILE = "COMPILE"; //NOI18N
     
     public static final String PROFILE_PUBLIC = "netbeans-public"; //NOI18N
     public static final String PROFILE_PRIVATE = "netbeans-private"; //NOI18N

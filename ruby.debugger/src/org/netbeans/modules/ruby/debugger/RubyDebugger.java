@@ -56,7 +56,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
@@ -77,7 +77,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
-    private ExecutionDescriptor descriptor;
+    private RubyExecutionDescriptor descriptor;
     
     private RubySession rubySession;
     
@@ -91,7 +91,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
     }
     
-    public void describeProcess(ExecutionDescriptor descriptor) {
+    public void describeProcess(RubyExecutionDescriptor descriptor) {
         this.descriptor = descriptor;
     }
     
@@ -143,7 +143,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
      * @throws java.io.IOException
      * @throws org.rubyforge.debugcommons.RubyDebuggerException
      */
-    static RubySession startDebugging(final ExecutionDescriptor descriptor)
+    static RubySession startDebugging(final RubyExecutionDescriptor descriptor)
             throws IOException, RubyDebuggerException {
         final RubyPlatform platform = descriptor.getPlatform();
         boolean jrubySet = platform.isJRuby();
@@ -219,7 +219,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         return intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
     }
 
-    private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
+    private static Map<String, String> getJRubyEnvironment(final RubyExecutionDescriptor descriptor) {
         Map<String, String> env = new HashMap<String, String>();
         if (descriptor.getClassPath() != null) {
             env.put("CLASSPATH", descriptor.getClassPath()); // NOI18N
@@ -228,7 +228,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     }
 
     /** Package private for unit test. */
-    static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
+    static boolean checkAndTuneSettings(final RubyExecutionDescriptor descriptor) {
         final RubyPlatform platform = descriptor.getPlatform();
         if (platform.isRubinius()) { // no debugger support for Rubinius yet
             return false;

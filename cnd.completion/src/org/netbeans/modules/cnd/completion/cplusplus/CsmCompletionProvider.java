@@ -56,7 +56,6 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
 import org.netbeans.editor.Utilities;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression;
 import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
@@ -237,7 +236,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                     CsmSyntaxSupport sup = (CsmSyntaxSupport) syntSupp.get(CsmSyntaxSupport.class);
                     NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
                     NbCsmCompletionQuery.CsmCompletionResult res = (NbCsmCompletionQuery.CsmCompletionResult) query.query(component, caretOffset, sup);
-                    if (res == null || (res.getData().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
+                    if (res == null || (res.getItems().isEmpty() && (queryScope == CsmCompletionQuery.QueryScope.SMART_QUERY))) {
                         // switch to global context
                         if (TRACE) System.err.println("query switch to global" + getTestState()); // NOI18N
                         queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
@@ -255,7 +254,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                             queryScope = CsmCompletionQuery.QueryScope.GLOBAL_QUERY;
                         }
                         queryAnchorOffset = res.getSubstituteOffset();
-                        Collection items = res.getData();
+                        Collection items = res.getItems();
                         // no more title in NB 6 in completion window
                         //resultSet.setTitle(res.getTitle());
                         resultSet.setAnchorOffset(queryAnchorOffset);
@@ -289,7 +288,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                     if (queryResult == null || !isCppIdentifierPart(filterPrefix)) {
                         filterPrefix = null;
                     } else {
-                        Collection items = getFilteredData(queryResult.getData(), filterPrefix);
+                        Collection items = getFilteredData(queryResult.getItems(), filterPrefix);
                         if (items.isEmpty()) {
                             filterPrefix = null;
                         }
@@ -315,7 +314,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 // no more title in NB 6 in completion window
                 //resultSet.setTitle(getFilteredTitle(queryResult.getTitle(), filterPrefix));
                 resultSet.setAnchorOffset(queryAnchorOffset);
-                Collection items = getFilteredData(queryResult.getData(), filterPrefix);
+                Collection items = getFilteredData(queryResult.getItems(), filterPrefix);
                 if (TRACE) System.err.println("filter with prefix" + getTestState()); // NOI18N
                 addItems(resultSet, items);
             }
@@ -332,15 +331,13 @@ public class CsmCompletionProvider implements CompletionProvider {
             return true;
         }
 
-        private Collection getFilteredData(Collection data, String prefix) {
+        private Collection getFilteredData(Collection<CompletionItem> data, String prefix) {
             List ret = new ArrayList(1024);
             boolean camelCase = prefix.length() > 1 && prefix.equals(prefix.toUpperCase());
-            for (Iterator it = data.iterator(); it.hasNext();) {
-                CompletionQuery.ResultItem itm = (CompletionQuery.ResultItem) it.next();
+            for (Iterator<CompletionItem> it = data.iterator(); it.hasNext();) {
+                CompletionItem itm = it.next();
                 // TODO: filter
-                if (matchPrefix(itm.getItemText(), prefix, caseSensitive) /* || prefix.length() == 0*/) {
-//                if (JMIUtils.startsWith(itm.getItemText(), prefix)
-//                        || (camelCase && (itm instanceof NbJMIResultItem.ClassResultItem) && JMIUtils.matchesCamelCase(itm.getItemText(), prefix)))
+                if (matchPrefix(itm.getInsertPrefix().toString(), prefix, caseSensitive) /* || prefix.length() == 0*/) {
                     ret.add(itm);
                 }
             }
@@ -386,7 +383,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 List list = new ArrayList();
                 int idx = -1;
                 boolean checked = false;
-                for (Iterator it = res.getData().iterator(); it.hasNext();) {
+                for (Iterator it = res.getItems().iterator(); it.hasNext();) {
                     Object o = it.next();
                     if (o instanceof CsmResultItem.ConstructorResultItem) {
                         CsmResultItem.ConstructorResultItem item = (CsmResultItem.ConstructorResultItem) o;
