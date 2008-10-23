@@ -46,7 +46,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
@@ -104,7 +104,7 @@ public class AutotestRunner implements TestRunner {
         String displayName = NbBundle.getMessage(AutotestRunner.class, "AutoTest", ProjectUtils.getInformation(project).getDisplayName());
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
 
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform,
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform,
                 displayName,
                 FileUtil.toFile(project.getProjectDirectory()),
                 platform.getAutoTest());

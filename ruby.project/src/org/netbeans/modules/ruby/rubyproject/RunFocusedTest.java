@@ -59,7 +59,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -197,7 +197,7 @@ public class RunFocusedTest extends BaseAction {
         }
 
         String targetPath =  FileUtil.toFile(target).getAbsolutePath();
-        ExecutionDescriptor desc = null;
+        RubyExecutionDescriptor desc = null;
         String charsetName = null;
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -216,7 +216,7 @@ public class RunFocusedTest extends BaseAction {
                             new String[additionalArgs.size()])); // NOI18N
             }
         } else {
-            desc = new ExecutionDescriptor(platform, displayName, pwd, targetPath);
+            desc = new RubyExecutionDescriptor(platform, displayName, pwd, targetPath);
 
             desc.additionalArgs(additionalArgs.toArray(
                     new String[additionalArgs.size()])); // NOI18N

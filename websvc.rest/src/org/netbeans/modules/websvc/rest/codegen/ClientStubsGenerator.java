@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -67,6 +68,7 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
@@ -146,7 +148,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private String folderName;
     private String baseUrl;
     private String proxyUrl;
-    private String baseEncoding = "UTF-8";
+    private Charset baseEncoding;
     private FileObject rootFolder;
     
     public ClientStubsGenerator(FileObject rootFolder, String folderName, Project p, 
@@ -157,6 +159,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.p = p;
         this.overwrite = overwrite;
         this.projectName = ProjectUtils.getInformation(getProject()).getName();
+        this.baseEncoding = FileEncodingQuery.getEncoding(rootFolder);
     }
     
     public ClientStubsGenerator(FileObject rootFolder, String folderName, InputStream wis, 
@@ -166,6 +169,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.wis = wis;
         this.overwrite = overwrite;
         this.projectName = "NewProject";
+        this.baseEncoding = FileEncodingQuery.getEncoding(rootFolder);
     }
 
     public FileObject getRootFolder() {
@@ -226,12 +230,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.proxyUrl = proxyUrl;
     }
     
-    public String getBaseEncoding() {
+    public Charset getBaseEncoding() {
         return baseEncoding;
-    }
-    
-    public void setBaseEncoding(String baseEncoding) {
-        this.baseEncoding = baseEncoding;
     }
     
     private String getApplicationNameFromUrl(String url) {
@@ -263,7 +263,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 url = getProperty(asPropFile, "tomcat.url");
             if(url != null)
                 url = url.replace("\\", "");
-        }
+            }
         return url;
     }
     
@@ -294,13 +294,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return appContext;
     }
     
-    private String findBaseEncoding(Project p) {
-        if(p == null)
-            return null;
-        FileObject projProp = p.getProjectDirectory().getFileObject("nbproject/project.properties");
-        return getProperty(projProp, "source.encoding");
-    }
-    
     private String getProperty(FileObject fo, String name) {
         if(fo == null)
             return null;
@@ -314,14 +307,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 if(line.trim().startsWith(name+"="))
                     return line.trim().split("=")[1];
             }
-        } catch(IOException iox) {  
+        } catch(IOException iox) {
         } finally {
             if(lock != null)
                 lock.releaseLock();
         }
         return null;
     }
-    
+
     private String getXmlData(FileObject fo, String name) {
         if(fo == null)
             return null;
@@ -374,8 +367,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
             setProxyUrl(url+".."+PROXY_URL);
             this.projectName = getApplicationNameFromUrl(url);
         }
-        if(targetPrj != null)
-            setBaseEncoding(findBaseEncoding(targetPrj));
         List<Resource> resourceList = getModel().getResources();
         
         rjsDir = getStubFolder();
@@ -468,7 +459,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
         tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
         tr.addToken(MSG_JS_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JS_Readme_Content));
-        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding().name());
         
         FileObject fo = createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
         tr.replaceTokens(fo);
@@ -567,7 +558,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 }
                 sb.append("\n");
             }
-            OutputStreamWriter writer = new OutputStreamWriter(projectStub.getOutputStream(lock), "UTF-8");
+            OutputStreamWriter writer = new OutputStreamWriter(projectStub.getOutputStream(lock), getBaseEncoding());
             try {
                 writer.write(sb.toString());
             } finally {
@@ -632,7 +623,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 sb.append(line);
                 sb.append("\n");
             }
-            OutputStreamWriter writer = new OutputStreamWriter(restStub.getOutputStream(lock), "UTF-8");
+            OutputStreamWriter writer = new OutputStreamWriter(restStub.getOutputStream(lock), getBaseEncoding());
             try {
                 writer.write(sb.toString());
             } finally {
@@ -674,7 +665,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     sb.append(line);
                     sb.append("\n");
                 }
-                OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+                OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), getBaseEncoding());
                 try {
                     writer.write(sb.toString());
                 } finally {

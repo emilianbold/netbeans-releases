@@ -46,6 +46,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -215,19 +216,24 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
         if (p != null) {
             root = (String)p.getValue();
         }
-        return runLogReader(objFileName, root);
+        List<SourceFileProperties> res = runLogReader(objFileName, root, progress);
+        progress = null;
+        return res;
+
     }
     
-    /* package-local */ static List<SourceFileProperties> runLogReader(String objFileName, String root){
+    /* package-local */ static List<SourceFileProperties> runLogReader(String objFileName, String root, Progress progress){
         LogReader clrf = new LogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults();
+        List<SourceFileProperties> list = clrf.getResults(progress);
         return list;
     }
     
-    public List<Configuration> analyze(final ProjectProxy project) {
+    private Progress progress;
+    public List<Configuration> analyze(final ProjectProxy project, Progress progress) {
         isStoped = false;
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
+        this.progress = progress;
         if (!isStoped){
             Configuration conf = new Configuration(){
                 private List<SourceFileProperties> myFileProperties;
@@ -247,7 +253,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
                             set = detectMakeLog(project);
                         }
                         if (set != null && set.length() > 0) {
-                            myFileProperties = getSourceFileProperties(new String[]{set});
+                            myFileProperties = getSourceFileProperties(new String[]{set},null);
                         }
                     }
                     return myFileProperties;
