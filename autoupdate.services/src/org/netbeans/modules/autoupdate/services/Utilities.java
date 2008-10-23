@@ -83,6 +83,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
+import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.updater.ModuleDeactivator;
@@ -695,6 +696,11 @@ public class Utilities {
             case Dependency.TYPE_REQUIRES :
             case Dependency.TYPE_NEEDS :
             case Dependency.TYPE_RECOMMENDS :
+                if (DummyModuleInfo.TOKEN_MODULE_FORMAT1.equals (dep.getName ()) ||
+                        DummyModuleInfo.TOKEN_MODULE_FORMAT2.equals (dep.getName ())) {
+                    // these tokens you can ignore here
+                    break;
+                }
                 UpdateUnit p = DependencyAggregator.getRequested (dep);
                 boolean passed = false;
                 if (p == null) {
