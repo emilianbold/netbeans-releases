@@ -70,10 +70,6 @@ public class SaveDiagram implements SaveCookie {
         //custom logic to save uml diagrams
         if (scene != null) {
             
-            if (fileObj != null) {
-                FileSysManip.backupCopy(fileObj); //NOI18N
-            }
-
             PersistenceManager pMgr = new PersistenceManager(fileObj);
             pMgr.saveDiagram(scene);
             

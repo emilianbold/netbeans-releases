@@ -1674,7 +1674,6 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
 			{
                                 if (m_IsDirty)
                                 {
-                                    backupCopy();
                                     internalSave(fileName);
                                     // Now save the TypeManager
                                     if (m_TypeManager != null)
@@ -1747,26 +1746,6 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
                      }
                 }
 	}
-        
-        protected void backupCopy()
-        {
-            try {
-                String fileName = getCurFile();   //<project folder>\*.etd file
-                if ((fileName != null) && (fileName.length() > 0))
-                {
-                    File modelFile = new File(fileName);
-                    FileObject modelFO = FileUtil.toFileObject(modelFile);
-                    if (modelFO != null) 
-                    {
-                        FileSysManip.backupCopy(fileName); //NOI18N
-                        FileSysManip.backupCopy(StringUtilities.ensureExtension(fileName,".ettm")); //NOI18N
-                        FileSysManip.backupCopy(StringUtilities.ensureExtension(fileName,".etup")); //NOI18N
-                    }
-                }
-            } catch (Exception ex) {
-                UMLLogger.logException(ex, Level.WARNING);
-            }
-        }
     
 	public void close()
 	{
