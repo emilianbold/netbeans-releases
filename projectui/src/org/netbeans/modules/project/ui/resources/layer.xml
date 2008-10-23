@@ -637,4 +637,16 @@ made subject to such option by the copyright holder.
             <file name="1.xsd" url="projectui-open-files.xsd"/>
         </folder>
     </folder>
+
+    <folder name="OptionsDialog">
+ 
+        <folder name="Actions"> <!-- XXX #71280: should not be necessary but currently is -->
+            <folder name="Build">
+                <file name="org-netbeans-modules-project-ui-Rerun.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-Rerun.instance"/>
+                </file>
+            </folder>
+        </folder>
+   </folder>
+
 </filesystem>
