@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.editor.deprecated.pre65formatting;
 
+import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
@@ -57,12 +58,15 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
+import org.netbeans.editor.Utilities;
+import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.spi.editor.mimelookup.MimeDataProvider;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -86,13 +90,15 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
             if (provider != null) {
                 IndentTask.Factory legacyIndenter = provider.getIndentTaskFactory();
                 ReformatTask.Factory legacyFormatter = provider.getReformatTaskFactory();
+                TypedTextInterceptor.Factory legacyAutoIndenter = provider.getTypedTextInterceptorFactory();
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("'" + mimePath.getPath() + "' uses legacyIndenter=" + legacyIndenter
-                            + " and legacyFormatter=" + legacyFormatter); //NOI18N
+                    LOG.fine("'" + mimePath.getPath() + "' uses legacyIndenter=" + legacyIndenter //NOI18N
+                            + ", legacyFormatter=" + legacyFormatter //NOI18N
+                            + ", legacyAutoIndenter=" + legacyAutoIndenter); //NOI18N
                 }
 
-                return Lookups.fixed(legacyIndenter, legacyFormatter);
+                return Lookups.fixed(legacyIndenter, legacyFormatter, legacyAutoIndenter);
             }
         }
 
@@ -186,6 +192,22 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
             return reformatTaskFactory;
         }
 
+        public TypedTextInterceptor.Factory getTypedTextInterceptorFactory() {
+            if (typedTextInterceptorFactory == null) {
+                typedTextInterceptorFactory = new TypedTextInterceptor.Factory() {
+                    public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+                        Formatter formatter = getFormatter();
+                        if (formatter instanceof ExtFormatter) {
+                            return new AutoIndenter((ExtFormatter)formatter);
+                        } else {
+                            return null;
+                        }
+                    }
+                };
+            }
+            return typedTextInterceptorFactory;
+        }
+
         // -------------------------------------------------------------------
         // private implementation
         // -------------------------------------------------------------------
@@ -197,6 +219,7 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
 
         private IndentTask.Factory indentTaskFactory;
         private ReformatTask.Factory reformatTaskFactory;
+        private TypedTextInterceptor.Factory typedTextInterceptorFactory;
         private Object legacyFormatter;
 
         private IndentReformatTaskFactoriesProvider(MimePath mimePath) {
@@ -307,4 +330,49 @@ public final class LegacyFormattersProvider implements MimeDataProvider {
         }
     } // End of Reformatter class
 
+    private static final class AutoIndenter implements TypedTextInterceptor {
+
+        private final ExtFormatter formatter;
+
+        public AutoIndenter(ExtFormatter formatter) {
+            this.formatter = formatter;
+        }
+
+        public boolean beforeInsertion(Context context) throws BadLocationException {
+            // no-op
+            return false;
+        }
+
+        public void textTyped(MutableContext context) throws BadLocationException {
+            // no-op
+        }
+
+        public void afterInsertion(Context context) throws BadLocationException {
+            if (context.getDocument() instanceof BaseDocument) {
+                BaseDocument doc = (BaseDocument) context.getDocument();
+                int [] fmtBlk = formatter.getReformatBlock(context.getComponent(), context.getText());
+                if (fmtBlk != null) {
+                    try {
+
+                        fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
+                        fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
+
+                        //this was the of #18922, that causes the bug #20198
+                        //ef.reformat(doc, fmtBlk[0], fmtBlk[1]);
+
+                        //bugfix of the bug #20198. Bug #18922 is fixed too as well as #6968
+                        formatter.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+
+                    } catch (BadLocationException e) {
+                    } catch (IOException e) {
+                    }
+                }
+            }
+        }
+
+        public void cancelled(Context context) {
+            // no-op
+        }
+
+    } // End of AutoIndenter class
 }
