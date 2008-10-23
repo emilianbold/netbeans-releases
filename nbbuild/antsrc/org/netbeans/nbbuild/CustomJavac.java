@@ -81,22 +81,29 @@ public class CustomJavac extends Javac {
             createCompilerArg().setPath(processorPath);
         }
         createCompilerArg().setValue("-implicit:class");
-        if (compileList.length > 0) {
-            log("Compiling " + compileList.length + " source file" +
-                    (compileList.length == 1 ? "" : "s") +
-                    (getDestdir() != null ? " to " + getDestdir() : ""));
-            if (listFiles) {
-                for (File f : compileList) {
-                    log(f.getAbsolutePath());
+        try {
+            Class.forName("javax.tools.JavaCompiler");
+            // Fine, have 269 in process, proceed...
+            super.compile();
+        } catch (ClassNotFoundException x) {
+            log("JSR 269 not found, loading from " + javacClasspath);
+            if (compileList.length > 0) {
+                log("Compiling " + compileList.length + " source file" +
+                        (compileList.length == 1 ? "" : "s") +
+                        (getDestdir() != null ? " to " + getDestdir() : ""));
+                if (listFiles) {
+                    for (File f : compileList) {
+                        log(f.getAbsolutePath());
+                    }
                 }
-            }
-            CompilerAdapter adapter = new CustomAdapter();
-            adapter.setJavac(this);
-            if (adapter.execute()) {
-                // XXX updateDirList
-            } else {
-                // other modes not supported, see below
-                throw new BuildException("Compile failed; see the compiler error output for details.", getLocation());
+                CompilerAdapter adapter = new CustomAdapter();
+                adapter.setJavac(this);
+                if (adapter.execute()) {
+                    // XXX updateDirList
+                } else {
+                    // other modes not supported, see below
+                    throw new BuildException("Compile failed; see the compiler error output for details.", getLocation());
+                }
             }
         }
     }
@@ -116,6 +123,10 @@ public class CustomJavac extends Javac {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void setFork(boolean f) {
+        throw new UnsupportedOperationException();
+    }
 
     private static class CustomAdapter extends DefaultCompilerAdapter {
 
@@ -124,7 +135,8 @@ public class CustomJavac extends Javac {
             Commandline cmd = setupModernJavacCommand();
             try {
                 Path cp = ((CustomJavac) getJavac()).javacClasspath;
-                ClassLoader cl = new AntClassLoader(getJavac().getProject(), cp);
+                AntClassLoader cl = new AntClassLoader(getJavac().getProject(), cp, false);
+                cl.setIsolated(true); // otherwise RB.gB("c.s.t.j.r.compiler") -> tools.jar's compiler.class despite our compiler.properties
                 Class c = Class.forName("com.sun.tools.javac.Main", true, cl);
                 getJavac().log("Running javac from " + c.getProtectionDomain().getCodeSource().getLocation(), Project.MSG_VERBOSE);
                 Method compile = c.getMethod("compile", String[].class);
