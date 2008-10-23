@@ -177,21 +177,18 @@ public class OutputWindowWriter extends Writer {
         }
         
         public void outputLineSelected(OutputEvent ev) {
-            //We should not handle outputLineSelected the same way as outputLineAction
-            //see issue 128785
-            //showLine();
+            showLine(false);
         }
         
         public void outputLineAction(OutputEvent ev) {
-            //goto:
-            showLine();
+            showLine(true);
         }
         
         public void outputLineCleared(OutputEvent ev) {
             ErrorAnnotation.getInstance().detach(null);
         }
         
-        private void showLine() {
+        private void showLine(boolean openTab) {
             try {
                 DataObject od = DataObject.find(file);
                 LineCookie lc = od.getCookie(LineCookie.class);
@@ -204,7 +201,11 @@ public class OutputWindowWriter extends Writer {
                         Line l = lc.getLineSet().getOriginal(line);
 
                         if (!l.isDeleted()) {
-                            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS); // instead of deprecated l.show(Line.SHOW_GOTO);
+                            if (openTab) {
+                                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
+                            } else {
+                                l.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
+                            }
                             ErrorAnnotation.getInstance().attach(l);
                         }
                     } catch (IndexOutOfBoundsException ex) {
@@ -241,12 +242,9 @@ public class OutputWindowWriter extends Writer {
                     fileName = fileName.replace('/', '\\');
                 }
             }
-
             fileName = HostInfoProvider.getDefault().getMapper(hkey).getLocalPath(fileName);
-
-            File directory = FileUtil.normalizeFile(new File(fileName));
-
-            return FileUtil.toFileObject(directory);
+            File file = FileUtil.normalizeFile(new File(fileName));
+            return FileUtil.toFileObject(file);
         }
 
         protected FileObject resolveRelativePath(FileObject relativeDir, String relativePath) {
@@ -281,12 +279,16 @@ public class OutputWindowWriter extends Writer {
                         }
                     }
                 }
+                FileObject myObj = resolveFile(relativePath);
+                if (myObj != null) {
+                    return myObj;
+                }
                 if (relativePath.startsWith(File.separator)){ // NOI18N
                     relativePath = relativePath.substring(1);
                 }
                 try {
                     FileSystem fs = relativeDir.getFileSystem();
-                    FileObject myObj = fs.findResource(relativePath);
+                    myObj = fs.findResource(relativePath);
                     if (myObj != null) {
                         return myObj;
                     }

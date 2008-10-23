@@ -51,9 +51,9 @@ import org.netbeans.spi.project.ui.support.ProjectActionPerformer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 
 /** Action sensitive to current project
@@ -63,8 +63,8 @@ import org.openide.util.actions.Presenter;
 public class SelectNodeAction extends LookupSensitiveAction implements Presenter.Menu, Presenter.Popup {
     
     // XXX Better icons
-    private static final Icon SELECT_IN_PROJECTS_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" ) ); //NOI18N
-    private static final Icon SELECT_IN_FILES_ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" ) ); //NOI18N
+    private static final Icon SELECT_IN_PROJECTS_ICON = new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/projectTab.png" ) ); //NOI18N
+    private static final Icon SELECT_IN_FILES_ICON = new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/filesTab.png" ) ); //NOI18N
     
     private static final String SELECT_IN_PROJECTS_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInProjectsAction_Name" ); // NOI18N
     private static final String SELECT_IN_FILES_NAME = NbBundle.getMessage( CloseProject.class, "LBL_SelectInFilesAction_Name" ); // NOI18N

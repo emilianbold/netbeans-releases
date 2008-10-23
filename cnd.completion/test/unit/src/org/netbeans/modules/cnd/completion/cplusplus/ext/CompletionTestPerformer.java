@@ -145,7 +145,7 @@ public class CompletionTestPerformer {
         CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
         CsmCompletionQuery.CsmCompletionResult res = (CsmCompletionQuery.CsmCompletionResult)query.query(editor, doc, caretOffset, support, false, !unsorted);
         
-        CompletionItem[] array =  res == null ? new CompletionItem[0] : (CompletionItem[])res.getData().toArray(new CompletionItem[res.getData().size()]);
+        CompletionItem[] array =  res == null ? new CompletionItem[0] : (CompletionItem[])res.getItems().toArray(new CompletionItem[res.getItems().size()]);
         assert array != null;
         return array;
     }

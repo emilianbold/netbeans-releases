@@ -140,6 +140,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final Object          LAST_GO_WAS_STEP = "lastGoWasStep"; // NOI18N
     public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext"; // NOI18N
 
+    public static String DONE_PREFIX = "^done"; // NOI18N
+
     private Object                      lastGo;
     private String                      lastStop;
 
@@ -167,6 +169,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private String state = STATE_NONE;
     private final PropertyChangeSupport pcs;
     private String runDirectory;
+    private String baseDir;
     private final ArrayList<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
     private final GdbEngineProvider gdbEngineProvider;
     private CallStackFrame currentCallStackFrame;
@@ -252,6 +255,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 iotab.setErrSeparated(false);
             }
             runDirectory = pathMap.getRemotePath(pae.getProfile().getRunDirectory().replace("\\", "/") + "/");  // NOI18N
+            baseDir = pae.getConfiguration().getBaseDir().replace("\\", "/");  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = hkey.equals(CompilerSetManager.LOCALHOST) ?
                 pae.getProfile().getConsoleType().getValue() : RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW;
@@ -301,11 +305,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 } else {
                     gdb.file_exec_and_symbols(path);
                 }
-                CommandBuffer cb = new CommandBuffer(gdb);
-                gdb.target_attach(cb, Long.toString(programPID));
-                cb.waitForCompletion();
+                CommandBuffer cb = gdb.target_attach(Long.toString(programPID));
                 String err = cb.getError();
-                if (err != null || cb.timedOut()) {
+                if (err != null || cb.isTimedOut()) {
                     final String msg;
                     if (err == null) {
                         msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachTimeout"); // NOI18N
@@ -333,7 +335,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
 
                     // 1) see if path was explicitly loaded by target_attach (this is system dependent)
-                    if (!symbolsRead(cb.toString(), path)) {
+                    if (!symbolsRead(cb.getResponse(), path)) {
                         // 2) see if we can validate via /proc (or perhaps other platform specific means)
                         if (validAttachViaSlashProc(programPID, path)) { // Linux or Solaris
                             if (isSolaris()) {
@@ -341,10 +343,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                             }
                             setLoading();
                         } else if (isSharedLibrary && platform == PlatformTypes.PLATFORM_MACOSX) {
-                            cb = new CommandBuffer(gdb);
-                            gdb.info_share(cb);
-                            cb.waitForCompletion();
-                            String addr = getMacDylibAddress(path, cb.toString());
+                            String addr = getMacDylibAddress(path, gdb.info_share(true).getResponse());
                             if (addr != null) {
                                 gdb.addSymbolFile(path, addr);
                                 setLoading();
@@ -361,10 +360,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                         } else {
                             // 3) send an "info files" command to gdb. Its response should say what symbols
                             // are read.
-                            cb = new CommandBuffer(gdb);
-                            gdb.info_files(cb);
-                            cb.waitForCompletion();
-                            if (symbolsReadFromInfoFiles(cb.toString(), path)) {
+                            if (symbolsReadFromInfoFiles(gdb.info_files().getResponse(), path)) {
                                 setLoading();
                             } else {
                                 final String msg = NbBundle.getMessage(GdbDebugger.class, "ERR_AttachValidationFailure"); // NOI18N
@@ -431,9 +427,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     ((Session) lookupProvider.lookupFirst(null, Session.class)).kill();
                 }
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                    CommandBuffer cb = new CommandBuffer(gdb);
-                    gdb.info_threads(cb); // we get the PID from this...
-                    String msg = cb.waitForCompletion();
+                    String msg = gdb.info_threads().getResponse(); // we get the PID from this...
                     int pos1 = msg.indexOf("* 1 thread "); // NOI18N
                     if (pos1 >= 0) {
                         int pos2 = msg.indexOf('.', pos1);
@@ -467,10 +461,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     private final void initGdbVersion() {
-        CommandBuffer cb = new CommandBuffer(gdb);
-        gdb.gdb_version(cb);
-        cb.waitForCompletion();
-        String message = cb.toString();
+        String message = gdb.gdb_version().getResponse();
 
         if (startupTimer != null) {
             // Cancel the startup timer - we've got our first response from gdb
@@ -578,9 +569,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     } catch (InterruptedException ex) {
                     }
                 }
-                CommandBuffer cb = new CommandBuffer(gdb);
-                gdb.info_threads(cb);
-                String results = cb.waitForCompletion();
+                String results = gdb.info_threads().getResponse();
                 if (results.length() > 0) {
                     List<String> list = new ArrayList<String>();
                     StringBuilder sb = new StringBuilder();
@@ -651,9 +640,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PROP_STATE)) {
             if (evt.getNewValue().equals(STATE_LOADING)) {
-                CommandBuffer cb = new CommandBuffer(gdb);
-                shareToken = gdb.info_share();
-                cb.setID(shareToken);
+                shareToken = gdb.info_share(false).getID();
             } else if (evt.getNewValue().equals(STATE_READY)) {
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
@@ -777,11 +764,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
     
     private String getMacExePath() {
-        CommandBuffer cb = new CommandBuffer(gdb);
-        
-        gdb.info_files(cb);
-        cb.waitForCompletion();
-        String info = cb.toString();
+        String info = gdb.info_files().getResponse();
         for (String line : info.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
                 String ep = line.substring(15, line.length() - 3);
@@ -981,120 +964,115 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     /** Handle geb responses starting with '^' */
     public void resultRecord(int token, String msg) {
-        CommandBuffer cb;
-        Integer itok = token;
-
         currentToken = token + 1;
-        if (msg.startsWith("^done,bkpt=")) { // NOI18N (-break-insert)
-            msg = msg.substring(12, msg.length() - 1);
-            Map<String, String> map = GdbUtils.createMapFromString(msg);
-            boolean isTmp = breakpointValidation(token, map);
-            if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
-                setRunning();
+        if (msg.startsWith(DONE_PREFIX)) {
+            // ^done should finish corresponding commandBuffer
+            CommandBuffer cb = gdb.getCommandBuffer(token);
+            if (cb != null) {
+                // add message text to the buffer if any
+                if (msg.length() > DONE_PREFIX.length()) {
+                    cb.append(msg.substring(DONE_PREFIX.length()+1));
+                }
+                cb.done();
             }
-        } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
-            if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
-                stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
-            } else if (state.equals(STATE_SILENT_STOP)) {
-                cb = gdb.getCommandBuffer(itok);
+
+            String afterDoneMsg = msg.substring(DONE_PREFIX.length());
+
+            if (afterDoneMsg.startsWith(",bkpt=")) { // NOI18N (-break-insert)
+                msg = msg.substring(12, msg.length() - 1);
+                Map<String, String> map = GdbUtils.createMapFromString(msg);
+                boolean isTmp = breakpointValidation(token, map);
+                if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
+                    setRunning();
+                }
+            } else if (afterDoneMsg.startsWith(",stack=")) { // NOI18N (-stack-list-frames)
+                if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+                    stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
+                } else if (state.equals(STATE_SILENT_STOP)) {
+//                    CommandBuffer cb = gdb.getCommandBuffer(token);
+//                    if (cb != null) {
+//                        cb.append(msg.substring(13, msg.length() - 1));
+//                        cb.done();
+//                    }
+                }
+            } else if (afterDoneMsg.startsWith(",locals=")) { // NOI18N (-stack-list-locals)
+                if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+                    addLocalsToLocalVariables(msg.substring(13));
+                } else {
+                    log.finest("GD.resultRecord: Skipping results from -stack-list-locals (not stopped)");
+                }
+            } else if (afterDoneMsg.startsWith(",stack-args=")) { // NOI18N (-stack-list-arguments)
+                if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+                    addArgsToLocalVariables(msg.substring(17));
+                } else {
+                    log.finest("GD.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
+                }
+            } else if (afterDoneMsg.startsWith(",new-thread-id=")) { // NOI18N (-thread-select)
+                String tid = msg.substring(21, msg.indexOf('"', 22));
+                if (!tid.equals(currentThreadID)) {
+                    String otid = currentThreadID;
+                    currentThreadID = tid;
+                    log.finest("GD.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
+                    firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
+                }
+            } else if (afterDoneMsg.startsWith(",value=") && msg.contains("auto; currently c")) { // NOI18N
+                if (msg.contains("auto; currently c++")) { // NOI18N
+                    cplusplus = true;
+                    DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
+                }
+            } else if (afterDoneMsg.startsWith(",value=")) { // NOI18N (-data-evaluate-expression)
+//                CommandBuffer cb = gdb.getCommandBuffer(token);
+//                if (cb != null) {
+//                    cb.append(msg.substring(13, msg.length() - 1));
+//                    cb.done();
+//                }
+            } else if (afterDoneMsg.startsWith(",thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
+//                CommandBuffer cb = gdb.getCommandBuffer(token);
+//                if (cb != null) {
+//                    cb.done();
+//                }
+            } else if (afterDoneMsg.startsWith(",addr=")) { // NOI18N
+//                CommandBuffer cb = gdb.getCommandBuffer(token);
+//                if (cb != null) {
+//                    cb.append(msg.substring(6));
+//                    cb.done();
+//                }
+            }
+            // Should now work in the last if-branch
+            /*else if (afterDoneMsg.startsWith(",shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
+                String info = msg.substring(6);
+                //CommandBuffer cb = gdb.getCommandBuffer(token);
                 if (cb != null) {
-                    cb.append(msg.substring(13, msg.length() - 1));
-                    cb.done();
+//                    cb.append(info);
+//                    cb.done();
+                    if (token == shareToken) {
+                        shareTab = createShareTab(info);
+                    }
+                }
+            }*/ else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
+                disassembly.update(msg);
+            } else if (msg.startsWith(Disassembly.REGISTER_NAMES_HEADER)) {
+                disassembly.updateRegNames(msg);
+            } else if (msg.startsWith(Disassembly.REGISTER_VALUES_HEADER)) {
+                disassembly.updateRegValues(msg);
+            } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
+                disassembly.updateRegModified(msg);
+                GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, disassembly.getRegisterValues());
+            } else { // NOI18N
+                if (cb != null) {
+                    if (token == shareToken) {
+                        shareTab = createShareTab(cb.getResponse());
+                    }
+                } else if (pendingBreakpointMap.get(token) != null) {
+                    breakpointValidation(token, null);
                 }
             }
-        } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
-            if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
-                addLocalsToLocalVariables(msg.substring(13));
-            } else {
-                log.finest("GD.resultRecord: Skipping results from -stack-list-locals (not stopped)");
-            }
-        } else if (msg.startsWith("^done,stack-args=")) { // NOI18N (-stack-list-arguments)
-            if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
-                addArgsToLocalVariables(msg.substring(17));
-            } else {
-                log.finest("GD.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
-            }
-        } else if (msg.startsWith("^done,new-thread-id=")) { // NOI18N (-thread-select)
-            String tid = msg.substring(21, msg.indexOf('"', 22));
-            if (!tid.equals(currentThreadID)) {
-                String otid = currentThreadID;
-                currentThreadID = tid;
-                log.finest("GD.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
-                firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
-            }
-        } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c")) { // NOI18N
-            if (msg.contains("auto; currently c++")) { // NOI18N
-                cplusplus = true;
-                DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
-            }
-        } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
-            cb = gdb.getCommandBuffer(itok);
-            if (cb != null) {
-                cb.append(msg.substring(13, msg.length() - 1));
-                cb.done();
-            }
-        } else if (msg.startsWith("^done,thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-            cb = gdb.getCommandBuffer(itok);
-            if (cb != null) {
-                cb.done();
-            }
-        } else if (msg.startsWith("^done,addr=")) { // NOI18N
-            cb = gdb.getCommandBuffer(itok);
-            if (cb != null) {
-                cb.append(msg.substring(6));
-                cb.done();
-            }
-        } else if (msg.startsWith("^done,shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-            String info = msg.substring(6);
-            cb = gdb.getCommandBuffer(itok);
-            if (cb != null) {
-                cb.append(info);
-                cb.done();
-                if (token == shareToken) {
-                    shareTab = createShareTab(info);
-                    /*if (shareTab.containsKey("GdbHelper")) { // NOI18N
-                        ProjectActionEvent pae;
-                        pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                        int conType = pae.getProfile().getConsoleType().getValue();
-                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW) {
-                            gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N // FIXME (broken on Mac)
-                        }
-                    }*/
-                }
-            }
-        } else if (msg.startsWith(Disassembly.RESPONSE_HEADER)) {
-            disassembly.update(msg);
-        } else if (msg.startsWith(Disassembly.REGISTER_NAMES_HEADER)) {
-            disassembly.updateRegNames(msg);
-        } else if (msg.startsWith(Disassembly.REGISTER_VALUES_HEADER)) {
-            disassembly.updateRegValues(msg);
-        } else if (msg.startsWith(Disassembly.REGISTER_MODIFIED_HEADER)) {
-            disassembly.updateRegModified(msg);
-            GdbContext.getInstance().setProperty(GdbContext.PROP_REGISTERS, disassembly.getRegisterValues());
-        } else if (msg.equals("^done")) { // NOI18N
-            cb = gdb.getCommandBuffer(itok);
-            if (cb != null) {
-                cb.done();
-                if (token == shareToken) {
-                    shareTab = createShareTab(cb.toString());
-                    /*if (shareTab.containsKey("GdbHelper")) { // NOI18N
-                        ProjectActionEvent pae;
-                        pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                        int conType = pae.getProfile().getConsoleType().getValue();
-                        if (conType == RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW && platform != PlatformTypes.PLATFORM_WINDOWS) {
-                            // FIXME - core dumping on Windows...
-                            gdb.data_evaluate_expression("_gdbHelperSetLineBuffered()"); // NOI18N
-                        }
-                    }*/
-                }
-            } else if (pendingBreakpointMap.get(itok) != null) {
-                breakpointValidation(token, null);
-            }
+            // end of ^done block
         } else if (msg.startsWith("^running") && getState().equals(STATE_STOPPED)) { // NOI18N
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
-            cb = gdb.getCommandBuffer(itok);
+            CommandBuffer cb = gdb.getCommandBuffer(token);
 
             if (cb != null) {
                 cb.error(msg);
@@ -1143,7 +1121,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (pendingBreakpointMap.containsKey(token)) {
                 BreakpointImpl breakpoint = pendingBreakpointMap.remove(token);
-                if (platform == PlatformTypes.PLATFORM_MACOSX && breakpoint != null) {
+                if (breakpoint != null) {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
                 }
@@ -1177,7 +1155,6 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     /** Handle gdb responses starting with '~' */
     public void consoleStreamOutput(int token, String omsg) {
-        CommandBuffer cb = gdb.getCommandBuffer(token);
         String msg;
 
         if (omsg.endsWith("\\n")) { // NOI18N
@@ -1185,6 +1162,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else {
             msg = omsg;
         }
+
+        CommandBuffer cb = gdb.getCommandBuffer(token);
         if (cb != null) {
             cb.append(omsg);
         } else if (msg.toLowerCase().contains("mingw")) { // NOI18N
@@ -1802,9 +1781,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void checkSharedLibs() {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                CommandBuffer cb = new CommandBuffer(gdb);
-                gdb.info_share(cb);
-                String share = cb.waitForCompletion();
+                String share = gdb.info_share(true).getResponse();
                 Map<String, ShareInfo> nuTab = createShareTab(share);
                 if (nuTab.size() > shareTab.size()) {
                     // dlopened a shared library
@@ -1848,9 +1825,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void stepOutOfDlopen() {
         String oldState = state;
         state = STATE_SILENT_STOP;
-        CommandBuffer cb = new CommandBuffer(gdb);
-        cb.setID(gdb.stack_list_frames(cb));
-        String msg = cb.waitForCompletion();
+        String msg = gdb.stack_list_framesEx().getResponse();
         int i = 0;
         boolean valid = true;
         boolean checkNextFrame = false;
@@ -2140,23 +2115,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         if (gdb == null) {
             return null;
         }
-        CommandBuffer cb = new CommandBuffer(gdb);
 
-        if (expression.indexOf('(') != -1) {
+        boolean suspendAll = expression.indexOf('(') != -1;
+
+        if (suspendAll) {
             suspendBreakpointsAndSignals();
-            gdb.data_evaluate_expression(cb, '"' + expression + '"'); // NOI18N
-            restoreBreakpointsAndSignals();
-        } else {
-            gdb.data_evaluate_expression(cb, '"' + expression + '"'); // NOI18N
         }
-        String response = cb.waitForCompletion();
-        if (cb.getState() == CommandBuffer.STATE_ERROR) {
+        CommandBuffer cb = gdb.data_evaluate_expressionEx('"' + expression + '"'); // NOI18N
+        if (suspendAll) {
+            restoreBreakpointsAndSignals();
+        }
+
+        String response = cb.getResponse();
+        if (cb.isError()) {
             return NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
         }
         if (response.startsWith("@0x")) { // NOI18N
-            cb = new CommandBuffer(gdb);
-            gdb.print(cb, expression);
-            response = cb.waitForCompletion();
+            cb = gdb.print(expression);
+            response = cb.getResponse();
             if (response.length() > 0 && response.charAt(0) == '$') {
                 int pos = response.indexOf('=');
                 if (pos != -1 && (pos + 2) < response.length()) {
@@ -2182,21 +2158,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
+    // TODO: unify with requestWhatis and requestSymbolType
     public String requestValueEx(String name) throws GdbErrorException {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
         if (state.equals(STATE_STOPPED)) {
-            CommandBuffer cb = new CommandBuffer(gdb);
-            gdb.data_evaluate_expression(cb, name);
-            String info = cb.waitForCompletion();
-            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
-                if (cb.getState() == CommandBuffer.STATE_ERROR) {
-                    log.fine("GD.requestValue[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
+            CommandBuffer cb = gdb.data_evaluate_expressionEx(name);
+            String info = cb.getResponse();
+            if (info.length() == 0 || !cb.isOK()) {
+                if (cb.isError()) {
+                    log.fine("GD.requestValue Error[" + cb + "]"); // NOI18N
                     // TODO: do not enclose the message in ><
                     throw new GdbErrorException('>' + cb.getError() + '<');
                 } else {
-                    log.fine("GD.requestValue[" + cb.getID() + "]: Failure [" + // NOI18N
-                            info.length() + ", " + cb.getState() + "]"); // NOI18N
+                    log.fine("GD.requestValue Failure[" + cb + "]"); // NOI18N
                     return "";
                 }
             } else {
@@ -2207,21 +2182,20 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
+    // TODO: unify with requestValueEx and requestSymbolType
     public String requestWhatis(String name) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
         if (state.equals(STATE_STOPPED) && name != null && name.length() > 0) {
-            CommandBuffer cb = new CommandBuffer(gdb);
-            gdb.whatis(cb, name);
-            String info = cb.waitForCompletion();
-            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
-                if (cb.getState() == CommandBuffer.STATE_ERROR) {
-                    log.fine("GD.requestWhatis[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
+            CommandBuffer cb = gdb.whatis(name);
+            String info = cb.getResponse();
+            if (info.length() == 0 || !cb.isOK()) {
+                if (cb.isError()) {
+                    log.fine("GD.requestWhatis Error[" + cb + "]"); // NOI18N
 //                    return '>' + cb.getError() + '<'; Show error in Value field...
                     return "";
                 } else {
-                    log.fine("GD.requestWhatis[" + cb.getID() + "]: Failure [" + // NOI18N
-                            info.length() + ", " + cb.getState() + "]"); // NOI18N
+                    log.fine("GD.requestWhatis Failure[" + cb + "]"); // NOI18N
                     return "";
                 }
             } else {
@@ -2232,25 +2206,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
+    // TODO: unify with requestWhatis and requestValueEx
     public String requestSymbolType(String type) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
         if (state.equals(STATE_STOPPED) && type != null && type.length() > 0) {
-            CommandBuffer cb = new CommandBuffer(gdb);
-            gdb.symbol_type(cb, type);
-            String info = cb.waitForCompletion();
-            if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
-                if (cb.getState() == CommandBuffer.STATE_ERROR) {
-                    log.fine("GD.requestSymbolType[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
+            CommandBuffer cb = gdb.symbol_type(type);
+            String info = cb.getResponse();
+            if (info.length() == 0 || !cb.isOK()) {
+                if (cb.isError()) {
+                    log.fine("GD.requestSymbolType Error[" + cb + "]"); // NOI18N
 //                    return '>' + cb.getError() + '<';  Show error in Value field...
                     return "";
                 } else {
-                    log.fine("GD.requestSymbolType[" + cb.getID() + "]: Failure [" + // NOI18N
-                            info.length() + ", " + cb.getState() + "]. Returning original type"); // NOI18N
+                    log.fine("GD.requestSymbolType Failure[" + cb + "]. Returning original type"); // NOI18N
                     return type;
                 }
             } else {
-                log.fine("GD.requestSymbolType[" + cb.getID() + "]: " + type + " --> [" + info + "]");
+                log.fine("GD.requestSymbolType[" + cb + "]: " + type + " --> [" + info + "]");
                 return info.substring(7, info.length() - 2);
             }
         } else {
@@ -2403,8 +2376,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public String getBestPath(String path) {
         path = pathMap.getRemotePath(path);
-        if (path.startsWith(runDirectory)) {
-            return (path.substring(runDirectory.length()));
+        if (path.startsWith(baseDir + '/')) {
+            return path.substring(baseDir.length() + 1);
         } else {
             int pos = path.lastIndexOf('/');
             if (pos != -1) {

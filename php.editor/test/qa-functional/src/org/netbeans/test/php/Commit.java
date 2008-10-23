@@ -425,6 +425,7 @@ public class Commit extends GeneralPHP
     CompletePairCheck( eoPHP, sRandom, CreatePair( sRandom ) );
 
     // Formatting
+    /*
     if( bFormat )
     {
       TypeCode( eoPHP, "class a{function aa(){return;}}" );
@@ -433,14 +434,16 @@ public class Commit extends GeneralPHP
       // CheckResult( eoPHP, "some staff"
       // TODO
     }
+    */
 
     // Completion
     if( bInclass )
     {
       // start constructor
       TypeCode( eoPHP, "function __con" );
+      Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-      Sleep( 500 );
+      Sleep( 1500 );
       CheckResult( eoPHP, "function  __construct() {", -1 );
       int i = eoPHP.getLineNumber( ) - 1;
       eoPHP.deleteLine( i );
@@ -451,8 +454,9 @@ public class Commit extends GeneralPHP
     {
       // start class declaration
       TypeCode( eoPHP, "class a ext" );
+      Sleep( 1500 );
       eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
-      Sleep( 500 );
+      Sleep( 1500 );
       CheckResult( eoPHP, "class a extends" );
     }
 
@@ -515,9 +519,11 @@ public class Commit extends GeneralPHP
     eoPHP.deleteLine( il );
     eoPHP.deleteLine( il );
     eoPHP.deleteLine( il );
+    Sleep( 1500 );
 
     // Insert get
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    Sleep( 1500 );
 
     jdInsetter = new JDialogOperator( );
     jlList = new JListOperator( jdInsetter );

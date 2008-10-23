@@ -65,7 +65,6 @@ import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 public class JspBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
     private MatcherContext context;
-    private LanguagePath htmlLanguagePath;
     
     public JspBracesMatching() {
         this(null, null);
@@ -73,7 +72,6 @@ public class JspBracesMatching implements BracesMatcher, BracesMatcherFactory {
     
     private JspBracesMatching(MatcherContext context, LanguagePath htmlLanguagePath) {
         this.context = context;
-        this.htmlLanguagePath = htmlLanguagePath;
     }
     
     //use two searches to find the original area :-|

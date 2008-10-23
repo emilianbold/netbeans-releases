@@ -38,10 +38,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.logging.Logger;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.ListCellRenderer;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.api.ruby.platform.RubyPlatform;
@@ -63,6 +63,8 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 public abstract class SharedRubyProjectProperties {
+
+    private static final Logger LOGGER = Logger.getLogger(SharedRubyProjectProperties.class.getName());
     
     public static final String MAIN_CLASS = "main.file"; // NOI18N
     public static final String RUBY_OPTIONS = "ruby.options"; // NOI18N
@@ -98,7 +100,7 @@ public abstract class SharedRubyProjectProperties {
     //public ButtonModel INCLUDE_JAVA_MODEL;
     public ListCellRenderer CLASS_PATH_LIST_RENDERER;
     
-    private final Project project;
+    private final RubyBaseProject project;
     private RubyPlatform platform;
     protected final PropertyEvaluator evaluator;
     private final UpdateHelper updateHelper;
@@ -125,7 +127,7 @@ public abstract class SharedRubyProjectProperties {
     //public abstract ListCellRenderer getListRenderer(String propertyName);
     
     public SharedRubyProjectProperties(
-            final Project project,
+            final RubyBaseProject project,
             final PropertyEvaluator evaluator,
             final UpdateHelper updateHelper,
             final GeneratedFilesHelper genFileHelper,
@@ -172,15 +174,12 @@ public abstract class SharedRubyProjectProperties {
         return updateHelper;
     }
 
-    protected Project getProject() {
+    protected RubyBaseProject getProject() {
         return project;
     }
 
     public RubyPlatform getPlatform() {
-        if (platform == null) {
-            platform = RubyPlatform.platformFor(project);
-        }
-        return platform;
+        return getProject().getPlatform();
     }
 
     public static String getRubyOptions(final RubyBaseProject project) {
@@ -204,6 +203,10 @@ public abstract class SharedRubyProjectProperties {
     }
 
     public static void storePlatform(final EditableProperties ep, final RubyPlatform platform) {
+        if (platform == null) {
+            LOGGER.fine("Project has invalid platform (null).");
+            return;
+        }
         ep.setProperty(PLATFORM_ACTIVE, platform.getID());
     }
 

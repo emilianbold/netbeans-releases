@@ -157,5 +157,9 @@ public class MethodCompletionTest extends GroovyTestBase {
         checkCompletion(TEST_BASE + "" + "Methods13.groovy", "        new Test1().^", false);
     }
 
+    public void testCompletionGroovyThis1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods14.groovy", "        this.get^", false);
+    }
+
 }
 

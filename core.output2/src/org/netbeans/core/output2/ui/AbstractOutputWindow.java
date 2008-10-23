@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -41,6 +41,7 @@
 
 package org.netbeans.core.output2.ui;
 
+import java.awt.event.MouseEvent;
 import javax.swing.border.Border;
 import org.netbeans.core.output2.Controller;
 import org.openide.util.Utilities;
@@ -51,11 +52,14 @@ import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.util.ArrayList;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
 import java.lang.reflect.Method;
 import javax.swing.plaf.TabbedPaneUI;
+import org.openide.awt.MouseUtils;
+import org.openide.util.NbBundle;
 
 /**
  * A panel which, if more than one AbstractOutputTab is added to it, instead
@@ -67,6 +71,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
     protected JTabbedPane pane = TabbedPaneFactory.createCloseButtonTabbedPane();
     private static final String ICON_PROP = "tabIcon"; //NOI18N
     private JToolBar toolbar = null;
+    private JPopupMenu popupMenu;
     
     /** Creates a new instance of AbstractOutputWindow */
     public AbstractOutputWindow() {
@@ -102,6 +107,18 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         add(toolbar, BorderLayout.WEST);
         toolbar.setBorder(new VariableRightBorder(pane));
         toolbar.setBorderPainted(true);
+
+        popupMenu = new JPopupMenu();
+        popupMenu.add(new Close());
+        popupMenu.add(new CloseAll());
+        popupMenu.add(new CloseOthers());
+        pane.addMouseListener(new MouseUtils.PopupMouseAdapter() {
+
+            @Override
+            protected void showPopup(MouseEvent evt) {
+                popupMenu.show(AbstractOutputWindow.this, evt.getX(), evt.getY());
+            }
+        });
     }
     
     public void propertyChange(PropertyChangeEvent pce) {
@@ -362,6 +379,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
      * setOpaque(true).
      * @see http://www.netbeans.org/issues/show_bug.cgi?id=43024
      */
+    @Override
     public void paint(Graphics g) {
         if (isGtk) {
             //Presumably we can get this fixed for JDK 1.5.1
@@ -479,5 +497,48 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
         
     }
-    
+
+    private void closeOtherTabs() {
+        AbstractOutputTab[] tabs = getTabs();
+        AbstractOutputTab curTab = getSelectedTab();
+        for (int i = 0; i < tabs.length; i++) {
+            AbstractOutputTab tab = tabs[i];
+            if (tab != curTab) {
+                closeRequest(tab);
+            }
+        }
+    }
+
+    private class Close extends AbstractAction {
+
+        public Close() {
+            super(NbBundle.getMessage(AbstractOutputWindow.class, "LBL_Close"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+             closeRequest(getSelectedTab());
+        }
+    }
+
+    private class CloseAll extends AbstractAction {
+
+        public CloseAll() {
+            super(NbBundle.getMessage(AbstractOutputWindow.class, "LBL_CloseAll"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            close();
+        }
+    }
+
+    private class CloseOthers extends AbstractAction {
+
+        public CloseOthers() {
+            super(NbBundle.getMessage(AbstractOutputWindow.class, "LBL_CloseOthers"));
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            closeOtherTabs();
+        }
+    }
 }

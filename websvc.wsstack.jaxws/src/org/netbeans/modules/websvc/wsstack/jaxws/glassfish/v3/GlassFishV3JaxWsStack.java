@@ -90,7 +90,9 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public boolean isFeatureSupported(Feature feature) {
-        if (feature == JaxWs.Feature.WSIT) return true;
+        if (feature == JaxWs.Feature.WSIT && isMetroInstalled()) {
+            return true;
+        }
         if (feature == JaxWs.Feature.JSR109 && isMetroInstalled()) {
             return true;
         }

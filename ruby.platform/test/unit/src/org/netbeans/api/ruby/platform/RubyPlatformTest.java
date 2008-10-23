@@ -187,4 +187,8 @@ public class RubyPlatformTest extends RubyTestBase {
         assertNull("does not throw AssertionError", rubinius.getSystemRoot(FileUtil.toFileObject(new File(rubinius.getHome(), "lib"))));
     }
 
+    public void testGetGemTool() throws Exception {
+        RubyPlatform platform = setUpPlatformWithRubyGems();
+        assertEquals("righ gem tool", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), platform.getGemTool());
+    }
 }
