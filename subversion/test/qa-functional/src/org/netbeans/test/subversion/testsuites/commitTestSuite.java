@@ -77,7 +77,7 @@ public class commitTestSuite extends JellyTestCase {
                 return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                         .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
                         .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                        .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
+//                        .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
                         .enableModules(".*").clusters(".*"));
             } else {
                 return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
