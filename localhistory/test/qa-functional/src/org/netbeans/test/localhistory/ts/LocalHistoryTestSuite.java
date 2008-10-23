@@ -63,12 +63,12 @@ public class LocalHistoryTestSuite extends JellyTestCase {
         return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(LocalHistoryViewTest.class, 
                 "testLocalHistoryInvoke",
-                "testLocalHistoryRevertFromHistory",
+                "testLocalHistoryRevertFromHistory")
 //                "testLocalHistoryDeleteFromHistory",
 //                "testLocalHistoryRevisionCountAfterModification",
-                "testLocalHistoryNewFileInNewPackage",
-                "testLocalHistoryRevertDeleted",
-                "testLocalHistoryRevisionCountAfterModification2")
+//                "testLocalHistoryNewFileInNewPackage",
+//                "testLocalHistoryRevertDeleted",
+//                "testLocalHistoryRevisionCountAfterModification2")
                 .enableModules(".*")
                 .clusters(".*"));
     } 
