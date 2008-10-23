@@ -40,28 +40,21 @@
  */
 package org.netbeans.modules.java.hints.infrastructure;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class ErrorHintsFactory extends EditorAwareJavaSourceTaskFactory {
+public class ErrorHintsFactory extends TaskFactory {
 
-    /**
-     * Creates a new instance of JavaHintsFactory
-     */
-    public ErrorHintsFactory() {
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "text/x-java", "text/x-jsp", "text/x-tag");
-    }
-
-    public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new ErrorHintsProvider(file);
+    @Override
+    public Collection<SchedulerTask> create(Snapshot snapshot) {
+        return Collections.<SchedulerTask>singleton(new ErrorHintsProvider());
     }
 
 }
