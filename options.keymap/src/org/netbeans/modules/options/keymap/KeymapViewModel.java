@@ -408,6 +408,8 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (currentProfile);
         m = convertFromEmacs(m);
         Set<String> shortcuts = m.get(action);
+        if (shortcuts == null)
+            shortcuts = Collections.<String>emptySet(); //this action has no default shortcut
         //lets search for conflicting SCs
         Set<ShortcutAction> conflictingActions = new HashSet<ShortcutAction>();
         for(String sc : shortcuts) {
