@@ -8,8 +8,8 @@ extern "C" {
 typedef struct sockaddr sockaddr;
 typedef struct addrinfo addrinfo;
 
-typedef struct audio_format_t audio_format_t;
-typedef audio_format_t audio_sample_format_t;
+typedef struct audio_format audio_format;
+typedef audio_format audio_format_sample;
 
 #ifdef	__cplusplus
 }
