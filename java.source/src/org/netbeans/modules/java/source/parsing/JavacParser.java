@@ -622,6 +622,7 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validateSourceLevel(sourceLevel));
+        options.add("-proc:none"); // NOI18N, Disable annotation processors
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
         try {            
