@@ -39,18 +39,21 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module.run;
+package org.netbeans.modules.project.ui.actions;
 
-import java.awt.EventQueue;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.CallableSystemAction;
 import org.openide.util.actions.SystemAction;
 
@@ -60,67 +63,24 @@ import org.openide.util.actions.SystemAction;
  * @author Jesse Glick
  * @see "issue #43143"
  */
-public final class StopBuildingAction extends CallableSystemAction {
+public final class StopBuildingAction extends CallableSystemAction implements ChangeListener {
     
-    /**
-     * Map from active processing threads to their process display names.
-     */
-    private static final Map<Thread,String> activeProcesses = new WeakHashMap<Thread,String>();
-    
-    static void registerProcess(Thread t, String displayName) {
-        synchronized (activeProcesses) {
-            assert !activeProcesses.containsKey(t);
-            activeProcesses.put(t, displayName);
-        }
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                SystemAction.get(StopBuildingAction.class).setEnabled(true);
-            }
-        });
-    }
-    
-    static void unregisterProcess(Thread t) {
-        final boolean enable;
-        synchronized (activeProcesses) {
-            assert activeProcesses.containsKey(t);
-            activeProcesses.remove(t);
-            enable = !activeProcesses.isEmpty();
-        }
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                SystemAction.get(StopBuildingAction.class).setEnabled(enable);
-            }
-        });
-    }
-    
+   public StopBuildingAction()  {
+       super();
+        BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImplementation.class));
+   }
+
     @Override
     public void performAction() {
-        Thread[] toStop = null;
-        synchronized (activeProcesses) {
-            assert !activeProcesses.isEmpty();
-            if (activeProcesses.size() == 1) {
-                toStop = activeProcesses.keySet().toArray(new Thread[1]);
-            }
-        }
-        if (toStop == null) {
+        List<BuildExecutionSupport.Item> toStop = BuildExecutionSupportImpl.getInstance().getRunningItems();
+
+        if (toStop.size() > 1) {
             // More than one, need to select one.
-            Map<Thread,String> activeProcessesClone;
-            synchronized (activeProcesses) {
-                activeProcessesClone = new HashMap<Thread,String>(activeProcesses);
-            }
-            toStop = StopBuildingAlert.selectProcessToKill(activeProcessesClone);
-            synchronized (activeProcesses) {
-                for (int i = 0; i < toStop.length; i++) {
-                    if (!activeProcesses.containsKey(toStop[i])) {
-                        // Oops, process ended while it was being selected... just ignore.
-                        toStop[i] = null;
-                    }
-                }
-            }
+            toStop = StopBuildingAlert.selectProcessToKill(toStop);
         }
-        for (Thread t : toStop) {
+        for (BuildExecutionSupport.Item t : toStop) {
             if (t != null) {
-                TargetExecutor.stopProcess(t);
+                t.stopRunning();
             }
         }
     }
@@ -153,19 +113,18 @@ public final class StopBuildingAction extends CallableSystemAction {
                 super(StopBuildingAction.this);
             }
             public JComponent[] getMenuPresenters() {
-                String label;
-                synchronized (activeProcesses) {
-                    switch (activeProcesses.size()) {
-                        case 0:
-                            label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building");
-                            break;
-                        case 1:
-                            label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building_one",
-                                    activeProcesses.values().iterator().next());
-                            break;
-                        default:
-                            label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building_many");
-                    }
+                String label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building");
+                List<BuildExecutionSupport.Item> items = BuildExecutionSupportImpl.getInstance().getRunningItems();
+                switch (items.size()) {
+                    case 0:
+                        label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building");
+                        break;
+                    case 1:
+                        label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building_one",
+                                items.iterator().next().getDisplayName());
+                        break;
+                    default:
+                        label = NbBundle.getMessage(StopBuildingAction.class, "LBL_stop_building_many");
                 }
                 Mnemonics.setLocalizedText(this, label);
                 return new JComponent[] {this};
@@ -175,6 +134,16 @@ public final class StopBuildingAction extends CallableSystemAction {
             }
         }
         return new SpecialMenuItem();
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        final List<BuildExecutionSupport.Item> items = BuildExecutionSupportImpl.getInstance().getRunningItems();
+
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                SystemAction.get(StopBuildingAction.class).setEnabled(items.size() > 0);
+            }
+        });
     }
     
 }

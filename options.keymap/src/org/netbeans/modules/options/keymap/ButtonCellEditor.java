@@ -86,16 +86,30 @@ public class ButtonCellEditor extends DefaultCellEditor {
             ShortcutAction sca = (ShortcutAction) action;
             ShortcutAction conflictingAction = model.findActionForShortcut(s);
             if (conflictingAction != null && !conflictingAction.equals(sca)) {//there is a conflicting action, show err dialog
-                if(!overrride(conflictingAction.getDisplayName()))
+                //there is a conflicting action, show err dialog
+                Object overrride = overrride(conflictingAction.getDisplayName());
+                if (overrride.equals(DialogDescriptor.YES_OPTION)) {
+//                    model.removeShortcut(sca, orig);
+//                    model.addShortcut(sca, s);
+//                    boolean stopCellEditing = super.stopCellEditing();
+//                    model.update();
+//                    return stopCellEditing;
+                } else if (overrride.equals(DialogDescriptor.NO_OPTION)) {
+                    JComponent comp = (JComponent) getComponent();
+                    comp.setBorder(new LineBorder(Color.red));
+                    comp.requestFocus();
                     return false;
+                } else {
+                    ((ShortcutCell) value).getTextField().setText(orig);
+                    return super.stopCellEditing();
+                }
             }
-            model.removeShortcut(sca, orig);
-            model.addShortcut(sca ,s);
-            
         } catch (Exception e) {
             ((JComponent) getComponent()).setBorder(new LineBorder(Color.red));
             return false;
         }
+        model.removeShortcut((ShortcutAction) action, orig);
+        model.addShortcut((ShortcutAction) action, s);
         boolean stopCellEditing = super.stopCellEditing();
         model.update();
         return stopCellEditing;
@@ -125,31 +139,23 @@ public class ButtonCellEditor extends DefaultCellEditor {
     }
 
     /**
-     * Shows dialog where useer chooses whether SC of confl. action should be overriden
+     * Shows dialog where user chooses whether SC of confl. action should be overriden
      * @param displayName name of conflicting action
-     * @return true if shortcut of confliting action should be overriden
+     * @return dialog result
      */
-    private boolean overrride(String displayName) {
+    private Object overrride(String displayName) {
         JPanel innerPane = new JPanel();
         innerPane.add(new JLabel(NbBundle.getMessage(ButtonCellEditor.class, "Override_Shortcut", displayName))); //NOI18N
         DialogDescriptor descriptor = new DialogDescriptor(
                 innerPane,
                 NbBundle.getMessage(ButtonCellEditor.class, "Conflicting_Shortcut_Dialog"),
                 true,
-                DialogDescriptor.YES_NO_OPTION,
+                DialogDescriptor.YES_NO_CANCEL_OPTION,
                 null,
                 null); //NOI18N
         
         DialogDisplayer.getDefault().notify(descriptor);
-
-        if (descriptor.getValue().equals(DialogDescriptor.YES_OPTION))
-            return true;
-        else {
-            JComponent comp = (JComponent) getComponent();
-            comp.setBorder(new LineBorder(Color.red));
-            comp.requestFocus();
-            return false;
-        }
+        return descriptor.getValue();
     }
 
 }

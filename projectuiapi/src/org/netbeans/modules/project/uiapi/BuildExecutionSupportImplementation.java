@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-package org.netbeans.modules.project.ui.actions;
-
-import javax.swing.AbstractAction;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-import org.openide.util.ImageUtilities;
-
-/** Basic action. Serves as a base class for all projects specific
- * actions.
  *
- * @author Pet Hrebejk
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-abstract class BasicAction extends AbstractAction {
 
-    protected BasicAction() {}
+package org.netbeans.modules.project.uiapi;
 
-    protected BasicAction( String displayName, Icon icon ) {
-        if ( displayName != null ) {
-            setDisplayName( displayName );
-        }
-        if ( icon != null ) {
-            setSmallIcon( icon );
-        }
-    }
-    
-    protected final void setDisplayName( String name ) {
-        putValue( NAME, name );
-    }
-    
-    protected final void setSmallIcon( Icon icon ) {
-        if ( icon != null ) {
-            putValue( SMALL_ICON, icon );
-        }
-    }
-    
-    protected final void setSmallIcon( String iconResource ) {
-        if ( iconResource != null ) {
-            putValue( SMALL_ICON, new ImageIcon( ImageUtilities.loadImage( iconResource ) ) );
-        }
-    }
-        
+import java.util.List;
+import javax.swing.event.ChangeListener;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
+
+/**
+ *
+ * @author mkleint
+ */
+public interface BuildExecutionSupportImplementation {
+
+    void registerFinishedItem(BuildExecutionSupport.Item item);
+
+    void registerRunningItem(BuildExecutionSupport.Item item);
+
+    void addChangeListener(ChangeListener listener);
+
+    void removeChangeListener(ChangeListener listener);
+
+    BuildExecutionSupport.Item getLastItem();
+
+    List<BuildExecutionSupport.Item> getRunningItems();
+
 }

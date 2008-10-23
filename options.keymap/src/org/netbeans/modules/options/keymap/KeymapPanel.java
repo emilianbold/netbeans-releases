@@ -214,6 +214,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                     }
                 }
             }
+            getModel().fireTableDataChanged();
         } else
             update();
     }
