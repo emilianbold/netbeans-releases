@@ -94,6 +94,7 @@ import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.completion.csm.CsmContext;
 import org.netbeans.modules.cnd.completion.csm.CsmContextUtilities;
 import org.netbeans.modules.cnd.completion.csm.CsmOffsetResolver;
+import org.netbeans.modules.cnd.completion.csm.CsmOffsetUtilities;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.AntiLoop;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
@@ -826,11 +827,6 @@ abstract public class CsmCompletionQuery {
         boolean resolveExp(CsmCompletionExpression exp) {
             boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
-
-//            if (exp.getExpID() == CsmCompletionExpression.CPPINCLUDE) { // #include statement
-//                exp = exp.getParameterCount() == 2 ? exp.getParameter(1) : exp.getParameter(0);
-//                return false;
-//            }
 
             switch (exp.getExpID()) {
             case CsmCompletionExpression.DOT_OPEN: // Dot expression with the dot at the end
@@ -1832,6 +1828,21 @@ abstract public class CsmCompletionQuery {
                     if (v.getName().toString().equals(var)) {
                         return v.getType();
                     }
+                }
+            }
+            if (var.length() == 0 && CsmKindUtilities.isVariable(context.getLastObject())) {
+                // probably in initializer of variable, like
+                // struct AAA a[] = { { .field = 1}, { .field = 2}};
+                CsmVariable varObj = (CsmVariable) context.getLastObject();
+                if (CsmOffsetUtilities.isInObject(varObj.getInitialValue(), varPos)) {
+                    CsmType type = varObj.getType();
+                    if (type.getArrayDepth() > 0) {
+                        CsmClassifier cls = type.getClassifier();
+                        if (cls != null) {
+                            type = CsmCompletion.getType(cls, 0);
+                        }
+                    }
+                    return type;
                 }
             }
             return null;
