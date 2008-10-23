@@ -107,14 +107,14 @@ made subject to such option by the copyright holder.
             <pathelement path="${module.classpath}"/>
             <pathelement path="${cp.extra}"/>
         </path>
-        <!-- Unlike ${module.classpath}, this does not use publicPackageJarDir, since processors need not be in public packages: -->
-        <parseprojectxml project="." moduleclasspathproperty="processor.path"/>
+        <!-- Unlike ${module.classpath}, this does not use publicPackageJarDir, since processors need not be in public packages. -->
+        <!-- Also needs to include transitive dependencies. -->
         <presetdef name="nb-javac">
             <custom-javac>
                 <bootclasspath path="${nbjdk.bootclasspath}"/>
                 <javacclasspath refid="javacimpl"/>
                 <processorpath>
-                    <pathelement path="${processor.path}"/>
+                    <pathelement path="${module.run.classpath}"/>
                     <pathelement path="${cp.extra}"/>
                 </processorpath>
             </custom-javac>
