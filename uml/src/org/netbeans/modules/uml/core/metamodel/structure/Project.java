@@ -110,6 +110,7 @@ import org.netbeans.modules.uml.core.reverseengineering.reframework.parsingframe
 import org.netbeans.modules.uml.core.support.UMLLogger;
 import org.netbeans.modules.uml.core.support.umlmessagingcore.UMLMessagingHelper;
 import org.netbeans.modules.uml.core.support.umlsupport.FileManip;
+import org.netbeans.modules.uml.core.support.umlsupport.FileSysManip;
 import org.netbeans.modules.uml.core.support.umlsupport.IResultCell;
 import org.netbeans.modules.uml.core.support.umlsupport.PathManip;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
@@ -1757,31 +1758,15 @@ public class Project extends Model implements IProject, IElementModifiedEventsSi
                     FileObject modelFO = FileUtil.toFileObject(modelFile);
                     if (modelFO != null) 
                     {
-                        FileObject parentFolderFO = modelFO.getParent(); 
-                        String fileNameWithoutExt = modelFO.getName(); 
-                        FileObject destFolderFO = FileUtil.createFolder(parentFolderFO, "DiagramBackup"); //NOI18N
-
-                        String[] exts = new String[]{modelFO.getExt(), "ettm", "etup"}; //NOI18N
-                        for(String ext : exts) 
-                        {
-                            FileObject srcFO = parentFolderFO.getFileObject(fileNameWithoutExt, ext); 
-                            if (srcFO != null) 
-                            {
-                                FileObject destFO = destFolderFO.getFileObject(fileNameWithoutExt, ext);
-                                if (destFO != null) 
-                                {
-                                    destFO.delete();
-                                }                                
-                                FileUtil.copyFile(srcFO, destFolderFO, fileNameWithoutExt);
-                            }
-                        }
+                        FileSysManip.backupCopy(fileName); //NOI18N
+                        FileSysManip.backupCopy(StringUtilities.ensureExtension(fileName,".ettm")); //NOI18N
+                        FileSysManip.backupCopy(StringUtilities.ensureExtension(fileName,".etup")); //NOI18N
                     }
                 }
             } catch (Exception ex) {
                 UMLLogger.logException(ex, Level.WARNING);
             }
         }
-
     
 	public void close()
 	{
