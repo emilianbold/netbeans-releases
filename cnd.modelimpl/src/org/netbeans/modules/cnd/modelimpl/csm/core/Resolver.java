@@ -50,7 +50,10 @@ import java.util.*;
 public interface Resolver {
     public static final int NAMESPACE = 1 << 0;
     public static final int CLASSIFIER = 1 << 1;
-    public static final int ALL = NAMESPACE | CLASSIFIER;
+    public static final int CLASS = 1 << 2;
+    public static final int ALL = NAMESPACE | CLASSIFIER | CLASS;
+
+    public CsmFile getStartFile();
 
     /**
      * Resolves classifier (class/enum/typedef) or namespace name.

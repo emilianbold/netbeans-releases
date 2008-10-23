@@ -44,93 +44,109 @@ package org.apache.tools.ant.module.run;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
-import javax.swing.event.ChangeListener;
+import org.apache.tools.ant.module.AntModule;
 import org.apache.tools.ant.module.api.AntProjectCookie;
 import org.apache.tools.ant.module.api.support.AntScriptUtils;
+import org.apache.tools.ant.module.bridge.AntBridge;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.RequestProcessor;
 
 /**
  * Records the last Ant target(s) that was executed.
  * @author Jesse Glick
  */
-public class LastTargetExecuted {
+public class LastTargetExecuted implements BuildExecutionSupport.Item {
     
     private LastTargetExecuted() {}
     
-    private static File buildScript;
+    private File buildScript;
     //private static int verbosity;
-    private static String[] targets;
-    private static Map<String,String> properties;
-    private static String displayName;
+    private String[] targets;
+    private Map<String,String> properties;
+    private String displayName;
+    private Thread thread;
     
     /** Called from {@link TargetExecutor}. */
-    static void record(File buildScript, String[] targets, Map<String,String> properties, String displayName) {
-        LastTargetExecuted.buildScript = buildScript;
+    static LastTargetExecuted record(File buildScript, String[] targets, Map<String,String> properties, String displayName, Thread thread) {
+        LastTargetExecuted rec = new LastTargetExecuted();
+        rec.buildScript = buildScript;
         //LastTargetExecuted.verbosity = verbosity;
-        LastTargetExecuted.targets = targets;
-        LastTargetExecuted.properties = properties;
-        LastTargetExecuted.displayName = displayName;
-        cs.fireChange();
+        rec.targets = targets;
+        rec.properties = properties;
+        rec.displayName = displayName;
+        rec.thread = thread;
+        BuildExecutionSupport.registerRunningItem(rec);
+        return rec;
+    }
+
+    static void finish(LastTargetExecuted exc) {
+        BuildExecutionSupport.registerFinishedItem(exc);
     }
     
     /**
      * Get the last build script to be run.
      * @return the last-run build script, or null if nothing has been run yet (or the build script disappeared etc.)
      */
-    public static AntProjectCookie getLastBuildScript() {
-        if (buildScript != null && buildScript.isFile()) {
-            FileObject fo = FileUtil.toFileObject(buildScript);
+    public static AntProjectCookie getLastBuildScript(LastTargetExecuted ext) {
+        if (ext.buildScript != null && ext.buildScript.isFile()) {
+            FileObject fo = FileUtil.toFileObject(ext.buildScript);
             assert fo != null;
             return AntScriptUtils.antProjectCookieFor(fo);
         }
         return null;
     }
     
-    /**
-     * Get the last target names to be run.
-     * @return a list of one or more targets, or null for the default target
-     */
-    public static String[] getLastTargets() {
-        return targets;
-    }
-    
-    /**
-     * Get a display name (as it would appear in the Output Window) for the last process.
-     * @return a process display name, or null if nothing has been run yet
-     */
-    public static String getProcessDisplayName() {
-        return displayName;
-    }
-    
+
     /**
      * Try to rerun the last task.
      */
-    public static ExecutorTask rerun() throws IOException {
-        AntProjectCookie apc = getLastBuildScript();
+    public static ExecutorTask rerun(LastTargetExecuted exec) throws IOException {
+        AntProjectCookie apc = getLastBuildScript(exec);
         if (apc == null) {
             // Can happen in case the build script was deleted (similar to #84874).
             // Also make sure to disable RunLastTargetAction.
             cs.fireChange();
             return null;
         }
-        TargetExecutor t = new TargetExecutor(apc, targets);
+        TargetExecutor t = new TargetExecutor(apc, exec.targets);
         //t.setVerbosity(verbosity);
-        t.setProperties(properties);
-        t.setDisplayName(displayName); // #140999: do not recalculate
+        t.setProperties(exec.properties);
+        t.setDisplayName(exec.displayName); // #140999: do not recalculate
         return t.execute();
     }
     
     private static final ChangeSupport cs = new ChangeSupport(LastTargetExecuted.class);
     
-    public static void addChangeListener(ChangeListener l) {
-        cs.addChangeListener(l);
+ 
+
+    public String getDisplayName() {
+        return displayName;
     }
-    
-    public static void removeChangeListener(ChangeListener l) {
-        cs.removeChangeListener(l);
+
+    public void repeatExecution() {
+       RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                try {
+                    rerun(LastTargetExecuted.this);
+                } catch (IOException ioe) {
+                    AntModule.err.notify(ioe);
+                }
+            }
+        });
+    }
+
+    public boolean isRunning() {
+        return thread != null ? thread.isAlive() : false;
+    }
+
+    public void stopRunning() {
+        if (thread != null) {
+            AntBridge.getInterface().stop(thread);
+        }
     }
     
 }

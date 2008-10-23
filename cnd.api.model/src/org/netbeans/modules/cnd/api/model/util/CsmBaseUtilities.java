@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmInstantiation;
@@ -94,7 +95,7 @@ public class CsmBaseUtilities {
         if (outScope == null || isGlobalNamespace(outScope)) {
             return false;
         } else {
-            CsmFunction decl = (CsmFunction) CsmBaseUtilities.getFunctionDeclaration(fun);
+            CsmFunction decl = CsmBaseUtilities.getFunctionDeclaration(fun);
             if (decl == null || !CsmKindUtilities.isMethod(fun)) {
                 return false;
             } else {
@@ -332,8 +333,8 @@ public class CsmBaseUtilities {
         return fun;
     }      
     
-    public static CsmClassifier getOriginalClassifier(CsmClassifier orig) {
-        return CsmClassifierResolver.getDefault().getOriginalClassifier(orig);
+    public static CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
+        return CsmClassifierResolver.getDefault().getOriginalClassifier(orig, contextFile);
     }
 
 }

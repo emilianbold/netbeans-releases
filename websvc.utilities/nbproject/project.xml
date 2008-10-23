@@ -99,6 +99,14 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.9</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.filesystems</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -168,6 +176,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.websvc.design</friend>
                 <package>org.netbeans.modules.websvc.api.support</package>
                 <package>org.netbeans.modules.websvc.api.support.java</package>
+                <package>org.netbeans.modules.websvc.spi.support</package>
             </friend-packages>
         </data>
     </configuration>
