@@ -63,8 +63,10 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         //XXX: should not use the document, I guess:
         Document doc = snapshot.getSource().getDocument();
-        
-        assert doc != null;
+
+        if (doc == null) {
+            return Collections.emptyList();
+        }
 
         SimplifiedJSPServlet gen = new SimplifiedJSPServlet(snapshot, doc);
         
