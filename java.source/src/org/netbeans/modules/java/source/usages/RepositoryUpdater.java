@@ -137,6 +137,7 @@ import org.netbeans.modules.java.source.tasklist.TasklistSettings;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
+import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -1253,7 +1254,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     }
     
-    private final class CompileWorker implements CancellableTask<CompilationInfo> {
+    private final class CompileWorker extends GenericUserTask {
                 
         /**
          * Used as a identity for resetDirty, which should reset currentWork only
@@ -1290,7 +1291,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.canceled.set(true);
         }
         
-        public void run (final CompilationInfo nullInfo) throws IOException {
+        public void run () throws IOException {
             ACTIVITY_LOGGER.finest("START");    //NOI18N
             final Logger PERF_LOGGER = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
             PERF_LOGGER.log(Level.FINE, "start", RepositoryUpdater.class.getName()); // NOI18N
@@ -2384,7 +2385,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             active.add (new CompileTuple(FileObjects.nbFileObject(fo, rootFo, filter, false),fileFile));
                         }
                         if (!active.isEmpty()) {
-                            JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);                            
+                            JavacTaskImpl jt =  JavacParser.createJavacTask(cpInfo, listener, sourceLevel,null);                           
                             if (LOGGER.isLoggable(Level.FINEST)) {
                                 LOGGER.finest("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
                             }                            
@@ -3070,7 +3071,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         if (jt == null) {
-                            jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
+                            jt = JavacParser.createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
                             jt.setTaskListener(listener);
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N

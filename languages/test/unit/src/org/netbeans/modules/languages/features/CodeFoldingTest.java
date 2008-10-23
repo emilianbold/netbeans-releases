@@ -42,30 +42,24 @@
 package org.netbeans.modules.languages.features;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.Document;
 import junit.framework.TestCase;
+
 import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTToken;
 import org.netbeans.api.languages.ParseException;
-import org.netbeans.api.languages.ParserManager;
 import org.netbeans.modules.languages.*;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Selector;
 import org.netbeans.modules.languages.dataobject.LanguagesEditorKit;
 import org.netbeans.modules.languages.features.LanguagesFoldManager.FoldItem;
 import org.netbeans.modules.languages.lexer.SLanguageHierarchy;
-import org.netbeans.modules.languages.Rule;
-import org.netbeans.modules.languages.parser.LLSyntaxAnalyser;
-import org.netbeans.modules.languages.parser.Parser;
 import org.netbeans.modules.languages.parser.Pattern;
+import org.netbeans.modules.parsing.api.ParserManager;
 
 /**
  *

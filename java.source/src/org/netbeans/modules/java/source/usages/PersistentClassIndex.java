@@ -208,41 +208,11 @@ public class PersistentClassIndex extends ClassIndexImpl {
                 final long startTime = System.currentTimeMillis();
                 Iterator<FileObject> files = js.getFileObjects().iterator();
                 FileObject fo = files.hasNext() ? files.next() : null;
-                if (fo != null && fo.isValid()) {                    
-                    if (JavaSourceAccessor.getINSTANCE().isDispatchThread()) {
-                        //Already under javac's lock
-                        try {
-                            ClassIndexManager.getDefault().writeLock(
-                                new ClassIndexManager.ExceptionAction<Void>() {
-                                    public Void run () throws IOException {
-                                        CompilationInfo compilationInfo = JavaSourceAccessor.getINSTANCE().getCurrentCompilationInfo (js, JavaSource.Phase.RESOLVED);                                        
-                                        if (compilationInfo != null) {
-                                            //Not cancelled
-                                            final SourceAnalyser sa = getSourceAnalyser();
-                                            long st = System.currentTimeMillis();
-                                            sa.analyseUnitAndStore(compilationInfo.getCompilationUnit(), JavaSourceAccessor.getINSTANCE().getJavacTask(compilationInfo),
-                                                ClasspathInfoAccessor.getINSTANCE().getFileManager(compilationInfo.getClasspathInfo()));
-                                            long et = System.currentTimeMillis();
-                                            }
-                                        return null;
-                                    }
-                            });
-                        } catch (IndexAlreadyClosedException e) {
-                            //A try to  store to closed index, safe to ignore.
-                            //Data will be scanned when project is reopened.
-                            LOGGER.info("Ignoring store into closed index");
-                        } catch (IOException ioe) {
-                            Exceptions.printStackTrace(ioe);
-                        }
-                        catch (InterruptedException e) {
-                            //Should never happen
-                            Exceptions.printStackTrace(e);
-                        }
-                    }
-                    else {
-                        try {
-                            js.runUserActionTask(new Task<CompilationController>() {
-                                public void run (final CompilationController controller) throws Exception {
+                if (fo != null && fo.isValid()) {                                        
+                    try {
+                        js.runUserActionTask(new Task<CompilationController>() {
+                            public void run (final CompilationController controller) {
+                                try {                            
                                     ClassIndexManager.getDefault().writeLock(
                                         new ClassIndexManager.ExceptionAction<Void>() {
                                             public Void run () throws IOException {
@@ -255,20 +225,21 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                                 return null;
                                             }
                                     });
+                                } catch (IndexAlreadyClosedException e) {
+                                    //A try to  store to closed index, safe to ignore.
+                                    //Data will be scanned when project is reopened.
+                                   LOGGER.info("Ignoring store into closed index");
+                                } catch (IOException ioe) {
+                                   Exceptions.printStackTrace(ioe);
                                 }
-                            }, true);
-                        } catch (IOException ioe) {
-                            final Throwable rootCause = ioe.getCause();
-                            if (rootCause instanceof IndexAlreadyClosedException) {
-                                //A try to  store to closed index, safe to ignore.
-                                //Data will be scanned when project is reopened.
-                                LOGGER.info("Ignoring store into closed index");
+                                catch (InterruptedException e) {
+                                   //Should never happen
+                                   Exceptions.printStackTrace(e);
+                                }
                             }
-                            else {
-                                Exceptions.printStackTrace(ioe);
-                            }
-                        }
-                    }
+                        }, true);
+                } catch (IOException ioe) {
+                    Exceptions.printStackTrace(ioe);
                 }
                 synchronized (this) {
                     this.dirty = null;

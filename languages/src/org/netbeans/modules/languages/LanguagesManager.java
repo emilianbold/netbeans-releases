@@ -187,7 +187,7 @@ public class LanguagesManager extends org.netbeans.api.languages.LanguagesManage
         }
         
         // HACK
-        ParserManagerImpl.refreshHack ();
+        //!ParserManagerImpl.refreshHack ();
     }
 
     private Set<FileObject> listeningOn = new HashSet<FileObject> ();
