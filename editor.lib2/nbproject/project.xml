@@ -146,6 +146,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.spi.editor.codegen</package>
                 <package>org.netbeans.spi.editor.highlighting</package>
                 <package>org.netbeans.spi.editor.highlighting.support</package>
+                <package>org.netbeans.spi.editor.typinghooks</package>
             </public-packages>
         </data>
     </configuration>
