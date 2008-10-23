@@ -2165,8 +2165,15 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             VariableExpression variable = (VariableExpression) dotCompletionContext.getAstPath().leaf();
             if ("this".equals(variable.getName())) { // NOI18N
                 request.declaringClass = getSurroundingClassNode(request);
+                request.completingThis = true;
                 return request.declaringClass;
             }
+// FIXME this does not work invetsigate in path there is something like super -> this -> this
+//            if ("super".equals(variable.getName())) { // NOI18N
+//                request.declaringClass = getSurroundingClassNode(request);
+//                request.completingSuper = true;
+//                return request.declaringClass;
+//            }
         }
 
         if (dotCompletionContext.getAstPath().leaf() instanceof Expression) {
@@ -2427,25 +2434,33 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
         ClassNode typeNode = node;
 
-        // FIXME index is broken when invoked on start
-        // FIXME optimize this search if we are inside definition (this)
-        GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
-
-        if (index == null) {
-            return Collections.emptyMap();
-        }
-        Set<IndexedClass> classes = index.getClasses(typeNode.getName(), NameKind.EXACT_NAME, true, false, false);
-
         boolean groovyClass = false;
-        if (!classes.isEmpty()) {
-            ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
-            if (astNode instanceof ClassNode) {
-                typeNode = (ClassNode) astNode;
-                groovyClass = true;
-            }
 
-            result.putAll(GroovyElementHandler.forCompilationInfo(request.info)
-                    .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS));
+        // optimized - don't use index when completing this
+        if (!(type == ClassType.CLASS && request.isCompletingThis())) {
+            // FIXME index is broken when invoked on start
+            GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+            if (index == null) {
+                return Collections.emptyMap();
+            }
+            Set<IndexedClass> classes = index.getClasses(typeNode.getName(), NameKind.EXACT_NAME, true, false, false);
+
+
+            if (!classes.isEmpty()) {
+                ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
+                if (astNode instanceof ClassNode) {
+                    typeNode = (ClassNode) astNode;
+                    groovyClass = true;
+                }
+
+                fillSuggestions(GroovyElementHandler.forCompilationInfo(request.info)
+                        .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS), result);
+            }
+        } else {
+            groovyClass = true;
+            fillSuggestions(GroovyElementHandler.forCompilationInfo(request.info)
+                    .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS), result);
         }
 
         // optimized - if it is groovy class don't ask java index
@@ -2460,49 +2475,33 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                 }
             }
 
-            for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
-                    .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS).entrySet()) {
-                if (!result.containsKey(entry.getKey())) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
+            fillSuggestions(JavaElementHandler.forCompilationInfo(request.info)
+                    .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS), result);
         }
 
-        //if (type == ClassType.CLASS) {
-            // FIXME aggregate this, but use as last
-            for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : MetaElementHandler.forCompilationInfo(request.info)
-                    .getMethods(typeNode.getName(), request.prefix, anchor).entrySet()) {
-                if (!result.containsKey(entry.getKey())) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
-        //}
+        // FIXME aggregate this, but use as last
+        fillSuggestions(MetaElementHandler.forCompilationInfo(request.info)
+                .getMethods(typeNode.getName(), request.prefix, anchor), result);
 
         if (typeNode.getSuperClass() != null) {
-            for (Map.Entry<MethodSignature, ? extends CompletionItem> entry
-                    : completeMethods(request, typeNode.getSuperClass(), ClassType.SUPERCLASS).entrySet()) {
-                if (!result.containsKey(entry.getKey())) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
+            fillSuggestions(completeMethods(request, typeNode.getSuperClass(), ClassType.SUPERCLASS), result);
         } else if (type == ClassType.CLASS) {
-            for (Map.Entry<MethodSignature, ? extends CompletionItem> entry : JavaElementHandler.forCompilationInfo(request.info)
-                    .getMethods("java.lang.Object", request.prefix, anchor, new String[]{}, false).entrySet()) { // NOI18N
-                if (!result.containsKey(entry.getKey())) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
+            fillSuggestions(JavaElementHandler.forCompilationInfo(request.info)
+                    .getMethods("java.lang.Object", request.prefix, anchor, new String[]{}, false), result); // NOI18N
         }
 
         for (ClassNode inter : typeNode.getInterfaces()) {
-            for (Map.Entry<MethodSignature, ? extends CompletionItem> entry
-                    : completeMethods(request, inter, ClassType.SUPERINTERFACE).entrySet()) {
-                if (!result.containsKey(entry.getKey())) {
-                    result.put(entry.getKey(), entry.getValue());
-                }
-            }
+            fillSuggestions(completeMethods(request, inter, ClassType.SUPERINTERFACE), result);
         }
         return result;
+    }
+
+    private static <T> void fillSuggestions(Map<T, ? extends CompletionItem> input, Map<T, ? super CompletionItem> result) {
+        for (Map.Entry<T, ? extends CompletionItem> entry : input.entrySet()) {
+            if (!result.containsKey(entry.getKey())) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
     }
 
     /**
@@ -3028,8 +3027,20 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         ClassNode declaringClass;
         DotCompletionContext dotContext;
 
+        boolean completingThis;
+
+        boolean completingSuper;
+
         public boolean isBehindDot() {
             return dotContext != null;
+        }
+
+        public boolean isCompletingThis() {
+            return completingThis;
+        }
+
+        public boolean isCompletingSuper() {
+            return completingSuper;
         }
     }
 
