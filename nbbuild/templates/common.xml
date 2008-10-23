@@ -116,6 +116,7 @@ made subject to such option by the copyright holder.
                 <processorpath>
                     <pathelement path="${module.run.classpath}"/>
                     <pathelement path="${cp.extra}"/>
+                    <pathelement location="${build.classes.dir}"/> <!-- so unit tests can use processor defined in module itself -->
                 </processorpath>
             </custom-javac>
         </presetdef>
