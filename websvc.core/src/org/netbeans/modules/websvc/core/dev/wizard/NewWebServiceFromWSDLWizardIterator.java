@@ -52,8 +52,8 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
-import org.netbeans.modules.websvc.core.ServiceCreator;
 
 import org.openide.WizardDescriptor;
 
