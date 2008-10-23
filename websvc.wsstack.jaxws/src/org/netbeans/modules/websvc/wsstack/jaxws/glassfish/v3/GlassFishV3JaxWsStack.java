@@ -76,6 +76,9 @@ public class GlassFishV3JaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     public WSStackVersion getVersion() {
+        if (isMetroInstalled()) {
+            return WSStackVersion.valueOf(2, 1, 4, 1);
+        }
         return WSStackVersion.valueOf(2, 1, 3, 0);
     }
 
