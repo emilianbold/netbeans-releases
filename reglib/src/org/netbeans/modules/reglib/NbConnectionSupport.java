@@ -44,6 +44,7 @@ package org.netbeans.modules.reglib;
 import org.netbeans.modules.servicetag.RegistrationData;
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.URL;
@@ -171,10 +172,13 @@ public class NbConnectionSupport {
             
             LOG.log(Level.FINE,"POSTing registration data at " + url);
             OutputStream out = con.getOutputStream();
-            registration.storeToXML(out);
-            LOG.log(Level.FINE,"Registration data: " + registration.toString());
-            out.flush();
-            out.close();
+            try {
+                registration.storeToXML(out);
+                LOG.log(Level.FINE,"Registration data: " + registration.toString());
+                out.flush();
+            } finally {
+                out.close();
+            }
 
             int returnCode = con.getResponseCode();
             LOG.log(Level.FINE,"POST return status = " + returnCode);
@@ -192,26 +196,23 @@ public class NbConnectionSupport {
         }
     }
     
-    private static void printReturnData(HttpURLConnection con, int returnCode)
-            throws IOException {
-        BufferedReader reader = null;
+    private static void printReturnData(HttpURLConnection con, int returnCode) throws IOException {
+        InputStream is = null;
+        if (returnCode < 400) {
+            is = con.getInputStream();
+        } else {
+            is = con.getErrorStream();
+        }
         try {
-            if (returnCode < 400) {
-                reader = new BufferedReader(
-                             new InputStreamReader(con.getInputStream()));
-            } else {
-                reader = new BufferedReader(
-                             new InputStreamReader(con.getErrorStream()));
-            }
+            BufferedReader reader = new BufferedReader(new InputStreamReader(is));
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = reader.readLine()) != null) {
                 sb.append(line).append("\n");
             }
+            reader.close();
         } finally {
-            if (reader != null) {
-                reader.close();
-            }
+            is.close();
         }
     }
     
@@ -240,19 +241,23 @@ public class NbConnectionSupport {
 
             LOG.log(Level.FINE,"Response code = " + responseCode);
             if (responseCode == 200) {
-                BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+                InputStream is = con.getInputStream();
                 StringBuffer sb = new StringBuffer();
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
-                while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
+                    while (true) {
+                        String line = reader.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        sb.append(line);
                     }
-                    sb.append(line);
-                }
 
-                reader.close();
+                    reader.close();
+                } finally {
+                    is.close();
+                }
                 String response = sb.toString();
                 
                 LOG.log(Level.FINE,"Response: " + response);
@@ -301,19 +306,23 @@ public class NbConnectionSupport {
 
             LOG.log(Level.FINE,"Response code = " + responseCode);
             if (responseCode == 200) {
-                BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(con.getInputStream()));
+                InputStream is = con.getInputStream();
                 StringBuffer sb = new StringBuffer();
+                try {
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is));
 
-                while (true) {
-                    String line = reader.readLine();
-                    if (line == null) {
-                        break;
+                    while (true) {
+                        String line = reader.readLine();
+                        if (line == null) {
+                            break;
+                        }
+                        sb.append(line);
                     }
-                    sb.append(line);
-                }
 
-                reader.close();
+                    reader.close();
+                } finally {
+                    is.close();
+                }
                 String response = sb.toString();
                 
                 LOG.log(Level.FINE,"Response: " + response);

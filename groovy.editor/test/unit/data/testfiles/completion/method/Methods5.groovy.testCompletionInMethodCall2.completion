@@ -7,7 +7,6 @@ METHOD     canWrite()                                 boolean
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(File)                            int
-METHOD     compareTo(Object)                          int
 METHOD     createNewFile()                            boolean
 METHOD     createTempFile(String, String)             File
 METHOD     createTempFile(String, String,             File

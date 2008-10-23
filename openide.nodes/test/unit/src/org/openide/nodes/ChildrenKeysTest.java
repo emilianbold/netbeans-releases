@@ -256,6 +256,32 @@ public class ChildrenKeysTest extends NbTestCase {
         assertSame("Last node the same", now[2].getName(), after[1].getName());
     }
 
+    public void testGetNodesOptimal() throws Exception {
+        class KOpt extends Keys {
+
+            KOpt() {
+                super(lazy());
+            }
+            int cnt;
+
+            @Override
+            public Node[] getNodes(boolean optimal) {
+                assertTrue("Only calling with true", optimal);
+                cnt++;
+                return super.getNodes(optimal);
+            }
+        }
+
+        KOpt k = new KOpt();
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("3 nodes", 3, arr.length);
+        assertEquals("Calling cnt once", 1, k.cnt);
+
+    }
+
     public void testRefreshOnFavoritesAdding() throws Exception {
         Keys k = new Keys(lazy());
         k.keys("1", "2", "3");

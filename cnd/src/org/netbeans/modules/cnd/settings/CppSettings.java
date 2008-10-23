@@ -108,7 +108,7 @@ public class CppSettings extends SharedClassObject {
     public static CppSettings getDefault() {
         // See IZ 120502
         if (cppSettings == null) {
-            cppSettings = (CppSettings) findObject(CppSettings.class, true);
+            cppSettings = findObject(CppSettings.class, true);
     }
         return cppSettings;
     }

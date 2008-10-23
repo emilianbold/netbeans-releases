@@ -139,6 +139,8 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 return ((ArrayReference) v).length ();
             } catch (ObjectCollectedException ocex) {
                 return 0;
+            } catch (VMDisconnectedException e) {
+                return 0;
             }
         } else {
             if (fields == null || refreshFields) {
@@ -161,6 +163,8 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         try {
             f = ((ReferenceType) this.getInnerValue().type()).fieldByName(name);
         } catch (ObjectCollectedException ocex) {
+            return null;
+        } catch (VMDisconnectedException e) {
             return null;
         }
         if (f == null) return null;
@@ -205,6 +209,8 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 return fields;
             }
         } catch (ObjectCollectedException ocex) {
+            return new Field[] {};
+        } catch (VMDisconnectedException e) {
             return new Field[] {};
         }
     }
@@ -272,6 +278,8 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                     getID()
                     );
         } catch (ObjectCollectedException ocex) {
+            return null;
+        } catch (VMDisconnectedException e) {
             return null;
         }
     }
@@ -465,10 +473,16 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
     public JPDAClassType getClassType() {
         Value value = getInnerValue();
         if (value == null) return null;
-        com.sun.jdi.Type type = value.type();
-        if (type instanceof ReferenceType) {
-            return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
-        } else {
+        try {
+            com.sun.jdi.Type type = value.type();
+            if (type instanceof ReferenceType) {
+                return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
+            } else {
+                return null;
+            }
+        } catch (ObjectCollectedException e) {
+            return null;
+        } catch (VMDisconnectedException e) {
             return null;
         }
     }
@@ -572,6 +586,8 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 type = value.type ();
             } catch (ObjectCollectedException ocex) {
                 type = null;
+            } catch (VMDisconnectedException e) {
+                type = null;
             }
         } else {
             type = null;
@@ -600,6 +616,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
                 }
             } catch (ObjectCollectedException ocex) {
                 // The object is gone => no fields
+            } catch (VMDisconnectedException e) {
             }
         }
     }

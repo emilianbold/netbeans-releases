@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
-import org.netbeans.modules.j2ee.common.project.ui.ShowJavadocAction;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.CharConversionException;
@@ -51,7 +50,6 @@ import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
@@ -70,7 +68,6 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -108,10 +105,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         setIconBaseWithExtension(PLATFORM_ICON);
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
 
+    @Override
     public String getDisplayName () {
         JavaPlatform plat = pp.getPlatform();
         String name;
@@ -130,6 +129,7 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         return name;
     }
     
+    @Override
     public String getHtmlDisplayName () {
         if (pp.getPlatform() == null) {
             String displayName = this.getDisplayName();
@@ -146,10 +146,12 @@ class PlatformNode extends AbstractNode implements ChangeListener {
         }                                
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new Action[] {
             SystemAction.get (ShowJavadocAction.class)
@@ -181,15 +183,15 @@ class PlatformNode extends AbstractNode implements ChangeListener {
 
     private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
-        private ClassPathSupport cs;
         PlatformContentChildren (ClassPathSupport cs) {
-            this.cs = cs;
         }
 
+        @Override
         protected void addNotify() {
             this.setKeys (this.getKeys());
         }
 
+        @Override
         protected void removeNotify() {
             this.setKeys(Collections.<SourceGroup>emptySet());
         }

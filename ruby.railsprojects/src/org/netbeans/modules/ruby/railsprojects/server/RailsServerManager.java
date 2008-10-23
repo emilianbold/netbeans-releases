@@ -78,7 +78,7 @@ import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
@@ -256,7 +256,7 @@ public final class RailsServerManager {
                 ensurePortAvailable();
                 String displayName = NbBundle.getMessage(RailsServerManager.class,
                         "LBL_ServerTab" , instance.getDisplayName(), projectName, Integer.toString(port)); // NOI18N
-                ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
+                RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
                 desc.cmd(getJavaExecutable());
                 desc.useInterpreter(false);
                 desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
@@ -290,7 +290,7 @@ public final class RailsServerManager {
         ensurePortAvailable();
         String displayName = getServerTabName(server, projectName, port);
         String serverPath = server.getServerPath();
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, serverPath);
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, dir, serverPath);
 // can place debug flags here to allow attaching NB debugger to jruby process
 // running server that is started in debug-commons.
 //        if(debug && "true".equals(System.getProperty("rdebug.enable.debug"))) {
