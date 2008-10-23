@@ -107,8 +107,10 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         if (((ActionHolder) table.getValueAt(row, 0)).isAlternative())
             //alternative SC, remove row
             keymapViewModel.removeRow(row);
-        else
+        else {
             name.getTextField().setText("");
+            keymapViewModel.update();
+        }
         return;
     }
 
