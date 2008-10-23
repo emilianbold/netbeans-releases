@@ -63,6 +63,8 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     private int row;
     private JTable table;
     private JPopupMenu pm;
+    /** whether 'add alternative' should be displayed */
+    private boolean displayAlternative;
 
     /** Creates new form ShortcutPopup */
     ShortcutPopupPanel(JTable table, JPopupMenu pm) {
@@ -81,7 +83,43 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     void setDisplayAddAlternative(boolean shortcutSet) {
         model = shortcutSet ? modelWithAddAlternative : modelWithoutAddAltenrnative;
         list.setModel(model);
+        this.displayAlternative = shortcutSet;
         this.setPreferredSize(list.getPreferredSize());
+    }
+
+    private void addAlternative() {
+        String category = (String) table.getValueAt(row, 2);
+        ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
+        Object[] newRow = new Object[]{new ActionHolder(action, true), new ShortcutCell("", action), category, ""};
+        ((DefaultTableModel) ((TableSorter) table.getModel()).getTableModel()).insertRow(row + 1, newRow);
+        pm.setVisible(false);
+        table.editCellAt(row + 1, 1);
+    }
+
+    private void clear() {
+        pm.setVisible(false);
+        ShortcutCell name = (ShortcutCell) table.getValueAt(row, 1);
+        String scText = name.getTextField().getText();
+        ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
+        KeymapViewModel keymapViewModel = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
+        if (scText.length() != 0)
+            keymapViewModel.removeShortcut(action, scText);
+        if (((ActionHolder) table.getValueAt(row, 0)).isAlternative())
+            //alternative SC, remove row
+            keymapViewModel.removeRow(row);
+        else {
+            name.getTextField().setText("");
+            keymapViewModel.update();
+        }
+        return;
+    }
+
+    private void resetToDefault() {
+        pm.setVisible(false);
+        ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
+        KeymapViewModel mod = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
+        mod.revertShortcutsToDefault(action);
+        mod.fireTableDataChanged();
     }
 
     /** This method is called from within the constructor to
@@ -134,45 +172,47 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
 
     private void listMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_listMouseClicked
         int index = list.locationToIndex(new Point(evt.getX(), evt.getY()));
+        if (displayAlternative) {
         switch (index) {
             case 0: //edit
                 pm.setVisible(false);
                 table.editCellAt(row, 1);
                 break;
             case 1: {//add alternative
-                String category = (String) table.getValueAt(row, 2);
-                ShortcutAction action = ((ActionHolder)table.getValueAt(row, 0)).getAction();
-                Object[] newRow = new Object[]{new ActionHolder(action, true), new ShortcutCell("", action), category, ""};
-                ((DefaultTableModel) ((TableSorter) table.getModel()).getTableModel()).insertRow(row + 1, newRow);
-                pm.setVisible(false);
-                table.editCellAt(row + 1, 1);
+                addAlternative();
                 break;
             }
             case 2: {//reset to default
-                pm.setVisible(false);
-                ShortcutAction action = ((ActionHolder)table.getValueAt(row, 0)).getAction();
-                KeymapViewModel mod = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
-                mod.revertShortcutsToDefault(action);
-                mod.fireTableDataChanged();
+                resetToDefault();
                 break;
             }
             case 3: {//clear
-                pm.setVisible(false);
-                ShortcutCell name = (ShortcutCell) table.getValueAt(row, 1);
-                String scText = name.getTextField().getText();
-                ShortcutAction action = ((ActionHolder)table.getValueAt(row, 0)).getAction();
-                KeymapViewModel keymapViewModel = (KeymapViewModel) ((TableSorter) table.getModel()).getTableModel();
-                if(scText.length() != 0)
-                    keymapViewModel.removeShortcut(action, scText);
-                if (((ActionHolder) table.getValueAt(row, 0)).isAlternative()) //alternative SC, remove row
-                    keymapViewModel.removeRow(row);
-                else
-                    name.getTextField().setText("");
+                clear();
                 break;
             }
             default:
                 throw new UnsupportedOperationException("Invalid popup selection item"); // NOI18N
+            }
+        } else {
+            switch (index) {
+            case 0: //edit
+                pm.setVisible(false);
+                table.editCellAt(row, 1);
+                break;
+            case 1: {
+                resetToDefault();
+                break;
+            }
+            case 2: {
+                clear();
+                break;
+            }
+            default:
+                throw new UnsupportedOperationException("Invalid popup selection item"); // NOI18N
+            }
+
         }
+
     }//GEN-LAST:event_listMouseClicked
 
     private void listKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_listKeyPressed
@@ -220,4 +260,5 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         }
 
     }
+
 }

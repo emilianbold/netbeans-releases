@@ -837,28 +837,32 @@ final class JUnitOutputReader {
 
     private void updateProgress(String message) {
         assert progressHandle != null;
-        
-        int progress = getProcessedWorkunits();
-        if (progressLogger.isLoggable(FINER)) {
-            progressLogger.finer(
-                "------ Progress: "                                     //NOI18N
-                + String.format("%3d%%",
-                                100 * progress / PROGRESS_WORKUNITS));  //NOI18N
-        }
-        if (progress < INITIAL_PROGRESS) {
-            progress = INITIAL_PROGRESS;
-        }
-        if (progress != lastProgress) {
-            if (progress < lastProgress) {
-                /* hack to allow decrease of progress: */
-                progressHandle.switchToIndeterminate();
-                progressHandle.switchToDeterminate(PROGRESS_WORKUNITS);
+
+        if (isDeterminateProgress) {
+            int progress = getProcessedWorkunits();
+            if (progressLogger.isLoggable(FINER)) {
+                progressLogger.finer(
+                    "------ Progress: "                                     //NOI18N
+                    + String.format("%3d%%",
+                                    100 * progress / PROGRESS_WORKUNITS));  //NOI18N
             }
-            lastProgress = progress;
-            if (message != null) {
-                progressHandle.progress(message, progress);
-            } else {
-                progressHandle.progress(progress);
+            if (progress < INITIAL_PROGRESS) {
+                progress = INITIAL_PROGRESS;
+            }
+            if (progress != lastProgress) {
+                if (progress < lastProgress) {
+                    /* hack to allow decrease of progress: */
+                    progressHandle.switchToIndeterminate();
+                    progressHandle.switchToDeterminate(PROGRESS_WORKUNITS);
+                }
+                lastProgress = progress;
+                if (message != null) {
+                    progressHandle.progress(message, progress);
+                } else {
+                    progressHandle.progress(progress);
+                }
+            } else if (message != null) {
+                progressHandle.progress(message);
             }
         } else if (message != null) {
             progressHandle.progress(message);

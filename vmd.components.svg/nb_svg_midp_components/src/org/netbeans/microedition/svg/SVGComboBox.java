@@ -335,6 +335,7 @@ public class SVGComboBox extends SVGComponent implements
             				getElement().getId());
         }
         myList = new SVGList(getForm(), (SVGLocatableElement) listElement);
+        myList.setFocusable( false);
     }
     
     private void initEditor( ) {
@@ -601,6 +602,7 @@ public class SVGComboBox extends SVGComponent implements
             }
             if ( myList.getBounds()!= null && myList.getBounds().contains(x, y)){
                 myList.getInputHandler().handlePointerRelease( myList, x, y);
+                myIndex = myList.getSelectionModel().getSelectedIndex();
             }
             super.handlePointerRelease(comp, x, y);
         }

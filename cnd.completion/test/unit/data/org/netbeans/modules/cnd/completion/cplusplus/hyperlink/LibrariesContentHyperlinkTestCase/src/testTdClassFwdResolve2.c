@@ -1,7 +1,9 @@
+
 #include "common_tds.h"
 
-#include <aout_internal.h>
+#include <vs_internal.h>
 
-void aout_FormatPrintChannels( const audio_sample_format_t * p_format ) {
-    p_format->i_rate;
+void addr_function(audio_format *var, audio_format_sample *var_sample) {
+    var->field;
+    var_sample->field;
 }

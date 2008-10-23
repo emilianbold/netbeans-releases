@@ -46,7 +46,9 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Vector;
+import java.util.logging.Logger;
 import javax.swing.table.DefaultTableModel;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
@@ -60,6 +62,8 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 
 public class RubyProjectProperties extends SharedRubyProjectProperties {
+
+    private static final Logger LOGGER = Logger.getLogger(RubyProjectProperties.class.getName());
 
     public static final String RUN_WORK_DIR = "work.dir"; // NOI18N
     
@@ -109,7 +113,12 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
 
     @Override
     protected void storeProperties(EditableProperties projectProperties, EditableProperties privateProperties) throws IOException {
-        Info info = getPlatform().getInfo();
+        RubyPlatform platform = getPlatform();
+        if (platform == null) {
+            LOGGER.fine("Project has invalid platform (null).");
+            return;
+        }
+        Info info = platform.getInfo();
         Util.logUsage(RubyProjectProperties.class, "USG_PROJECT_CONFIG_RUBY", // NOI18N
                 info.getKind(),
                 info.getPlatformVersion(),

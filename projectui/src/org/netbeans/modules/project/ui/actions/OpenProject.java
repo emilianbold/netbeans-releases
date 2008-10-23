@@ -58,6 +58,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
@@ -69,7 +70,7 @@ public class OpenProject extends BasicAction {
         
     /** Creates a new instance of BrowserAction */
     public OpenProject() {
-        super( DISPLAY_NAME, new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.png" ) ) );
+        super( DISPLAY_NAME, new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/openProject.png" ) ) );
         putValue("iconBase","org/netbeans/modules/project/ui/resources/openProject.png"); //NOI18N
         putValue(SHORT_DESCRIPTION, _SHORT_DESCRIPTION);
     }

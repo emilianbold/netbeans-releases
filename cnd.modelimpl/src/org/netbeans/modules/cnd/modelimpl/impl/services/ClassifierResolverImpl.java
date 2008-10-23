@@ -48,6 +48,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 
 /**
@@ -57,31 +59,34 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
 public class ClassifierResolverImpl extends CsmClassifierResolver {
 
     @Override
-    public CsmClassifier getOriginalClassifier(CsmClassifier orig) {
+    public CsmClassifier getOriginalClassifier(CsmClassifier orig, CsmFile contextFile) {
         if (orig instanceof CsmOffsetable) {
-            return ResolverFactory.createResolver((CsmOffsetable) orig).getOriginalClassifier(orig);
+            return ResolverFactory.createResolver((CsmOffsetable) orig, contextFile).getOriginalClassifier(orig);
         }
         return orig;
     }
 
     @Override
-    public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile file, boolean checkLibs) {
+    public CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, CsmFile file, boolean classesOnly) {
         CsmProject project = file.getProject();
         if (project == null) {
             return null;
         }
         AtomicBoolean visible = new AtomicBoolean(false);
-        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible);
-        if (visible.get()) {
+        CsmClassifier result = findVisibleDeclaration(project, qualifiedName, file, visible, classesOnly);
+        // we prefer to skip even visible class forward based classes
+        if (!isForwardClass(result) && visible.get()) {
             assert result != null : "how can visible be true without a result?";
             return result;
         }
         // continue in libs
         for (Iterator iter = project.getLibraries().iterator(); iter.hasNext();) {
+            visible.set(false);
             CsmProject lib = (CsmProject) iter.next();
-            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible);
-            if (visible.get()) {
-                return (CsmClassifier) visibleDecl;
+            CsmClassifier visibleDecl = findVisibleDeclaration(lib, qualifiedName, file, visible, classesOnly);         
+            // we prefer to skip even visible class forward based classes
+            if (!isForwardClass(visibleDecl) && visible.get()) {
+                return visibleDecl;
             }
             if (result == null) {
                 result = visibleDecl;
@@ -91,18 +96,24 @@ public class ClassifierResolverImpl extends CsmClassifierResolver {
     }
 
     private CsmClassifier findVisibleDeclaration(CsmProject project, CharSequence uniqueName,
-            CsmFile file, AtomicBoolean visible) {
+            CsmFile file, AtomicBoolean visible, boolean classesOnly) {
         Collection<CsmClassifier> decls = project.findClassifiers(uniqueName);
         CsmClassifier first = null;
         for (CsmClassifier decl : decls) {
-            if (first == null) {
-                first = decl;
-            }
-            if (CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
-                visible.set(true);
-                return (CsmClassifier) decl;
+            if (!classesOnly || CsmKindUtilities.isClass(decl)) {
+                if (first == null || isForwardClass(first)) {
+                    first = decl;
+                }
+                if (CsmIncludeResolver.getDefault().isObjectVisible(file, decl)) {
+                    visible.set(true);
+                    return decl;
+                }
             }
         }
         return first;
+    }
+
+    private boolean isForwardClass(CsmClassifier first) {
+        return first instanceof ForwardClass;
     }
 }

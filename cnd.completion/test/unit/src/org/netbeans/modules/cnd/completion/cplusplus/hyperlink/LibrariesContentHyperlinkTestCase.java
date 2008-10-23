@@ -84,15 +84,16 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         assertTrue("Not existing directory" + srcDir, srcDir.exists());
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
-/*
+
     public void testStructFromSystemDir() throws Exception {
         performTest("src/testTdClassFwdResolve1.c", 7, 15, "sys_include2/addrinfo.h", 5, 5);
     }
-    
+
     public void testStructFromUserDir() throws Exception {
-        performTest("src/testTdClassFwdResolve2.c", 6, 20, "src/audio_format_t.h", 17, 5);
+        performTest("src/testTdClassFwdResolve2.c", 7, 12, "src/audio_format.h", 4, 5);
+        performTest("src/testTdClassFwdResolve2.c", 8, 20, "src/audio_format.h", 4, 5);
     }
-*/    
+
     public void testDuplicationConstructions_0() throws Exception {
         // IZ#145982: context of code changes unexpectedly
         performTest("src/testDup1.cc", 5, 15, "src/dup1.h", 12, 5); // duplicationFoo
@@ -116,7 +117,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/testSys2Dup.cc", 4, 10, "sys_include2/sys2dup.h", 2, 1); // Duplication
         performTest("src/testSys2Dup.cc", 6, 10, "sys_include2/sys2dup.h", 9, 1); // ElementDup
     }
-    
+
     public void testTypedefClassFwd() throws Exception {
         // IZ#146289: REGRESSTION: inaccuracy tests show significant regressions
         performTest("src/testTdClassFwdResolve.cc", 5, 25, "src/outer.h", 3, 5); // outerFunction

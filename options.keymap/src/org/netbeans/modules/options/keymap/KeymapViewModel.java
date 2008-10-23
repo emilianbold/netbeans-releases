@@ -51,12 +51,15 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -398,9 +401,9 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             this.fireTableDataChanged();
             update();
         }
-        Set<String> s = new HashSet<String> ();
-        s.add (shortcut);
+        Set<String> s = new LinkedHashSet<String> ();
         s.addAll (Arrays.asList (getShortcuts (action)));
+        s.add (shortcut);
         setShortcuts (action, s);
     }
 
@@ -408,6 +411,8 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         Map<ShortcutAction, Set<String>> m = model.getKeymapDefaults (currentProfile);
         m = convertFromEmacs(m);
         Set<String> shortcuts = m.get(action);
+        if (shortcuts == null)
+            shortcuts = Collections.<String>emptySet(); //this action has no default shortcut
         //lets search for conflicting SCs
         Set<ShortcutAction> conflictingActions = new HashSet<ShortcutAction>();
         for(String sc : shortcuts) {
