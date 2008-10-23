@@ -183,10 +183,12 @@ public final class Model extends TabbedPanelModel {
     }
     
     boolean isValid () {
-        Iterator it = categoryToController.values ().iterator ();
-        while (it.hasNext ())
-            if (!((OptionsPanelController) it.next ()).isValid ())
+        for (OptionsPanelController controller : categoryToController.values()) {
+            // if changed (#145569) and not valid
+            if (controller.isChanged() && !controller.isValid()) {
                 return false;
+            }
+        }
         return true;
     }
     
