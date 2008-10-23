@@ -175,7 +175,7 @@ public class CsmFinderImpl implements CsmFinder {
     public CsmClassifier getExactClassifier(String classFullName) {
         // System.out.println ("getExactClassifier: " + classFullName); //NOI18N
 //        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
-        CsmClassifier cls = CsmClassifierResolver.getDefault().findClassifierUsedInFile(classFullName, csmFile, true);
+        CsmClassifier cls = CsmClassifierResolver.getDefault().findClassifierUsedInFile(classFullName, csmFile, false);
         return cls;
     }
     
@@ -872,7 +872,11 @@ public class CsmFinderImpl implements CsmFinder {
     }
 
     public List<CsmClass> findBaseClasses(CsmOffsetableDeclaration contextDeclaration, CsmClassifier c, String name, boolean exactMatch, boolean sort) {
-        c = CsmBaseUtilities.getOriginalClassifier(c);
+        CsmFile contextFile = getCsmFile();
+        if (contextFile == null && contextDeclaration != null) {
+            contextFile = contextDeclaration.getContainingFile();
+        }
+        c = CsmBaseUtilities.getOriginalClassifier(c, contextFile);
         if (CsmKindUtilities.isClass(c)) {
             CsmClass clazz = (CsmClass)c;
             CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());

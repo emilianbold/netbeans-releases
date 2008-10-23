@@ -38,18 +38,23 @@
  */
 package org.netbeans.modules.maven.execute;
 
-import org.apache.maven.project.MavenProject;
-import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.options.MavenExecutionSettings;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+
+
 
 /**
  *
@@ -58,7 +63,8 @@ import org.openide.filesystems.FileObject;
 public class BeanRunConfig implements RunConfig {
     
     private File executionDirectory;
-    private Project project;
+    private WeakReference<Project> project;
+    private FileObject projectDirectory;
     private List<String> goals;
     private String executionName;
     private Properties properties;
@@ -110,7 +116,20 @@ public class BeanRunConfig implements RunConfig {
         if (parent != null && project == null) {
             return parent.getProject();
         }
-        return project;
+        if (project != null) {
+            Project prj = project.get();
+            if (prj == null && projectDirectory.isValid()) {
+                try {
+                    prj = ProjectManager.getDefault().findProject(projectDirectory);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return prj;
+        }
+        return null;
     }
 
     public final synchronized MavenProject getMavenProject() {
@@ -132,12 +151,16 @@ public class BeanRunConfig implements RunConfig {
             mp = impl.loadMavenProject(profiles, properties);
         }
         return mp;
-    }
-
-
+     }
 
     public final synchronized void setProject(Project project) {
-        this.project = project;
+        if (project != null) {
+            this.project = new WeakReference<Project>(project);
+            projectDirectory  = project.getProjectDirectory();
+        } else {
+            this.project = null;
+            projectDirectory = null;
+        }
         mp = null;
     }
 
