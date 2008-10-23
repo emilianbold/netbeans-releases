@@ -39,11 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module.run;
+package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -51,7 +50,8 @@ import javax.swing.JComponent;
 import javax.swing.JMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.apache.tools.ant.module.AntModule;
+import org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -61,28 +61,28 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
 /**
- * An action to run the last Ant build.
+ * An action to run the last build execution.
  * @see "#47925"
  */
-public final class RunLastTargetAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
+public final class RunLastBuildAction extends AbstractAction implements ChangeListener, Presenter.Menu, Presenter.Toolbar {
     
-    public RunLastTargetAction() {
-        super(NbBundle.getMessage(RunLastTargetAction.class, "LBL_RunLastTargetAction_general")/*,
-                new ImageIcon(Utilities.loadImage("org/apache/tools/ant/module/resources/AntIcon.gif", true))*/);
-        LastTargetExecuted.addChangeListener(WeakListeners.change(this, LastTargetExecuted.class));
+    public RunLastBuildAction() {
+        super(NbBundle.getMessage(RunLastBuildAction.class, "LBL_RunLastBuildAction_general"));
+        BuildExecutionSupportImpl.getInstance().addChangeListener(WeakListeners.change(this, BuildExecutionSupportImplementation.class));
     }
     
     @Override
     public boolean isEnabled() {
-        return LastTargetExecuted.getLastBuildScript() != null;
+        return BuildExecutionSupportImpl.getInstance().getLastItem() != null;
     }
     
     @Override
     public Object getValue(String key) {
         if (key.equals(Action.SHORT_DESCRIPTION)) {
-            String display = LastTargetExecuted.getProcessDisplayName();
-            if (display != null) {
-                return NbBundle.getMessage(RunLastTargetAction.class, "TIP_RunLastTargetAction_specific", display);
+            BuildExecutionSupport.Item item = BuildExecutionSupportImpl.getInstance().getLastItem();
+            if (item != null) {
+                String display = item.getDisplayName();
+                return NbBundle.getMessage(RunLastBuildAction.class, "TIP_RunLastBuildAction_specific", display);
             } else {
                 return null;
             }
@@ -94,10 +94,9 @@ public final class RunLastTargetAction extends AbstractAction implements ChangeL
     public void actionPerformed(ActionEvent e) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
-                try {
-                    LastTargetExecuted.rerun();
-                } catch (IOException ioe) {
-                    AntModule.err.notify(ioe);
+                BuildExecutionSupport.Item item = BuildExecutionSupportImpl.getInstance().getLastItem();
+                if (item != null) {
+                    item.repeatExecution();
                 }
             }
         });
@@ -111,13 +110,14 @@ public final class RunLastTargetAction extends AbstractAction implements ChangeL
     public JMenuItem getMenuPresenter() {
         class SpecialMenuItem extends JMenuItem implements DynamicMenuContent {
             public SpecialMenuItem() {
-                super(RunLastTargetAction.this);
+                super(RunLastBuildAction.this);
             }
             public JComponent[] getMenuPresenters() {
                 String label;
-                String display = LastTargetExecuted.getProcessDisplayName();
-                if (display != null) {
-                    label = NbBundle.getMessage(RunLastTargetAction.class, "LBL_RunLastTargetAction_specific", display);
+                BuildExecutionSupport.Item item = BuildExecutionSupportImpl.getInstance().getLastItem();
+                if (item != null) {
+                    String display = item.getDisplayName();
+                    label = NbBundle.getMessage(RunLastBuildAction.class, "LBL_RunLastBuildAction_specific", display);
                 } else {
                     label = (String) getValue(Action.NAME);
                 }

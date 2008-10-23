@@ -39,12 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.apache.tools.ant.module.run;
+package org.netbeans.modules.project.ui.actions;
 
 import java.awt.Component;
 import java.text.Collator;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Map;
+import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.swing.DefaultListCellRenderer;
@@ -54,6 +56,7 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -65,21 +68,16 @@ import org.openide.util.NbBundle;
  */
 final class StopBuildingAlert extends JPanel {
     
-    /**
-     * Select one or more processes to kill among several choices.
-     * @param processesWithDisplayNames a list of possible threads to kill, mapped to display names
-     * @return the selection(s) (or empty if cancelled)
-     */
-    public static Thread[] selectProcessToKill(final Map<Thread,String> processesWithDisplayNames) {
-        StopBuildingAlert alert = new StopBuildingAlert(processesWithDisplayNames);
-        final JList list = alert.buildsList;
+    static List<BuildExecutionSupport.Item> selectProcessToKill(List<BuildExecutionSupport.Item> toStop) {
         // Add all threads, sorted by display name.
         DefaultListModel model = new DefaultListModel();
-        Comparator<Thread> comp = new Comparator<Thread>() {
+        StopBuildingAlert alert = new StopBuildingAlert();
+        final JList list = alert.buildsList;
+        Comparator<BuildExecutionSupport.Item> comp = new Comparator<BuildExecutionSupport.Item>() {
             private final Collator coll = Collator.getInstance();
-            public int compare(Thread t1, Thread t2) {
-                String n1 = processesWithDisplayNames.get(t1);
-                String n2 = processesWithDisplayNames.get(t2);
+            public int compare(BuildExecutionSupport.Item t1, BuildExecutionSupport.Item t2) {
+                String n1 = t1.getDisplayName();
+                String n2 = t2.getDisplayName();
                 int r = coll.compare(n1, n2);
                 if (r != 0) {
                     return r;
@@ -91,9 +89,10 @@ final class StopBuildingAlert extends JPanel {
                 }
             }
         };
-        SortedSet<Thread> threads = new TreeSet<Thread>(comp);
-        threads.addAll(processesWithDisplayNames.keySet());
-        for (Thread t : threads) {
+        SortedSet<BuildExecutionSupport.Item> items = new TreeSet<BuildExecutionSupport.Item>(comp);
+        items.addAll(toStop);
+
+        for (BuildExecutionSupport.Item t : items) {
             model.addElement(t);
         }
         list.setModel(model);
@@ -109,39 +108,35 @@ final class StopBuildingAlert extends JPanel {
         });
         dd.setOptions(new Object[] {stopButton, DialogDescriptor.CANCEL_OPTION});
         DialogDisplayer.getDefault().createDialog(dd).setVisible(true);
+        List<BuildExecutionSupport.Item> toRet = new ArrayList<BuildExecutionSupport.Item>();
         if (dd.getValue() == stopButton) {
-            Object[] _selectedThreads = list.getSelectedValues();
-            Thread[] selectedThreads = new Thread[_selectedThreads.length];
-            for (int i = 0; i < _selectedThreads.length; i++) {
-                selectedThreads[i] = (Thread) _selectedThreads[i];
+            Object[] selectedItems = list.getSelectedValues();
+            for (Object o : selectedItems) {
+                toRet.add((BuildExecutionSupport.Item)o);
             }
-            return selectedThreads;
-        } else {
-            return new Thread[0];
         }
+        return toRet;
+
     }
     
-    private final Map<Thread,String> processesWithDisplayNames;
     
-    private StopBuildingAlert(Map<Thread,String> processesWithDisplayNames) {
-        this.processesWithDisplayNames = processesWithDisplayNames;
+    private StopBuildingAlert() {
         initComponents();
         buildsList.setCellRenderer(new ProcessCellRenderer());
     }
     
-    // <editor-fold defaultstate="collapsed" desc=" Generated Code ">//GEN-BEGIN:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         introLabel = new javax.swing.JLabel();
         buildsLabel = new javax.swing.JLabel();
         buildsScrollPane = new javax.swing.JScrollPane();
         buildsList = new javax.swing.JList();
 
-        org.openide.awt.Mnemonics.setLocalizedText(introLabel, org.openide.util.NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_intro"));
+        org.openide.awt.Mnemonics.setLocalizedText(introLabel, org.openide.util.NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_intro")); // NOI18N
 
         buildsLabel.setLabelFor(buildsList);
-        org.openide.awt.Mnemonics.setLocalizedText(buildsLabel, org.openide.util.NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_select"));
+        org.openide.awt.Mnemonics.setLocalizedText(buildsLabel, org.openide.util.NbBundle.getMessage(StopBuildingAlert.class, "LBL_SBA_select")); // NOI18N
 
         buildsScrollPane.setViewportView(buildsList);
 
@@ -149,13 +144,13 @@ final class StopBuildingAlert extends JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(buildsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
                         .addContainerGap())
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
                             .add(buildsLabel)
                             .add(introLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
@@ -163,7 +158,7 @@ final class StopBuildingAlert extends JPanel {
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+            .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(introLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -172,8 +167,7 @@ final class StopBuildingAlert extends JPanel {
                 .add(buildsScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 234, Short.MAX_VALUE)
                 .addContainerGap())
         );
-    }
-    // </editor-fold>//GEN-END:initComponents
+    }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -189,8 +183,8 @@ final class StopBuildingAlert extends JPanel {
 
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            Thread t = (Thread) value;
-            String displayName = processesWithDisplayNames.get(t);
+            BuildExecutionSupport.Item t = (BuildExecutionSupport.Item) value;
+            String displayName = t.getDisplayName();
             return super.getListCellRendererComponent(list, displayName, index, isSelected, cellHasFocus);
         }
         
