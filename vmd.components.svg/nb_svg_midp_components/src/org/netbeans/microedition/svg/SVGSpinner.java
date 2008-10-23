@@ -49,6 +49,7 @@ import org.netbeans.microedition.svg.input.NumPadInputHandler;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -362,6 +363,42 @@ public class SVGSpinner extends SVGComponent implements DataListener {
                 }
             }
             return ret;
+        }
+        
+        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+            SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
+            if( rect != null && rect.getX()<= x && 
+                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
+                    rect.getY() + rect.getHeight() >=y )
+            {
+                pressUpButton();
+            }
+            rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
+            if( rect != null && rect.getX()<= x && 
+                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
+                    rect.getY() + rect.getHeight() >=y )
+            {
+                pressDownButton();
+            }
+            super.handlePointerPress(comp, x, y);
+        }
+        
+        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+            SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
+            if( rect != null && rect.getX()<= x && 
+                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
+                    rect.getY() + rect.getHeight() >=y )
+            {
+                releaseUpButton();
+            }
+            rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
+            if( rect != null && rect.getX()<= x && 
+                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
+                    rect.getY() + rect.getHeight() >=y )
+            {
+                releaseDownButton();
+            }
+            super.handlePointerRelease(comp, x, y);
         }
         
     }

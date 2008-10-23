@@ -60,12 +60,6 @@ public class CndModule extends ModuleInstall {
 
     /** Module is being opened (NetBeans startup, or enable-toggled) */
     @Override public void restored() {
-
-//	PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-//	ps.addOption ((SystemOption) SystemOption.findObject(FPrintOptions.class, true));
-//	ps.addOption ((SystemOption) SystemOption.findObject(CCPrintOptions.class, true));
-//	ps.addOption ((SystemOption) SystemOption.findObject(MakefilePrintOptions.class, true));
-//	ps.addOption ((SystemOption) SystemOption.findObject(ShellPrintOptions.class, true));
         
         if (Utilities.isUnix()) {
             // TODO: why not set permissions for bin/* ?

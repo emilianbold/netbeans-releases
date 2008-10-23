@@ -165,7 +165,10 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
                             err.log(Level.WARNING, "exception while moving", e);
                         }
                         finally {
-                            working[0] = false;
+                            synchronized (working) {
+                                working[0] = false;
+                                working.notifyAll();
+                            }
                             err.info("settings working to false");
                         }
                     }
@@ -183,7 +186,14 @@ public class DataFolderMoveTest extends LoggingTestCaseHid {
                 while (working[0]) {
                     err.info("test nodes while working: " + working[0]);
                     failed = testNodes(fsNodes[dest], false);
-                    err.info("did it failed or not?");
+                    err.info("did it failed or not?: " + failed);
+                    synchronized (working) {
+                        if (working[0]) {
+                            err.info("waiting");
+                            working.wait(500);
+                            err.info("waiting done");
+                        }
+                    }
                 }
                 if (failed) {
                     err.info("Failed, sleeping...");

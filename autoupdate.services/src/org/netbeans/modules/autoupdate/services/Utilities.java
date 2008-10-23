@@ -657,27 +657,36 @@ public class Utilities {
                         matched = DependencyChecker.checkDependencyModule (dep, ((ModuleUpdateElementImpl) reqElImpl).getModuleInfo ());
                     }
                     if (! matched) {
-                        UpdateElement reqEl = u.getAvailableUpdates ().isEmpty () ? null : u.getAvailableUpdates ().get (0);
-                        if (reqEl == null) {
-                            for (ModuleInfo m : availableInfos) {
-                                if (DependencyChecker.checkDependencyModule (dep, m)) {
-                                    matched = true;
-                                    break;
+                        // first chance
+                        for (ModuleInfo m : availableInfos) {
+                            if (DependencyChecker.checkDependencyModule (dep, m)) {
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (! matched) {
+                            UpdateElement reqEl = u.getAvailableUpdates ().isEmpty () ? null : u.getAvailableUpdates ().get (0);
+                            if (reqEl == null) {
+                                for (ModuleInfo m : availableInfos) {
+                                    if (DependencyChecker.checkDependencyModule (dep, m)) {
+                                        matched = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (! matched) {
-                                brokenDependencies.add (dep);
-                            }
-                        } else {
-                            UpdateElementImpl reqElImpl = Trampoline.API.impl (reqEl);
-                            ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
-                            ModuleInfo info = reqModuleImpl.getModuleInfo ();
-                            if (DependencyChecker.checkDependencyModule (dep, info)) {
-                                if (! availableInfos.contains (info)) {
-                                    requested = reqEl;
+                                if (! matched) {
+                                    brokenDependencies.add (dep);
                                 }
                             } else {
-                                brokenDependencies.add (dep);
+                                UpdateElementImpl reqElImpl = Trampoline.API.impl (reqEl);
+                                ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
+                                ModuleInfo info = reqModuleImpl.getModuleInfo ();
+                                if (DependencyChecker.checkDependencyModule (dep, info)) {
+                                    if (! availableInfos.contains (info)) {
+                                        requested = reqEl;
+                                    }
+                                } else {
+                                    brokenDependencies.add (dep);
+                                }
                             }
                         }
                     }

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
@@ -178,7 +179,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
         return 0;
     }
     
-    public List<Configuration> analyze(ProjectProxy project) {
+    public List<Configuration> analyze(ProjectProxy project, final Progress progress) {
         isStoped = false;
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -197,10 +198,16 @@ public class AnalyzeFolder extends BaseDwarfProvider {
                 public List<SourceFileProperties> getSourcesConfiguration() {
                     if (myFileProperties == null){
                         Set<String> set = getObjectFiles((String)getProperty(FOLDER_KEY).getValue());
+                        if (progress != null) {
+                            progress.start(set.size());
+                        }
                         if (set.size() > 0) {
-                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]));
+                            myFileProperties = getSourceFileProperties(set.toArray(new String[set.size()]), progress);
                         } else {
                             myFileProperties = new ArrayList<SourceFileProperties>();
+                        }
+                        if (progress != null) {
+                            progress.done();
                         }
                     }
                     return myFileProperties;

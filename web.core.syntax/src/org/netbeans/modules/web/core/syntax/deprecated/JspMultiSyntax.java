@@ -43,9 +43,6 @@ package org.netbeans.modules.web.core.syntax.deprecated;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.web.core.syntax.deprecated.JspTagSyntax;
-import org.netbeans.modules.web.core.syntax.*;
-import org.netbeans.modules.web.core.syntax.deprecated.ELSyntax;
 import org.netbeans.editor.TokenContextPath;
 import org.netbeans.editor.Syntax;
 import org.netbeans.editor.TokenID;
@@ -243,28 +240,16 @@ public class JspMultiSyntax extends Syntax {
     *  </ul>
     */
     protected TokenID parseToken() {
-//debug = (tokenOffset != offset);    
-//debug = !((tokenOffset == offset) || (firstTokenID == null));  // !firstTokenNotRead
-  
-//if (debug)
-//System.out.println("parseToken tokenOffset=" + tokenOffset + ", offset=" + offset + ", state=" + state + 
-//", nestMode=" + nestMode + ", stopOffset=" + stopOffset + ", lastBuffer=" + lastBuffer);
-     
         //<editor-fold defaultstate="collapsed" desc="setting states">
         if (state != ISI_LANGUAGE) {
             char actChar;
             while(offset < stopOffset) {
                 actChar = buffer[offset];
-                //    System.out.println("JspMultiSyntax: parseToken tokenOffset=" + tokenOffset + ", actChar='" + actChar + ", offset=" + offset + ", state=" + getStateName(state) + 
-                 //   ", nestMode=" + getNestModeName( nestMode) + ", stopOffset=" + stopOffset + ", lastBuffer=" + lastBuffer);
                 switch (state) {
                     case ISI_HOST_JSPTAG: // switch to JspTagSyntax
-//if (debug)
-//System.out.println("switching from HOST to JSPTAG, hostState " + ((BaseStateInfo)hostStateInfo).toString(this));
                         nestMode = MODE_HOST_JSPTAG;
                         state = ISI_LANGUAGE;
                         transferMasterToSlave(jspTagSyntax, null);
-                        //jspTagSyntax.load(null, buffer, offset, stopOffset - offset, lastBuffer);
                         if (jspTagStateInfo == null) {
                             jspTagStateInfo = jspTagSyntax.createStateInfo();
                         }
@@ -390,15 +375,11 @@ public class JspMultiSyntax extends Syntax {
                                 javaNestMode = JAVA_EXPRESSION;
                                 state = ISI_JSPTAG_JAVA_JUMP;
                                 offset++;
-//if (debug)
-//System.out.println("returning (1x) pos " + offset + " symbol " + getTokenName(JspTagSyntax.JSP_SYMBOL2 + jspTagSyntaxInfo.tokenIDShift));
                                 tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                                 return JspTagTokenContext.SYMBOL2;
                             default: // assume this is a scriptlet
                                 javaNestMode = JAVA_SCRIPTLET;
                                 state = ISI_JSPTAG_JAVA_JUMP;
-//if (debug)
-//System.out.println("returning (2x) pos " + offset + " symbol " + getTokenName(JspTagSyntax.JSP_SYMBOL2 + jspTagSyntaxInfo.tokenIDShift));
                                 tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                                 return JspTagTokenContext.SYMBOL2;
                         } // switch (actChar)
@@ -408,7 +389,6 @@ public class JspMultiSyntax extends Syntax {
                         nestMode = MODE_HOST_JSPTAG_JAVA;
                         state = ISI_LANGUAGE;
                         transferMasterToSlave(javaSyntax, null);
-                        //javaSyntax.load(null, buffer, offset, stopOffset - offset, lastBuffer);
                         if (javaStateInfo == null) {
                             javaStateInfo = javaSyntax.createStateInfo();
                         }
@@ -465,8 +445,6 @@ public class JspMultiSyntax extends Syntax {
                             case '>':
                                 state = ISI_JAVA1_JUMP;
                                 offset++;
-//if (debug)
-//System.out.println("returning (1xx) pos " + offset + " symbol " + getTokenName(JspTagSyntax.JSP_SYMBOL2 + jspTagSyntaxInfo.tokenIDShift));
                                 tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                                 return JspTagTokenContext.SYMBOL2;
                             default:  
@@ -497,8 +475,6 @@ public class JspMultiSyntax extends Syntax {
                             case '>':
                                 state = ISI_JAVA2_JUMP;
                                 offset++;
-//if (debug)
-//System.out.println("returning (2xx) pos " + offset + " symbol " + getTokenName(JspTagSyntax.JSP_SYMBOL2 + jspTagSyntaxInfo.tokenIDShift));
                                 tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                                 return JspTagTokenContext.SYMBOL2;
                             default:  
@@ -518,8 +494,6 @@ public class JspMultiSyntax extends Syntax {
                             case '}':
                                 state = ISI_EL1_JUMP;
                                 offset++;
-//if (debug)
-//System.out.println("returning (1xx) pos " + offset + " symbol " + getTokenName(ELSyntax.ED_DELIM + elSyntaxInfo.tokenIDShift));
                                 tokenContextPath = JspMultiTokenContext.elContextPath;
                                 return ELTokenContext.EL_DELIM;
                             default:  
@@ -540,8 +514,6 @@ public class JspMultiSyntax extends Syntax {
                             case '}':
                                 state = ISI_EL2_JUMP;
                                 offset++;
-//if (debug)
-//System.out.println("returning (1xx) pos " + offset + " symbol " + getTokenName(ELSyntax.ED_DELIM + elSyntaxInfo.tokenIDShift));
                                 tokenContextPath = JspMultiTokenContext.elContextPath;
                                 return ELTokenContext.EL_DELIM;
                             default:  
@@ -561,7 +533,7 @@ public class JspMultiSyntax extends Syntax {
                 if (state == ISI_LANGUAGE)
                     break;
 
-                offset = ++offset;
+                offset++;
             } // end of while(offset...)
 
             if (state != ISI_LANGUAGE) {
@@ -586,8 +558,6 @@ public class JspMultiSyntax extends Syntax {
                         case ISI_JAVA2_SWITCH:
                         case ISI_JAVA2_PC:
                         case ISI_JAVA2_JUMP:
-//if (debug)
-//System.out.println("returning (3) pos " + offset + " symbol " + getTokenName(JspTagSyntax.JSP_SYMBOL2 + jspTagSyntaxInfo.tokenIDShift));
                             tokenContextPath = JspMultiTokenContext.jspTagContextPath;
                             return JspTagTokenContext.SYMBOL2;
                             
@@ -601,14 +571,10 @@ public class JspMultiSyntax extends Syntax {
                         case ISI_EL1_JUMP:
                         case ISI_EL2_SWITCH:
                         case ISI_EL2_JUMP:
-//if (debug)
-//System.out.println("returning (3.5) pos " + offset + " symbol " + getTokenName(JspELSyntax.EL_DELIM + elSyntaxInfo.tokenIDShift));
                             tokenContextPath = JspMultiTokenContext.elContextPath;
                             return ELTokenContext.EL_DELIM;
                     } // switch (state)
                 } // if lastBuffer
-//if (debug)
-//System.out.println("returning (4) pos " + offset + " symbol " + getTokenName(null));
                 return null;
             }  // if state != ISI_LANGUAGE - inner
         } // if state != ISI_LANGUAGE - outer
@@ -616,7 +582,6 @@ public class JspMultiSyntax extends Syntax {
         //</editor-fold>
         
         // now state is ISI_LANGUAGE
-//if (state != ISI_LANGUAGE) new Exception("state should be ISI_LANGUAGE").printStackTrace();    
         TokenID slaveTokenID = null;
         TokenID returnedTokenID;
 
@@ -1032,8 +997,6 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                             }
                             javaSyntax.storeState(javaStateInfo);
                         }
-//if (debug)
-//System.out.println("returnuju (12) " + null + " at " + offset);            
                         return null;
                     }  
                     // find out if the token could contain an ending symbol for a Java block
@@ -1044,8 +1007,6 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                             javaStateInfo = javaSyntax.createStateInfo();
                         }
                         javaSyntax.storeState(javaStateInfo);
-//if (debug)
-//System.out.println("returnuju (13) " + slaveTokenID + " at " + offset);            
                         return slaveTokenID;
                     }
                     // store the state
@@ -1060,9 +1021,6 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                 // - canBe is not DELIMCHECK_NO
                 // - firstTokenID and firstTokenLength are meaningful
                 // - if (equalPositions) then firstJavaStateInfo is meaningful
-//if (firstTokenID == null) {
-//new Exception("invalid firstTokenID !!!!!!!").printStackTrace();
-//}  
                 while (canBe == DELIMCHECK_PART) { // need another token
                     // now get the new token
                     returnedTokenID = javaSyntax.nextToken();
@@ -1094,8 +1052,6 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                             }
                             javaSyntax.storeState(javaStateInfo);
                         }
-//if (debug)
-//System.out.println("returnuju (14) " + null + " at " + offset);            
                         return null;
                     }
                     canBe = canBeJavaDelimiter(tokenOffset, slaveOffset, tokenOffset + firstTokenLength, false, nestMode);
@@ -1110,8 +1066,6 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                         firstJavaStateInfo = javaSyntax.createStateInfo();
                     }
                     else {
-//if (debug)
-//System.out.println("= imagine - rescan called !!");          
                         // we need to rescan the first token to find out the state
                         // now helpJavaStateInfo is useful
                         javaSyntax.load(helpJavaStateInfo, buffer, tokenOffset, stopOffset - tokenOffset, lastBuffer, -1);
@@ -1122,18 +1076,10 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                             javaStateInfo = javaSyntax.createStateInfo();
                         }
                         javaSyntax.storeState(javaStateInfo);
-//if (slaveTokenID != firstTokenID)
-//new Exception("token ID does not match !!!!!!!").printStackTrace();
-//if (offset != javaSyntax.getOffset())
-//new Exception("offset does not match !!!!!!!").printStackTrace();
                     }
-//if (debug)
-//System.out.println("returnuju (15) " + firstTokenID + " at " + offset);            
                     return firstTokenID;
                 }
                 else { // we found a delimiter
-//if (canBe >= tokenOffset + firstTokenLength)        
-//new Exception("value of canBe is invalid !!!!!!!").printStackTrace();
                     // now use the saved state
                     if (equalPositions) {
                         javaSyntax.load(javaStateInfo, buffer, tokenOffset, canBe - tokenOffset, true, -1);
@@ -1149,14 +1095,7 @@ System.out.println("returnuju (5) " + firstTokenID + " at " + offset);
                     }
                     javaSyntax.storeState(javaStateInfo);
                     javaStateInfo.setPreScan(0);
-//if (javaSyntax.getOffset() != canBe)
-//new Exception("bad number of characters parsed !!!").printStackTrace();          
                     offset = canBe;
-/*if (debug) {
-System.out.println("offset of the returned (a)" + javaSyntax.getOffset());          
-System.out.println("found delimiter at " + offset);          
-System.out.println("returnuju (16) " + firstTokenID + " at " + offset);            
-}*/
                     
                     return firstTokenID;
                 }
@@ -1344,15 +1283,6 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                 return JspMultiTokenContext.javaScriptletContextPath;
         }
     }
-    
-    /** Method for debugging purposes * /
-    private String getToken(Syntax syntax) {
-        StringBuffer token = new StringBuffer();
-        for (int i=syntax.getOffset()-syntax.getTokenLength();i<syntax.getOffset();i++)
-            token.append(buffer[i]);
-        return token.toString();  
-    }
-     */
   
     /** Checks if the part of the buffer starting at tokenOffset and ending just before endOffset
     * contains a "delimiter" or could contain a starting part of a "delimiter", where
@@ -1506,8 +1436,6 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                         default:
                             if (isJspTag(tagString.toString())) {
                                 state = ISI_HOST_JSPTAG;
-//if (debug)
-//System.out.println("found beginning of JspTag at " + possibleBeginning);
                                 return possibleBeginning;
                             }
                             else {
@@ -1523,30 +1451,21 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                         case '@': // directive
                         case '-': // JSP comment
                             state = ISI_HOST_JSPTAG;
-//if (debug)
-//System.out.println("found beginning of directive/comment at " + possibleBeginning);
                             return possibleBeginning;
                         case '!': // declaration
                             javaNestMode = JAVA_DECLARATION;
                             state = ISI_HOST_JAVA;
-//if (debug)
-//System.out.println("found beginning of declaration/expression at " + possibleBeginning);
                             return possibleBeginning;
                             
                         case '=': // expression
                             javaNestMode = JAVA_EXPRESSION;
                             state = ISI_HOST_JAVA;
-//if (debug)
-//System.out.println("found beginning of declaration/expression at " + possibleBeginning);
                             return possibleBeginning;
                         default: // scriptlet  
                             javaNestMode = JAVA_SCRIPTLET;
                             state = ISI_HOST_JAVA;
-//if (debug)
-//System.out.println("found beginning of scriptlet at " + possibleBeginning);
                             return possibleBeginning;
                     }
-                    //break;
                     
                 case HOST_D:
                     switch (actChar) {
@@ -1594,8 +1513,6 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                 case HOST_TAG:
                     if (isJspTag(tagString.toString())) {
                         state = ISI_HOST_JSPTAG;
-//if (debug)
-//System.out.println("found beginning of JspTag at " + possibleBeginning);
                         return possibleBeginning;
                     }
             }    
@@ -1694,15 +1611,11 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                         case '!': // declaration
                             javaNestMode = JAVA_DECLARATION;
                             state = ISI_JSPTAG_JAVA;
-//if (debug)
-//System.out.println("found beginning of declaration/expression at " + possibleBeginning);
                             return possibleBeginning;
                             
                         case '=': // expression
                             javaNestMode = JAVA_EXPRESSION;
                             state = ISI_JSPTAG_JAVA;
-//if (debug)
-//System.out.println("found beginning of declaration/expression at " + possibleBeginning);
                             return possibleBeginning;
                         case '@': // declaration
                         case '-': // comment
@@ -1711,8 +1624,6 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                         default: // scriptlet  
                             javaNestMode = JAVA_SCRIPTLET;
                             state = ISI_JSPTAG_JAVA;
-//if (debug)
-//System.out.println("found beginning of scriptlet at " + possibleBeginning);
                             return possibleBeginning;
                     }
                     //break;
@@ -1759,8 +1670,6 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
             switch (delimState) {
                 case JSPTAG_LT_PC:
                     state = ISI_JSPTAG_JAVA;
-//if (debug)
-//System.out.println("found beginning of scriptlet at " + possibleBeginning);
                     return possibleBeginning;
             }
         }
@@ -1828,17 +1737,12 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                             switch (myNestMode) {
                                 case MODE_HOST_JSPTAG_JAVA:
                                     state = ISI_JAVA1_SWITCH;
-//if (debug)
-//System.out.println("found end of Java at " + possibleBeginning);
                                     return possibleBeginning;
                                 case MODE_HOST_JAVA:
                                     state = ISI_JAVA2_SWITCH;
-//if (debug)
-//System.out.println("found end of Java at " + possibleBeginning);
                                     return possibleBeginning;
                             }
                             Logger.getLogger("global").log(Level.INFO, null, new Exception("bad nestMode"));  // NOI18N
-                            //break; - not reached
                         case '%':
                             if (offset >= firstTokenEnd)
                                 return DELIMCHECK_NO;
@@ -1898,13 +1802,9 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
                             switch (myNestMode) {
                                 case MODE_HOST_JSPTAG_EL:
                                     state = ISI_EL1_SWITCH;
-//if (debug)
-//System.out.println("found end of EL at " + possibleBeginning);
                                     return possibleBeginning;
                                 case MODE_HOST_EL:
                                     state = ISI_EL2_SWITCH;
-//if (debug)
-//System.out.println("found end of EL at " + possibleBeginning);
                                     return possibleBeginning;
                             }
                             Logger.getLogger("global").log(Level.INFO, null,
@@ -2040,16 +1940,9 @@ System.out.println("returnuju (16.5) " + firstTokenID + " at " + offset);
             jspsi.firstTokenID = null;
             jspsi.firstTokenLength = -1;
         }
-/*System.out.print("storing state at offset=" + offset + ", tokenOffset=" + tokenOffset + ", token=");
-for(int i=tokenOffset;i<offset;i++)
-System.out.print(buffer[i]);
-System.out.println();
-System.out.println(((JspStateInfo)stateInfo).toString(this));*/
     }
 
     public void loadState(StateInfo stateInfo) {
-/*System.out.println("loading state");
-System.out.println(((JspStateInfo)stateInfo).toString(this));    */
         super.loadState(stateInfo);
         JspStateInfo jspsi = (JspStateInfo)stateInfo;
         nestMode = jspsi.nestMode;
@@ -2368,8 +2261,6 @@ System.out.println(((JspStateInfo)stateInfo).toString(this));    */
         }
     
         public String toString(Syntax s) {
-//if ((getPreScan() != 0) && (stateOfScanningAtInit != null) && (stateOfScanningAtInit.getPreScan() != 0))
-//new Exception("scanning prescan should be 0").printStackTrace();
             return "JspStateInfo state=" + getState() + ", prescan=" + JspStateInfo.this.getPreScan() + ", nestMode=" + nestMode +    // NOI18N
                 ((JspStateInfo.this.getPreScan() == 0) ? "" : "\n  firstTokenID=" + firstTokenID + ", firstTokenLength=" + firstTokenLength) + // NOI18N
                 "\n  hostStateInfo=" + (hostStateInfo == null ? "null" : ((BaseStateInfo)hostStateInfo).toString(s)) +  // NOI18N

@@ -127,22 +127,22 @@ TAG_CLOSE_SYMBOL:>
 TEXT:
 
         
-TAG_OPEN_SYMBOL:<
-TAG_OPEN:missing:SimpleTag
-WS: 
-ARGUMENT:name
-OPERATOR:=
-VALUE:"My Name"
-TAG_CLOSE_SYMBOL:/>
+SYMBOL:<
+TAG:missing:SimpleTag
+WHITESPACE: 
+ATTRIBUTE:name
+SYMBOL:=
+ATTR_VALUE:"My Name"
+SYMBOL:/>
 TEXT:
         
-TAG_OPEN_SYMBOL:<
-TAG_OPEN:tag:MyTag
-WS: 
-ARGUMENT:title
-OPERATOR:=
-VALUE:"My title"
-TAG_CLOSE_SYMBOL:/>
+SYMBOL:<
+TAG:tag:MyTag
+WHITESPACE: 
+ATTRIBUTE:title
+SYMBOL:=
+ATTR_VALUE:"My title"
+SYMBOL:/>
 TEXT: 
         
 SYMBOL2:<%!
@@ -388,21 +388,21 @@ TAG_OPEN:ul
 TAG_CLOSE_SYMBOL:>
 TEXT:
             
-TAG_OPEN_SYMBOL:<
-TAG_OPEN:c:forTokens
-WS: 
-ARGUMENT:items
-OPERATOR:=
-VALUE:"a,b,c"
-WS: 
-ARGUMENT:delims
-OPERATOR:=
-VALUE:","
-WS: 
-ARGUMENT:var
-OPERATOR:=
-VALUE:"token"
-TAG_CLOSE_SYMBOL:>
+SYMBOL:<
+TAG:c:forTokens
+WHITESPACE: 
+ATTRIBUTE:items
+SYMBOL:=
+ATTR_VALUE:"a,b,c"
+WHITESPACE: 
+ATTRIBUTE:delims
+SYMBOL:=
+ATTR_VALUE:","
+WHITESPACE: 
+ATTRIBUTE:var
+SYMBOL:=
+ATTR_VALUE:"token"
+SYMBOL:>
 TEXT:
                 
 TAG_OPEN_SYMBOL:<
@@ -411,9 +411,9 @@ TAG_CLOSE_SYMBOL:>
 IDENTIFIER:token
 TEXT:
             
-TAG_OPEN_SYMBOL:</
-TAG_CLOSE:c:forTokens
-TAG_CLOSE_SYMBOL:>
+SYMBOL:</
+ENDTAG:c:forTokens
+SYMBOL:>
 TEXT:
             
 TAG_OPEN_SYMBOL:<

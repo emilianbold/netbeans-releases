@@ -208,6 +208,49 @@ public class SVGSlider extends SVGComponent {
             return ret;
         }
         
+        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+            SVGRect rect = myKnobElement.getScreenBBox();
+            if ( rect == null ){
+                super.handlePointerPress(comp, x, y);
+                return;
+            }
+            myStartKnobX = rect.getX();
+            myStartKnobY = rect.getY();
+            if ( myStartKnobX <= x && myStartKnobX +rect.getWidth()>= x ){
+                isKnobPressed = true;
+            }
+            super.handlePointerPress(comp, x, y);
+        }
+        
+        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+            SVGRect rect = myKnobElement.getScreenBBox();
+            if ( rect == null ){
+                super.handlePointerRelease(comp, x, y);
+                return;
+            }
+            float knobX = rect.getX();
+            if ( isKnobPressed ){
+                isKnobPressed = false;
+                SVGRect ruleRect = myRuleElement.getScreenBBox();
+                if ( ruleRect == null ){
+                    super.handlePointerRelease(comp, x, y);
+                    return;
+                }
+                float factor = (x-ruleRect.getX())/ruleRect.getWidth();
+                setValue(myMin + (int)(factor*(myMax - myMin)));
+            }
+            else if ( knobX > x ){
+                setValue( Math.max( myMin , myValue - myStep ) );
+            }
+            else {
+                setValue(  Math.min( myMax , myValue + myStep ) );
+            }
+            super.handlePointerRelease(comp, x, y);
+        }
+        
+        private boolean isKnobPressed;
+        private float myStartKnobX;
+        private float myStartKnobY;
     }
     
     private int myMin;

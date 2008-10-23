@@ -115,7 +115,8 @@ public final class RunUtils {
         Project prj = config.getProject();
         if (prj != null) {
               String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
-              return cos != null && ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+              //COS for tests is the default value.
+              return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
         }
         return false;
     }

@@ -79,7 +79,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -105,8 +104,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  * after JCResultItem
  */
 
-public abstract class CsmResultItem
-        implements CompletionQuery.ResultItem, CompletionQuery.ResultItemAssociatedObject, CompletionItem {
+public abstract class CsmResultItem implements CompletionItem {
 
     private static boolean enableInstantSubstitution = true;
     
@@ -235,7 +233,7 @@ public abstract class CsmResultItem
     
     public static final String COMPLETION_SUBSTITUTE_TEXT= "completion-substitute-text"; //NOI18N
 
-    static String toAdd;
+    private String toAdd;
 
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
@@ -315,7 +313,7 @@ public abstract class CsmResultItem
         if (substOffset == -1) {
             substOffset = component.getCaret().getDot();
         }
-        CsmResultItem.toAdd = addText;
+        toAdd = addText;
         if (substituteText(component, substOffset, component.getCaret().getDot() - substOffset, false)) {
             CsmIncludeResolver inclResolver = CsmIncludeResolver.getDefault();
             BaseDocument doc = (BaseDocument) component.getDocument();
@@ -988,6 +986,7 @@ public abstract class CsmResultItem
             final boolean res[] = new boolean[] { true };
             final AtomicBoolean showTooltip = new AtomicBoolean();
             final BaseDocument doc = (BaseDocument) c.getDocument();
+            final CsmResultItem thisItem = this;
             doc.runAtomic(new Runnable() {
 
                 public void run() {
@@ -1076,7 +1075,7 @@ public abstract class CsmResultItem
                                         } // NOI18N
                                         len = fnwpos + 1 - offset;
                                         text += paramsText;
-                                        toAdd = null; // do not add '.', ',', ';'
+                                        thisItem.toAdd = null; // do not add '.', ',', ';'
                                     }
                                 } catch (BadLocationException e) {
                                 }
@@ -1120,9 +1119,9 @@ public abstract class CsmResultItem
                     }
 
                     if (text != null) {
-                        if (toAdd != null && !toAdd.equals("\n") && !"(".equals(toAdd)) // NOI18N
+                        if (thisItem.toAdd != null && !thisItem.toAdd.equals("\n") && !"(".equals(thisItem.toAdd)) // NOI18N
                         {
-                            text += toAdd;
+                            text += thisItem.toAdd;
                         }
                         // Update the text
                         try {
@@ -1138,7 +1137,7 @@ public abstract class CsmResultItem
                             } else if (selectionStartOffset >= 0) {
                                 c.select(offset + selectionStartOffset,
                                         offset + selectionEndOffset);
-                            } else if ("(".equals(toAdd)) { // NOI18N
+                            } else if ("(".equals(thisItem.toAdd)) { // NOI18N
                                 int index = text.lastIndexOf(')');
                                 if (index > -1) {
                                     c.setCaretPosition(offset + index);

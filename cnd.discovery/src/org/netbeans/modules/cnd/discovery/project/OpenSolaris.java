@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.KnownProject;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -440,7 +441,7 @@ public class OpenSolaris extends KnownProject {
             this.project = project;
             this.provider = provider;
             this.root = root;
-            this.configurations = provider.analyze(null);
+            this.configurations = provider.analyze(null,null);
         }
         public Project getProject() {
             return project;
@@ -504,7 +505,7 @@ public class OpenSolaris extends KnownProject {
 
         public List<ProjectConfiguration> getConfigurations() {
             if (projectConfigurations ==null) {
-                provider.analyze(null);
+                provider.analyze(null,null);
                 projectConfigurations = new ArrayList<ProjectConfiguration>();
                 for (Iterator<Configuration> it = configurations.iterator(); it.hasNext();) {
                     Configuration conf = it.next();
@@ -603,7 +604,7 @@ public class OpenSolaris extends KnownProject {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
-        public List<Configuration> analyze(ProjectProxy project) {
+        public List<Configuration> analyze(ProjectProxy project, Progress progress) {
             List<Configuration> confs = new ArrayList<Configuration>();
             Configuration conf = new Configuration() {
 
