@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * Contributor(s):
- * 
+ *
  * The Original Software is NetBeans. The Initial Developer of the Original
  * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -59,8 +59,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -69,6 +67,12 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.Descriptor;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
@@ -79,10 +83,6 @@ import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.rest.wizard.Util;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Text;
 
 /**
  * Code generator for plain REST resource class.
@@ -93,7 +93,7 @@ import org.w3c.dom.Text;
  * @author Ayub Khan
  */
 public class ClientStubsGenerator extends AbstractGenerator {
-    
+
     public static final String REST = "rest"; //NOI18N
     public static final String RJS = "rjs"; //NOI18N
     public static final String CSS = "css"; //NOI18N
@@ -106,7 +106,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String IMAGES = "images"; //NOI18N
     public static final String BUNDLE = "Bundle"; //NOI18N
     public static final String PROPERTIES = "properties"; //NOI18N
-    
+
     public static final String JS_SUPPORT = "Support"; //NOI18N
     public static final String JS_TESTSTUBS = "TestStubs"; //NOI18N
     public static final String JS_README = "Readme"; //NOI18N
@@ -117,11 +117,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
     public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
-    
+
     public static final String PROXY = "RestProxyServlet"; //NOI18N
     public static final String PROXY_URL = "/restproxy";
     public static final String PROXY_TEMPLATE = "Templates/WebServices/RestProxyServlet.txt"; //NOI18N
-    
+
     public static final String TTL_DojoResources_Stubs = "TTL_DojoResources_Stubs";
     public static final String MSG_Readme = "MSG_Readme";
     public static final String MSG_TestPage = "MSG_TestPage";
@@ -137,7 +137,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DEFAULT_BASE_URL = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT;
     public static final String BASE_URL_TOKEN = "__BASE_URL__";
     public static final String FILE_ENCODING_TOKEN = "__FILE_ENCODING__";
-    
+
     private FileObject stubFolder;
     private Project p;
     private boolean overwrite;
@@ -150,8 +150,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private String proxyUrl;
     private Charset baseEncoding;
     private FileObject rootFolder;
-    
-    public ClientStubsGenerator(FileObject rootFolder, String folderName, Project p, 
+
+    public ClientStubsGenerator(FileObject rootFolder, String folderName, Project p,
             boolean overwrite) throws IOException {
         assert p != null;
         this.rootFolder = rootFolder;
@@ -161,8 +161,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
         this.projectName = ProjectUtils.getInformation(getProject()).getName();
         this.baseEncoding = FileEncodingQuery.getEncoding(rootFolder);
     }
-    
-    public ClientStubsGenerator(FileObject rootFolder, String folderName, InputStream wis, 
+
+    public ClientStubsGenerator(FileObject rootFolder, String folderName, InputStream wis,
             boolean overwrite) throws IOException {
         this.rootFolder = rootFolder;
         this.folderName = folderName;
@@ -185,55 +185,55 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         return stubFolder;
     }
-    
+
     public void setStubFolder(FileObject stubFolder) {
         this.stubFolder = stubFolder;
     }
-    
+
     public String getFolderName() {
         return folderName;
     }
-    
+
     public Project getProject() {
         return p;
     }
-    
+
     public boolean canOverwrite() {
         return overwrite;
     }
-    
+
     public String getProjectName() {
         return projectName;
     }
-    
+
     public ResourceModel getModel() {
         return model;
     }
-    
+
     public String getDefaultBaseUrl() {
         return DEFAULT_BASE_URL+"/";
     }
-    
+
     public String getBaseUrl() {
         return baseUrl;
     }
-    
+
     public void setBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
     }
-    
+
     public String getProxyUrl() {
         return proxyUrl;
     }
-    
+
     public void setProxyUrl(String proxyUrl) {
         this.proxyUrl = proxyUrl;
     }
-    
+
     public Charset getBaseEncoding() {
         return baseEncoding;
     }
-    
+
     private String getApplicationNameFromUrl(String url) {
         String appName = url.replaceAll(DEFAULT_PROTOCOL+"://", "");
         if(appName.endsWith("/"))
@@ -251,89 +251,37 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
         return ClientStubModel.normalizeName(appName);
     }
-    
+
     private String findBaseUrl(Project p) {
         String url = null;
-        FileObject privProp = p.getProjectDirectory().getFileObject("nbproject/private/private.properties");
-        if(privProp != null) {
-            String asProp = getProperty(privProp, "deploy.ant.properties.file");
-            FileObject asPropFile = FileUtil.toFileObject(new File(asProp));
-            url = getProperty(asPropFile, "sjsas.url");
-            if(url == null)
-                url = getProperty(asPropFile, "tomcat.url");
-            if(url != null)
-                url = url.replace("\\", "");
+        J2eeModuleProvider provider = p.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null) {
+            String sID = provider.getServerInstanceID();
+            ServerInstance si = Deployment.getDefault().getServerInstance(sID);
+            if (si != null) {
+                try {
+                    Descriptor descriptor = si.getDescriptor();
+                    url = (descriptor.getHttpPort() == 80)
+                            ? descriptor.getHostname()
+                            : descriptor.getHostname() + ":" + descriptor.getHttpPort(); //NOI18N
+                    //XXX - should somehow support/expect HTTPS too?
+                    url = "http://" + url; //NOI18N
+                } catch (InstanceRemovedException ex) {
+                    url = null;
+                }
             }
+        }
         return url;
     }
-    
-    private String findAppContext(Project p) throws IOException {
-        String appContext = null;
-        FileObject sunWebData = p.getProjectDirectory().getFileObject("web/WEB-INF/sun-web.xml");
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(FileUtil.toFile(sunWebData));
 
-            //Context nodes
-            NodeList contextNodes = RestUtils.getNodeList(doc, "//sun-web-app/context-root");
-            if (contextNodes != null && contextNodes.getLength() > 0) {
-                Node contextNode = contextNodes.item(0);
-                if(contextNode.getFirstChild() instanceof Text)
-                    appContext = contextNode.getFirstChild().getNodeValue().trim();
-            }
-        } catch (Exception ex) {//If parseer fails, try directly reading the context
-            appContext = getXmlData(sunWebData, "context-root");
-        }
-        if(appContext != null) {
-            if(appContext.length() > 1 && appContext.startsWith("/"))
-                appContext = appContext.substring(1);
+    private String findAppContext(Project p) {
+        String cPath = WebModule.getWebModule(p.getProjectDirectory()).getContextPath();
+        if (cPath != null) {
+            cPath = cPath.substring(1);
         } else {
-            appContext = ProjectUtils.getInformation(p).getName();
+            cPath = ProjectUtils.getInformation(p).getName();
         }
-        return appContext;
-    }
-    
-    private String getProperty(FileObject fo, String name) {
-        if(fo == null)
-            return null;
-        FileLock lock = null;
-        try {
-            lock = fo.lock();
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
-            String line;
-            StringBuffer sb = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                if(line.trim().startsWith(name+"="))
-                    return line.trim().split("=")[1];
-            }
-        } catch(IOException iox) {
-        } finally {
-            if(lock != null)
-                lock.releaseLock();
-        }
-        return null;
-    }
-
-    private String getXmlData(FileObject fo, String name) {
-        if(fo == null)
-            return null;
-        FileLock lock = null;
-        try {
-            lock = fo.lock();
-            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
-            String line;
-            StringBuffer sb = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                if(line.contains("<"+name+">"))
-                    return line.substring(line.indexOf(">")+1, line.indexOf("</"));
-            }
-        } catch(IOException iox) {  
-        } finally {
-            if(lock != null)
-                lock.releaseLock();
-        }
-        return null;
+        return cPath;
     }
 
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
@@ -368,10 +316,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
             this.projectName = getApplicationNameFromUrl(url);
         }
         List<Resource> resourceList = getModel().getResources();
-        
+
         rjsDir = getStubFolder();
         initJs(p);
-        
+
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
         updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
@@ -391,7 +339,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             js.generate();
         }
         updateRestStub(rjsDir.getFileObject(JS_TESTSTUBS, HTML), resourceList, "");
-  
+
         Set<FileObject> files = new HashSet<FileObject>();
         FileObject rjsTest = rjsDir.getFileObject(JS_TESTSTUBS, HTML);
         if(rjsTest != null)
@@ -401,8 +349,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             files.add(readme);
         return files;
     }
-    
-    protected FileObject createDataObjectFromTemplate(final String template, final FileObject dir, 
+
+    protected FileObject createDataObjectFromTemplate(final String template, final FileObject dir,
             final String fileName, final String ext, final boolean overwrite) throws IOException {
         FileObject rF0 = dir.getFileObject(fileName, ext);
         if(rF0 != null) {
@@ -452,7 +400,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
         }
     }
-    
+
     private void initJs(Project p) throws IOException {
         TokenReplacer tr = new TokenReplacer();
         tr.addToken(TTL_RestClient_Stubs, NbBundle.getMessage(ClientStubsGenerator.class, TTL_RestClient_Stubs));
@@ -460,25 +408,25 @@ public class ClientStubsGenerator extends AbstractGenerator {
         tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
         tr.addToken(MSG_JS_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JS_Readme_Content));
         tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding().name());
-        
+
         FileObject fo = createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
         tr.replaceTokens(fo);
-        
+
         createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, false);
-        
+
         fo = createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, false);
         tr.replaceTokens(fo);
-        
+
         fo = createDataObjectFromTemplate(PROXY_TEMPLATE, rjsDir, PROXY, TXT, false);
-        
+
         File cssDir = new File(FileUtil.toFile(rjsDir), "css");
         cssDir.mkdirs();
         copySupportFiles(cssDir);
     }
- 
+
     private void copySupportFiles(File cssDir) throws IOException {
-        String[] fileNames = { 
-            "clientstubs.css", 
+        String[] fileNames = {
+            "clientstubs.css",
             "css_master-all.css",
             "images/background_border_bottom.gif",
             "images/pbsel.png",
@@ -501,7 +449,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             RestSupport.copyFile(cssDir, file);
         }
     }
- 
+
     protected void copyFile(String resourceName, File destFile) throws IOException {
         String path = "resources/"+resourceName;
         if(!destFile.exists()) {
@@ -520,18 +468,18 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     os.close();
                 }
                 if(is != null)
-                    is.close();            
+                    is.close();
             }
         }
     }
-            
+
     protected FileObject createFolder(FileObject parent, String folderName) throws IOException {
         FileObject folder = parent.getFileObject(folderName);
         if(folder == null)
             folder = parent.createFolder(folderName);
         return folder;
     }
-    
+
     private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
         FileLock lock = projectStub.lock();
         try {
@@ -568,7 +516,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             lock.releaseLock();
         }
     }
-    
+
     private void updateRestStub(FileObject restStub, List<Resource> resourceList, String pkg) throws IOException {
         String prjName = getProjectName();
         String prjStubDir = prjName.toLowerCase();
@@ -633,7 +581,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             lock.releaseLock();
         }
     }
-    
+
     public class TokenReplacer {
 
         private Map<String, String> tokens = new HashMap<String, String>();
@@ -641,11 +589,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
         public Map<String, String> getTokens() {
             return Collections.unmodifiableMap(tokens);
         }
-        
+
         public void addToken(String name, String value) {
             tokens.put(name, value);
         }
-        
+
         public void setTokens(Map<String, String> tokens) {
             this.tokens = tokens;
         }
@@ -653,7 +601,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         public void replaceTokens(FileObject fo) throws IOException {
             replaceTokens(fo, getTokens());
         }
-        
+
         public void replaceTokens(FileObject fo, Map<String, String> tokenMap) throws IOException {
             FileLock lock = fo.lock();
             try {
@@ -687,10 +635,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return replacedLine;
         }
     }
-    
+
     public abstract class ResourceJavaScript extends TokenReplacer {
         final String RJSSUPPORT = "rjsSupport";
-        
+
         protected Resource r;
         protected FileObject jsFolder;
         protected RepresentationNode root;
@@ -698,7 +646,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         protected String object;
         protected String stubJSToken;
         private Map<String, String> tokens;
-        
+
         public ResourceJavaScript(Resource r, FileObject jsFolder) {
             super();
             this.r = r;
@@ -708,11 +656,11 @@ public class ClientStubsGenerator extends AbstractGenerator {
             root = r.getRepresentation().getRoot();
             stubJSToken = createStubJSMethods(r, object, pkg);
         }
-        
+
         public FileObject getFolder() {
             return jsFolder;
         }
-        
+
         public abstract FileObject generate() throws IOException;
 
         protected String createStubJSMethods(Resource r, String object, String pkg) {
@@ -726,7 +674,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             else
                 return s;
         }
-         
+
         private String createMethod(Method m, final String object, String pkg) {
             if (m.getType() == MethodType.GET) {
                 return createGetMethod(m, object);
@@ -742,7 +690,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 return "";
             }
         }
-        
+
         private String createMethodName(Method m, String mimeType, int length) {
             if(length > 1) {
                 for(Constants.MimeType mime:Constants.MimeType.values())
@@ -751,7 +699,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return m.getName();
         }
-        
+
         private String createGetMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
             int length = m.getResponse().getRepresentation().size();
@@ -768,7 +716,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             else
                 return s;
         }
-        
+
         private String createPostMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
             int length = m.getRequest().getRepresentation().size();
@@ -785,7 +733,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             else
                 return s;
         }
-        
+
         private String createPutMethod(Method m, String object) {
             StringBuffer sb = new StringBuffer();
             int length = m.getRequest().getRepresentation().size();
@@ -802,13 +750,13 @@ public class ClientStubsGenerator extends AbstractGenerator {
             else
                 return s;
         }
-        
+
         private String createDeleteMethod(Method m, String object) {
             return "   " + RestUtils.escapeJSReserved(m.getName()) + " : function() {\n" +
                     "      return "+object+"delete_(this.uri);\n" +
                     "   }";
         }
-        
+
         private String createNavigationMethod(NavigationMethod m, String pkg) {
             String s = "";
             String fs = "";
@@ -833,14 +781,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     "      return link;\n" +
                     "   }";
         }
-        
+
     }
-    
+
     public class ContainerJavaScript extends ResourceJavaScript {
-        
+
         public ContainerJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
-            
+
             if (root != null && root.getChildren().size() > 0) {
                 String containerName = r.getName();
                 String containerRepName = root.getName();
@@ -857,7 +805,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 setTokens(containerStubTokens);
             }
         }
-        
+
         @Override
         public FileObject generate() throws IOException {
             String fileName = r.getName();
@@ -879,12 +827,12 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return fo;
         }
     }
-    
+
     public class ContainerItemJavaScript extends ResourceJavaScript {
-        
+
         public ContainerItemJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
-            
+
             if(root != null){
                 String resourceName = r.getName();
                 String resourceRepName = root.getName();
@@ -902,7 +850,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 setTokens(genericStubTokens);
             }
         }
-        
+
         @Override
         public FileObject generate() throws IOException {
             String fileName = r.getName();
@@ -923,19 +871,19 @@ public class ClientStubsGenerator extends AbstractGenerator {
             replaceTokens(fo);
             return fo;
         }
-        
+
         private String createGetterSetterMethods(RepresentationNode root, boolean skipUri) {
             StringBuffer sb = new StringBuffer();
-            
+
             //create getter and setter for attributes
             sb.append(createGetterSetterMethods(root.getAttributes(), skipUri));
-            
+
             //create getter and setter for elements
             sb.append(createGetterSetterMethods(root.getChildren(), skipUri));
-            
+
             return sb.toString();
         }
-        
+
         private String createGetterSetterMethods(List<RepresentationNode> nodes, boolean skipUri) {
             StringBuffer sb = new StringBuffer();
             for(RepresentationNode child:nodes) {
@@ -947,7 +895,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return sb.toString();
         }
-        
+
         private String createFieldsDefinition(RepresentationNode root, boolean skipUri) {
             StringBuffer sb = new StringBuffer();
             for(RepresentationNode child:root.getAttributes()) {
@@ -965,7 +913,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return sb.toString();
         }
-        
+
         private String createFieldsInitBody(RepresentationNode root, boolean skipUri, String pkg) {
             String repName = root.getName();
             StringBuffer sb = new StringBuffer();
@@ -987,14 +935,14 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return sb.toString();
         }
-        
+
         private String pluralize(String word) {
             String plural = Util.pluralize(word);
             if(plural.endsWith("ss"))
                 plural = plural.substring(0, plural.length()-2)+Constants.COLLECTION;
             return plural;
         }
-        
+
         private String createFieldsToStringBody(RepresentationNode root, boolean skipUri) {
             StringBuffer sb = new StringBuffer();
             for(RepresentationNode child:root.getAttributes()) {
@@ -1011,7 +959,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return sb.toString();
         }
-        
+
         private String createFieldNamesBody(RepresentationNode root, boolean skipUri) {
             StringBuffer sb = new StringBuffer();
             for(RepresentationNode child:root.getAttributes()) {
@@ -1027,7 +975,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return sb.toString();
         }
-        
+
         private String findResourceName(String repName) {
             return repName.substring(0,1).toUpperCase()+repName.substring(1);
         }
@@ -1041,7 +989,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     "      return this." + fieldName + ";\n" +
                     "   }";
         }
-        
+
         private String createSetterMethod(RepresentationNode n) {
             String mName = createSetterMethodName(n);
             String fieldName = n.getName();
@@ -1049,7 +997,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
                     "      this." + fieldName + " = " + fieldName + "_;\n" +
                     "   }";
         }
-        
+
         private String createSetterMethodName(RepresentationNode n) {
             String mName = "set";
             if(n.getLink() != null) {
@@ -1062,9 +1010,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
             return mName;
         }
     }
-    
+
     public class GenericResourceJavaScript extends ResourceJavaScript {
-        
+
         public GenericResourceJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
             Map<String, String> stubOnlyTokens = new HashMap<String, String>();
@@ -1072,7 +1020,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             stubOnlyTokens.put("__STUB_METHODS__", stubJSToken);
             setTokens(stubOnlyTokens);
         }
-        
+
         @Override
         public FileObject generate() throws IOException {
             String fileName = r.getName();
@@ -1092,6 +1040,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
             fo = jsFolder.getFileObject(fileNameExt);
             replaceTokens(fo);
             return fo;
-        } 
+        }
      }
 }
