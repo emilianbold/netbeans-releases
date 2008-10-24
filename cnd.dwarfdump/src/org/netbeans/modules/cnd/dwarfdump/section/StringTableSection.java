@@ -48,6 +48,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -110,7 +111,7 @@ public class StringTableSection extends ElfSection {
             return;
         }
         
-        int offset = 1;
+        int offset = 0;
         int idx = 0;
 
         out.printf("No.\tOffset\tString\n"); // NOI18N
@@ -120,5 +121,13 @@ public class StringTableSection extends ElfSection {
             out.printf("%d.\t%d\t%s\n", ++idx, offset, string); // NOI18N
             offset += string.length() + 1;
         }
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
 }
