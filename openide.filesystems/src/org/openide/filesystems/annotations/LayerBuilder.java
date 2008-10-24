@@ -45,13 +45,15 @@ import java.io.ObjectOutputStream;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.annotation.processing.Filer;
 import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -62,7 +64,6 @@ import javax.lang.model.util.ElementFilter;
 import javax.tools.Diagnostic.Kind;
 import javax.tools.StandardLocation;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 /**
@@ -73,13 +74,14 @@ import org.w3c.dom.NodeList;
 public final class LayerBuilder {
 
     private final Document doc;
+    private final Element originatingElement;
+    private final ProcessingEnvironment processingEnv;
+    private final List<File> unwrittenFiles = new LinkedList<File>();
 
-    /**
-     * Creates a new builder.
-     * @param document a DOM representation of an XML layer which will be modified
-     */
-    public LayerBuilder(Document document) {
+    LayerBuilder(Document document, Element/*or null*/ originatingElement, ProcessingEnvironment/* or null*/ processingEnv) {
         this.doc = document;
+        this.originatingElement = originatingElement;
+        this.processingEnv = processingEnv;
     }
 
     /**
@@ -89,26 +91,33 @@ public final class LayerBuilder {
      * @return a file builder
      */
     public File file(String path) {
-        return new File(path);
+        File f = new File(path);
+        unwrittenFiles.add(f);
+        return f;
+    }
+
+    void close() {
+        for (File f : unwrittenFiles) {
+            processingEnv.getMessager().printMessage(Kind.WARNING, "layer file " + f.getPath() + " was never written");
+        }
+        unwrittenFiles.clear();
     }
 
     /**
-     * Generates an instance file whose {@code InstanceCookie} would load a given class or method.
+     * Generates an instance file whose {@code InstanceCookie} would load the associated class or method.
      * Useful for {@link LayerGeneratingProcessor}s which define layer fragments which instantiate Java objects from the annotated code.
      * <p>While you can pick a specific instance file name, if possible you should pass null for {@code name}
      * as using the generated name will help avoid accidental name collisions between annotations.
-     * @param annotationTarget an annotated {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
      * @param path path to folder of instance file, e.g. {@code "Menu/File"}
      * @param name instance file basename, e.g. {@code "my-menu-Item"}, or null to pick a name according to the element
      * @param type a type to which the instance ought to be assignable, or null to skip this check
-     * @param processingEnv a processor environment used for {@link ProcessingEnvironment#getElementUtils} and {@link ProcessingEnvironment#getTypeUtils}
      * @return an instance file (call {@link File#write} to finalize)
-     * @throws IllegalArgumentException if the annotationTarget is not of a suitable sort
-     *                                  (detail message can be reported as a {@link Kind#ERROR})
+     * @throws IllegalArgumentException if the builder is not associated with exactly one
+     *                                  {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+     * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type
      */
-    public File instanceFile(javax.lang.model.element.Element annotationTarget, String path, String name, Class type,
-            ProcessingEnvironment processingEnv) throws IllegalArgumentException {
-        String[] clazzOrMethod = instantiableClassOrMethod(annotationTarget, type, processingEnv);
+    public File instanceFile(String path, String name, Class type) throws IllegalArgumentException, LayerGenerationException {
+        String[] clazzOrMethod = instantiableClassOrMethod(type);
         String clazz = clazzOrMethod[0];
         String method = clazzOrMethod[1];
         String basename;
@@ -129,48 +138,50 @@ public final class LayerBuilder {
         return f;
     }
 
-    private static String[] instantiableClassOrMethod(javax.lang.model.element.Element annotationTarget, Class type,
-            ProcessingEnvironment processingEnv) throws IllegalArgumentException {
+    private String[] instantiableClassOrMethod(Class type) throws IllegalArgumentException, LayerGenerationException {
+        if (originatingElement == null) {
+            throw new IllegalArgumentException("Only applicable to builders with exactly one associated element");
+        }
         TypeMirror typeMirror = type != null ? processingEnv.getElementUtils().getTypeElement(type.getName().replace('$', '.')).asType() : null;
-        switch (annotationTarget.getKind()) {
+        switch (originatingElement.getKind()) {
             case CLASS: {
-                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) annotationTarget).toString();
-                if (annotationTarget.getModifiers().contains(Modifier.ABSTRACT)) {
-                    throw new IllegalArgumentException(clazz + " must not be abstract");
+                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) originatingElement).toString();
+                if (originatingElement.getModifiers().contains(Modifier.ABSTRACT)) {
+                    throw new LayerGenerationException(clazz + " must not be abstract", originatingElement);
                 }
                 {
                     boolean hasDefaultCtor = false;
-                    for (ExecutableElement constructor : ElementFilter.constructorsIn(annotationTarget.getEnclosedElements())) {
+                    for (ExecutableElement constructor : ElementFilter.constructorsIn(originatingElement.getEnclosedElements())) {
                         if (constructor.getParameters().isEmpty()) {
                             hasDefaultCtor = true;
                             break;
                         }
                     }
                     if (!hasDefaultCtor) {
-                        throw new IllegalArgumentException(clazz + " must have a no-argument constructor");
+                        throw new LayerGenerationException(clazz + " must have a no-argument constructor", originatingElement);
                     }
                 }
-                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(annotationTarget.asType(), typeMirror)) {
-                    throw new IllegalArgumentException(clazz + " is not assignable to " + typeMirror);
+                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(originatingElement.asType(), typeMirror)) {
+                    throw new LayerGenerationException(clazz + " is not assignable to " + typeMirror, originatingElement);
                 }
                 return new String[] {clazz, null};
             }
             case METHOD: {
-                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) annotationTarget.getEnclosingElement()).toString();
-                String method = annotationTarget.getSimpleName().toString();
-                if (!annotationTarget.getModifiers().contains(Modifier.STATIC)) {
-                    throw new IllegalArgumentException(clazz + "." + method + " must be static");
+                String clazz = processingEnv.getElementUtils().getBinaryName((TypeElement) originatingElement.getEnclosingElement()).toString();
+                String method = originatingElement.getSimpleName().toString();
+                if (!originatingElement.getModifiers().contains(Modifier.STATIC)) {
+                    throw new LayerGenerationException(clazz + "." + method + " must be static", originatingElement);
                 }
-                if (!((ExecutableElement) annotationTarget).getParameters().isEmpty()) {
-                    throw new IllegalArgumentException(clazz + "." + method + " must not take arguments");
+                if (!((ExecutableElement) originatingElement).getParameters().isEmpty()) {
+                    throw new LayerGenerationException(clazz + "." + method + " must not take arguments", originatingElement);
                 }
-                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement) annotationTarget).getReturnType(), typeMirror)) {
-                    throw new IllegalArgumentException(clazz + "." + method + " is not assignable to " + typeMirror);
+                if (typeMirror != null && !processingEnv.getTypeUtils().isAssignable(((ExecutableElement) originatingElement).getReturnType(), typeMirror)) {
+                    throw new LayerGenerationException(clazz + "." + method + " is not assignable to " + typeMirror, originatingElement);
                 }
                 return new String[] {clazz, method};
             }
             default:
-                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + annotationTarget);
+                throw new IllegalArgumentException("Annotated element is not loadable as an instance: " + originatingElement);
         }
     }
 
@@ -345,11 +356,11 @@ public final class LayerBuilder {
          *              or {@code "nbresloc:/my/module/resource.html"}; relative values permitted
          *              but not likely useful as base URL would be e.g. {@code "jar:...!/META-INF/"}
          * @return this builder
-         * @throws IllegalArgumentException in case an opaque URI is passed as {@code value}
+         * @throws LayerGenerationException in case an opaque URI is passed as {@code value}
          */
-        public File urlvalue(String attr, URI value) throws IllegalArgumentException {
+        public File urlvalue(String attr, URI value) throws LayerGenerationException {
             if (value.isOpaque()) {
-                throw new IllegalArgumentException("Cannot use an opaque URI: " + value);
+                throw new LayerGenerationException("Cannot use an opaque URI: " + value, originatingElement);
             }
             attrs.put(attr, new String[] {"urlvalue", value.toString()});
             return this;
@@ -362,10 +373,14 @@ public final class LayerBuilder {
          *              or {@code "nbresloc:/my/module/resource.html"}; relative values permitted
          *              but not likely useful as base URL would be e.g. {@code "jar:...!/META-INF/"}
          * @return this builder
-         * @throws IllegalArgumentException in case {@code value} cannot be passed as a URI or is opaque
+         * @throws LayerGenerationException in case {@code value} cannot be passed as a URI or is opaque
          */
-        public File urlvalue(String attr, String value) throws IllegalArgumentException {
-            return urlvalue(attr, URI.create(value));
+        public File urlvalue(String attr, String value) throws LayerGenerationException {
+            try {
+                return urlvalue(attr, URI.create(value));
+            } catch (IllegalArgumentException x) {
+                throw new LayerGenerationException(x.getLocalizedMessage(), originatingElement);
+            }
         }
 
         /**
@@ -392,19 +407,17 @@ public final class LayerBuilder {
         }
 
         /**
-         * Adds an attribute to load a given class or method.
+         * Adds an attribute to load the associated class or method.
          * Useful for {@link LayerGeneratingProcessor}s which define layer fragments which instantiate Java objects from the annotated code.
          * @param attr the attribute name
-         * @param annotationTarget an annotated {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
          * @param type a type to which the instance ought to be assignable, or null to skip this check
          * @param processingEnv a processor environment used for {@link ProcessingEnvironment#getElementUtils} and {@link ProcessingEnvironment#getTypeUtils}
          * @return this builder
-         * @throws IllegalArgumentException if the annotationTarget is not of a suitable sort
-         *                                  (detail message can be reported as a {@link Kind#ERROR})
+         * @throws IllegalArgumentException if the associated element is not a {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
+         * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type
          */
-        public File instanceAttribute(String attr, javax.lang.model.element.Element annotationTarget, Class type,
-            ProcessingEnvironment processingEnv) throws IllegalArgumentException {
-            String[] clazzOrMethod = instantiableClassOrMethod(annotationTarget, type, processingEnv);
+        public File instanceAttribute(String attr, Class type) throws IllegalArgumentException, LayerGenerationException {
+            String[] clazzOrMethod = instantiableClassOrMethod(type);
             if (clazzOrMethod[1] == null) {
                 newvalue(attr, clazzOrMethod[0]);
             } else {
@@ -430,42 +443,42 @@ public final class LayerBuilder {
          * @param attr the attribute name
          * @param label either a general string to store as is, or a resource bundle reference
          *              such as {@code "my.module.Bundle#some_key"},
-         *              or just {@code "#some_key"} to load from a {@code "Bundle"} in the same package
-         * @param referenceElement if not null, a source element to determine the package
-         * @param filer if not null, a way to look up the source bundle to verify that it exists and has the specified key
+         *              or just {@code "#some_key"} to load from a {@code "Bundle"}
+         *              in the same package as the element associated with this builder (if exactly one)
          * @return this builder
-         * @throws IllegalArgumentException if a bundle key is requested but it cannot be found in sources
-         *                                  (detail message can be reported as a {@link Kind#ERROR})
+         * @throws LayerGenerationException if a bundle key is requested but it cannot be found in sources
          */
-        public File bundlevalue(String attr, String label, javax.lang.model.element.Element referenceElement, Filer filer) throws IllegalArgumentException {
+        public File bundlevalue(String attr, String label) throws LayerGenerationException {
             String javaIdentifier = "(?:\\p{javaJavaIdentifierStart}\\p{javaJavaIdentifierPart}*)";
             Matcher m = Pattern.compile("((?:" + javaIdentifier + "\\.)+[^\\s.#]+)?#(\\S+)").matcher(label);
             if (m.matches()) {
                 String bundle = m.group(1);
                 String key = m.group(2);
                 if (bundle == null) {
+                    Element referenceElement = originatingElement;
                     while (referenceElement != null && referenceElement.getKind() != ElementKind.PACKAGE) {
                         referenceElement = referenceElement.getEnclosingElement();
                     }
                     if (referenceElement == null) {
-                        throw new IllegalArgumentException("No reference element to determine package in '" + label + "'");
+                        throw new LayerGenerationException("No reference element to determine package in '" + label + "'", originatingElement);
                     }
                     bundle = ((PackageElement) referenceElement).getQualifiedName() + ".Bundle";
                 }
-                if (filer != null) {
+                if (processingEnv != null) {
+                    String resource = bundle.replace('.', '/') + ".properties";
                     try {
-                        InputStream is = filer.getResource(StandardLocation.SOURCE_PATH, "", bundle.replace('.', '/') + ".properties").openInputStream();
+                        InputStream is = processingEnv.getFiler().getResource(StandardLocation.SOURCE_PATH, "", resource).openInputStream();
                         try {
                             Properties p = new Properties();
                             p.load(is);
                             if (p.getProperty(key) == null) {
-                                throw new IllegalArgumentException("No key '" + key + "' found in " + bundle);
+                                throw new LayerGenerationException("No key '" + key + "' found in " + resource, originatingElement);
                             }
                         } finally {
                             is.close();
                         }
                     } catch (IOException x) {
-                        throw new IllegalArgumentException("Could not open " + bundle + ": " + x);
+                        throw new LayerGenerationException("Could not open " + resource + ": " + x, originatingElement);
                     }
                 }
                 bundlevalue(attr, bundle, key);
@@ -516,29 +529,30 @@ public final class LayerBuilder {
          * @return the originating layer builder, in case you want to add another file
          */
         public LayerBuilder write() {
-            Element e = doc.getDocumentElement();
+            unwrittenFiles.remove(this);
+            org.w3c.dom.Element e = doc.getDocumentElement();
             String[] pieces = path.split("/");
             for (String piece : Arrays.asList(pieces).subList(0, pieces.length - 1)) {
-                Element kid = find(e, piece);
+                org.w3c.dom.Element kid = find(e, piece);
                 if (kid != null) {
                     if (!kid.getNodeName().equals("folder")) {
                         throw new IllegalArgumentException(path);
                     }
                     e = kid;
                 } else {
-                    e = (Element) e.appendChild(doc.createElement("folder"));
+                    e = (org.w3c.dom.Element) e.appendChild(doc.createElement("folder"));
                     e.setAttribute("name", piece);
                 }
             }
             String piece = pieces[pieces.length - 1];
-            Element file = find(e,piece);
+            org.w3c.dom.Element file = find(e,piece);
             if (file != null) {
                 e.removeChild(file);
             }
-            file = (Element) e.appendChild(doc.createElement("file"));
+            file = (org.w3c.dom.Element) e.appendChild(doc.createElement("file"));
             file.setAttribute("name", piece);
             for (Map.Entry<String,String[]> entry : attrs.entrySet()) {
-                Element attr = (Element) file.appendChild(doc.createElement("attr"));
+                org.w3c.dom.Element attr = (org.w3c.dom.Element) file.appendChild(doc.createElement("attr"));
                 attr.setAttribute("name", entry.getKey());
                 attr.setAttribute(entry.getValue()[0], entry.getValue()[1]);
             }
@@ -550,10 +564,10 @@ public final class LayerBuilder {
             return LayerBuilder.this;
         }
 
-        private Element find(Element parent, String name) {
+        private org.w3c.dom.Element find(org.w3c.dom.Element parent, String name) {
             NodeList nl = parent.getElementsByTagName("*");
             for (int i = 0; i < nl.getLength(); i++) {
-                Element e = (Element) nl.item(i);
+                org.w3c.dom.Element e = (org.w3c.dom.Element) nl.item(i);
                 if (e.getAttribute("name").equals(name)) {
                     return e;
                 }

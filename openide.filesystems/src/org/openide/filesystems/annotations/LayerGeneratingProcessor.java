@@ -47,6 +47,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -55,6 +56,7 @@ import java.util.TreeSet;
 import java.util.WeakHashMap;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
+import javax.annotation.processing.Messager;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.Element;
@@ -106,9 +108,26 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
     /** For access by subclasses. */
     protected LayerGeneratingProcessor() {}
 
+    private final List<LayerBuilder> createdBuilders = new LinkedList<LayerBuilder>();
+
     @Override
     public final boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
-        boolean ret = doProcess(annotations, roundEnv);
+        Messager messager = processingEnv.getMessager();
+        boolean ret;
+        try {
+            ret = handleProcess(annotations, roundEnv);
+        } catch (LayerGenerationException x) {
+            if (x.erroneousAnnotationValue != null) {
+                messager.printMessage(Kind.ERROR, x.getLocalizedMessage(), x.erroneousElement, x.erroneousAnnotation, x.erroneousAnnotationValue);
+            } else if (x.erroneousAnnotation != null) {
+                messager.printMessage(Kind.ERROR, x.getLocalizedMessage(), x.erroneousElement, x.erroneousAnnotation);
+            } else if (x.erroneousElement != null) {
+                messager.printMessage(Kind.ERROR, x.getLocalizedMessage(), x.erroneousElement);
+            } else {
+                messager.printMessage(Kind.ERROR, x.getLocalizedMessage());
+            }
+            return false;
+        }
         if (roundEnv.processingOver() && !roundEnv.errorRaised()) {
             Document doc = generatedLayerByProcessor.remove(processingEnv);
             if (doc != null) {
@@ -142,15 +161,19 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
                             files.add(name);
                         }
                         for (String file : files) {
-                            processingEnv.getMessager().printMessage(Kind.NOTE, "generated layer entry: " + file);
+                            messager.printMessage(Kind.NOTE, "generated layer entry: " + file);
                         }
                     }
                 } catch (IOException x) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to write generated-layer.xml: " + x.toString());
+                    messager.printMessage(Kind.ERROR, "Failed to write generated-layer.xml: " + x.toString());
                 } catch (SAXException x) {
-                    processingEnv.getMessager().printMessage(Kind.ERROR, "Refused to write invalid generated-layer.xml: " + x.toString());
+                    messager.printMessage(Kind.ERROR, "Refused to write invalid generated-layer.xml: " + x.toString());
                 }
             }
+            for (LayerBuilder b : createdBuilders) {
+                b.close();
+            }
+            createdBuilders.clear();
         }
         return ret;
     }
@@ -163,19 +186,26 @@ public abstract class LayerGeneratingProcessor extends AbstractProcessor {
      * @param annotations as in {@link #process}
      * @param roundEnv as in {@link #process}
      * @return as in {@link #process}
+     * @throws LayerGenerationException in case some layer fragment cannot be generated (a user-level error will be reported for you)
      */
-    protected abstract boolean doProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv);
+    protected abstract boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException;
 
     /**
-     * Access the generated XML layer document.
+     * Access the generated XML layer.
      * May already have content from a previous compilation run which should be overwritten.
      * May also have content from other layer-generated processors which should be appended to.
-     * Simply make changes to the document and they will be written to disk at the end of the job.
-     * <p>Use {@link LayerBuilder} to easily add file entries without working with the DOM directly.
-     * @param originatingElements as in {@link Filer#createResource}, optional
-     * @return the DOM document corresponding to the XML layer being created
+     * Simply make changes to the layer and they will be written to disk at the end of the job.
+     * @param originatingElements as in {@link Filer#createResource};
+     *                            optional but (if exactly one is passed) may be used for error reporting as well as identification of Java instances
+     * @return a builder permitting you to add layer entries
      */
-    protected final Document layer(Element... originatingElements) {
+    protected final LayerBuilder layer(Element... originatingElements) {
+        LayerBuilder b = new LayerBuilder(layerDocument(originatingElements), originatingElements.length == 1 ? originatingElements[0] : null, processingEnv);
+        createdBuilders.add(b);
+        return b;
+    }
+
+    private Document layerDocument(Element... originatingElements) {
         List<Element> originatingElementsL = originatingElementsByProcessor.get(processingEnv);
         if (originatingElementsL == null) {
             originatingElementsL = new ArrayList<Element>();

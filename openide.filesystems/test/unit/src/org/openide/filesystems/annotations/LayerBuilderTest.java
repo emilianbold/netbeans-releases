@@ -58,7 +58,7 @@ public class LayerBuilderTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         doc = XMLUtil.createDocument("filesystem", null, null, null);
-        b = new LayerBuilder(doc);
+        b = new LayerBuilder(doc, null, null);
         assertEquals("<filesystem/>", dump());
     }
 
@@ -122,11 +122,11 @@ public class LayerBuilderTest extends NbTestCase {
         try {
             f.urlvalue("bogus", ":not:a:URI");
             fail();
-        } catch (IllegalArgumentException x) {/* right */}
+        } catch (LayerGenerationException x) {/* right */}
         try {
             f.urlvalue("bogus", "something:opaque");
             fail();
-        } catch (IllegalArgumentException x) {/* right */}
+        } catch (LayerGenerationException x) {/* right */}
         f.write();
         assertEquals("<filesystem><file name='x'>" +
                 "<attr name='a' urlvalue='../rel'/>" +
