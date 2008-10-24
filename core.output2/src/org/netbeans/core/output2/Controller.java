@@ -64,6 +64,7 @@ import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -908,7 +909,10 @@ public class Controller { //XXX public only for debug access to logging code
                 popup.add ((JSeparator) popupItems[i]);
             } else {
                 if (popupItems[i] != wrapAction) {
-                    popup.add ((Action) popupItems[i]);
+                    JMenuItem item = popup.add((Action) popupItems[i]);
+                    if (popupItems[i] == findAction) {
+                        item.setMnemonic(KeyEvent.VK_F);
+                    }
                 } else {
                     JCheckBoxMenuItem item = 
                         new JCheckBoxMenuItem((Action) popupItems[i]);
