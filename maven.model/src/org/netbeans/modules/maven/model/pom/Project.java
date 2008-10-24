@@ -68,8 +68,8 @@ public interface Project extends POMComponent {
     public static final String DEPENDENCYMANAGEMENT_PROPERTY = "dependencyManagement"; // NOI18N
     public static final String DISTRIBUTIONMANAGEMENT_PROPERTY = "distributionManagement"; // NOI18N
 
-    public Parent getParent();
-    public void setParent(Parent parent);
+    public Parent getPomParent();
+    public void setPomParent(Parent parent);
 
     public Prerequisites getPrerequisites();
     public void setPrerequisites(Prerequisites prerequisites);
@@ -109,19 +109,19 @@ public interface Project extends POMComponent {
     public void addProfile(Profile profile);
     public void removeProfile(Profile profile);
 
-    public List<Module> getModules();
-    public void addModule(Module module);
-    public void removeModule(Module module);
+//    public List<String> getModules();
+//    public void addModule(String module);
+//   public void removeModule(String module);
 
-    public List<Repository> getRepositorys();
+    public List<Repository> getRepositories();
     public void addRepository(Repository repository);
     public void removeRepository(Repository repository);
 
-    public List<PluginRepository> getPluginRepositorys();
-    public void addPluginRepository(PluginRepository pluginRepository);
-    public void removePluginRepository(PluginRepository pluginRepository);
+    public List<Repository> getPluginRepositories();
+    public void addPluginRepository(Repository pluginRepository);
+    public void removePluginRepository(Repository pluginRepository);
 
-    public List<Dependency> getDependencys();
+    public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
 

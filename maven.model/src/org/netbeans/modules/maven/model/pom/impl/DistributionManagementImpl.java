@@ -60,22 +60,22 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
     // attributes
 
     // child elements
-    public DistRepository getDistRepository() {
-        return getChild(DistRepository.class);
+    public DeploymentRepository getRepository() {
+        return getChild(DeploymentRepository.class);
     }
 
-    public void setDistRepository(DistRepository distRepository) {
+    public void setRepository(DeploymentRepository distRepository) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DistRepository.class, DISTREPOSITORY_PROPERTY, distRepository, empty);
+        setChild(DeploymentRepository.class, REPOSITORY_PROPERTY, distRepository, empty);
     }
 
-    public DistSnapshotRepository getDistSnapshotRepository() {
-        return getChild(DistSnapshotRepository.class);
+    public DeploymentRepository getSnapshotRepository() {
+        return getChild(DeploymentRepository.class);
     }
 
-    public void setDistSnapshotRepository(DistSnapshotRepository distSnapshotRepository) {
+    public void setSnapshotRepository(DeploymentRepository distSnapshotRepository) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DistSnapshotRepository.class, DISTSNAPSHOTREPOSITORY_PROPERTY, distSnapshotRepository, empty);
+        setChild(DeploymentRepository.class, SNAPSHOTREPOSITORY_PROPERTY, distSnapshotRepository, empty);
     }
 
     public Site getSite() {

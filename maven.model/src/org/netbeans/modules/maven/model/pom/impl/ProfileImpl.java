@@ -78,19 +78,19 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
         setChild(BuildBase.class, BUILDBASE_PROPERTY, buildBase, empty);
     }
 
-    public List<Module> getModules() {
-        return getChildren(Module.class);
-    }
+//    public List<Module> getModules() {
+//        return getChildren(Module.class);
+//    }
+//
+//    public void addModule(Module buildBase) {
+//        appendChild(MODULE_PROPERTY, buildBase);
+//    }
+//
+//    public void removeModule(Module buildBase) {
+//        removeChild(MODULE_PROPERTY, buildBase);
+//    }
 
-    public void addModule(Module buildBase) {
-        appendChild(MODULE_PROPERTY, buildBase);
-    }
-
-    public void removeModule(Module buildBase) {
-        removeChild(MODULE_PROPERTY, buildBase);
-    }
-
-    public List<Repository> getRepositorys() {
+    public List<Repository> getRepositories() {
         return getChildren(Repository.class);
     }
 
@@ -102,19 +102,19 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
         removeChild(REPOSITORY_PROPERTY, buildBase);
     }
 
-    public List<PluginRepository> getPluginRepositorys() {
-        return getChildren(PluginRepository.class);
+    public List<Repository> getPluginRepositories() {
+        return getChildren(Repository.class);
     }
 
-    public void addPluginRepository(PluginRepository buildBase) {
+    public void addPluginRepository(Repository buildBase) {
         appendChild(PLUGINREPOSITORY_PROPERTY, buildBase);
     }
 
-    public void removePluginRepository(PluginRepository buildBase) {
+    public void removePluginRepository(Repository buildBase) {
         removeChild(PLUGINREPOSITORY_PROPERTY, buildBase);
     }
 
-    public List<Dependency> getDependencys() {
+    public List<Dependency> getDependencies() {
         return getChildren(Dependency.class);
     }
 

@@ -52,8 +52,8 @@ public class DeploymentRepositoryImpl extends POMComponentImpl implements Deploy
         super(model, element);
     }
     
-    public DeploymentRepositoryImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DISTSNAPSHOTREPOSITORY));
+    public DeploymentRepositoryImpl(POMModel model, POMQName name) {
+        this(model, createElementNS(model, name));
     }
 
     // attributes

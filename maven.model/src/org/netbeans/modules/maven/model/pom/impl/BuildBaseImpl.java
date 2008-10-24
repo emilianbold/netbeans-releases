@@ -72,15 +72,15 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         removeChild(RESOURCE_PROPERTY, plugin);
     }
 
-    public List<TestResource> getTestResources() {
-        return getChildren(TestResource.class);
+    public List<Resource> getTestResources() {
+        return getChildren(Resource.class);
     }
 
-    public void addTestResource(TestResource plugin) {
+    public void addTestResource(Resource plugin) {
         appendChild(TESTRESOURCE_PROPERTY, plugin);
     }
 
-    public void removeTestResource(TestResource plugin) {
+    public void removeTestResource(Resource plugin) {
         removeChild(TESTRESOURCE_PROPERTY, plugin);
     }
 

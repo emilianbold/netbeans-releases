@@ -64,19 +64,19 @@ public interface Profile extends POMComponent {
     public BuildBase getBuildBase();
     public void setBuildBase(BuildBase buildBase);
 
-    public List<Module> getModules();
-    public void addModule(Module module);
-    public void removeModule(Module module);
+//    public List<Module> getModules();
+//    public void addModule(Module module);
+//    public void removeModule(Module module);
 
-    public List<Repository> getRepositorys();
+    public List<Repository> getRepositories();
     public void addRepository(Repository repository);
     public void removeRepository(Repository repository);
 
-    public List<PluginRepository> getPluginRepositorys();
-    public void addPluginRepository(PluginRepository pluginRepository);
-    public void removePluginRepository(PluginRepository pluginRepository);
+    public List<Repository> getPluginRepositories();
+    public void addPluginRepository(Repository pluginRepository);
+    public void removePluginRepository(Repository pluginRepository);
 
-    public List<Dependency> getDependencys();
+    public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
 

@@ -72,51 +72,8 @@ public class BuildImpl extends BuildBaseImpl implements Build {
         removeChild(EXTENSION_PROPERTY, plugin);
     }
 
-    public List<Resource> getResources() {
-        return getChildren(Resource.class);
-    }
 
-    public void addResource(Resource plugin) {
-        appendChild(RESOURCE_PROPERTY, plugin);
-    }
-
-    public void removeResource(Resource plugin) {
-        removeChild(RESOURCE_PROPERTY, plugin);
-    }
-
-    public List<TestResource> getTestResources() {
-        return getChildren(TestResource.class);
-    }
-
-    public void addTestResource(TestResource plugin) {
-        appendChild(TESTRESOURCE_PROPERTY, plugin);
-    }
-
-    public void removeTestResource(TestResource plugin) {
-        removeChild(TESTRESOURCE_PROPERTY, plugin);
-    }
-
-    public PluginManagement getPluginManagement() {
-        return getChild(PluginManagement.class);
-    }
-
-    public void setPluginManagement(PluginManagement pluginManagement) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(PluginManagement.class, PLUGINMANAGEMENT_PROPERTY, pluginManagement, empty);
-    }
-
-    public List<Plugin> getPlugins() {
-        return getChildren(Plugin.class);
-    }
-
-    public void addPlugin(Plugin pluginManagement) {
-        appendChild(PLUGIN_PROPERTY, pluginManagement);
-    }
-
-    public void removePlugin(Plugin pluginManagement) {
-        removeChild(PLUGIN_PROPERTY, pluginManagement);
-    }
-
+    @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

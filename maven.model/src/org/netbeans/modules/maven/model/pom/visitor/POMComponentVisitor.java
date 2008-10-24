@@ -52,7 +52,6 @@ public interface POMComponentVisitor {
     void visit(DistributionManagement target);
     void visit(Site target);
     void visit(DeploymentRepository target);
-    void visit(DeploymentRepository target);
     void visit(Prerequisites target);
     void visit(Contributor target);
     void visit(Scm target);
@@ -60,8 +59,7 @@ public interface POMComponentVisitor {
     void visit(CiManagement target);
     void visit(Notifier target);
     void visit(Repository target);
-    void visit(Release target);
-    void visit(Snapshot target);
+    void visit(RepositoryPolicy target);
     void visit(Profile target);
     void visit(BuildBase target);
     void visit(Plugin target);

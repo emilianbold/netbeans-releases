@@ -60,22 +60,22 @@ public class RepositoryImpl extends POMComponentImpl implements Repository {
     // attributes
 
     // child elements
-    public Releases getReleases() {
-        return getChild(Releases.class);
+    public RepositoryPolicy getReleases() {
+        return getChild(RepositoryPolicy.class);
     }
 
-    public void setReleases(Releases releases) {
+    public void setReleases(RepositoryPolicy releases) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Releases.class, RELEASES_PROPERTY, releases, empty);
+        setChild(RepositoryPolicy.class, RELEASES_PROPERTY, releases, empty);
     }
 
-    public Snapshots getSnapshots() {
-        return getChild(Snapshots.class);
+    public RepositoryPolicy getSnapshots() {
+        return getChild(RepositoryPolicy.class);
     }
 
-    public void setSnapshots(Snapshots snapshots) {
+    public void setSnapshots(RepositoryPolicy snapshots) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Snapshots.class, SNAPSHOTS_PROPERTY, snapshots, empty);
+        setChild(RepositoryPolicy.class, SNAPSHOTS_PROPERTY, snapshots, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {

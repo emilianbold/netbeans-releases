@@ -57,9 +57,9 @@ public interface BuildBase extends POMComponent {
     public void addResource(Resource resource);
     public void removeResource(Resource resource);
 
-    public List<TestResource> getTestResources();
-    public void addTestResource(TestResource testResource);
-    public void removeTestResource(TestResource testResource);
+    public List<Resource> getTestResources();
+    public void addTestResource(Resource testResource);
+    public void removeTestResource(Resource testResource);
 
     public PluginManagement getPluginManagement();
     public void setPluginManagement(PluginManagement pluginManagement);

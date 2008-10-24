@@ -60,11 +60,11 @@ public class ProjectImpl extends POMComponentImpl implements Project {
     // attributes
 
     // child elements
-    public Parent getParent() {
+    public Parent getPomParent() {
         return getChild(Parent.class);
     }
 
-    public void setParent(Parent parent) {
+    public void setPomParent(Parent parent) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(Parent.class, PARENT_PROPERTY, parent, empty);
     }
@@ -183,19 +183,19 @@ public class ProjectImpl extends POMComponentImpl implements Project {
         removeChild(PROFILE_PROPERTY, build);
     }
 
-    public List<Module> getModules() {
-        return getChildren(Module.class);
-    }
+//    public List<String> getModules() {
+//        return getChildren(Module.class);
+//    }
+//
+//    public void addModule(String build) {
+//        appendChild(MODULE_PROPERTY, build);
+//    }
+//
+//    public void removeModule(String build) {
+//        removeChild(MODULE_PROPERTY, build);
+//    }
 
-    public void addModule(Module build) {
-        appendChild(MODULE_PROPERTY, build);
-    }
-
-    public void removeModule(Module build) {
-        removeChild(MODULE_PROPERTY, build);
-    }
-
-    public List<Repository> getRepositorys() {
+    public List<Repository> getRepositories() {
         return getChildren(Repository.class);
     }
 
@@ -207,19 +207,19 @@ public class ProjectImpl extends POMComponentImpl implements Project {
         removeChild(REPOSITORY_PROPERTY, build);
     }
 
-    public List<PluginRepository> getPluginRepositorys() {
-        return getChildren(PluginRepository.class);
+    public List<Repository> getPluginRepositories() {
+        return getChildren(Repository.class);
     }
 
-    public void addPluginRepository(PluginRepository build) {
+    public void addPluginRepository(Repository build) {
         appendChild(PLUGINREPOSITORY_PROPERTY, build);
     }
 
-    public void removePluginRepository(PluginRepository build) {
+    public void removePluginRepository(Repository build) {
         removeChild(PLUGINREPOSITORY_PROPERTY, build);
     }
 
-    public List<Dependency> getDependencys() {
+    public List<Dependency> getDependencies() {
         return getChildren(Dependency.class);
     }
 

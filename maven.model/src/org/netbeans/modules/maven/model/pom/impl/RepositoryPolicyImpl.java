@@ -40,23 +40,30 @@ package org.netbeans.modules.maven.model.pom.impl;
 
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
 
 /**
  *
  * @author mkleint
  */
-public abstract class RepositoryPolicyImpl extends POMComponentImpl implements RepositoryPolicy {
+public class RepositoryPolicyImpl extends POMComponentImpl implements RepositoryPolicy {
 
     public RepositoryPolicyImpl(POMModel model, Element element) {
         super(model, element);
     }
     
-    public RepositoryPolicyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.REPOSITORYPOLICY));
+    public RepositoryPolicyImpl(POMModel model, POMQName name) {
+        this(model, createElementNS(model, name));
     }
 
     // attributes
 
     // child elements
+
+    // child elements
+    public void accept(POMComponentVisitor visitor) {
+        visitor.visit(this);
+    }
+
 
 }

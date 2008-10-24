@@ -53,8 +53,8 @@ public enum POMQName {
     ORGANIZATION(createQName("organization")), // NOI18N
     DISTRIBUTIONMANAGEMENT(createQName("distributionManagement")), // NOI18N
     SITE(createQName("site")), // NOI18N
-    DISTREPOSITORY(createQName("distRepository")), // NOI18N
-    DISTSNAPSHOTREPOSITORY(createQName("distSnapshotRepository")), // NOI18N
+    DIST_REPOSITORY(createQName("repository")), // NOI18N
+    DIST_SNAPSHOTREPOSITORY(createQName("snapshotRepository")), // NOI18N
     PREREQUISITES(createQName("prerequisites")), // NOI18N
     CONTRIBUTOR(createQName("contributor")), // NOI18N
     SCM(createQName("scm")), // NOI18N
@@ -62,7 +62,7 @@ public enum POMQName {
     CIMANAGEMENT(createQName("ciManagement")), // NOI18N
     NOTIFIER(createQName("notifier")), // NOI18N
     REPOSITORY(createQName("repository")), // NOI18N
-    REPOSITORYPOLICY(createQName("repositoryPolicy")), // NOI18N
+    PLUGINREPOSITORY(createQName("pluginRepository")), // NOI18N
     RELEASE(createQName("release")), // NOI18N
     SNAPSHOT(createQName("snapshot")), // NOI18N
     PROFILE(createQName("profile")), // NOI18N
@@ -72,6 +72,7 @@ public enum POMQName {
     EXCLUSION(createQName("exclusion")), // NOI18N
     EXECUTION(createQName("execution")), // NOI18N
     RESOURCE(createQName("resource")), // NOI18N
+    TESTRESOURCE(createQName("testResource")), // NOI18N
     PLUGINMANAGEMENT(createQName("pluginManagement")), // NOI18N
     REPORTING(createQName("reporting")), // NOI18N
     REPORTPLUGIN(createQName("reportPlugin")), // NOI18N

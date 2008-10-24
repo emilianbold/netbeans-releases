@@ -150,18 +150,20 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.MODULE)) {
-            created = new ModuleImpl(context.getModel(), element);
-            return;
-        }
+//        if (isElementQName(POMQName.MODULE)) {
+//            created = new ModuleImpl(context.getModel(), element);
+//            return;
+//        }
 
+        //TODO distinguish repository and pluginrepository and repository in
+        //distributionManagement
         if (isElementQName(POMQName.REPOSITORY)) {
             created = new RepositoryImpl(context.getModel(), element);
             return;
         }
 
         if (isElementQName(POMQName.PLUGINREPOSITORY)) {
-            created = new PluginRepositoryImpl(context.getModel(), element);
+            created = new RepositoryImpl(context.getModel(), element);
             return;
         }
 
@@ -200,13 +202,13 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(DistributionManagement context) {
-        if (isElementQName(POMQName.DISTREPOSITORY)) {
-            created = new DistRepositoryImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DIST_REPOSITORY)) {
+            created = new DeploymentRepositoryImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DISTSNAPSHOTREPOSITORY)) {
-            created = new DistSnapshotRepositoryImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DIST_SNAPSHOTREPOSITORY)) {
+            created = new DeploymentRepositoryImpl(context.getModel(), element);
             return;
         }
 
@@ -220,11 +222,6 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Site context) {
-        //createExtensibilityElement(context);
-    }
-
-    @Override
-    public void visit(DeploymentRepository context) {
         //createExtensibilityElement(context);
     }
 
@@ -270,34 +267,23 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Repository context) {
-        if (isElementQName(POMQName.RELEASES)) {
-            created = new ReleasesImpl(context.getModel(), element);
+        if (isElementQName(POMQName.RELEASE)) {
+            created = new RepositoryPolicyImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.SNAPSHOTS)) {
-            created = new SnapshotsImpl(context.getModel(), element);
+        if (isElementQName(POMQName.SNAPSHOT)) {
+            created = new RepositoryPolicyImpl(context.getModel(), element);
             return;
         }
 
         //createExtensibilityElement(context);
     }
 
-    private void visit(RepositoryPolicy context) {
+    public void visit(RepositoryPolicy context) {
         //createExtensibilityElement(context);
     }
 
-    @Override
-    public void visit(Release context) {
-        visit((RepositoryPolicy) context);
-
-    }
-
-    @Override
-    public void visit(Snapshot context) {
-        visit((RepositoryPolicy) context);
-
-    }
 
     @Override
     public void visit(Profile context) {
@@ -311,10 +297,10 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.MODULE)) {
-            created = new ModuleImpl(context.getModel(), element);
-            return;
-        }
+//        if (isElementQName(POMQName.MODULE)) {
+//            created = new ModuleImpl(context.getModel(), element);
+//            return;
+//        }
 
         if (isElementQName(POMQName.REPOSITORY)) {
             created = new RepositoryImpl(context.getModel(), element);
@@ -322,7 +308,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
 
         if (isElementQName(POMQName.PLUGINREPOSITORY)) {
-            created = new PluginRepositoryImpl(context.getModel(), element);
+            created = new RepositoryImpl(context.getModel(), element);
             return;
         }
 
@@ -357,7 +343,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
 
         if (isElementQName(POMQName.TESTRESOURCE)) {
-            created = new TestResourceImpl(context.getModel(), element);
+            created = new ResourceImpl(context.getModel(), element);
             return;
         }
 
@@ -377,7 +363,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     @Override
     public void visit(Plugin context) {
         if (isElementQName(POMQName.EXECUTION)) {
-            created = new ExecutionImpl(context.getModel(), element);
+            created = new PluginExecutionImpl(context.getModel(), element);
             return;
         }
 
@@ -519,7 +505,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
 
         if (isElementQName(POMQName.TESTRESOURCE)) {
-            created = new TestResourceImpl(context.getModel(), element);
+            created = new ResourceImpl(context.getModel(), element);
             return;
         }
 

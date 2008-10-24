@@ -50,10 +50,10 @@ public interface Repository extends POMComponent {
     public static final String RELEASES_PROPERTY = "releases"; // NOI18N
     public static final String SNAPSHOTS_PROPERTY = "snapshots"; // NOI18N
 
-    public Releases getReleases();
-    public void setReleases(Releases releases);
+    public RepositoryPolicy getReleases();
+    public void setReleases(RepositoryPolicy releases);
 
-    public Snapshots getSnapshots();
-    public void setSnapshots(Snapshots snapshots);
+    public RepositoryPolicy getSnapshots();
+    public void setSnapshots(RepositoryPolicy snapshots);
 
 }

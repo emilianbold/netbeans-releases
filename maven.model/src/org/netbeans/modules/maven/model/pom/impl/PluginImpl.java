@@ -60,15 +60,15 @@ public class PluginImpl extends POMComponentImpl implements Plugin {
     // attributes
 
     // child elements
-    public List<Execution> getExecutions() {
-        return getChildren(Execution.class);
+    public List<PluginExecution> getExecutions() {
+        return getChildren(PluginExecution.class);
     }
 
-    public void addExecution(Execution dependency) {
+    public void addExecution(PluginExecution dependency) {
         appendChild(EXECUTION_PROPERTY, dependency);
     }
 
-    public void removeExecution(Execution dependency) {
+    public void removeExecution(PluginExecution dependency) {
         removeChild(EXECUTION_PROPERTY, dependency);
     }
 

@@ -49,28 +49,9 @@ public interface Build extends POMComponent, BuildBase {
     // attribute properties
     // child element properties
     public static final String EXTENSION_PROPERTY = "extension"; // NOI18N
-    public static final String RESOURCE_PROPERTY = "resource"; // NOI18N
-    public static final String TESTRESOURCE_PROPERTY = "testResource"; // NOI18N
-    public static final String PLUGINMANAGEMENT_PROPERTY = "pluginManagement"; // NOI18N
-    public static final String PLUGIN_PROPERTY = "plugin"; // NOI18N
 
     public List<Extension> getExtensions();
     public void addExtension(Extension extension);
     public void removeExtension(Extension extension);
-
-    public List<Resource> getResources();
-    public void addResource(Resource resource);
-    public void removeResource(Resource resource);
-
-    public List<TestResource> getTestResources();
-    public void addTestResource(TestResource testResource);
-    public void removeTestResource(TestResource testResource);
-
-    public PluginManagement getPluginManagement();
-    public void setPluginManagement(PluginManagement pluginManagement);
-
-    public List<Plugin> getPlugins();
-    public void addPlugin(Plugin plugin);
-    public void removePlugin(Plugin plugin);
 
 }

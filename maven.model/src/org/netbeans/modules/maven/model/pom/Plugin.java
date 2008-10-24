@@ -51,9 +51,9 @@ public interface Plugin extends POMComponent {
     public static final String EXECUTION_PROPERTY = "execution"; // NOI18N
     public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
 
-    public List<Execution> getExecutions();
-    public void addExecution(Execution execution);
-    public void removeExecution(Execution execution);
+    public List<PluginExecution> getExecutions();
+    public void addExecution(PluginExecution execution);
+    public void removeExecution(PluginExecution execution);
 
     public List<Dependency> getDependencys();
     public void addDependency(Dependency dependency);

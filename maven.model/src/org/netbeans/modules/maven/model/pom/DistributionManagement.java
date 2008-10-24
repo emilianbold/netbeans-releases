@@ -47,15 +47,15 @@ public interface DistributionManagement extends POMComponent {
 
     // attribute properties
     // child element properties
-    public static final String DISTREPOSITORY_PROPERTY = "distRepository"; // NOI18N
-    public static final String DISTSNAPSHOTREPOSITORY_PROPERTY = "distSnapshotRepository"; // NOI18N
+    public static final String REPOSITORY_PROPERTY = "repository"; // NOI18N
+    public static final String SNAPSHOTREPOSITORY_PROPERTY = "snapshotRepository"; // NOI18N
     public static final String SITE_PROPERTY = "site"; // NOI18N
 
-    public DistRepository getDistRepository();
-    public void setDistRepository(DistRepository distRepository);
+    public DeploymentRepository getRepository();
+    public void setRepository(DeploymentRepository distRepository);
 
-    public DistSnapshotRepository getDistSnapshotRepository();
-    public void setDistSnapshotRepository(DistSnapshotRepository distSnapshotRepository);
+    public DeploymentRepository getSnapshotRepository();
+    public void setSnapshotRepository(DeploymentRepository distSnapshotRepository);
 
     public Site getSite();
     public void setSite(Site site);

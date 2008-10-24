@@ -69,8 +69,8 @@ public interface POMComponentFactory extends ComponentFactory<POMComponent>  {
     CiManagement createCiManagement();
     Notifier createNotifier();
     Repository createRepository();
-    Release createRelease();
-    Snapshot createSnapshot();
+    RepositoryPolicy createSnapshotRepositoryPolicy();
+    RepositoryPolicy createReleaseRepositoryPolicy();
     Profile createProfile();
     BuildBase createBuildBase();
     Plugin createPlugin();

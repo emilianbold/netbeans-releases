@@ -71,10 +71,6 @@ public class DefaultVisitor implements POMComponentVisitor {
         visitComponent(target);
     }
 
-    public void visit(DeploymentRepository target) {
-        visitComponent(target);
-    }
-
     public void visit(Prerequisites target) {
         visitComponent(target);
     }
@@ -103,11 +99,7 @@ public class DefaultVisitor implements POMComponentVisitor {
         visitComponent(target);
     }
 
-    public void visit(Release target) {
-        visitComponent(target);
-    }
-
-    public void visit(Snapshot target) {
+    public void visit(RepositoryPolicy target) {
         visitComponent(target);
     }
 
