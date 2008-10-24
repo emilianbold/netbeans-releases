@@ -47,7 +47,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class PluginImpl extends POMComponentImpl implements Plugin {
+public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
     public PluginImpl(POMModel model, Element element) {
         super(model, element);
@@ -72,7 +72,7 @@ public class PluginImpl extends POMComponentImpl implements Plugin {
         removeChild(EXECUTION_PROPERTY, dependency);
     }
 
-    public List<Dependency> getDependencys() {
+    public List<Dependency> getDependencies() {
         return getChildren(Dependency.class);
     }
 

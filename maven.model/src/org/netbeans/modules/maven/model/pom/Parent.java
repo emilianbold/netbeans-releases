@@ -43,18 +43,13 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface Parent extends POMComponent {
+public interface Parent extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties
+    String getRelativePath();
 
-    String getGroupId();
-    void setGroupId(String groupId);
+    void setRelativePath(String path);
 
-    String getArtifactId();
-    void setArtifactId(String artifactId);
-
-    String getVersion();
-    void setVersion(String version);
 
 }

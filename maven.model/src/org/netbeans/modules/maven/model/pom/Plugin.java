@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Plugin extends POMComponent {
+public interface Plugin extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties
@@ -55,7 +55,7 @@ public interface Plugin extends POMComponent {
     public void addExecution(PluginExecution execution);
     public void removeExecution(PluginExecution execution);
 
-    public List<Dependency> getDependencys();
+    public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
 

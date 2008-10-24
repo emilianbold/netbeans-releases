@@ -73,20 +73,33 @@ public class NewEmptyJUnitTest extends TestCase {
         assertTrue(sourceFile.exists());
         FileObject fo = FileUtil.toFileObject(sourceFile);
         assertNotNull(fo);
-        ModelSource source = Utilities.createModelSource(fo, false);
+        ModelSource source = Utilities.createModelSource(fo, true);
+        assertTrue(source.isEditable());
         POMModel model = POMModelFactory.getDefault().getModel(source);
-        assertNotNull(model);
-        System.out.println("state =" + model.getState());
         assertNotNull(model.getRootComponent());
         Project prj = model.getProject();
         assertNotNull(prj);
         Parent parent = prj.getPomParent();
         assertNotNull(parent);
         assertNotNull(parent.getGroupId());
+        assertEquals("org.codehaus.mojo", parent.getGroupId());
         
 
-//        List<MailingList> lists = prj.getMailingLists();
-//        assertEquals(3, lists.size());
+        List<MailingList> lists = prj.getMailingLists();
+        assertEquals(3, lists.size());
+        for (MailingList lst : lists) {
+            assertNotNull(lst);
+        }
+
+//        model.startTransaction();
+//        try {
+//            parent.setGroupId("XXX");
+//            assertEquals("XXX", parent.getGroupId());
+//        } finally {
+//            model.endTransaction();
+//        }
+
+
      }
 
 }

@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Dependency extends POMComponent {
+public interface Dependency extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties

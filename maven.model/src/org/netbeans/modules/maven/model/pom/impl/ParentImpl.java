@@ -41,13 +41,12 @@ package org.netbeans.modules.maven.model.pom.impl;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
-import org.w3c.dom.NodeList;
 
 /**
  *
  * @author mkleint
  */
-public class ParentImpl extends POMComponentImpl implements Parent {
+public class ParentImpl extends VersionablePOMComponentImpl implements Parent {
 
     public ParentImpl(POMModel model, Element element) {
         super(model, element);
@@ -64,32 +63,13 @@ public class ParentImpl extends POMComponentImpl implements Parent {
         visitor.visit(this);
     }
 
-    public String getGroupId() {
-        NodeList nl = getPeer().getElementsByTagNameNS(getNamespaceURI(), POMQName.GROUPID.getQName().getLocalPart());
-        if (nl.getLength() == 1) {
-            return nl.item(0).getTextContent();
-        }
-        return null;
+    public String getRelativePath() {
+        return getChildElementText(POMQName.RELATIVEPATH.getQName());
     }
 
-    public void setGroupId(String groupId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getArtifactId() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setArtifactId(String artifactId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getVersion() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setVersion(String version) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public void setRelativePath(String relPath) {
+        setChildElementText(POMQName.RELATIVEPATH.getQName().getLocalPart(), relPath,
+                POMQName.RELATIVEPATH.getQName());
     }
 
 }

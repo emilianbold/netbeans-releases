@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Project extends POMComponent {
+public interface Project extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties
@@ -53,6 +53,7 @@ public interface Project extends POMComponent {
     public static final String ISSUEMANAGEMENT_PROPERTY = "issueManagement"; // NOI18N
     public static final String CIMANAGEMENT_PROPERTY = "ciManagement"; // NOI18N
     public static final String MAILINGLIST_PROPERTY = "mailingList"; // NOI18N
+    public static final String MAILINGLISTS_PROPERTY = "mailingLists"; // NOI18N
     public static final String DEVELOPER_PROPERTY = "developer"; // NOI18N
     public static final String CONTRIBUTOR_PROPERTY = "contributor"; // NOI18N
     public static final String LICENSE_PROPERTY = "license"; // NOI18N
@@ -68,43 +69,132 @@ public interface Project extends POMComponent {
     public static final String DEPENDENCYMANAGEMENT_PROPERTY = "dependencyManagement"; // NOI18N
     public static final String DISTRIBUTIONMANAGEMENT_PROPERTY = "distributionManagement"; // NOI18N
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Parent getPomParent();
     public void setPomParent(Parent parent);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    public String getModelVersion();
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    public String getPackaging();
+    public void setPackaging(String pack);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    public String getName();
+    public void setName(String name);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    public String getDescription();
+    public void setDescription(String description);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    public String getURL();
+    public void setURL(String url);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Prerequisites getPrerequisites();
     public void setPrerequisites(Prerequisites prerequisites);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    public String getInceptionYear();
+    public void setInceptionYear(String inceptionYear);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public IssueManagement getIssueManagement();
     public void setIssueManagement(IssueManagement issueManagement);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public CiManagement getCiManagement();
     public void setCiManagement(CiManagement ciManagement);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<MailingList> getMailingLists();
     public void addMailingList(MailingList mailingList);
     public void removeMailingList(MailingList mailingList);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Developer> getDevelopers();
     public void addDeveloper(Developer developer);
     public void removeDeveloper(Developer developer);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Contributor> getContributors();
     public void addContributor(Contributor contributor);
     public void removeContributor(Contributor contributor);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<License> getLicenses();
     public void addLicense(License license);
     public void removeLicense(License license);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Scm getScm();
     public void setScm(Scm scm);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Organization getOrganization();
     public void setOrganization(Organization organization);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Build getBuild();
     public void setBuild(Build build);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Profile> getProfiles();
     public void addProfile(Profile profile);
     public void removeProfile(Profile profile);
@@ -113,24 +203,48 @@ public interface Project extends POMComponent {
 //    public void addModule(String module);
 //   public void removeModule(String module);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Repository> getRepositories();
     public void addRepository(Repository repository);
     public void removeRepository(Repository repository);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Repository> getPluginRepositories();
     public void addPluginRepository(Repository pluginRepository);
     public void removePluginRepository(Repository pluginRepository);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public Reporting getReporting();
     public void setReporting(Reporting reporting);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public DependencyManagement getDependencyManagement();
     public void setDependencyManagement(DependencyManagement dependencyManagement);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public DistributionManagement getDistributionManagement();
     public void setDistributionManagement(DistributionManagement distributionManagement);
 

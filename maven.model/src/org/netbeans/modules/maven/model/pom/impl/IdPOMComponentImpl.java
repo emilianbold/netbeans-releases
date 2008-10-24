@@ -38,42 +38,30 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
 
 /**
  *
  * @author mkleint
  */
-public class DependencyImpl extends VersionablePOMComponentImpl implements Dependency {
+public abstract class IdPOMComponentImpl extends POMComponentImpl implements IdPOMComponent {
 
-    public DependencyImpl(POMModel model, Element element) {
+    public IdPOMComponentImpl(POMModel model, Element element) {
         super(model, element);
-    }
-    
-    public DependencyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DEPENDENCY));
     }
 
     // attributes
 
-    // child elements
-    public List<Exclusion> getExclusions() {
-        return getChildren(Exclusion.class);
+
+    public String getId() {
+        return getChildElementText(POMQName.ID.getQName());
     }
 
-    public void addExclusion(Exclusion exclusion) {
-        appendChild(EXCLUSION_PROPERTY, exclusion);
+    public void setId(String id) {
+        setChildElementText(POMQName.ID.getQName().getLocalPart(), id,
+                POMQName.ID.getQName());
     }
 
-    public void removeExclusion(Exclusion exclusion) {
-        removeChild(EXCLUSION_PROPERTY, exclusion);
-    }
-
-    public void accept(POMComponentVisitor visitor) {
-        visitor.visit(this);
-    }
 
 }

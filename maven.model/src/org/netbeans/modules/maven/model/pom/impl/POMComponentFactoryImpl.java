@@ -253,6 +253,10 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         return new MailingListImpl(model);
     }
 
+    public MailingListImpl.List createMailingListList() {
+        return new MailingListImpl.List(model);
+    }
+
     public Developer createDeveloper() {
         return new DeveloperImpl(model);
     }

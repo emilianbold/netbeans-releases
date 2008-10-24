@@ -83,5 +83,6 @@ public interface POMComponentVisitor {
     void visit(MailingList target);
     void visit(Developer target);
     void visit(POMExtensibilityElement target);
+    void visit(ModelList target);
 
 }

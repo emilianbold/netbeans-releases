@@ -38,40 +38,50 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+import java.util.List;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
+import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
 
 /**
  *
  * @author mkleint
  */
-public class DependencyImpl extends VersionablePOMComponentImpl implements Dependency {
+public class ListImpl<T extends POMComponent> extends POMComponentImpl implements ModelList<T> {
+    private POMQName childname;
+    private Class<T> clazz;
 
-    public DependencyImpl(POMModel model, Element element) {
+    protected ListImpl(POMModel model, Element element, POMQName childs, Class<T> clazz) {
         super(model, element);
+        this.childname = childs;
+        this.clazz = clazz;
     }
     
-    public DependencyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DEPENDENCY));
+
+    public Class<T> getListClass() {
+        return clazz;
     }
 
     // attributes
 
     // child elements
-    public List<Exclusion> getExclusions() {
-        return getChildren(Exclusion.class);
+
+    // child elements
+    public List<T> getListChildren() {
+        return getChildren(clazz);
     }
 
-    public void addExclusion(Exclusion exclusion) {
-        appendChild(EXCLUSION_PROPERTY, exclusion);
+    public void addListChild(T child) {
+        appendChild(childname.getQName().getLocalPart(), child);
     }
 
-    public void removeExclusion(Exclusion exclusion) {
-        removeChild(EXCLUSION_PROPERTY, exclusion);
+    public void removeListChild(T child) {
+        removeChild(childname.getQName().getLocalPart(), child);
     }
 
+
+
+    // child elements
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

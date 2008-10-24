@@ -47,7 +47,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class ReportPluginImpl extends POMComponentImpl implements ReportPlugin {
+public class ReportPluginImpl extends VersionablePOMComponentImpl implements ReportPlugin {
 
     public ReportPluginImpl(POMModel model, Element element) {
         super(model, element);

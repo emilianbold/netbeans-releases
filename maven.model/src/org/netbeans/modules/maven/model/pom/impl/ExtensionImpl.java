@@ -46,7 +46,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class ExtensionImpl extends POMComponentImpl implements Extension {
+public class ExtensionImpl extends VersionablePOMComponentImpl implements Extension {
 
     public ExtensionImpl(POMModel model, Element element) {
         super(model, element);

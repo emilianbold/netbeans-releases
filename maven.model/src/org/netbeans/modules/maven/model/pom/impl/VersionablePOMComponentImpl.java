@@ -38,42 +38,47 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
 
 /**
  *
  * @author mkleint
  */
-public class DependencyImpl extends VersionablePOMComponentImpl implements Dependency {
+public abstract class VersionablePOMComponentImpl extends POMComponentImpl implements VersionablePOMComponent {
 
-    public DependencyImpl(POMModel model, Element element) {
+    public VersionablePOMComponentImpl(POMModel model, Element element) {
         super(model, element);
-    }
-    
-    public DependencyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DEPENDENCY));
     }
 
     // attributes
 
-    // child elements
-    public List<Exclusion> getExclusions() {
-        return getChildren(Exclusion.class);
+
+    public String getGroupId() {
+        return getChildElementText(POMQName.GROUPID.getQName());
     }
 
-    public void addExclusion(Exclusion exclusion) {
-        appendChild(EXCLUSION_PROPERTY, exclusion);
+    public void setGroupId(String groupId) {
+        setChildElementText(POMQName.GROUPID.getQName().getLocalPart(), groupId,
+                POMQName.GROUPID.getQName());
     }
 
-    public void removeExclusion(Exclusion exclusion) {
-        removeChild(EXCLUSION_PROPERTY, exclusion);
+    public String getArtifactId() {
+        return getChildElementText(POMQName.ARTIFACTID.getQName());
     }
 
-    public void accept(POMComponentVisitor visitor) {
-        visitor.visit(this);
+    public void setArtifactId(String artifactId) {
+        setChildElementText(POMQName.ARTIFACTID.getQName().getLocalPart(), artifactId,
+                POMQName.ARTIFACTID.getQName());
+    }
+
+    public String getVersion() {
+        return getChildElementText(POMQName.VERSION.getQName());
+    }
+
+    public void setVersion(String version) {
+        setChildElementText(POMQName.VERSION.getQName().getLocalPart(), version,
+                POMQName.VERSION.getQName());
     }
 
 }

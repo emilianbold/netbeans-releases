@@ -41,13 +41,15 @@ package org.netbeans.modules.maven.model.pom.impl;
 import java.util.*;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.pom.MailingList;
+import org.netbeans.modules.maven.model.pom.ModelList;
 import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
 
 /**
  *
  * @author mkleint
  */
-public class ProjectImpl extends POMComponentImpl implements Project {
+public class ProjectImpl extends VersionablePOMComponentImpl implements Project {
 
     public ProjectImpl(POMModel model, Element element) {
         super(model, element);
@@ -97,15 +99,31 @@ public class ProjectImpl extends POMComponentImpl implements Project {
     }
 
     public List<MailingList> getMailingLists() {
-        return getChildren(MailingList.class);
+        ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addMailingList(MailingList ciManagement) {
-        appendChild(MAILINGLIST_PROPERTY, ciManagement);
+    public void addMailingList(MailingList mailingList) {
+        ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
+        if (childs == null) {
+            setChild(MailingListImpl.List.class,
+                    POMQName.MAILINGLISTS.getQName().getLocalPart(),
+                    getModel().getFactory().create(this, POMQName.MAILINGLISTS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(MailingListImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(mailingList);
     }
 
-    public void removeMailingList(MailingList ciManagement) {
-        removeChild(MAILINGLIST_PROPERTY, ciManagement);
+    public void removeMailingList(MailingList mailingList) {
+        ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(mailingList);
+        }
     }
 
     public List<Developer> getDevelopers() {
@@ -260,6 +278,55 @@ public class ProjectImpl extends POMComponentImpl implements Project {
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public String getModelVersion() {
+        return getChildElementText(POMQName.MODELVERSION.getQName());
+    }
+
+    public String getPackaging() {
+        return getChildElementText(POMQName.PACKAGING.getQName());
+    }
+
+    public void setPackaging(String pack) {
+        setChildElementText(POMQName.PACKAGING.getQName().getLocalPart(), pack,
+                POMQName.PACKAGING.getQName());
+    }
+
+    public String getName() {
+        return getChildElementText(POMQName.NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(POMQName.NAME.getQName().getLocalPart(), name,
+                POMQName.NAME.getQName());
+    }
+
+    public String getDescription() {
+        return getChildElementText(POMQName.DESCRIPTION.getQName());
+    }
+
+    public void setDescription(String description) {
+        setChildElementText(POMQName.DESCRIPTION.getQName().getLocalPart(), description,
+                POMQName.DESCRIPTION.getQName());
+    }
+
+    public String getURL() {
+        return getChildElementText(POMQName.URL.getQName());
+    }
+
+    public void setURL(String url) {
+        setChildElementText(POMQName.URL.getQName().getLocalPart(), url,
+                POMQName.URL.getQName());
+    }
+
+    public String getInceptionYear() {
+        return getChildElementText(POMQName.INCEPTIONYEAR.getQName());
+    }
+
+    public void setInceptionYear(String inceptionYear) {
+        setChildElementText(POMQName.INCEPTIONYEAR.getQName().getLocalPart(), inceptionYear,
+                POMQName.INCEPTIONYEAR.getQName());
     }
 
 }

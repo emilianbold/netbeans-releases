@@ -87,11 +87,24 @@ public enum POMQName {
     EXTENSION(createQName("extension")), // NOI18N
     LICENSE(createQName("license")), // NOI18N
     MAILINGLIST(createQName("mailingList")), // NOI18N
+    MAILINGLISTS(createQName("mailingLists")), // NOI18N
     DEVELOPER(createQName("developer")), // NOI18N
 
+    ID(createQName("id")), //NOI18N
     GROUPID(createQName("groupId")), //NOI18N
     ARTIFACTID(createQName("artifactId")), //NOI18N
     VERSION(createQName("version")), //NOI18N
+
+    RELATIVEPATH(createQName("relativePath")), //NOI18N
+
+    MODELVERSION(createQName("modelVersion")), //NOI18N
+    PACKAGING(createQName("packaging")), //NOI18N
+    URL(createQName("url")), //NOI18N
+    NAME(createQName("name")), //NOI18N
+    DESCRIPTION(createQName("description")), //NOI18N
+    INCEPTIONYEAR(createQName("inceptionYear")), //NOI18N
+
+
     ;
     
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N

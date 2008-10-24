@@ -63,4 +63,16 @@ public class MailingListImpl extends POMComponentImpl implements MailingList {
         visitor.visit(this);
     }
 
+    public static class List extends ListImpl<MailingList> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.MAILINGLIST, MailingList.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.MAILINGLISTS));
+        }
+
+
+    }
+
 }

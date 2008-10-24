@@ -36,44 +36,23 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom.impl;
+package org.netbeans.modules.maven.model.pom;
 
-import java.util.*;
-import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
+import java.util.List;
+
 
 /**
  *
  * @author mkleint
  */
-public class DependencyImpl extends VersionablePOMComponentImpl implements Dependency {
+public interface ModelList<T extends POMComponent> extends POMComponent {
 
-    public DependencyImpl(POMModel model, Element element) {
-        super(model, element);
-    }
-    
-    public DependencyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DEPENDENCY));
-    }
+    List<T> getListChildren();
 
-    // attributes
+    void addListChild(T child);
 
-    // child elements
-    public List<Exclusion> getExclusions() {
-        return getChildren(Exclusion.class);
-    }
+    void removeListChild(T child);
 
-    public void addExclusion(Exclusion exclusion) {
-        appendChild(EXCLUSION_PROPERTY, exclusion);
-    }
-
-    public void removeExclusion(Exclusion exclusion) {
-        removeChild(EXCLUSION_PROPERTY, exclusion);
-    }
-
-    public void accept(POMComponentVisitor visitor) {
-        visitor.visit(this);
-    }
+    Class<T> getListClass();
 
 }

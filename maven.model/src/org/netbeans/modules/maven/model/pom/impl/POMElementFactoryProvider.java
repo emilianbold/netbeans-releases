@@ -110,8 +110,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.MAILINGLIST)) {
-            created = new MailingListImpl(context.getModel(), element);
+        if (isElementQName(POMQName.MAILINGLISTS)) {
+            created = new MailingListImpl.List(context.getModel(), element);
             return;
         }
 
@@ -541,6 +541,16 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     public void visit(Developer context) {
         //createExtensibilityElement(context);
     }
+
+    @Override
+    public void visit(ModelList context) {
+        if (isElementQName(POMQName.MAILINGLIST) && context.getListClass().equals(MailingList.class)) {
+            created = new MailingListImpl(context.getModel(), element);
+            return;
+        }
+    }
+
+
 
     @Override
     public void visit(POMExtensibilityElement context) {

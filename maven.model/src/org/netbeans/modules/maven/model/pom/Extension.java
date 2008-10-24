@@ -43,7 +43,7 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface Extension extends POMComponent {
+public interface Extension extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties

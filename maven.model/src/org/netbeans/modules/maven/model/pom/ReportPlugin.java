@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface ReportPlugin extends POMComponent {
+public interface ReportPlugin extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties
