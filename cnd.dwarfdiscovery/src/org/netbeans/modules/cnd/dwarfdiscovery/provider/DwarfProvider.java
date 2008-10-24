@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -112,7 +113,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
         return myProperties.get(key);
     }
     
-    public List<Configuration> analyze(ProjectProxy project) {
+    public List<Configuration> analyze(ProjectProxy project, Progress progress) {
         isStoped = false;
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -132,7 +133,7 @@ abstract public class DwarfProvider extends BaseDwarfProvider {
                     if (myFileProperties == null){
                         String[] objFileNames = (String[])getProperty(EXECUTABLES_KEY).getValue();
                         if (objFileNames != null) {
-                            myFileProperties = getSourceFileProperties(objFileNames);
+                            myFileProperties = getSourceFileProperties(objFileNames,null);
                         }
                     }
                     return myFileProperties;

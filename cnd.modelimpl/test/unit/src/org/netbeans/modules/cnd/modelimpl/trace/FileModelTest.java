@@ -357,7 +357,7 @@ public class FileModelTest extends TraceModelTestBase {
                             t.isTemplateBased();
                             CsmClassifier c = t.getClassifier();
                             if (c != null) {
-                                CsmBaseUtilities.getOriginalClassifier(c);
+                                CsmBaseUtilities.getOriginalClassifier(c,f);
                             }
                         }
                     }

@@ -51,6 +51,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testIZ151061() throws Exception {
+        // IZ#151061: code model inaccuracy on VLC's is above boundary
+        performTest("iz151061.c", 6, 10, "iz151061.c", 2, 5);
+        performTest("iz151061.c", 7, 10, "iz151061.c", 2, 5);
+//        performTest("iz151061.c", 24, 20, "iz151061.c", 2, 5);
+
+        performTest("iz151061.c", 17, 15, "iz151061.c", 13, 9);
+        performTest("iz151061.c", 18, 15, "iz151061.c", 13, 9);
+//        performTest("iz151061.c", 22, 15, "iz151061.c", 13, 9);
+    }
+
     public void testIZ146392() throws Exception {
         // IZ#146392: regression: some declaration statements are not rendered any more
         performTest("iz146392.cc", 4, 25, "iz146392.cc", 4, 22);

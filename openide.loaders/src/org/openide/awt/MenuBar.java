@@ -272,7 +272,12 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 Throwable t = newEx;
                 while (true) {
                     if (t.getCause() == null) {
-                        t.initCause(ex);
+                        if (t instanceof ClassNotFoundException) {
+                            newEx = new ClassNotFoundException(t.getMessage(), ex);
+                            newEx.setStackTrace(t.getStackTrace());
+                        } else {
+                            t.initCause(ex);
+                        }
                         break;
                     }
                     t = t.getCause();

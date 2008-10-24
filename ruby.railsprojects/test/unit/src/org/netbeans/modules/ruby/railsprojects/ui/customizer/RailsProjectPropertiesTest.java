@@ -123,7 +123,7 @@ public class RailsProjectPropertiesTest extends RailsProjectTestBase {
             return "WEBMOCKER";
         }
 
-        public String getDisplayName() { throw uoe(); }
+        public String getDisplayName() { return "WebMocker Server Ruby Edition 1.2.3 update 4"; }
         public ServerState getServerState() { throw uoe(); }
         public Future<OperationState> startServer(RubyPlatform platform) { throw uoe(); }
         public Future<OperationState> stopServer() { throw uoe(); }

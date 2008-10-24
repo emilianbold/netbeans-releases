@@ -53,13 +53,13 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.ext.CompletionQuery;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.completion.cplusplus.CsmCompletionProvider;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery.CsmCompletionResult;
 import org.netbeans.modules.cnd.completion.impl.xref.FileReferencesContext;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -153,17 +153,17 @@ public class CompletionUtilities {
             
             boolean searchFuncsOnly = (idFunBlk.length == 3);
             for (int ind = idFunBlk.length - 1; ind >= 1; ind--) {
-                CompletionQuery.Result result = query.query(target, baseDoc, idFunBlk[ind], sup, true, false);
-                if (result != null && result.getData().size() > 0) {
-                    List<CsmObject> filter = getAssociatedObjects(result.getData(), searchFuncsOnly);
-                    CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getData().get(0));
+                CsmCompletionResult result = query.query(target, baseDoc, idFunBlk[ind], sup, true, false);
+                if (result != null && result.getItems().size() > 0) {
+                    List<CsmObject> filter = getAssociatedObjects(result.getItems(), searchFuncsOnly);
+                    CsmObject itm = filter.size() > 0 ? filter.get(0) : getAssociatedObject(result.getItems().get(0));
                     if (filter.size() > 1 && searchFuncsOnly) {
                         // It is overloaded method, lets check for the right one
                         int endOfMethod = findEndOfMethod(baseDoc, idFunBlk[ind]-1);
                         if (endOfMethod > -1){
-                            CompletionQuery.Result resultx = query.query(target, baseDoc, endOfMethod, sup, true, false);
-                            if (resultx != null && resultx.getData().size() > 0) {
-                                return getAssociatedObject(resultx.getData().get(0));
+                            CsmCompletionResult resultx = query.query(target, baseDoc, endOfMethod, sup, true, false);
+                            if (resultx != null && resultx.getItems().size() > 0) {
+                                return getAssociatedObject(resultx.getItems().get(0));
                             }
                         }
                     }

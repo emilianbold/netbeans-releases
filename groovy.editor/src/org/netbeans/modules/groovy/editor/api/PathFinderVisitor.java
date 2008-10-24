@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -107,9 +107,9 @@ import org.codehaus.groovy.control.SourceUnit;
 
 /**
  * Visitor that builds path to element identified at given position
- * 
+ *
  * @todo skipping irrelevant subtrees, see IsInside(...) method
- * 
+ *
  * @author Martin Adamek
  */
 public class PathFinderVisitor extends ClassCodeVisitorSupport {
@@ -117,21 +117,23 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     private static final Logger LOG = Logger.getLogger(PathFinderVisitor.class.getName());
 
     private final SourceUnit sourceUnit;
+
     private final int line;
+    
     private final int column;
-    private final List<ASTNode> path;
+
+    private final List<ASTNode> path = new ArrayList<ASTNode>();
 
     public PathFinderVisitor(SourceUnit sourceUnit, int line, int column) {
         this.sourceUnit = sourceUnit;
         this.line = line;
         this.column = column;
-        this.path = new  ArrayList<ASTNode>();
     }
-    
+
     public List<ASTNode> getPath() {
-        return path;
+        return new ArrayList<ASTNode>(path);
     }
-    
+
     @Override
     protected SourceUnit getSourceUnit() {
         return sourceUnit;
@@ -150,6 +152,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     protected void visitStatement(Statement statement) {
     }
 
+    @Override
     public void visitBlockStatement(BlockStatement node) {
         if (isInside(node, line, column, false)) {
             path.add(node);
@@ -168,186 +171,217 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         }
     }
 
+    @Override
     public void visitForLoop(ForStatement node) {
         if (isInside(node, line, column)) {
             super.visitForLoop(node);
         }
     }
 
+    @Override
     public void visitWhileLoop(WhileStatement node) {
         if (isInside(node, line, column)) {
             super.visitWhileLoop(node);
         }
     }
 
+    @Override
     public void visitDoWhileLoop(DoWhileStatement node) {
         if (isInside(node, line, column)) {
             super.visitDoWhileLoop(node);
         }
     }
 
+    @Override
     public void visitIfElse(IfStatement node) {
         if (isInside(node, line, column)) {
             super.visitIfElse(node);
         }
     }
 
+    @Override
     public void visitExpressionStatement(ExpressionStatement node) {
         if (isInside(node, line, column)) {
             super.visitExpressionStatement(node);
         }
     }
 
+    @Override
     public void visitReturnStatement(ReturnStatement node) {
         if (isInside(node, line, column)) {
             super.visitReturnStatement(node);
         }
     }
 
+    @Override
     public void visitAssertStatement(AssertStatement node) {
         if (isInside(node, line, column)) {
             super.visitAssertStatement(node);
         }
     }
 
+    @Override
     public void visitTryCatchFinally(TryCatchStatement node) {
         if (isInside(node, line, column)) {
             super.visitTryCatchFinally(node);
         }
     }
 
+    @Override
     public void visitSwitch(SwitchStatement node) {
         if (isInside(node, line, column)) {
             super.visitSwitch(node);
         }
     }
 
+    @Override
     public void visitCaseStatement(CaseStatement node) {
         if (isInside(node, line, column)) {
             super.visitCaseStatement(node);
         }
     }
 
+    @Override
     public void visitBreakStatement(BreakStatement node) {
         if (isInside(node, line, column)) {
             super.visitBreakStatement(node);
         }
     }
 
+    @Override
     public void visitContinueStatement(ContinueStatement node) {
         if (isInside(node, line, column)) {
             super.visitContinueStatement(node);
         }
     }
 
+    @Override
     public void visitThrowStatement(ThrowStatement node) {
         if (isInside(node, line, column)) {
             super.visitThrowStatement(node);
         }
     }
 
+    @Override
     public void visitSynchronizedStatement(SynchronizedStatement node) {
         if (isInside(node, line, column)) {
             super.visitSynchronizedStatement(node);
         }
     }
 
+    @Override
     public void visitCatchStatement(CatchStatement node) {
         if (isInside(node, line, column)) {
             super.visitCatchStatement(node);
         }
     }
 
+    @Override
     public void visitMethodCallExpression(MethodCallExpression node) {
         if (isInside(node, line, column)) {
             super.visitMethodCallExpression(node);
         }
     }
 
+    @Override
     public void visitStaticMethodCallExpression(StaticMethodCallExpression node) {
         if (isInside(node, line, column)) {
             super.visitStaticMethodCallExpression(node);
         }
     }
 
+    @Override
     public void visitConstructorCallExpression(ConstructorCallExpression node) {
         if (isInside(node, line, column)) {
             super.visitConstructorCallExpression(node);
         }
     }
 
+    @Override
     public void visitTernaryExpression(TernaryExpression node) {
         if (isInside(node, line, column)) {
             super.visitTernaryExpression(node);
         }
     }
 
+    @Override
     public void visitShortTernaryExpression(ElvisOperatorExpression node) {
         if (isInside(node, line, column)) {
             super.visitShortTernaryExpression(node);
         }
     }
 
+    @Override
     public void visitBinaryExpression(BinaryExpression node) {
         if (isInside(node, line, column)) {
             super.visitBinaryExpression(node);
         }
     }
 
+    @Override
     public void visitPrefixExpression(PrefixExpression node) {
         if (isInside(node, line, column)) {
             super.visitPrefixExpression(node);
         }
     }
 
+    @Override
     public void visitPostfixExpression(PostfixExpression node) {
         if (isInside(node, line, column)) {
             super.visitPostfixExpression(node);
         }
     }
 
+    @Override
     public void visitBooleanExpression(BooleanExpression node) {
         if (isInside(node, line, column)) {
             super.visitBooleanExpression(node);
         }
     }
 
+    @Override
     public void visitClosureExpression(ClosureExpression node) {
         if (isInside(node, line, column)) {
             super.visitClosureExpression(node);
         }
     }
 
+    @Override
     public void visitTupleExpression(TupleExpression node) {
         if (isInside(node, line, column)) {
             super.visitTupleExpression(node);
         }
     }
 
+    @Override
     public void visitMapExpression(MapExpression node) {
         if (isInside(node, line, column)) {
             super.visitMapExpression(node);
         }
     }
 
+    @Override
     public void visitMapEntryExpression(MapEntryExpression node) {
         if (isInside(node, line, column)) {
             super.visitMapEntryExpression(node);
         }
     }
 
+    @Override
     public void visitListExpression(ListExpression node) {
         if (isInside(node, line, column)) {
             super.visitListExpression(node);
         }
     }
 
+    @Override
     public void visitRangeExpression(RangeExpression node) {
         if (isInside(node, line, column)) {
             super.visitRangeExpression(node);
         }
     }
 
+    @Override
     public void visitPropertyExpression(PropertyExpression node) {
 
         // XXX PropertyExpression has wrong offsets, e.g. 4-4 for 'this.field1 = 77'
@@ -357,7 +391,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
 
         Expression objectExpression = node.getObjectExpression();
         Expression property = node.getProperty();
-        
+
         if (isInside(node, line, column, false)) {
             path.add(node);
         } else {
@@ -377,147 +411,173 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         property.visit(this);
     }
 
+    @Override
     public void visitAttributeExpression(AttributeExpression node) {
         if (isInside(node, line, column)) {
             super.visitAttributeExpression(node);
         }
     }
 
+    @Override
     public void visitFieldExpression(FieldExpression node) {
         if (isInside(node, line, column)) {
             super.visitFieldExpression(node);
         }
     }
 
+    @Override
     public void visitMethodPointerExpression(MethodPointerExpression node) {
         if (isInside(node, line, column)) {
             super.visitMethodPointerExpression(node);
         }
     }
 
+    @Override
     public void visitConstantExpression(ConstantExpression node) {
         if (isInside(node, line, column)) {
             super.visitConstantExpression(node);
         }
     }
 
+    @Override
     public void visitClassExpression(ClassExpression node) {
         if (isInside(node, line, column)) {
             super.visitClassExpression(node);
         }
     }
 
+    @Override
     public void visitVariableExpression(VariableExpression node) {
         if (isInside(node, line, column)) {
-//            System.out.println("### VariableExpression " + node.getLineNumber() + ", " + node.getColumnNumber() + ", " + node.getLastLineNumber() + ", " + node.getLastColumnNumber());
             super.visitVariableExpression(node);
         }
     }
 
+    @Override
     public void visitDeclarationExpression(DeclarationExpression node) {
         if (isInside(node, line, column)) {
             super.visitDeclarationExpression(node);
         }
     }
 
+    @Override
     public void visitRegexExpression(RegexExpression node) {
         if (isInside(node, line, column)) {
             super.visitRegexExpression(node);
         }
     }
 
+    @Override
     public void visitGStringExpression(GStringExpression node) {
         if (isInside(node, line, column)) {
             super.visitGStringExpression(node);
         }
     }
 
+    @Override
     public void visitArrayExpression(ArrayExpression node) {
         if (isInside(node, line, column)) {
             super.visitArrayExpression(node);
         }
     }
 
+    @Override
     public void visitSpreadExpression(SpreadExpression node) {
         if (isInside(node, line, column)) {
             super.visitSpreadExpression(node);
         }
     }
 
+    @Override
     public void visitSpreadMapExpression(SpreadMapExpression node) {
         if (isInside(node, line, column)) {
             super.visitSpreadMapExpression(node);
         }
     }
 
+    @Override
     public void visitNotExpression(NotExpression node) {
         if (isInside(node, line, column)) {
             super.visitNotExpression(node);
         }
     }
 
+    @Override
     public void visitUnaryMinusExpression(UnaryMinusExpression node) {
         if (isInside(node, line, column)) {
             super.visitUnaryMinusExpression(node);
         }
     }
 
+    @Override
     public void visitUnaryPlusExpression(UnaryPlusExpression node) {
         if (isInside(node, line, column)) {
             super.visitUnaryPlusExpression(node);
         }
     }
 
+    @Override
     public void visitBitwiseNegationExpression(BitwiseNegationExpression node) {
         if (isInside(node, line, column)) {
             super.visitBitwiseNegationExpression(node);
         }
     }
 
+    @Override
     public void visitCastExpression(CastExpression node) {
         if (isInside(node, line, column)) {
             super.visitCastExpression(node);
         }
     }
 
+    @Override
     public void visitArgumentlistExpression(ArgumentListExpression node) {
         if (isInside(node, line, column)) {
             super.visitArgumentlistExpression(node);
         }
     }
 
+    @Override
     public void visitClosureListExpression(ClosureListExpression node) {
         if (isInside(node, line, column)) {
             super.visitClosureListExpression(node);
         }
     }
 
+    @Override
     public void visitClass(ClassNode node) {
         if (isInside(node, line, column)) {
             super.visitClass(node);
         }
     }
 
+    @Override
     public void visitConstructor(ConstructorNode node) {
-        if (isInside(node, line, column)) {
+        // we don't want synthetic constructors duplicating field initial expressions
+        if (!node.isSynthetic() && isInside(node, line, column)) {
             super.visitConstructor(node);
         }
     }
 
+    @Override
     public void visitMethod(MethodNode node) {
         if (isInside(node, line, column)) {
             super.visitMethod(node);
         }
     }
 
+    @Override
     public void visitField(FieldNode node) {
-        if (isInside(node, line, column)) {
+        // we don't want synthetic fields duplicating property initial expressions
+        if (!node.isSynthetic() && isInside(node, line, column)) {
             super.visitField(node);
         }
     }
 
+    @Override
     public void visitProperty(PropertyNode node) {
-        if (isInside(node, line, column)) {
+        // we don't want synthetic static initializers introducing this variables
+        if (!node.isSynthetic() && isInside(node, line, column)) {
             super.visitProperty(node);
         }
     }
@@ -525,23 +585,21 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     private boolean isInside(ASTNode node, int line, int column) {
         return isInside(node, line, column, true);
     }
-    
-    private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
 
-        fixCoordinates(node);
+    private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
         int endLine = node.getLastLineNumber();
         int endColumn = node.getLastColumnNumber();
-        
+
         LOG.finest("isInside: " + node + " - " + beginLine + ", " + beginColumn + ", " + endLine + ", " + endColumn);
-        
+
         if (beginLine == -1 || beginColumn == -1 || endLine == -1 || endColumn == -1) {
             // this node doesn't provide its coordinates, some wrappers do that
             // let's say yes and visit its children
             return addToPath ? true : false;
         }
-        
+
         boolean result = false;
 
         if (beginLine == endLine) {
@@ -561,7 +619,7 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         } else {
             result = false;
         }
-        
+
         if (result && addToPath) {
             path.add(node);
             LOG.finest("Path:" + path);
@@ -570,10 +628,6 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         // if addToPath is false, return result, we want to know real state of affairs
         // and not to continue traversing
         return addToPath ? true : result;
-    }
-
-    private void fixCoordinates(ASTNode node) {
-        // noop for Groovy 1.5.7
     }
 
 }

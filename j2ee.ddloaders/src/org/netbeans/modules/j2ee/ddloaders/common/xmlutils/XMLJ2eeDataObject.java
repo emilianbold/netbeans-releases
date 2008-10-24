@@ -49,12 +49,10 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.text.Line;
 import org.openide.windows.*;
 import org.openide.util.NbBundle;
-
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.xml.sax.*;
-import org.openide.xml.*;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.spi.xml.cookies.*;
 
@@ -95,6 +93,7 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
         getCookieSet().add(checkCookie);
     }
     // Issuezilla 23493 - this is the way how to disable the OpenCoookie from this data object
+    @Override
     protected EditorCookie createEditorCookie () {
         return null;
     }    
@@ -300,7 +299,6 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
             inOut.setFocusTaken (false);
             OutputWriter outputWriter = inOut.getOut();
             int line   = Math.max(0,error.getErrorLine());
-//            int column = Math.max(0,error.getErrorColumn());
             
             LineCookie cookie = (LineCookie)getCookie(LineCookie.class);
             // getting Line object
@@ -313,9 +311,12 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
                 // defining of new OutputListener
                 IOCtl outList= new IOCtl(xline);
                 outputWriter.println(this.getOutputStringForInvalidDocument(error),outList);
-            }catch(IOException e){}        
+            } catch (IOException e) {
+                Logger.getLogger("XMLJ2eeDataObject").log(Level.FINE, "ignored exception", e); //NOI18N
+            }
     }
     
+    @Override
     public void setValid(boolean valid) throws java.beans.PropertyVetoException {
         if (!valid && inOut!=null) inOut.closeInputOutput();
         super.setValid(valid);

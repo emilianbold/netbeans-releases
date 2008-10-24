@@ -382,7 +382,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         WSStackUtils wsStackUtils = new WSStackUtils(project);
         jsr109Supported = wsStackUtils.isJsr109Supported();
         jaxWsInJ2ee14Supported = ServerType.JBOSS == wsStackUtils.getServerType();
-        noMetroInstalledOnGlassFishV3 = !jsr109Supported && ServerType.GLASSFISH_V3 == wsStackUtils.getServerType();
+        noMetroInstalledOnGlassFishV3 = !wsStackUtils.isWsitSupported() && ServerType.GLASSFISH_V3 == wsStackUtils.getServerType();
         jsr109oldSupported = wsStackUtils.isJsr109OldSupported();
         wm = WebModule.getWebModule(project.getProjectDirectory());
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());

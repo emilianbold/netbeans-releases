@@ -83,6 +83,7 @@ import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.core.startup.Main;
 import org.netbeans.core.startup.TopLogging;
+import org.netbeans.modules.autoupdate.updateprovider.DummyModuleInfo;
 import org.netbeans.spi.autoupdate.KeyStoreProvider;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.updater.ModuleDeactivator;
@@ -657,27 +658,36 @@ public class Utilities {
                         matched = DependencyChecker.checkDependencyModule (dep, ((ModuleUpdateElementImpl) reqElImpl).getModuleInfo ());
                     }
                     if (! matched) {
-                        UpdateElement reqEl = u.getAvailableUpdates ().isEmpty () ? null : u.getAvailableUpdates ().get (0);
-                        if (reqEl == null) {
-                            for (ModuleInfo m : availableInfos) {
-                                if (DependencyChecker.checkDependencyModule (dep, m)) {
-                                    matched = true;
-                                    break;
+                        // first chance
+                        for (ModuleInfo m : availableInfos) {
+                            if (DependencyChecker.checkDependencyModule (dep, m)) {
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (! matched) {
+                            UpdateElement reqEl = u.getAvailableUpdates ().isEmpty () ? null : u.getAvailableUpdates ().get (0);
+                            if (reqEl == null) {
+                                for (ModuleInfo m : availableInfos) {
+                                    if (DependencyChecker.checkDependencyModule (dep, m)) {
+                                        matched = true;
+                                        break;
+                                    }
                                 }
-                            }
-                            if (! matched) {
-                                brokenDependencies.add (dep);
-                            }
-                        } else {
-                            UpdateElementImpl reqElImpl = Trampoline.API.impl (reqEl);
-                            ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
-                            ModuleInfo info = reqModuleImpl.getModuleInfo ();
-                            if (DependencyChecker.checkDependencyModule (dep, info)) {
-                                if (! availableInfos.contains (info)) {
-                                    requested = reqEl;
+                                if (! matched) {
+                                    brokenDependencies.add (dep);
                                 }
                             } else {
-                                brokenDependencies.add (dep);
+                                UpdateElementImpl reqElImpl = Trampoline.API.impl (reqEl);
+                                ModuleUpdateElementImpl reqModuleImpl = (ModuleUpdateElementImpl) reqElImpl;
+                                ModuleInfo info = reqModuleImpl.getModuleInfo ();
+                                if (DependencyChecker.checkDependencyModule (dep, info)) {
+                                    if (! availableInfos.contains (info)) {
+                                        requested = reqEl;
+                                    }
+                                } else {
+                                    brokenDependencies.add (dep);
+                                }
                             }
                         }
                     }
@@ -686,6 +696,11 @@ public class Utilities {
             case Dependency.TYPE_REQUIRES :
             case Dependency.TYPE_NEEDS :
             case Dependency.TYPE_RECOMMENDS :
+                if (DummyModuleInfo.TOKEN_MODULE_FORMAT1.equals (dep.getName ()) ||
+                        DummyModuleInfo.TOKEN_MODULE_FORMAT2.equals (dep.getName ())) {
+                    // these tokens you can ignore here
+                    break;
+                }
                 UpdateUnit p = DependencyAggregator.getRequested (dep);
                 boolean passed = false;
                 if (p == null) {

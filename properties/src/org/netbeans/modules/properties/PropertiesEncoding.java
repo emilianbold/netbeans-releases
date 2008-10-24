@@ -787,13 +787,11 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
                         assert index <= 15;
                         unicodeValue = (unicodeValue << 4) | index;
                         if (++unicodeBytesRead == 4) {
-                            if ((unicodeValue == 0x20)
-                                    || (unicodeValue == 0x09)
-                                    || (unicodeValue == 0x0c)) {
+                            if (unicodeValue <= 0x20) {
                                 unicodeValueChars[3] = bChar;
                                 /*
-                                 * Do not translate sequences \\u0020 (Space),
-                                 * \\u0009 (Tab) and \\u000c (Form-feed).
+                                 * Do not translate Unicode sequences of value
+                                 * 20h (space) or less (control characters).
                                  * Changing form of these unicode sequences
                                  * to one-character form might change
                                  * semantics, which is not desirable

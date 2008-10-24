@@ -239,8 +239,10 @@ public class AutoupdateCheckScheduler {
                            break;
                        } 
                     }
-                    container.add (reqs);
-                    updates.add (element);
+                    if (! somePendingElements) {
+                        container.add (reqs);
+                        updates.add (element);
+                    }
                 }
             }
         }
