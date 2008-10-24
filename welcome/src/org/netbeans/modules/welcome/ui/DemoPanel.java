@@ -84,7 +84,6 @@ import org.netbeans.modules.welcome.content.WebLink;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -306,17 +305,25 @@ class DemoPanel extends RSSFeedReaderPanel {
         }
 
         public void paintIcon(Component c, Graphics g, int x, int y) {
-            int imgX = x;
-            int imgY = y;
-            if( content.getWidth(null) > MAX_IMAGE_WIDTH )
-                imgX += (content.getWidth(null) - MAX_IMAGE_WIDTH) / 2;
-            if( content.getHeight(null) > MAX_IMAGE_HEIGHT )
-                imgY += (content.getHeight(null) - MAX_IMAGE_HEIGHT) / 2;
-            g.drawImage(content, x, y, x+Math.min(MAX_IMAGE_WIDTH, content.getWidth(null)), 
-                                       y+Math.min(MAX_IMAGE_HEIGHT, content.getHeight(null)),
-                    imgX, imgY, imgX+Math.min(MAX_IMAGE_WIDTH, content.getWidth(null)), 
-                                imgY+Math.min(MAX_IMAGE_HEIGHT, content.getHeight(null)), null);
-            g.drawImage(frame, x, y, c);
+            try {
+                int imgX = x;
+                int imgY = y;
+                if( content.getWidth(null) > MAX_IMAGE_WIDTH )
+                    imgX += (content.getWidth(null) - MAX_IMAGE_WIDTH) / 2;
+                if( content.getHeight(null) > MAX_IMAGE_HEIGHT )
+                    imgY += (content.getHeight(null) - MAX_IMAGE_HEIGHT) / 2;
+                g.drawImage(content, x, y, x+Math.min(MAX_IMAGE_WIDTH, content.getWidth(null)),
+                                           y+Math.min(MAX_IMAGE_HEIGHT, content.getHeight(null)),
+                        imgX, imgY, imgX+Math.min(MAX_IMAGE_WIDTH, content.getWidth(null)),
+                                    imgY+Math.min(MAX_IMAGE_HEIGHT, content.getHeight(null)), null);
+                g.drawImage(frame, x, y, c);
+            } catch( ThreadDeath td ) {
+                throw td;
+            } catch( Throwable e ) {
+                //#135448 - don't let corrupt image downloads break the painting of the whole IDE window
+                Logger.getLogger(DemoPanel.class.getName()).log(Level.FINE,
+                        "Error while painting demo image.", e); //NOI18N
+            }
         }
 
         public int getIconWidth() {
