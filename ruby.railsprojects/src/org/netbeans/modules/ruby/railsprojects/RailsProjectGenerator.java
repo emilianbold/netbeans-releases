@@ -46,18 +46,24 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.ExecutionService;
+import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
@@ -68,8 +74,8 @@ import org.netbeans.modules.ruby.spi.project.support.rake.EditableProperties;
 import org.netbeans.modules.ruby.spi.project.support.rake.ProjectGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Task;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -86,6 +92,8 @@ public class RailsProjectGenerator {
     public static final RegexpOutputRecognizer RAILS_GENERATOR =
         new RegexpOutputRecognizer("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$", // NOI18N
             2, -1, -1);
+
+    static final Pattern RAILS_GENERATOR_PATTERN = Pattern.compile("^   (   create|    force|identical|     skip)\\s+([\\w|/]+\\.\\S+)\\s*$"); // NOI18N
 
     private RailsProjectGenerator() {}
     
@@ -132,21 +140,21 @@ public class RailsProjectGenerator {
                 desc.additionalArgs(args);
                 desc.cmd(railsF);
             }
-            
+
+            desc.runThroughRuby(runThroughRuby);
             desc.fileLocator(new DirectoryFileLocator(dirFO));
-            desc.addOutputRecognizer(RAILS_GENERATOR);
-            ExecutionService service = null;
-            if (runThroughRuby) {
-                service = new RubyExecution(desc);
-            } else {
-                // Try invoking the Rails script directly (probably a Linux distribution
-                // with railties installed and rails is a Unix shell script rather 
-                // than a Ruby program)
-                service = new ExecutionService(desc);
+
+            RubyProcessCreator rpc = new RubyProcessCreator(desc, createLineConvertorFactory(desc.getFileLocator()));
+            org.netbeans.modules.extexecution.api.ExecutionService es =
+                    org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
+            try {
+                es.run().get();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (ExecutionException ex) {
+                Exceptions.printStackTrace(ex);
             }
-            Task task = service.run();
-            task.waitFinished();
-            
+
             // Precreate a spec directory if it doesn't exist such that my source root will work
             if (platform.getGemManager().getLatestVersion("rspec") != null) { // NOI18N
                 File spec = new File(data.getDir(), "spec"); // NOI18N
@@ -238,6 +246,18 @@ public class RailsProjectGenerator {
         h.putProperties(RakeProjectHelper.PRIVATE_PROPERTIES_PATH, privateProperties);
         h.putProperties(RakeProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         return h;
+    }
+
+    //XXX: to be removed once the extexecution api supports chaining convertors
+    private static LineConvertorFactory createLineConvertorFactory(FileLocator locator) {
+        LineConvertor chain = RubyProcessCreator.getConvertor(locator);
+        final LineConvertor rails = LineConvertors.filePattern(chain, RubyProcessCreator.wrap(locator), RAILS_GENERATOR_PATTERN, null, 2, -1);
+        return new LineConvertorFactory() {
+
+            public LineConvertor newLineConvertor() {
+                return rails;
+            }
+        };
     }
 }
 

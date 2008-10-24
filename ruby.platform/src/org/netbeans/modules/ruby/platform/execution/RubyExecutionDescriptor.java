@@ -86,6 +86,7 @@ public class RubyExecutionDescriptor {
     private String encoding;
     private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
+    private boolean runThroughRuby = true;
     /**
      * Defines whether rerun should be allowed. <i>Currently needed
      * only because rerunning rake test tasks in the test runner does not
@@ -225,6 +226,12 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
+    public RubyExecutionDescriptor runThroughRuby(boolean runThroughRuby) {
+        this.runThroughRuby = runThroughRuby;
+        return this;
+    }
+
+
     /**
      * Builder property which sets whether the JDK should be added to the PATH
      * for the executed process. The default is false. If it is set, it will be
@@ -251,6 +258,10 @@ public class RubyExecutionDescriptor {
         return platform;
     }
     
+    public boolean isRunThroughRuby() {
+        return runThroughRuby;
+    }
+
     public File getCmd() {
         return cmd;
     }
