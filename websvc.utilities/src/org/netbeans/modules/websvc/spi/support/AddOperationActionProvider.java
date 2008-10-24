@@ -39,8 +39,9 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.spi.support;
 
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.openide.filesystems.FileObject;
 
 /**

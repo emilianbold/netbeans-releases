@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.api.support;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 
@@ -58,6 +58,6 @@ public interface AddOperationCookie extends Node.Cookie {
      * in the source editor.
      * @param implClass Implementation class that is shown in the editor
      */ 
-    public boolean isEnabledInEditor(FileObject implClass);
+    public boolean isEnabled(FileObject implClass);
     
 }
