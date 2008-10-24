@@ -48,4 +48,13 @@ public interface Parent extends POMComponent {
     // attribute properties
     // child element properties
 
+    String getGroupId();
+    void setGroupId(String groupId);
+
+    String getArtifactId();
+    void setArtifactId(String artifactId);
+
+    String getVersion();
+    void setVersion(String version);
+
 }

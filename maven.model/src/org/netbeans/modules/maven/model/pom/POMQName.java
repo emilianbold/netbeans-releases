@@ -88,6 +88,10 @@ public enum POMQName {
     LICENSE(createQName("license")), // NOI18N
     MAILINGLIST(createQName("mailingList")), // NOI18N
     DEVELOPER(createQName("developer")), // NOI18N
+
+    GROUPID(createQName("groupId")), //NOI18N
+    ARTIFACTID(createQName("artifactId")), //NOI18N
+    VERSION(createQName("version")), //NOI18N
     ;
     
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N

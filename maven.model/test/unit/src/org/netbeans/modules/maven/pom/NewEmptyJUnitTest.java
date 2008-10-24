@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,65 +31,62 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom.impl;
 
-import org.w3c.dom.Element;
-import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
-import org.w3c.dom.NodeList;
+package org.netbeans.modules.maven.pom;
+
+import java.io.File;
+import java.net.URL;
+import java.util.List;
+import junit.framework.TestCase;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.MailingList;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.pom.Parent;
+import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
  * @author mkleint
  */
-public class ParentImpl extends POMComponentImpl implements Parent {
+public class NewEmptyJUnitTest extends TestCase {
 
-    public ParentImpl(POMModel model, Element element) {
-        super(model, element);
-    }
-    
-    public ParentImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PARENT));
+    public NewEmptyJUnitTest() {
     }
 
-    // attributes
 
-    // child elements
-    public void accept(POMComponentVisitor visitor) {
-        visitor.visit(this);
-    }
+    // TODO add test methods here.
+    // The methods must be annotated with annotation @Test. For example:
+    //
+     public void testModel() throws Exception {
+        URL url = getClass().getClassLoader().getResource("sample.pom");
+        File sourceFile = new File(url.toURI());
+        assertTrue(sourceFile.exists());
+        FileObject fo = FileUtil.toFileObject(sourceFile);
+        assertNotNull(fo);
+        ModelSource source = Utilities.createModelSource(fo, false);
+        POMModel model = POMModelFactory.getDefault().getModel(source);
+        assertNotNull(model);
+        System.out.println("state =" + model.getState());
+        assertNotNull(model.getRootComponent());
+        Project prj = model.getProject();
+        assertNotNull(prj);
+        Parent parent = prj.getPomParent();
+        assertNotNull(parent);
+        assertNotNull(parent.getGroupId());
+        
 
-    public String getGroupId() {
-        NodeList nl = getPeer().getElementsByTagNameNS(getNamespaceURI(), POMQName.GROUPID.getQName().getLocalPart());
-        if (nl.getLength() == 1) {
-            return nl.item(0).getTextContent();
-        }
-        return null;
-    }
-
-    public void setGroupId(String groupId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getArtifactId() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setArtifactId(String artifactId) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public String getVersion() {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    public void setVersion(String version) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
+//        List<MailingList> lists = prj.getMailingLists();
+//        assertEquals(3, lists.size());
+     }
 
 }
