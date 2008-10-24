@@ -55,7 +55,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;

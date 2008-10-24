@@ -52,8 +52,8 @@ import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
+import org.netbeans.modules.csl.api.EditHistory;
+import org.netbeans.modules.csl.api.IncrementalEmbeddingModel;
 import org.netbeans.modules.javascript.editing.JsAnalyzer;
 
 /**

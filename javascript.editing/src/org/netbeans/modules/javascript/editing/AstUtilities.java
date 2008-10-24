@@ -42,25 +42,24 @@ package org.netbeans.modules.javascript.editing;
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node.LabelledNode;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.SourceModel;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.ParserFile;
+import org.netbeans.modules.csl.api.ParserResult;
+import org.netbeans.modules.csl.api.SourceModel;
+import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.SourceModelFactory;
-import org.netbeans.modules.gsf.api.annotations.NonNull;
+import org.netbeans.modules.csl.api.CancellableTask;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.SourceModelFactory;
+import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -236,7 +235,7 @@ public final class AstUtilities {
             return null;
         }
 
-        SourceModel model = SourceModelFactory.getInstance().getModel(fo);
+        SourceModel model = SourceModelFactory.getInstance().getModel (fo);
         if (model == null) {
             return null;
         }

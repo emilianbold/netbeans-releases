@@ -48,19 +48,19 @@ import java.util.Set;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.api.CompilationInfo;
 
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.ParserResult;
+import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.gsf.api.annotations.CheckForNull;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;

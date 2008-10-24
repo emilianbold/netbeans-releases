@@ -48,7 +48,7 @@ import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
