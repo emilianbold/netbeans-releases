@@ -252,35 +252,19 @@ public class FtpClient implements RemoteClient {
             FTPFile[] files = ftpClient.listFiles();
             result = new ArrayList<RemoteFile>(files.length);
             for (FTPFile f : files) {
-                if (isVisible(f)) {
-                    result.add(new RemoteFileImpl(f));
+                // #142682
+                if (f == null) {
+                    // hmm, really weird...
+                    LOGGER.fine("NULL returned for listing of " + pathInfo);
+                    continue;
                 }
+                result.add(new RemoteFileImpl(f));
             }
         } catch (IOException ex) {
             LOGGER.log(Level.FINE, "Error while listing files for " + pathInfo, ex);
             throw new RemoteException(NbBundle.getMessage(FtpClient.class, "MSG_FtpCannotListFiles", pathInfo.getFullPath()), ex, getReplyString());
         }
         return result;
-    }
-
-    // some FTP servers return ".." in directory listing (e.g. Cerberus FTP server) - so ignore them
-    private boolean isVisible(FTPFile file) {
-        // #142682
-        if (file == null) {
-            // hmm, really weird...
-            return false;
-        }
-        // XXX
-//        if (file.isDirectory()) {
-//            String name = file.getName();
-//            for (String ignored : IGNORED_REMOTE_DIRS) {
-//                if (name.equals(ignored)) {
-//                    return false;
-//                }
-//            }
-//        }
-        return true;
-
     }
 
     public boolean retrieveFile(String remote, OutputStream local) throws RemoteException {
