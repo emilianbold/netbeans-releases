@@ -466,6 +466,21 @@ public class RootSelectorTree extends JCheckTree {
         return root;
     }
 
+    private void applyCurrentSelection() {
+        TreeNode root = (TreeNode) this.getModel().getRoot();
+        Enumeration childrenEnum = root.children();
+
+        while (childrenEnum.hasMoreElements()) {
+            Object child = childrenEnum.nextElement();
+
+            if (child instanceof SelectorNode) {
+                for (ClientUtils.SourceCodeSelection selection : currentSelectionSet) {
+                    applySelection((SelectorNode) child, selection);
+                }
+            }
+        }
+    }
+
     private void applySelection(ClientUtils.SourceCodeSelection[] selections) {
         TreeNode root = (TreeNode) this.getModel().getRoot();
         Enumeration childrenEnum = root.children();
@@ -487,7 +502,7 @@ public class RootSelectorTree extends JCheckTree {
         ClientUtils.SourceCodeSelection signature = node.getSignature();
 
         if (signature != null) {
-            if (signature.equals(selection)) {
+            if (signature.equals(selection) || selection.contains(signature)) {
                 node.setChecked(true);
 
                 return;
@@ -655,6 +670,7 @@ public class RootSelectorTree extends JCheckTree {
         setRootVisible(false);
         setShowsRootHandles(true);
         setModel(new DefaultTreeModel(getTreeRoot()));
+        applyCurrentSelection();
         treeDidChange();
     }
 
