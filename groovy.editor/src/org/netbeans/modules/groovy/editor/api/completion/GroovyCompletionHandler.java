@@ -1541,8 +1541,8 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
 
-            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.WHITESPACE
-                    && t.id() != GroovyTokenId.NLS) {
+            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT
+                    && t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 // is it prefix
                 if (t.id() != GroovyTokenId.IDENTIFIER) {
                     return null;
@@ -1554,7 +1554,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
-        if (ts.token().id() != GroovyTokenId.DOT) {
+        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -1566,7 +1566,8 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        if (ts.token().id() != GroovyTokenId.DOT || !remainingTokens) {
+        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT)
+                || !remainingTokens) {
             // no astpath
             return null;
         }
