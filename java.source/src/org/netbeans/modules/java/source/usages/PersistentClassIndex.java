@@ -56,7 +56,6 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
@@ -238,8 +237,9 @@ public class PersistentClassIndex extends ClassIndexImpl {
                                 }
                             }
                         }, true);
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    } catch (IOException ioe) {
+                        Exceptions.printStackTrace(ioe);
+                    }
                 }
                 synchronized (this) {
                     this.dirty = null;
