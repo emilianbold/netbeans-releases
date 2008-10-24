@@ -123,7 +123,7 @@ public class ServiceProviderProcessor extends AbstractProcessor {
         String impl = processingEnv.getElementUtils().getBinaryName(clazz).toString();
         String xface = processingEnv.getElementUtils().getBinaryName((TypeElement) processingEnv.getTypeUtils().asElement(type)).toString();
         if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), type)) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, impl + " is not assignable to " + xface);
+            processingEnv.getMessager().printMessage(Kind.ERROR, impl + " is not assignable to " + xface, clazz/*, XXX annotation mirror & value*/);
             return;
         }
         processingEnv.getMessager().printMessage(Kind.NOTE, impl + " to be registered as a " + xface);
@@ -188,11 +188,11 @@ public class ServiceProviderProcessor extends AbstractProcessor {
 
     private boolean verifyServiceProviderSignature(TypeElement clazz) {
         if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public");
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public", clazz);
             return false;
         }
         if (clazz.getModifiers().contains(Modifier.ABSTRACT)) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract");
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract", clazz);
             return false;
         }
         {
@@ -204,7 +204,7 @@ public class ServiceProviderProcessor extends AbstractProcessor {
                 }
             }
             if (!hasDefaultCtor) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must have a public no-argument constructor");
+                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must have a public no-argument constructor", clazz);
                 return false;
             }
         }
