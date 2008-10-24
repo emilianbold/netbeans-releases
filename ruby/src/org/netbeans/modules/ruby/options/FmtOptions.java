@@ -67,11 +67,14 @@ import javax.swing.JTextField;
 import javax.swing.JViewport;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
-import org.netbeans.modules.ruby.RubyFormatter;
 import org.netbeans.modules.ruby.RubyMimeResolver;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.util.HelpCtx;
@@ -345,11 +348,25 @@ public class FmtOptions {
 
             jep.setIgnoreRepaint(true);
             jep.setText(previewText);
-            
-            CodeStyle codeStyle = CodeStyle.get(previewPrefs);
-            RubyFormatter formatter = new RubyFormatter(codeStyle, rm);
-            formatter.reindent(null, jep.getDocument(), 0, jep.getDocument().getLength(), null, false);
-            
+
+            final Document doc = jep.getDocument();
+            final Reformat formatter = Reformat.get(doc);
+            formatter.lock();
+            try {
+                ((BaseDocument) doc).runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            // The formatter is automatically going to use the previewPrefs.
+                            formatter.reformat(0, doc.getLength());
+                        } catch (BadLocationException ble) {
+                            // ignore
+                        }
+                    }
+                });
+            } finally {
+                formatter.unlock();
+            }
+
             jep.setIgnoreRepaint(false);
             jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
             jep.repaint(100);

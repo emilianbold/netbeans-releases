@@ -50,6 +50,7 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -138,11 +139,12 @@ public abstract class CndAbstractDataLoaderExt extends CndAbstractDataLoader {
                         offset++;
                         if (doc instanceof BaseDocument) {
                             BaseDocument bd = (BaseDocument) doc;
-                            bd.getFormatter().reformatLock();
+                            Reformat formatter = Reformat.get(doc);
+                            formatter.lock();
                             try {
-                                bd.getFormatter().reformat(bd, 0, offset);
+                                formatter.reformat( 0, offset);
                             } finally {
-                                bd.getFormatter().reformatUnlock();
+                                formatter.unlock();
                             }
                         }
                         w.write(doc.getText(0, doc.getLength()));

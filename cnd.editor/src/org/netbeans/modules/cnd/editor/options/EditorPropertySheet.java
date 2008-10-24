@@ -63,9 +63,9 @@ import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.reformat.Reformatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.explorer.propertysheet.PropertySheet;
@@ -516,20 +516,22 @@ public class EditorPropertySheet extends javax.swing.JPanel
                 Exceptions.printStackTrace(ex);
             }
         } else {
+            // XXX: this code is most likely broken and should probably be removed;
+            // it's not used anyway
             CodeStyle codeStyle = CodeStyle.getDefault(language);
             Preferences oldPreferences = EditorOptions.getPreferences(codeStyle);
             EditorOptions.setPreferences(codeStyle, p);
-            Formatter f = bd.getFormatter();
+            Reformat f = Reformat.get(bd);
+            f.lock();
             try {
-                f.reformatLock();
-                f.reformat(bd, 0, bd.getLength());
+                f.reformat(0, bd.getLength());
                 String x = bd.getText(0, bd.getLength());
                 pane.setText(x);
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             } finally {
+                f.unlock();
                 EditorOptions.setPreferences(codeStyle, oldPreferences);
-                f.reformatUnlock();
             }
         }
     }

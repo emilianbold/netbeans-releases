@@ -46,9 +46,12 @@ import java.io.IOException;
 import java.io.StringWriter;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.ext.ExtSyntaxSupport;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.schema2beans.BaseBean;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
@@ -335,17 +338,28 @@ public class JSFEditorUtilities {
     
     private static int writeString(BaseDocument doc, String text, int offset){
         int formatLength = 0;
-        try{
+        Indent indenter = Indent.get(doc);
+        Reformat formatter = Reformat.get(doc);
+        indenter.lock();
+        formatter.lock();
+        try {
             doc.atomicLock();
-            offset = doc.getFormatter().indentNewLine(doc, offset+1);
-            doc.insertString(offset, text, null );
-            formatLength = doc.getFormatter().reformat(doc, offset, offset + text.length()-1);
-        }
-        catch(BadLocationException ex){
-            Exceptions.printStackTrace(ex);
-        }
-        finally {
-            doc.atomicUnlock();
+            try{
+                offset = indenter.indentNewLine(offset + 1);
+                doc.insertString(offset, text, null );
+                Position endPos = doc.createPosition(offset + text.length() - 1);
+                formatter.reformat(offset, endPos.getOffset());
+                formatLength = Math.max(0, endPos.getOffset() - offset);
+            }
+            catch(BadLocationException ex){
+                Exceptions.printStackTrace(ex);
+            }
+            finally {
+                doc.atomicUnlock();
+            }
+        } finally {
+            formatter.unlock();
+            indenter.unlock();
         }
         return offset + formatLength + 1;
     }

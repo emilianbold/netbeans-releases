@@ -46,6 +46,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 
@@ -136,58 +137,50 @@ public class EditList {
         Collections.sort(edits);
         Collections.reverse(edits);
 
-        doc.runAtomic(new Runnable() {
+        final Reformat f = Reformat.get(doc);
+        f.lock();
+        try {
+            doc.runAtomic(new Runnable() {
 
-            public void run() {
-                try {
-                    int lastOffset = edits.get(0).offset;
-                    Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
+                public void run() {
+                    try {
+                        int lastOffset = edits.get(0).offset;
+                        Position lastPos = doc.createPosition(lastOffset, Position.Bias.Forward);
 
-                    // Apply edits in reverse order (to keep offsets accurate)
-                    for (Edit edit : edits) {
-                        if (edit.removeLen > 0) {
-                            doc.remove(edit.offset, edit.removeLen);
-                        }
-                        if (edit.getInsertText() != null) {
-                            doc.insertString(edit.offset, edit.insertText, null);
-                            int end = edit.offset + edit.insertText.length();
-                            for (int i = 0; i < positions.size(); i++) {
-                                DelegatedPosition pos = positions.get(i);
-                                int positionOffset = pos.originalOffset;
-                                if (edit.getOffset() <= positionOffset && end >= positionOffset) {
-                                    pos.delegate = doc.createPosition(positionOffset, pos.bias); // Position of the comment
-                                }
+                        // Apply edits in reverse order (to keep offsets accurate)
+                        for (Edit edit : edits) {
+                            if (edit.removeLen > 0) {
+                                doc.remove(edit.offset, edit.removeLen);
                             }
-                            if (edit.format) {
-                                @SuppressWarnings("deprecation") // For doc.getFormatter()
-                                final org.netbeans.editor.Formatter f = doc.getFormatter();
-                                try {
-                                    f.reformatLock();
-                                    f.reformat(doc, edit.offset, end);
-                                } finally {
-                                    f.reformatUnlock();
+                            if (edit.getInsertText() != null) {
+                                doc.insertString(edit.offset, edit.insertText, null);
+                                int end = edit.offset + edit.insertText.length();
+                                for (int i = 0; i < positions.size(); i++) {
+                                    DelegatedPosition pos = positions.get(i);
+                                    int positionOffset = pos.originalOffset;
+                                    if (edit.getOffset() <= positionOffset && end >= positionOffset) {
+                                        pos.delegate = doc.createPosition(positionOffset, pos.bias); // Position of the comment
+                                    }
+                                }
+                                if (edit.format) {
+                                    f.reformat(edit.offset, end);
                                 }
                             }
                         }
-                    }
 
-                    if (formatAll) {
-                        int firstOffset = edits.get(edits.size() - 1).offset;
-                        lastOffset = lastPos.getOffset();
-                        @SuppressWarnings("deprecation")
-                        final org.netbeans.editor.Formatter f = doc.getFormatter();
-                        try {
-                            f.reformatLock();
-                            f.reformat(doc, firstOffset, lastOffset);
-                        } finally {
-                            f.reformatUnlock();
+                        if (formatAll) {
+                            int firstOffset = edits.get(edits.size() - 1).offset;
+                            lastOffset = lastPos.getOffset();
+                            f.reformat(firstOffset, lastOffset);
                         }
+                    } catch (BadLocationException ble) {
+                        Exceptions.printStackTrace(ble);
                     }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
                 }
-            }
-        });
+            });
+        } finally {
+            f.unlock();
+        }
     }
     
     public OffsetRange getRange() {

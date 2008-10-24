@@ -59,6 +59,7 @@ import org.netbeans.editor.*;
 
 import org.netbeans.modules.editor.*;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
 * Fortran editor kit with appropriate document
@@ -94,7 +95,6 @@ public class FKit extends NbEditorKit {
     }
 
     /** Create the formatter appropriate for this kit */
-    @Override
     public Formatter createFormatter() {
         return new FFormatter(this.getClass());
     }
@@ -168,48 +168,43 @@ public class FKit extends NbEditorKit {
 		}
 
 		final BaseDocument doc = (BaseDocument)target.getDocument();
+                final Reformat formatter = Reformat.get(doc);
                 // Set hourglass cursor
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                
-                doc.runAtomic(new Runnable() {
-                    public void run() {
-                        try {
-                            Caret caret = target.getCaret();
-                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-                            int startPos;
-                            Position endPosition;
-                            if (Utilities.isSelectionShowing(caret)) {
-                                startPos = target.getSelectionStart();
-                                endPosition = doc.createPosition(target.getSelectionEnd());
-                            } else {
-                                startPos = 0;
-                                endPosition = doc.createPosition(doc.getLength());
-                            }
 
-                            int pos = startPos;
-                            Formatter formatter = doc.getFormatter();
-                            formatter.reformatLock();
+                formatter.lock();
+                try {
+                    doc.runAtomic(new Runnable() {
+                        public void run() {
                             try {
-                                while (pos < endPosition.getOffset()) {
-                                    int stopPos = endPosition.getOffset();
-                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                    pos = pos + reformattedLen;
+                                Caret caret = target.getCaret();
+                                int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                                int startPos;
+                                Position endPosition;
+                                if (Utilities.isSelectionShowing(caret)) {
+                                    startPos = target.getSelectionStart();
+                                    endPosition = doc.createPosition(target.getSelectionEnd());
+                                } else {
+                                    startPos = 0;
+                                    endPosition = doc.createPosition(doc.getLength());
                                 }
-                            } finally {
-                                formatter.reformatUnlock();
-                            }
 
-                            // Restore the line
-                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-                            if (pos >= 0) {
-                                caret.setDot(pos);
+                                formatter.reformat(startPos, endPosition.getOffset());
+
+                                // Restore the line
+                                int pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
+                                if (pos >= 0) {
+                                    caret.setDot(pos);
+                                }
+                            } catch (BadLocationException e) {
+                                //failed to format
                             }
-                        } catch (BadLocationException e) {
-                            //failed to format
                         }
-                    }
-                });
+                    });
+                } finally {
+                    formatter.unlock();
+                }
                 target.setCursor(origCursor);
 
 	    }

@@ -41,12 +41,16 @@
 
 package org.netbeans.modules.editor;
 
+import java.awt.Toolkit;
 import java.io.*;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.ext.ExtFormatter;
+import org.openide.ErrorManager;
 import org.openide.text.IndentEngine;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
 /**
  * Indent engine that delegates to formatter
@@ -165,8 +169,15 @@ public abstract class FormatterIndentEngine extends IndentEngine {
 
     public void setSpacesPerTab(int spacesPerTab) {
         if (spacesPerTab <= 0) {
-            NbEditorUtilities.invalidArgument("MSG_NegativeValue"); // NOI18N
-            return; // value unchanged
+            IllegalArgumentException iae = new IllegalArgumentException("Invalid argument"); //NOI18N
+            ErrorManager errMan = Lookup.getDefault().lookup(ErrorManager.class);
+
+            if (errMan != null) {
+                Toolkit.getDefaultToolkit().beep();
+                errMan.annotate(iae, ErrorManager.USER, iae.getMessage(), NbBundle.getMessage(FormatterIndentEngine.class, "MSG_NegativeValue"), null, null); //NOI18N
+            } else {
+                throw iae;
+            }
         }
 
         int old = getFormatter().getSpacesPerTab();

@@ -59,8 +59,6 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.GuardedDocument;
-import org.netbeans.editor.MarkBlockChain;
 import org.netbeans.lib.editor.util.swing.MutablePositionRegion;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
@@ -417,44 +415,6 @@ public final class TaskHandler {
                     indentRegions.add(IndentSpiPackageAccessor.get().createContextRegion(wholeDocRegion));
                 }
                 
-                // Filter out guarded regions
-                if (indentRegions.size() > 0 && doc instanceof GuardedDocument) {
-                    MutablePositionRegion region = IndentSpiPackageAccessor.get().positionRegion(indentRegions.get(0));
-                    int regionStartOffset = region.getStartOffset();
-                    GuardedDocument gdoc = (GuardedDocument)doc;
-//                    int gbStartOffset = guardedBlocks.adjustToBlockEnd(region.getEndOffset());
-//                    MarkBlockChain guardedBlocks = gdoc.getGuardedBlockChain();
-//                    if (guardedBlocks != null && guardedBlocks.getChain() != null) {
-//                        int gbStartOffset = guardedBlocks.adjustToNextBlockStart(indentRegions.getStartOffset());
-//                        int regionIndex = 0;
-//                        while (regionIndex < indentRegions.size()) { // indentRegions can be mutated dynamically
-//                            MutablePositionRegion region = IndentSpiPackageAccessor.get().positionRegion(indentRegions.get(regionIndex));
-//                            int gbStartOffset = guardedBlocks.adjustToNextBlockStart(region.getStartOffset());
-//                            int gbEndOffset = guardedBlocks.adjustToBlockEnd(region.getEndOffset());
-//
-//                            while (pos < endPosition.getOffset()) {
-//                                int stopPos = endPosition.getOffset();
-//                                if (gdoc != null) { // adjust to start of the next guarded block
-//                                    stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-//                                    if (stopPos == -1 || stopPos > endPosition.getOffset()) {
-//                                        stopPos = endPosition.getOffset();
-//                                    }
-//                                }
-//
-//                                if (pos < stopPos) {
-//                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-//                                    pos = pos + reformattedLen;
-//                                } else {
-//                                    pos++; //ensure to make progress
-//                                }
-//
-//                                if (gdoc != null) { // adjust to end of current block
-//                                    pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
-//                                }
-//                            }
-//                        }
-//                    }
-                }
             } catch (BadLocationException e) {
                 Exceptions.printStackTrace(e);
                 indentRegions = Collections.emptyList();
