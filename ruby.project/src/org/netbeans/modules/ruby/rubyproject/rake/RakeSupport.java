@@ -328,10 +328,10 @@ public final class RakeSupport {
             ExecutionService.logProcess(pb);
             Process process = pb.start();
 
-            stdout = readInputStream(process.getInputStream());
-            String stderr = readInputStream(process.getErrorStream());
-
             exitCode = process.waitFor();
+
+            stdout = readInputStream(process.getInputStream(), false);
+            String stderr = readInputStream(process.getErrorStream(), true);
 
             if (exitCode != 0) {
                 LOGGER.severe("rake process failed (workdir: " + pwd + "):\nstdout:\n\n" + stdout + // NOI18N
@@ -352,7 +352,7 @@ public final class RakeSupport {
         return stdout;
     }
 
-    private static String readInputStream(InputStream is) {
+    private static String readInputStream(final InputStream is, final boolean readingErrors) {
         StringBuilder sb = new StringBuilder();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
@@ -364,7 +364,7 @@ public final class RakeSupport {
                 if (line == null) {
                     break;
                 }
-                if (!line.contains("=")) { // not 'key=value' property
+                if (!readingErrors && !line.contains("=")) { // not 'key=value' property
                     continue;
                 }
                 sb.append(line);

@@ -1,5 +1,5 @@
 Name: Debug Commons
-Version: 0.9.1
+Version: 0.10.0
 License: MIT
 OSR: 5813
 Comment: The file lib/classic-debug.rb is based on the debug.rb file from Ruby project.

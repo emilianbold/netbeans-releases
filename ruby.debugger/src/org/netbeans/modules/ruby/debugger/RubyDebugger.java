@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -74,6 +75,8 @@ import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResul
  * to point to the Ruby debugging.
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(RubyDebugger.class.getName());
     
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
@@ -188,16 +191,16 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.setEnvironment(env);
         RubyDebuggerProxy proxy;
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
-        Util.finer("Using timeout: " + timeout + 's'); // NOI18N
+        LOGGER.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
         if (!platform.hasFastDebuggerInstalled()) {
-            Util.LOGGER.fine("Running classic(slow) debugger...");
+            LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
             String version = platform.getLatestAvailableValidRDebugIDEVersions();
             debugDesc.setRubyDebugIDEVersion(version);
-            Util.LOGGER.fine("Running fast debugger...");
+            LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
             
             if(descriptor.useInterpreter()) {

@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.debugger;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -53,6 +54,8 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
 
 public final class EditorUtil {
+
+    private static final Logger LOGGER = Logger.getLogger(EditorUtil.class.getName());
 
     /** For unit tests to be able to prevent editor pop-ups. */
     public static boolean showLines = true;
@@ -118,7 +121,7 @@ public final class EditorUtil {
         File file = new File(filePath);
         FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
         if (fileObject == null) {
-            Util.info("Cannot resolve \"" + filePath + '"');
+            LOGGER.info("Cannot resolve \"" + filePath + '"');
             return null;
         }
 
@@ -140,7 +143,7 @@ public final class EditorUtil {
                 result = dataObject.getCookie(LineCookie.class);
             }
         } catch (DataObjectNotFoundException e) {
-            Util.LOGGER.log(Level.FINE, "Cannot find DataObject for: " + fo, e.getMessage());
+            LOGGER.log(Level.FINE, "Cannot find DataObject for: " + fo, e.getMessage());
         }
         return result;
     }
