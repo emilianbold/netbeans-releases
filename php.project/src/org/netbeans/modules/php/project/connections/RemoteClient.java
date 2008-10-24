@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import java.io.File;
 import java.io.FileInputStream;
@@ -121,6 +120,10 @@ public class RemoteClient implements Cancellable {
             baseDir.append(additionalInitialSubdirectory);
         }
         baseRemoteDirectory = baseDir.toString().replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
+
+        assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
+        assert !baseRemoteDirectory.endsWith(TransferFile.SEPARATOR) : "base directory cannot end with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
+
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Remote client created with configuration: " + configuration + " and base remote directory: " + baseRemoteDirectory);
         }

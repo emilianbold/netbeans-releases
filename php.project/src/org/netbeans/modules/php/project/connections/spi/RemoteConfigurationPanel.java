@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.connections.spi;
 
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 
 /**
  * @author Tomas Mysik
@@ -50,4 +51,18 @@ public interface RemoteConfigurationPanel {
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
     JPanel getComponent();
+    void setEnabledFields(boolean enabled);
+    void read(ConfigManager.Configuration configuration);
+    void store(ConfigManager.Configuration configuration);
+    /**
+     * Check whether the configuration is valid, it means it contains no errors.
+     * @return <code>true</code> if the configuration contains no errors, <code>false</code> otherwise.
+     */
+    boolean isValidConfiguration();
+    /**
+     * Get the error messsage if the configuration is not valid.
+     * @return error messsage if the configuration is not valid, <code>null</code> otherwise.
+     * @see #isValid()
+     */
+    String getError();
 }
