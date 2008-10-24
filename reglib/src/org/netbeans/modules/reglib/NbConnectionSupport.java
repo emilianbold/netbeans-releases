@@ -80,9 +80,9 @@ public class NbConnectionSupport {
     }
         
     /**
-     * Returns a URL for JDK registration interfacing with the Sun Connection
+     * Returns a URL for product registration interfacing with the Sun Connection
      * registration relay service in this form:
-     *   <registration-url>/<registry_urn>?product=jdk&locale=<locale-lang>
+     *   <registration-url>/<registry_urn>?product=<product>&locale=<locale-lang>
      *
      * The <registration-url> can be overridden by an environment 
      * variable or a system property.
@@ -93,6 +93,9 @@ public class NbConnectionSupport {
      *    the URL
      * 3) Default production URL
      *
+     * @param registrationURN used as parameter in URL as key to match previously posted registration data
+     * @param product product id eg.: nb, nbgf, nbas, ... used as parameter in URL to select proper welcome
+     *        and thank you page
      */
     public static URL getRegistrationURL(String registrationURN, String product) {
         String url = System.getProperty("nb.registration.host");
