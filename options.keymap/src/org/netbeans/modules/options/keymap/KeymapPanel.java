@@ -59,6 +59,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDisplayer;
@@ -227,10 +228,12 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
     //controller methods
     void applyChanges() {
+        stopCurrentCellEditing();
         getModel().apply();
     }
 
     void cancel() {
+        stopCurrentCellEditing();
         if (keymapModel == null)
             return;
         keymapModel.cancel();
@@ -262,6 +265,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     }
 
     //controller method end
+
+    private void stopCurrentCellEditing() {
+        TableCellEditor cellEditor = actionsTable.getCellEditor(
+                actionsTable.getEditingRow(), actionsTable.getEditingColumn());
+        if (cellEditor != null)
+            cellEditor.stopCellEditing();
+    }
 
     /**
      * Adjust column widths
