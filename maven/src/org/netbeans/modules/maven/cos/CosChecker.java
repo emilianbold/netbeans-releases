@@ -70,6 +70,8 @@ import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.classpath.AbstractProjectClassPathImpl;
 import org.netbeans.modules.maven.classpath.RuntimeClassPathImpl;
 import org.netbeans.modules.maven.classpath.TestRuntimeClassPathImpl;
+import org.netbeans.modules.maven.configurations.M2ConfigProvider;
+import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.RunJarPanel;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ActionProvider;
@@ -303,8 +305,18 @@ public class CosChecker implements PrerequisitesChecker {
         if (isNewer(stamp, prjDir.getFileObject("nbactions.xml"))) { //NOI18N
             return true;
         }
-        //TODO what other files/folders to check
         // the nbactions.xml file belonging to active configuration?
+        M2ConfigProvider prov = rc.getProject().getLookup().lookup(M2ConfigProvider.class);
+        if (prov != null) {
+            M2Configuration m2c = prov.getActiveConfiguration();
+            if (m2c != null) {
+                String name = M2Configuration.getFileNameExt(m2c.getId());
+                if (isNewer(stamp, prjDir.getFileObject(name))) {
+                    return true;
+                }
+            }
+        }
+        //TODO what other files/folders to check?
         return false;
     }
 
