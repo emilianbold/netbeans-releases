@@ -799,6 +799,16 @@ public class JavaBraceCompletionUnitTest extends NbTestCase {
         );
     }
     
+    public void testQuotes148878() throws Exception {
+        Context ctx = new Context(new JavaKit(),
+                "if (c == '\\\\|')"
+        );
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals(
+                "if (c == '\\\\'|)"
+        );
+    }
+
     private static final class Context {
         
         private JEditorPane pane;
