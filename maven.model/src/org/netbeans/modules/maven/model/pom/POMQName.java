@@ -104,6 +104,11 @@ public enum POMQName {
     DESCRIPTION(createQName("description")), //NOI18N
     INCEPTIONYEAR(createQName("inceptionYear")), //NOI18N
 
+    TYPE(createQName("type")), //NOI18N
+    CLASSIFIER(createQName("classifier")), //NOI18N
+    SCOPE(createQName("scope")), //NOI18N
+    SYSTEMPATH(createQName("systemPath")), //NOI18N
+    OPTIONAL(createQName("optional")), //NOI18N
 
     ;
     

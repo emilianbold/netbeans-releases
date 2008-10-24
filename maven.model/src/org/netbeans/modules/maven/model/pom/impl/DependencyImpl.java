@@ -76,4 +76,54 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
         visitor.visit(this);
     }
 
+    public String getType() {
+        return getChildElementText(POMQName.TYPE.getQName());
+    }
+
+    public void setType(String type) {
+        setChildElementText(POMQName.TYPE.getQName().getLocalPart(), type,
+                POMQName.TYPE.getQName());
+    }
+
+    public String getClassifier() {
+        return getChildElementText(POMQName.CLASSIFIER.getQName());
+    }
+
+    public void setClassifier(String classifier) {
+        setChildElementText(POMQName.CLASSIFIER.getQName().getLocalPart(), classifier,
+                POMQName.CLASSIFIER.getQName());
+    }
+
+    public String getScope() {
+        return getChildElementText(POMQName.SCOPE.getQName());
+    }
+
+    public void setScope(String scope) {
+        setChildElementText(POMQName.SCOPE.getQName().getLocalPart(), scope,
+                POMQName.SCOPE.getQName());
+    }
+
+    public String getSystemPath() {
+        return getChildElementText(POMQName.SYSTEMPATH.getQName());
+    }
+
+    public void setSystemPath(String systemPath) {
+        setChildElementText(POMQName.SYSTEMPATH.getQName().getLocalPart(), systemPath,
+                POMQName.SYSTEMPATH.getQName());
+    }
+
+    public Boolean isOptional() {
+        String str = getChildElementText(POMQName.OPTIONAL.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return Boolean.FALSE;
+    }
+
+    public void setOptional(Boolean optional) {
+        setChildElementText(POMQName.OPTIONAL.getQName().getLocalPart(),
+                optional == null ? null : optional.toString(),
+                POMQName.OPTIONAL.getQName());
+    }
+
 }

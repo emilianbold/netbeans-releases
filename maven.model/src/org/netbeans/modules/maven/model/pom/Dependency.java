@@ -50,8 +50,48 @@ public interface Dependency extends VersionablePOMComponent {
     // child element properties
     public static final String EXCLUSION_PROPERTY = "exclusion"; // NOI18N
 
-    public List<Exclusion> getExclusions();
-    public void addExclusion(Exclusion exclusion);
-    public void removeExclusion(Exclusion exclusion);
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    List<Exclusion> getExclusions();
+    void addExclusion(Exclusion exclusion);
+    void removeExclusion(Exclusion exclusion);
+
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getType();
+    void setType(String type);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getClassifier();
+    void setClassifier(String classifier);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getScope();
+    void setScope(String scope);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getSystemPath();
+    void setSystemPath(String systemPath);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Boolean isOptional();
+    void setOptional(Boolean optional);
 
 }
