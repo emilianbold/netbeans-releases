@@ -267,10 +267,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     //controller method end
 
     private void stopCurrentCellEditing() {
-        TableCellEditor cellEditor = actionsTable.getCellEditor(
-                actionsTable.getEditingRow(), actionsTable.getEditingColumn());
-        if (cellEditor != null)
-            cellEditor.stopCellEditing();
+        int row = actionsTable.getEditingRow();
+        int col = actionsTable.getEditingColumn();
+        if (row != -1)
+            actionsTable.getCellEditor(row,col).stopCellEditing();
     }
 
     /**
