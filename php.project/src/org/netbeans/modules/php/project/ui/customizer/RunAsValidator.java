@@ -164,11 +164,6 @@ public final class RunAsValidator {
         return (retval != null) ? retval.toExternalForm() : ""; // NOI18N
     }
 
-    public static String composeUploadDirectoryHint(String host, String initialDirectory, String uploadDirectory) {
-        String path = initialDirectory + uploadDirectory;
-        return "ftp://" + host + path.replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
-    }
-
     public static final class InvalidUrlException extends Exception {
         private static final long serialVersionUID = 1234514014505423742L;
 

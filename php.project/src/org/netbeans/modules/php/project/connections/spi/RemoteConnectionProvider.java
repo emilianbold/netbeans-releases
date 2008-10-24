@@ -36,41 +36,30 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.project.connections;
 
-import org.netbeans.modules.php.project.connections.TransferFile;
-import java.io.File;
-import org.netbeans.junit.NbTestCase;
+package org.netbeans.modules.php.project.connections.spi;
+
+import java.util.Set;
+import org.netbeans.modules.php.project.connections.ConfigManager;
+import org.openide.windows.InputOutput;
 
 /**
+ * Provider for remote connection, e.g. FTP, SFTP etc.
  * @author Tomas Mysik
  */
-public class TransferFileTest extends NbTestCase {
-
-    public TransferFileTest(String name) {
-        super(name);
-    }
-
-    public void testTransferInfo() throws Exception {
-        TransferFile file = TransferFile.fromFile(new File("/a/b/c"), "/a");
-        assertEquals("c", file.getName());
-        assertEquals("b/c", file.getRelativePath());
-        assertEquals("b", file.getParentRelativePath());
-
-        TransferFile file2 = TransferFile.fromFile(new File("/a/b/c"), "/a/b");
-        assertFalse(file.equals(file2));
-
-        TransferFile file3 = TransferFile.fromFile(new File("/0/1/2/b/c"), "/0/1/2");
-        assertTrue(file.equals(file3));
-
-        file = TransferFile.fromFile(new File("/a/b"), "/a");
-        assertEquals("b", file.getName());
-        assertEquals("b", file.getRelativePath());
-        assertEquals(TransferFile.CWD, file.getParentRelativePath());
-
-        file = TransferFile.fromFile(new File("/a"), "/a");
-        assertEquals("a", file.getName());
-        assertSame(TransferFile.CWD, file.getRelativePath());
-        assertEquals(null, file.getParentRelativePath());
-    }
+public interface RemoteConnectionProvider {
+    /**
+     * Get the display name of the remote connection, e.g. <i>FTP</i>, <i>SFTP</i> etc.
+     * @return the display name.
+     */
+    String getDisplayName();
+    /**
+     * Get the list of property names which will be used (and stored).
+     * @return the list of property names.
+     */
+    Set<String> getPropertyNames();
+    RemoteConfiguration createRemoteConfiguration(String name, String displayName);
+    RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration);
+    RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io);
+    RemoteConfigurationPanel getRemoteConfigurationPanel(RemoteConfiguration remoteConfiguration);
 }

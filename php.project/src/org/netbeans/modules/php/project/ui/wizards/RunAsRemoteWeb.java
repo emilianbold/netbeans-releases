@@ -60,14 +60,13 @@ import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.SourcesFolderProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.UploadFiles;
 import org.netbeans.modules.php.project.ui.customizer.RunAsPanel;
-import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -78,7 +77,7 @@ import org.openide.util.NbBundle;
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5592669886554191271L;
     static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
-            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
+            new RemoteConfiguration.Empty("no-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
@@ -319,8 +318,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnectionHintLabel.setText(" "); // NOI18N
             return;
         }
-        remoteConnectionHintLabel.setText(RunAsValidator.composeUploadDirectoryHint(configuration.getHost(),
-                configuration.getInitialDirectory(), uploadDirectoryTextField.getText()));
+        remoteConnectionHintLabel.setText(configuration.getUrl(uploadDirectoryTextField.getText()));
     }
 
     /** This method is called from within the constructor to

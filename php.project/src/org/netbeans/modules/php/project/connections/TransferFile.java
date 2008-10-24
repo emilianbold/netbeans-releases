@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.connections;
 import java.io.File;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.net.ftp.FTPFile;
+import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -120,22 +121,22 @@ public final class TransferFile {
     }
 
     /**
-     * Implementation for {@link FTPFile}.
+     * Implementation for {@link RemoteFile}.
      */
-    public static TransferFile fromFtpFile(FTPFile ftpFile, String baseDirectory, String parentDirectory) {
-        assert ftpFile != null;
+    public static TransferFile fromRemoteFile(RemoteFile remoteFile, String baseDirectory, String parentDirectory) {
+        assert remoteFile != null;
         assert baseDirectory.startsWith(SEPARATOR) : "Base directory must start with '" + SEPARATOR + "' [" + baseDirectory + "]";
         assert parentDirectory.startsWith(SEPARATOR) : "Parent directory must start with '" + SEPARATOR + "' [" + parentDirectory + "]";
         assert !baseDirectory.endsWith(SEPARATOR) && !parentDirectory.endsWith(SEPARATOR) : "Both base and parent directory cannot end with '" + SEPARATOR + "' [" + baseDirectory + ", " + parentDirectory + "]";
         assert parentDirectory.startsWith(baseDirectory) : "Parent directory must be underneath base directory [" + parentDirectory + " => " + baseDirectory + "]";
 
-        String name = ftpFile.getName();
+        String name = remoteFile.getName();
         String absolutePath = parentDirectory + SEPARATOR + name; // NOI18N
         String relativePath = getRelativePath(absolutePath, baseDirectory);
         String parentRelativePath = getParentRelativePath(parentDirectory, baseDirectory);
-        boolean directory = ftpFile.isDirectory();
-        boolean file = ftpFile.isFile();
-        long size = directory ? 0L : ftpFile.getSize();
+        boolean directory = remoteFile.isDirectory();
+        boolean file = remoteFile.isFile();
+        long size = directory ? 0L : remoteFile.getSize();
 
         return new TransferFile(name, relativePath, parentRelativePath, size, directory, file);
     }

@@ -62,7 +62,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
-import org.netbeans.modules.php.project.connections.RemoteConnections.ConnectionType;
+import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.openide.util.ChangeSupport;
 
 /**
@@ -85,7 +85,7 @@ public class RemoteConnectionsPanel extends JPanel {
 
         setEnabledLoginCredentials();
         setEnabledRemoveButton();
-        for (ConnectionType connectionType : ConnectionType.values()) {
+        for (String connectionType : RemoteConnections.get().getRemoteConnections()) {
             typeComboBox.addItem(connectionType);
         }
 
@@ -581,11 +581,11 @@ public class RemoteConnectionsPanel extends JPanel {
         connectionTextField.setText(connectionName);
     }
 
-    public ConnectionType getType() {
-        return (ConnectionType) typeComboBox.getSelectedItem();
+    public String getType() {
+        return (String) typeComboBox.getSelectedItem();
     }
 
-    public void setType(ConnectionType connectionType) {
+    public void setType(String connectionType) {
         typeComboBox.setSelectedItem(connectionType);
     }
 

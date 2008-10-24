@@ -39,14 +39,17 @@
 
 package org.netbeans.modules.php.project.connections;
 
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -61,6 +64,8 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
+import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.DialogDescriptor;
@@ -77,27 +82,13 @@ import org.openide.util.TaskListener;
  */
 public final class RemoteConnections {
 
-    public static enum ConnectionType {
-        FTP ("LBL_Ftp"); // NOI18N
-
-        private final String label;
-
-        private ConnectionType(String labelKey) {
-            label = NbBundle.getMessage(RemoteConnections.class, labelKey);
-        }
-
-        public String getLabel() {
-            return label;
-        }
-    }
-
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
-
     private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
+    private static final RemoteConfiguration UNKNOWN__REMOTE_CONFIGURATION =
+            new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
 
-    private static final ConnectionType DEFAULT_TYPE = ConnectionType.FTP;
     private static final int DEFAULT_PORT = 21;
     private static final int MINIMUM_PORT = 0;
     private static final int MAXIMUM_PORT = 65535;
@@ -115,19 +106,6 @@ public final class RemoteConnections {
     static final String PATH_SEPARATOR = "pathSeparator"; // NOI18N
     static final String TIMEOUT = "timeout"; // NOI18N
     static final String PASSIVE_MODE = "passiveMode"; // NOI18N
-
-    static final String[] PROPERTIES = new String[] {
-        TYPE,
-        HOST,
-        PORT,
-        USER,
-        PASSWORD,
-        ANONYMOUS_LOGIN,
-        INITIAL_DIRECTORY,
-        PATH_SEPARATOR,
-        TIMEOUT,
-        PASSIVE_MODE,
-    };
 
     private final ConfigManager configManager;
     private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
@@ -248,6 +226,26 @@ public final class RemoteConnections {
         return changed;
     }
 
+    List<RemoteConnectionProvider> getConnectionProviders() {
+        // XXX
+        return Collections.<RemoteConnectionProvider>singletonList(FtpConnectionProvider.get());
+    }
+
+    public List<String> getRemoteConnections() {
+        // XXX
+        return Collections.singletonList(FtpConnectionProvider.get().getDisplayName());
+    }
+
+    private RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
+        for (RemoteConnectionProvider provider : getConnectionProviders()) {
+            RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg);
+            if (configuration != null) {
+                return configuration;
+            }
+        }
+        return null;
+    }
+
     /**
      * Get the ordered list of {@link RemoteConfiguration remote configurations}. The list is order according to configuration's display
      * name (locale-sensitive string comparison).
@@ -261,7 +259,12 @@ public final class RemoteConnections {
         // convert them to remote connections
         List<RemoteConfiguration> remoteConfigs = new ArrayList<RemoteConfiguration>(configs.size());
         for (Configuration cfg : configs) {
-            remoteConfigs.add(new RemoteConfiguration(cfg));
+            RemoteConfiguration configuration = getRemoteConfiguration(cfg);
+            if (configuration == null) {
+                // unknown configuration type => create config of unknown type
+                configuration = UNKNOWN__REMOTE_CONFIGURATION;
+            }
+            remoteConfigs.add(configuration);
         }
         return Collections.unmodifiableList(remoteConfigs);
     }
@@ -286,11 +289,13 @@ public final class RemoteConnections {
 
         Configuration selectedConfiguration = panel.getSelectedConfiguration();
         assert selectedConfiguration != null;
+        RemoteConfiguration remoteConfiguration = getRemoteConfiguration(selectedConfiguration);
+        assert remoteConfiguration != null : "Cannot find remote configuration for config manager configuration " + selectedConfiguration.getName();
 
         String configName = selectedConfiguration.getDisplayName();
         String progressTitle = NbBundle.getMessage(RemoteConnections.class, "MSG_TestingConnection", configName);
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle);
-        RemoteClient client = new RemoteClient(new RemoteConfiguration(selectedConfiguration));
+        RemoteClient client = new RemoteClient(remoteConfiguration);
         RemoteException exception = null;
         try {
             progressHandle.start();
@@ -406,7 +411,7 @@ public final class RemoteConnections {
             configManager.markAsCurrentConfiguration(cfg.getName());
 
             panel.setConnectionName(cfg.getDisplayName());
-            panel.setType(resolveType(cfg.getValue(TYPE)));
+            panel.setType(cfg.getValue(TYPE));
             panel.setHostName(cfg.getValue(HOST));
             panel.setPort(cfg.getValue(PORT));
             panel.setUserName(cfg.getValue(USER));
@@ -560,7 +565,7 @@ public final class RemoteConnections {
             // no config selected
             return;
         }
-        cfg.putValue(TYPE, panel.getType().name());
+        cfg.putValue(TYPE, panel.getType());
         cfg.putValue(HOST, panel.getHostName());
         cfg.putValue(PORT, panel.getPort());
         cfg.putValue(USER, panel.getUserName());
@@ -598,19 +603,6 @@ public final class RemoteConnections {
         }
     }
 
-    private ConnectionType resolveType(String type) {
-        if (type == null) {
-            return DEFAULT_TYPE;
-        }
-        ConnectionType connectionType = null;
-        try {
-            connectionType = ConnectionType.valueOf(type);
-        } catch (IllegalArgumentException iae) {
-            connectionType = DEFAULT_TYPE;
-        }
-        return connectionType;
-    }
-
     private boolean resolveBoolean(String value) {
         return Boolean.valueOf(value);
     }
@@ -624,7 +616,11 @@ public final class RemoteConnections {
         }
 
         public String[] getConfigProperties() {
-            return PROPERTIES;
+            Set<String> properties = new HashSet<String>();
+            for (RemoteConnectionProvider provider : getConnectionProviders()) {
+                properties.addAll(provider.getPropertyNames());
+            }
+            return properties.toArray(new String[properties.size()]);
         }
 
         public Map<String, Map<String, String>> getConfigs() {

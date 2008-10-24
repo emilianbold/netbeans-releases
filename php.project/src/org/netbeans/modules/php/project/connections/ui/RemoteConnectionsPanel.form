@@ -147,7 +147,7 @@
               <Group type="102" attributes="0">
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
-                      <Component id="separator" alignment="0" pref="434" max="32767" attributes="0"/>
+                      <Component id="separator" alignment="0" pref="422" max="32767" attributes="0"/>
                       <Group type="102" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
                               <Component id="connectionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -159,14 +159,14 @@
                           </Group>
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="typeComboBox" pref="309" max="32767" attributes="0"/>
-                              <Component id="connectionTextField" alignment="0" pref="309" max="32767" attributes="0"/>
+                              <Component id="typeComboBox" pref="297" max="32767" attributes="0"/>
+                              <Component id="connectionTextField" alignment="0" pref="297" max="32767" attributes="0"/>
                               <Group type="102" alignment="1" attributes="0">
                                   <Group type="103" groupAlignment="0" attributes="0">
-                                      <Component id="userTextField" alignment="0" pref="158" max="32767" attributes="2"/>
-                                      <Component id="hostTextField" alignment="0" pref="158" max="32767" attributes="2"/>
-                                      <Component id="passwordTextField" alignment="0" pref="158" max="32767" attributes="0"/>
-                                      <Component id="initialDirectoryTextField" alignment="0" pref="158" max="32767" attributes="2"/>
+                                      <Component id="userTextField" alignment="0" pref="146" max="32767" attributes="2"/>
+                                      <Component id="hostTextField" alignment="0" pref="146" max="32767" attributes="2"/>
+                                      <Component id="passwordTextField" alignment="0" pref="146" max="32767" attributes="0"/>
+                                      <Component id="initialDirectoryTextField" alignment="0" pref="146" max="32767" attributes="2"/>
                                   </Group>
                                   <EmptySpace min="-2" max="-2" attributes="0"/>
                                   <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -183,10 +183,7 @@
                                       </Group>
                                   </Group>
                               </Group>
-                              <Group type="102" alignment="0" attributes="0">
-                                  <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
-                                  <EmptySpace max="-2" attributes="0"/>
-                              </Group>
+                              <Component id="passwordLabelInfo" alignment="0" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <Component id="warningLabel" alignment="0" min="-2" max="-2" attributes="0"/>

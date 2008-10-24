@@ -62,7 +62,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.connections.RemoteConfiguration;
+import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
@@ -80,9 +80,9 @@ import org.openide.util.NbBundle;
 public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5593346955414591271L;
     private static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
-            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
+            new RemoteConfiguration.Empty("no-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration")); // NOI18N
     private static final RemoteConfiguration MISSING_REMOTE_CONFIGURATION =
-            new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration"));
+            new RemoteConfiguration.Empty("missing-config", NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_MissingRemoteConfiguration")); // NOI18N
     private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
 
     private final PhpProjectProperties properties;
@@ -307,8 +307,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnectionHintLabel.setText(" "); // NOI18N
             return;
         }
-        remoteConnectionHintLabel.setText(RunAsValidator.composeUploadDirectoryHint(configuration.getHost(),
-                configuration.getInitialDirectory(), uploadDirectoryTextField.getText()));
+        remoteConnectionHintLabel.setText(configuration.getUrl(uploadDirectoryTextField.getText()));
     }
 
     /** This method is called from within the constructor to
