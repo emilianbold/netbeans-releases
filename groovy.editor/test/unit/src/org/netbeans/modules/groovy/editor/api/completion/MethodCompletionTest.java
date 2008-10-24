@@ -160,9 +160,9 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionGroovyThis1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods14.groovy", "        this.get^", false);
     }
-
-    public void testCompletionIssue149963() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Methods14.groovy", "        this.get^", false);
+    
+    public void testCompletionGroovySuper1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods15.groovy", "        super.^", false);
     }
 }
 

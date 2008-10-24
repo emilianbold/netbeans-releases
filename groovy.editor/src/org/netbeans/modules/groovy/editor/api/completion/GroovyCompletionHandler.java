@@ -1541,8 +1541,8 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
 
 
-            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.WHITESPACE
-                    && t.id() != GroovyTokenId.NLS) {
+            if (t.id() != GroovyTokenId.DOT && t.id() != GroovyTokenId.OPTIONAL_DOT
+                    && t.id() != GroovyTokenId.WHITESPACE && t.id() != GroovyTokenId.NLS) {
                 // is it prefix
                 if (t.id() != GroovyTokenId.IDENTIFIER) {
                     return null;
@@ -1554,7 +1554,7 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
 
         // now we should be on dot or in whitespace or NLS after the dot
         boolean remainingTokens = true;
-        if (ts.token().id() != GroovyTokenId.DOT) {
+        if (ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT) {
 
             // travel back on the token string till the token is neither a
             // WHITESPACE nor NLS
@@ -1566,7 +1566,8 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        if (ts.token().id() != GroovyTokenId.DOT || !remainingTokens) {
+        if ((ts.token().id() != GroovyTokenId.DOT && ts.token().id() != GroovyTokenId.OPTIONAL_DOT)
+                || !remainingTokens) {
             // no astpath
             return null;
         }
@@ -2165,15 +2166,14 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             VariableExpression variable = (VariableExpression) dotCompletionContext.getAstPath().leaf();
             if ("this".equals(variable.getName())) { // NOI18N
                 request.declaringClass = getSurroundingClassNode(request);
-                request.completingThis = true;
+                request.completionType = CompletionType.THIS;
                 return request.declaringClass;
             }
-// FIXME this does not work invetsigate in path there is something like super -> this -> this
-//            if ("super".equals(variable.getName())) { // NOI18N
-//                request.declaringClass = getSurroundingClassNode(request);
-//                request.completingSuper = true;
-//                return request.declaringClass;
-//            }
+            if ("super".equals(variable.getName())) { // NOI18N
+                request.declaringClass = getSurroundingClassNode(request);
+                request.completionType = CompletionType.SUPER;
+                return request.declaringClass;
+            }
         }
 
         if (dotCompletionContext.getAstPath().leaf() instanceof Expression) {
@@ -2432,52 +2432,23 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             ClassNode node, ClassType type) {
 
         Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-        ClassNode typeNode = node;
+        ClassNode typeNode = typeNode = loadDefinition(request, node, type);
 
-        boolean groovyClass = false;
+        fillSuggestions(GroovyElementHandler.forCompilationInfo(request.info)
+                .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS), result);
 
-        // optimized - don't use index when completing this
-        if (!(type == ClassType.CLASS && request.isCompletingThis())) {
-            // FIXME index is broken when invoked on start
-            GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
-
-            if (index == null) {
-                return Collections.emptyMap();
+        String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
+        for (int i = 0; i < typeParameters.length; i++) {
+            GenericsType genType = typeNode.getGenericsTypes()[i];
+            if (genType.getUpperBounds() != null) {
+                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
+            } else {
+                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getName());
             }
-            Set<IndexedClass> classes = index.getClasses(typeNode.getName(), NameKind.EXACT_NAME, true, false, false);
-
-
-            if (!classes.isEmpty()) {
-                ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
-                if (astNode instanceof ClassNode) {
-                    typeNode = (ClassNode) astNode;
-                    groovyClass = true;
-                }
-
-                fillSuggestions(GroovyElementHandler.forCompilationInfo(request.info)
-                        .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS), result);
-            }
-        } else {
-            groovyClass = true;
-            fillSuggestions(GroovyElementHandler.forCompilationInfo(request.info)
-                    .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS), result);
         }
 
-        // optimized - if it is groovy class don't ask java index
-        if (!groovyClass) {
-            String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
-            for (int i = 0; i < typeParameters.length; i++) {
-                GenericsType genType = typeNode.getGenericsTypes()[i];
-                if (genType.getUpperBounds() != null) {
-                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
-                } else {
-                    typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getName());
-                }
-            }
-
-            fillSuggestions(JavaElementHandler.forCompilationInfo(request.info)
-                    .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS), result);
-        }
+        fillSuggestions(JavaElementHandler.forCompilationInfo(request.info)
+                .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS), result);
 
         // FIXME aggregate this, but use as last
         fillSuggestions(MetaElementHandler.forCompilationInfo(request.info)
@@ -2502,6 +2473,43 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
                 result.put(entry.getKey(), entry.getValue());
             }
         }
+    }
+
+    private static ClassNode loadDefinition(CompletionRequest request, ClassNode node, ClassType type) {
+
+        if (request.getCompletionType() == CompletionType.THIS && type == ClassType.CLASS) {
+            return node;
+        }
+
+        ClassNode superNode = null;
+        String name = node.getName();
+
+        if (request.getCompletionType() == CompletionType.SUPER && type == ClassType.CLASS) {
+            superNode = node.getSuperClass();
+            if (superNode != null) {
+                name = superNode.getName();
+            } else {
+                return new ClassNode("java.lang.Object", ClassNode.ACC_PUBLIC, null);
+            }
+        }
+
+        // FIXME index is broken when invoked on start
+        GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
+
+        if (index == null) {
+            return superNode != null ? superNode : node;
+        }
+
+        Set<IndexedClass> classes = index.getClasses(name, NameKind.EXACT_NAME, true, false, false);
+
+        if (!classes.isEmpty()) {
+            ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
+            if (astNode instanceof ClassNode) {
+                return (ClassNode) astNode;
+            }
+        }
+
+        return superNode != null ? superNode : node;
     }
 
     /**
@@ -3027,21 +3035,24 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         ClassNode declaringClass;
         DotCompletionContext dotContext;
 
-        boolean completingThis;
-
-        boolean completingSuper;
+        CompletionType completionType = CompletionType.OBJECT;
 
         public boolean isBehindDot() {
             return dotContext != null;
         }
 
-        public boolean isCompletingThis() {
-            return completingThis;
+        public CompletionType getCompletionType() {
+            return completionType;
         }
 
-        public boolean isCompletingSuper() {
-            return completingSuper;
-        }
+    }
+
+    private static enum CompletionType {
+        OBJECT,
+
+        THIS,
+
+        SUPER
     }
 
     private static class TypeHolder {
