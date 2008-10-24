@@ -105,13 +105,13 @@ made subject to such option by the copyright holder.
 						<sp:MustSupportRefEncryptedKey/>
 					</wsp:Policy>
 				</sp:Wss11>
-				<sp:Trust10 xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+				<sp:Trust13 xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
 					<wsp:Policy>
 						<sp:MustSupportIssuedTokens/>
 						<sp:RequireClientEntropy/>
 						<sp:RequireServerEntropy/>
 					</wsp:Policy>
-				</sp:Trust10>
+				</sp:Trust13>
 
                 <sc:ValidatorConfiguration xmlns:sc="http://schemas.sun.com/2006/03/wss/server">
                 </sc:ValidatorConfiguration>
