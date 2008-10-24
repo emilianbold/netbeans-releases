@@ -74,6 +74,8 @@ public final class GroovyElementHandler {
         return new GroovyElementHandler(info);
     }
 
+    // FIXME ideally there should be something like nice CompletionRequest once public and stable
+    // then this class could implement some common interface
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
             String prefix, int anchor, boolean emphasise) {
 

@@ -116,6 +116,8 @@ import org.netbeans.modules.groovy.editor.api.elements.AstMethodElement;
 import org.netbeans.modules.groovy.editor.api.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler;
+import org.netbeans.modules.groovy.editor.completion.CompleteElementHandler.CompletionType;
 import org.netbeans.modules.groovy.editor.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.completion.GroovyElementHandler;
 import org.netbeans.modules.groovy.editor.completion.JavaElementHandler;
@@ -2420,96 +2422,12 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        Map<MethodSignature, ? extends CompletionItem> result = completeMethods(
-                request, declaringClass, ClassType.CLASS);
+        Map<MethodSignature, ? extends CompletionItem> result = CompleteElementHandler
+                .forCompilationInfo(request.info)
+                    .getMethods(request.getCompletionType(), declaringClass, ClassType.CLASS, request.prefix, anchor);
         proposals.addAll(result.values());
 
         return true;
-    }
-
-    // FIXME configure acess levels
-    private Map<MethodSignature, ? extends CompletionItem> completeMethods(CompletionRequest request,
-            ClassNode node, ClassType type) {
-
-        Map<MethodSignature, CompletionItem> result = new HashMap<MethodSignature, CompletionItem>();
-        ClassNode typeNode = typeNode = loadDefinition(request, node, type);
-
-        fillSuggestions(GroovyElementHandler.forCompilationInfo(request.info)
-                .getMethods(typeNode.getName(), request.prefix, anchor, type == ClassType.CLASS), result);
-
-        String[] typeParameters = new String[typeNode.isUsingGenerics() && typeNode.getGenericsTypes() != null ? typeNode.getGenericsTypes().length : 0];
-        for (int i = 0; i < typeParameters.length; i++) {
-            GenericsType genType = typeNode.getGenericsTypes()[i];
-            if (genType.getUpperBounds() != null) {
-                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getUpperBounds()[0].getName());
-            } else {
-                typeParameters[i] = org.netbeans.modules.groovy.editor.java.Utilities.translateClassLoaderTypeName(genType.getName());
-            }
-        }
-
-        fillSuggestions(JavaElementHandler.forCompilationInfo(request.info)
-                .getMethods(typeNode.getName(), request.prefix, anchor, typeParameters, type == ClassType.CLASS), result);
-
-        // FIXME aggregate this, but use as last
-        fillSuggestions(MetaElementHandler.forCompilationInfo(request.info)
-                .getMethods(typeNode.getName(), request.prefix, anchor), result);
-
-        if (typeNode.getSuperClass() != null) {
-            fillSuggestions(completeMethods(request, typeNode.getSuperClass(), ClassType.SUPERCLASS), result);
-        } else if (type == ClassType.CLASS) {
-            fillSuggestions(JavaElementHandler.forCompilationInfo(request.info)
-                    .getMethods("java.lang.Object", request.prefix, anchor, new String[]{}, false), result); // NOI18N
-        }
-
-        for (ClassNode inter : typeNode.getInterfaces()) {
-            fillSuggestions(completeMethods(request, inter, ClassType.SUPERINTERFACE), result);
-        }
-        return result;
-    }
-
-    private static <T> void fillSuggestions(Map<T, ? extends CompletionItem> input, Map<T, ? super CompletionItem> result) {
-        for (Map.Entry<T, ? extends CompletionItem> entry : input.entrySet()) {
-            if (!result.containsKey(entry.getKey())) {
-                result.put(entry.getKey(), entry.getValue());
-            }
-        }
-    }
-
-    private static ClassNode loadDefinition(CompletionRequest request, ClassNode node, ClassType type) {
-
-        if (request.getCompletionType() == CompletionType.THIS && type == ClassType.CLASS) {
-            return node;
-        }
-
-        ClassNode superNode = null;
-        String name = node.getName();
-
-        if (request.getCompletionType() == CompletionType.SUPER && type == ClassType.CLASS) {
-            superNode = node.getSuperClass();
-            if (superNode != null) {
-                name = superNode.getName();
-            } else {
-                return new ClassNode("java.lang.Object", ClassNode.ACC_PUBLIC, null);
-            }
-        }
-
-        // FIXME index is broken when invoked on start
-        GroovyIndex index = new GroovyIndex(request.info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
-
-        if (index == null) {
-            return superNode != null ? superNode : node;
-        }
-
-        Set<IndexedClass> classes = index.getClasses(name, NameKind.EXACT_NAME, true, false, false);
-
-        if (!classes.isEmpty()) {
-            ASTNode astNode = AstUtilities.getForeignNode(classes.iterator().next());
-            if (astNode instanceof ClassNode) {
-                return (ClassNode) astNode;
-            }
-        }
-
-        return superNode != null ? superNode : node;
     }
 
     /**
@@ -3045,14 +2963,6 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
             return completionType;
         }
 
-    }
-
-    private static enum CompletionType {
-        OBJECT,
-
-        THIS,
-
-        SUPER
     }
 
     private static class TypeHolder {
