@@ -84,6 +84,8 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
      @deprecated Use getBasicHeight instead. */
     @Deprecated
     public static final int BASIC_HEIGHT = 34;
+
+    static final Logger LOG = Logger.getLogger(Toolbar.class.getName());
     
     /** 5 pixels is tolerance of toolbar height so toolbar can be high (BASIC_HEIGHT + HEIGHT_TOLERANCE)
         but it will be set to BASIC_HEIGHT high. */
@@ -190,7 +192,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
             try {
                 synthIconClass = Class.forName("sun.swing.plaf.synth.SynthIcon");
             } catch (ClassNotFoundException exc) {
-                Logger.getLogger(Toolbar.class.getName()).log(Level.INFO, null, exc);
+                LOG.log(Level.INFO, null, exc);
             }
         }
         return (synthIconClass != null);
@@ -286,7 +288,7 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                                                                        backingFolder.delete();
                                                                    }
                                                                    catch (java.io.IOException e) {
-                                                                       Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING,
+                                                                       LOG.log(Level.WARNING,
                                                                                          null,
                                                                                          e);
                                                                    }
@@ -1117,10 +1119,10 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                     }
                 }
                 catch (java.io.IOException ex) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, ex);
+                    LOG.log(Level.WARNING, null, ex);
                 }
                 catch (java.lang.ClassNotFoundException ex) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, ex);
+                    LOG.log(Level.WARNING, null, ex);
                 }
                 finally {
                     cookiesToObjects.clear();
@@ -1255,31 +1257,31 @@ public class Toolbar extends JToolBar /*implemented by patchsuperclass MouseInpu
                 try {
                     m = synthIconClass.getMethod("getIconWidth",Icon.class, SynthContext.class);
                 } catch (NoSuchMethodException exc) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                 }
                 int width = 0;
                 //width = SynthIcon.getIconWidth(icon, context);
                 try {
                     width = (Integer) m.invoke(null, new Object [] {icon, context});
                 } catch (IllegalAccessException exc) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                 } catch (InvocationTargetException exc) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                 }
                 try {
                     m = synthIconClass.getMethod("paintIcon",Icon.class,SynthContext.class,                            
                     Graphics.class,Integer.TYPE,Integer.TYPE,Integer.TYPE,Integer.TYPE);
                 } catch (NoSuchMethodException exc) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                 }
                 //SynthIcon.paintIcon(icon, context, g, 0, 0, width, height);
                 try {
                     m.invoke(null, new Object [] {icon,context,g,new Integer(0),new Integer(-1),
                     new Integer(width),new Integer(height)});
                 } catch (IllegalAccessException exc) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                 } catch (InvocationTargetException exc) {
-                    Logger.getLogger(Toolbar.class.getName()).log(Level.WARNING, null, exc);
+                    LOG.log(Level.WARNING, null, exc);
                 }                    
             } else {
                 Dimension size = this.getSize();
