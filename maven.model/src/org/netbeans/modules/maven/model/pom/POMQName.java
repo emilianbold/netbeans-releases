@@ -87,8 +87,11 @@ public enum POMQName {
     EXTENSION(createQName("extension")), // NOI18N
     LICENSE(createQName("license")), // NOI18N
     MAILINGLIST(createQName("mailingList")), // NOI18N
-    MAILINGLISTS(createQName("mailingLists")), // NOI18N
     DEVELOPER(createQName("developer")), // NOI18N
+
+    MAILINGLISTS(createQName("mailingLists")), // NOI18N
+    DEPENDENCIES(createQName("dependencies")), // NOI18N
+
 
     ID(createQName("id")), //NOI18N
     GROUPID(createQName("groupId")), //NOI18N

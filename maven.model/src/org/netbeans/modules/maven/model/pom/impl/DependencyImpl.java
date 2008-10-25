@@ -60,7 +60,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     // attributes
 
     // child elements
-    public List<Exclusion> getExclusions() {
+    public java.util.List<Exclusion> getExclusions() {
         return getChildren(Exclusion.class);
     }
 
@@ -125,5 +125,16 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
                 optional == null ? null : optional.toString(),
                 POMQName.OPTIONAL.getQName());
     }
+
+    public static class List extends ListImpl<Dependency> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.DEPENDENCY, Dependency.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.DEPENDENCIES));
+        }
+    }
+
 
 }

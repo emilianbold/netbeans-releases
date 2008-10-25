@@ -238,15 +238,31 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public List<Dependency> getDependencies() {
-        return getChildren(Dependency.class);
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addDependency(Dependency build) {
-        appendChild(DEPENDENCY_PROPERTY, build);
+    public void addDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs == null) {
+            setChild(DependencyImpl.List.class,
+                    POMQName.DEPENDENCIES.getQName().getLocalPart(),
+                    getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(DependencyImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(dep);
     }
 
-    public void removeDependency(Dependency build) {
-        removeChild(DEPENDENCY_PROPERTY, build);
+    public void removeDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(dep);
+        }
     }
 
     public Reporting getReporting() {

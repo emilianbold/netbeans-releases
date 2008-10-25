@@ -71,8 +71,6 @@ public class MailingListImpl extends POMComponentImpl implements MailingList {
         public List(POMModel model) {
             this(model, createElementNS(model, POMQName.MAILINGLISTS));
         }
-
-
     }
 
 }

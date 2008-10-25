@@ -167,8 +167,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCY)) {
-            created = new DependencyImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DEPENDENCIES)) {
+            created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
@@ -482,8 +482,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(DependencyManagement context) {
-        if (isElementQName(POMQName.DEPENDENCY)) {
-            created = new DependencyImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DEPENDENCIES)) {
+            created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
@@ -546,6 +546,10 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     public void visit(ModelList context) {
         if (isElementQName(POMQName.MAILINGLIST) && context.getListClass().equals(MailingList.class)) {
             created = new MailingListImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.DEPENDENCY) && context.getListClass().equals(Dependency.class)) {
+            created = new DependencyImpl(context.getModel(), element);
             return;
         }
     }

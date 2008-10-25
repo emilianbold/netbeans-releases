@@ -59,17 +59,32 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
 
     // attributes
 
-    // child elements
-    public List<Dependency> getDependencys() {
-        return getChildren(Dependency.class);
+    public List<Dependency> getDependencies() {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addDependency(Dependency dependency) {
-        appendChild(DEPENDENCY_PROPERTY, dependency);
+    public void addDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs == null) {
+            setChild(DependencyImpl.List.class,
+                    POMQName.DEPENDENCIES.getQName().getLocalPart(),
+                    getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(DependencyImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(dep);
     }
 
-    public void removeDependency(Dependency dependency) {
-        removeChild(DEPENDENCY_PROPERTY, dependency);
+    public void removeDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(dep);
+        }
     }
 
     public void accept(POMComponentVisitor visitor) {

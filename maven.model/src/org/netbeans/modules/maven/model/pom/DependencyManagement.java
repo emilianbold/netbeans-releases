@@ -50,7 +50,7 @@ public interface DependencyManagement extends POMComponent {
     // child element properties
     public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
 
-    public List<Dependency> getDependencys();
+    public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
 

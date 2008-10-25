@@ -184,6 +184,10 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
     public Dependency createDependency() {
         return new DependencyImpl(model);
     }
+    
+    public DependencyImpl.List createDependencyList() {
+        return new DependencyImpl.List(model);
+    }
 
     public Exclusion createExclusion() {
         return new ExclusionImpl(model);
