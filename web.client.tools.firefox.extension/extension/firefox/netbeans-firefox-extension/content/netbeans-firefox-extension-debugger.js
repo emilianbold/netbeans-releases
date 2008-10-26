@@ -2477,7 +2477,7 @@
             for( var name in jsvalue )
             {
                 if ( CONSTANTS_FILTER.test(name) ) {
-                    if ( features.showConstants )
+                    if ( !features.showConstants )
                         continue;
                 }
                 try {
