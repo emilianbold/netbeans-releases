@@ -45,7 +45,13 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Scm extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Scm">
+//    <xs:all>
+//      <xs:element name="connection" minOccurs="0" type="xs:string">
+//      <xs:element name="developerConnection" minOccurs="0" type="xs:string">
+//      <xs:element name="tag" minOccurs="0" type="xs:string" default="HEAD">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

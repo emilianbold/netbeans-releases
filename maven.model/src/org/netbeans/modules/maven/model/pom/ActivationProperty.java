@@ -45,7 +45,11 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface ActivationProperty extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="ActivationProperty">
+//    <xs:all>
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="value" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

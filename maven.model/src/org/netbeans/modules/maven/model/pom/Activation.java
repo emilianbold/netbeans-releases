@@ -45,12 +45,17 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Activation extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String ACTIVATIONOS_PROPERTY = "activationOS"; // NOI18N
-    public static final String ACTIVATIONPROPERTY_PROPERTY = "activationProperty"; // NOI18N
-    public static final String ACTIVATIONFILE_PROPERTY = "activationFile"; // NOI18N
-    public static final String ACTIVATIONCUSTOM_PROPERTY = "activationCustom"; // NOI18N
+//  <!--xs:complexType name="Activation">
+//    <xs:all>
+//      <xs:element name="activeByDefault" minOccurs="0" type="xs:boolean" default="false">
+//      <xs:element name="jdk" minOccurs="0" type="xs:string">
+//      <xs:element name="os" minOccurs="0" type="ActivationOS">
+//      <xs:element name="property" minOccurs="0" type="ActivationProperty">
+//      <xs:element name="file" minOccurs="0" type="ActivationFile">
+//      <xs:element name="custom" minOccurs="0" type="ActivationCustom">
+//    </xs:all>
+//  </xs:complexType-->
+
 
     public ActivationOS getActivationOS();
     public void setActivationOS(ActivationOS activationOS);

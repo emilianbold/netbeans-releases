@@ -45,7 +45,12 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface ActivationCustom extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="ActivationCustom">
+//    <xs:all>
+//      <xs:element name="configuration" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//      <xs:element name="type" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

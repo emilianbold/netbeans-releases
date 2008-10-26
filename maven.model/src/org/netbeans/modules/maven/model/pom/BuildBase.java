@@ -46,12 +46,22 @@ import java.util.*;
  */
 public interface BuildBase extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String RESOURCE_PROPERTY = "resource"; // NOI18N
-    public static final String TESTRESOURCE_PROPERTY = "testResource"; // NOI18N
-    public static final String PLUGINMANAGEMENT_PROPERTY = "pluginManagement"; // NOI18N
-    public static final String PLUGIN_PROPERTY = "plugin"; // NOI18N
+//  <!--xs:complexType name="BuildBase">
+//    <xs:all>
+//      <xs:element name="defaultGoal" minOccurs="0" type="xs:string">
+//      <xs:element name="resources" minOccurs="0">
+//            <xs:element name="resource" minOccurs="0" maxOccurs="unbounded" type="Resource"/>
+//      <xs:element name="testResources" minOccurs="0">
+//            <xs:element name="testResource" minOccurs="0" maxOccurs="unbounded" type="Resource"/>
+//      <xs:element name="directory" minOccurs="0" type="xs:string">
+//      <xs:element name="finalName" minOccurs="0" type="xs:string">
+//      <xs:element name="filters" minOccurs="0">
+//            <xs:element name="filter" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//      <xs:element name="pluginManagement" minOccurs="0" type="PluginManagement">
+//      <xs:element name="plugins" minOccurs="0">
+//            <xs:element name="plugin" minOccurs="0" maxOccurs="unbounded" type="Plugin"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public List<Resource> getResources();
     public void addResource(Resource resource);

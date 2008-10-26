@@ -45,7 +45,20 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Developer extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Developer">
+//    <xs:all>
+//      <xs:element name="id" minOccurs="0" type="xs:string">
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="email" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//      <xs:element name="organization" minOccurs="0" type="xs:string">
+//      <xs:element name="organizationUrl" minOccurs="0" type="xs:string">
+//      <xs:element name="roles" minOccurs="0">
+//            <xs:element name="role" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//      <xs:element name="timezone" minOccurs="0" type="xs:string">
+//      <xs:element name="properties" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//    </xs:all>
+//  </xs:complexType-->
 
 }

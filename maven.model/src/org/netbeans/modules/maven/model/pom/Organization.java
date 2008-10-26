@@ -45,7 +45,11 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Organization extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Organization">
+//    <xs:all>
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

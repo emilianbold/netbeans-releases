@@ -45,8 +45,13 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Exclusion extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Exclusion">
+//    <xs:all>
+//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
+//      <xs:element name="groupId" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
+
     /**
      * POM RELATED PROPERTY
      * @return

@@ -63,8 +63,8 @@ public enum POMQName {
     NOTIFIER(createQName("notifier")), // NOI18N
     REPOSITORY(createQName("repository")), // NOI18N
     PLUGINREPOSITORY(createQName("pluginRepository")), // NOI18N
-    RELEASE(createQName("release")), // NOI18N
-    SNAPSHOT(createQName("snapshot")), // NOI18N
+    RELEASES(createQName("releases")), // NOI18N
+    SNAPSHOTS(createQName("snapshots")), // NOI18N
     PROFILE(createQName("profile")), // NOI18N
     BUILDBASE(createQName("buildBase")), // NOI18N
     PLUGIN(createQName("plugin")), // NOI18N

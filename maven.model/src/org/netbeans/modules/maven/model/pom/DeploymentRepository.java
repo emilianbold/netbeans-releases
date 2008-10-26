@@ -45,7 +45,14 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface DeploymentRepository extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="DeploymentRepository">
+//    <xs:all>
+//      <xs:element name="uniqueVersion" minOccurs="0" type="xs:boolean" default="true">
+//      <xs:element name="id" minOccurs="0" type="xs:string">
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//      <xs:element name="layout" minOccurs="0" type="xs:string" default="default">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

@@ -46,17 +46,28 @@ import java.util.*;
  */
 public interface Profile extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String ACTIVATION_PROPERTY = "activation"; // NOI18N
-    public static final String BUILDBASE_PROPERTY = "buildBase"; // NOI18N
-    public static final String MODULE_PROPERTY = "module"; // NOI18N
-    public static final String REPOSITORY_PROPERTY = "repository"; // NOI18N
-    public static final String PLUGINREPOSITORY_PROPERTY = "pluginRepository"; // NOI18N
-    public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
-    public static final String REPORTING_PROPERTY = "reporting"; // NOI18N
-    public static final String DEPENDENCYMANAGEMENT_PROPERTY = "dependencyManagement"; // NOI18N
-    public static final String DISTRIBUTIONMANAGEMENT_PROPERTY = "distributionManagement"; // NOI18N
+//  <!--xs:complexType name="Profile">
+//    <xs:all>
+//      <xs:element name="id" minOccurs="0" type="xs:string" default="default">
+//      <xs:element name="activation" minOccurs="0" type="Activation">
+//      <xs:element name="build" minOccurs="0" type="BuildBase">
+//      <xs:element name="modules" minOccurs="0">
+//            <xs:element name="module" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//      <xs:element name="repositories" minOccurs="0">
+//            <xs:element name="repository" minOccurs="0" maxOccurs="unbounded" type="Repository"/>
+//      <xs:element name="pluginRepositories" minOccurs="0">
+//            <xs:element name="pluginRepository" minOccurs="0" maxOccurs="unbounded" type="Repository"/>
+//      <xs:element name="dependencies" minOccurs="0">
+//            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
+//      <xs:element name="reports" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//      <xs:element name="reporting" minOccurs="0" type="Reporting">
+//      <xs:element name="dependencyManagement" minOccurs="0" type="DependencyManagement">
+//      <xs:element name="distributionManagement" minOccurs="0" type="DistributionManagement">
+//      <xs:element name="properties" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public Activation getActivation();
     public void setActivation(Activation activation);

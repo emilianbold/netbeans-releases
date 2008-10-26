@@ -45,8 +45,17 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface PluginExecution extends IdPOMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="PluginExecution">
+//    <xs:all>
+//      <xs:element name="id" minOccurs="0" type="xs:string" default="default">
+//      <xs:element name="phase" minOccurs="0" type="xs:string">
+//      <xs:element name="goals" minOccurs="0">
+//            <xs:element name="goal" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//      <xs:element name="inherited" minOccurs="0" type="xs:string">
+//      <xs:element name="configuration" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//    </xs:all>
+//  </xs:complexType-->
 
 
     /**

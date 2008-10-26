@@ -46,9 +46,12 @@ import java.util.*;
  */
 public interface PluginManagement extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String PLUGIN_PROPERTY = "plugin"; // NOI18N
+//  <!--xs:complexType name="PluginManagement">
+//    <xs:all>
+//      <xs:element name="plugins" minOccurs="0">
+//            <xs:element name="plugin" minOccurs="0" maxOccurs="unbounded" type="Plugin"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public List<Plugin> getPlugins();
     public void addPlugin(Plugin plugin);

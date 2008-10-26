@@ -45,7 +45,13 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface License extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="License">
+//    <xs:all>
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//      <xs:element name="distribution" minOccurs="0" type="xs:string">
+//      <xs:element name="comments" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

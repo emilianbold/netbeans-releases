@@ -46,10 +46,13 @@ import java.util.*;
  */
 public interface DependencyManagement extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
-
+//  <!--xs:complexType name="DependencyManagement">
+//    <xs:all>
+//      <xs:element name="dependencies" minOccurs="0">
+//            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
+//    </xs:all>
+//  </xs:complexType-->
+    
     public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);

@@ -46,9 +46,14 @@ import java.util.*;
  */
 public interface Reporting extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String REPORTPLUGIN_PROPERTY = "reportPlugin"; // NOI18N
+//  <!--xs:complexType name="Reporting">
+//    <xs:all>
+//      <xs:element name="excludeDefaults" minOccurs="0" type="xs:boolean" default="false">
+//      <xs:element name="outputDirectory" minOccurs="0" type="xs:string">
+//      <xs:element name="plugins" minOccurs="0">
+//            <xs:element name="plugin" minOccurs="0" maxOccurs="unbounded" type="ReportPlugin"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public List<ReportPlugin> getReportPlugins();
     public void addReportPlugin(ReportPlugin reportPlugin);

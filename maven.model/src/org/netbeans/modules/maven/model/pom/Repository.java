@@ -45,10 +45,16 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Repository extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String RELEASES_PROPERTY = "releases"; // NOI18N
-    public static final String SNAPSHOTS_PROPERTY = "snapshots"; // NOI18N
+//  <!--xs:complexType name="Repository">
+//    <xs:all>
+//      <xs:element name="releases" minOccurs="0" type="RepositoryPolicy">
+//      <xs:element name="snapshots" minOccurs="0" type="RepositoryPolicy">
+//      <xs:element name="id" minOccurs="0" type="xs:string">
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//      <xs:element name="layout" minOccurs="0" type="xs:string" default="default">
+//    </xs:all>
+//  </xs:complexType-->
 
     public RepositoryPolicy getReleases();
     public void setReleases(RepositoryPolicy releases);

@@ -43,9 +43,17 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface ReportSet extends POMComponent {
+public interface ReportSet extends IdPOMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="ReportSet">
+//    <xs:all>
+//      <xs:element name="id" minOccurs="0" type="xs:string" default="default">
+//      <xs:element name="configuration" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//      <xs:element name="inherited" minOccurs="0" type="xs:string">
+//      <xs:element name="reports" minOccurs="0">
+//            <xs:element name="report" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//    </xs:all>
+//  </xs:complexType-->
 
 }

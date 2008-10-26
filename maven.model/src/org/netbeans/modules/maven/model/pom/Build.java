@@ -46,9 +46,29 @@ import java.util.*;
  */
 public interface Build extends POMComponent, BuildBase {
 
-    // attribute properties
-    // child element properties
-    public static final String EXTENSION_PROPERTY = "extension"; // NOI18N
+//  <!--xs:complexType name="Build">
+//    <xs:all>
+//      <xs:element name="sourceDirectory" minOccurs="0" type="xs:string">
+//      <xs:element name="scriptSourceDirectory" minOccurs="0" type="xs:string">
+//      <xs:element name="testSourceDirectory" minOccurs="0" type="xs:string">
+//      <xs:element name="outputDirectory" minOccurs="0" type="xs:string">
+//      <xs:element name="testOutputDirectory" minOccurs="0" type="xs:string">
+//      <xs:element name="extensions" minOccurs="0">
+//            <xs:element name="extension" minOccurs="0" maxOccurs="unbounded" type="Extension"/>
+//      <xs:element name="defaultGoal" minOccurs="0" type="xs:string">
+//      <xs:element name="resources" minOccurs="0">
+//            <xs:element name="resource" minOccurs="0" maxOccurs="unbounded" type="Resource"/>
+//      <xs:element name="testResources" minOccurs="0">
+//            <xs:element name="testResource" minOccurs="0" maxOccurs="unbounded" type="Resource"/>
+//      <xs:element name="directory" minOccurs="0" type="xs:string">
+//      <xs:element name="finalName" minOccurs="0" type="xs:string">
+//      <xs:element name="filters" minOccurs="0">
+//            <xs:element name="filter" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//      <xs:element name="pluginManagement" minOccurs="0" type="PluginManagement">
+//      <xs:element name="plugins" minOccurs="0">
+//            <xs:element name="plugin" minOccurs="0" maxOccurs="unbounded" type="Plugin"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public List<Extension> getExtensions();
     public void addExtension(Extension extension);

@@ -45,12 +45,17 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface DistributionManagement extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String REPOSITORY_PROPERTY = "repository"; // NOI18N
-    public static final String SNAPSHOTREPOSITORY_PROPERTY = "snapshotRepository"; // NOI18N
-    public static final String SITE_PROPERTY = "site"; // NOI18N
-
+//  <!--xs:complexType name="DistributionManagement">
+//    <xs:all>
+//      <xs:element name="repository" minOccurs="0" type="DeploymentRepository">
+//      <xs:element name="snapshotRepository" minOccurs="0" type="DeploymentRepository">
+//      <xs:element name="site" minOccurs="0" type="Site">
+//      <xs:element name="downloadUrl" minOccurs="0" type="xs:string">
+//      <xs:element name="relocation" minOccurs="0" type="Relocation">
+//      <xs:element name="status" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
+//
     public DeploymentRepository getRepository();
     public void setRepository(DeploymentRepository distRepository);
 

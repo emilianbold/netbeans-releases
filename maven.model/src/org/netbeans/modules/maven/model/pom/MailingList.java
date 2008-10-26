@@ -45,7 +45,16 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface MailingList extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="MailingList">
+//    <xs:all>
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="subscribe" minOccurs="0" type="xs:string">
+//      <xs:element name="unsubscribe" minOccurs="0" type="xs:string">
+//      <xs:element name="post" minOccurs="0" type="xs:string">
+//      <xs:element name="archive" minOccurs="0" type="xs:string">
+//      <xs:element name="otherArchives" minOccurs="0">
+//            <xs:element name="otherArchive" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//    </xs:all>
+//  </xs:complexType-->
 
 }

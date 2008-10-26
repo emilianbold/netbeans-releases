@@ -45,29 +45,52 @@ import java.util.*;
  * @author mkleint
  */
 public interface Project extends VersionablePOMComponent {
+//  <!--xs:complexType name="Model">
+//    <xs:all>
+//      <xs:element name="parent" minOccurs="0" type="Parent">
+//      <xs:element name="modelVersion" minOccurs="0" type="xs:string">
+//      <xs:element name="groupId" minOccurs="0" type="xs:string">
+//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
+//      <xs:element name="packaging" minOccurs="0" type="xs:string" default="jar">
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="version" minOccurs="0" type="xs:string">
+//      <xs:element name="description" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//      <xs:element name="prerequisites" minOccurs="0" type="Prerequisites">
+//      <xs:element name="issueManagement" minOccurs="0" type="IssueManagement">
+//      <xs:element name="ciManagement" minOccurs="0" type="CiManagement">
+//      <xs:element name="inceptionYear" minOccurs="0" type="xs:string">
+//      <xs:element name="mailingLists" minOccurs="0">
+//            <xs:element name="mailingList" minOccurs="0" maxOccurs="unbounded" type="MailingList"/>
+//      <xs:element name="developers" minOccurs="0">
+//            <xs:element name="developer" minOccurs="0" maxOccurs="unbounded" type="Developer"/>
+//      <xs:element name="contributors" minOccurs="0">
+//            <xs:element name="contributor" minOccurs="0" maxOccurs="unbounded" type="Contributor"/>
+//      <xs:element name="licenses" minOccurs="0">
+//            <xs:element name="license" minOccurs="0" maxOccurs="unbounded" type="License"/>
+//      <xs:element name="scm" minOccurs="0" type="Scm">
+//      <xs:element name="organization" minOccurs="0" type="Organization">
+//      <xs:element name="build" minOccurs="0" type="Build">
+//      <xs:element name="profiles" minOccurs="0">
+//            <xs:element name="profile" minOccurs="0" maxOccurs="unbounded" type="Profile"/>
+//      <xs:element name="modules" minOccurs="0">
+//            <xs:element name="module" minOccurs="0" maxOccurs="unbounded" type="xs:string"/>
+//      <xs:element name="repositories" minOccurs="0">
+//            <xs:element name="repository" minOccurs="0" maxOccurs="unbounded" type="Repository"/>
+//      <xs:element name="pluginRepositories" minOccurs="0">
+//            <xs:element name="pluginRepository" minOccurs="0" maxOccurs="unbounded" type="Repository"/>
+//      <xs:element name="dependencies" minOccurs="0">
+//            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
+//      <xs:element name="reports" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//      <xs:element name="reporting" minOccurs="0" type="Reporting">
+//      <xs:element name="dependencyManagement" minOccurs="0" type="DependencyManagement">
+//      <xs:element name="distributionManagement" minOccurs="0" type="DistributionManagement">
+//      <xs:element name="properties" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//    </xs:all>
+//  </xs:complexType-->
 
-    // attribute properties
-    // child element properties
-    public static final String PARENT_PROPERTY = "parent"; // NOI18N
-    public static final String PREREQUISITES_PROPERTY = "prerequisites"; // NOI18N
-    public static final String ISSUEMANAGEMENT_PROPERTY = "issueManagement"; // NOI18N
-    public static final String CIMANAGEMENT_PROPERTY = "ciManagement"; // NOI18N
-    public static final String MAILINGLIST_PROPERTY = "mailingList"; // NOI18N
-    public static final String MAILINGLISTS_PROPERTY = "mailingLists"; // NOI18N
-    public static final String DEVELOPER_PROPERTY = "developer"; // NOI18N
-    public static final String CONTRIBUTOR_PROPERTY = "contributor"; // NOI18N
-    public static final String LICENSE_PROPERTY = "license"; // NOI18N
-    public static final String SCM_PROPERTY = "scm"; // NOI18N
-    public static final String ORGANIZATION_PROPERTY = "organization"; // NOI18N
-    public static final String BUILD_PROPERTY = "build"; // NOI18N
-    public static final String PROFILE_PROPERTY = "profile"; // NOI18N
-    public static final String MODULE_PROPERTY = "module"; // NOI18N
-    public static final String REPOSITORY_PROPERTY = "repository"; // NOI18N
-    public static final String PLUGINREPOSITORY_PROPERTY = "pluginRepository"; // NOI18N
-    public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
-    public static final String REPORTING_PROPERTY = "reporting"; // NOI18N
-    public static final String DEPENDENCYMANAGEMENT_PROPERTY = "dependencyManagement"; // NOI18N
-    public static final String DISTRIBUTIONMANAGEMENT_PROPERTY = "distributionManagement"; // NOI18N
 
     /**
      * POM RELATED PROPERTY

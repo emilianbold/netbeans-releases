@@ -45,7 +45,12 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface RepositoryPolicy extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="RepositoryPolicy">
+//    <xs:all>
+//      <xs:element name="enabled" minOccurs="0" type="xs:boolean" default="true">
+//      <xs:element name="updatePolicy" minOccurs="0" type="xs:string">
+//      <xs:element name="checksumPolicy" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

@@ -46,10 +46,23 @@ import java.util.*;
  */
 public interface Plugin extends VersionablePOMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String EXECUTION_PROPERTY = "execution"; // NOI18N
-    public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
+//  <!--xs:complexType name="Plugin">
+//    <xs:all>
+//      <xs:element name="groupId" minOccurs="0" type="xs:string" default="org.apache.maven.plugins">
+//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
+//      <xs:element name="version" minOccurs="0" type="xs:string">
+//      <xs:element name="extensions" minOccurs="0" type="xs:boolean" default="false">
+//      <xs:element name="executions" minOccurs="0">
+//            <xs:element name="execution" minOccurs="0" maxOccurs="unbounded" type="PluginExecution"/>
+//      <xs:element name="dependencies" minOccurs="0">
+//            <xs:element name="dependency" minOccurs="0" maxOccurs="unbounded" type="Dependency"/>
+//      <xs:element name="goals" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//      <xs:element name="inherited" minOccurs="0" type="xs:string">
+//      <xs:element name="configuration" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     /**
      * POM RELATED PROPERTY

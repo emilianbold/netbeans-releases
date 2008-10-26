@@ -45,7 +45,12 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Extension extends VersionablePOMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Extension">
+//    <xs:all>
+//      <xs:element name="groupId" minOccurs="0" type="xs:string">
+//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
+//      <xs:element name="version" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

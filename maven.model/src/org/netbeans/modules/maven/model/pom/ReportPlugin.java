@@ -46,9 +46,18 @@ import java.util.*;
  */
 public interface ReportPlugin extends VersionablePOMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String REPORTSET_PROPERTY = "reportSet"; // NOI18N
+//  <!--xs:complexType name="ReportPlugin">
+//    <xs:all>
+//      <xs:element name="groupId" minOccurs="0" type="xs:string" default="org.apache.maven.plugins">
+//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
+//      <xs:element name="version" minOccurs="0" type="xs:string">
+//      <xs:element name="inherited" minOccurs="0" type="xs:string">
+//      <xs:element name="configuration" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//      <xs:element name="reportSets" minOccurs="0">
+//            <xs:element name="reportSet" minOccurs="0" maxOccurs="unbounded" type="ReportSet"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public List<ReportSet> getReportSets();
     public void addReportSet(ReportSet reportSet);

@@ -46,9 +46,14 @@ import java.util.*;
  */
 public interface CiManagement extends POMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String NOTIFIER_PROPERTY = "notifier"; // NOI18N
+//  <!--xs:complexType name="CiManagement">
+//    <xs:all>
+//      <xs:element name="system" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//      <xs:element name="notifiers" minOccurs="0">
+//            <xs:element name="notifier" minOccurs="0" maxOccurs="unbounded" type="Notifier"/>
+//    </xs:all>
+//  </xs:complexType-->
 
     public List<Notifier> getNotifiers();
     public void addNotifier(Notifier notifier);

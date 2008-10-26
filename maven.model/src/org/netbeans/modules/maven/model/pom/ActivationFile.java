@@ -45,7 +45,11 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface ActivationFile extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="ActivationFile">
+//    <xs:all>
+//      <xs:element name="missing" minOccurs="0" type="xs:string">
+//      <xs:element name="exists" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

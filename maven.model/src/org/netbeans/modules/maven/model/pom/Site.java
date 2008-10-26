@@ -43,9 +43,14 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface Site extends POMComponent {
+public interface Site extends IdPOMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Site">
+//    <xs:all>
+//      <xs:element name="id" minOccurs="0" type="xs:string">
+//      <xs:element name="name" minOccurs="0" type="xs:string">
+//      <xs:element name="url" minOccurs="0" type="xs:string">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

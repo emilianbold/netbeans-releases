@@ -46,9 +46,20 @@ import java.util.*;
  */
 public interface Dependency extends VersionablePOMComponent {
 
-    // attribute properties
-    // child element properties
-    public static final String EXCLUSION_PROPERTY = "exclusion"; // NOI18N
+//  <!--xs:complexType name="Dependency">
+//    <xs:all>
+//      <xs:element name="groupId" minOccurs="0" type="xs:string">
+//      <xs:element name="artifactId" minOccurs="0" type="xs:string">
+//      <xs:element name="version" minOccurs="0" type="xs:string">
+//      <xs:element name="type" minOccurs="0" type="xs:string" default="jar">
+//      <xs:element name="classifier" minOccurs="0" type="xs:string">
+//      <xs:element name="scope" minOccurs="0" type="xs:string">
+//      <xs:element name="systemPath" minOccurs="0" type="xs:string">
+//      <xs:element name="exclusions" minOccurs="0">
+//            <xs:element name="exclusion" minOccurs="0" maxOccurs="unbounded" type="Exclusion"/>
+//      <xs:element name="optional" minOccurs="0" type="xs:boolean" default="false">
+//    </xs:all>
+//  </xs:complexType-->
 
     /**
      * POM RELATED PROPERTY

@@ -45,7 +45,10 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Prerequisites extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Prerequisites">
+//    <xs:all>
+//      <xs:element name="maven" minOccurs="0" type="xs:string" default="2.0">
+//    </xs:all>
+//  </xs:complexType-->
 
 }

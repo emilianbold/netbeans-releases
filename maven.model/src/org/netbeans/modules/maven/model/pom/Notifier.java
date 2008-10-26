@@ -45,7 +45,17 @@ package org.netbeans.modules.maven.model.pom;
  */
 public interface Notifier extends POMComponent {
 
-    // attribute properties
-    // child element properties
+//  <!--xs:complexType name="Notifier">
+//    <xs:all>
+//      <xs:element name="type" minOccurs="0" type="xs:string" default="mail">
+//      <xs:element name="sendOnError" minOccurs="0" type="xs:boolean" default="true">
+//      <xs:element name="sendOnFailure" minOccurs="0" type="xs:boolean" default="true">
+//      <xs:element name="sendOnSuccess" minOccurs="0" type="xs:boolean" default="true">
+//      <xs:element name="sendOnWarning" minOccurs="0" type="xs:boolean" default="true">
+//      <xs:element name="address" minOccurs="0" type="xs:string">      </xs:element>
+//      <xs:element name="configuration" minOccurs="0">
+//            <xs:any minOccurs="0" maxOccurs="unbounded" processContents="skip"/>
+//    </xs:all>
+//  </xs:complexType-->
 
 }
