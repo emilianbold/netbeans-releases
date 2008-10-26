@@ -300,13 +300,13 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 //            return;
 //        }
 
-        if (isElementQName(POMQName.REPOSITORY)) {
-            created = new RepositoryImpl(context.getModel(), element);
+        if (isElementQName(POMQName.REPOSITORIES)) {
+            created = new RepositoryImpl.RepoList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINREPOSITORY)) {
-            created = new RepositoryImpl(context.getModel(), element);
+        if (isElementQName(POMQName.PLUGINREPOSITORIES)) {
+            created = new RepositoryImpl.PluginRepoList(context.getModel(), element);
             return;
         }
 
@@ -335,13 +335,13 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(BuildBase context) {
-        if (isElementQName(POMQName.RESOURCE)) {
-            created = new ResourceImpl(context.getModel(), element);
+        if (isElementQName(POMQName.RESOURCES)) {
+            created = new ResourceImpl.ResList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.TESTRESOURCE)) {
-            created = new ResourceImpl(context.getModel(), element);
+        if (isElementQName(POMQName.TESTRESOURCES)) {
+            created = new ResourceImpl.TestResList(context.getModel(), element);
             return;
         }
 
@@ -350,8 +350,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.PLUGIN)) {
-            created = new PluginImpl(context.getModel(), element);
+        if (isElementQName(POMQName.PLUGINS)) {
+            created = new PluginImpl.List(context.getModel(), element);
             return;
         }
 
@@ -360,8 +360,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Plugin context) {
-        if (isElementQName(POMQName.EXECUTION)) {
-            created = new PluginExecutionImpl(context.getModel(), element);
+        if (isElementQName(POMQName.EXECUTIONS)) {
+            created = new PluginExecutionImpl.List(context.getModel(), element);
             return;
         }
 
@@ -375,8 +375,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Dependency context) {
-        if (isElementQName(POMQName.EXCLUSION)) {
-            created = new ExclusionImpl(context.getModel(), element);
+        if (isElementQName(POMQName.EXCLUSIONS)) {
+            created = new ExclusionImpl.List(context.getModel(), element);
             return;
         }
 
@@ -400,8 +400,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(PluginManagement context) {
-        if (isElementQName(POMQName.PLUGIN)) {
-            created = new PluginImpl(context.getModel(), element);
+        if (isElementQName(POMQName.PLUGINS)) {
+            created = new PluginImpl.List(context.getModel(), element);
             return;
         }
 
@@ -492,18 +492,18 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     public void visit(Build context) {
         visit((BuildBase) context);
 
-        if (isElementQName(POMQName.EXTENSION)) {
-            created = new ExtensionImpl(context.getModel(), element);
+        if (isElementQName(POMQName.EXTENSIONS)) {
+            created = new ExtensionImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.RESOURCE)) {
-            created = new ResourceImpl(context.getModel(), element);
+        if (isElementQName(POMQName.RESOURCES)) {
+            created = new ResourceImpl.ResList(context.getModel(), element);
             return;
         }
 
         if (isElementQName(POMQName.TESTRESOURCE)) {
-            created = new ResourceImpl(context.getModel(), element);
+            created = new ResourceImpl.TestResList(context.getModel(), element);
             return;
         }
 
@@ -512,8 +512,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.PLUGIN)) {
-            created = new PluginImpl(context.getModel(), element);
+        if (isElementQName(POMQName.PLUGINS)) {
+            created = new PluginImpl.List(context.getModel(), element);
             return;
         }
 
@@ -572,6 +572,30 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
         if (isElementQName(POMQName.PLUGINREPOSITORY) && context.getListClass().equals(Repository.class)) {
             created = new RepositoryImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.EXCLUSION) && context.getListClass().equals(Exclusion.class)) {
+            created = new ExclusionImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.PLUGIN) && context.getListClass().equals(Plugin.class)) {
+            created = new PluginImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.EXTENSION) && context.getListClass().equals(Extension.class)) {
+            created = new ExtensionImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.EXECUTION) && context.getListClass().equals(PluginExecution.class)) {
+            created = new PluginExecutionImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.RESOURCE) && context.getListClass().equals(Resource.class)) {
+            created = new ResourceImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.TESTRESOURCE) && context.getListClass().equals(Resource.class)) {
+            created = new ResourceImpl(context.getModel(), element);
             return;
         }
     }

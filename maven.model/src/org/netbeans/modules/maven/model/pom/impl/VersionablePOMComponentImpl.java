@@ -59,7 +59,7 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
     }
 
     public void setGroupId(String groupId) {
-        setChildElementText(POMQName.GROUPID.getQName().getLocalPart(), groupId,
+        setChildElementText(POMQName.GROUPID.getName(), groupId,
                 POMQName.GROUPID.getQName());
     }
 
@@ -68,7 +68,7 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
     }
 
     public void setArtifactId(String artifactId) {
-        setChildElementText(POMQName.ARTIFACTID.getQName().getLocalPart(), artifactId,
+        setChildElementText(POMQName.ARTIFACTID.getName(), artifactId,
                 POMQName.ARTIFACTID.getQName());
     }
 
@@ -77,7 +77,7 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
     }
 
     public void setVersion(String version) {
-        setChildElementText(POMQName.VERSION.getQName().getLocalPart(), version,
+        setChildElementText(POMQName.VERSION.getName(), version,
                 POMQName.VERSION.getQName());
     }
 

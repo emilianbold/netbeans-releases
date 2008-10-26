@@ -189,9 +189,6 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         return new DependencyImpl(model);
     }
     
-    public DependencyImpl.List createDependencyList() {
-        return new DependencyImpl.List(model);
-    }
 
     public Exclusion createExclusion() {
         return new ExclusionImpl(model);
@@ -202,7 +199,11 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
     }
 
     public Resource createResource() {
-        return new ResourceImpl(model);
+        return new ResourceImpl(model, false);
+    }
+
+    public Resource createTestResource() {
+        return new ResourceImpl(model, true);
     }
 
     public PluginManagement createPluginManagement() {

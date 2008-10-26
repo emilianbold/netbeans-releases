@@ -47,5 +47,18 @@ public interface Exclusion extends POMComponent {
 
     // attribute properties
     // child element properties
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getGroupId();
+    void setGroupId(String groupId);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getArtifactId();
+    void setArtifactId(String artifactId);
 
 }

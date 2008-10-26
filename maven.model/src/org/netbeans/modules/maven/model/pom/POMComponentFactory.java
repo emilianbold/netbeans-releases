@@ -79,6 +79,7 @@ public interface POMComponentFactory extends ComponentFactory<POMComponent>  {
     Exclusion createExclusion();
     PluginExecution createExecution();
     Resource createResource();
+    Resource createTestResource();
     PluginManagement createPluginManagement();
     Reporting createReporting();
     ReportPlugin createReportPlugin();

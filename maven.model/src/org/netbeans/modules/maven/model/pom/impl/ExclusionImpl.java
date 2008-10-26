@@ -56,11 +56,38 @@ public class ExclusionImpl extends POMComponentImpl implements Exclusion {
         this(model, createElementNS(model, POMQName.EXCLUSION));
     }
 
+    public String getGroupId() {
+        return getChildElementText(POMQName.GROUPID.getQName());
+    }
+
+    public void setGroupId(String groupId) {
+        setChildElementText(POMQName.GROUPID.getName(), groupId,
+                POMQName.GROUPID.getQName());
+    }
+
+    public String getArtifactId() {
+        return getChildElementText(POMQName.ARTIFACTID.getQName());
+    }
+
+    public void setArtifactId(String artifactId) {
+        setChildElementText(POMQName.ARTIFACTID.getName(), artifactId,
+                POMQName.ARTIFACTID.getQName());
+    }
     // attributes
 
     // child elements
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public static class List extends ListImpl<Exclusion> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.EXCLUSION, Exclusion.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.EXCLUSIONS));
+        }
     }
 
 }

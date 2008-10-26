@@ -43,9 +43,34 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface PluginExecution extends POMComponent {
+public interface PluginExecution extends IdPOMComponent {
 
     // attribute properties
     // child element properties
+
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getPhase();
+    void setPhase(String phase);
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Boolean isInherited();
+    void setInherited(Boolean inherited);
+
+    //TODO add goals processing
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+//    List<String> getGoals();
+//    void addGoal(String goal);
+//    void removeGoal(String goal);
+
+    //TODO configuration
 
 }

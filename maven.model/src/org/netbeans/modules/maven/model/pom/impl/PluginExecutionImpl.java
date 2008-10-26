@@ -46,7 +46,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class PluginExecutionImpl extends POMComponentImpl implements PluginExecution {
+public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExecution {
 
     public PluginExecutionImpl(POMModel model, Element element) {
         super(model, element);
@@ -61,6 +61,40 @@ public class PluginExecutionImpl extends POMComponentImpl implements PluginExecu
     // child elements
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public String getPhase() {
+        return getChildElementText(POMQName.PHASE.getQName());
+    }
+
+    public void setPhase(String phase) {
+        setChildElementText(POMQName.PHASE.getName(), phase,
+                POMQName.PHASE.getQName());
+    }
+
+    public Boolean isInherited() {
+        String str = getChildElementText(POMQName.INHERITED.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return Boolean.TRUE;
+    }
+
+    public void setInherited(Boolean inherited) {
+        setChildElementText(POMQName.INHERITED.getName(),
+                inherited == null ? null : inherited.toString(),
+                POMQName.INHERITED.getQName());
+    }
+
+
+    public static class List extends ListImpl<PluginExecution> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.EXECUTION, PluginExecution.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.EXECUTIONS));
+        }
     }
 
 }

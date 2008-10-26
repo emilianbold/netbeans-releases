@@ -60,32 +60,103 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     // attributes
 
     // child elements
-    public List<PluginExecution> getExecutions() {
-        return getChildren(PluginExecution.class);
+    public java.util.List<PluginExecution> getExecutions() {
+        ModelList<PluginExecution> childs = getChild(PluginExecutionImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addExecution(PluginExecution dependency) {
-        appendChild(EXECUTION_PROPERTY, dependency);
+    public void addExecution(PluginExecution execution) {
+        ModelList<PluginExecution> childs = getChild(PluginExecutionImpl.List.class);
+        if (childs == null) {
+            setChild(DependencyImpl.List.class,
+                    POMQName.EXECUTIONS.getName(),
+                    getModel().getFactory().create(this, POMQName.EXECUTIONS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(PluginExecutionImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(execution);
     }
 
-    public void removeExecution(PluginExecution dependency) {
-        removeChild(EXECUTION_PROPERTY, dependency);
+    public void removeExecution(PluginExecution execution) {
+        ModelList<PluginExecution> childs = getChild(PluginExecutionImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(execution);
+        }
     }
 
-    public List<Dependency> getDependencies() {
-        return getChildren(Dependency.class);
+    public java.util.List<Dependency> getDependencies() {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addDependency(Dependency dependency) {
-        appendChild(DEPENDENCY_PROPERTY, dependency);
+    public void addDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs == null) {
+            setChild(DependencyImpl.List.class,
+                    POMQName.DEPENDENCIES.getName(),
+                    getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(DependencyImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(dep);
     }
 
-    public void removeDependency(Dependency dependency) {
-        removeChild(DEPENDENCY_PROPERTY, dependency);
+    public void removeDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(dep);
+        }
+    }
+
+
+    public Boolean isExtensions() {
+        String str = getChildElementText(POMQName.EXTENSIONS.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return Boolean.FALSE;
+    }
+
+    public void setExtensions(Boolean extensions) {
+        setChildElementText(POMQName.EXTENSIONS.getName(),
+                extensions == null ? null : extensions.toString(),
+                POMQName.EXTENSIONS.getQName());
+    }
+
+    public Boolean isInherited() {
+        String str = getChildElementText(POMQName.INHERITED.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return Boolean.TRUE;
+    }
+
+    public void setInherited(Boolean inherited) {
+        setChildElementText(POMQName.INHERITED.getName(),
+                inherited == null ? null : inherited.toString(),
+                POMQName.INHERITED.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+    
+    public static class List extends ListImpl<Plugin> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.PLUGIN, Plugin.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.PLUGINS));
+        }
     }
 
 }

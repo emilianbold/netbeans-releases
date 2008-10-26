@@ -97,12 +97,19 @@ public enum POMQName {
     PROFILES(createQName("profiles")), // NOI18N
     REPOSITORIES(createQName("repositories")), // NOI18N
     PLUGINREPOSITORIES(createQName("pluginRepositories")), // NOI18N
+    EXCLUSIONS(createQName("exclusions")), // NOI18N
+    EXECUTIONS(createQName("executions")), // NOI18N
+    PLUGINS(createQName("plugins")), // NOI18N
+    EXTENSIONS(createQName("extensions")), // NOI18N
+    RESOURCES(createQName("resources")), // NOI18N
+    TESTRESOURCES(createQName("testResources")), // NOI18N
 
 
     ID(createQName("id")), //NOI18N
     GROUPID(createQName("groupId")), //NOI18N
     ARTIFACTID(createQName("artifactId")), //NOI18N
     VERSION(createQName("version")), //NOI18N
+    CONFIGURATION(createQName("configuration")), //NOI18N
 
     RELATIVEPATH(createQName("relativePath")), //NOI18N
 
@@ -119,6 +126,8 @@ public enum POMQName {
     SYSTEMPATH(createQName("systemPath")), //NOI18N
     OPTIONAL(createQName("optional")), //NOI18N
 
+    INHERITED(createQName("inherited")), //NOI18N
+    PHASE(createQName("phase")), //NOI18N
     ;
     
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N

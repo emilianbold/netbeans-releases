@@ -47,8 +47,11 @@ public interface Parent extends VersionablePOMComponent {
 
     // attribute properties
     // child element properties
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     String getRelativePath();
-
     void setRelativePath(String path);
 
 

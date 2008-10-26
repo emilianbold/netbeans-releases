@@ -52,8 +52,8 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
         super(model, element);
     }
     
-    public ResourceImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.RESOURCE));
+    public ResourceImpl(POMModel model, boolean testResource) {
+        this(model, createElementNS(model, testResource ? POMQName.TESTRESOURCE : POMQName.RESOURCE));
     }
 
     // attributes
@@ -61,6 +61,26 @@ public class ResourceImpl extends POMComponentImpl implements Resource {
     // child elements
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+    
+    public static class ResList extends ListImpl<Resource> {
+        public ResList(POMModel model, Element element) {
+            super(model, element, POMQName.RESOURCE, Resource.class);
+        }
+
+        public ResList(POMModel model) {
+            this(model, createElementNS(model, POMQName.RESOURCES));
+        }
+    }
+
+    public static class TestResList extends ListImpl<Resource> {
+        public TestResList(POMModel model, Element element) {
+            super(model, element, POMQName.TESTRESOURCE, Resource.class);
+        }
+
+        public TestResList(POMModel model) {
+            this(model, createElementNS(model, POMQName.TESTRESOURCES));
+        }
     }
 
 }

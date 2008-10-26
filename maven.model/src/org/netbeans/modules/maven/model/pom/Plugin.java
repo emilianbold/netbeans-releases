@@ -51,12 +51,46 @@ public interface Plugin extends VersionablePOMComponent {
     public static final String EXECUTION_PROPERTY = "execution"; // NOI18N
     public static final String DEPENDENCY_PROPERTY = "dependency"; // NOI18N
 
-    public List<PluginExecution> getExecutions();
-    public void addExecution(PluginExecution execution);
-    public void removeExecution(PluginExecution execution);
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    List<PluginExecution> getExecutions();
+    void addExecution(PluginExecution execution);
+    void removeExecution(PluginExecution execution);
 
-    public List<Dependency> getDependencies();
-    public void addDependency(Dependency dependency);
-    public void removeDependency(Dependency dependency);
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    List<Dependency> getDependencies();
+    void addDependency(Dependency dependency);
+    void removeDependency(Dependency dependency);
+
+    
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Boolean isExtensions();
+    void setExtensions(Boolean extensions);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Boolean isInherited();
+    void setInherited(Boolean inherited);
+
+    //TODO add goals processing
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+//    List<String> getGoals();
+//    void addGoal(String goal);
+//    void removeGoal(String goal);
+
+    //TODO configuration
 
 }

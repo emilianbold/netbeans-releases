@@ -61,15 +61,31 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
 
     // child elements
     public java.util.List<Exclusion> getExclusions() {
-        return getChildren(Exclusion.class);
+        ModelList<Exclusion> childs = getChild(ExclusionImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
     public void addExclusion(Exclusion exclusion) {
-        appendChild(EXCLUSION_PROPERTY, exclusion);
+        ModelList<Exclusion> childs = getChild(ExclusionImpl.List.class);
+        if (childs == null) {
+            setChild(ExclusionImpl.List.class,
+                    POMQName.EXCLUSIONS.getName(),
+                    getModel().getFactory().create(this, POMQName.EXCLUSIONS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ExclusionImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(exclusion);
     }
 
     public void removeExclusion(Exclusion exclusion) {
-        removeChild(EXCLUSION_PROPERTY, exclusion);
+        ModelList<Exclusion> childs = getChild(ExclusionImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(exclusion);
+        }
     }
 
     public void accept(POMComponentVisitor visitor) {
@@ -81,7 +97,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public void setType(String type) {
-        setChildElementText(POMQName.TYPE.getQName().getLocalPart(), type,
+        setChildElementText(POMQName.TYPE.getName(), type,
                 POMQName.TYPE.getQName());
     }
 
@@ -90,7 +106,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public void setClassifier(String classifier) {
-        setChildElementText(POMQName.CLASSIFIER.getQName().getLocalPart(), classifier,
+        setChildElementText(POMQName.CLASSIFIER.getName(), classifier,
                 POMQName.CLASSIFIER.getQName());
     }
 
@@ -99,7 +115,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public void setScope(String scope) {
-        setChildElementText(POMQName.SCOPE.getQName().getLocalPart(), scope,
+        setChildElementText(POMQName.SCOPE.getName(), scope,
                 POMQName.SCOPE.getQName());
     }
 
@@ -108,7 +124,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public void setSystemPath(String systemPath) {
-        setChildElementText(POMQName.SYSTEMPATH.getQName().getLocalPart(), systemPath,
+        setChildElementText(POMQName.SYSTEMPATH.getName(), systemPath,
                 POMQName.SYSTEMPATH.getQName());
     }
 
@@ -121,7 +137,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public void setOptional(Boolean optional) {
-        setChildElementText(POMQName.OPTIONAL.getQName().getLocalPart(),
+        setChildElementText(POMQName.OPTIONAL.getName(),
                 optional == null ? null : optional.toString(),
                 POMQName.OPTIONAL.getQName());
     }

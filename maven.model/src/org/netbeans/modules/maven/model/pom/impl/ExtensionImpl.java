@@ -63,4 +63,14 @@ public class ExtensionImpl extends VersionablePOMComponentImpl implements Extens
         visitor.visit(this);
     }
 
+    public static class List extends ListImpl<Extension> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.EXTENSION, Extension.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.EXTENSIONS));
+        }
+    }
+
 }
