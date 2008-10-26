@@ -53,8 +53,9 @@ public class RepositoryImpl extends POMComponentImpl implements Repository {
         super(model, element);
     }
     
-    public RepositoryImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.REPOSITORY));
+    public RepositoryImpl(POMModel model, boolean pluginRepo) {
+        this(model, createElementNS(model,
+                pluginRepo ? POMQName.PLUGINREPOSITORY : POMQName.REPOSITORY));
     }
 
     // attributes
@@ -80,6 +81,26 @@ public class RepositoryImpl extends POMComponentImpl implements Repository {
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public static class RepoList extends ListImpl<Repository> {
+        public RepoList(POMModel model, Element element) {
+            super(model, element, POMQName.REPOSITORY, Repository.class);
+        }
+
+        public RepoList(POMModel model) {
+            this(model, createElementNS(model, POMQName.REPOSITORIES));
+        }
+    }
+
+    public static class PluginRepoList extends ListImpl<Repository> {
+        public PluginRepoList(POMModel model, Element element) {
+            super(model, element, POMQName.PLUGINREPOSITORY, Repository.class);
+        }
+
+        public PluginRepoList(POMModel model) {
+            this(model, createElementNS(model, POMQName.PLUGINREPOSITORIES));
+        }
     }
 
 }

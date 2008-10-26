@@ -91,6 +91,12 @@ public enum POMQName {
 
     MAILINGLISTS(createQName("mailingLists")), // NOI18N
     DEPENDENCIES(createQName("dependencies")), // NOI18N
+    DEVELOPERS(createQName("developers")), // NOI18N
+    CONTRIBUTORS(createQName("contributors")), // NOI18N
+    LICENSES(createQName("licenses")), // NOI18N
+    PROFILES(createQName("profiles")), // NOI18N
+    REPOSITORIES(createQName("repositories")), // NOI18N
+    PLUGINREPOSITORIES(createQName("pluginRepositories")), // NOI18N
 
 
     ID(createQName("id")), //NOI18N
@@ -128,6 +134,10 @@ public enum POMQName {
     
     public QName getQName(){
         return qName;
+    }
+
+    public String getName() {
+        return qName.getLocalPart();
     }
     
     private static Set<QName> qnames = null;

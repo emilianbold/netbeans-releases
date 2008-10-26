@@ -157,7 +157,11 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
     }
 
     public Repository createRepository() {
-        return new RepositoryImpl(model);
+        return new RepositoryImpl(model, false);
+    }
+
+    public Repository createPluginRepository() {
+        return new RepositoryImpl(model, true);
     }
 
     public RepositoryPolicy createReleaseRepositoryPolicy() {
@@ -257,12 +261,10 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         return new MailingListImpl(model);
     }
 
-    public MailingListImpl.List createMailingListList() {
-        return new MailingListImpl.List(model);
-    }
 
     public Developer createDeveloper() {
         return new DeveloperImpl(model);
     }
+
 
 }

@@ -63,4 +63,15 @@ public class DeveloperImpl extends POMComponentImpl implements Developer {
         visitor.visit(this);
     }
 
+    public static class List extends ListImpl<Developer> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.DEVELOPER, Developer.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.DEVELOPERS));
+        }
+    }
+
+
 }

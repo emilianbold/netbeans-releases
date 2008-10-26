@@ -63,4 +63,15 @@ public class LicenseImpl extends POMComponentImpl implements License {
         visitor.visit(this);
     }
 
+    public static class List extends ListImpl<License> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.LICENSE, License.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.LICENSES));
+        }
+    }
+
+
 }

@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+import java.util.Collections;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
@@ -65,7 +65,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
     }
 
     public void setActivation(Activation activation) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(Activation.class, ACTIVATION_PROPERTY, activation, empty);
     }
 
@@ -74,7 +74,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
     }
 
     public void setBuildBase(BuildBase buildBase) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(BuildBase.class, BUILDBASE_PROPERTY, buildBase, empty);
     }
 
@@ -90,7 +90,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 //        removeChild(MODULE_PROPERTY, buildBase);
 //    }
 
-    public List<Repository> getRepositories() {
+    public java.util.List<Repository> getRepositories() {
         return getChildren(Repository.class);
     }
 
@@ -102,7 +102,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
         removeChild(REPOSITORY_PROPERTY, buildBase);
     }
 
-    public List<Repository> getPluginRepositories() {
+    public java.util.List<Repository> getPluginRepositories() {
         return getChildren(Repository.class);
     }
 
@@ -114,7 +114,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
         removeChild(PLUGINREPOSITORY_PROPERTY, buildBase);
     }
 
-    public List<Dependency> getDependencies() {
+    public java.util.List<Dependency> getDependencies() {
         return getChildren(Dependency.class);
     }
 
@@ -131,7 +131,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
     }
 
     public void setReporting(Reporting reporting) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(Reporting.class, REPORTING_PROPERTY, reporting, empty);
     }
 
@@ -140,7 +140,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
     }
 
     public void setDependencyManagement(DependencyManagement dependencyManagement) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(DependencyManagement.class, DEPENDENCYMANAGEMENT_PROPERTY, dependencyManagement, empty);
     }
 
@@ -149,12 +149,23 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
     }
 
     public void setDistributionManagement(DistributionManagement distributionManagement) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(DistributionManagement.class, DISTRIBUTIONMANAGEMENT_PROPERTY, distributionManagement, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
+
+    public static class List extends ListImpl<Profile> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.PROFILE, Profile.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.PROFILES));
+        }
+    }
+
 
 }

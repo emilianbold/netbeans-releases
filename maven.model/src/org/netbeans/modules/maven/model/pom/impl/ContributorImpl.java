@@ -63,4 +63,14 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
         visitor.visit(this);
     }
 
+    public static class List extends ListImpl<Contributor> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.CONTRIBUTOR, Contributor.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.CONTRIBUTORS));
+        }
+    }
+
 }

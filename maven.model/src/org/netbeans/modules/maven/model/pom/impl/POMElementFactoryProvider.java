@@ -115,18 +115,18 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.DEVELOPER)) {
-            created = new DeveloperImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DEVELOPERS)) {
+            created = new DeveloperImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.CONTRIBUTOR)) {
-            created = new ContributorImpl(context.getModel(), element);
+        if (isElementQName(POMQName.CONTRIBUTORS)) {
+            created = new DeveloperImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.LICENSE)) {
-            created = new LicenseImpl(context.getModel(), element);
+        if (isElementQName(POMQName.LICENSES)) {
+            created = new LicenseImpl.List(context.getModel(), element);
             return;
         }
 
@@ -145,8 +145,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.PROFILE)) {
-            created = new ProfileImpl(context.getModel(), element);
+        if (isElementQName(POMQName.PROFILES)) {
+            created = new ProfileImpl.List(context.getModel(), element);
             return;
         }
 
@@ -155,15 +155,13 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 //            return;
 //        }
 
-        //TODO distinguish repository and pluginrepository and repository in
-        //distributionManagement
-        if (isElementQName(POMQName.REPOSITORY)) {
-            created = new RepositoryImpl(context.getModel(), element);
+        if (isElementQName(POMQName.REPOSITORIES)) {
+            created = new RepositoryImpl.RepoList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINREPOSITORY)) {
-            created = new RepositoryImpl(context.getModel(), element);
+        if (isElementQName(POMQName.PLUGINREPOSITORIES)) {
+            created = new RepositoryImpl.PluginRepoList(context.getModel(), element);
             return;
         }
 
@@ -312,8 +310,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCY)) {
-            created = new DependencyImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DEPENDENCIES)) {
+            created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
@@ -367,8 +365,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCY)) {
-            created = new DependencyImpl(context.getModel(), element);
+        if (isElementQName(POMQName.DEPENDENCIES)) {
+            created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
@@ -550,6 +548,30 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
         if (isElementQName(POMQName.DEPENDENCY) && context.getListClass().equals(Dependency.class)) {
             created = new DependencyImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.DEVELOPER) && context.getListClass().equals(Developer.class)) {
+            created = new DeveloperImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.CONTRIBUTOR) && context.getListClass().equals(Contributor.class)) {
+            created = new ContributorImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.LICENSE) && context.getListClass().equals(License.class)) {
+            created = new LicenseImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.PROFILE) && context.getListClass().equals(Profile.class)) {
+            created = new ProfileImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.REPOSITORY) && context.getListClass().equals(Repository.class)) {
+            created = new RepositoryImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.PLUGINREPOSITORY) && context.getListClass().equals(Repository.class)) {
+            created = new RepositoryImpl(context.getModel(), element);
             return;
         }
     }

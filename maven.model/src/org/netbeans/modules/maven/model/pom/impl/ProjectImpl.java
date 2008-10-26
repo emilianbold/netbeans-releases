@@ -68,7 +68,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setPomParent(Parent parent) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Parent.class, PARENT_PROPERTY, parent, empty);
+        setChild(Parent.class, POMQName.PARENT.getName(), parent, empty);
     }
 
     public Prerequisites getPrerequisites() {
@@ -77,7 +77,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setPrerequisites(Prerequisites prerequisites) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Prerequisites.class, PREREQUISITES_PROPERTY, prerequisites, empty);
+        setChild(Prerequisites.class, POMQName.PREREQUISITES.getName(), prerequisites, empty);
     }
 
     public IssueManagement getIssueManagement() {
@@ -86,7 +86,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setIssueManagement(IssueManagement issueManagement) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(IssueManagement.class, ISSUEMANAGEMENT_PROPERTY, issueManagement, empty);
+        setChild(IssueManagement.class, POMQName.ISSUEMANAGEMENT.getName(), issueManagement, empty);
     }
 
     public CiManagement getCiManagement() {
@@ -95,7 +95,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setCiManagement(CiManagement ciManagement) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(CiManagement.class, CIMANAGEMENT_PROPERTY, ciManagement, empty);
+        setChild(CiManagement.class, POMQName.CIMANAGEMENT.getName(), ciManagement, empty);
     }
 
     public List<MailingList> getMailingLists() {
@@ -110,7 +110,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         ModelList<MailingList> childs = getChild(MailingListImpl.List.class);
         if (childs == null) {
             setChild(MailingListImpl.List.class,
-                    POMQName.MAILINGLISTS.getQName().getLocalPart(),
+                    POMQName.MAILINGLISTS.getName(),
                     getModel().getFactory().create(this, POMQName.MAILINGLISTS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(MailingListImpl.List.class);
@@ -127,39 +127,87 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public List<Developer> getDevelopers() {
-        return getChildren(Developer.class);
+        ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addDeveloper(Developer ciManagement) {
-        appendChild(DEVELOPER_PROPERTY, ciManagement);
+    public void addDeveloper(Developer dev) {
+        ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
+        if (childs == null) {
+            setChild(DeveloperImpl.List.class,
+                    POMQName.DEVELOPERS.getName(),
+                    getModel().getFactory().create(this, POMQName.DEVELOPERS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(DeveloperImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(dev);
     }
 
-    public void removeDeveloper(Developer ciManagement) {
-        removeChild(DEVELOPER_PROPERTY, ciManagement);
+    public void removeDeveloper(Developer dev) {
+        ModelList<Developer> childs = getChild(DeveloperImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(dev);
+        }
     }
 
     public List<Contributor> getContributors() {
-        return getChildren(Contributor.class);
+        ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addContributor(Contributor ciManagement) {
-        appendChild(CONTRIBUTOR_PROPERTY, ciManagement);
+    public void addContributor(Contributor contributor) {
+        ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
+        if (childs == null) {
+            setChild(ContributorImpl.List.class,
+                    POMQName.CONTRIBUTORS.getName(),
+                    getModel().getFactory().create(this, POMQName.CONTRIBUTORS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ContributorImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(contributor);
     }
 
-    public void removeContributor(Contributor ciManagement) {
-        removeChild(CONTRIBUTOR_PROPERTY, ciManagement);
+    public void removeContributor(Contributor contributor) {
+        ModelList<Contributor> childs = getChild(ContributorImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(contributor);
+        }
     }
 
     public List<License> getLicenses() {
-        return getChildren(License.class);
+        ModelList<License> childs = getChild(LicenseImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addLicense(License ciManagement) {
-        appendChild(LICENSE_PROPERTY, ciManagement);
+    public void addLicense(License license) {
+        ModelList<License> childs = getChild(LicenseImpl.List.class);
+        if (childs == null) {
+            setChild(LicenseImpl.List.class,
+                    POMQName.LICENSES.getName(),
+                    getModel().getFactory().create(this, POMQName.LICENSES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(LicenseImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(license);
     }
 
-    public void removeLicense(License ciManagement) {
-        removeChild(LICENSE_PROPERTY, ciManagement);
+    public void removeLicense(License lic) {
+        ModelList<License> childs = getChild(LicenseImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(lic);
+        }
     }
 
     public Scm getScm() {
@@ -168,7 +216,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setScm(Scm scm) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Scm.class, SCM_PROPERTY, scm, empty);
+        setChild(Scm.class, POMQName.SCM.getName(), scm, empty);
     }
 
     public Organization getOrganization() {
@@ -177,7 +225,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setOrganization(Organization organization) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Organization.class, ORGANIZATION_PROPERTY, organization, empty);
+        setChild(Organization.class, POMQName.ORGANIZATION.getName(), organization, empty);
     }
 
     public Build getBuild() {
@@ -186,19 +234,35 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setBuild(Build build) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Build.class, BUILD_PROPERTY, build, empty);
+        setChild(Build.class, POMQName.BUILD.getName(), build, empty);
     }
 
     public List<Profile> getProfiles() {
-        return getChildren(Profile.class);
+        ModelList<Profile> childs = getChild(ProfileImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addProfile(Profile build) {
-        appendChild(PROFILE_PROPERTY, build);
+    public void addProfile(Profile profile) {
+        ModelList<Profile> childs = getChild(ProfileImpl.List.class);
+        if (childs == null) {
+            setChild(ProfileImpl.List.class,
+                    POMQName.PROFILES.getName(),
+                    getModel().getFactory().create(this, POMQName.PROFILES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ProfileImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(profile);
     }
 
-    public void removeProfile(Profile build) {
-        removeChild(PROFILE_PROPERTY, build);
+    public void removeProfile(Profile profile) {
+        ModelList<Profile> childs = getChild(ProfileImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(profile);
+        }
     }
 
 //    public List<String> getModules() {
@@ -214,27 +278,59 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 //    }
 
     public List<Repository> getRepositories() {
-        return getChildren(Repository.class);
+        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addRepository(Repository build) {
-        appendChild(REPOSITORY_PROPERTY, build);
+    public void addRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
+        if (childs == null) {
+            setChild(RepositoryImpl.RepoList.class,
+                    POMQName.REPOSITORIES.getName(),
+                    getModel().getFactory().create(this, POMQName.REPOSITORIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(RepositoryImpl.RepoList.class);
+            assert childs != null;
+        }
+        childs.addListChild(repo);
     }
 
-    public void removeRepository(Repository build) {
-        removeChild(REPOSITORY_PROPERTY, build);
+    public void removeRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
+        if (childs != null) {
+            childs.removeListChild(repo);
+        }
     }
 
     public List<Repository> getPluginRepositories() {
-        return getChildren(Repository.class);
+        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addPluginRepository(Repository build) {
-        appendChild(PLUGINREPOSITORY_PROPERTY, build);
+    public void addPluginRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
+        if (childs == null) {
+            setChild(RepositoryImpl.PluginRepoList.class,
+                    POMQName.PLUGINREPOSITORIES.getName(),
+                    getModel().getFactory().create(this, POMQName.PLUGINREPOSITORIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(RepositoryImpl.PluginRepoList.class);
+            assert childs != null;
+        }
+        childs.addListChild(repo);
     }
 
-    public void removePluginRepository(Repository build) {
-        removeChild(PLUGINREPOSITORY_PROPERTY, build);
+    public void removePluginRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
+        if (childs != null) {
+            childs.removeListChild(repo);
+        }
     }
 
     public List<Dependency> getDependencies() {
@@ -249,7 +345,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs == null) {
             setChild(DependencyImpl.List.class,
-                    POMQName.DEPENDENCIES.getQName().getLocalPart(),
+                    POMQName.DEPENDENCIES.getName(),
                     getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(DependencyImpl.List.class);
@@ -271,7 +367,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setReporting(Reporting reporting) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Reporting.class, REPORTING_PROPERTY, reporting, empty);
+        setChild(Reporting.class, POMQName.REPORTING.getName(), reporting, empty);
     }
 
     public DependencyManagement getDependencyManagement() {
@@ -280,7 +376,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setDependencyManagement(DependencyManagement dependencyManagement) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DependencyManagement.class, DEPENDENCYMANAGEMENT_PROPERTY, dependencyManagement, empty);
+        setChild(DependencyManagement.class, POMQName.DEPENDENCYMANAGEMENT.getName(), dependencyManagement, empty);
     }
 
     public DistributionManagement getDistributionManagement() {
@@ -289,7 +385,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
 
     public void setDistributionManagement(DistributionManagement distributionManagement) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DistributionManagement.class, DISTRIBUTIONMANAGEMENT_PROPERTY, distributionManagement, empty);
+        setChild(DistributionManagement.class, POMQName.DISTRIBUTIONMANAGEMENT.getName(), distributionManagement, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {
@@ -305,7 +401,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public void setPackaging(String pack) {
-        setChildElementText(POMQName.PACKAGING.getQName().getLocalPart(), pack,
+        setChildElementText(POMQName.PACKAGING.getName(), pack,
                 POMQName.PACKAGING.getQName());
     }
 
@@ -314,7 +410,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public void setName(String name) {
-        setChildElementText(POMQName.NAME.getQName().getLocalPart(), name,
+        setChildElementText(POMQName.NAME.getName(), name,
                 POMQName.NAME.getQName());
     }
 
@@ -323,7 +419,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public void setDescription(String description) {
-        setChildElementText(POMQName.DESCRIPTION.getQName().getLocalPart(), description,
+        setChildElementText(POMQName.DESCRIPTION.getName(), description,
                 POMQName.DESCRIPTION.getQName());
     }
 
@@ -332,7 +428,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public void setURL(String url) {
-        setChildElementText(POMQName.URL.getQName().getLocalPart(), url,
+        setChildElementText(POMQName.URL.getName(), url,
                 POMQName.URL.getQName());
     }
 
@@ -341,7 +437,7 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public void setInceptionYear(String inceptionYear) {
-        setChildElementText(POMQName.INCEPTIONYEAR.getQName().getLocalPart(), inceptionYear,
+        setChildElementText(POMQName.INCEPTIONYEAR.getName(), inceptionYear,
                 POMQName.INCEPTIONYEAR.getQName());
     }
 
