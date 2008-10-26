@@ -150,7 +150,7 @@ public class CopyFinderTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
         
         DataObject od = DataObject.find(data);
-        EditorCookie ec = od.getCookie(EditorCookie.class);
+        EditorCookie ec = od.getLookup().lookup(EditorCookie.class);
         
         assertNotNull(ec);
         
