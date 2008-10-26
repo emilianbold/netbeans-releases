@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.section.FileEntry;
 import java.io.File;
 import java.io.PrintStream;
@@ -125,6 +126,14 @@ public class DwarfStatementList {
         for (FileEntry fileEntry : fileEntries) {
             out.printf(" %-6d%-6d%-6d%-6d%s\n", ++idx, fileEntry.dirIndex, fileEntry.modifiedTime, fileEntry.fileSize, fileEntry.fileName); // NOI18N
         }
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
     
     public int getDirectoryIndex(String dirname) {

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,45 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-package org.netbeans.modules.websvc.editor.hints.fixes;
-
+package org.netbeans.modules.websvc.api.support;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
+import org.openide.nodes.Node;
 
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-
-import org.netbeans.modules.websvc.api.support.AddOperationCookie;
-import org.netbeans.modules.websvc.core.WebServiceActionProvider;
-
-/**
- * @author Ajit.Bhate@Sun.COM
+/*
+ * Provides a facility for obtaining the addOperation feature
+ * for both JAX-WS and JAX-RPC web service.
  */
-public class AddWSOpeartion implements Fix {
-    private FileObject fileObject;
+public interface AddOperationCookie extends Node.Cookie {
     
-    /** Creates a new instance of AddWSOpeartion */
-    public AddWSOpeartion(FileObject fileObject) {
-        this.fileObject = fileObject;
-    }
+    /**
+     * Adds a method definition to the the implementation class, possibly to SEI
+     */
+    public void addOperation(FileObject implementationClass);
     
-    public ChangeInfo implement(){
-        AddOperationCookie cookie = WebServiceActionProvider.getAddOperationAction(fileObject);
-        if(cookie !=null) cookie.addOperation(fileObject);
-        return null;
-    }
+    /**
+     * Determines if the Add Operation pop up menu should be enabled
+     * in the source editor.
+     * @param implClass Implementation class that is shown in the editor
+     */ 
+    public boolean isEnabled(FileObject implClass);
     
-    public int hashCode(){
-        return 1;
-    }
-    
-    public boolean equals(Object o){
-        // TODO: implement equals properly
-        return super.equals(o);
-    }
-    
-    public String getText(){
-        return NbBundle.getMessage(RemoveAnnotation.class, "LBL_AddWSOpeartion");
-    }
 }

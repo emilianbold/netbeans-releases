@@ -587,6 +587,10 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
     }
 
     private boolean isInside(ASTNode node, int line, int column, boolean addToPath) {
+        if (!isInSource(node)) {
+            return false;
+        }
+
         int beginLine = node.getLineNumber();
         int beginColumn = node.getColumnNumber();
         int endLine = node.getLastLineNumber();
@@ -630,4 +634,22 @@ public class PathFinderVisitor extends ClassCodeVisitorSupport {
         return addToPath ? true : result;
     }
 
+    private boolean isInSource(ASTNode node) {
+        if (node instanceof StaticMethodCallExpression && node.getLineNumber() == -1
+                && node.getLastLineNumber() == -1 && node.getColumnNumber() == -1
+                && node.getLastColumnNumber() == -1) {
+
+            StaticMethodCallExpression methodCall = (StaticMethodCallExpression) node;
+            if ("initMetaClass".equals(methodCall.getMethod())) { // NOI18N
+                Expression args = methodCall.getArguments();
+                if (args instanceof VariableExpression) {
+                    VariableExpression var = (VariableExpression) args;
+                    if ("this".equals(var.getName())) { // NOI18N
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
 }

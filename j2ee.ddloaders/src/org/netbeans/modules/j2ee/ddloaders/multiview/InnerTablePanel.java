@@ -44,7 +44,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 import org.netbeans.modules.xml.multiview.ui.DefaultTablePanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -75,7 +74,7 @@ public class InnerTablePanel extends SectionNodeInnerPanel {
                 stopCellEditing(table);
                 selectCell(model.addRow(), 0);
                 model.modelUpdatedFromUI();
-                Utils.scrollToVisible(tablePanel);
+                org.netbeans.modules.xml.multiview.Utils.scrollToVisible(tablePanel);
             }
         });
         getEditButton().addActionListener(new ActionListener() {

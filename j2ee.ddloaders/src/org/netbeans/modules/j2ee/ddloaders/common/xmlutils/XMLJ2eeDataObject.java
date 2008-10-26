@@ -81,16 +81,17 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
         throws org.openide.loaders.DataObjectExistsException {
         super(pf,loader);
         
-        getCookieSet().add(XMLJ2eeEditorSupport.class, this);
-        getCookieSet().add(EditCookie.class, this);
-        getCookieSet().add(EditorCookie.class, this);
-        getCookieSet().add(LineCookie.class, this);
-        getCookieSet().add(PrintCookie.class, this);
-        getCookieSet().add(CloseCookie.class, this);
+        CookieSet cs = getCookieSet();
+        cs.add(XMLJ2eeEditorSupport.class, this);
+        cs.add(EditCookie.class, this);
+        cs.add(EditorCookie.class, this);
+        cs.add(LineCookie.class, this);
+        cs.add(PrintCookie.class, this);
+        cs.add(CloseCookie.class, this);
         // added CheckXMLCookie
         InputSource in = DataObjectAdapters.inputSource(this);
         CheckXMLCookie checkCookie = new CheckXMLSupport(in);
-        getCookieSet().add(checkCookie);
+        cs.add(checkCookie);
     }
     // Issuezilla 23493 - this is the way how to disable the OpenCoookie from this data object
     @Override
@@ -286,13 +287,12 @@ public abstract class XMLJ2eeDataObject extends XMLDataObject implements CookieS
             if (error==null) return;
             if (errorAnnotation==null)
                  errorAnnotation = new org.openide.text.Annotation() {
-                 public String getAnnotationType() {
-                   return "xml-j2ee-annotation";    // NOI18N
-                 }
-                 String desc = NbBundle.getMessage(XMLJ2eeDataObject.class, "HINT_XMLErrorDescription");
-                 public String getShortDescription() {
-                   return desc;
-                 }
+                     public String getAnnotationType() {
+                        return "xml-j2ee-annotation";    // NOI18N
+                     }
+                     public String getShortDescription() {
+                        return NbBundle.getMessage(XMLJ2eeDataObject.class, "HINT_XMLErrorDescription");
+                     }
             };
             if (inOut==null)
                 inOut=org.openide.windows.IOProvider.getDefault().getIO(NbBundle.getMessage(XMLJ2eeDataObject.class, "TXT_parser"), false);

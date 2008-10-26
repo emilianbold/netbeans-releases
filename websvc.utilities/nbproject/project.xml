@@ -172,8 +172,9 @@ made subject to such option by the copyright holder.
             <friend-packages>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
-                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.design</friend>
+                <friend>org.netbeans.modules.websvc.editor.hints</friend>
+                <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <package>org.netbeans.modules.websvc.api.support</package>
                 <package>org.netbeans.modules.websvc.api.support.java</package>
                 <package>org.netbeans.modules.websvc.spi.support</package>

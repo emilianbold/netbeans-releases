@@ -49,12 +49,14 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.reader.DwarfReader;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.SECTIONS;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 
@@ -64,9 +66,11 @@ import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
  */
 public class DwarfDebugInfoSection extends ElfSection {
     List<CompilationUnit> compilationUnits = new ArrayList<CompilationUnit>();
+    DwarfRelaDebugInfoSection rela;
     
     public DwarfDebugInfoSection(DwarfReader reader, int sectionIdx) {
         super(reader, sectionIdx);
+        rela = (DwarfRelaDebugInfoSection) reader.getSection(SECTIONS.RELA_DEBUG_INFO);
     }
 
     public DwarfDebugInfoSection(ElfReader reader, int sectionIdx, SectionHeader header, String sectionName) {
@@ -122,5 +126,13 @@ public class DwarfDebugInfoSection extends ElfSection {
         } catch (IOException ex) {
             ex.printStackTrace();
         }
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
 }

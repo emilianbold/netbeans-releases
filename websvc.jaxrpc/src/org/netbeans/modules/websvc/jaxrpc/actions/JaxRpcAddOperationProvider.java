@@ -42,8 +42,8 @@
 package org.netbeans.modules.websvc.jaxrpc.actions;
 
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
-import org.netbeans.modules.websvc.core.AddOperationActionProvider;
-import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.spi.support.AddOperationActionProvider;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.openide.filesystems.FileObject;
 
 public class JaxRpcAddOperationProvider implements AddOperationActionProvider {

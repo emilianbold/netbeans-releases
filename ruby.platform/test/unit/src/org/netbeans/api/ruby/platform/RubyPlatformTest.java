@@ -191,4 +191,16 @@ public class RubyPlatformTest extends RubyTestBase {
         RubyPlatform platform = setUpPlatformWithRubyGems();
         assertEquals("righ gem tool", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), platform.getGemTool());
     }
+
+    public void testEqualityHashCodeAndOrdering() throws Exception {
+        RubyPlatform jrubySafe = getSafeJRuby();
+        RubyPlatform jrubyDef = RubyPlatformManager.getDefaultPlatform();
+        RubyPlatform ruby = setUpPlatform();
+
+        assertTrue("def vs. safe equals", jrubyDef.equals(jrubySafe));
+        assertTrue("def vs. safe compareTo", jrubyDef.compareTo(jrubySafe) == 0);
+
+        assertFalse("ruby vs. safe equals", ruby.equals(jrubySafe));
+        assertTrue("ruby vs. safe compareTo", ruby.compareTo(jrubySafe) > 0);
+    }
 }
