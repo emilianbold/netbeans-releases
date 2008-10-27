@@ -88,13 +88,12 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.openide.filesystems.URLMapper;
@@ -646,7 +645,7 @@ public class WebProjectUtilities {
         if (rh.getProjectLibraryManager().getLibrary("junit_4") == null) { // NOI18N
             rh.copyLibrary(LibraryManager.getDefault().getLibrary("junit_4")); // NOI18N
         }
-        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
+        SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
 
     private static String configureServerLibrary(final String librariesDefinition,

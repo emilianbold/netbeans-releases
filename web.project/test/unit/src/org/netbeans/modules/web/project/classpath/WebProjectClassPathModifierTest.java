@@ -86,7 +86,7 @@ public class WebProjectClassPathModifierTest extends NbTestCase {
         SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         FileObject srcJava = webProject.getSourceRoots().getRoots()[0];
         assertEquals("We should edit sources", "${src.dir}", groups[0].getName());
-        String classPathProperty = webProject.getClassPathProvider().getPropertyName(groups[0], ClassPath.COMPILE);
+        String classPathProperty = webProject.getClassPathProvider().getPropertyName(groups[0], ClassPath.COMPILE)[0];
         
         AntProjectHelper helper = webProject.getAntProjectHelper();
         

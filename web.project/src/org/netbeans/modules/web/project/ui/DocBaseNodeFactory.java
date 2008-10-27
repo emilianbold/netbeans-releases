@@ -50,23 +50,20 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
+import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
-import org.netbeans.modules.web.project.WebSources;
-import org.netbeans.modules.web.project.ui.SourceNodeFactory.PreselectPropertiesAction;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -87,7 +84,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.PasteType;
 
@@ -337,7 +333,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 actions[5] = null;
                 actions[6] = SystemAction.get(FileSystemAction.class);
                 actions[7] = null;
-                actions[8] = new PreselectPropertiesAction(project, "Sources"); //NOI18N
+                actions[8] = new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Sources"); //NOI18N
             }
             return actions;
         }

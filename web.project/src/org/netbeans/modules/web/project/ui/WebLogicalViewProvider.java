@@ -85,12 +85,11 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenDatasourceSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -102,6 +101,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.LogicalViewProvider2;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -116,7 +117,7 @@ import org.w3c.dom.Element;
  * Support for creating logical views.
  * @author Petr Hrebejk
  */
-public class WebLogicalViewProvider implements LogicalViewProvider {
+public class WebLogicalViewProvider implements LogicalViewProvider2 {
 
     private static final RequestProcessor BROKEN_LINKS_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_LINKS_RP"); // NOI18N
     private static final RequestProcessor BROKEN_DATASOURCE_RP = new RequestProcessor("WebLogicalViewProvider.BROKEN_DATASOURCE_RP"); //NOI18N
@@ -236,7 +237,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
     private static final String[] BREAKABLE_PROPERTIES = new String[] {
         ProjectProperties.JAVAC_CLASSPATH,
         WebProjectProperties.DEBUG_CLASSPATH,
-        ProjectProperties.RUN_TEST_CLASSPATH, 
+        ProjectProperties.RUN_TEST_CLASSPATH,
         WebProjectProperties.DEBUG_TEST_CLASSPATH, 
         ProjectProperties.JAVAC_TEST_CLASSPATH,
         WebProjectProperties.WAR_CONTENT_ADDITIONAL,
@@ -513,7 +514,7 @@ public class WebLogicalViewProvider implements LogicalViewProvider {
                 String j2eeSpec = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(WebProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(WebLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+WebProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N

@@ -61,7 +61,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
 import org.netbeans.modules.web.project.api.WebPropertyEvaluator;
 import org.netbeans.modules.web.project.jaxws.WebProjectJAXWSClientSupport;
@@ -97,11 +97,12 @@ import org.netbeans.modules.web.project.ui.WebLogicalViewProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifierSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifierSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
@@ -122,16 +123,17 @@ import org.netbeans.spi.project.ui.support.UILookupMergerSupport;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.web.project.classpath.WebProjectLibrariesModifierImpl;
@@ -346,8 +348,7 @@ public final class WebProject implements Project, AntProjectListener {
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         enterpriseResourceSupport = new WebContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
-            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback(),
-                                    new String[]{ProjectProperties.JAVAC_CLASSPATH, WebProjectProperties.WAR_CONTENT_ADDITIONAL});
+            new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
@@ -376,11 +377,12 @@ public final class WebProject implements Project, AntProjectListener {
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
-                final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
-                if (classPathProperty == null) {
+                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                if (classPathProperty == null || classPathProperty.length == 0) {
                     throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
-                return classPathProperty;
+                assert !classPathProperty[0].equals(WebProjectProperties.J2EE_PLATFORM_CLASSPATH);
+                return classPathProperty[0];
             }
 
             public String getElementName(String classpathProperty) {
@@ -497,7 +499,7 @@ public final class WebProject implements Project, AntProjectListener {
             new WebPersistenceProviderSupplier(this),
             new WebEMGenStrategyResolver(),
             new WebJPADataSourceSupport(this), 
-            new WebServerStatusProvider(this),
+            Util.createServerStatusProvider(getWebModule()),
             new WebJPAModuleInfo(this),
             UILookupMergerSupport.createPrivilegedTemplatesMerger(),
             UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -511,7 +513,7 @@ public final class WebProject implements Project, AntProjectListener {
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
-            BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
     }
@@ -645,7 +647,7 @@ public final class WebProject implements Project, AntProjectListener {
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     WebProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(WebProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -949,10 +951,10 @@ public final class WebProject implements Project, AntProjectListener {
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);    //Reread the properties, PathParser changes them
 
             // #134642 - use Ant task from copylibs library
-            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
 
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
 
             //add webinf.dir required by 6.0 projects
             if (props.getProperty(WebProjectProperties.WEBINF_DIR) == null) {
