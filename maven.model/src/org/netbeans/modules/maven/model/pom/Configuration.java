@@ -38,63 +38,15 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
-import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xam.dom.ComponentFactory;
 
 /**
  *
  * @author mkleint
  */
-public interface POMComponentFactory extends ComponentFactory<POMComponent>  {
+public interface Configuration extends POMComponent {
 
-    /**
-     * Creates a domain component generically.
-     */
-    POMComponent create(POMComponent context, QName qName);
-    
-    // The following are specific create method for each of the defined 
-    // component interfaces
+//  <!--xs:complexType name="Configuration">
+//  </xs:complexType-->
 
-    Project createProject();
-    Parent createParent();
-    Organization createOrganization();
-    DistributionManagement createDistributionManagement();
-    Site createSite();
-    DeploymentRepository createDistRepository();
-    DeploymentRepository createDistSnapshotRepository();
-    Prerequisites createPrerequisites();
-    Contributor createContributor();
-    Scm createScm();
-    IssueManagement createIssueManagement();
-    CiManagement createCiManagement();
-    Notifier createNotifier();
-    Repository createRepository();
-    Repository createPluginRepository();
-    RepositoryPolicy createSnapshotRepositoryPolicy();
-    RepositoryPolicy createReleaseRepositoryPolicy();
-    Profile createProfile();
-    BuildBase createBuildBase();
-    Plugin createPlugin();
-    Dependency createDependency();
-    Exclusion createExclusion();
-    PluginExecution createExecution();
-    Resource createResource();
-    Resource createTestResource();
-    PluginManagement createPluginManagement();
-    Reporting createReporting();
-    ReportPlugin createReportPlugin();
-    ReportSet createReportSet();
-    Activation createActivation();
-    ActivationProperty createActivationProperty();
-    ActivationOS createActivationOS();
-    ActivationFile createActivationFile();
-    ActivationCustom createActivationCustom();
-    DependencyManagement createDependencyManagement();
-    Build createBuild();
-    Extension createExtension();
-    License createLicense();
-    MailingList createMailingList();
-    Developer createDeveloper();
-    Configuration createConfiguration();
-    Properties createProperties();
+
 }

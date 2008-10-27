@@ -102,20 +102,8 @@ public interface POMComponent extends DocumentComponent<POMComponent> {
      */
     <T extends POMExtensibilityElement> List<T> getExtensibilityElements(Class<T> type);
         
-    /**
-     * Gets the value of an attribute in any namespace.
-     * 
-     * @param qname attribute QName 
-     * 
-     * @return  attribute value
-     */
-    String getAnyAttribute(QName qname);
-    
-    /**
-     * Sets the value of an attribute in any namespace.
-     * 
-     * @param qname attribute QName 
-     * @param value new attribute value
-     */
-    void setAnyAttribute(QName qname, String value);
+
+    String getChildElementText(QName qname);
+    void setChildElementText(String propertyName, String text, QName qname);
+
 }

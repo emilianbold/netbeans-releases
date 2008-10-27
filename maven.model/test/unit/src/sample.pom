@@ -608,4 +608,8 @@
       <url>dav:https://dav.codehaus.org/mojo/nbm-maven-plugin</url>
     </site>
   </distributionManagement>
+  <properties>
+      <prop1>foo</prop1>
+      <prop2>bar</prop2>
+  </properties>
 </project>

@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.pom;
 import java.io.File;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import junit.framework.TestCase;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
@@ -51,6 +52,7 @@ import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Parent;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -95,6 +97,18 @@ public class NewEmptyJUnitTest extends TestCase {
         List<Plugin> plugins = prj.getBuild().getPlugins();
         assertNotNull(plugins);
         assertEquals(4, plugins.size());
+
+        Properties props = prj.getProperties();
+        assertNotNull(props);
+        String val1 = props.getProperty("prop1");
+        assertEquals("foo", val1);
+        String val2 = props.getProperty("prop2");
+        assertEquals("bar", val2);
+
+        Map<String, String> p = props.getProperties();
+        assertEquals(2, p.size());
+        assertEquals("foo", p.get("prop1"));
+        assertEquals("bar", p.get("prop2"));
 
 //        model.startTransaction();
 //        try {

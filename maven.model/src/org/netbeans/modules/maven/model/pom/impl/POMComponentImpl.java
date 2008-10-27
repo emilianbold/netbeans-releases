@@ -150,7 +150,20 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
             }
         }
         return ret;
-    }   
+    }
+
+    @Override
+    public String getChildElementText(QName qname) {
+        return super.getChildElementText(qname);
+    }
+
+
+    @Override
+    public void setChildElementText(String propertyName, String text, QName qname) {
+        super.setChildElementText(propertyName, text, qname);
+    }
+
+
     
 }
 

@@ -185,6 +185,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
+        if (isElementQName(POMQName.PROPERTIES)) {
+            created = new PropertiesImpl(context.getModel(), element);
+            return;
+        }
+
         //createExtensibilityElement(context);
     }
 
@@ -330,6 +335,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             created = new DistributionManagementImpl(context.getModel(), element);
             return;
         }
+        
+        if (isElementQName(POMQName.PROPERTIES)) {
+            created = new PropertiesImpl(context.getModel(), element);
+            return;
+        }
 
         //createExtensibilityElement(context);
     }
@@ -368,6 +378,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
         if (isElementQName(POMQName.DEPENDENCIES)) {
             created = new DependencyImpl.List(context.getModel(), element);
+            return;
+        }
+
+        if (isElementQName(POMQName.CONFIGURATION)) {
+            created = new ConfigurationImpl(context.getModel(), element);
             return;
         }
 
@@ -423,6 +438,10 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     public void visit(ReportPlugin context) {
         if (isElementQName(POMQName.REPORTSET)) {
             created = new ReportSetImpl(context.getModel(), element);
+            return;
+        }
+        if (isElementQName(POMQName.CONFIGURATION)) {
+            created = new ConfigurationImpl(context.getModel(), element);
             return;
         }
 

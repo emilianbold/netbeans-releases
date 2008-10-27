@@ -38,7 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.MailingList;
@@ -439,6 +440,14 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     public void setInceptionYear(String inceptionYear) {
         setChildElementText(POMQName.INCEPTIONYEAR.getName(), inceptionYear,
                 POMQName.INCEPTIONYEAR.getQName());
+    }
+
+    public Properties getProperties() {
+        return getChild(Properties.class);
+    }
+
+    public void setProperties(Properties props) {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
 }

@@ -111,6 +111,7 @@ public enum POMQName {
     ARTIFACTID(createQName("artifactId")), //NOI18N
     VERSION(createQName("version")), //NOI18N
     CONFIGURATION(createQName("configuration")), //NOI18N
+    PROPERTIES(createQName("properties")), //NOI18N
 
     RELATIVEPATH(createQName("relativePath")), //NOI18N
 

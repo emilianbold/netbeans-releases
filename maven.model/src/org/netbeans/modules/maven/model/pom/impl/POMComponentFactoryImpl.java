@@ -267,5 +267,12 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         return new DeveloperImpl(model);
     }
 
+    public Configuration createConfiguration() {
+        return new ConfigurationImpl(model);
+    }
+
+    public Properties createProperties() {
+        return new PropertiesImpl(model);
+    }
 
 }

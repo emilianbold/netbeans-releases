@@ -36,55 +36,34 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom.visitor;
+package org.netbeans.modules.maven.model.pom.impl;
 
-import org.netbeans.modules.maven.model.pom.*;
+import java.util.*;
+import org.w3c.dom.Element;
+import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
 
 /**
  *
  * @author mkleint
  */
-public interface POMComponentVisitor {
+public class ConfigurationImpl extends POMComponentImpl implements Configuration {
+
+    public ConfigurationImpl(POMModel model, Element element) {
+        super(model, element);
+    }
     
-    void visit(Project target);
-    void visit(Parent target);
-    void visit(Organization target);
-    void visit(DistributionManagement target);
-    void visit(Site target);
-    void visit(DeploymentRepository target);
-    void visit(Prerequisites target);
-    void visit(Contributor target);
-    void visit(Scm target);
-    void visit(IssueManagement target);
-    void visit(CiManagement target);
-    void visit(Notifier target);
-    void visit(Repository target);
-    void visit(RepositoryPolicy target);
-    void visit(Profile target);
-    void visit(BuildBase target);
-    void visit(Plugin target);
-    void visit(Dependency target);
-    void visit(Exclusion target);
-    void visit(PluginExecution target);
-    void visit(Resource target);
-    void visit(PluginManagement target);
-    void visit(Reporting target);
-    void visit(ReportPlugin target);
-    void visit(ReportSet target);
-    void visit(Activation target);
-    void visit(ActivationProperty target);
-    void visit(ActivationOS target);
-    void visit(ActivationFile target);
-    void visit(ActivationCustom target);
-    void visit(DependencyManagement target);
-    void visit(Build target);
-    void visit(Extension target);
-    void visit(License target);
-    void visit(MailingList target);
-    void visit(Developer target);
-    void visit(POMExtensibilityElement target);
-    void visit(ModelList target);
-    void visit(Configuration target);
-    void visit(Properties target);
+    public ConfigurationImpl(POMModel model) {
+        this(model, createElementNS(model, POMQName.CONFIGURATION));
+    }
+
+    // attributes
+
+    // child elements
+
+    public void accept(POMComponentVisitor visitor) {
+        visitor.visit(this);
+    }
+
 
 }

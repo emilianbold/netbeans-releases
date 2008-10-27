@@ -199,8 +199,15 @@ public class DefaultVisitor implements POMComponentVisitor {
         visitComponent(target);
     }
     
-    protected void visitComponent(POMComponent target) {
+    public void visit(Configuration target) {
+        visitComponent(target);
     }
 
+    public void visit(Properties target) {
+        visitComponent(target);
+    }
+
+    protected void visitComponent(POMComponent target) {
+    }
 
 }

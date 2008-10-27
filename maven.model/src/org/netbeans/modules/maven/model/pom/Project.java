@@ -271,4 +271,7 @@ public interface Project extends VersionablePOMComponent {
     public DistributionManagement getDistributionManagement();
     public void setDistributionManagement(DistributionManagement distributionManagement);
 
+
+    Properties getProperties();
+    void setProperties(Properties props);
 }

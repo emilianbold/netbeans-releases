@@ -36,65 +36,67 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom;
+package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.xml.xam.dom.ComponentFactory;
+import org.w3c.dom.Element;
+import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
 
 /**
  *
  * @author mkleint
  */
-public interface POMComponentFactory extends ComponentFactory<POMComponent>  {
+public class PropertiesImpl extends POMComponentImpl implements Properties {
 
-    /**
-     * Creates a domain component generically.
-     */
-    POMComponent create(POMComponent context, QName qName);
+    public PropertiesImpl(POMModel model, Element element) {
+        super(model, element);
+    }
     
-    // The following are specific create method for each of the defined 
-    // component interfaces
+    public PropertiesImpl(POMModel model) {
+        this(model, createElementNS(model, POMQName.PROPERTIES));
+    }
 
-    Project createProject();
-    Parent createParent();
-    Organization createOrganization();
-    DistributionManagement createDistributionManagement();
-    Site createSite();
-    DeploymentRepository createDistRepository();
-    DeploymentRepository createDistSnapshotRepository();
-    Prerequisites createPrerequisites();
-    Contributor createContributor();
-    Scm createScm();
-    IssueManagement createIssueManagement();
-    CiManagement createCiManagement();
-    Notifier createNotifier();
-    Repository createRepository();
-    Repository createPluginRepository();
-    RepositoryPolicy createSnapshotRepositoryPolicy();
-    RepositoryPolicy createReleaseRepositoryPolicy();
-    Profile createProfile();
-    BuildBase createBuildBase();
-    Plugin createPlugin();
-    Dependency createDependency();
-    Exclusion createExclusion();
-    PluginExecution createExecution();
-    Resource createResource();
-    Resource createTestResource();
-    PluginManagement createPluginManagement();
-    Reporting createReporting();
-    ReportPlugin createReportPlugin();
-    ReportSet createReportSet();
-    Activation createActivation();
-    ActivationProperty createActivationProperty();
-    ActivationOS createActivationOS();
-    ActivationFile createActivationFile();
-    ActivationCustom createActivationCustom();
-    DependencyManagement createDependencyManagement();
-    Build createBuild();
-    Extension createExtension();
-    License createLicense();
-    MailingList createMailingList();
-    Developer createDeveloper();
-    Configuration createConfiguration();
-    Properties createProperties();
+    // attributes
+
+    // child elements
+
+    public String getType() {
+        return getChildElementText(POMQName.TYPE.getQName());
+    }
+
+    public void setType(String type) {
+        setChildElementText(POMQName.TYPE.getName(), type,
+                POMQName.TYPE.getQName());
+    }
+
+    public void setProperty(String key, String value) {
+        QName qname = POMQName.createQName(key);
+        setChildElementText(qname.getLocalPart(), value,
+                qname);
+    }
+
+    public String getProperty(String key) {
+        return getChildElementText(POMQName.createQName(key));
+    }
+
+    public Map<String, String> getProperties() {
+        Map<String, String> toRet = new HashMap<String, String>();
+        List<POMComponent> chlds = getChildren();
+        for (POMComponent pc : chlds) {
+            Element el = pc.getPeer();
+            String key = el.getLocalName();
+            String val = el.getTextContent();
+            toRet.put(key, val);
+        }
+        return toRet;
+    }
+
+    public void accept(POMComponentVisitor visitor) {
+        visitor.visit(this);
+    }
+
 }
