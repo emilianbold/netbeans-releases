@@ -188,8 +188,8 @@ public class GdbDebugger implements PropertyChangeListener {
     private String firstBPfile;
     private String firstBPline;
     private InputOutput iotab;
-    private boolean firstOutput;
-    private boolean dlopenPending;
+    private boolean firstOutput = true;
+    private boolean dlopenPending = false;
     private int shareToken;
     private final Disassembly disassembly;
     private GdbBreakpoint currentBreakpoint = null;
@@ -204,8 +204,6 @@ public class GdbDebugger implements PropertyChangeListener {
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
-        firstOutput = true;
-        dlopenPending = false;
         addPropertyChangeListener(this);
 
         GdbEngineProvider dep = null;
@@ -2473,9 +2471,9 @@ public class GdbDebugger implements PropertyChangeListener {
         pcs.firePropertyChange(name, o, n);
     }
 
-    public int getCurrentToken() {
+    /*public int getCurrentToken() {
         return currentToken;
-    }
+    }*/
 
     public boolean isCygwin() {
         return cygwin;
@@ -2485,10 +2483,10 @@ public class GdbDebugger implements PropertyChangeListener {
         return mingw;
     }
     
-    public boolean isUnix() {
+    /*public boolean isUnix() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC ||
                 platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
-    }
+    }*/
     
     public boolean isSolaris() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC;
