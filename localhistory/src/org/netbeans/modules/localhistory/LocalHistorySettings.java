@@ -71,16 +71,16 @@ public class LocalHistorySettings {
         return NbPreferences.forModule(LocalHistorySettings.class);
     }
 
-    public void setTTL(int ttl) {       
+    public void setTTL(int ttl) {
         getPreferences().putInt(PROP_TTL, ttl);
     }
     
-    public int getTTL() {               
+    public int getTTL() {
         return getPreferences().getInt(PROP_TTL, 7);
     }    
 
-    public int getTTLMillis() {               
-        return getTTL() * 24 * 60 * 60 * 1000;
+    public long getTTLMillis() {
+        return ((long) getTTL()) * 24 * 60 * 60 * 1000;
     }   
     
     public void setLastSelectedEntry(File file, long ts) {
