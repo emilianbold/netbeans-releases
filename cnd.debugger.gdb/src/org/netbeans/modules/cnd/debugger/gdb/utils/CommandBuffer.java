@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 public class CommandBuffer {
     
     // Static parts
-    private static enum STATE {
+    private static enum State {
         NONE, WAITING, TIMEOUT, OK, ERROR;
     }
     
@@ -62,7 +62,7 @@ public class CommandBuffer {
     private final StringBuilder buf = new StringBuilder();
     private final int token;
     private String err = null;
-    private STATE state = STATE.NONE;
+    private State state = State.NONE;
     private final Object lock = new Object();
     protected static Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
     private final GdbProxy gdb;
@@ -82,31 +82,31 @@ public class CommandBuffer {
     public String waitForCompletion() {
         assert !Thread.currentThread().getName().equals("GdbReaderRP");
         synchronized (lock) {
-            if (state == STATE.NONE) {
-                state = STATE.WAITING; // this will change unless we timeout
+            if (state == State.NONE) {
+                state = State.WAITING; // this will change unless we timeout
             }
             try {
                 long tstart = System.currentTimeMillis();
                 long tend = tstart;
-                while (state == STATE.WAITING) {
+                while (state == State.WAITING) {
                     lock.wait(WAIT_TIME);
                     tend = System.currentTimeMillis();
                     if ((tend - tstart) > WAIT_TIME) {
-                        if (state == STATE.OK) {
+                        if (state == State.OK) {
                             log.finest("CB.postAndWait[" + token + "]: Timed out after Done [" + getResponse() + "]");
                         } else {
-                            state = STATE.TIMEOUT;
+                            state = State.TIMEOUT;
                         }
                     }
                 }
-                if (state == STATE.TIMEOUT) {
+                if (state == State.TIMEOUT) {
                     log.warning("CB.postAndWait[" + token + "]: Timeout at " + tend + " on " + GdbUtils.threadId());
                 } else if (log.isLoggable(Level.FINE)) {
-                    if (state == STATE.ERROR &&
+                    if (state == State.ERROR &&
                             !Thread.currentThread().getName().equals("ToolTip-Evaluator")) { // NOI18N
                         log.fine("CB.postAndWait[" + token + "]: Error wait of " + (tend - tstart) + " ms on " +
                                 GdbUtils.threadId());
-                    } else if (state == STATE.OK) {
+                    } else if (state == State.OK) {
                         log.fine("CB.postAndWait[" + token + "]: OK wait of " + (tend - tstart) + " ms on " +
                                 GdbUtils.threadId());
                     }
@@ -131,7 +131,7 @@ public class CommandBuffer {
     public void done() {
         String time = getTimePrefix(timerOn && log.isLoggable(Level.FINEST));
         synchronized (lock) {
-            state = STATE.OK;
+            state = State.OK;
             log.finest("CB.done[" + time + token + "]: Released lock on " + GdbUtils.threadId());
             gdb.removeCB(token);
             lock.notifyAll();
@@ -142,7 +142,7 @@ public class CommandBuffer {
         String time = getTimePrefix(timerOn && log.isLoggable(Level.FINEST));
         synchronized (lock) {
             err = msg;
-            state = STATE.ERROR;
+            state = State.ERROR;
             log.finest("CB.error[" + time + token + "]: Releasing lock on " + GdbUtils.threadId());
             gdb.removeCB(token);
             lock.notifyAll();
@@ -150,22 +150,22 @@ public class CommandBuffer {
     }
     
     public String getError() {
-        if (state == STATE.ERROR && err != null) {
+        if (state == State.ERROR && err != null) {
             return err;
         }
         return null;
     }
     
     public boolean isTimedOut() {
-        return state == STATE.TIMEOUT;
+        return state == State.TIMEOUT;
     }
 
     public boolean isError() {
-        return state == STATE.ERROR;
+        return state == State.ERROR;
     }
 
     public boolean isOK() {
-        return state == STATE.OK;
+        return state == State.OK;
     }
 
     public String getResponse() {
