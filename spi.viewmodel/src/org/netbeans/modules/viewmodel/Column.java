@@ -52,6 +52,8 @@ import org.openide.nodes.PropertySupport;
  */
 public class Column extends PropertySupport.ReadWrite {
 
+    public static final String PROP_ORDER_NUMBER = "OrderNumberOutline"; // NOI18N
+
     private PropertyEditor propertyEditor;
     private ColumnModel columnModel;
     private TreeTable treeTable;
@@ -108,7 +110,17 @@ public class Column extends PropertySupport.ReadWrite {
     boolean isDefault () {
         return columnModel.getType () == null;
     }
-    
+
+    @Override
+    public boolean isHidden() {
+        return !columnModel.isVisible();
+    }
+
+    @Override
+    public void setHidden(boolean hidden) {
+        columnModel.setVisible(!hidden);
+    }
+
     public Object getValue () {
         return null;
     }
@@ -117,7 +129,7 @@ public class Column extends PropertySupport.ReadWrite {
     }
 
     public Object getValue (String propertyName) {
-        if ("OrderNumberTTV".equals (propertyName)) {
+        if (treeTable != null && "OrderNumberTTV".equals (propertyName)) {
             if (!columnModel.isVisible()) return -1;
             int index = columnModel.getCurrentOrderNumber();
             if (index != -1) {
@@ -130,6 +142,10 @@ public class Column extends PropertySupport.ReadWrite {
                 return new Integer(index);
             }
         }
+        if (PROP_ORDER_NUMBER.equals (propertyName)) {
+            int index = columnModel.getCurrentOrderNumber();
+            return new Integer(index);
+        }
         if ("InvisibleInTreeTableView".equals (propertyName)) 
             return Boolean.valueOf (!columnModel.isVisible ());
         if ("SortingColumnTTV".equals (propertyName)) 
@@ -140,7 +156,7 @@ public class Column extends PropertySupport.ReadWrite {
     }
     
     public void setValue (String propertyName, Object newValue) {
-        if ("OrderNumberTTV".equals (propertyName)) {
+        if (treeTable != null && "OrderNumberTTV".equals (propertyName)) {
             int index = ((Integer) newValue).intValue();
             //System.err.println("Set order of "+this.getDisplayName()+" <= "+newValue);
             if (index != -1) {
@@ -148,7 +164,11 @@ public class Column extends PropertySupport.ReadWrite {
                 columnModel.setCurrentOrderNumber(index);
             }
         } else
-        if ("InvisibleInTreeTableView".equals (propertyName)) {
+        if (PROP_ORDER_NUMBER.equals (propertyName)) {
+            int index = ((Integer) newValue).intValue();
+            columnModel.setCurrentOrderNumber(index);
+        } else
+        if (treeTable != null && "InvisibleInTreeTableView".equals (propertyName)) {
             columnModel.setVisible (
                 !((Boolean) newValue).booleanValue ()
             );
