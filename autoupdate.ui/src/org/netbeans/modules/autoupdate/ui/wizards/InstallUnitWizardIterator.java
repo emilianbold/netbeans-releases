@@ -100,10 +100,12 @@ public final class InstallUnitWizardIterator implements WizardDescriptor.Iterato
     }
     
     public boolean hasNext () {
+        compactPanels ();
         return index < panels.size () - 1;
     }
     
     public boolean hasPrevious () {
+        compactPanels ();
         return index > 0 && ! (current () instanceof InstallStep || current () instanceof CustomHandleStep);
     }
     

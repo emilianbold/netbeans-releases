@@ -78,13 +78,13 @@ public class Retriever implements Runnable {
     public static final int STATUS_BAD_DOWNLOAD = 6;
     
     private static final String [] STATUS_MESSAGE = {
-        "Ready.",
-        "Connecting...",
-        "Downloading...",
-        "", // "Complete",
-        "{0}: {1}",
-        "", // "Terminated.",
-        "Response from this URL is not a valid WSDL file.",
+        NbBundle.getMessage(Retriever.class, "STATUS_Ready"),  //NOI18N
+        NbBundle.getMessage(Retriever.class, "STATUS_Connecting"),  //NOI18N
+        NbBundle.getMessage(Retriever.class, "STATUS_Downloading"),  //NOI18N
+        NbBundle.getMessage(Retriever.class, "STATUS_Complete"),  //NOI18N
+        NbBundle.getMessage(Retriever.class, "STATUS_Failed"),  //NOI18N
+        NbBundle.getMessage(Retriever.class, "STATUS_Terminated"),  //NOI18N
+        NbBundle.getMessage(Retriever.class, "STATUS_InvalidWsdl")  //NOI18N
     };
     
     public interface Updater {
@@ -144,15 +144,15 @@ public class Retriever implements Runnable {
     }
     
     private String countAsString(int c) {
-        String size = "";
+        String size = "";  //NOI18N
         if(c < 1024) {
-            size = NbBundle.getMessage(Retriever.class, "MSG_SizeBytes", c);
+            size = NbBundle.getMessage(Retriever.class, "MSG_SizeBytes", c);  //NOI18N
         } else if(c < 1048676) {
-            size = NbBundle.getMessage(Retriever.class, "MSG_SizeKb", c / 1024);
+            size = NbBundle.getMessage(Retriever.class, "MSG_SizeKb", c / 1024);  //NOI18N
         } else {
             int m = c / 1048676;
             int d = (c - m * 1048676)*10 / 1048676;
-            size = NbBundle.getMessage(Retriever.class, "MSG_SizeMb", m, d);
+            size = NbBundle.getMessage(Retriever.class, "MSG_SizeMb", m, d);  //NOI18N
         }
         return size;
     }
@@ -200,16 +200,16 @@ public class Retriever implements Runnable {
                 message = NbBundle.getMessage(Retriever.class, "MSG_DownloadCancelled"); // NOI18N
             }
         } catch(ConnectException ex) {
-            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "Connection Exception", ex); // NOI18N
         } catch(MalformedURLException ex) {
-            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "Badly formed URL", ex); // NOI18N
         } catch(IOException ex) {
-            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "I/O Exception", ex); // NOI18N
         } catch(RuntimeException ex) {
-            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);  //NOI18N
             setDownloadState(STATUS_FAILED, "Runtime Exception", ex); // NOI18N
         } finally {
             if(shutdown || status != STATUS_COMPLETE) {
@@ -391,39 +391,35 @@ public class Retriever implements Runnable {
         // > 3600000 -> XX hours, XX minutes, XX seconds
         StringBuilder builder = new StringBuilder(100);
         if(time < 0) {
-            builder.append("an eternity");
+            builder.append(NbBundle.getMessage(Retriever.class, "TIME_ETERNITY"));  //NOI18N
         } else if(time == 0) {
-            builder.append("no time at all");
+            builder.append(NbBundle.getMessage(Retriever.class, "TIME_NO_TIME"));  //NOI18N
         } else {
+            String separator = NbBundle.getMessage(Retriever.class, "TIME_SEPARATOR"); //NOI18N
             if(time >= 3600000) {
                 int hours = time / 3600000;
                 time %= 3600000;
-                builder.append(hours);
-                builder.append(hours > 1 ? " hours" : " hour");
+                builder.append(NbBundle.getMessage(Retriever.class, "TIME_HOURS", hours));  //NOI18N
             }
             if(time >= 60000) {
                 if(builder.length() > 0) {
-                    builder.append(", ");
+                    builder.append(separator);
                 }
                 int minutes = time / 60000;
                 time %= 60000;
-                builder.append(minutes);
-                builder.append(minutes > 1 ? " minutes" : " minute");
+                builder.append(NbBundle.getMessage(Retriever.class, "TIME_MINUTES", minutes));  //NOI18N
             }
             if(time >= 1000 || builder.length() > 0) {
                 if(builder.length() > 0) {
-                    builder.append(", ");
+                    builder.append(separator);
                 }
                 int seconds = (time + 500) / 1000;
                 time %= 1000;
-                
                 if(seconds > 0) {
-                    builder.append(seconds);
-                    builder.append(seconds > 1 ? " seconds" : " second");
+                    builder.append(NbBundle.getMessage(Retriever.class, "TIME_SECONDS", seconds));  //NOI18N
                 }
             } else {
-                builder.append(time);
-                builder.append(" ms");
+                builder.append(NbBundle.getMessage(Retriever.class, "TIME_MILISECONDS", time));  //NOI18N
             }
         }
         

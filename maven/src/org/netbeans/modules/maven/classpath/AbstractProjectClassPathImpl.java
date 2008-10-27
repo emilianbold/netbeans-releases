@@ -63,7 +63,7 @@ import org.netbeans.spi.java.classpath.PathResourceImplementation;
  *
  * @author mkleint
  */
-abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
+public abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     private List<PathResourceImplementation> resources;
     private NbMavenProjectImpl project;
@@ -144,10 +144,13 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
     protected FilteringPathResourceImplementation getFilteringResources() {
         return null;
     }
-    
+
     private List<PathResourceImplementation> getPath() {
+        return getPath(createPath());
+    }
+    
+    public static  List<PathResourceImplementation> getPath(URI[] pieces) {
         List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
-        URI[] pieces = createPath();
         for (int i = 0; i < pieces.length; i++) {
             try {
                 URL entry;
@@ -180,10 +183,10 @@ abstract class AbstractProjectClassPathImpl implements ClassPathImplementation {
                 ErrorManager.getDefault().notify(mue);
             }
         }
-        FilteringPathResourceImplementation filtering = getFilteringResources();
-        if (filtering != null) {
-            result.add(filtering);
-        }
+//        FilteringPathResourceImplementation filtering = getFilteringResources();
+//        if (filtering != null) {
+//            result.add(filtering);
+//        }
         return Collections.<PathResourceImplementation>unmodifiableList(result);
     }
     

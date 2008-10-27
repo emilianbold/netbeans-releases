@@ -32,7 +32,7 @@
 
     <!-- GlassFish V3 properties   -->   
     <property name="glassfish.v3.build.type"      value="prelude"/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish_branch/10.0/promoted"/>
 
     <loadresource property="glassfish.v3.build.number">
           <url url="${glassfish.v3.location.prefix}/prelude/latest/archive/bundles"/>

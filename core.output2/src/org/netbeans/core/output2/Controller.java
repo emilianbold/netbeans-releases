@@ -741,7 +741,6 @@ public class Controller { //XXX public only for debug access to logging code
         }
     }
 
-    private boolean firstF12 = true;
     /**
      * Sends the caret in a tab to the nearest error line to its current position, selecting
      * that line.
@@ -760,7 +759,11 @@ public class Controller { //XXX public only for debug access to logging code
         }
         OutWriter out = tab.getIO().out();
         if (out != null) {
-            int line = firstF12 ? 0 : Math.max(0, tab.getOutputPane().getCaretLine());
+            int line = tab.getOutputPane().getCaretLine();
+            if (!tab.getOutputPane().isLineSelected(line)) {
+                line += backward ? 1 : -1;
+            }
+
             if (line >= tab.getOutputPane().getLineCount()-1) {
                 line = 0;
             }
@@ -791,7 +794,6 @@ public class Controller { //XXX public only for debug access to logging code
                     l.outputLineAction(ce);
                 }
             }
-            firstF12 = false;
         }
     }
 
@@ -1158,7 +1160,6 @@ public class Controller { //XXX public only for debug access to logging code
                 }
                 break;
             case IOEvent.CMD_RESET :
-                firstF12 = true;
                 if (tab == null) {
                     if (LOG) log ("Got a reset on an io with no tab.  Creating a tab.");
                     performCommand (win, null, io, IOEvent.CMD_CREATE, value, data);
@@ -1220,7 +1221,7 @@ public class Controller { //XXX public only for debug access to logging code
     }
 
     void hasOutputListenersChanged(OutputWindow win, OutputTab tab, boolean hasOutputListeners) {
-        if (hasOutputListeners && win.getSelectedTab() == tab && tab.isShowing()) {
+        if (hasOutputListeners && tab.getOutputPane().isScrollLocked()) {
             navigateToFirstErrorLine(tab);
         }
     }

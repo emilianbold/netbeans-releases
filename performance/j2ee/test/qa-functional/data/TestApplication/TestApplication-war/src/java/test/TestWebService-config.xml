@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<configuration xmlns='http://java.sun.com/xml/ns/jax-rpc/ri/config'>
+	<service name='TestWebService' targetNamespace='urn:TestWebService/wsdl' typeNamespace='urn:TestWebService/types' packageName='test'>
+		<interface name='test.TestWebServiceSEI' servantName='test.TestWebServiceImpl'>
+		</interface>
+	</service>
+</configuration>

@@ -56,6 +56,16 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class URLNodeTest extends JellyTestCase {
     
+    public static final String[] tests = new String[] {
+        "testVerifyPopup",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testRename",
+        "testSaveAsTemplate",
+        "testProperties"
+    };
+    
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -78,13 +88,7 @@ public class URLNodeTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(URLNodeTest.class, 
-        "testVerifyPopup",
-        "testCut",
-        "testCopy",
-        "testDelete",
-        "testRename",
-        "testSaveAsTemplate",
-        "testProperties");
+        tests);
     }
     
     /** Use for internal test execution inside IDE

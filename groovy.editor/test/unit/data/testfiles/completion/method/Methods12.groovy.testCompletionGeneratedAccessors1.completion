@@ -1,0 +1,13 @@
+Code completion result for source line:
+new Test().get|
+(QueryType=COMPLETION, NameKind=PREFIX)
+------------------------------------
+METHOD     getAge()                                   
+METHOD     getAt(String)                              Object
+METHOD     getClass()                                 Class<? extends Object>
+METHOD     getMetaClass()                             MetaClass
+METHOD     getMetaPropertyValues()                    List
+METHOD     getName()                                  
+METHOD     getProperties()                            Map
+METHOD     getProperty(String)                        Object
+METHOD     getSomething()                             

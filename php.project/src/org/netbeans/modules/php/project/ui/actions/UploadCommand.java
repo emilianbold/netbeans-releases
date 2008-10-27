@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.File;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;

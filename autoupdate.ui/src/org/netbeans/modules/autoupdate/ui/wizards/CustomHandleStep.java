@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -145,10 +145,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     private boolean done = false;
     
     private boolean handleOperation () {
-        if (! isInstall) {
-            assert false : "Not supported for uninstall.";
-        }
-        final OperationSupport support = model.getCustomHandledContainer ().getSupport (); //XXX: for install only !
+        final OperationSupport support = model.getCustomHandledContainer ().getSupport ();
         assert support != null;
         passed = false;
         
@@ -213,13 +210,7 @@ public class CustomHandleStep implements WizardDescriptor.FinishablePanel<Wizard
     }
 
     public void storeSettings (WizardDescriptor wd) {
-        if (WizardDescriptor.CANCEL_OPTION.equals (wd.getValue ()) || WizardDescriptor.CLOSED_OPTION.equals (wd.getValue ())) {
-            try {
-                model.doCleanup (true);
-            } catch (OperationException x) {
-                Logger.getLogger (InstallUnitWizardModel.class.getName ()).log (Level.INFO, x.getMessage (), x);
-            }
-        }
+        model.getCustomHandledContainer ().removeAll ();
     }
 
     public boolean isValid() {

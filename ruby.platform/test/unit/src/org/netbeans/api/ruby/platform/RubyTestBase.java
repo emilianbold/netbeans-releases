@@ -85,21 +85,20 @@ public abstract class RubyTestBase extends GsfTestBase {
         return directory;
     }
 
-    protected File setUpRuby() throws IOException {
-        return setUpRuby(false, "");
+    protected RubyPlatform setUpPlatform() throws IOException {
+        return setUpPlatform(false, "");
     }
 
-    protected File setUpRubyWithGems() throws IOException {
-        return setUpRuby(true, "");
+    protected RubyPlatform setUpPlatformWithRubyGems() throws IOException {
+        return setUpPlatform(true, "");
     }
 
-    protected File setUpRuby(final boolean withGems, final String suffix) throws IOException {
-        return setUpRuby("Ruby", withGems, suffix);
+    protected RubyPlatform setUpPlatform(final boolean withGems, final String suffix) throws IOException {
+        return RubyPlatformManager.addPlatform(setUpRuby("Ruby", withGems, suffix));
     }
 
-    protected File setUpRubinius() throws IOException {
-        return setUpRuby("Rubinius", false, "");
-
+    protected RubyPlatform setUpRubinius() throws IOException {
+        return RubyPlatformManager.addPlatform(setUpRuby("Rubinius", false, ""));
     }
 
     private File setUpRuby(final String kind, final boolean withGems, final String suffix) throws IOException {
@@ -170,7 +169,7 @@ public abstract class RubyTestBase extends GsfTestBase {
 
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
-        installFakeGem("ruby-debug-ide", "0.3.0", gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.3.1", gemplaf, platform);
     }
 
     protected static void uninstallFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {

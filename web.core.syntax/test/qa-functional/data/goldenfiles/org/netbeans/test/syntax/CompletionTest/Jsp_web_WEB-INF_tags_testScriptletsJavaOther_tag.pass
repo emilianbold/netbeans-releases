@@ -58,13 +58,13 @@ End cursor position = 631
 long serialVersionUID
 Object clone ()
 void destroy ()
-void doDelete (HttpServletRequest req , HttpSe 
-void doGet (HttpServletRequest req , HttpServl 
-void doHead (HttpServletRequest req , HttpServ 
-void doOptions (HttpServletRequest req , HttpS 
-void doPost (HttpServletRequest req , HttpServ 
-void doPut (HttpServletRequest req , HttpServl 
-void doTrace (HttpServletRequest req , HttpSer 
+void doDelete (HttpServletRequest req , HttpSe
+void doGet (HttpServletRequest req , HttpServl
+void doHead (HttpServletRequest req , HttpServ
+void doOptions (HttpServletRequest req , HttpS
+void doPost (HttpServletRequest req , HttpServ
+void doPut (HttpServletRequest req , HttpServl
+void doTrace (HttpServletRequest req , HttpSer
 boolean equals (Object obj )
 void f ()
 void finalize ()
@@ -83,8 +83,8 @@ void log (String msg )
 void log (String message , Throwable t )
 void notify ()
 void notifyAll ()
-void service (HttpServletRequest req , HttpSer 
-void service (ServletRequest req , ServletResp 
+void service (HttpServletRequest req , HttpSer
+void service (ServletRequest req , ServletResp
 String toString ()
 void wait ()
 void wait (long timeout )
@@ -137,7 +137,7 @@ Enumeration getParameterNames ()
 String[] getParameterValues (String name )
 BufferedReader getReader ()
 int getRemotePort ()
-RequestDispatcher getRequestDispatcher (Strin 
+RequestDispatcher getRequestDispatcher (Strin
 StringBuffer getRequestURL ()
 int getServerPort ()
 HttpSession getSession ()

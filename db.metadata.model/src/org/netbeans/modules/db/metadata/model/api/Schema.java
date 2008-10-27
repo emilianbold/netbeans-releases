@@ -47,7 +47,7 @@ import org.netbeans.modules.db.metadata.model.spi.SchemaImplementation;
  *
  * @author Andrei Badea
  */
-public class Schema extends MetadataObject {
+public class Schema extends MetadataElement {
 
     final SchemaImplementation impl;
 

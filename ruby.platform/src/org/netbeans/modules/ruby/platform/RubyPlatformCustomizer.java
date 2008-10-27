@@ -61,6 +61,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.PlatformComponentFactory.RubyPlatformListModel;
+import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.gems.GemPanel;
 import org.openide.DialogDescriptor;
@@ -77,8 +78,34 @@ public class RubyPlatformCustomizer extends JPanel {
 
     private static String lastSelectedPlatformID;
 
+    public static void manage(final JComboBox platforms) {
+        manage(platforms, true);
+    }
+    
+    /**
+     * @param canManageGems whether the "Gem Manager" button is visible. Is used
+     *        when Platform Customizer was called from Gem Manager to prevent
+     *        creation of another Gem Manager.
+     */
+    public static void manage(final JComboBox platforms, final boolean canManageGems) {
+        RubyPlatformCustomizer.showCustomizer(canManageGems);
+        RubyPlatform origPlatform = (RubyPlatform) platforms.getSelectedItem();
+        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
+        platforms.setSelectedItem(origPlatform);
+        platforms.requestFocus();
+    }
+
     public static void showCustomizer() {
-        RubyPlatformCustomizer customizer = new RubyPlatformCustomizer();
+        showCustomizer(true);
+    }
+
+    /**
+     * @param canManageGems whether the "Gem Manager" button is visible. Is used
+     *        when Platform Customizer was called from Gem Manager to prevent
+     *        creation of another Gem Manager.
+     */
+    public static void showCustomizer(final boolean canManageGems) {
+        RubyPlatformCustomizer customizer = new RubyPlatformCustomizer(canManageGems);
         JButton closeButton = new JButton();
         closeButton.getAccessibleContext().setAccessibleDescription(getMessage("RubyPlatformCustomizer.closeButton.AccessibleContext.accessibleName"));
         Mnemonics.setLocalizedText(closeButton,
@@ -98,7 +125,19 @@ public class RubyPlatformCustomizer extends JPanel {
     }
 
     public RubyPlatformCustomizer() {
+
+    }
+
+    /**
+     * @param canManageGems whether the "Gem Manager" button is visible. Is used
+     *        when Platform Customizer was called from Gem Manager to prevent
+     *        creation of another Gem Manager.
+     */
+    public RubyPlatformCustomizer(final boolean canManageGems) {
         initComponents();
+        if (!canManageGems) {
+            gemManagerButton.setVisible(false);
+        }
         getAccessibleContext().setAccessibleName(getMessage("RubyPlatformCustomizer.AccessibleContext.accessibleName"));
         getAccessibleContext().setAccessibleDescription(getMessage("RubyPlatformCustomizer.AccessibleContext.accessibleDescription"));
         refreshPlatformList();
@@ -119,14 +158,6 @@ public class RubyPlatformCustomizer extends JPanel {
         } else {
             setAutoDetecting(false);
         }
-    }
-
-    public static void manage(JComboBox platforms) {
-        RubyPlatformCustomizer.showCustomizer();
-        RubyPlatform origPlatform = (RubyPlatform) platforms.getSelectedItem();
-        platforms.setModel(new PlatformComponentFactory.RubyPlatformListModel()); // refresh
-        platforms.setSelectedItem(origPlatform);
-        platforms.requestFocus();
     }
 
     private RubyPlatform getSelectedPlatform() {
@@ -190,7 +221,7 @@ public class RubyPlatformCustomizer extends JPanel {
         if (gemsInstalled) {
             gemHomeValue.setText(plaf.getGemManager().getGemHome());
             gemPathList.setModel(createGemPathsModel(plaf));
-            gemToolValue.setText(plaf.getGemManager().getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
+            gemToolValue.setText(plaf.getGemTool() + " (" + plaf.getInfo().getGemVersion() + ')'); // NOI18N
             color = UIManager.getColor("Label.foreground");
         } else {
             color = PlatformComponentFactory.INVALID_PLAF_COLOR;
@@ -209,7 +240,7 @@ public class RubyPlatformCustomizer extends JPanel {
     private void setEnabledGUI(final boolean enabled) {
         JComponent[] controls = new JComponent[] {
             removeButton, browseGemHome, addGemPath, removeGemPath,
-            installFastDebugger
+            installFastDebugger, gemManagerButton
         };
         for (JComponent comp : controls) {
             comp.setEnabled(enabled);
@@ -276,6 +307,7 @@ public class RubyPlatformCustomizer extends JPanel {
         platformsList = PlatformComponentFactory.getRubyPlatformsList();
         addButton = new javax.swing.JButton();
         removeButton = new javax.swing.JButton();
+        gemManagerButton = new javax.swing.JButton();
         autoDetectButton = new javax.swing.JButton();
         configPanel = new javax.swing.JPanel();
         gemTool = new javax.swing.JLabel();
@@ -321,6 +353,13 @@ public class RubyPlatformCustomizer extends JPanel {
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonremovePlatform(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(gemManagerButton, org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.gemManagerButton.text")); // NOI18N
+        gemManagerButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                gemManagerButtonActionPerformed(evt);
             }
         });
 
@@ -394,16 +433,16 @@ public class RubyPlatformCustomizer extends JPanel {
                 .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(configPanelLayout.createSequentialGroup()
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
-                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE))
+                            .add(gemHomeValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE)
+                            .add(gemPathSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 396, Short.MAX_VALUE))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(configPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
                             .add(removeGemPath)
                             .add(addGemPath)
                             .add(browseGemHome)))
-                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
-                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
-                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)))
+                    .add(plfInterpreterValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
+                    .add(plfNameValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
+                    .add(gemToolValue, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)))
         );
 
         configPanelLayout.linkSize(new java.awt.Component[] {gemHome, gemTool, plfInterpreter, plfName}, org.jdesktop.layout.GroupLayout.HORIZONTAL);
@@ -476,7 +515,7 @@ public class RubyPlatformCustomizer extends JPanel {
                     .add(debuggerPanelLayout.createSequentialGroup()
                         .add(rubyDebuggerLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 369, Short.MAX_VALUE))
+                        .add(upperSep, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 478, Short.MAX_VALUE))
                     .add(debuggerPanelLayout.createSequentialGroup()
                         .add(engineLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -520,9 +559,11 @@ public class RubyPlatformCustomizer extends JPanel {
                         .add(addButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeButton)
+                        .add(6, 6, 6)
+                        .add(gemManagerButton)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(autoDetectButton)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 22, Short.MAX_VALUE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
@@ -534,7 +575,7 @@ public class RubyPlatformCustomizer extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 287, Short.MAX_VALUE)
+                        .add(platformsListSP, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 312, Short.MAX_VALUE)
                         .add(6, 6, 6))
                     .add(layout.createSequentialGroup()
                         .add(configPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
@@ -545,6 +586,7 @@ public class RubyPlatformCustomizer extends JPanel {
                     .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                         .add(addButton)
                         .add(removeButton)
+                        .add(gemManagerButton)
                         .add(autoDetectButton))
                     .add(progressPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
@@ -556,6 +598,10 @@ public class RubyPlatformCustomizer extends JPanel {
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
         autoDetectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(RubyPlatformCustomizer.class, "RubyPlatformCustomizer.autoDetectButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
+
+    private void gemManagerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_gemManagerButtonActionPerformed
+        GemAction.showGemManager(getSelectedPlatform(), false);
+    }//GEN-LAST:event_gemManagerButtonActionPerformed
 
     private PlatformComponentFactory.RubyPlatformListModel getPlafListModel() {
         return (PlatformComponentFactory.RubyPlatformListModel) platformsList.getModel();
@@ -683,6 +729,7 @@ public class RubyPlatformCustomizer extends JPanel {
     private javax.swing.JLabel engineType;
     private javax.swing.JLabel gemHome;
     private javax.swing.JTextField gemHomeValue;
+    private javax.swing.JButton gemManagerButton;
     private javax.swing.JLabel gemPath;
     private javax.swing.JList gemPathList;
     private javax.swing.JScrollPane gemPathSP;

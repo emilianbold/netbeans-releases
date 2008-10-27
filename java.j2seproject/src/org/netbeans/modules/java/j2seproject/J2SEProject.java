@@ -282,7 +282,6 @@ public final class J2SEProject implements Project, AntProjectListener {
             cpe,
             buildExtender,
             cpMod,
-            this, // never cast an externally obtained Project to J2SEProject - use lookup instead
             new J2SEProjectOperations(this, actionProvider),
             new J2SEConfigurationProvider(this),
             new J2SEPersistenceProvider(this, cpProvider),

@@ -320,9 +320,18 @@ public class CasualDiff {
         int localPointer = bounds[0];
         
         int[] qualBounds = getBounds(oldT.getQualifiedIdentifier());
-        copyTo(localPointer, qualBounds[0]);
+        if (oldT.staticImport == newT.staticImport) {
+            copyTo(localPointer, qualBounds[0]);
+        } else {
+            if (oldT.staticImport) {
+                //removing "static":
+                moveFwdToToken(tokenSequence, localPointer, JavaTokenId.STATIC);
+                copyTo(localPointer, tokenSequence.offset());
+            } else {
+                //TODO: adding "static"
+            }
+        }
         localPointer = diffTree(oldT.getQualifiedIdentifier(), newT.getQualifiedIdentifier(), qualBounds);
-        // TODO: Missing implementation. Static import change not covered!
         copyTo(localPointer, bounds[1]);
         
         return bounds[1];
@@ -333,6 +342,7 @@ public class CasualDiff {
     
     protected int diffClassDef(JCClassDecl oldT, JCClassDecl newT, int[] bounds) {
         int localPointer = bounds[0];
+        final Name origOuterClassName = origClassName;
         int insertHint = localPointer;
         // skip the section when printing anonymous class
         if (anonClass == false) {
@@ -442,8 +452,7 @@ public class CasualDiff {
             copyTo(localPointer, insertHint);
         localPointer = diffList(filterHidden(oldT.defs), filterHidden(newT.defs), insertHint, est, Measure.MEMBER, printer);
         printer.enclClassName = origName;
-        // the reference is no longer needed.
-        origClassName = null;
+        origClassName = origOuterClassName;
         printer.undent(old);
         if (localPointer != -1 && localPointer < origText.length()) {
             if (origText.charAt(localPointer) == '}') {

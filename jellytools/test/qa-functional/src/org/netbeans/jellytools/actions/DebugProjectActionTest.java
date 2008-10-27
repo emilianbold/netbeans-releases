@@ -59,6 +59,9 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class DebugProjectActionTest extends JellyTestCase {
     
+    public static final String[] tests = new String[]
+    {"testPerformPopup", "testPerformMenu", "testPerformShortcut"};
+    
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -76,7 +79,7 @@ public class DebugProjectActionTest extends JellyTestCase {
         suite.addTest(new DebugProjectActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(DebugProjectActionTest.class, "testPerformPopup", "testPerformMenu", "testPerformShortcut");
+        return createModuleTest(DebugProjectActionTest.class, tests);
     }
     
     private static MainWindowOperator.StatusTextTracer statusTextTracer;

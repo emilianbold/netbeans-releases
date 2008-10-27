@@ -234,11 +234,11 @@ public class CreateConstructorTest extends GenerateCodeTestCase {
                     "    }";
             waitAndCompare(expected);
             new Action("Edit|Undo", null).perform();
-            assertFalse("Constuctor not removed", contains(editor.getText(), expected));
+            assertFalse("Constuctor not removed", editor.getText().contains(expected));
             MainWindowOperator.getDefault().menuBar().pushMenu("Edit");
             MainWindowOperator.getDefault().menuBar().closeSubmenus();
             new Action("Edit|Redo", null).perform();
-            assertTrue("Constuctor not re-inserted", contains(editor.getText(), expected));
+            assertTrue("Constuctor not re-inserted", editor.getText().contains(expected));
         } finally {
             editor.close(false);
         }

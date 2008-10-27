@@ -46,6 +46,7 @@ import javax.swing.Action;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.SwingUtilities;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.vmd.game.model.Editable;
 import org.netbeans.modules.vmd.game.model.GlobalRepository;
@@ -80,32 +81,54 @@ public class GameDesignNavigator extends JPanel {
 	}
 	
 	private class TreeMousListener extends MouseAdapter {
-		public void mousePressed(MouseEvent e) {
-			if (e.isPopupTrigger()) {
-				this.handlePopup(e);
-			}
-		}
-		public void mouseReleased(MouseEvent e) {
-			if (e.isPopupTrigger()) {
-				this.handlePopup(e);
-			}
-		}
-		private void handlePopup(MouseEvent e) {
-			TreePath tp = tree.getClosestPathForLocation(e.getX(), e.getY());
-			Object node = tp.getLastPathComponent();
-			tree.setSelectionPath(tp);
-			if (node instanceof Editable) {
-				Editable editable = (Editable) node;
-				JPopupMenu menu = new JPopupMenu();
-				for (Action action : editable.getActions()) {
-                    menu.add(action);
+            @Override
+            public void mousePressed(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    this.handlePopup(e);
                 }
-				menu.show(tree, e.getX(), e.getY());
-			}
-			else {
-				//pretty weird - should be editable :/
-			}
-		}
+            }
+            
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.isPopupTrigger()) {
+                    this.handlePopup(e);
+                }
+            }
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() >= 2 && SwingUtilities.isLeftMouseButton(e)) {
+                    Object node = getSelectedNodeObj(e);
+                    if (node instanceof Editable) {
+                        Editable editable = (Editable) node;
+                        gameDesign.getMainView().requestEditing(editable);
+                    } else {
+                        super.mouseClicked(e);
+                    }
+                } else {
+                    super.mouseClicked(e);
+                }
+            }
+            
+            private Object getSelectedNodeObj(MouseEvent e){
+                TreePath tp = tree.getClosestPathForLocation(e.getX(), e.getY());
+                tree.setSelectionPath(tp);
+                return tp.getLastPathComponent();
+            }
+            
+            private void handlePopup(MouseEvent e) {
+                Object node = getSelectedNodeObj(e);
+                if (node instanceof Editable) {
+                    Editable editable = (Editable) node;
+                    JPopupMenu menu = new JPopupMenu();
+                    for (Action action : editable.getActions()) {
+                        menu.add(action);
+                    }
+                    menu.show(tree, e.getX(), e.getY());
+                } else {
+                    //pretty weird - should be editable :/
+                }
+            }
 	}
 	
 }

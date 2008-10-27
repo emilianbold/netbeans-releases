@@ -5,4 +5,3 @@ l.comp|
 METHOD     compareTo(Character)                       int
 METHOD     compareTo(Long)                            int
 METHOD     compareTo(Number)                          int
-METHOD     compareTo(Object)                          int

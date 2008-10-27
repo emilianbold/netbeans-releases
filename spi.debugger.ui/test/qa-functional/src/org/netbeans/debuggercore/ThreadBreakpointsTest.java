@@ -127,6 +127,11 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             Node beanNode = new Node(new SourcePackagesNode(Utilities.testProjectName), "examples.advanced|MemoryView.java"); //NOI18N
             new OpenAction().performAPI(beanNode);
             EditorOperator eo = new EditorOperator("MemoryView.java");
+            try {
+                eo.clickMouse(50,50,1);
+            } catch (Throwable t) {
+                System.err.println(t.getMessage());
+            }
             new NewBreakpointAction().perform();
             NbDialogOperator dialog = new NbDialogOperator(Utilities.newBreakpointTitle);
             setBreakpointType(dialog, "Thread");
@@ -151,11 +156,32 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            try {
+                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            try {
+                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
         } catch (Throwable th) {
             Utilities.captureScreen(this);
             throw th;
@@ -173,9 +199,23 @@ public class ThreadBreakpointsTest extends JellyTestCase {
             dialog.ok();
 
             Utilities.startDebugger();
-            Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            try {
+                Utilities.waitStatusText("Thread breakpoint hit by thread ");
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText("Thread breakpoint hit by thread ")) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             new ContinueAction().perform();
-            Utilities.waitStatusText(Utilities.runningStatusBarText);
+            try {
+                Utilities.waitStatusText(Utilities.runningStatusBarText);
+            } catch (Throwable e) {
+                if (!Utilities.checkConsoleLastLineForText(Utilities.runningStatusBarText)) {
+                    System.err.println(e.getMessage());
+                    throw e;
+                }
+            }
             assertEquals("There were more than one hit of the breakpoint", Utilities.checkConsoleForNumberOfOccurrences(Utilities.runningStatusBarText, 0), 2);
         } catch (Throwable th) {
             Utilities.captureScreen(this);

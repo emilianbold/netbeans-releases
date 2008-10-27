@@ -98,11 +98,12 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.ada.platform</friend>
                 <friend>org.netbeans.modules.groovy.grailsproject</friend>
                 <friend>org.netbeans.modules.j2ee.weblogic9</friend>
                 <friend>org.netbeans.modules.scala.console</friend>
                 <friend>org.netbeans.modules.php.project</friend>
-                <friend>net.java.dev.nbpython.core</friend>
+                <friend>org.netbeans.modules.python.core</friend>
                 <package>org.netbeans.modules.extexecution.api</package>
                 <package>org.netbeans.modules.extexecution.api.print</package>
                 <package>org.netbeans.modules.extexecution.api.input</package>

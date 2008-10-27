@@ -229,6 +229,9 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
             if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
                 return null;
             String newS = notifyDescriptor.getInputText();
+            if (newS.length() == 0) {
+                return null;
+            }
             return newS;
 	}
 

@@ -46,6 +46,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
 import com.sun.tools.javac.api.JavacTaskImpl;
+import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.model.JavacElements;
 import com.sun.tools.javac.tree.JCTree;
@@ -373,12 +374,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public synchronized boolean isScanInProgress() {
-        return notInitialized || this.noSubmited > 0;
+        // true, when updater is not initilized, there is no scanning task
+        // submitted and GlobalSourcePath is actually changing.
+        return notInitialized || this.noSubmited > 0 || !GlobalSourcePath.getDefault().isFinished();
     }
     
     public synchronized void waitScanFinished () throws InterruptedException {
         while (isScanInProgress()) {
-            this.wait();
+            this.wait(1000);
         }
     }
     
@@ -1289,6 +1292,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public void run (final CompilationInfo nullInfo) throws IOException {
             ACTIVITY_LOGGER.finest("START");    //NOI18N
+            final Logger PERF_LOGGER = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
+            PERF_LOGGER.log(Level.FINE, "start", RepositoryUpdater.class.getName()); // NOI18N
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
@@ -1305,6 +1310,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                             
                             handle.start();
+                            handle.progress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies"));
                             try {
                                 final MultiRootsWork mw = (MultiRootsWork) work;
                                 final List<URL> roots = mw.getRoots();
@@ -1340,6 +1346,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             assert handle == null;
                             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(RepositoryUpdater.class,"MSG_BackgroundCompileStart"));
                             handle.start();
+                            handle.progress(NbBundle.getMessage(RepositoryUpdater.class, "MSG_ProjectDependencies"));
                             boolean completed = false;
                             try {
                                 oldRoots = new HashSet<URL> (scannedRoots);
@@ -1624,6 +1631,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             finally {
                 ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
+                PERF_LOGGER.log(Level.FINE, "end", RepositoryUpdater.class.getName()); // NOI18N
             }
         }
         
@@ -3272,7 +3280,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             jt = null;
                             activeTuple = null;                            
                             listener.cleanDiagnostics();
-                            if (!(t instanceof Abort)) {                                
+                            if (!(t instanceof Abort || t instanceof Symbol.CompletionFailure)) {                                
                                 final ClassPath bootPath   = cpInfo.getClassPath(ClasspathInfo.PathKind.BOOT);
                                 final ClassPath classPath  = cpInfo.getClassPath(ClasspathInfo.PathKind.COMPILE);
                                 final ClassPath sourcePath = cpInfo.getClassPath(ClasspathInfo.PathKind.SOURCE);

@@ -122,6 +122,7 @@ implements Runnable, ExplorerManager.Provider {
         associateLookup (ExplorerUtils.createLookup (manager, map));
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         return new HelpCtx(Tab.class);
     }
@@ -131,11 +132,13 @@ implements Runnable, ExplorerManager.Provider {
     }
     
     /** Return preferred ID */
+    @Override
     protected String preferredID () {
         return "favorites"; //NOI18N
     }
     
     /** Initialize visual content of component */
+    @Override
     protected void componentShowing () {
         super.componentShowing ();
 
@@ -161,14 +164,17 @@ implements Runnable, ExplorerManager.Provider {
         TreeView view = new BeanTreeView();
         view.setRootVisible(false);
         view.setDragSource (true);
+        view.setUseSubstringInQuickSearch(true);
         setLayout(new BorderLayout());
         add (view);
         return view;
     }
 
+    @Override
     protected void componentActivated() {
         ExplorerUtils.activateActions(manager, true);
     }
+    @Override
     protected void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }
@@ -276,6 +282,7 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /* Updated accessible name of the tree view */
+    @Override
     public void setName(String name) {
         super.setName(name);
         if (view != null) {
@@ -284,6 +291,7 @@ implements Runnable, ExplorerManager.Provider {
     }
 
     /* Updated accessible description of the tree view */
+    @Override
     public void setToolTipText(String text) {
         super.setToolTipText(text);
         if (view != null) {
@@ -356,6 +364,7 @@ implements Runnable, ExplorerManager.Provider {
 
     /** Overriden to explicitely set persistence type of ProjectsTab
      * to PERSISTENCE_ALWAYS */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }

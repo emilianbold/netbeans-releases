@@ -60,7 +60,9 @@ public enum Platform {
     
     SOLARIS(OS_FAMILY_SOLARIS, null, null, null, "Solaris"),
     SOLARIS_X86(OS_FAMILY_SOLARIS, HARDWARE_X86, null, null, "Solaris X86"),
+    SOLARIS_X64(OS_FAMILY_SOLARIS, HARDWARE_X64, null, null, "Solaris X64"),
     SOLARIS_SPARC(OS_FAMILY_SOLARIS, HARDWARE_SPARC, null, null, "Solaris SPARC"),
+    SOLARIS_SPARCV9(OS_FAMILY_SOLARIS, HARDWARE_SPARCV9, null, null, "Solaris SPARCV9"),
     
     MACOSX(OS_FAMILY_MACOSX, null, null, null, "MacOS X"),
     MACOSX_X86(OS_FAMILY_MACOSX, HARDWARE_X86, null, null, "Mac OS X Intel"),
@@ -184,6 +186,13 @@ public enum Platform {
         
         if ((platform.hardwareArch != null) &&
                 !platform.hardwareArch.equals(hardwareArch)) {
+            if(platform.osFamily.equals(OS_FAMILY_SOLARIS)) {
+                boolean compX86   = HARDWARE_X64.equals(hardwareArch) &&
+                        HARDWARE_X86.equals(platform.hardwareArch);
+                boolean compSparc = HARDWARE_SPARCV9.equals(hardwareArch) &&
+                        HARDWARE_SPARC.equals(platform.hardwareArch);
+                return compX86 || compSparc;
+            }
             return false;
         }
         

@@ -49,7 +49,7 @@ import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 /**
  * Creates a Groovy model for an GSP file. 

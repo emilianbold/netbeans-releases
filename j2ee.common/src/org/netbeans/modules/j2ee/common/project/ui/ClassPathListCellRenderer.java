@@ -65,7 +65,6 @@ import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * This class decorates package nodes and file nodes under the Libraries Nodes.
@@ -102,6 +101,7 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
             this.projectFolder = projectFolder;
         }
         
+    @Override
         public Component getListCellRendererComponent( JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             if (value != null) {
                 assert value instanceof ClassPathSupport.Item : value.getClass().toString();
@@ -292,7 +292,7 @@ class ClassPathListCellRenderer extends DefaultListCellRenderer {
                 return super.getTableCellRendererComponent(table, renderer.getDisplayName( item ), isSelected, false, row, column);
             } else {
                 setIcon( null );
-                return super.getTableCellRendererComponent( table, value, isSelected, false, row, column );
+                return super.getTableCellRendererComponent( table, null, isSelected, false, row, column );
             }
         }
         

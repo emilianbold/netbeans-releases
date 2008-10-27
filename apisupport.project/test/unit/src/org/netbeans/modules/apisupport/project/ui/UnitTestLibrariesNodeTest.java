@@ -101,6 +101,7 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         //test removedep action
         addTestDependency(p);
         String depName = p.getModuleList().getEntry(DEP_CNB).getLocalizedName();
+        forceChildrenUpdate(libs);
         Node depNode = libs.getChildren().findChild(depName);
         assertNotNull("have a node with dependency", depNode);
         Action[] act = depNode.getActions(false);
@@ -108,9 +109,10 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         RemoveDependencyAction removeAct = (RemoveDependencyAction) act[2];
         assertEquals("nc+1 nodes now", nc+1, libs.getChildren().getNodes().length);
         removeAct.performAction(new Node[] {depNode});
+        forceChildrenUpdate(libs);
         assertEquals("nc nodes now, dep removed", nc, libs.getChildren().getNodes().length);
     }
-    
+
     //TODO add more tests, try to invoke all actions on nodes, etc
     
     private void addTestDependency(NbModuleProject project) throws Exception{
@@ -121,6 +123,11 @@ public class UnitTestLibrariesNodeTest extends TestBase {
         TestModuleDependency tmd = new TestModuleDependency(me, true, true, true);
         pxm.addTestDependency(TestModuleDependency.UNIT, tmd);
         ProjectManager.getDefault().saveProject(project);
+    }
+
+    private void forceChildrenUpdate(Node node) {
+        node.getChildren().getNodesCount(); // so that refreshKeys() gets called
+        waitForNodesUpdate();
     }
     
 }

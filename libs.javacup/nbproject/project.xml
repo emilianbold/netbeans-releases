@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
             <module-dependencies/>
             <friend-packages>
                 <friend>org.netbeans.modules.php.editor</friend>
+                <friend>org.netbeans.modules.ada.editor</friend>
                 <package>java_cup.runtime</package>
             </friend-packages>
             <class-path-extension>

@@ -44,6 +44,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -51,6 +53,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
+import org.netbeans.modules.cnd.highlight.InterrupterImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -119,7 +122,7 @@ public class HighlightProvider  {
         }
     }
     
-    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, Interrupter interrupter) {
+    private void addAnnotations(final BaseDocument doc, final CsmFile file, final DataObject dao, final Interrupter interrupter) {
 
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_PROCESSING);
         final List<ErrorDescription> descriptions = new ArrayList<ErrorDescription>();
@@ -152,7 +155,27 @@ public class HighlightProvider  {
             }
         };
         removeAnnotations(doc);
-        CsmErrorProvider.getDefault().getErrors(new RequestImpl(file, doc, interrupter), response);
+        DocumentListener listener = null;
+        if (doc != null && (interrupter instanceof InterrupterImpl)) {
+            listener = new DocumentListener(){
+                public void insertUpdate(DocumentEvent e) {
+                    ((InterrupterImpl)interrupter).cancel();
+                }
+                public void removeUpdate(DocumentEvent e) {
+                    ((InterrupterImpl)interrupter).cancel();
+                }
+                public void changedUpdate(DocumentEvent e) {
+                }
+            };
+            doc.addDocumentListener(listener);
+        }
+        try {
+            CsmErrorProvider.getDefault().getErrors(new RequestImpl(file, doc, interrupter), response);
+        } finally {
+            if (listener != null) {
+                doc.removeDocumentListener(listener);
+            }
+        }
         CppUpToDateStatusProvider.get(doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         
     }

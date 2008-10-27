@@ -42,7 +42,7 @@ package org.netbeans.modules.websvc.core.webservices.action;
 
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
-import org.netbeans.modules.websvc.core.AddOperationCookie;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.core.WebServiceActionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -77,7 +77,7 @@ public class AddOperationEditorAction extends NodeAction {
             fo = getFileObjectFromNode(activatedNodes[0]);
             if (fo!=null) {
                 cookie = WebServiceActionProvider.getAddOperationAction(fo);
-                return cookie!=null && activatedNodes.length == 1 && cookie.isEnabledInEditor(fo);
+                return cookie!=null && activatedNodes.length == 1 && cookie.isEnabled(fo);
             }
         }
         return false;
