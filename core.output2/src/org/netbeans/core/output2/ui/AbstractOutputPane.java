@@ -387,12 +387,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     protected abstract void postPopupMenu (Point p, Component src);
     
     public final int getCaretLine() {
-        int result = -1;
+        int result = 0;
         int charPos = getCaret().getDot();
         if (charPos > 0) {
             result = textView.getDocument().getDefaultRootElement().getElementIndex(charPos);
         }
         return result;
+    }
+
+    public final boolean isLineSelected(int idx) {
+        Element line = textView.getDocument().getDefaultRootElement().getElement(idx);
+        return line.getStartOffset() == getSelectionStart() && line.getEndOffset()-1 == getSelectionEnd();
     }
 
     public final int getCaretPos() {

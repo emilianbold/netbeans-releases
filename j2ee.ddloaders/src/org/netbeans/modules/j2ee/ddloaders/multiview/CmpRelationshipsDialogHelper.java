@@ -56,6 +56,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
+import org.openide.util.Utilities;
 
 /**
  * @author pfiala
@@ -260,7 +261,7 @@ public class CmpRelationshipsDialogHelper {
         private String validateFieldName() {
             if(isCreateCmrField()) {
                 String fieldName = getFieldName();
-                if (!Utils.isJavaIdentifier(fieldName)) {
+                if (!Utilities.isJavaIdentifier(fieldName)) {
                     return Utils.getBundleMessage("MSG_InvalidFieldName");
                 }
             }

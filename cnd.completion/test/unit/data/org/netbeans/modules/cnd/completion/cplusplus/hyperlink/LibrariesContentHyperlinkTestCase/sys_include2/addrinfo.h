@@ -6,3 +6,7 @@ struct addrinfo
     struct addrinfo *ai_next;	/* Pointer to next in list.  */
 };
 
+struct sockaddr
+{
+    char sa_data[14];		/* Address data.  */
+};

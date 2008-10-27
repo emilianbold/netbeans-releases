@@ -60,7 +60,9 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 import java.util.logging.Level;
@@ -77,19 +79,19 @@ public class NbServiceTagSupport {
     
     private static String NB_VERSION;
     
-    private static final String USER_HOME = System.getProperty("user.home");
+    private static final String USER_HOME = System.getProperty("user.home"); // NOI18N
 
     private static final String SUPER_IDENTITY_FILE_NAME = ".superId"; // NOI18N
     
     private static final String DEFAULT_NETBEANS_DIR = ".netbeans"; // NOI18N
     
-    private static final String USER_DIR = System.getProperty("netbeans.user");
+    private static final String USER_DIR = System.getProperty("netbeans.user"); // NOI18N
     
-    private static final String ST_DIR = "servicetag";
+    private static final String ST_DIR = "servicetag"; // NOI18N
     
-    private static final String ST_FILE = "servicetag";
+    private static final String ST_FILE = "servicetag"; // NOI18N
     
-    private static final String REG_FILE = "registration.xml";
+    private static final String REG_FILE = "registration.xml"; // NOI18N
     
     /** Dir in home dir */
     private static File svcTagDirHome;
@@ -119,26 +121,26 @@ public class NbServiceTagSupport {
     
     private static File registerHtmlParent;
     
-    private final static String REGISTRATION_HTML_NAME = "register";
+    private final static String REGISTRATION_HTML_NAME = "register"; // NOI18N
     
     private static boolean inited = false;
     
     private static void init () {
-        LOG.log(Level.FINE,"Initializing");
+        LOG.log(Level.FINE,"Initializing"); // NOI18N
         NB_CLUSTER = NbBundle.getMessage(NbServiceTagSupport.class,"nb.cluster");
         NB_VERSION = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.version");    
         
         //This return platfomX dir but we need install dir
-        File f = new File(System.getProperty("netbeans.home"));
+        File f = new File(System.getProperty("netbeans.home")); // NOI18N
         
         nbInstallDir = f.getParentFile();
-        LOG.log(Level.FINE,"NetBeans install dir is:" + nbInstallDir);
+        LOG.log(Level.FINE,"NetBeans install dir is:" + nbInstallDir); // NOI18N
         
         nbClusterDir = new File(nbInstallDir,NB_CLUSTER);
-        LOG.log(Level.FINE,"nb cluster dir is:" + nbClusterDir);
+        LOG.log(Level.FINE,"nb cluster dir is:" + nbClusterDir); // NOI18N
         
         svcTagDirNb = new File(nbClusterDir.getPath() + File.separator + ST_DIR);
-        svcTagDirHome = new File(USER_HOME + File.separator + ".netbeans-registration"
+        svcTagDirHome = new File(USER_HOME + File.separator + ".netbeans-registration" // NOI18N
         + File.separator + NB_VERSION);
         if (nbClusterDir.canWrite() && (!svcTagDirNb.exists())) {
             svcTagDirNb.mkdirs();
@@ -156,9 +158,113 @@ public class NbServiceTagSupport {
         inited = true;
     }
 
-    /** Returns NetBeans IDE product name. */
+    /** Returns NetBeans IDE product name. Used as source for servicetag. */
     public static String getProductName () {
         return NbBundle.getMessage(NbServiceTagSupport.class,"nb.product.name");
+    }
+
+    /**
+     * Returns array of products based on registration data content. It is used as list of products
+     * in offline registration page.
+     */
+    public static String [] getProductNames (RegistrationData regData) {
+        List<String> names = new ArrayList<String>();
+        String nbProductURN = NbBundle.getMessage(NbServiceTagSupport.class,"servicetag.nb.urn");
+
+        boolean isGFAdded = false, isASAdded = false;
+
+        Collection<ServiceTag> svcTags = regData.getServiceTags();
+        for (ServiceTag st : svcTags) {
+            if (nbProductURN.equals(st.getProductURN())) {
+                names.add(getProductName());
+            } else if (st.getProductDefinedInstanceID().contains("glassfish.home")) { // NOI18N
+                String [] arr = st.getProductDefinedInstanceID().split(","); // NOI18N
+                for (String s : arr) {
+                    if (s.contains("glassfish.home")) { // NOI18N
+                        String arrGF[] = s.split("="); // NOI18N
+                        if (arrGF.length >= 2) {
+                            if (arrGF[1].toUpperCase(Locale.ENGLISH).contains("GLASSFISH")) { // NOI18N
+                                if (!isGFAdded) {
+                                    names.add("GlassFish V2 UR2"); // NOI18N
+                                    isGFAdded = true;
+                                }
+                            } else if (arrGF[1].toUpperCase(Locale.ENGLISH).contains("APPSERVER") || // NOI18N
+                                       arrGF[1].toUpperCase(Locale.ENGLISH).contains("SDK")) { // NOI18N
+                                if (!isASAdded) {
+                                    names.add("Sun Java System Application Server 9.1 Update 2"); // NOI18N
+                                    isASAdded = true;
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else if (st.getProductName().contains("Sun Java System Application Server")) { // NOI18N
+                if (!isASAdded) {
+                    names.add("Sun Java System Application Server 9.1 Update 2"); // NOI18N
+                    isASAdded = true;
+                }
+            } else if (st.getProductName().contains("Sun GlassFish Enterprise Server")) { // NOI18N
+                if (!isGFAdded) {
+                    names.add("GlassFish V2 UR2"); // NOI18N
+                    isGFAdded = true;
+                }
+            } else if (st.getProductName().contains("J2SE 5.0 Development Kit")) { // NOI18N
+                names.add(st.getProductName());
+            } else if (st.getProductName().contains("Java SE 6 Development Kit")) { // NOI18N
+                names.add(st.getProductName());
+            }
+        }
+        return names.toArray(new String [0]);
+    }
+
+    /**
+     * Returns product id based on registration data content. It is used as parameter
+     * in registration URL.
+     */
+    public static String getProductId (RegistrationData regData) {
+        //Default we assume NB is always installed (as we do not have product page without NB anyway)
+        String productId = "nb"; // NOI18N
+
+        boolean isJDK = false, isGF = false, isAS = false;
+        Collection<ServiceTag> svcTags = regData.getServiceTags();
+        for (ServiceTag st : svcTags) {
+            if (st.getProductDefinedInstanceID().contains("glassfish.home")) { // NOI18N
+                String [] arr = st.getProductDefinedInstanceID().split(","); // NOI18N
+                for (String s : arr) {
+                    if (s.contains("glassfish.home")) { // NOI18N
+                        String arrGF[] = s.split("="); // NOI18N
+                        if (arrGF.length >= 2) {
+                            if (arrGF[1].toUpperCase(Locale.ENGLISH).contains("GLASSFISH")) { // NOI18N
+                                isGF = true;
+                            } else if (arrGF[1].toUpperCase(Locale.ENGLISH).contains("APPSERVER") || // NOI18N
+                                       arrGF[1].toUpperCase(Locale.ENGLISH).contains("SDK")) { // NOI18N
+                                isAS = true;
+                            }
+                        }
+                        break;
+                    }
+                }
+            } else if (st.getProductName().contains("Sun Java System Application Server")) { // NOI18N
+                isAS = true;
+            } else if (st.getProductName().contains("Sun GlassFish Enterprise Server")) { // NOI18N
+                isGF = true;
+            } else if (st.getProductName().contains("J2SE 5.0 Development Kit")) { // NOI18N
+                isJDK = true;
+            } else if (st.getProductName().contains("Java SE 6 Development Kit")) { // NOI18N
+                isJDK = true;
+            }
+        }
+        if (isJDK && (isGF || isAS)) {
+            productId = "nbgfjdk"; // NOI18N
+        } else if (isJDK) {
+            productId = "nbjdk"; // NOI18N
+        } else if (isGF) {
+            productId = "nbgf"; // NOI18N
+        } else if (isAS) {
+            productId = "nbas"; // NOI18N
+        }
+        return productId;
     }
 
     /**
@@ -176,12 +282,12 @@ public class NbServiceTagSupport {
         if (!inited) {
             init();
         }
-        LOG.log(Level.FINE,"Creating NetBeans service tag");
+        LOG.log(Level.FINE,"Creating NetBeans service tag"); // NOI18N
         
         ServiceTag st = getNbServiceTag();    
         // New service tag entry if not created
         if (st == null) {
-            LOG.log(Level.FINE,"Creating new service tag");
+            LOG.log(Level.FINE,"Creating new service tag"); // NOI18N
             st = newNbServiceTag(source, javaVersion);
             // Add the service tag to the registration data in NB
             getRegistrationData().addServiceTag(st);
@@ -190,10 +296,10 @@ public class NbServiceTagSupport {
         
         // Install a system service tag if supported
         if (Registry.isSupported()) {
-            LOG.log(Level.FINE,"Add service tag to system registry");
+            LOG.log(Level.FINE,"Add service tag to system registry"); // NOI18N
             installSystemServiceTag(st);
         } else {
-            LOG.log(Level.FINE,"Cannot add service tag to system registry as ST infrastructure is not found");
+            LOG.log(Level.FINE,"Cannot add service tag to system registry as ST infrastructure is not found"); // NOI18N
         }
         return st;
     }

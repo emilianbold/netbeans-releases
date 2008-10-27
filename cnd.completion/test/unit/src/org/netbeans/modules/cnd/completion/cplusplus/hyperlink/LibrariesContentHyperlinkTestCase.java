@@ -85,6 +85,18 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         assertTrue("Not directory" + srcDir, srcDir.isDirectory());
     }
 
+    public void /*change to test*/ tstTwoLevelsStructRedirection() throws Exception {
+        performTest("src/format1.c", 17, 15, "src/format1.c", 7, 5);
+        performTest("src/format1.c", 18, 15, "src/format1.c", 8, 5);
+        performTest("src/format1.c", 19, 15, "src/format1.c", 12, 5);
+        performTest("src/format1.c", 20, 15, "src/format1.c", 13, 5);
+        
+        performTest("src/format2.c", 17, 15, "src/format2.c", 7, 5);
+        performTest("src/format2.c", 18, 15, "src/format2.c", 8, 5);
+        performTest("src/format2.c", 19, 15, "src/format2.c", 12, 5);
+        performTest("src/format2.c", 20, 15, "src/format2.c", 13, 5);
+    }
+    
     public void testStructFromSystemDir() throws Exception {
         performTest("src/testTdClassFwdResolve1.c", 7, 15, "sys_include2/addrinfo.h", 5, 5);
     }

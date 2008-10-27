@@ -140,7 +140,8 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionNoPrefixString2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods11.groovy", "def name='Petr'.^", false);
     }    
-    
+
+    // FIXME this test randomly fails
     public void testCompletionInsideFor2() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods9.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^", false);
     }
@@ -160,6 +161,9 @@ public class MethodCompletionTest extends GroovyTestBase {
     public void testCompletionGroovyThis1() throws Exception {
         checkCompletion(TEST_BASE + "" + "Methods14.groovy", "        this.get^", false);
     }
-
+    
+    public void testCompletionGroovySuper1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Methods15.groovy", "        super.^", false);
+    }
 }
 

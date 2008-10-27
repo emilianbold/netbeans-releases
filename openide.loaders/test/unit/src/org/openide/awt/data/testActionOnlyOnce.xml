@@ -67,5 +67,16 @@ made subject to such option by the copyright holder.
             <attr name="position" intvalue="0"/>
         </file>
     </folder>
+    <folder name="FullOfCNFs">
+        <file name="non-exit.instance">
+            <attr name="instanceClass" stringvalue="org.openide.awt.CNFCompo"/>
+        </file>
+        <file name="non-exit2.instance">
+            <attr name="instanceOf" stringvalue="org.openide.awt.CNFCompo"/>
+        </file>
+        <file name="non-exit3.instance">
+            <attr name="instanceOf" stringvalue="org.openide.awt.CNFCompo"/>
+        </file>
+    </folder>
     
 </filesystem>

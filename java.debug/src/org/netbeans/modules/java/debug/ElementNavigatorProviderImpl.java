@@ -91,6 +91,7 @@ public class ElementNavigatorProviderImpl implements NavigatorPanel {
         if (panel == null) {
             final BeanTreeView view = new BeanTreeView();
             view.setRootVisible(true);
+            view.setUseSubstringInQuickSearch(true);
             view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             class Panel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
                 // Make sure action context works correctly:

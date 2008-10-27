@@ -56,10 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -201,10 +199,6 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         return result;
     }
 
-//    public ListCellRenderer getListCellRenderer () {
-//        return new KeymapListRenderer (this);
-//    }
-    
     
     // other methods ...........................................................
 
@@ -421,7 +415,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                 conflictingActions.add(ac);
             }
         }
-        if(conflictingActions.size() > 0) {             ////////TRYOUT
+        if(conflictingActions.size() > 0) {
             if(overrideAll(conflictingActions)) {
                 for (String sc : shortcuts) {
                     ShortcutAction sca = findActionForShortcut(sc);

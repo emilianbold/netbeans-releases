@@ -509,6 +509,13 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
     }
 
+    private void closeAllTabs() {
+        AbstractOutputTab[] tabs = getTabs();
+        for (int i = 0; i < tabs.length; i++) {
+            closeRequest(tabs[i]);
+        }
+    }
+
     private class Close extends AbstractAction {
 
         public Close() {
@@ -527,7 +534,7 @@ public abstract class AbstractOutputWindow extends TopComponent implements Chang
         }
 
         public void actionPerformed(ActionEvent e) {
-            close();
+            closeAllTabs();
         }
     }
 

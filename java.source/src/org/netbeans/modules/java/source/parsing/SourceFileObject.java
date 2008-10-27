@@ -336,6 +336,7 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
             return null;
         }
         final String relativePath = FileUtil.getRelativePath(root,file);
+        assert relativePath != null : "root=" + FileUtil.getFileDisplayName(root) + ", file=" + FileUtil.getFileDisplayName(file);
         final int index = relativePath.lastIndexOf('.');
         assert index > 0;
         final String result = relativePath.substring(0,index).replace('/','.');

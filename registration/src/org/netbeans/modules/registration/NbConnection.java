@@ -285,7 +285,7 @@ class NbConnection {
      * If user selects Register registration is started
      * @param value User choice in reminder dialog
      */
-    static void updateStatus (String value, String product) {
+    static void updateStatus (String value) {
         LOG.log(Level.FINE,"updateStatus status:" + value);
         //Ignore null value ie. do not change status if null is passed
         if (value != null) {
@@ -298,7 +298,7 @@ class NbConnection {
         
         if (StatusData.STATUS_REGISTERED.equals(status.getStatus())) {
             try {
-                NbConnection.register(NbServiceTagSupport.getRegistrationData(), product);
+                NbConnection.register(NbServiceTagSupport.getRegistrationData());
             } catch (IOException ex) {
                 LOG.log(Level.INFO, "Error: Cannot register product", ex);
             }
@@ -337,9 +337,11 @@ class NbConnection {
      * @param regData registration data to be posted to the Sun Connection
      *             for registration.
      */
-    static void register(final RegistrationData regData, final String product) {
+    static void register(final RegistrationData regData) {
         RP.post(new Runnable() {
             public void run() {
+                //We will determine product id from registration data content
+                String product = NbServiceTagSupport.getProductId(regData);
                 // Gets the URL for SunConnection registration relay service
                 LOG.log(Level.FINE,"Product registration");
                 URL url = NbConnectionSupport.getRegistrationURL(regData.getRegistrationURN(), product);
@@ -359,7 +361,7 @@ class NbConnection {
                 } else {
                     // open browser with the offline registration page
                     try {
-                        openOfflineRegisterPage(product);
+                        openOfflineRegisterPage(product, NbServiceTagSupport.getProductNames(regData));
                     } catch (IOException ex) {
                         LOG.log(Level.INFO, "Error: Cannot open browser", ex);
                     }
@@ -396,11 +398,10 @@ class NbConnection {
      * Opens the offline registratioin page in the browser.
      * 
      */
-    private static void openOfflineRegisterPage (String product)
+    private static void openOfflineRegisterPage (String product, String [] productNames)
             throws IOException {
         File registerPage = 
-        NbServiceTagSupport.getRegistrationHtmlPage
-        (product, new String [] {NbServiceTagSupport.getProductName()});
+        NbServiceTagSupport.getRegistrationHtmlPage(product, productNames);
         if (BrowserSupport.isSupported()) {
             try {
                 BrowserSupport.browse(registerPage.toURI());

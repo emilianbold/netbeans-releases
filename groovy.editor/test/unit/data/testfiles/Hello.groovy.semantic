@@ -12,7 +12,7 @@ class |>CLASS:Hello1<| {
 	|>FIELD:field1<| = inputval
     }
 
-    static void |>STATIC:main<|(args) {
+    static void |>METHOD,STATIC:main<|(args) {
         String s = 'aaa'
         println 'Hello, world'
     }

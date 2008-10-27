@@ -88,7 +88,9 @@ public abstract class SVGComponent implements SVGForm.FocusListener {
     }
     
     public void requestFocus() {
-        form.requestFocus(this);
+        if ( isFocusable() ){
+            form.requestFocus(this);
+        }
     }
 
     public void focusGained() {

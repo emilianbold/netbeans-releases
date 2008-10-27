@@ -52,21 +52,7 @@ public class CommandBuffer {
     
     // Static parts
     private static enum STATE {
-        NONE("None"), // NOI18N
-        WAITING("Waiting"), // NOI18N
-        TIMEOUT("Timeout"), // NOI18N
-        OK("OK"), // NOI18N
-        ERROR("Error"); // NOI18N
-
-        private final String name;
-        STATE(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
+        NONE, WAITING, TIMEOUT, OK, ERROR;
     }
     
     private final int WAIT_TIME = 30000;

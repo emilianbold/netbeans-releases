@@ -39,15 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.spi.support;
 
-import java.io.IOException;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author mkuchtiak
  */
-public interface ServiceCreator {
-    public void createService() throws IOException ;
-    public void createServiceFromWsdl() throws IOException ;
+public interface AddOperationActionProvider {
+    public AddOperationCookie getAddOperationCookie(FileObject fileObject);
 }

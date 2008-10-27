@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -99,11 +100,12 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     public void visitField(FieldNode node) {
         if (node.getLineNumber() > 0) {
             OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.FIELD_SET);
+            EnumSet<ColoringAttributes> attributes = EnumSet.of(ColoringAttributes.FIELD);
 
             if (node.isStatic()) {
-                highlights.put(range, ColoringAttributes.STATIC_SET);
+                attributes.add(ColoringAttributes.STATIC);
             }
+            highlights.put(range, attributes);
         }
         super.visitField(node);
     }
@@ -123,11 +125,12 @@ public class SemanticAnalysisVisitor extends ClassCodeVisitorSupport {
     public void visitMethod(MethodNode node) {
         if (node.getLineNumber() > 0) {
             OffsetRange range = AstUtilities.getRange(node, doc);
-            highlights.put(range, ColoringAttributes.METHOD_SET);
+            EnumSet<ColoringAttributes> attributes = EnumSet.of(ColoringAttributes.METHOD);
 
             if (node.isStatic()) {
-                highlights.put(range, ColoringAttributes.STATIC_SET);
+                attributes.add(ColoringAttributes.STATIC);
             }
+            highlights.put(range, attributes);
         }
         super.visitMethod(node);
     }
