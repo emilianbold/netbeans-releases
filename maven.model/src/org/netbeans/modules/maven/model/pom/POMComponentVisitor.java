@@ -36,7 +36,7 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom.visitor;
+package org.netbeans.modules.maven.model.pom;
 
 import org.netbeans.modules.maven.model.pom.*;
 

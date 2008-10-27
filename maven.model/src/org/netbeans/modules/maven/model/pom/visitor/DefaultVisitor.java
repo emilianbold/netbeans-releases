@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.visitor;
 
+import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 import org.netbeans.modules.maven.model.pom.*;
 
 /**

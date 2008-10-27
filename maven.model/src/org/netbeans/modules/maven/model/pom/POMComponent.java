@@ -40,7 +40,7 @@ package org.netbeans.modules.maven.model.pom;
 
 import java.util.List;
 import javax.xml.namespace.QName;
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
+import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 import org.netbeans.modules.xml.xam.dom.DocumentComponent;
 import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 

@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.maven.model.pom.impl.POMComponentImpl;
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
+import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.w3c.dom.Element;
 

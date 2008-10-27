@@ -44,7 +44,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;	
+import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
