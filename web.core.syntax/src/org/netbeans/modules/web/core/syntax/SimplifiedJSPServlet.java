@@ -464,6 +464,10 @@ public class SimplifiedJSPServlet {
         if (!processingSuccessful){
             return null;
         }
+
+        if (declarations.isEmpty() && scriptlets.isEmpty()) {
+            return null;
+        }
         
         List<Embedding> content = new LinkedList<Embedding>();
         
