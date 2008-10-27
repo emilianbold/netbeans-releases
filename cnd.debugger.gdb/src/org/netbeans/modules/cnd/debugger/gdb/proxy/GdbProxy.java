@@ -361,7 +361,7 @@ public class GdbProxy {
      * If it is, stop at the first instruction of the called function.
      */
     public void exec_step() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_STEP);
+        debugger.setLastGo(GdbDebugger.LastGoState.STEP);
         engine.sendCommand("-exec-step"); // NOI18N
     }
 
@@ -371,7 +371,7 @@ public class GdbProxy {
      * when the beginning of the next source line is reached.
      */
     public void exec_next() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_NEXT);
+        debugger.setLastGo(GdbDebugger.LastGoState.NEXT);
         engine.sendCommand("-exec-next"); // NOI18N
     }
     
@@ -379,6 +379,7 @@ public class GdbProxy {
      * Execute single instruction
      */
     public void exec_step_instruction() {
+        // TODO: don't we need to set last go state here?
         engine.sendCommand("-exec-step-instruction"); // NOI18N
     }
 
@@ -386,6 +387,7 @@ public class GdbProxy {
      * Execute next instruction
      */
     public void exec_next_instruction() {
+        // TODO: don't we need to set last go state here?
         engine.sendCommand("-exec-next-instruction"); // NOI18N
     }
 
@@ -395,7 +397,7 @@ public class GdbProxy {
      * the current function is exited.
      */
     public void exec_finish() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_FINISH);
+        debugger.setLastGo(GdbDebugger.LastGoState.FINISH);
         engine.sendCommand("-exec-finish"); // NOI18N
     }
 
@@ -405,7 +407,7 @@ public class GdbProxy {
      * breakpoint is encountered, or until the inferior exits.
      */
     public void exec_continue() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_CONTINUE);
+        debugger.setLastGo(GdbDebugger.LastGoState.CONTINUE);
         engine.sendCommand("-exec-continue"); // NOI18N
     }
 

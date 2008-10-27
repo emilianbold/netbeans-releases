@@ -129,14 +129,13 @@ public class GdbDebugger implements PropertyChangeListener {
         NONE, STARTING, LOADING, READY, RUNNING, STOPPED, SILENT_STOP, EXITED;
     }
 
-    public static final Object          LAST_GO_WAS_CONTINUE = "lastGoWasContinue"; // NOI18N
-    public static final Object          LAST_GO_WAS_FINISH = "lastGoWasFinish"; // NOI18N
-    public static final Object          LAST_GO_WAS_STEP = "lastGoWasStep"; // NOI18N
-    public static final Object          LAST_GO_WAS_NEXT = "lastGoWasNext"; // NOI18N
+    public static enum LastGoState {
+        CONTINUE, FINISH, STEP, NEXT;
+    }
 
     public static String DONE_PREFIX = "^done"; // NOI18N
 
-    private Object                      lastGo;
+    private LastGoState                 lastGo;
     private String                      lastStop;
 
     private static final int            DEBUG_ATTACH = 999;
@@ -1613,14 +1612,14 @@ public class GdbDebugger implements PropertyChangeListener {
                     String frame = map.get("frame"); // NOI18N
                     if (frame != null && frame.contains("func=\"dlopen\"")) { // NOI18N
                         dlopenPending = true;
-                        Object saveLastGo = lastGo;
+                        LastGoState saveLastGo = lastGo;
                         gdb.exec_finish();
                         setLastGo(saveLastGo); // exec_finish changes lastGo
                         return;
                     }
                 } else {
                     GdbBreakpoint breakpoint = impl.getBreakpoint();
-                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE && lastGo == LAST_GO_WAS_CONTINUE) {
+                    if (breakpoint.getSuspend() == GdbBreakpoint.SUSPEND_NONE && lastGo == LastGoState.CONTINUE) {
                         fireBreakpointEvent(breakpoint, new GdbBreakpointEvent(
                                     breakpoint, this, GdbBreakpointEvent.CONDITION_NONE, null));
                         gdb.exec_continue();
@@ -1773,7 +1772,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     log.fine("GD.checkSharedLibs: Closed a shared library");
                 }
                 shareTab = nuTab;
-                if (lastGo == LAST_GO_WAS_CONTINUE) {
+                if (lastGo == LastGoState.CONTINUE) {
                     gdb.exec_continue();
                 } else {
                     stepOutOfDlopen();
@@ -2513,11 +2512,8 @@ public class GdbDebugger implements PropertyChangeListener {
         this.currentBreakpoint = currentBreakpoint;
     }
 
-    public void setLastGo(Object lastGo) {
-        if (lastGo == LAST_GO_WAS_CONTINUE || lastGo == LAST_GO_WAS_FINISH ||
-                lastGo == LAST_GO_WAS_STEP || lastGo == LAST_GO_WAS_NEXT) {
-            this.lastGo = lastGo;
-        }
+    public void setLastGo(LastGoState lastGo) {
+        this.lastGo = lastGo;
     }
     
     private boolean isAttaching() {
