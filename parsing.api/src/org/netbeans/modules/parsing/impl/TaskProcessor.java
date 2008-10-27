@@ -536,40 +536,41 @@ public class TaskProcessor {
                                                 }
                                                 else {
                                                     SchedulerEvent event = SourceAccessor.getINSTANCE().getEvent (source);
-                                                    Parser.Result currentResult;
                                                     currentRequest.setCurrentParser(sourceCache.getParser());
-                                                    currentResult = sourceCache.getResult (r.task, event);
-                                                    boolean shouldCall = currentResult != null && !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
-                                                    if (shouldCall) {
+                                                    final Parser.Result currentResult = sourceCache.getResult (r.task, event);
+                                                    if (currentResult != null) {
                                                         try {
-                                                            final long startTime = System.currentTimeMillis();
-                                                            if (r.task instanceof ParserResultTask) {
-                                                                if (LOGGER.isLoggable(Level.FINE)) {
-                                                                    LOGGER.fine("Running Task: " + r.toString());
-                                                                }
+                                                            boolean shouldCall = !SourceAccessor.getINSTANCE().testFlag(source, SourceFlags.INVALID);
+                                                            if (shouldCall) {
                                                                 try {
-                                                                    ((ParserResultTask)r.task).run (currentResult,sourceCache.getSnapshot ());
-                                                                } finally {
-                                                                    ParserAccessor.getINSTANCE().invalidate(currentResult);
+                                                                    final long startTime = System.currentTimeMillis();
+                                                                    if (r.task instanceof ParserResultTask) {
+                                                                        if (LOGGER.isLoggable(Level.FINE)) {
+                                                                            LOGGER.fine("Running Task: " + r.toString());
+                                                                        }
+                                                                        ((ParserResultTask)r.task).run (currentResult,sourceCache.getSnapshot ());                                                                        
+                                                                    }
+                                                                    else {
+                                                                        assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
+                                                                    }
+                                                                    final long endTime = System.currentTimeMillis();
+                                                                    if (LOGGER.isLoggable(Level.FINEST)) {
+                                                                        LOGGER.finest(String.format("Executed task: %s in %d ms.",  //NOI18N
+                                                                            r.task.getClass().toString(), (endTime-startTime)));
+                                                                    }
+                                                                    if (LOGGER.isLoggable(Level.FINER)) {
+                                                                        final long cancelTime = currentRequest.getCancelTime();
+                                                                        if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
+                                                                            LOGGER.finer(String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
+                                                                                r.task.getClass().toString(), (endTime-cancelTime)));
+                                                                        }
+                                                                    }
+                                                                } catch (Exception re) {
+                                                                    Exceptions.printStackTrace (re);
                                                                 }
                                                             }
-                                                            else {
-                                                                assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
-                                                            }
-                                                            final long endTime = System.currentTimeMillis();
-                                                            if (LOGGER.isLoggable(Level.FINEST)) {
-                                                                LOGGER.finest(String.format("Executed task: %s in %d ms.",  //NOI18N
-                                                                    r.task.getClass().toString(), (endTime-startTime)));
-                                                            }
-                                                            if (LOGGER.isLoggable(Level.FINER)) {
-                                                                final long cancelTime = currentRequest.getCancelTime();
-                                                                if (cancelTime >= startTime && (endTime - cancelTime) > SLOW_CANCEL_LIMIT) {
-                                                                    LOGGER.finer(String.format("Task: %s ignored cancel for %d ms.",  //NOI18N
-                                                                        r.task.getClass().toString(), (endTime-cancelTime)));
-                                                                }
-                                                            }
-                                                        } catch (Exception re) {
-                                                            Exceptions.printStackTrace (re);
+                                                        } finally {
+                                                            ParserAccessor.getINSTANCE().invalidate(currentResult);
                                                         }
                                                     }
                                                 }
