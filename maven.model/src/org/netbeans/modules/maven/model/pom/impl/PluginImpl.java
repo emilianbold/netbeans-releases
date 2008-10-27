@@ -148,6 +148,15 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
+
+    public Configuration getConfiguration() {
+        return getChild(Configuration.class);
+    }
+
+    public void setConfiguration(Configuration config) {
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
+    }
     
     public static class List extends ListImpl<Plugin> {
         public List(POMModel model, Element element) {

@@ -65,5 +65,9 @@ public class ConfigurationImpl extends POMComponentImpl implements Configuration
         visitor.visit(this);
     }
 
+    public List<POMExtensibilityElement> getConfigurationElements() {
+        return getChildren(POMExtensibilityElement.class);
+    }
+
 
 }

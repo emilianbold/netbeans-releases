@@ -104,6 +104,11 @@ public interface Plugin extends VersionablePOMComponent {
 //    void addGoal(String goal);
 //    void removeGoal(String goal);
 
-    //TODO configuration
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Configuration getConfiguration();
+    void setConfiguration(Configuration config);
 
 }

@@ -45,8 +45,9 @@ import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
 import org.netbeans.modules.maven.model.Utilities;
-import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
 import org.netbeans.modules.maven.model.pom.MailingList;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Parent;
@@ -94,9 +95,6 @@ public class NewEmptyJUnitTest extends TestCase {
             assertNotNull(lst);
         }
 
-        List<Plugin> plugins = prj.getBuild().getPlugins();
-        assertNotNull(plugins);
-        assertEquals(4, plugins.size());
 
         Properties props = prj.getProperties();
         assertNotNull(props);
@@ -109,6 +107,20 @@ public class NewEmptyJUnitTest extends TestCase {
         assertEquals(2, p.size());
         assertEquals("foo", p.get("prop1"));
         assertEquals("bar", p.get("prop2"));
+
+        List<Plugin> plugins = prj.getBuild().getPlugins();
+        assertNotNull(plugins);
+        assertEquals(4, plugins.size());
+
+        Plugin plug = plugins.get(1);
+        assertEquals("modello-maven-plugin", plug.getArtifactId());
+        Configuration config = plug.getConfiguration();
+        assertNotNull(config);
+        List<POMExtensibilityElement> lst = config.getConfigurationElements();
+        assertEquals(2, lst.size());
+        POMExtensibilityElement el = lst.get(1);
+        assertEquals("version", el.getQName().getLocalPart());
+        assertEquals("1.0.0", el.getElementText());
 
 //        model.startTransaction();
 //        try {

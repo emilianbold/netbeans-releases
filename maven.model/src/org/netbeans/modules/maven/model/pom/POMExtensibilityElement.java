@@ -91,6 +91,8 @@ public interface POMExtensibilityElement extends POMComponent {
      * @returns list of children extensibility elements of unknown type.
      */
     public List<POMExtensibilityElement> getAnyElements();
+
+    public String getElementText();
     
     /**
      * Returns QName of the backing DOM element.

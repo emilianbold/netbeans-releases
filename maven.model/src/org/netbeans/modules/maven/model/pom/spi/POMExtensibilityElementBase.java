@@ -63,6 +63,10 @@ public class POMExtensibilityElementBase extends POMComponentImpl
         visitor.visit(this);
     }
 
+    public String getElementText() {
+        return getText();
+    }
+
     public static class StringAttribute implements Attribute {
         private String name;
         public StringAttribute(String name) { this.name = name; }

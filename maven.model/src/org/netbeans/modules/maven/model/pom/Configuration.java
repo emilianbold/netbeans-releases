@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.List;
+
 
 /**
  *
@@ -48,5 +50,6 @@ public interface Configuration extends POMComponent {
 //  <!--xs:complexType name="Configuration">
 //  </xs:complexType-->
 
+    List<POMExtensibilityElement> getConfigurationElements();
 
 }
