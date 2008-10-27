@@ -541,7 +541,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             counterPrepareDocument--;
                             if (isStrongSet && canReleaseDoc()) {
                                 isStrongSet = false;
-                                CloneableEditorSupport.this.doc.setStrong(false);
+                                if (CloneableEditorSupport.this.doc != null) {
+                                    CloneableEditorSupport.this.doc.setStrong(false);
+                                }
                             }
                             task.removeTaskListener(this);
                         }
@@ -760,7 +762,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 counterOpenDocument--;
                 if (isStrongSet && canReleaseDoc()) {
                     isStrongSet = false;
-                    this.doc.setStrong(false);
+                    if (this.doc != null) {
+                        this.doc.setStrong(false);
+                    }
                 }
             }
         }
@@ -855,7 +859,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterGetDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            this.doc.setStrong(false);
+                            if (this.doc != null) {
+                                this.doc.setStrong(false);
+                            }
                         }
                     }
                 }
@@ -2398,7 +2404,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterOpenAtImpl--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            CloneableEditorSupport.this.doc.setStrong(false);
+                            if (CloneableEditorSupport.this.doc != null) {
+                                CloneableEditorSupport.this.doc.setStrong(false);
+                            }
                         }
                     }
                 }
