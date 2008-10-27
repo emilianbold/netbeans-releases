@@ -77,6 +77,7 @@ import org.netbeans.modules.ruby.platform.PlatformComponentFactory.PlatformChang
 import org.netbeans.modules.ruby.platform.RubyPlatformCustomizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.RailsServerManager;
+import org.netbeans.modules.ruby.railsprojects.server.RailsServerUiUtils;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.CustomizerSupport;
@@ -336,7 +337,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         mainPanel = new javax.swing.JPanel();
         portLabel = new javax.swing.JLabel();
         portField = new javax.swing.JTextField();
-        serverComboBox = RailsServerManager.getServerComboBox(getPlatform());
+        serverComboBox = RailsServerUiUtils.getServerComboBox(getPlatform());
         serverLabel = new javax.swing.JLabel();
         railsEnvCombo = new javax.swing.JComboBox();
         railsEnvLabel = new javax.swing.JLabel();
@@ -562,7 +563,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         if (getPlatform() == null) {
             serverComboBox.setModel(new DefaultComboBoxModel());
         } else {
-            serverComboBox.setModel(new RailsServerManager.ServerListModel(getPlatform()));
+            serverComboBox.setModel(new RailsServerUiUtils.ServerListModel(getPlatform()));
             String serverID = configs.get(getSelectedConfig()).get(RailsProjectProperties.RAILS_SERVERTYPE);
             if (serverID != null) {
                 selectServer(serverID);

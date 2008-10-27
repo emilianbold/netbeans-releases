@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.ruby.railsprojects.server;
 
-import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.io.BufferedReader;
 import java.io.File;
@@ -48,17 +47,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
-import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
@@ -66,12 +59,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
-import javax.swing.AbstractListModel;
-import javax.swing.ComboBoxModel;
-import javax.swing.JComboBox;
-import javax.swing.JLabel;
-import javax.swing.JList;
-import javax.swing.ListCellRenderer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectInformation;
@@ -83,26 +70,15 @@ import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
-import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.LocationMappersFactory;
-import org.netbeans.modules.web.client.tools.api.NbJSToJSLocationMapper;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsProjectUtils;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionException;
-import org.netbeans.modules.web.client.tools.api.WebClientToolsSessionStarterService;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
-import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Support for the builtin Ruby on Rails web server: WEBrick, Mongrel, Lighttpd
@@ -121,12 +97,6 @@ import org.openide.util.lookup.Lookups;
  * @author Tor Norbye, Pavel Buzek, Erno Mononen, Peter Williams
  */
 public final class RailsServerManager {
-     /**
-      * A hidden flag to turn off automatic browser display on server startup.
-      * Should probably be exposed as a user visible option somewhere.
-      */
-    private static boolean NO_BROWSER = Boolean.getBoolean("rails.nobrowser");
-
    
     enum ServerStatus { NOT_STARTED, STARTING, RUNNING; }
 
@@ -430,7 +400,7 @@ public final class RailsServerManager {
      */
     public void showUrl(final String relativeUrl) {
         if (ensureRunning()) {
-            RailsServerManager.showURL(getContextRoot(), relativeUrl, port, clientDebug, project);
+            RailsUrlDisplayer.showURL(getContextRoot(), relativeUrl, port, clientDebug, project);
         } else {
             String displayName = NbBundle.getMessage(RailsServerManager.class, "ServerStartup");
             final ProgressHandle handle =
@@ -469,7 +439,7 @@ public final class RailsServerManager {
                                         LOGGER.fine("Server " + ((server != null) ? server : instance) +
                                                 " started in " + (i+500)/1000 + " seconds.");
                                     }
-                                    RailsServerManager.showURL(getContextRoot(), relativeUrl, port, runClientDebug, project);
+                                    RailsUrlDisplayer.showURL(getContextRoot(), relativeUrl, port, runClientDebug, project);
                                     return;
                                 }
 
@@ -569,68 +539,6 @@ public final class RailsServerManager {
         } catch (IOException ioe) {
             LOGGER.log(Level.FINE, "Exception while connecting to " + port, ioe);
             return false;
-        }
-    }
-
-    private static void showURL(String contextRoot, String relativeUrl, int port, boolean runClientDebugger, RailsProject project) {
-        if (NO_BROWSER) {
-            return;
-        }
-
-        LOGGER.fine("Opening URL: " + "http://localhost:" + port + "/" + relativeUrl);
-        try {
-            URL url = new URL("http://localhost:" + port + contextRoot + "/" + relativeUrl); // NOI18N
-            
-            if (!runClientDebugger) {
-                HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-            } else {
-                // launch browser with clientside debugger
-                FileObject projectDocBase = project.getRakeProjectHelper().resolveFileObject("public"); // NOI18N
-                String hostPrefix = "http://localhost:" + port + "/"; // NOI18N
-                
-                HtmlBrowser.Factory browser = null;
-                if (WebClientToolsProjectUtils.isInternetExplorer(project)) {
-                    browser = WebClientToolsProjectUtils.getInternetExplorerBrowser();
-                } else {
-                    browser = WebClientToolsProjectUtils.getFirefoxBrowser();
-                }
-                
-                if (browser == null) {
-                    HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                    return;
-                }
-                                 
-                LocationMappersFactory mapperFactory = Lookup.getDefault().lookup(LocationMappersFactory.class);
-
-                Lookup debuggerLookup = null;
-                if (mapperFactory != null) {
-                    URI appContext = new URI(hostPrefix);
-
-                    // If the public/index.html file exists assume that it is the welcome file.
-                    Map<String, Object> extendedInfo = null;
-                    FileObject welcomeFile = projectDocBase.getFileObject("index.html");  //NOI18N
-                    if (welcomeFile != null) {
-                        extendedInfo = new HashMap<String, Object>();
-                        extendedInfo.put("welcome-file", "index.html"); //NOI18N
-                    }
-                    
-                    JSToNbJSLocationMapper forwardMapper =
-                            mapperFactory.getJSToNbJSLocationMapper(projectDocBase, appContext, extendedInfo);
-                    NbJSToJSLocationMapper reverseMapper =
-                            mapperFactory.getNbJSToJSLocationMapper(projectDocBase, appContext, extendedInfo);
-                    debuggerLookup = Lookups.fixed(forwardMapper, reverseMapper, project);
-                } else {
-                    debuggerLookup = Lookups.fixed(project);
-                }
-                
-                WebClientToolsSessionStarterService.startSession(url.toURI(), browser, debuggerLookup);
-            }
-        } catch (MalformedURLException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (URISyntaxException ex) {
-            ErrorManager.getDefault().notify(ex);
-        } catch (WebClientToolsSessionException ex) {
-            ErrorManager.getDefault().notify(ex);
         }
     }
 
@@ -756,65 +664,6 @@ public final class RailsServerManager {
 
         private boolean isAddressInUseMsg(String line) {
             return line.contains("BindException");
-        }
-    }
-
-    public static JComboBox getServerComboBox(RubyPlatform platform) {
-        JComboBox result = new JComboBox();
-        if (platform != null) {
-            result.setModel(new ServerListModel(platform));
-        }
-        result.setRenderer(new ServerListCellRendered());
-        return result;
-    }
-
-    public static class ServerListModel extends AbstractListModel implements ComboBoxModel {
-
-        private final List<? extends RubyInstance> servers;
-        private Object selected;
-
-        public ServerListModel(RubyPlatform platform) {
-            this.servers = ServerRegistry.getDefault().getServers(platform);
-            if (!servers.isEmpty()) {
-                this.selected = servers.get(0);
-            }
-        }
-
-        public int getSize() {
-            return servers.size();
-        }
-
-        public Object getElementAt(int index) {
-            return servers.get(index);
-        }
-
-        public void setSelectedItem(Object server) {
-            if (selected != server) {
-                this.selected = server;
-                fireContentsChanged(this, -1, -1);
-            }
-        }
-
-        public Object getSelectedItem() {
-            return selected;
-        }
-        
-    }
-
-    private static class ServerListCellRendered extends JLabel implements ListCellRenderer {
-
-        public ServerListCellRendered() {
-            setOpaque(true);
-        }
-
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-            RubyInstance server = (RubyInstance) value;
-            if (server != null) {
-                setText(server.getDisplayName());
-                setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
-                setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
-            }
-            return this;
         }
     }
 
