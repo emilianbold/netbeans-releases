@@ -62,11 +62,11 @@ public class PackageConfig {
     }
 
     private void initPackages() {
-        File file = new File("/usr/lib/pkgconfig/");
+        File file = new File("/usr/lib/pkgconfig/"); // NOI18N
         if (file.exists() && file.isDirectory() && file.canRead()) {
             for (File fpc : file.listFiles()) {
                 String name = fpc.getName();
-                if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) {
+                if (name.endsWith(".pc") && fpc.canRead() && fpc.isFile()) { // NOI18N
                     PackageConfiguration pc = new PackageConfiguration();
                     readConfig(fpc, pc);
                     configurations.put(name.substring(0, name.length()-3), pc);
@@ -81,9 +81,9 @@ public class PackageConfig {
         for(String pkg: sort){
             PackageConfiguration pc = getConfig(pkg);
             if (pc != null){
-                System.out.println("Package:\t"+pkg);
-                System.out.println("Macros:\t"+pc.macros);
-                System.out.println("Paths:\t"+pc.paths);
+                System.out.println("Package:\t"+pkg); // NOI18N
+                System.out.println("Macros:\t"+pc.macros); // NOI18N
+                System.out.println("Paths:\t"+pc.paths); // NOI18N
             }
         }
     }
@@ -91,19 +91,19 @@ public class PackageConfig {
     /*package-local*/ void traceConfig(String pkg){
         PackageConfiguration pc = configurations.get(pkg);
         if (pc != null){
-            System.out.println("Package:\t"+pkg);
-            System.out.println("Requires:\t"+pc.requires);
-            System.out.println("Macros:\t"+pc.macros);
-            System.out.println("Paths:\t"+pc.paths);
+            System.out.println("Package:\t"+pkg); // NOI18N
+            System.out.println("Requires:\t"+pc.requires); // NOI18N
+            System.out.println("Macros:\t"+pc.macros); // NOI18N
+            System.out.println("Paths:\t"+pc.paths); // NOI18N
         }
     }
 
     /*package-local*/ void traceRecursiveConfig(String pkg){
         PackageConfiguration pc = getConfig(pkg);
         if (pc != null){
-            System.out.println("Package:\t"+pkg);
-            System.out.println("Macros:\t"+pc.macros);
-            System.out.println("Paths:\t"+pc.paths);
+            System.out.println("Package:\t"+pkg); // NOI18N
+            System.out.println("Macros:\t"+pc.macros); // NOI18N
+            System.out.println("Paths:\t"+pc.paths); // NOI18N
         }
     }
 
@@ -162,27 +162,27 @@ public class PackageConfig {
                 if (line.startsWith("#")) { // NOI18N
                     continue;
                 }
-                if (line.indexOf("=")>0){
-                    int i = line.indexOf("=");
+                if (line.indexOf("=")>0){ // NOI18N
+                    int i = line.indexOf("="); // NOI18N
                     String name = line.substring(0, i).trim();
                     String value = line.substring(i+1).trim();
                     vars.put(name, expandMacros(value, vars));
-                } else if (line.startsWith("Requires:")){
+                } else if (line.startsWith("Requires:")){ // NOI18N
                     String value = line.substring(9).trim();
                     value = expandMacros(value,vars);
-                    StringTokenizer st = new StringTokenizer(value, " ");
+                    StringTokenizer st = new StringTokenizer(value, " "); // NOI18N
                     while(st.hasMoreTokens()) {
                         pc.requires.add(st.nextToken());
                     }
-                } else if (line.startsWith("Cflags:")){
+                } else if (line.startsWith("Cflags:")){ // NOI18N
                     String value = line.substring(5).trim();
                     value = expandMacros(value,vars);
-                    StringTokenizer st = new StringTokenizer(value, " ");
+                    StringTokenizer st = new StringTokenizer(value, " "); // NOI18N
                     while(st.hasMoreTokens()) {
                         String v = st.nextToken();
-                        if (v.startsWith("-I")){
+                        if (v.startsWith("-I")){ // NOI18N
                             pc.paths.add(v.substring(3));
-                        } else if (v.startsWith("-D")){
+                        } else if (v.startsWith("-D")){ // NOI18N
                             pc.macros.add(v.substring(3));
                         }
                     }
@@ -197,16 +197,16 @@ public class PackageConfig {
     }
 
     private String expandMacros(String value, Map<String, String> vars){
-        if (value.indexOf("${")>=0) {
-            while(value.indexOf("${")>=0) {
-                int i = value.indexOf("${");
-                int j = value.indexOf("}");
+        if (value.indexOf("${")>=0) { // NOI18N
+            while(value.indexOf("${")>=0) { // NOI18N
+                int i = value.indexOf("${"); // NOI18N
+                int j = value.indexOf("}"); // NOI18N
                 if (j < i) {
                     break;
                 }
                 String macro = value.substring(i+2, j);
                 String v = vars.get(macro);
-                if (v == null || v.indexOf("${")>=0) {
+                if (v == null || v.indexOf("${")>=0) { // NOI18N
                     break;
                 }
                 value = value.substring(0,i)+v+value.substring(j+1);
