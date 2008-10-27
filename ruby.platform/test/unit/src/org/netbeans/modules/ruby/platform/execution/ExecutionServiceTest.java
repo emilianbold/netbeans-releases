@@ -71,7 +71,7 @@ public final class ExecutionServiceTest extends RubyTestBase {
 
     public void testAdditionalEnvironment() throws IOException {
         RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
-        ExecutionDescriptor descriptor = new ExecutionDescriptor(platform);
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(platform);
 
         descriptor.cmd(platform.getInterpreterFile());
         String gemPath = getWorkDirPath() + File.separator + "fake-repo";

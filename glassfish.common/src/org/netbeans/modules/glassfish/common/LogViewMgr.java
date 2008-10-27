@@ -92,7 +92,9 @@ import org.openide.windows.OutputWriter;
  * @author Michal Mocnak
  */
 public class LogViewMgr {
-    
+
+    private static final Logger LOGGER = Logger.getLogger("glassfish");
+
     /**
      * Amount of time in milliseconds to wait between checks of the input
      * stream
@@ -104,6 +106,11 @@ public class LogViewMgr {
      */
     private static final Map<String, WeakReference<LogViewMgr>> instances =
             new HashMap<String, WeakReference<LogViewMgr>>();
+
+    /**
+     * Server URI for this log view
+     */
+    private final String uri;
 
     /**
      * The I/O window where to output the changes
@@ -130,7 +137,8 @@ public class LogViewMgr {
      * 
      * @param uri the uri of the server
      */
-    private LogViewMgr(String uri) {
+    private LogViewMgr(final String uri) {
+        this.uri = uri;
         io = getServerIO(uri);
         
         if (io == null) {
@@ -159,11 +167,6 @@ public class LogViewMgr {
             if(logViewMgr == null) {
                 logViewMgr = new LogViewMgr(uri);
                 instances.put(uri, new WeakReference<LogViewMgr>(logViewMgr));
-            }
-            if(logViewMgr.io != null) {
-                Logger.getLogger("glassfish").log(Level.FINE, "getLogViewMgrInstance: closed = " + logViewMgr.io.isClosed() + ", output error flag = " + logViewMgr.io.getOut().checkError());
-            } else {
-                Logger.getLogger("glassfish").log(Level.FINE, "getLogViewMgrInstance: io = " + logViewMgr.io);
             }
         }
         return logViewMgr;
@@ -222,7 +225,7 @@ public class LogViewMgr {
                     readers.add(new WeakReference<LoggerRunnable>(logger));
                     rp.post(logger);
                 } catch (FileNotFoundException ex) {
-                    Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage());
+                    LOGGER.log(Level.FINE, ex.getLocalizedMessage());
                 }
             }
         }
@@ -259,24 +262,49 @@ public class LogViewMgr {
      * @param s message to write
      */
     public synchronized void write(String s, boolean error) {
-        Logger.getLogger("glassfish").log(Level.FINE, "write: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
-        OutputWriter writer = error ? io.getErr() : io.getOut();
-        writer.print(s);
+        OutputWriter writer = getWriter(error);
+        if(writer != null) {
+            writer.print(s);
+        }
     }
-    
+
     /**
-     * Writes a message into output
+     * Writes a message into output, including a link to a portion of the
+     * content being written.
      * 
      * @param s message to write
      */
     public synchronized void write(String s, OutputListener link, boolean important, boolean error) {
-        Logger.getLogger("glassfish").log(Level.FINE, "writeOL: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
         try {
-            OutputWriter writer = error ? io.getErr() : io.getOut();
-            writer.println(s, link, important);
+            OutputWriter writer = getWriter(error);
+            if(writer != null) {
+                writer.println(s, link, important);
+            }
         } catch(IOException ex) {
-            Logger.getLogger("glassfish").log(Level.FINE, ex.getLocalizedMessage(), ex);
+            LOGGER.log(Level.FINE, ex.getLocalizedMessage(), ex);
         }
+    }
+
+    private OutputWriter getWriter(boolean error) {
+        OutputWriter writer = error ? io.getErr() : io.getOut();
+        if(LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "getIOWriter: closed = " + io.isClosed() +
+                    " [ " + (error ? "STDERR" : "STDOUT") + " ]" +
+                    ", output error flag = " + writer.checkError());
+        }
+        if(writer.checkError() == true) {
+            InputOutput newIO = getServerIO(uri);
+            if(newIO == null) {
+                if(LOGGER.isLoggable(Level.INFO)) {
+                    LOGGER.log(Level.INFO, "Unable to recreate I/O for " + uri + ", still in error state");
+                }
+                writer = null;
+            } else {
+                io = newIO;
+                writer = error ? io.getErr() : io.getOut();
+            }
+        }
+        return writer;
     }
 
     private final Locale logLocale = getLogLocale();
@@ -324,7 +352,10 @@ public class LogViewMgr {
      * Selects output panel
      */
     public synchronized void selectIO() {
-        Logger.getLogger("glassfish").log(Level.FINE, "selectIO: closed = " + io.isClosed() + ", output error flag = " + io.getOut().checkError());
+        if(LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, "selectIO: closed = " + io.isClosed() +
+                    ", output error flag = " + io.getOut().checkError());
+        }
         io.select();
     }
     
@@ -400,19 +431,19 @@ public class LogViewMgr {
                     }
                 }
             } catch (IOException ex) {
-                Logger.getLogger("glassfish").log(Level.SEVERE, "I/O exception reading server log", ex);
+                LOGGER.log(Level.SEVERE, "I/O exception reading server log", ex);
             } finally {
                 try {
                     inputStream.close();
                 } catch (IOException ex) {
-                    Logger.getLogger("glassfish").log(Level.SEVERE, "I/O exception closing server log", ex);
+                    LOGGER.log(Level.SEVERE, "I/O exception closing server log", ex);
                 }
                 
                 if(reader != null) {
                     try {
                         reader.close();
                     } catch (IOException ex) {
-                        Logger.getLogger("glassfish").log(Level.WARNING, "I/O exception closing stream buffer", ex);
+                        LOGGER.log(Level.WARNING, "I/O exception closing stream buffer", ex);
                     }
                 }
                 
@@ -423,8 +454,8 @@ public class LogViewMgr {
         }
 
         private void processLine(String line) {
-            if(Logger.getLogger("glassfish").isLoggable(Level.FINE)) {
-                Logger.getLogger("glassfish").log(Level.FINE, "processing text: '" + line + "'");
+            if(LOGGER.isLoggable(Level.FINEST)) {
+                LOGGER.log(Level.FINEST, "processing text: '" + line + "'");
             }
             OutputListener listener = null;
             Iterator<Recognizer> iterator = recognizers.iterator();
@@ -741,14 +772,33 @@ public class LogViewMgr {
         synchronized (ioWeakMap) {
             // look in the cache
             InputOutput serverIO = ioWeakMap.get(si);
-//            if(serverIO != null && !serverIO.getOut().checkError()) {
             if(serverIO != null) {
+                boolean valid = true;
                 if(serverIO.isClosed()) {
-                    Logger.getLogger("glassfish").fine("Output for " + uri + " is closed.");
-                } else if(serverIO.getOut().checkError()) {
-                    Logger.getLogger("glassfish").fine("Output for " + uri + " is in error state.");
-                } else {
+                    if(LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Output window for " + uri + " is closed.");
+                    }
+                }
+                if(serverIO.getOut().checkError()) {
+                    if(LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Standard out for " + uri + " is in error state.");
+                    }
+                    valid = false;
+                }
+                if(serverIO.getErr().checkError()) {
+                    if(LOGGER.isLoggable(Level.FINE)) {
+                        LOGGER.fine("Standard error for " + uri + " is in error state.");
+                    }
+                    valid = false;
+                }
+
+                if(valid) {
                     return serverIO;
+                } else {
+                    if(!serverIO.isClosed()) {
+                        serverIO.closeInputOutput();
+                    }
+                    ioWeakMap.put(si, null);
                 }
             }
 
@@ -773,10 +823,15 @@ public class LogViewMgr {
                 new StopServerAction.OutputAction(commonSupport),
                 new RefreshAction.OutputAction(commonSupport)
             };
-            InputOutput newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
 
-            // put the newIO in the cache
-            ioWeakMap.put(si, newIO);
+            InputOutput newIO = null;
+            synchronized (ioWeakMap) {
+                newIO = ioWeakMap.get(si);
+                if(newIO == null) {
+                    newIO = IOProvider.getDefault().getIO(si.getDisplayName(), actions);
+                    ioWeakMap.put(si, newIO);
+                }
+            }
             return newIO;
         }
     }    

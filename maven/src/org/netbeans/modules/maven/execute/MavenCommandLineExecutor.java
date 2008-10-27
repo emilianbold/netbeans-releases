@@ -57,6 +57,7 @@ import org.netbeans.modules.maven.api.execute.ActiveJ2SEPlatformProvider;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -88,6 +89,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
      * not to be called directrly.. use execute();
      */
     public void run() {
+        synchronized (SEMAPHORE) {
+            if (task == null) {
+                try {
+                    SEMAPHORE.wait();
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.FINE, "interrupted", ex);
+                }
+            }
+        }
+
         final RunConfig clonedConfig = new BeanRunConfig(this.config);
         int executionresult = -10;
         InputOutput ioput = getInputOutput();
@@ -107,6 +118,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         handle.start();
         processInitialMessage();
         try {
+            BuildExecutionSupport.registerRunningItem(item);
+
             out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
             
             File workingDir = clonedConfig.getExecutionDirectory();
@@ -132,6 +145,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             if (!hasJavaSet) {
                 if (config.getProject() != null) {
+                    //TODO somehow use the config.getMavenProject() call rather than looking up the
+                    // ActiveJ2SEPlatformProvider from lookup. The loaded project can be different from the executed one.
                     ActiveJ2SEPlatformProvider javaprov = config.getProject().getLookup().lookup(ActiveJ2SEPlatformProvider.class);
                     File path = null;
                     FileObject java = javaprov.getJavaPlatform().findTool("java"); //NOI18N
@@ -172,6 +187,8 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             }
             throw death;
         } finally {
+            BuildExecutionSupport.registerFinishedItem(item);
+
             try { //defend against badly written extensions..
                 out.buildFinished();
                 if (clonedConfig.getProject() != null) {

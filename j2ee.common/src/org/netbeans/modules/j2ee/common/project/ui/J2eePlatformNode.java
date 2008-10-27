@@ -69,7 +69,6 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -124,14 +123,17 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return new J2eePlatformNode(project, evaluator, platformPropName, cs);
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
     
+    @Override
     public String getDisplayName() {
         return "";
     }
     
+    @Override
     public String getHtmlDisplayName() {
         if (getPlatform() != null)
             return getPlatform().getDisplayName();
@@ -139,6 +141,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
             return NbBundle.getMessage(J2eePlatformNode.class, "LBL_J2eeServerMissing");
     }
     
+    @Override
     public Image getIcon(int type) {
         Image result = null;
         if (getPlatform() != null) {
@@ -147,14 +150,17 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return result != null ? result : brokenIcon;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new SystemAction[0];
     }
@@ -218,9 +224,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
 
     private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
-        private ClassPathSupport cs;
         PlatformContentChildren (ClassPathSupport cs) {
-            this.cs = cs;
         }
 
         @Override

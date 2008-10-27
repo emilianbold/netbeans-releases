@@ -44,9 +44,9 @@ import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.expr.VariableExpression;
-import org.netbeans.modules.groovy.editor.AstPath;
-import org.netbeans.modules.groovy.editor.AstUtilities;
-import org.netbeans.modules.groovy.editor.elements.AstElement;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.elements.AstElement;
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.openide.filesystems.FileObject;
 

@@ -41,10 +41,6 @@
 
 package org.netbeans.modules.cnd.editor.makefile;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.ObjectStreamField;
 import org.netbeans.editor.ext.ExtFormatter;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.FormatterIndentEngine;
@@ -69,8 +65,6 @@ public class MakefileIndentEngine extends FormatterIndentEngine {
 
     public MakefileIndentEngine() {
         setAcceptedMimeTypes(new String[] { MIMENames.MAKEFILE_MIME_TYPE });
-	setExpandTabs(false); // This should be the default for Makefilesd
-	setSpacesPerTab(8);
     }
     
     protected ExtFormatter createFormatter() {
@@ -86,25 +80,9 @@ public class MakefileIndentEngine extends FormatterIndentEngine {
 //        this.type = type;
 //    }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("Welcome_opt_indent_makefile"); // NOI18N // FIXUP
     }
-    
-    // Serialization
-    
-    private static final ObjectStreamField[] serialPersistenFields = {
-        new ObjectStreamField(MAKEFILE_TYPE, String.class)
-    };
-    
-    private void readObject(ObjectInputStream ois) throws IOException, ClassNotFoundException {
-//        ObjectInputStream.GetField fields = ois.readFields();
-//        setMakefileType((String) fields.get(MAKEFILE_TYPE, (Object) getMakefileType()));
-    }
-    
-    private void writeObject(ObjectOutputStream oos) throws IOException, ClassNotFoundException {
-//        ObjectOutputStream.PutField fields = oos.putFields();
-//        fields.put(MAKEFILE_TYPE, getMakefileType());
-//        oos.writeFields();
-    }
-}
 
+}

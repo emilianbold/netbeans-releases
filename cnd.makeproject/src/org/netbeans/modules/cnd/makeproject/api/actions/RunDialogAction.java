@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.loaders.CoreElfObject;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileUtil;
@@ -92,11 +93,14 @@ public class RunDialogAction extends NodeAction {
     }
 
     protected boolean enable(Node[] activatedNodes) {
-	if (activatedNodes == null || activatedNodes.length != 1)
+	if (activatedNodes == null || activatedNodes.length != 1) {
 	    return false;
+        }
 	DataObject dataObject = (DataObject)activatedNodes[0].getCookie(DataObject.class);
-	if (!(dataObject instanceof ExeObject))
+        // disabled for core files, see issue 136696
+	if (!(dataObject instanceof ExeObject) || dataObject instanceof CoreElfObject) {
 	    return false;
+        }
 	return true;
     }
 

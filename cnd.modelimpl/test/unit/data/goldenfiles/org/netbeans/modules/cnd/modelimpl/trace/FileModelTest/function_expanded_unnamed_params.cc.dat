@@ -29,7 +29,7 @@ FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$
          [3:27/108-3:54/135]  TYPE: *char TEXT=char*  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: **char TEXT=char**  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: int TEXT=int  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
-    RETURNS *char TEXT=char*  [3:1/82-3:14/95]
+    RETURNS *char TEXT=char*  [3:8/89-3:14/95]
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$ 
@@ -49,5 +49,5 @@ FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$
          [3:27/108-3:54/135]  TYPE: *char TEXT=char*  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: **char TEXT=char**  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
          [3:27/108-3:54/135]  TYPE: int TEXT=int  [3:27/108-3:54/135]  INIT: null  SCOPE: get_variable 
-    RETURNS *char TEXT=char*  [3:1/82-3:14/95]
+    RETURNS *char TEXT=char*  [3:8/89-3:14/95]
 

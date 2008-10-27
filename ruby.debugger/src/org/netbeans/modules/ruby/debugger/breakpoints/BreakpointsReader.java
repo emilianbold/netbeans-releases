@@ -44,9 +44,9 @@ package org.netbeans.modules.ruby.debugger.breakpoints;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.modules.ruby.debugger.EditorUtil;
-import org.netbeans.modules.ruby.debugger.Util;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -56,7 +56,9 @@ import org.openide.util.Exceptions;
 
 /** Stores and reads {@link RubyBreakpoint}s. */
 public final class BreakpointsReader implements Properties.Reader {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(BreakpointsReader.class.getName());
+
     private static final String PROPERTY_URL = "url"; // NOI18N
     private static final String PROPERTY_LINE_NUMBER = "lineNumber"; // NOI18N
     private static final String PROPERTY_CONDITION = "condition"; // NOI18N
@@ -106,7 +108,7 @@ public final class BreakpointsReader implements Properties.Reader {
         try {
             fo = URLMapper.findFileObject(new URL(url));
         } catch (MalformedURLException e) {
-            Util.finer("Did not find FileObject. Malformed URL '" + url + "'");
+            LOGGER.finer("Did not find FileObject. Malformed URL '" + url + "'");
             return null;
         }
         if (fo == null) {
@@ -123,9 +125,9 @@ public final class BreakpointsReader implements Properties.Reader {
         try {
             return ls.getCurrent(lineNumber);
         } catch (IndexOutOfBoundsException e) {
-            Util.LOGGER.log(Level.FINE, e.getMessage(), e);
+            LOGGER.log(Level.FINE, e.getLocalizedMessage(), e);
         } catch (IllegalArgumentException e) {
-            Util.LOGGER.log(Level.FINE, e.getMessage(), e);
+            LOGGER.log(Level.FINE, e.getLocalizedMessage(), e);
         }
         return null;
     }

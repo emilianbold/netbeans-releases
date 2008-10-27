@@ -55,6 +55,16 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class PropertyPickerOperatorTest extends FormPropertiesEditorsTestCase {
     
+    public static final String[] tests = new String[] {
+        "testLblComponent",
+        "testCboComponent",
+        "testLblProperties",
+        "testLstProperties",
+        "testSetComponent",
+        "testSetProperty",
+        "testClose"
+    };
+    
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -78,13 +88,7 @@ public class PropertyPickerOperatorTest extends FormPropertiesEditorsTestCase {
         return suite;
          */
         return (NbTestSuite) createModuleTest(PropertyPickerOperatorTest.class, 
-        "testLblComponent",
-        "testCboComponent",
-        "testLblProperties",
-        "testLstProperties",
-        "testSetComponent",
-        "testSetProperty",
-        "testClose");
+        tests);
     }
     
     /** Redirect output to log files, wait before each test case. */

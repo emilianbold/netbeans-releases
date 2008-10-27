@@ -59,8 +59,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -69,6 +71,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipException;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
@@ -782,6 +785,21 @@ public class JarFileSystem extends AbstractFileSystem {
 
                 try {
                     Enumeration<JarEntry> en = j.entries();
+                    // #144166 - If duplicate entries found in jar, it is
+                    // immediately reported to the user. It can happen because
+                    // Ant's jar task can produce such jars.
+                    Set<String> duplicateCheck = new HashSet<String>();
+                    while (en.hasMoreElements()) {
+                        String name = en.nextElement().getName();
+                        if (!duplicateCheck.add(name)) {
+                            String message = getString("EXC_DuplicateEntries", getJarFile(), name);  //NOI18N
+                            IllegalArgumentException iae = new IllegalArgumentException(message);
+                            Exceptions.attachLocalizedMessage(iae, message);
+                            Exceptions.printStackTrace(iae);
+                            return Cache.INVALID;
+                        }
+                    }
+                    en = j.entries();
                     Cache newCache = new Cache(en);
                     lastModification = root.lastModified();
                     strongCache = newCache;

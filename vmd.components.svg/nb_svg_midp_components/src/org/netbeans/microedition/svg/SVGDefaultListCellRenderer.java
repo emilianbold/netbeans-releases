@@ -95,7 +95,7 @@ public class SVGDefaultListCellRenderer implements SVGListCellRenderer {
      * @see org.netbeans.microedition.svg.SVGListCellRenderer#getCellRendererComponent(org.netbeans.microedition.svg.SVGList, java.lang.Object, int, boolean)
      */
     public SVGComponent getCellRendererComponent( SVGList list, Object value,
-            int index, boolean isSelected )
+            int index, boolean isSelected , boolean cellHasFocus)
     {
         final SVGLocatableElement content = list.getContent();
         

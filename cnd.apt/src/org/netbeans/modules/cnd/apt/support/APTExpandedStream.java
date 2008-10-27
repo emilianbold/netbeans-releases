@@ -320,7 +320,7 @@ public class APTExpandedStream implements TokenStream {
     // we are trying to prevent such experiments, especially in IDE
     private static final long MACRO_EXPANDING_THREASHOLD = 16*1024;
     private static List<Token> subsituteParams(APTMacro macro, List<List<Token>> params, APTMacroCallback callback, boolean expandPPExpression) throws TokenStreamException {
-        final Map<String/*getTokenTextKey(token)*/, List<Token>> paramsMap = createParamsMap(macro, params);;
+        final Map<String/*getTokenTextKey(token)*/, List<Token>> paramsMap = createParamsMap(macro, params);
         final List<Token> expanded = new LinkedList<Token>();
         final TokenStream body = new APTCommentsFilter(macro.getBody());
         int state = BODY_STREAM;
@@ -385,9 +385,15 @@ public class APTExpandedStream implements TokenStream {
                     token = null;
                     assert (laToken.getType() == APTTokenTypes.DBL_SHARP);
                     assert (leftConcatToken != null);
-                    Token rightConcatToken = body.nextToken();
-                    List<Token> concatList = createConcatenation(leftConcatToken, rightConcatToken, paramsMap);
-                    laToken = body.nextToken();  
+                    List<Token> rightConcatTokens = new ArrayList<Token>();
+                    rightConcatTokens.add(body.nextToken());
+                    laToken = body.nextToken();
+                    if (isImplicitConcat(rightConcatTokens.get(0), laToken)) {
+                        // Fix for IZ#149225: incorrect concatenation with token that starts with digit
+                        rightConcatTokens.add(laToken);
+                        laToken = body.nextToken();
+                    }
+                    List<Token> concatList = createConcatenation(leftConcatToken, rightConcatTokens, paramsMap);
                     switch (laToken.getType()) {
                         case APTTokenTypes.DBL_SHARP:
                         {
@@ -402,8 +408,8 @@ public class APTExpandedStream implements TokenStream {
                             }
                             state = CONCATENATE;
                             break;
-                        }                        
-                        default:    
+                        }
+                        default:
                         {
                             leftConcatToken = null;
                             expanded.addAll(concatList);
@@ -447,6 +453,23 @@ public class APTExpandedStream implements TokenStream {
         return expanded;
     }
 
+    private static boolean isImplicitConcat(Token left, Token right) {
+        return APTUtils.isInt(left) && APTUtils.isID(right) && areAdjacent(left, right);
+    }
+
+    private static boolean areAdjacent(Token left, Token right) {
+        while (left instanceof MacroExpandedToken && right instanceof MacroExpandedToken) {
+            left = ((MacroExpandedToken)left).getTo();
+            right = ((MacroExpandedToken)right).getTo();
+        }
+        if (left instanceof APTToken && right instanceof APTToken) {
+            return ((APTToken)left).getEndOffset() == ((APTToken)right).getOffset();
+        } else {
+            return left.getLine() == right.getLine()
+                    && left.getColumn() + left.getText().length() == right.getColumn();
+        }
+    }
+
     private static Map<String, List<Token>> createParamsMap(APTMacro macro, List<List<Token>> params) {
         Map<String, List<Token>> map = new HashMap<String, List<Token>>();
         Collection<Token> macroParams = macro.getParams();
@@ -471,7 +494,7 @@ public class APTExpandedStream implements TokenStream {
         return map;
     }    
 
-    private static List<Token> createConcatenation(Token tokenLeft, Token tokenRight, final Map<String/*getTokenTextKey(token)*/, List<Token>> paramsMap) {
+    private static List<Token> createConcatenation(Token tokenLeft, List<Token> tokensRight, final Map<String/*getTokenTextKey(token)*/, List<Token>> paramsMap) {
         //TODO: finish it, use lexer
         List<Token> valLeft = paramsMap.get(tokenLeft.getText());
         String leftText;
@@ -480,12 +503,23 @@ public class APTExpandedStream implements TokenStream {
         } else {
             leftText = tokenLeft.getText();
         }
-        List<Token> valRight = paramsMap.get(tokenRight.getText());
+        StringBuilder tokensRightMerged = new StringBuilder();
+        for (Token token : tokensRight) {
+            tokensRightMerged.append(token.getText());
+        }
+        List<Token> valRight = paramsMap.get(tokensRightMerged.toString());
         String rightText;
         if (valRight != null) {
             rightText = toText(valRight, false);
         } else {
-            rightText = tokenRight.getText();
+            rightText = tokensRightMerged.toString();
+        }
+        // IZ#149505: special handling of __VA_ARGS__ with preceding comma
+        if (tokenLeft.getType() == APTTokenTypes.COMMA && rightText.length() == 0 && 
+            APTUtils.isVaArgsToken(tokensRight.get(0))) {
+            // when __VA_ARGS__ is empty expanded => 
+            // need to eat comma as well and should return no tokens
+            return new ArrayList<Token>();
         }
         String text = leftText + rightText;
         TokenStream ts = APTTokenStreamBuilder.buildTokenStream(text);
@@ -503,24 +537,17 @@ public class APTExpandedStream implements TokenStream {
     }
     
     private static String toText(List<Token> tokens, boolean stringize) {
-        // TODO: we need to check there, that end offset and start offset
-        // for subsequent tokens to identify whether whitespaces and comments
-        // where eaten before
-        // 
-        // now just concat all texts
         StringBuilder out = new StringBuilder();
         if (stringize) {
             out.append('"'); // NOI18N
         }
-        for (Iterator<Token> it = tokens.iterator(); it.hasNext();) {
-            Token token = it.next();
+        for (int i = 0; i < tokens.size(); ++i) {
+            Token token = tokens.get(i);
             if (stringize) {
                 out.append(escape(token.getText()));
             } else {
                 out.append(token.getText());
-                // FIXUP: this is the hack to be OK in stringize
-                // (used in #include macro) and concatenation
-                if (it.hasNext()) {
+                if (i + 1 < tokens.size() && !areAdjacent(token, tokens.get(i + 1))) {
                     out.append(' '); // NOI18N
                 }
             }

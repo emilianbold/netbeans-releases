@@ -47,13 +47,16 @@
 
 package org.netbeans.modules.j2ee.dd.impl.common;
 
-import org.netbeans.modules.schema2beans.BaseBean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.schema2beans.Version;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.common.DescriptionInterface;
 
 public abstract class DescriptionBeanMultiple extends EnclosingBean implements DescriptionInterface {
 
+    private static final Logger LOG = Logger.getLogger(DescriptionBeanMultiple.class.getName());
+    
     public DescriptionBeanMultiple(java.util.Vector comps, Version version) {
 	super(comps, version);
     }
@@ -91,14 +94,15 @@ public abstract class DescriptionBeanMultiple extends EnclosingBean implements D
     public void setDescription(String description) {
         try {
             setDescription(null,description);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     
     public void setAllDescriptions(java.util.Map descriptions) throws VersionNotSupportedException {
         removeAllDescriptions();
         if (descriptions!=null) {
             java.util.Iterator keys = descriptions.keySet().iterator();
-            String[] newDescription = new String[descriptions.size()]; 
             int i=0;
             while (keys.hasNext()) {
                 String key = (String) keys.next();
@@ -120,7 +124,9 @@ public abstract class DescriptionBeanMultiple extends EnclosingBean implements D
     public String getDefaultDescription() {
         try {
             return getDescription(null);
-        } catch (VersionNotSupportedException ex){return null;}
+        } catch (VersionNotSupportedException ex){
+            return null;
+        }
     }
     public java.util.Map getAllDescriptions() {
         java.util.Map map =new java.util.HashMap();
@@ -146,7 +152,9 @@ public abstract class DescriptionBeanMultiple extends EnclosingBean implements D
     public void removeDescription() {
         try {
             removeDescriptionForLocale(null);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     public void removeAllDescriptions() {
         setDescription(new String[]{});

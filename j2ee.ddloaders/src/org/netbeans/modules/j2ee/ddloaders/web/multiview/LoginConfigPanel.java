@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JRadioButton;
 import org.netbeans.modules.j2ee.dd.api.web.FormLoginConfig;
 import org.netbeans.modules.j2ee.dd.api.web.LoginConfig;
@@ -58,6 +60,8 @@ import org.netbeans.modules.xml.multiview.ui.SectionView;
  * @author  ptliu
  */
 public class LoginConfigPanel extends SectionInnerPanel {
+    private static final Logger LOG = Logger.getLogger(LoginConfigPanel.class.getName());
+    
     private static String NONE = "NONE";                //NOI18N
     private static String BASIC = "BASIC";              //NOI18N
     private static String DIGEST = "DIGEST";            //NOI18N
@@ -66,7 +70,6 @@ public class LoginConfigPanel extends SectionInnerPanel {
     
     private WebApp webApp;
     private LoginConfig loginConfig;
-    private SectionView view;
     private DDDataObject dObj;
     
     /**
@@ -76,7 +79,6 @@ public class LoginConfigPanel extends SectionInnerPanel {
         super(view);
         initComponents();
         
-        this.view = view;
         this.dObj = dObj;
         this.webApp = dObj.getWebApp();
         this.loginConfig = webApp.getSingleLoginConfig();
@@ -160,6 +162,7 @@ public class LoginConfigPanel extends SectionInnerPanel {
         return null;
     }
     
+    @Override
     public void documentChanged(javax.swing.text.JTextComponent comp, String value) {
         /* TODO: Is there anything to validate?
         if (comp == realmNameTF) {
@@ -184,6 +187,7 @@ public class LoginConfigPanel extends SectionInnerPanel {
                 loginConfig = (LoginConfig) webApp.createBean("LoginConfig");  //NOI18N
                 webApp.setLoginConfig(loginConfig);
             } catch (ClassNotFoundException ex) {
+                LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
             }
         }
         
@@ -199,6 +203,7 @@ public class LoginConfigPanel extends SectionInnerPanel {
                 formLoginConfig = (FormLoginConfig) webApp.createBean("FormLoginConfig");  //NOI18N
                 loginConfig.setFormLoginConfig(formLoginConfig);
             } catch (ClassNotFoundException ex) {
+                LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
             }
         }
         
@@ -219,6 +224,8 @@ public class LoginConfigPanel extends SectionInnerPanel {
                 authMethod = BASIC;
             } else if (source == formRB) {
                 authMethod = FORM;
+            } else {
+                authMethod = NONE;
             }
             
             // Null out the existing loginConfig
@@ -250,17 +257,20 @@ public class LoginConfigPanel extends SectionInnerPanel {
         }
     }
     
+    @Override
     public void rollbackValue(javax.swing.text.JTextComponent source) {
     }
     
     /** This will be called before model is changed from this panel
      */
+    @Override
     protected void startUIChange() {
         dObj.setChangedFromUI(true);
     }
     
     /** This will be called after model is changed from this panel
      */
+    @Override
     protected void endUIChange() {
         dObj.modelUpdatedFromUI();
         dObj.setChangedFromUI(false);
@@ -449,32 +459,26 @@ public class LoginConfigPanel extends SectionInnerPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void formRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_formRBActionPerformed
-// TODO add your handling code here:
         updateVisualState(FORM);
     }//GEN-LAST:event_formRBActionPerformed
 
     private void basicRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_basicRBActionPerformed
-// TODO add your handling code here:
         updateVisualState(BASIC);
     }//GEN-LAST:event_basicRBActionPerformed
 
     private void clientCertRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clientCertRBActionPerformed
-// TODO add your handling code here:
         updateVisualState(CLIENT_CERT);
     }//GEN-LAST:event_clientCertRBActionPerformed
 
     private void digestRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_digestRBActionPerformed
-// TODO add your handling code here:
         updateVisualState(DIGEST);
     }//GEN-LAST:event_digestRBActionPerformed
 
     private void noneRBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_noneRBActionPerformed
-// TODO add your handling code here:
         updateVisualState(NONE);
     }//GEN-LAST:event_noneRBActionPerformed
     
     private void errorPageBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_errorPageBrowseButtonActionPerformed
-// TODO add your handling code here:
         try {
             org.netbeans.api.project.SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
@@ -490,11 +494,12 @@ public class LoginConfigPanel extends SectionInnerPanel {
                     getSectionView().checkValidity();
                 }
             }
-        } catch (java.io.IOException ex) {}
+        } catch (java.io.IOException ex) {
+            LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+        }
     }//GEN-LAST:event_errorPageBrowseButtonActionPerformed
     
     private void loginPageBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loginPageBrowseButtonActionPerformed
-// TODO add your handling code here:
          try {
             org.netbeans.api.project.SourceGroup[] groups = DDUtils.getDocBaseGroups(dObj);
             org.openide.filesystems.FileObject fo = BrowseFolders.showDialog(groups);
@@ -510,7 +515,9 @@ public class LoginConfigPanel extends SectionInnerPanel {
                     getSectionView().checkValidity();
                 }
             }
-        } catch (java.io.IOException ex) {}
+        } catch (java.io.IOException ex) {
+            LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+        }
     }//GEN-LAST:event_loginPageBrowseButtonActionPerformed
         
     

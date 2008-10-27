@@ -109,13 +109,14 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 
     protected void documentChanged() {
         lastLength = -1;
-        if (pendingCaretLine != -1) {
-            if (!sendCaretToLine (pendingCaretLine, pendingCaretSelect)) {
-                ensureCaretPosition();
+        if (lineToScroll != -1) {
+            if (scrollToLine(lineToScroll)) {
+                lineToScroll = -1;
             }
         } else {
             ensureCaretPosition();
         }
+
         if (recentlyReset && isShowing()) {
             recentlyReset = false;
         }
@@ -136,7 +137,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return textView.getSelectionStart() != textView.getSelectionEnd();
     }
 
-    boolean isScrollLocked() {
+    public boolean isScrollLocked() {
         return locked;
     }
 
@@ -148,13 +149,11 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
      * OutputDocument only fires changes on the event queue.
      */
     public final void ensureCaretPosition() {
-        if (locked) {           
+        if (locked && !enqueued) {
             //Make sure the scrollbar is updated *after* the document change
             //has been processed and the scrollbar model's maximum updated
-            if (!enqueued) {
-                enqueued = true;
-                SwingUtilities.invokeLater(this);
-            }
+            enqueued = true;
+            SwingUtilities.invokeLater(this);
         }
     }
     
@@ -166,8 +165,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
      */
     public void run() {
         enqueued = false;
-        getVerticalScrollBar().setValue(getVerticalScrollBar().getModel().getMaximum());
-        getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
+        if (locked) {
+            getVerticalScrollBar().setValue(getVerticalScrollBar().getModel().getMaximum());
+            getHorizontalScrollBar().setValue(getHorizontalScrollBar().getModel().getMinimum());
+        }
     }
 
     public int getSelectionStart() {
@@ -269,6 +270,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         hadSelection = false;
         lastCaretLine = 0;
         lastLength = -1;
+        lineToScroll = -1;
         Document old = textView.getDocument();
         old.removeDocumentListener(this);
         if (doc != null) {
@@ -276,7 +278,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
             doc.addDocumentListener(this);
             lockScroll();
             recentlyReset = true;
-            pendingCaretLine = -1;
         } else {
             textView.setDocument (new PlainDocument());
             textView.setEditorKit(new DefaultEditorKit());
@@ -316,52 +317,55 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         return lastLength;
     }
     
-    /**
-     * If we are sending the caret to a hyperlinked line, but it is < 3 lines
-     * from the bottom, we will hold the line number in this field until there
-     * are enough lines that it will be semi-centered.
-     */
-    private int pendingCaretLine = -1;
-    private boolean pendingCaretSelect = false;
     private boolean inSendCaretToLine = false;
-    
+    private int lineToScroll = -1;
     public final boolean sendCaretToLine(int idx, boolean select) {
-        int count = getLineCount();
-        if (count - idx < 3) {
-            pendingCaretLine = idx;
-            pendingCaretSelect = select;
-            return false;
-        } else {
-            inSendCaretToLine = true;
-            pendingCaretLine = -1;
-            unlockScroll();
-            getCaret().setVisible(true);
-            getCaret().setSelectionVisible(true);
-            Element el = textView.getDocument().getDefaultRootElement().getElement(Math.min(idx, getLineCount() - 1));
-            int position = el.getStartOffset();
-            if (select) {
-                getCaret().setDot (el.getEndOffset()-1);
-                getCaret().moveDot (position);
-                getCaret().setSelectionVisible(true);
-                textView.repaint();
-            } else {
-                getCaret().setDot(position);
-            }
-            if (idx + 3 < getLineCount()) {
-                try {
-                    Rectangle r = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement(idx + 3).getStartOffset());
-                    if (r != null) { //Will be null if maximized - no parent, no coordinate space
-                        textView.scrollRectToVisible(r);
-                    }
-                } catch (BadLocationException ble) {
-                    Exceptions.printStackTrace(ble);
-                }
-            }
-            inSendCaretToLine = false;
-            return true;
+        int lastLine = getLineCount() - 1;
+        if (idx > lastLine) {
+            idx = lastLine;
         }
-    }
+        inSendCaretToLine = true;
+        getCaret().setVisible(true);
+        getCaret().setSelectionVisible(true);
+        Element el = textView.getDocument().getDefaultRootElement().getElement(idx);
+        int position = el.getStartOffset();
+        if (select) {
+            getCaret().setDot(el.getEndOffset() - 1);
+            getCaret().moveDot(position);
+            getCaret().setSelectionVisible(true);
+            textView.repaint();
+        } else {
+            getCaret().setDot(position);
+        }
 
+        if (!scrollToLine(idx + 3) && isScrollLocked()) {
+            lineToScroll = idx + 3;
+        }
+        locked = false;
+        inSendCaretToLine = false;
+        return true;
+    }
+    
+    boolean scrollToLine(int line) {
+        int lineIdx = Math.min(getLineCount() - 1, line);
+        Rectangle rect = null;
+        try {
+            rect = textView.modelToView(textView.getDocument().getDefaultRootElement().getElement(lineIdx).getStartOffset());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+
+        if (rect == null) {
+            return false;
+        }
+
+        boolean oldLocked = locked;
+        textView.scrollRectToVisible(rect);
+        locked = oldLocked;
+
+        Rectangle visRect = textView.getVisibleRect();
+        return line == lineIdx && visRect.y + visRect.height == rect.y + rect.height;
+    }
 
     public final void lockScroll() {
         if (!locked) {
@@ -373,6 +377,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         if (locked) {
             locked = false;
         }
+        lineToScroll = -1;
     }
 
     protected abstract void caretEnteredLine (int line);
@@ -382,12 +387,17 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     protected abstract void postPopupMenu (Point p, Component src);
     
     public final int getCaretLine() {
-        int result = -1;
+        int result = 0;
         int charPos = getCaret().getDot();
         if (charPos > 0) {
             result = textView.getDocument().getDefaultRootElement().getElementIndex(charPos);
         }
         return result;
+    }
+
+    public final boolean isLineSelected(int idx) {
+        Element line = textView.getDocument().getDefaultRootElement().getElement(idx);
+        return line.getStartOffset() == getSelectionStart() && line.getEndOffset()-1 == getSelectionEnd();
     }
 
     public final int getCaretPos() {
@@ -406,11 +416,6 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
 //***********************Listener implementations*****************************
 
     public void stateChanged(ChangeEvent e) {
-        /*if (e.getSource() instanceof JViewport) { // #78191
-            if (locked) {
-                ensureCaretPosition();
-            }
-        } else*/
         if (e.getSource() == getVerticalScrollBar().getModel()) {
             if (!locked) { //XXX check if doc is still being written?
                 BoundedRangeModel mdl = getVerticalScrollBar().getModel();
@@ -613,7 +618,9 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     public void keyPressed(KeyEvent keyEvent) {
         switch (keyEvent.getKeyCode()) {
             case KeyEvent.VK_END:
-                lockScroll();
+                if (keyEvent.isControlDown()) {
+                    lockScroll();
+                }
                 break;
             case KeyEvent.VK_UP:
             case KeyEvent.VK_DOWN:

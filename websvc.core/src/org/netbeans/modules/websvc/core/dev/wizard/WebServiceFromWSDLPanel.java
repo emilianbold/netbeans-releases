@@ -121,8 +121,8 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         initJsr109Info();
 
         jTextFieldWSDLFile.getDocument().addDocumentListener(this);
-         
-        if(supportsJaxrpc()){
+
+        if (supportsJaxrpc()) {
             useProviderBtn.setVisible(false);
         }
         generateWsdlModelTask = RequestProcessor.getDefault().create(new Runnable() {
@@ -146,10 +146,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     StreamSource source = new StreamSource(wsdlURL.toExternalForm());
                     try {
                         File wsdlFile = new File(System.getProperty("java.io.tmpdir"), WsdlWrapperGenerator.getWrapperName(wsdlURL)); //NOI18N
+                        wsdlFile = wsdlFile.getCanonicalFile();
 
                         if (!wsdlFile.exists()) {
                             try {
                                 wsdlFile.createNewFile();
+                                wsdlFile.deleteOnExit();
                             } catch (IOException ex) {
                                 String mes = NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_UnableToCreateTempFile", wsdlFile.getPath()); // NOI18N
                                 NotifyDescriptor desc = new NotifyDescriptor.Message(mes, NotifyDescriptor.Message.ERROR_MESSAGE);
@@ -158,7 +160,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                             }
                         }
                         WsdlWrapperGenerator.generateWrapperWSDLContent(wsdlFile, source, handler.getTargetNsPrefix(), wsdlURL.toExternalForm());
-                        wsdlURL = wsdlFile.toURL();
+                        wsdlURL = wsdlFile.toURI().toURL();
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
                     }
@@ -376,11 +378,11 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
     }
 
     private void initJsr109Info() {
-        
+
         WSStackUtils wsStackUtils = new WSStackUtils(project);
         jsr109Supported = wsStackUtils.isJsr109Supported();
         jaxWsInJ2ee14Supported = ServerType.JBOSS == wsStackUtils.getServerType();
-        noMetroInstalledOnGlassFishV3 = !jsr109Supported && ServerType.GLASSFISH_V3 == wsStackUtils.getServerType();
+        noMetroInstalledOnGlassFishV3 = !wsStackUtils.isWsitSupported() && ServerType.GLASSFISH_V3 == wsStackUtils.getServerType();
         jsr109oldSupported = wsStackUtils.isJsr109OldSupported();
         wm = WebModule.getWebModule(project.getProjectDirectory());
         wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
@@ -467,7 +469,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "MSG_NoPort")); // NOI18N
                     return false;
                 }
-                
+
                 if (findServiceInProject(service.getName())) {
                     wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                             NbBundle.getMessage(WebServiceFromWSDLPanel.class, "ERR_ServiceNameExists", service.getName()));
@@ -498,7 +500,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
         } else {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, ""); // NOI18N
         }
-        
+
         if (noMetroInstalledOnGlassFishV3) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_NoMetroInstalled")); //NOI18N            
         } else {
@@ -597,7 +599,7 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             File normalizedWsdlFilePath = FileUtil.normalizeFile(new File(jTextFieldWSDLFile.getText().trim()));
             wsdlURL = null;
             try {
-                wsdlURL = normalizedWsdlFilePath.toURL();
+                wsdlURL = normalizedWsdlFilePath.toURI().toURL();
             } catch (MalformedURLException ex) {
                 ErrorManager.getDefault().notify(ex);
             }
@@ -647,12 +649,12 @@ public class WebServiceFromWSDLPanel extends javax.swing.JPanel implements HelpC
             return NbBundle.getMessage(WebServiceFromWSDLPanel.class, "LBL_WsdlFilterDescription"); // NOI18N
         }
     }
-    
+
     private boolean findServiceInProject(String serviceName) {
         JAXWSSupport support = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-        for (Object o:support.getServices()) {
-            Service s = (Service)o;
-            if (s.getWsdlUrl() != null && 
+        for (Object o : support.getServices()) {
+            Service s = (Service) o;
+            if (s.getWsdlUrl() != null &&
                     serviceName.equals(s.getServiceName())) {
                 return true;
             }

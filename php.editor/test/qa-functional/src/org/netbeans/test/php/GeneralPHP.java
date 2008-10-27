@@ -119,7 +119,14 @@ public class GeneralPHP extends JellyTestCase {
 
   protected void Sleep( int iTime )
   {
-    try { Thread.sleep( iTime ); } catch( InterruptedException ex ) { }
+    try
+    {
+      Thread.sleep( iTime );
+    }
+    catch( InterruptedException ex )
+    {
+      System.out.println( "=== Interrupted sleep ===" );
+    }
   }
 
   // All defaults including name
@@ -217,7 +224,8 @@ public class GeneralPHP extends JellyTestCase {
 
   protected void TypeCode( EditorOperator edit, String code )
   {
-    for( int i = 0; i < code.length( ); i++ )
+    int iLimit = code.length( );
+    for( int i = 0; i < iLimit; i++ )
     {
       edit.typeKey( code.charAt( i ) );
       Sleep( 100 );

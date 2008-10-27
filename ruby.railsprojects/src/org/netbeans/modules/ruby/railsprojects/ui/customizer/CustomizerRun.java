@@ -255,8 +255,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         platformListener = new PlatformChangeListener() {
             public void platformChanged() {
                 RubyPlatform platform = (RubyPlatform) platforms.getSelectedItem();
-                uiProperties.setPlatform(platform);
-                configs.get(getSelectedConfig()).put(RailsProjectProperties.PLATFORM_ACTIVE, platform.getID());
+                if (platform != null) {
+                    uiProperties.setPlatform(platform);
+                    configs.get(getSelectedConfig()).put(RailsProjectProperties.PLATFORM_ACTIVE, platform.getID());
+                }
             }
         };
         PlatformComponentFactory.addPlatformChangeListener(platforms, platformListener);

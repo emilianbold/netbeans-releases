@@ -41,6 +41,8 @@
 
 package org.openide.awt;
 
+import java.util.logging.Level;
+
 /** A special task designed to run in AWT thread.
  * It will fire itself immediatelly.
  */
@@ -52,13 +54,22 @@ final class AWTTask extends org.openide.util.Task {
         org.openide.util.Mutex.EVENT.readAccess (this);
     }
 
+    @Override
     public void run () {
         if (!executed) {
-            super.run ();
-            executed = true;
+            try {
+                super.run ();
+            } catch (ThreadDeath t) {
+                throw t;
+            } catch (Throwable t) {
+                Toolbar.LOG.log(Level.WARNING, "Error in AWT task", t); // NOI18N
+            } finally {
+                executed = true;
+            }
         }
     }
 
+    @Override
     public void waitFinished () {
         if (javax.swing.SwingUtilities.isEventDispatchThread ()) {
             run ();

@@ -461,9 +461,9 @@ public final class EarProject implements Project, AntProjectListener {
                 Exceptions.printStackTrace(e);
             }
             
-            String disableDeployOnSave = EarProject.this.getUpdateHelper().
-                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE);
-            if (!Boolean.parseBoolean(disableDeployOnSave)) {
+            String deployOnSave = EarProject.this.getUpdateHelper().
+                    getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(EarProjectProperties.J2EE_DEPLOY_ON_SAVE);
+            if (Boolean.parseBoolean(deployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(appModule);
             }
             
@@ -534,20 +534,6 @@ public final class EarProject implements Project, AntProjectListener {
             ProjectProperties.removeObsoleteLibraryLocations(ep);
             ProjectProperties.removeObsoleteLibraryLocations(props);
             
-            // configure DoS
-            if (!props.containsKey(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
-                boolean deployOnSaveEnabled = false;
-                try {
-                    String instanceId = ep.getProperty(EarProjectProperties.J2EE_SERVER_INSTANCE);
-                    if (instanceId != null) {
-                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
-                                .isDeployOnSaveSupported();
-                    }
-                } catch (InstanceRemovedException ex) {
-                    // false
-                }
-                props.setProperty(EarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
-            }
             
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
             

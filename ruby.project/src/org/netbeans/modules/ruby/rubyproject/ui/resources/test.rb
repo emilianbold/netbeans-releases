@@ -22,7 +22,7 @@ ${indent}module ${modulename}
 <#-- If the "extend" parameter is set, add < Superclass to the class definition -->
 ${indent}class ${class}<#if extend?? && extend != ""> < ${extend}</#if>
 ${indent}  def test_foo
-${indent}    assert(false, 'Assertion was false.')
+${indent}    #TODO: Write test
 ${indent}    flunk "TODO: Write test"
 ${indent}    # assert_equal("foo", bar)
 ${indent}  end

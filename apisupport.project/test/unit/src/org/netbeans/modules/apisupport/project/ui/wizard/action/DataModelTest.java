@@ -71,8 +71,8 @@ public class DataModelTest extends LayerTestBase {
         TestBase.initializeBuildProperties(getWorkDir(), getDataDir());
     }
 
+    public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
 //    XXX: failing test, fix or delete
-//    public void testDataModelGenarationForAlwaysEnabledActions() throws Exception {
 //        NbModuleProject project = TestBase.generateStandaloneModule(getWorkDir(), "module1");
 //        LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
 //        FileObject root = handle.layer(true).getRoot();
@@ -170,7 +170,7 @@ public class DataModelTest extends LayerTestBase {
 //
 //        CreatedModifiedFilesTest.assertLayerContent(supposedContent,
 //                new File(getWorkDir(), "module1/src/org/example/module1/resources/layer.xml"));
-//    }
+    }
 
 //    XXX: failing test, fix or delete
 //    public void testDataModelGenarationForConditionallyEnabledActions() throws Exception {

@@ -165,9 +165,6 @@ public class RenameClassPerfTest extends RefactoringTestCase implements NbPerfor
 
     }
 
-    @Override
-    protected void tearDown() {
-    }
 
 
     public PerformanceData[] getPerformanceData() {

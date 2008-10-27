@@ -184,7 +184,7 @@ class EjbJarActionProvider implements ActionProvider {
         }
 
         String realCommand = command;
-        if (COMMAND_BUILD.equals(realCommand) && isCosEnabled()
+        if (COMMAND_BUILD.equals(realCommand) && isDosEnabled()
                 && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")) {
             boolean cleanAndBuild = DeployOnSaveUtils.showBuildActionWarning(project,
                     new DeployOnSaveUtils.CustomizerPresenter() {
@@ -411,7 +411,7 @@ class EjbJarActionProvider implements ActionProvider {
             return false;
         }
 
-        if (isCosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
+        if (isDosEnabled() && DeployOnSaveUtils.containsIdeArtifacts(evaluator, updateHelper, "build.classes.dir")
                 && COMMAND_COMPILE_SINGLE.equals(command)) {
             return false;
         }
@@ -616,7 +616,7 @@ class EjbJarActionProvider implements ActionProvider {
         EjbJarProjectProperties.setServerInstance(project, antProjectHelper, serverInstanceId);
     }
     
-    private boolean isCosEnabled() {
-        return !Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE));
+    private boolean isDosEnabled() {
+        return Boolean.parseBoolean(project.evaluator().getProperty(EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE));
     }
 }

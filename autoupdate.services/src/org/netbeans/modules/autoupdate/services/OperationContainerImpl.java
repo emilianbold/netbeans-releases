@@ -96,7 +96,7 @@ public final class OperationContainerImpl<Support> {
         return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
     }
     public static OperationContainerImpl<OperationSupport> createForUninstallNativeComponent () {
-        return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_INSTALL);
+        return new OperationContainerImpl<OperationSupport> (OperationType.CUSTOM_UNINSTALL);
     }
     @SuppressWarnings({"unchecked"})
     public OperationInfo<Support> add (UpdateUnit updateUnit, UpdateElement updateElement) throws IllegalArgumentException {
@@ -196,7 +196,10 @@ public final class OperationContainerImpl<Support> {
             Collection<ModuleInfo> allModuleInfos = new HashSet<ModuleInfo> (operations.size ());
             for (OperationInfo<?> i : operations) {
                 all.add (i.getUpdateElement ());
-                allModuleInfos.add (((ModuleUpdateElementImpl) Trampoline.API.impl(i.getUpdateElement ())).getModuleInfo ());
+                UpdateElementImpl elImpl = Trampoline.API.impl (i.getUpdateElement ());
+                if (elImpl instanceof ModuleUpdateElementImpl) {
+                    allModuleInfos.add (((ModuleUpdateElementImpl) elImpl).getModuleInfo ());
+                }
             }
             for (UpdateElement eagerEl : UpdateManagerImpl.getInstance ().getAvailableEagers ()) {
                 UpdateElementImpl impl = Trampoline.API.impl (eagerEl);

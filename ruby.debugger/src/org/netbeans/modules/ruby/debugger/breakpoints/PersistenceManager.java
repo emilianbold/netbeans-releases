@@ -44,14 +44,16 @@ package org.netbeans.modules.ruby.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.Properties;
-import org.netbeans.modules.ruby.debugger.Util;
 
 public final class PersistenceManager extends DebuggerManagerAdapter {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(PersistenceManager.class.getName());
+
     private static final String RUBY_PROPERTY = "ruby"; // NOI18N
     private static final String DEBUGGER_PROPERTY = "debugger"; // NOI18N
     
@@ -65,7 +67,7 @@ public final class PersistenceManager extends DebuggerManagerAdapter {
                 breakpoint.addPropertyChangeListener(this);
                 validBreakpoints.add(breakpoint);
             } else {
-                Util.warning("null stored in the array obtained from \"" + RUBY_PROPERTY + "\" property"); // TODO: why?
+                LOGGER.warning("null stored in the array obtained from \"" + RUBY_PROPERTY + "\" property"); // TODO: why?
             }
         }
         return validBreakpoints.toArray(new Breakpoint[validBreakpoints.size()]);

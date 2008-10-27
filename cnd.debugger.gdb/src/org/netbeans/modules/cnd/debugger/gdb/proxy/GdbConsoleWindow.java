@@ -157,9 +157,9 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
     }
   
     public void propertyChange(PropertyChangeEvent ev) { 
-        if (ev.getPropertyName() == GdbDebugger.PROP_STATE) {
+        if (GdbDebugger.PROP_STATE.equals(ev.getPropertyName())) {
             Object state = ev.getNewValue();
-            if (state == GdbDebugger.STATE_NONE) {
+            if (state == GdbDebugger.State.NONE) {
                 closeConsole();
             } else {
                 updateStatus(state.toString());

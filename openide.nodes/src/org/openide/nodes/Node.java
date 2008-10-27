@@ -1078,31 +1078,38 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      * @param indices removed indicies, 
      */
     final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry, List<Node> current, List<Node> previous) {
-        if (err.isLoggable(Level.FINER)) {
-            err.finer("fireSubNodesChangeIdx() " + this); // NOI18N
-            err.finer("    added: " + added); // NOI18N
-            err.finer("    idxs: " + Arrays.toString(idxs)); // NOI18N
-            err.finer("    current size: " + current.size() + "    current: " + current); // NOI18N
-            err.finer(previous != null ? ("    previous size: " + previous.size() + "    previous: " + previous) : "    null"); // NOI18N
-        }
+        try {
+            // enter to readAccess to prevent firing another event before all listeners receive current event
+            Children.PR.enterReadAccess();
+            if (err.isLoggable(Level.FINER)) {
+                err.finer("fireSubNodesChangeIdx() " + this); // NOI18N
+                err.finer("    added: " + added); // NOI18N
+                err.finer("    idxs: " + Arrays.toString(idxs)); // NOI18N
+                err.finer("    sourceEntry: " + sourceEntry); // NOI18N
+                err.finer("    current size: " + current.size() + "    current: " + current); // NOI18N
+                err.finer(previous != null ? ("    previous size: " + previous.size() + "    previous: " + previous) : "    null"); // NOI18N
+            }
 
-        NodeMemberEvent ev = null;
-        Object[] tmpListeners = this.listeners.getListenerList();
-        // Process the listeners last to first, notifying
-        // those that are interested in this event
-        for (int i = tmpListeners.length - 2; i >= 0; i -= 2) {
-            if (tmpListeners[i] == NodeListener.class) {
-                // Lazily create the event:
-                if (ev == null) {
-                    ev = new NodeMemberEvent(this, added, idxs, current, previous);
-                    ev.sourceEntry = sourceEntry;
-                }
-                if (added) {
-                    ((NodeListener) tmpListeners[i + 1]).childrenAdded(ev);
-                } else {
-                    ((NodeListener) tmpListeners[i + 1]).childrenRemoved(ev);
+            NodeMemberEvent ev = null;
+            Object[] tmpListeners = this.listeners.getListenerList();
+            // Process the listeners last to first, notifying
+            // those that are interested in this event
+            for (int i = tmpListeners.length - 2; i >= 0; i -= 2) {
+                if (tmpListeners[i] == NodeListener.class) {
+                    // Lazily create the event:
+                    if (ev == null) {
+                        ev = new NodeMemberEvent(this, added, idxs, current, previous);
+                        ev.sourceEntry = sourceEntry;
+                    }
+                    if (added) {
+                        ((NodeListener) tmpListeners[i + 1]).childrenAdded(ev);
+                    } else {
+                        ((NodeListener) tmpListeners[i + 1]).childrenRemoved(ev);
+                    }
                 }
             }
+        } finally {
+            Children.PR.exitReadAccess();
         }
     }     
 
@@ -1251,6 +1258,14 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * If that methods returns a non-<code>null</code> value, one can serialize it,
     * and after deserialization
     * use {@link #getNode} to obtain the original node.
+    * 
+    * <b>Related documentation</b>
+    * 
+    * <ul>
+    * <li><a href="http://blogs.sun.com/geertjan/entry/serializing_nodes">Serializing Nodes</a> 
+    * <li><a href="http://blogs.sun.com/geertjan/entry/multiple_nodes_serialization">Serializing Multiple Nodes</a> 
+    * </ul>
+    * 
     */
     public static interface Handle extends java.io.Serializable {
         /** @deprecated Only public by accident. */

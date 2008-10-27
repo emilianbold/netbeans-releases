@@ -63,6 +63,7 @@ import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JToolBar;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.SharedClassObject;
 import org.openide.util.Utilities;
 
@@ -263,7 +264,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
                         }
                     } else {
                         // Hopefully an absolute path, but again (#26887) might be relative.
-                        Image i = Utilities.loadImage(resName, true);
+                        Image i = ImageUtilities.loadImage(resName, true);
 
                         if (i != null) {
                             // OK, the normal case.
@@ -399,9 +400,11 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
             comp.setSize(Math.max(size.width, 16), Math.max(size.height, 16));
         }
 
+        @Override
         protected void loadImage(Image i) {
         }
 
+        @Override
         public void paintIcon(Component c, Graphics g, int x, int y) {
             // When enabled, tracks color choices of container:
             comp.setBackground(c.getBackground());
@@ -411,10 +414,12 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
             comp.paint(clip);
         }
 
+        @Override
         public int getIconWidth() {
             return comp.getWidth();
         }
 
+        @Override
         public int getIconHeight() {
             return comp.getHeight();
         }
@@ -422,6 +427,7 @@ public abstract class SystemAction extends SharedClassObject implements Action, 
         // Needed because this is called directly from e.g.
         // AbstractButton.getDisabledIcon to pass to GrayFilter,
         // rather than going through the Icon interface.
+        @Override
         public Image getImage() {
             if (image == null) {
                 image = new BufferedImage(getIconWidth(), getIconHeight(), BufferedImage.TYPE_INT_ARGB);
