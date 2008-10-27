@@ -93,9 +93,6 @@ public final class PlatformConstants {
     
     public static final String HARDWARE_SPARC = 
             "sparc";
-
-    public static final String HARDWARE_SPARCV9 =
-            "sparcv9";
     
     public static final String HARDWARE_PPC = 
             "ppc";
