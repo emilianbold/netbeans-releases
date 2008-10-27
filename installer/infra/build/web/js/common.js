@@ -255,7 +255,11 @@ function get_file_name(platform, option) {
 function get_file_name_short(platform, option) {
     var file_name = "";
     if(platform=="zip") {
-        file_name += ZIP_FILES_PREFIX;
+        if(option == "javadoc" || option == "platform-src" || option == "src") {
+            file_name += ZIP_FILES_PREFIX.replace("-ml","");
+        } else {
+            file_name += ZIP_FILES_PREFIX;
+        }
     } else {
         file_name += BUNDLE_FILES_PREFIX;
     }
