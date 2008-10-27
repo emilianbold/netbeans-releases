@@ -94,6 +94,11 @@ public class PackageViewTest extends NbTestCase {
         root = TestUtil.makeScratchDir(this);
     }
 
+    @Override
+    protected int timeOut() {
+        return 300000;
+    }
+
     @RandomlyFails
     public void testFolders() throws Exception {
         assertNull( "source folder should not exist yet", root.getFileObject( "src" ) );
