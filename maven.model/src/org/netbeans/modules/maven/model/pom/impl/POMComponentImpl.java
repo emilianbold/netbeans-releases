@@ -45,10 +45,8 @@ import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
-import org.netbeans.modules.maven.model.pom.ReferenceablePOMComponent;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.dom.Attribute;
-import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -99,18 +97,6 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
     public static Element createElementNS(POMModel model, POMQName rq) {
         return model.getDocument().createElementNS(
                 rq.getQName().getNamespaceURI(), rq.getQualifiedName());
-    }
-        
-    protected <T extends ReferenceablePOMComponent> NamedComponentReference<T> 
-            resolveGlobalReference(            
-            Class<T> c, Attribute attrName) {        
-        String v = getAttribute(attrName);
-        return v == null ? null : new GlobalReferenceImpl<T>(c, this, v);
-    }
-    
-    public <T extends ReferenceablePOMComponent> NamedComponentReference<T> 
-            createReferenceTo(T target, Class<T> type) {        
-        return new GlobalReferenceImpl<T>(target, type, this);
     }
         
     public void removeExtensibilityElement(POMExtensibilityElement ee) {

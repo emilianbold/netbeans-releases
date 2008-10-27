@@ -63,17 +63,6 @@ public interface POMComponent extends DocumentComponent<POMComponent> {
     void accept(POMComponentVisitor visitor);
         
     /**
-     * Creates a global reference to the given target component.
-     * 
-     * @param target    the target component
-     * @param type      actual type of the target
-     * 
-     * @return the global reference.
-     */
-    <T extends ReferenceablePOMComponent> NamedComponentReference<T> 
-            createReferenceTo(T target, Class<T> type);
-    
-    /**
      * Adds a child extensibility element.
      * 
      * @param ee    a new child extensibility element
