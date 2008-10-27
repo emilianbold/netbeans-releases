@@ -73,7 +73,7 @@ public abstract class GdbDebuggerActionProvider extends ActionsProviderSupport
         } 
     }
     
-    protected abstract void checkEnabled(String debuggerState);
+    protected abstract void checkEnabled(GdbDebugger.State debuggerState);
     
     @Override
     public boolean isEnabled(Object action) {

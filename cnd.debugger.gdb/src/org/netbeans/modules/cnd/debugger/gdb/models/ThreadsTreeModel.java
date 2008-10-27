@@ -44,8 +44,8 @@ package org.netbeans.modules.cnd.debugger.gdb.models;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
-import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.viewmodel.ModelEvent;
@@ -62,7 +62,7 @@ import org.openide.util.RequestProcessor;
 public class ThreadsTreeModel implements TreeModel {
     
     private GdbDebugger     debugger;
-    private Collection      listeners = new HashSet();
+    private final Set       listeners = new HashSet();
     private Listener        listener;
    
     public ThreadsTreeModel(ContextProvider lookupProvider) {
@@ -191,7 +191,7 @@ public class ThreadsTreeModel implements TreeModel {
         public synchronized void propertyChange(PropertyChangeEvent e) {
             String propertyName = e.getPropertyName();
             if ((propertyName.equals(GdbDebugger.PROP_STATE) && 
-                    debugger.getState().equals(GdbDebugger.STATE_STOPPED)) ||
+                    debugger.getState() == GdbDebugger.State.STOPPED) ||
                     propertyName.equals(GdbDebugger.PROP_CURRENT_THREAD)) {
                 synchronized (this) {
                     if (task == null) {
@@ -204,7 +204,7 @@ public class ThreadsTreeModel implements TreeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                if (debugger.getState() == GdbDebugger.State.STOPPED) {
                     ThreadsTreeModel tm = getModel();
                     if (tm != null) {
                         tm.fireTreeChanged();
