@@ -67,6 +67,10 @@ public class POMExtensibilityElementBase extends POMComponentImpl
         return getText();
     }
 
+    public void setElementText(String text) {
+        setText(getQName().getLocalPart(), text);
+    }
+
     public static class StringAttribute implements Attribute {
         private String name;
         public StringAttribute(String name) { this.name = name; }

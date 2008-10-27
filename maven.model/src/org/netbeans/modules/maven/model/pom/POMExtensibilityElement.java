@@ -93,6 +93,7 @@ public interface POMExtensibilityElement extends POMComponent {
     public List<POMExtensibilityElement> getAnyElements();
 
     public String getElementText();
+    void setElementText(String text);
     
     /**
      * Returns QName of the backing DOM element.
