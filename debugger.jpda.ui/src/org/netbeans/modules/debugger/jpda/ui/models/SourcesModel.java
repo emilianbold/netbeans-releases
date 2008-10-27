@@ -402,16 +402,12 @@ NodeActionsProvider {
                 getString ("CTL_SourcesModel_Column_Name_Name");
         }
 
-        public Character getDisplayedMnemonic() {
-            return new Character(NbBundle.getBundle(SourcesModel.class).getString
-                ("CTL_SourcesModel_Column_Name_Name_Mnc").charAt(0));
-        }
-
         /**
          * Returns tooltip for given column.
          *
          * @return  tooltip for given node
          */
+        @Override
         public String getShortDescription () {
             return NbBundle.getBundle (DefaultSourcesColumn.class).getString
                 ("CTL_SourcesModel_Column_Name_Desc");
@@ -452,11 +448,6 @@ NodeActionsProvider {
                 ("CTL_SourcesModel_Column_Debugging_Name");
         }
 
-        public Character getDisplayedMnemonic() {
-            return new Character(NbBundle.getBundle(SourcesModel.class).getString
-                ("CTL_SourcesModel_Column_Debugging_Name_Mnc").charAt(0));
-        }
-
         /**
          * Returns type of column items.
          *
@@ -472,6 +463,7 @@ NodeActionsProvider {
          *
          * @return  tooltip for given node or <code>null</code>
          */
+        @Override
         public String getShortDescription () {
             return NbBundle.getBundle (SourcesModel.class).getString
                 ("CTL_SourcesModel_Column_Debugging_Desc");
@@ -670,6 +662,7 @@ NodeActionsProvider {
          *
          * @param visible set true if column is visible
          */
+        @Override
         public void setVisible (boolean visible) {
             properties.setBoolean (getID () + ".visible", visible);
         }
@@ -679,6 +672,7 @@ NodeActionsProvider {
          *
          * @param sorted set true if column should be sorted by default
          */
+        @Override
         public void setSorted (boolean sorted) {
             properties.setBoolean (getID () + ".sorted", sorted);
         }
@@ -689,6 +683,7 @@ NodeActionsProvider {
          * @param sortedDescending set true if column should be sorted by default
          *        in descending order
          */
+        @Override
         public void setSortedDescending (boolean sortedDescending) {
             properties.setBoolean (getID () + ".sortedDescending", sortedDescending);
         }
@@ -698,6 +693,7 @@ NodeActionsProvider {
          *
          * @return current order number of this column
          */
+        @Override
         public int getCurrentOrderNumber () {
             return properties.getInt (getID () + ".currentOrderNumber", -1);
         }
@@ -707,6 +703,7 @@ NodeActionsProvider {
          *
          * @param newOrderNumber new order number
          */
+        @Override
         public void setCurrentOrderNumber (int newOrderNumber) {
             properties.setInt (getID () + ".currentOrderNumber", newOrderNumber);
         }
@@ -716,6 +713,7 @@ NodeActionsProvider {
          *
          * @return column width of this column
          */
+        @Override
         public int getColumnWidth () {
             return properties.getInt (getID () + ".columnWidth", 150);
         }
@@ -725,6 +723,7 @@ NodeActionsProvider {
          *
          * @param newColumnWidth a new column width
          */
+        @Override
         public void setColumnWidth (int newColumnWidth) {
             properties.setInt (getID () + ".columnWidth", newColumnWidth);
         }
@@ -734,6 +733,7 @@ NodeActionsProvider {
          *
          * @return true if column should be visible by default
          */
+        @Override
         public boolean isVisible () {
             return properties.getBoolean (getID () + ".visible", true);
         }
@@ -743,6 +743,7 @@ NodeActionsProvider {
          *
          * @return true if column should be sorted by default
          */
+        @Override
         public boolean isSorted () {
             return properties.getBoolean (getID () + ".sorted", false);
         }
@@ -752,6 +753,7 @@ NodeActionsProvider {
          *
          * @return true if column should be sorted by default in descending order
          */
+        @Override
         public boolean isSortedDescending () {
             return properties.getBoolean (getID () + ".sortedDescending", false);
         }

@@ -45,11 +45,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository.Interrupter;
 import org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.PhaseRunner;
 import org.netbeans.modules.cnd.modelutil.CsmFontColorManager;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.util.Cancellable;
 
 /**
@@ -60,19 +58,16 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
 
     /*package*/ static final boolean MINIMAL = Boolean.getBoolean("cnd.highlighting.minimal");
     
-    private final OffsetsBag bag;
     private final WeakReference<BaseDocument> weakDoc;
 
     public HighlighterBase(Document doc) {
-        bag = new OffsetsBag(doc);
-
         if (doc instanceof BaseDocument) {
             weakDoc = new WeakReference<BaseDocument>((BaseDocument) doc);
         } else {
             weakDoc = null;
         }
     }
-    
+
     protected void init(Document doc){
         String mimeType = (String) doc.getProperty("mimeType"); //NOI18N
         CsmFontColorManager.instance().addListener(mimeType, this);
@@ -80,10 +75,6 @@ public abstract class HighlighterBase implements PhaseRunner, CsmFontColorManage
     
     protected BaseDocument getDocument() {
         return weakDoc != null ? weakDoc.get() : null;
-    }
-
-    public OffsetsBag getHighlightsBag() {
-        return bag;
     }
 
     // ChangeListener
