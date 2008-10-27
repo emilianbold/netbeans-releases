@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.*;
 import org.netbeans.modules.maven.model.pom.spi.ElementFactory;
+import org.netbeans.modules.maven.model.pom.spi.POMExtensibilityElementBase;
 import org.netbeans.modules.maven.model.pom.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.w3c.dom.Element;
@@ -620,13 +621,20 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         }
     }
 
+    @Override
+    public void visit(Configuration context) {
+        created = new POMExtensibilityElementBase(context.getModel(), element);
+    }
+
+    @Override
+    public void visit(Properties context) {
+        created = new POMExtensibilityElementBase(context.getModel(), element);
+    }
 
 
     @Override
     public void visit(POMExtensibilityElement context) {
-        //if (isForeignElement()) {
-        //    created = new POMExtensibilityElementImpl(context.getModel(), element);
-        //}
+        created = new POMExtensibilityElementBase(context.getModel(), element);
     }
 }
     
