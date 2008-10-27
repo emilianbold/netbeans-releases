@@ -45,11 +45,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -64,7 +67,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.FontColorProvider;
 import org.netbeans.modules.cnd.modelutil.NamedEntityOptions;
 import org.netbeans.spi.editor.highlighting.HighlightsSequence;
-import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
+import org.netbeans.spi.editor.highlighting.support.PositionsBag;
 
 /**
  * Semantic C/C++ code highlighter responsible for "graying out"
@@ -74,6 +77,8 @@ import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
  * @author Sergey Grinev
  */
 public final class SemanticHighlighter extends HighlighterBase {
+
+    private static final Logger LOG = Logger.getLogger(SemanticHighlighter.class.getName());
 
     public SemanticHighlighter(Document doc) {
         super(doc); 
@@ -86,22 +91,22 @@ public final class SemanticHighlighter extends HighlighterBase {
         }
     }
 
-    public static OffsetsBag getHighlightsBag(Document doc) {
+    public static PositionsBag getHighlightsBag(Document doc) {
         if (doc == null) {
             return null;
         }
 
-        OffsetsBag bag = (OffsetsBag) doc.getProperty(SemanticHighlighter.class);
+        PositionsBag bag = (PositionsBag) doc.getProperty(SemanticHighlighter.class);
 
         if (bag == null) {
-            doc.putProperty(SemanticHighlighter.class, bag = new OffsetsBag(doc));
+            doc.putProperty(SemanticHighlighter.class, bag = new PositionsBag(doc));
         }
 
         return bag;
     }
 
-    private static final boolean SHOW_TIMES = Boolean.getBoolean("cnd.highlighting.times"); // NOI18N
     private static final int MAX_LINE_NUMBER;
+
     static {
         String limit = System.getProperty("cnd.semantic.line.limit"); // NOI18N
         int userInput = 4000;
@@ -158,12 +163,12 @@ public final class SemanticHighlighter extends HighlighterBase {
     }
 
     private void update(BaseDocument doc, final Interrupter interrupter) {
-        OffsetsBag newBag = new OffsetsBag(doc);
+        PositionsBag newBag = new PositionsBag(doc);
         newBag.clear();
         final CsmFile csmFile = CsmUtilities.getCsmFile(doc, false);
         long start = System.currentTimeMillis();
         if (csmFile != null && csmFile.isParsed()) {
-            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
+            LOG.log(Level.FINER, "Semantic Highlighting update() have started for file " + csmFile.getAbsolutePath());
             final List<SemanticEntity> entities = new ArrayList<SemanticEntity>(SemanticEntitiesProvider.instance().get());
             final List<ReferenceCollector> collectors = new ArrayList<ReferenceCollector>(entities.size());
             // the following loop deals with entities without collectors
@@ -178,7 +183,7 @@ public final class SemanticHighlighter extends HighlighterBase {
                     } else {
                         // this is simple entity without collector,
                         // let's add its blocks right now
-                        addHighlights(newBag, se.getBlocks(csmFile), se);
+                        addHighlightsToBag(newBag, se.getBlocks(csmFile), se);
                         i.remove();
                     }
                 } else {
@@ -187,20 +192,20 @@ public final class SemanticHighlighter extends HighlighterBase {
                 }
             }
             // to show inactive code and macros first
-            OffsetsBag old = getHighlightsBag(doc);
+            PositionsBag old = getHighlightsBag(doc);
             if (old != null) {
-                OffsetsBag tempBag = new OffsetsBag(doc);
-                tempBag.addAllHighlights(newBag.getHighlights(0, Integer.MAX_VALUE));
+                // TODO: it seems to me there is a logic flaw above...
+                PositionsBag tempBag = new PositionsBag(doc);
+                tempBag.addAllHighlights(newBag);
                 HighlightsSequence seq = newBag.getHighlights(0, Integer.MAX_VALUE);
                 Set<AttributeSet> set = new HashSet<AttributeSet>();
                 while (seq.moveNext()) {
                     set.add(seq.getAttributes());
-                    tempBag.addAllHighlights(seq);
                 }
                 seq = old.getHighlights(0, Integer.MAX_VALUE);
                 while (seq.moveNext()) {
                     if (!set.contains(seq.getAttributes())) {
-                        tempBag.addHighlight(seq.getStartOffset(), seq.getEndOffset(), seq.getAttributes());
+                        addHighlightsToBag(tempBag, seq.getStartOffset(), seq.getEndOffset(), seq.getAttributes(), "cached"); //NOI18N
                     }
                 }
                 getHighlightsBag(doc).setHighlights(tempBag);
@@ -223,19 +228,30 @@ public final class SemanticHighlighter extends HighlighterBase {
                 });
                 // here we apply highlighting to discovered blocks
                 for (int i = 0; i < entities.size(); ++i) {
-                    addHighlights(newBag, collectors.get(i).getReferences(), entities.get(i));
+                    addHighlightsToBag(newBag, collectors.get(i).getReferences(), entities.get(i));
                 }
             }
-            if (SHOW_TIMES) System.err.println("#@# Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
+            LOG.log(Level.FINER, "Semantic Highlighting update() done in "+ (System.currentTimeMillis() - start) +"ms for file " + csmFile.getAbsolutePath());
         }
         if (!interrupter.cancelled()){
             getHighlightsBag(doc).setHighlights(newBag);
         }
     }
 
-    private void addHighlights(OffsetsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
+    private void addHighlightsToBag(PositionsBag bag, List<? extends CsmOffsetable> blocks, SemanticEntity entity) {
         for (CsmOffsetable block : blocks) {
-            bag.addHighlight(block.getStartOffset(), block.getEndOffset(), entity.getAttributes(block));
+            addHighlightsToBag(bag, block.getStartOffset(), block.getEndOffset(), entity.getAttributes(block), entity.getName());
+        }
+    }
+
+    private void addHighlightsToBag(PositionsBag bag, int start, int end, AttributeSet attr, String nameToStateInLog) {
+        try {
+            Document doc = getDocument();
+            if (doc != null) {
+                bag.addHighlight(doc.createPosition(start), doc.createPosition(end), attr);
+            }
+        } catch (BadLocationException ex) {
+            LOG.log(Level.FINE, "Can't add highlight <" + start + ", " + end + ", " + nameToStateInLog + ">", ex);
         }
     }
 
