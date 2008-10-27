@@ -103,24 +103,30 @@ public class RubyProcessCreator implements Callable<Process> {
     public static final Pattern EXT_RE = Pattern.compile(".*\\.(rb|rake|mab|rjs|rxml|builder)"); // NOI18N
     private final LineConvertorFactory lineConvertorFactory;
 
-    private static LineConvertorFactory getLineConvertorFactory(final FileLocator locator) {
-        LineConvertors.FileLocator wrapper = wrap(locator);
-        LineConvertor rubyCompilerWin = LineConvertors.filePattern(null, wrapper, RUBY_COMPILER_WIN, EXT_RE, 1, 2);
-        LineConvertor rubyCompiler = LineConvertors.filePattern(rubyCompilerWin, wrapper, RUBY_COMPILER, EXT_RE, 1, 2);
-        LineConvertor rubyCompilerWinMy = LineConvertors.filePattern(rubyCompiler, wrapper, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2);
-        final LineConvertor railsRecognizer = LineConvertors.filePattern(rubyCompilerWinMy, wrapper, RAILS_RECOGNIZER, EXT_RE, 1, 2);
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
+        this(descriptor, (String) null, (LineConvertor) null);
+    }
 
-        return new LineConvertorFactory() {
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor, String charsetName) {
+        this(descriptor, charsetName, (LineConvertor) null);
+    }
 
-            public LineConvertor newLineConvertor() {
-                return railsRecognizer;
-            }
-        };
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor, LineConvertor... lineConvertors) {
+        this(descriptor, null, lineConvertors);
+    }
 
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor, String charsetName, LineConvertor... lineConvertors) {
+        if (descriptor.getCmd() == null) {
+            descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
+        }
+        descriptor.addBinPath(true);
+        this.descriptor = descriptor;
+        this.charsetName = charsetName;
+        this.lineConvertorFactory = createLineConvertorFactory(lineConvertors);
     }
 
     /**
-     * Wraps the given locator as a LineConvertors.FileLocator. Just a temp utility 
+     * Wraps the given locator as a LineConvertors.FileLocator. Just a temp utility
      * method to ease the migration to extexecution.
      */
     public static LineConvertors.FileLocator wrap(final FileLocator locator) {
@@ -133,35 +139,30 @@ public class RubyProcessCreator implements Callable<Process> {
         return wrapper;
     }
 
-    //XXX: to be removed once the extexecution api supports chaining convertors
-    public static LineConvertor getConvertor(FileLocator locator) {
-        return getLineConvertorFactory(locator).newLineConvertor();
-    }
+    private LineConvertorFactory createLineConvertorFactory(LineConvertor... convertors) {
+        final List<LineConvertor> convertorList = new ArrayList<LineConvertor>();
+        convertorList.addAll(getStandardConvertors());
 
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
-        this(descriptor, null, null);
-    }
-
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor, String charsetName) {
-        this(descriptor, null, null);
-    }
-
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor, LineConvertorFactory lineConvertorFactory) {
-        this(descriptor, lineConvertorFactory, null);
-    }
-
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor, LineConvertorFactory lineConvertorFactory, String charsetName) {
-        if (descriptor.getCmd() == null) {
-            descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
+        for (LineConvertor each : convertors) {
+            convertorList.add(each);
         }
-        descriptor.addBinPath(true);
-        this.descriptor = descriptor;
-        this.charsetName = charsetName;
-        if (lineConvertorFactory != null) {
-            this.lineConvertorFactory = lineConvertorFactory;
-        } else {
-            this.lineConvertorFactory = getLineConvertorFactory(descriptor.getFileLocator());
-        }
+
+        return new LineConvertorFactory() {
+
+            public LineConvertor newLineConvertor() {
+                return LineConvertors.proxy(convertorList.toArray(new LineConvertor[convertorList.size()]));
+            }
+        };
+    }
+
+    private List<LineConvertor> getStandardConvertors() {
+        LineConvertors.FileLocator wrapper = wrap(descriptor.getFileLocator());
+        List<LineConvertor> result = new ArrayList<LineConvertor>(4);
+        result.add(LineConvertors.filePattern(wrapper, RAILS_RECOGNIZER, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER, EXT_RE, 1, 2));
+        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
+        return result;
     }
 
     public Process call() throws Exception {

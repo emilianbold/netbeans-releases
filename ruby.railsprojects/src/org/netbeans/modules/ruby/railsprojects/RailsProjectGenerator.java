@@ -55,13 +55,10 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
@@ -144,7 +141,9 @@ public class RailsProjectGenerator {
             desc.runThroughRuby(runThroughRuby);
             desc.fileLocator(new DirectoryFileLocator(dirFO));
 
-            RubyProcessCreator rpc = new RubyProcessCreator(desc, createLineConvertorFactory(desc.getFileLocator()));
+            LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
+
+            RubyProcessCreator rpc = new RubyProcessCreator(desc, LineConvertors.filePattern(locator, RAILS_GENERATOR_PATTERN, RubyProcessCreator.EXT_RE, 2, -1));
             org.netbeans.modules.extexecution.api.ExecutionService es =
                     org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
             try {
@@ -248,17 +247,6 @@ public class RailsProjectGenerator {
         return h;
     }
 
-    //XXX: to be removed once the extexecution api supports chaining convertors
-    private static LineConvertorFactory createLineConvertorFactory(FileLocator locator) {
-        LineConvertor chain = RubyProcessCreator.getConvertor(locator);
-        final LineConvertor rails = LineConvertors.filePattern(chain, RubyProcessCreator.wrap(locator), RAILS_GENERATOR_PATTERN, null, 2, -1);
-        return new LineConvertorFactory() {
-
-            public LineConvertor newLineConvertor() {
-                return rails;
-            }
-        };
-    }
 }
 
 
