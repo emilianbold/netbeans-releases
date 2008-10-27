@@ -365,6 +365,10 @@ made subject to such option by the copyright holder.
             <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
                 <attr name="position" intvalue="2000"/>
             </file>
+            <file name="SunStudio_Linux.xml" url="toolchain/SunStudio_Linux.xml">
+                <attr name="position" intvalue="2050"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
 
             <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
                 <attr name="position" intvalue="2100"/>
