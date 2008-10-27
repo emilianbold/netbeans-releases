@@ -151,12 +151,8 @@ public class RemoteServerRecord implements ServerRecord {
                 state = STATE_OFFLINE;
                 reason = rss.getReason();
             } else {
+                RemotePathMap.getMapper(name).init();
                 state = STATE_ONLINE;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        RemotePathMap.getMapper(name).init();
-                    }
-                });
             }
         }
         if (pcs != null) {

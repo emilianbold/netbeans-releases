@@ -55,6 +55,8 @@ import org.netbeans.modules.visualweb.palette.codeclips.CodeClipItemNode;
 import org.netbeans.modules.visualweb.palette.codeclips.CodeClipUtilities;
 import java.awt.event.ActionEvent;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.text.JTextComponent;
@@ -97,11 +99,18 @@ public class CodeClipPaletteActions extends PaletteActions {
     }
 
     public Action[] getCustomItemActions(Lookup item) {
-        return new Action[] {
-            SystemAction.get(RenameAction.class).createContextAwareInstance(item),
-            new EditCodeClipAction(item)
-//            ((EditAction)SystemAction.get(EditAction.class)).createContextAwareInstance(item)
-        };
+//        return new Action[] {
+//            SystemAction.get(RenameAction.class).createContextAwareInstance(item),
+//            new EditCodeClipAction(item)
+////            ((EditAction)SystemAction.get(EditAction.class)).createContextAwareInstance(item)
+//        };
+        // #148157 Avoiding adding action on non CodeClipItemNode's.
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(RenameAction.class).createContextAwareInstance(item));
+        if (item.lookup(CodeClipItemNode.class) != null) {
+            actions.add(new EditCodeClipAction(item));
+        }
+        return actions.toArray(new Action[actions.size()]);
     }
 
     public Action[] getCustomPaletteActions() {

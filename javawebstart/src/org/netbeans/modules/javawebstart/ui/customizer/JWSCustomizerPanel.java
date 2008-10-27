@@ -111,6 +111,20 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         setEnabledAllComponents(enableSelected);
         setEnabledRunComponent(enableSelected);
 
+        setEnabledAppletControls(appletDescRadioButton.isSelected());
+
+        if (jwsProps.isJnlpImplPreviousVersion) {
+            warningArea.setVisible(true);
+            extResButton.setEnabled(false);
+            appletDescRadioButton.setEnabled(false);
+            appletClassLabel.setEnabled(false);
+            appletClassComboBox.setEnabled(false);
+            appletParamsButton.setEnabled(false);
+            compDescRadioButton.setEnabled(false);
+        } else {
+            warningArea.setVisible(false);
+        }
+
         extResColumnNames = new String[] {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"),
@@ -158,6 +172,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         appletClassComboBox = new javax.swing.JComboBox();
         appletParamsButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
+        warningArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -401,6 +416,23 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
 
+        warningArea.setBackground(javax.swing.UIManager.getDefaults().getColor("Panel.background"));
+        warningArea.setColumns(20);
+        warningArea.setEditable(false);
+        warningArea.setLineWrap(true);
+        warningArea.setRows(2);
+        warningArea.setText(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "Previous_Version_Script_Warning")); // NOI18N
+        warningArea.setWrapStyleWord(true);
+        warningArea.setBorder(null);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
+        add(warningArea, gridBagConstraints);
+
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -587,6 +619,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     private javax.swing.JCheckBox offlineCheckBox;
     private javax.swing.JLabel panelDescLabel;
     private javax.swing.JCheckBox signedCheckBox;
+    private javax.swing.JTextArea warningArea;
     // End of variables declaration//GEN-END:variables
 
 }

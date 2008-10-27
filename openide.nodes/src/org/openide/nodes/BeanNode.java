@@ -72,13 +72,24 @@ import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 
 /**
- * Represents a JavaBeans component as a node.
-* <p>You may use this node type for an already-existing JavaBean (possibly
+* <p>
+* Represents a JavaBeans component as a node.
+* </p>
+*
+* <p>
+* You may use this node type for an already-existing JavaBean (possibly
 * using BeanContext) in order for its JavaBean properties to be reflected
 * as corresponding node properties. Thus, it serves as a compatibility wrapper.
+* </p>
+*
+* <p>
+* The bean passed in the constructor will be available in the node's lookup,
+* though not directly.  Instead, the node's <code>Lookup</code> will contain
+* an <code>InstanceCookie</code> from which you can retrieve the bean instance.
+* </p>
 *
 * @author Jan Jancura, Ian Formanek, Jaroslav Tulach
- * @param T the type of bean to be represented
+* @param T the type of bean to be represented
 */
 public class BeanNode<T> extends AbstractNode {
     // static ..................................................................................................................
@@ -218,6 +229,7 @@ public class BeanNode<T> extends AbstractNode {
     /** Detaches all listeners from the bean and destroys it.
     * @throws IOException if there was a problem
     */
+    @Override
     public void destroy() throws IOException {
         if (removePCLMethod != null) {
             try {
@@ -234,6 +246,7 @@ public class BeanNode<T> extends AbstractNode {
     /** Can this node be removed?
     * @return <CODE>true</CODE> in this implementation
     */
+    @Override
     public boolean canDestroy() {
         return true;
     }
@@ -243,6 +256,7 @@ public class BeanNode<T> extends AbstractNode {
     * according to {@link #setSynchronizeName}.
     * @param s the new name
     */
+    @Override
     public void setName(String s) {
         if (synchronizeName) {
             Method m = nameSetter;
@@ -263,6 +277,7 @@ public class BeanNode<T> extends AbstractNode {
     * @return <code>true</code> if there is no name synchronization, or there is
     *         a valid setter method for the name
     */
+    @Override
     public boolean canRename() {
         return !synchronizeName || (nameSetter != null);
     }
@@ -273,6 +288,7 @@ public class BeanNode<T> extends AbstractNode {
     * @param type constant from {@link java.beans.BeanInfo}
     * @return icon to use
     */
+    @Override
     public Image getIcon(int type) {
         Image image = beanInfo.getIcon(type);
 
@@ -288,10 +304,12 @@ public class BeanNode<T> extends AbstractNode {
     * @param type type constants
     * @return icon to use. The default implementation just uses {@link #getIcon}.
     */
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         HelpCtx h = HelpCtx.findHelp(bean);
 
@@ -340,6 +358,7 @@ public class BeanNode<T> extends AbstractNode {
     /** Can this node be copied?
     * @return <code>true</code> in the default implementation
     */
+    @Override
     public boolean canCopy() {
         return true;
     }
@@ -347,10 +366,12 @@ public class BeanNode<T> extends AbstractNode {
     /** Can this node be cut?
     * @return <code>false</code> in the default implementation
     */
+    @Override
     public boolean canCut() {
         return false;
     }
 
+    @Override
     public Action[] getActions(boolean context) {
         return NodeOp.createFromNames(
             new String[] { "Copy", null, "Tools", "Properties" // NOI18N
@@ -363,6 +384,7 @@ public class BeanNode<T> extends AbstractNode {
     *
     * @return <CODE>true</CODE> if there is a customizer.
     */
+    @Override
     public boolean hasCustomizer() {
         // true if we have already computed beanInfo and it has customizer class
         return beanInfo.getBeanDescriptor().getCustomizerClass() != null;
@@ -371,6 +393,7 @@ public class BeanNode<T> extends AbstractNode {
     /* Returns the customizer component.
     * @return the component or <CODE>null</CODE> if there is no customizer
     */
+    @Override
     public java.awt.Component getCustomizer() {
         Class clazz = beanInfo.getBeanDescriptor().getCustomizerClass();
 
@@ -764,6 +787,7 @@ public class BeanNode<T> extends AbstractNode {
         super.setName(name);
     }
 
+    @Override
     public Action getPreferredAction() {
         // default action is org.openide.actions.PropertiesAction
         SystemAction[] arr = NodeOp.createFromNames(new String[] { "Properties" }); // NOI18N

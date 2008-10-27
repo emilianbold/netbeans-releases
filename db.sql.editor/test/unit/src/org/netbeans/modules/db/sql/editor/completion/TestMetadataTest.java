@@ -75,7 +75,7 @@ public class TestMetadataTest extends MetadataTestBase {
         assertSame(defaultCatalog, metadata.getCatalog("catalog0"));
         assertNotNull(metadata.getCatalog("catalog9"));
         assertNames(new HashSet<String>(Arrays.asList("schema1", "schema5")), defaultCatalog.getSchemas());
-        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        Schema defaultSchema = metadata.getDefaultSchema();
         assertEquals("schema1", defaultSchema.getName());
         assertNames(Collections.singleton("table2"), defaultSchema.getTables());
         assertNames(Arrays.asList("col7", "col8"), defaultCatalog.getSchema("schema5").getTable("table6").getColumns());
@@ -107,7 +107,7 @@ public class TestMetadataTest extends MetadataTestBase {
                 "    table2"
         });
         Catalog defaultCatalog = metadata.getDefaultCatalog();
-        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        Schema defaultSchema = metadata.getDefaultSchema();
         assertTrue(defaultSchema.isSynthetic());
         assertTrue(defaultSchema.isDefault());
         assertSame(defaultSchema, defaultCatalog.getSyntheticSchema());

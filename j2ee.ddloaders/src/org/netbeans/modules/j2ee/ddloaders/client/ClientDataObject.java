@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.ddloaders.client;
 
 import java.awt.Component;
 import java.awt.Dialog;
-import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
@@ -66,7 +65,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.xml.cookies.CheckXMLCookie;
 import org.netbeans.api.xml.cookies.ValidateXMLCookie;
-import org.netbeans.core.spi.multiview.MultiViewElement;
 import org.netbeans.modules.j2ee.dd.api.client.AppClient;
 import org.netbeans.modules.j2ee.dd.api.client.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
@@ -82,11 +80,7 @@ import org.netbeans.spi.xml.cookies.DataObjectAdapters;
 import org.netbeans.spi.xml.cookies.ValidateXMLSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileChangeListener;
-import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.DataObjectExistsException;
@@ -109,7 +103,6 @@ public class ClientDataObject extends  DDMultiViewDataObject
     
     private transient AppClient appClient;
     private transient FileObject srcRoots[];
-    private transient FileObjectObserver fileListener;
     
     /** List of updates to servlets that should be processed */
     private Vector updates;
@@ -132,8 +125,6 @@ public class ClientDataObject extends  DDMultiViewDataObject
         getCookieSet().add(checkCookie);
         ValidateXMLCookie validateCookie = new ValidateXMLSupport(in);
         getCookieSet().add(validateCookie);
-        
-        fileListener = new FileObjectObserver(fo);
         
         Project project = FileOwnerQuery.getOwner(getPrimaryFile());
         if (project != null) {
@@ -181,13 +172,6 @@ public class ClientDataObject extends  DDMultiViewDataObject
      * @param evt - object that describes the change.
      */
     public void deploymentChange(DDChangeEvent evt) {
-        /*
-        // fix of #28542, don't add servlet, if it's already defined in DD
-        if (evt.getType() == DDChangeEvent.SERVLET_ADDED && servletDefined(evt.getNewValue())) {
-            return;
-        }
-         */
-        
         synchronized (this) {
             if (updates == null) {
                 updates = new Vector();
@@ -250,21 +234,9 @@ public class ClientDataObject extends  DDMultiViewDataObject
      * MultiViewDesc for MultiView editor
      */
     protected DesignMultiViewDesc[] getMultiViewDesc() {
-        
         return new DesignMultiViewDesc[] {};
     }
     
-        private class DesignMultiViewDescImpl extends DesignMultiViewDesc {
-            public MultiViewElement createElement() {
-                return null;
-            }
-            public Image getIcon() {
-                return null;
-            }
-            public String preferredID() {
-                return null;
-            }
-        }
     /**
      *
      *
@@ -319,6 +291,7 @@ public class ClientDataObject extends  DDMultiViewDataObject
         return getAppClient();
     }
     
+    @Override
     protected org.openide.nodes.Node createNodeDelegate () {
         return new ClientDataNode(this);
     }
@@ -422,120 +395,6 @@ public class ClientDataObject extends  DDMultiViewDataObject
         if (!isValid()) {
             return;
         }
-        
-        /*
-        if (evt.getType () == DDChangeEvent.SERVLET_ADDED) {
-            String clz = evt.getNewValue ();
-             
-            // new from template or copy of another servlet
-            String urimapping = "/servlet/"+clz;    // NOI18N
-            createDefaultServletConfiguration (clz, urimapping);
-        }
-        else if (evt.getType () == DDChangeEvent.SERVLET_CHANGED) {
-            // update servlet-class in servlet element
-            String old = evt.getOldValue ();
-            if (old == null) {
-                return;
-            }
-             
-            Servlet [] servlets = getAppClient ().getServlet ();
-            for (int i=0; i<servlets.length; i++) {
-                if (old.equals (servlets[i].getServletClass ())) {
-                    servlets[i].setServletClass ((String)evt.getNewValue ());
-                }
-            }
-        }
-        else if (evt.getType () == DDChangeEvent.SERVLET_DELETED) {
-            // delete servlet and matching servlet-mappings
-            String clz = evt.getNewValue ();
-            if (clz == null) {
-                return;
-            }
-            WebApp wa = getAppClient ();
-            Servlet [] servlets = wa.getServlet ();
-            java.util.Vector servletNames = new java.util.Vector ();
-            for (int i=0; i<servlets.length; i++) {
-                if (clz.equals (servlets[i].getServletClass ())) {
-                    servletNames.addElement (servlets[i].getServletName ());
-                    wa.removeServlet (servlets[i]);
-                }
-            }
-            ServletMapping [] mappings = wa.getServletMapping ();
-            for (int i=0; i<mappings.length; i++) {
-                if (servletNames.contains (mappings[i].getServletName ())) {
-                    wa.removeServletMapping (mappings[i]);
-                }
-            }
-        }
-        else if (evt.getType () == DDChangeEvent.FILTER_CHANGED) {
-            String old = evt.getOldValue ();
-            if (old == null) {
-                return;
-            }
-             
-            Filter [] filters = getAppClient ().getFilter ();
-            for (int i=0; i<filters.length; i++) {
-                if (old.equals (filters[i].getFilterClass ())) {
-                    filters[i].setFilterClass ((String)evt.getNewValue ());
-                }
-            }
-        }
-        else if (evt.getType () == DDChangeEvent.FILTER_DELETED) {
-            String clz = evt.getNewValue ();
-            if (clz == null) {
-                return;
-            }
-             
-            WebApp wa = getAppClient ();
-            Filter [] filters = wa.getFilter ();
-            java.util.Vector filterNames = new java.util.Vector ();
-            for (int i=0; i<filters.length; i++) {
-                if (clz.equals (filters[i].getFilterClass ())) {
-                    filterNames.addElement (filters[i].getFilterName ());
-                    wa.removeFilter (filters[i]);
-                }
-            }
-            FilterMapping [] mappings = wa.getFilterMapping ();
-            for (int i=0; i<mappings.length; i++) {
-                if (filterNames.contains (mappings[i].getFilterName ())) {
-                    wa.removeFilterMapping (mappings[i]);
-                }
-            }
-        }
-        else if (evt.getType () == DDChangeEvent.LISTENER_CHANGED) {
-            String old = evt.getOldValue ();
-            if (old == null) {
-                return;
-            }
-             
-            Listener [] listeners = getAppClient ().getListener ();
-            for (int i=0; i<listeners.length; i++) {
-                if (old.equals (listeners[i].getListenerClass ())) {
-                    listeners[i].setListenerClass ((String)evt.getNewValue ());
-                }
-            }
-        }
-        else if (evt.getType () == DDChangeEvent.LISTENER_DELETED) {
-            String clz = evt.getNewValue ();
-            if (clz == null) {
-                return;
-            }
-             
-            WebApp wa = getAppClient ();
-            Listener [] listeners = wa.getListener ();
-            for (int i=0; i<listeners.length; i++) {
-                if (clz.equals (listeners[i].getListenerClass ())) {
-                    wa.removeListener (listeners[i]);
-                    break;
-                }
-            }
-        }
-        try {
-            writeModel(getAppClient());
-        } catch (IOException e) {
-            ErrorManager.getDefault().notify(e);
-        }
-             */
     }
     
     private void parseDocument(boolean updateWebApp) throws IOException {
@@ -590,87 +449,9 @@ public class ClientDataObject extends  DDMultiViewDataObject
     }
 
     private OperationListener operationListener = new OperationAdapter() {
+        @Override
         public void operationDelete(OperationEvent ev) {
-            FileObject fo = ev.getObject().getPrimaryFile();
-            String resourceName = getPackageName(fo);
-            if (resourceName != null && "java".equals(fo.getExt())) { //NOI18N
-                boolean foundElement=false;
-                /*
-                Servlet[] servlets = getAppClient().getServlet();
-                for (int i=0;i<servlets.length;i++) {
-                    if (resourceName.equals(servlets[i].getServletClass())) {
-                        DDChangeEvent ddEvent = new DDChangeEvent(DDDataObject.this,DDDataObject.this,null,resourceName,DDChangeEvent.SERVLET_DELETED);
-                        deploymentChange (ddEvent);
-                        foundElement=true;
-                        break;
-                    }
-                }
-                if (foundElement) {
-                    return;
-                }
-                Filter[] filters = getAppClient().getFilter();
-                for (int i=0;i<filters.length;i++) {
-                    if (resourceName.equals(filters[i].getFilterClass())) {
-                        DDChangeEvent ddEvent = new DDChangeEvent(DDDataObject.this,DDDataObject.this,null,resourceName,DDChangeEvent.FILTER_DELETED);
-                        deploymentChange (ddEvent);
-                        foundElement=true;
-                        break;
-                    }
-                }
-                if (foundElement) {
-                    return;
-                }
-                Listener[] listeners = getAppClient().getListener();
-                for (int i=0;i<listeners.length;i++) {
-                    if (resourceName.equals(listeners[i].getListenerClass())) {
-                        DDChangeEvent ddEvent = new DDChangeEvent(DDDataObject.this,DDDataObject.this,null,resourceName,DDChangeEvent.LISTENER_DELETED);
-                        deploymentChange (ddEvent);
-                        break; // listener with that class should be only one
-                    }
-                }
-                 */
-            }
         }
     };
-    
-    /** WeakListener for accepting external changes to web.xml
-     */
-    private class FileObjectObserver implements FileChangeListener {
-        FileObjectObserver(FileObject fo) {
-            fo.addFileChangeListener((FileChangeListener)org.openide.util.WeakListeners.create(
-                    FileChangeListener.class, this, fo));
-        }
-        
-        public void fileAttributeChanged(FileAttributeEvent fileAttributeEvent) {
-        }
-        
-        public void fileChanged(FileEvent fileEvent) {
-            /*
-           WebAppProxy appClient = (WebAppProxy) DDDataObject.this.getAppClient();
-           boolean needRewriting = true;
-           if (appClient!= null && appClient.isWriting()) { // change from outside
-               appClient.setWriting(false);
-               needRewriting=false;
-           }
-           if (isSavingDocument()) {// document is being saved
-               setSavingDocument(false);
-               needRewriting=false;
-           }
-           if (needRewriting) getEditorSupport().restartTimer();
-             */
-        }
-        
-        public void fileDataCreated(FileEvent fileEvent) {
-        }
-        
-        public void fileDeleted(FileEvent fileEvent) {
-        }
-        
-        public void fileFolderCreated(FileEvent fileEvent) {
-        }
-        
-        public void fileRenamed(FileRenameEvent fileRenameEvent) {
-        }
-    }
     
 }

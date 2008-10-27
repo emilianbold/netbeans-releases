@@ -956,15 +956,9 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
                     if (CsmBaseUtilities.isValid(parentClassifier)) {
                         MemberResolverImpl memberResolver = new MemberResolverImpl(resolver);
                         if (instantiatedType instanceof org.netbeans.modules.cnd.modelimpl.csm.NestedType) {
-                            Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());
-                            if (iter.hasNext()) {
-                                resolved = iter.next();
-                            }
+                            resolved = getNestedClassifier(memberResolver, parentClassifier, ((org.netbeans.modules.cnd.modelimpl.csm.NestedType) instantiatedType).getOwnText());
                         } else if (instantiatedType instanceof NestedType) {
-                            Iterator<CsmClassifier> iter = memberResolver.getNestedClassifiers(parentClassifier, (((NestedType) instantiatedType)).getOwnText());
-                            if (iter.hasNext()) {
-                                resolved = iter.next();
-                            }
+                            resolved = getNestedClassifier(memberResolver, parentClassifier, ((NestedType) instantiatedType).getOwnText());
                         }
                     }
                 }
@@ -993,6 +987,11 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
         public boolean isInstantiation() {
             return (parentType != null && parentType.isInstantiation()) || super.isInstantiation();
         }
+
+    }
+
+    private static CsmClassifier getNestedClassifier(MemberResolverImpl memberResolver, CsmClassifier parentClassifier, CharSequence ownText) {
+        return org.netbeans.modules.cnd.modelimpl.csm.NestedType.getNestedClassifier(memberResolver, parentClassifier, ownText);
     }
 
     public final static class InstantiationUID<T extends CsmIdentifiable> implements CsmUID<T>, SelfPersistent {

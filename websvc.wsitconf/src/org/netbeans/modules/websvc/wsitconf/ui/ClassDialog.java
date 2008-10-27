@@ -47,6 +47,8 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.project.Project;
@@ -143,26 +145,33 @@ public class ClassDialog {
             }
             public void actionPerformed(ActionEvent evt){
                 if(evt.getSource() == NotifyDescriptor.OK_OPTION){
-                    boolean accepted = true;
+                    boolean accepted = false;
                     String errMsg = null;
+
                     Node[] selectedNodes = sPanel.getSelectedNodes();
-                    for(int i = 0; i < selectedNodes.length; i++){
-                        Node node = selectedNodes[i];
+                    if (selectedNodes.length != 1) {
+                        errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_SelectOnlyOne_msg");    //NOI18N
+                    } else {
+                        Node node = selectedNodes[0];
                         FileObject classElement = node.getLookup().lookup(FileObject.class);
-                        JavaSource js = JavaSource.forFileObject(classElement);
-                        if (js == null) {
-                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
-                            accepted = false;
-                            break;
-                        }
-                                                
-                        if (!isWantedClass(js)) {
-                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotWantedClass_msg",   //NOI18N
-                                    classElement.getName(), extendingClass);
-                            accepted = false;
-                            break;
+                        if (classElement == null) {
+                            errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NoFileObject_msg");    //NOI18N
+                            Logger.global.log(Level.INFO, errMsg + ", " + node);
+                        } else {
+                            JavaSource js = JavaSource.forFileObject(classElement);
+                            if (js == null) {
+                                errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotJavaClass_msg");    //NOI18N
+                            } else {
+                                if (!isWantedClass(js)) {
+                                    errMsg = NbBundle.getMessage(ClassDialog.class, "TXT_NotWantedClass_msg",   //NOI18N
+                                            classElement.getName(), extendingClass);
+                                } else {
+                                    accepted = true;
+                                }
+                            }
                         }
                     }
+                    
                     if (!accepted) {
                         NotifyDescriptor.Message notifyDescr =
                                 new NotifyDescriptor.Message(errMsg,

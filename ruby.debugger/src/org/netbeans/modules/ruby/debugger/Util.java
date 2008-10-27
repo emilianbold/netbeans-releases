@@ -59,9 +59,10 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult.*;
 
 public final class Util {
-    
-    public static final Logger LOGGER = Logger.getLogger(Util.class.getName());
-    
+
+    /** package private for tests. */
+    static final Logger LOGGER = Logger.getLogger(Util.class.getName());
+
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     public static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
 
@@ -71,30 +72,6 @@ public final class Util {
     }
     
     private Util() { /* do not allow instances */ }
-    
-    public static void finer(String message) {
-        LOGGER.finer(message);
-    }
-    
-    public static void info(String message) {
-        LOGGER.info(message);
-    }
-    
-    public static void warning(String message) {
-        LOGGER.warning(message);
-    }
-    
-    public static void severe(String failure) {
-        LOGGER.log(Level.SEVERE, failure);
-    }
-    
-    public static void severe(Throwable t) {
-        LOGGER.log(Level.SEVERE, t.getMessage(), t);
-    }
-    
-    public static void severe(String message, Throwable t) {
-        LOGGER.log(Level.SEVERE, message, t);
-    }
     
     public static String rdebugPattern() {
         return "rdebug-ide"; // NOI18N

@@ -192,11 +192,14 @@ public final class IncrementSpecificationVersions extends Task {
                     if (mC.matches()) {  // Correct 1.1.0 -> 1.2.0
                         nue = mC.group(1) + (Integer.parseInt(mC.group(2)) + 1) + mC.group(3);
                     }
-                    else if (mW1.matches() ) { // Wrong 1 -> 1.1.0
-                        nue = mW1.group(1) + ".1.0";
+                    else if (mW1.matches() ) { // Wrong 1 -> 2.1.0
+                        nue = (Integer.parseInt(mW1.group(1)) + 1) + ".1.0";
                     }
-                    else if (mW2.matches() ) { // Wrong 1.1 -> 1.2.0
-                        nue = mW2.group(1) + (Integer.parseInt(mW2.group(2)) + 1) + ".0";
+                    else if (mW2.matches() ) { // Wrong 1.1 -> 1.3.0
+                        // If we started with e.g. 1.1 prior to a release,
+                        // actual versions would be e.g. 1.1.49.8.
+                        // To make trunk > branch > old, need 1.3.0.49.8 > 1.2.1.49.8 > 1.1.49.8.
+                        nue = mW2.group(1) + (Integer.parseInt(mW2.group(2)) + 2) + ".0";
                     }                    
                     else if (mW3.matches() ) { // Wrong 1.2.3.4.5.6 -> 1.3.0
                         nue = mW3.group(1) + (Integer.parseInt(mW3.group(2)) + 1) + ".0";
@@ -225,16 +228,16 @@ public final class IncrementSpecificationVersions extends Task {
                 } else {
                     Matcher mC = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)").matcher(old);
                     Matcher mW1 = Pattern.compile("([0-9]+)").matcher(old);                    
-                    Matcher mW2 = Pattern.compile("([0-9]+\\.[0-9]+)").matcher(old);
+                    Matcher mW2 = Pattern.compile("([0-9]+\\.)([0-9]+)").matcher(old);
                     Matcher mW3 = Pattern.compile("([0-9]+\\.[0-9]+\\.)([0-9]+)\\.([0-9\\.]+)").matcher(old);                    
                     if (mC.matches()) { // Correct 1.2.3 -> 1.2.4
                         nue = mC.group(1) + (Integer.parseInt(mC.group(2)) + 1);
                     }
-                    else if ( mW1.matches()) { // Wrong 1 -> 1.0.1
-                        nue = mW1.group(1) + ".0.1";
+                    else if ( mW1.matches()) { // Wrong 1 -> 2.0.1
+                        nue = (Integer.parseInt(mW1.group(1)) + 1) + ".0.1";
                     }
-                    else if ( mW2.matches()) { // Wrong 1.2 -> 1.2.1
-                        nue = mW2.group(1) + ".1";
+                    else if ( mW2.matches()) { // Wrong 1.2 -> 1.3.1
+                        nue = mW2.group(1) + (Integer.parseInt(mW2.group(2)) + 1) + ".1";
                     }
                     else if ( mW3.matches()) { // Wrong 1.2.3.4.5.6 -> 1.2.4
                         nue = mW3.group(1) + (Integer.parseInt(mW3.group(2)) + 1);

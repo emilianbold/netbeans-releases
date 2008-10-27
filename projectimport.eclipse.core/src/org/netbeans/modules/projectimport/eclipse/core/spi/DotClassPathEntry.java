@@ -208,7 +208,11 @@ public final class DotClassPathEntry {
      * eclipse.core module.
      */
     public void updateJavadoc(String value) {
-        this.properties.put(ATTRIBUTE_JAVADOC, value);
+        if (value == null) {
+            this.properties.remove(ATTRIBUTE_JAVADOC);
+        } else {
+            this.properties.put(ATTRIBUTE_JAVADOC, value);
+        }
     }
     
 }

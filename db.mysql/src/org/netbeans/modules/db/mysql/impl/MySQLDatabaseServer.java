@@ -502,10 +502,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             public void execute() throws Exception {
                 disconnectSync();
 
+                checkConfiguration();
+
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
                     Utils.getMessage("MSG_ConnectingToServer"));
-
-                checkConfiguration();
 
                 try {
                     progress.start();
@@ -599,10 +599,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             cmd.syncUp();
 
             Throwable e = cmd.getException();
-            if (e instanceof DatabaseException) {
-                throw (DatabaseException)e;
-            } else {
-                throw Utils.launderThrowable(e);
+            if (e != null) {
+                if (e instanceof DatabaseException) {
+                    throw (DatabaseException)e;
+                } else {
+                    throw Utils.launderThrowable(e);
+                }
             }
         } catch (InterruptedException e) {
             disconnect();
@@ -636,10 +638,16 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
                     conn.prepareStatement(DROP_DATABASE_SQL + dbname).executeUpdate();
 
                     if (deleteConnections) {
+                        String hostname = getHost();
+
+                        String ipaddr = Utils.getHostIpAddress(hostname);
                         DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
                         for (DatabaseConnection dbconn : dbconns) {
                             if (dbconn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
-                                    dbconn.getDatabaseURL().contains("/" + dbname)) {
+                                    dbconn.getDatabaseURL().contains("/" + dbname) &&
+                                    (dbconn.getDatabaseURL().contains(getHost()) ||
+                                     dbconn.getDatabaseURL().contains(ipaddr)) &&
+                                     dbconn.getDatabaseURL().contains(getPort())) {
                                 ConnectionManager.getDefault().removeConnection(dbconn);
                             }
                         }

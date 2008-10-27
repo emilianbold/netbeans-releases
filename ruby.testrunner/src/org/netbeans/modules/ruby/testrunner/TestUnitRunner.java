@@ -48,7 +48,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
@@ -157,9 +157,9 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         RubyPlatform platform = RubyPlatform.platformFor(project);
 
         String targetPath = getScript(MEDIATOR_SCRIPT_NAME).getAbsolutePath();
-        ExecutionDescriptor desc = null;
+        RubyExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
+        desc = new RubyExecutionDescriptor(platform, name, FileUtil.toFile(project.getProjectDirectory()), targetPath);
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
         desc.initialArgs(RubyProjectUtil.getLoadPath(project)); //NOI18N
 
@@ -169,7 +169,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.addStandardRecognizers();
         desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name, 
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 TestUnitHandlerFactory.getHandlers(),
@@ -182,7 +182,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         return type == TestType.TEST_UNIT;
     }
 
-    public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
+    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -199,9 +199,8 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         // the custom test runner as an option for the task. This is needed since
         // the test run is forked to a different process (by Rake::TestTask) than rake itself
         task.addRakeParameters("-r \"" + getScript(RUNNER_SCRIPT_NAME).getAbsolutePath() + "\""); //NOI18N
-        FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestSession session = new TestSession(task.getDisplayName(),
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 TestUnitHandlerFactory.getHandlers(),

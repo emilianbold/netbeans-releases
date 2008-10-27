@@ -75,6 +75,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
     private final byte arrayDepth;
     private final boolean _const;
     CharSequence classifierText;
+    private int parseCount;
 
     final List<CsmType> instantiationParams = new ArrayList<CsmType>();
 
@@ -381,6 +382,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         if (CsmBaseUtilities.isValid(classifier)) {
             // skip
         } else {
+            if (classifier != null) {
+                int newCount = FileImpl.getParseCount();
+                if (newCount == parseCount) {
+                    return classifier;
+                }
+            }
             _setClassifier(null);
             if (qname != null) {
                 _setClassifier(renderClassifier(qname, parent));
@@ -392,6 +399,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         if (isInstantiation() && CsmKindUtilities.isTemplate(classifier) && !((CsmTemplate)classifier).getTemplateParameters().isEmpty()) {
             classifier = (CsmClassifier)Instantiation.create((CsmTemplate)classifier, this);
         }
+        parseCount = FileImpl.getParseCount();
         return classifier;
     }
 

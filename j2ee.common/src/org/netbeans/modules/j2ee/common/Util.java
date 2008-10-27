@@ -249,7 +249,6 @@ public class Util {
     }
     
     public static File[] getJ2eePlatformClasspathEntries(Project project) {
-        List<FileObject> j2eePlatformRoots = new ArrayList<FileObject>();
         if (project != null) {
             J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             if (j2eeModuleProvider != null) {

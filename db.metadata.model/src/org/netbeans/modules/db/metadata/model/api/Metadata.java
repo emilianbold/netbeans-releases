@@ -100,6 +100,14 @@ public class Metadata {
     }
 
     /**
+     * @return the default schema or {@code null}.
+     * @throws MetadataException if an error occurs while retrieving the metadata.
+     */
+    public Schema getDefaultSchema() {
+        return impl.getDefaultSchema();
+    }
+
+    /**
      * @throws MetadataException if an error occurs while retrieving the metadata.
      */
     public void refresh() {

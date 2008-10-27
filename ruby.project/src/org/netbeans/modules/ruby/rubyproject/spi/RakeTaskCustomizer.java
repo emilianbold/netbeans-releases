@@ -40,7 +40,7 @@
 package org.netbeans.modules.ruby.rubyproject.spi;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
 
 /**
@@ -60,6 +60,6 @@ public interface RakeTaskCustomizer {
      * @param taskDescriptor the descriptor for the given <code>task</code>.
      * @param debug
      */
-    void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug);
+    void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug);
 
 }

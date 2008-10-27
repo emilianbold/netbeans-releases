@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.TAG;
 import org.netbeans.modules.cnd.dwarfdump.section.DwarfAttribute;
@@ -112,11 +113,11 @@ public class DwarfAbbriviationTableEntry {
             if (qname != null) {
                 out.println("\tQualified Name: " + qname); // NOI18N
             }
+            dumpAttributes(out, dwarfEntry.getValues());
         }
         
-        dumpAttributes(out, dwarfEntry.getValues());
     }
-    
+
     public TAG getKind() {
         return TAG.get((int)tag);
     }
@@ -129,5 +130,17 @@ public class DwarfAbbriviationTableEntry {
                 getAttribute(i).dump(out, values.get(i));
             }
         }
+    }
+
+    @Override
+    public String toString() {
+        return toString(null);
+    }
+
+    public String toString(DwarfEntry dwarfEntry) {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out, dwarfEntry);
+        return st.toString();
     }
 }

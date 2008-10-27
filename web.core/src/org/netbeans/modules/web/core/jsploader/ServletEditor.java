@@ -398,7 +398,7 @@ public class ServletEditor extends CloneableEditorSupport
 
     } // JspServletEditorComponent
     
-    private static class JspEnv extends FileChangeAdapter implements CloneableEditorSupport.Env,
+     private static class JspEnv extends FileChangeAdapter implements CloneableEditorSupport.Env,
         java.io.Serializable, PropertyChangeListener {
             
         private static final long serialVersionUID = -5748207023470614141L;
@@ -509,11 +509,11 @@ public class ServletEditor extends CloneableEditorSupport
         /** The time when the data has been modified
         */
         public Date getTime () {
-            /*DataObject servlet = getServlet();
+            DataObject servlet = getServlet();
             if (servlet != null)
                 return servlet.getPrimaryFile().lastModified();
-            else*/
-                return null;
+            else
+                return new Date(System.currentTimeMillis());
         }
 
         /** Mime type of the document.

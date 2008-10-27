@@ -46,9 +46,8 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.AutotestHandlerFactory;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
@@ -98,18 +97,17 @@ public class AutotestRunner implements TestRunner {
     public void runAllTests(Project project, boolean debug) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-        if (!gemManager.isValidAutoTest(true)) {
+        if (!platform.hasValidAutoTest(true)) {
             return;
         }
 
         String displayName = NbBundle.getMessage(AutotestRunner.class, "AutoTest", ProjectUtils.getInformation(project).getDisplayName());
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
 
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform,
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform,
                 displayName,
                 FileUtil.toFile(project.getProjectDirectory()),
-                gemManager.getAutoTest());
+                platform.getAutoTest());
 
         desc.initialArgs("-r \"" + getLoaderScript().getAbsolutePath() + "\""); //NOI18N
         Map<String, String> env = new HashMap<String, String>(2);
@@ -123,7 +121,7 @@ public class AutotestRunner implements TestRunner {
         desc.setReadMaxWaitTime(TestUnitRunner.DEFAULT_WAIT_TIME);
 
         TestSession session = new TestSession(displayName,
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
                 AutotestHandlerFactory.getHandlers(),

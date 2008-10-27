@@ -606,7 +606,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         private FileObject getFileImpl () {
             // updates the file if there was a change
-	    changeFile();
+            changeFile();
             return fileObject;
         }
         
@@ -627,7 +627,6 @@ public class DataEditorSupport extends CloneableEditorSupport {
         * file object.
         */
         protected final void changeFile () {
-
             FileObject newFile = getFile ();
             
             if (newFile.equals (fileObject)) {
@@ -655,6 +654,8 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 lockAgain = false;
             }
 
+            boolean wasNull = fileObject == null;
+
             fileObject = newFile;
             ERR.fine("changeFile: " + newFile + " for " + fileObject); // NOI18N
             fileObject.addFileChangeListener (new EnvListener (this));
@@ -667,7 +668,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
                     Logger.getLogger(DataEditorSupport.class.getName()).log(Level.WARNING, null, e);
                 }
             }
-            
+            if (!wasNull) {
+                firePropertyChange("expectedTime", null, getTime()); // NOI18N
+            }
         }
         
         
@@ -1016,7 +1019,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
 
         @Override
         public boolean equals(Object obj) {
-            return getClass() == obj.getClass();
+            return obj != null && getClass() == obj.getClass();
         }
     }
     

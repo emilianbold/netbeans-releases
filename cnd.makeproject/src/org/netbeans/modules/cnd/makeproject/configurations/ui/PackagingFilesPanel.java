@@ -309,6 +309,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
         
         private void addFilesFromDirectory(ArrayList<PackagerFileElement> listToAdd, File origDir, File dir, PackagingAddingFilesProgressPanel progressPanel) {
             File[] files = dir.listFiles();
+            if (files == null) {
+                return;
+            }
             for (int i = 0; i < files.length; i++) {
                 if (cancelled) {
                     break;

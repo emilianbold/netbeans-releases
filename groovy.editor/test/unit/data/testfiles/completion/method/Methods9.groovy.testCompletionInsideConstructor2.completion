@@ -4,8 +4,10 @@ new File(new Date().get|)
 ------------------------------------
 METHOD     getAt(String)                              Object
 METHOD     getAt(int)                                 int
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getDate()                                  int
+METHOD     getDateString()                            String
+METHOD     getDateTimeString()                        String
 METHOD     getDay()                                   int
 METHOD     getHours()                                 int
 METHOD     getMetaClass()                             MetaClass
@@ -15,5 +17,6 @@ METHOD     getMonth()                                 int
 METHOD     getProperties()                            Map
 METHOD     getSeconds()                               int
 METHOD     getTime()                                  long
+METHOD     getTimeString()                            String
 METHOD     getTimezoneOffset()                        int
 METHOD     getYear()                                  int

@@ -129,7 +129,7 @@ public class FriendClassImpl extends OffsetableDeclarationBase<CsmFriendClass> i
     }
     
     private CsmObject resolve(Resolver resolver) {
-        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASSIFIER);
+        CsmObject result = ResolverFactory.createResolver(this, resolver).resolve(nameParts, Resolver.CLASS);
         if (result == null) {
             result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(nameParts, getContainingFile(), getStartOffset());
         }

@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.modules.cnd.debugger.gdb.utils.CommandBuffer;
+import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -81,6 +82,8 @@ public class GdbProxyEngine {
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
     private final LinkedList<CommandInfo> tokenList = new LinkedList<CommandInfo>();
+    
+    //TODO: int may not be enough here, consider using long
     private int nextToken = MIN_TOKEN;
     private int currentToken = MIN_TOKEN;
     private boolean active;
@@ -259,7 +262,7 @@ public class GdbProxyEngine {
         }
     }
     
-    private int nextToken() {
+    private synchronized int nextToken() {
         return nextToken++;
     }
     
@@ -268,29 +271,16 @@ public class GdbProxyEngine {
      *
      * @param cmd - a command to be sent to the debugger
      */
-    public int sendCommand(String cmd) {
-        return sendCommand(null, cmd, false);
+    int sendCommand(String cmd) {
+        int token = nextToken();
+        sendCommand(token, cmd);
+        return token;
     }
-    
-    public int sendCommand(CommandBuffer cb, String cmd) {
-        return sendCommand(cb, cmd, false);
-    }
-    
-    public int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
+
+    private void sendCommand(int token, String cmd) {
         if (active) {
-            String time;
-            if (timerOn) {
-                time = Long.toString(System.currentTimeMillis()) + ':';
-            } else {
-                time = "";
-            }
-            int token = nextToken();
-            if (cb != null) {
-                cb.setID(token);
-            }
-            if (consoleCommand) {
-                token += 10000;
-            } else if (cmd.charAt(0) != '-') {
+            String time = CommandBuffer.getTimePrefix(timerOn);
+            if (cmd.charAt(0) != '-') {
                 tokenList.add(new CommandInfo(token, cmd));
             }
             StringBuilder fullcmd = new StringBuilder(String.valueOf(token));
@@ -298,14 +288,27 @@ public class GdbProxyEngine {
             fullcmd.append('\n');
             gdbProxy.getLogger().logMessage(time + fullcmd.toString());
             toGdb.print(fullcmd.toString());
-            return token;
-        } else {
-            return -1;
         }
     }
+
+    CommandBuffer sendCommandEx(String cmd) {
+        return sendCommandEx(cmd, true);
+    }
+
+    CommandBuffer sendCommandEx(String cmd, boolean waitForCompletion) {
+        int token = nextToken();
+        CommandBuffer cb = new CommandBuffer(gdbProxy, token);
+        gdbProxy.putCB(token, cb);
+        sendCommand(token, cmd);
+        if (waitForCompletion) {
+            cb.waitForCompletion();
+        }
+        return cb;
+    }
     
-    public int sendConsoleCommand(String cmd) {
-        return sendCommand(null, cmd, true);
+    void sendConsoleCommand(String cmd) {
+        int token = nextToken() + 10000;
+        sendCommand(token, cmd);
     }
     
     void stopSending() {
@@ -318,12 +321,7 @@ public class GdbProxyEngine {
      * @return null if the reply is not recognized, otherwise return reply
      */
     private void processMessage(String msg) {
-        String time;
-        if (timerOn) {
-            time = Long.toString(System.currentTimeMillis()) + ':';
-        } else {
-            time = "";
-        }
+        String time = CommandBuffer.getTimePrefix(timerOn);
         if (msg.equals("(gdb)")) { // NOI18N
             return; // skip prompts
         }
@@ -348,10 +346,10 @@ public class GdbProxyEngine {
             log.warning("Empty message received from gdb");
             return;
         }
-        
+
         switch (msg.charAt(0)) {
             case '^': // result-record
-                if (token == currentToken && msg.equals("^done")) { // NOI18N
+                if (token == currentToken && msg.equals(GdbDebugger.DONE_PREFIX)) { // NOI18N
                     currentToken = -1;
                 }
                 debugger.resultRecord(token, msg);
@@ -452,14 +450,21 @@ public class GdbProxyEngine {
         }
     }
 
+    private static final String TIME_PREFIX = ",time="; // NOI18N
     /**
      * Cut timing information if any
      * @param msg
      */
-    private static String stripTiming(String msg) {
-        int pos = msg.indexOf(",time="); // NOI18N
-        if (pos != -1 ) {
-            msg = msg.substring(0, pos);
+    private String stripTiming(String msg) {
+        int pos = msg.indexOf(TIME_PREFIX);
+        if (pos != -1) {
+            // time= prefix may appear not only in the end of the message, see issue 147938
+            int endPos = GdbUtils.findMatchingCurly(msg, pos + TIME_PREFIX.length());
+            if (endPos != -1) {
+                return msg.substring(0, pos) + msg.substring(endPos+1);
+            } else {
+                log.warning("Matching curly not found in timing info: " + msg); // NOI18N
+            }
         }
         return msg;
     }

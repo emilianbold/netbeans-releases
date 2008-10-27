@@ -2,7 +2,7 @@ Code completion result for source line:
 stringField.spli|
 (QueryType=COMPLETION, NameKind=PREFIX)
 ------------------------------------
-METHOD     split()                                    String
-METHOD     split(String)                              String
-METHOD     split(String, int)                         String
+METHOD     split()                                    String[]
+METHOD     split(String)                              String[]
+METHOD     split(String, int)                         String[]
 METHOD     splitEachLine(String, Closure)             Object
