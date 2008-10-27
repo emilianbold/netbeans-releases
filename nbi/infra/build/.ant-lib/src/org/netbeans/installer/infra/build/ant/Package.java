@@ -198,8 +198,8 @@ public class Package extends Task {
             throw new BuildException(e);
         }
     }
-    private String getShortPath(File file) {
-        return file.getAbsolutePath().substring(directory.getAbsolutePath().length() + 1);
+    private String getShortPath(File file, final int offset) throws IOException {
+        return file.getAbsolutePath().substring(offset + 1);
     }
     // private //////////////////////////////////////////////////////////////////////
     private void browse(
@@ -211,11 +211,11 @@ public class Package extends Task {
         
         for (File child: parent.listFiles()) {
             if (toSkip.contains(child)) {
-                log("    skipping " + getShortPath(child)); // NOI18N
+                log("    skipping " + getShortPath(child,offset)); // NOI18N
                 continue;
             }
             
-            log("    visiting " + getShortPath(child)); // NOI18N
+            log("    visiting " + getShortPath(child,offset)); // NOI18N
             
             final String path = child.getAbsolutePath();
             String name = path.substring(offset + 1).replace('\\', '/');    // NOMAGI
@@ -268,7 +268,7 @@ public class Package extends Task {
                             child = unpacked.getAbsoluteFile();
                             
                             log("        successfully unpacked - processing " + // NOI18N
-                                    "file: " + getShortPath(child)); // NOI18N
+                                    "file: " + getShortPath(child,offset)); // NOI18N
                         } else {
                             unpacked.delete();
                             if (temp != null) {
