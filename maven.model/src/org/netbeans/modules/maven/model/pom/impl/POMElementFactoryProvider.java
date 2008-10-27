@@ -265,12 +265,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Repository context) {
-        if (isElementQName(POMQName.RELEASE)) {
+        if (isElementQName(POMQName.RELEASES)) {
             created = new RepositoryPolicyImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.SNAPSHOT)) {
+        if (isElementQName(POMQName.SNAPSHOTS)) {
             created = new RepositoryPolicyImpl(context.getModel(), element);
             return;
         }
@@ -278,6 +278,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
         //createExtensibilityElement(context);
     }
 
+    @Override
     public void visit(RepositoryPolicy context) {
         //createExtensibilityElement(context);
     }
@@ -290,7 +291,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        if (isElementQName(POMQName.BUILDBASE)) {
+        if (isElementQName(POMQName.BUILD)) {
             created = new BuildBaseImpl(context.getModel(), element);
             return;
         }
@@ -410,8 +411,8 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Reporting context) {
-        if (isElementQName(POMQName.REPORTPLUGIN)) {
-            created = new ReportPluginImpl(context.getModel(), element);
+        if (isElementQName(POMQName.REPORTPLUGINS)) {
+            created = new ReportPluginImpl.List(context.getModel(), element);
             return;
         }
 

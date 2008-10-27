@@ -49,6 +49,7 @@ import org.netbeans.modules.maven.model.pom.MailingList;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Parent;
+import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
@@ -90,6 +91,10 @@ public class NewEmptyJUnitTest extends TestCase {
         for (MailingList lst : lists) {
             assertNotNull(lst);
         }
+
+        List<Plugin> plugins = prj.getBuild().getPlugins();
+        assertNotNull(plugins);
+        assertEquals(4, plugins.size());
 
 //        model.startTransaction();
 //        try {

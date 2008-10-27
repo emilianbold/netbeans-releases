@@ -61,21 +61,82 @@ public class BuildImpl extends BuildBaseImpl implements Build {
 
     // child elements
     public List<Extension> getExtensions() {
-        return getChildren(Extension.class);
+        ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addExtension(Extension plugin) {
-        appendChild(EXTENSION_PROPERTY, plugin);
+    public void addExtension(Extension extension) {
+        ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
+        if (childs == null) {
+            setChild(ExtensionImpl.List.class,
+                    POMQName.EXTENSIONS.getName(),
+                    getModel().getFactory().create(this, POMQName.EXTENSIONS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ExtensionImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(extension);
     }
 
-    public void removeExtension(Extension plugin) {
-        removeChild(EXTENSION_PROPERTY, plugin);
+    public void removeExtension(Extension extension) {
+        ModelList<Extension> childs = getChild(ExtensionImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(extension);
+        }
     }
 
 
     @Override
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public String getSourceDirectory() {
+        return getChildElementText(POMQName.SOURCEDIRECTORY.getQName());
+    }
+
+    public void setSourceDirectory(String directory) {
+        setChildElementText(POMQName.SOURCEDIRECTORY.getName(), directory,
+                POMQName.SOURCEDIRECTORY.getQName());
+    }
+
+    public String getScriptSourceDirectory() {
+        return getChildElementText(POMQName.SCRIPTSOURCEDIRECTORY.getQName());
+    }
+
+    public void setScriptSourceDirectory(String directory) {
+        setChildElementText(POMQName.SCRIPTSOURCEDIRECTORY.getName(), directory,
+                POMQName.SCRIPTSOURCEDIRECTORY.getQName());
+    }
+
+    public String getTestSourceDirectory() {
+        return getChildElementText(POMQName.TESTSOURCEDIRECTORY.getQName());
+    }
+
+    public void setTestSourceDirectory(String directory) {
+        setChildElementText(POMQName.TESTSOURCEDIRECTORY.getName(), directory,
+                POMQName.TESTSOURCEDIRECTORY.getQName());
+    }
+
+    public String getOutputDirectory() {
+        return getChildElementText(POMQName.OUTPUTDIRECTORY.getQName());
+    }
+
+    public void setOutputDirectory(String directory) {
+        setChildElementText(POMQName.OUTPUTDIRECTORY.getName(), directory,
+                POMQName.OUTPUTDIRECTORY.getQName());
+    }
+
+    public String getTestOutputDirectory() {
+        return getChildElementText(POMQName.TESTOUTPUTDIRECTORY.getQName());
+    }
+
+    public void setTestOutputDirectory(String directory) {
+        setChildElementText(POMQName.TESTOUTPUTDIRECTORY.getName(), directory,
+                POMQName.TESTOUTPUTDIRECTORY.getQName());
     }
 
 }

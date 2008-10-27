@@ -46,7 +46,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class SiteImpl extends POMComponentImpl implements Site {
+public class SiteImpl extends IdPOMComponentImpl implements Site {
 
     public SiteImpl(POMModel model, Element element) {
         super(model, element);

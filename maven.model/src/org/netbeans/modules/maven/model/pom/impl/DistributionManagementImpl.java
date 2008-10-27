@@ -66,7 +66,7 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
 
     public void setRepository(DeploymentRepository distRepository) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DeploymentRepository.class, REPOSITORY_PROPERTY, distRepository, empty);
+        setChild(DeploymentRepository.class, POMQName.DIST_REPOSITORY.getName(), distRepository, empty);
     }
 
     public DeploymentRepository getSnapshotRepository() {
@@ -75,7 +75,7 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
 
     public void setSnapshotRepository(DeploymentRepository distSnapshotRepository) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DeploymentRepository.class, SNAPSHOTREPOSITORY_PROPERTY, distSnapshotRepository, empty);
+        setChild(DeploymentRepository.class, POMQName.DIST_SNAPSHOTREPOSITORY.getName(), distSnapshotRepository, empty);
     }
 
     public Site getSite() {
@@ -84,7 +84,7 @@ public class DistributionManagementImpl extends POMComponentImpl implements Dist
 
     public void setSite(Site site) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Site.class, SITE_PROPERTY, site, empty);
+        setChild(Site.class, POMQName.SITE.getName(), site, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {

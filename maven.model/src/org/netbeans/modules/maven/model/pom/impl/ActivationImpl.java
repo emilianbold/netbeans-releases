@@ -66,7 +66,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationOS(ActivationOS activationOS) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationOS.class, ACTIVATIONOS_PROPERTY, activationOS, empty);
+        setChild(ActivationOS.class, POMQName.ACTIVATIONOS.getName(), activationOS, empty);
     }
 
     public ActivationProperty getActivationProperty() {
@@ -75,7 +75,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationProperty(ActivationProperty activationProperty) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationProperty.class, ACTIVATIONPROPERTY_PROPERTY, activationProperty, empty);
+        setChild(ActivationProperty.class, POMQName.ACTIVATIONPROPERTY.getName(), activationProperty, empty);
     }
 
     public ActivationFile getActivationFile() {
@@ -84,7 +84,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationFile(ActivationFile activationFile) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationFile.class, ACTIVATIONFILE_PROPERTY, activationFile, empty);
+        setChild(ActivationFile.class, POMQName.ACTIVATIONFILE.getName(), activationFile, empty);
     }
 
     public ActivationCustom getActivationCustom() {
@@ -93,7 +93,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationCustom(ActivationCustom activationCustom) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationCustom.class, ACTIVATIONCUSTOM_PROPERTY, activationCustom, empty);
+        setChild(ActivationCustom.class, POMQName.ACTIVATIONCUSTOM.getName(), activationCustom, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {

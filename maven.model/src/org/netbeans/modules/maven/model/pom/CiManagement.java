@@ -55,6 +55,24 @@ public interface CiManagement extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getSystem();
+    void setSystem(String system);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUrl();
+    void setUrl(String url);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Notifier> getNotifiers();
     public void addNotifier(Notifier notifier);
     public void removeNotifier(Notifier notifier);

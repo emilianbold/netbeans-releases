@@ -63,19 +63,53 @@ public interface BuildBase extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Resource> getResources();
     public void addResource(Resource resource);
     public void removeResource(Resource resource);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Resource> getTestResources();
     public void addTestResource(Resource testResource);
     public void removeTestResource(Resource testResource);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public PluginManagement getPluginManagement();
     public void setPluginManagement(PluginManagement pluginManagement);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<Plugin> getPlugins();
     public void addPlugin(Plugin plugin);
     public void removePlugin(Plugin plugin);
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getDefaultGoal();
+    void setDefaultGoal(String goal);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getDirectory();
+    void setDirectory(String directory);
+
+    String getFinalName();
+    void setFinalName(String finalName);
+
+    //TODO filters
 }

@@ -70,8 +70,47 @@ public interface Build extends POMComponent, BuildBase {
 //    </xs:all>
 //  </xs:complexType-->
 
-    public List<Extension> getExtensions();
-    public void addExtension(Extension extension);
-    public void removeExtension(Extension extension);
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    List<Extension> getExtensions();
+    void addExtension(Extension extension);
+    void removeExtension(Extension extension);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getSourceDirectory();
+    void setSourceDirectory(String directory);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getScriptSourceDirectory();
+    void setScriptSourceDirectory(String directory);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getTestSourceDirectory();
+    void setTestSourceDirectory(String directory);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getOutputDirectory();
+    void setOutputDirectory(String directory);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getTestOutputDirectory();
+    void setTestOutputDirectory(String directory);
 
 }

@@ -63,4 +63,10 @@ public interface ReportPlugin extends VersionablePOMComponent {
     public void addReportSet(ReportSet reportSet);
     public void removeReportSet(ReportSet reportSet);
 
+    Boolean isInherited();
+    void setInherited(Boolean inherited);
+
+    //TODO configuration
+
+
 }

@@ -133,7 +133,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
         if (str != null) {
             return Boolean.valueOf(str);
         }
-        return Boolean.FALSE;
+        return null;
     }
 
     public void setOptional(Boolean optional) {

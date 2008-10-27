@@ -46,7 +46,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class ReportSetImpl extends POMComponentImpl implements ReportSet {
+public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
 
     public ReportSetImpl(POMModel model, Element element) {
         super(model, element);
@@ -62,5 +62,16 @@ public class ReportSetImpl extends POMComponentImpl implements ReportSet {
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
+
+    public static class List extends ListImpl<ReportSet> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.REPORTSET, ReportSet.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.REPORTSETS));
+        }
+    }
+
 
 }

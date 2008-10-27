@@ -122,7 +122,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         if (str != null) {
             return Boolean.valueOf(str);
         }
-        return Boolean.FALSE;
+        return null;
     }
 
     public void setExtensions(Boolean extensions) {
@@ -136,7 +136,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         if (str != null) {
             return Boolean.valueOf(str);
         }
-        return Boolean.TRUE;
+        return null;
     }
 
     public void setInherited(Boolean inherited) {

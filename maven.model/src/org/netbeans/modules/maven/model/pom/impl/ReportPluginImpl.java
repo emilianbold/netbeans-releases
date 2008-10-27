@@ -60,20 +60,63 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
     // attributes
 
     // child elements
-    public List<ReportSet> getReportSets() {
-        return getChildren(ReportSet.class);
+    public java.util.List<ReportSet> getReportSets() {
+        ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
     public void addReportSet(ReportSet reportSet) {
-        appendChild(REPORTSET_PROPERTY, reportSet);
+        ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
+        if (childs == null) {
+            setChild(ReportSetImpl.List.class,
+                    POMQName.REPORTSETS.getName(),
+                    getModel().getFactory().create(this, POMQName.REPORTSETS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ReportSetImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(reportSet);
     }
 
     public void removeReportSet(ReportSet reportSet) {
-        removeChild(REPORTSET_PROPERTY, reportSet);
+        ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(reportSet);
+        }
     }
+
+
+    public Boolean isInherited() {
+        String str = getChildElementText(POMQName.INHERITED.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return null;
+    }
+
+    public void setInherited(Boolean inherited) {
+        setChildElementText(POMQName.INHERITED.getName(),
+                inherited == null ? null : inherited.toString(),
+                POMQName.INHERITED.getQName());
+    }
+
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    
+    public static class List extends ListImpl<ReportPlugin> {
+        public List(POMModel model, Element element) {
+            super(model, element, POMQName.REPORTPLUGIN, ReportPlugin.class);
+        }
+
+        public List(POMModel model) {
+            this(model, createElementNS(model, POMQName.REPORTPLUGINS));
+        }
     }
 
 }

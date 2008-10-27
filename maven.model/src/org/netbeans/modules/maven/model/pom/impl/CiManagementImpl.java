@@ -62,14 +62,33 @@ public class CiManagementImpl extends POMComponentImpl implements CiManagement {
     // child elements
     public List<Notifier> getNotifiers() {
         return getChildren(Notifier.class);
-    }
+        }
 
     public void addNotifier(Notifier notifier) {
-        appendChild(NOTIFIER_PROPERTY, notifier);
-    }
+        appendChild(POMQName.NOTIFIER.getName(), notifier);
+        }
 
     public void removeNotifier(Notifier notifier) {
-        removeChild(NOTIFIER_PROPERTY, notifier);
+        removeChild(POMQName.NOTIFIER.getName(), notifier);
+    }
+
+
+    public String getSystem() {
+        return getChildElementText(POMQName.CIMANAG_SYSTEM.getQName());
+    }
+
+    public void setSystem(String system) {
+        setChildElementText(POMQName.CIMANAG_SYSTEM.getName(), system,
+                POMQName.CIMANAG_SYSTEM.getQName());
+    }
+
+    public String getUrl() {
+        return getChildElementText(POMQName.URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(POMQName.URL.getName(), url,
+                POMQName.URL.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {

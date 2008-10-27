@@ -66,7 +66,6 @@ public enum POMQName {
     RELEASES(createQName("releases")), // NOI18N
     SNAPSHOTS(createQName("snapshots")), // NOI18N
     PROFILE(createQName("profile")), // NOI18N
-    BUILDBASE(createQName("buildBase")), // NOI18N
     PLUGIN(createQName("plugin")), // NOI18N
     DEPENDENCY(createQName("dependency")), // NOI18N
     EXCLUSION(createQName("exclusion")), // NOI18N
@@ -103,6 +102,8 @@ public enum POMQName {
     EXTENSIONS(createQName("extensions")), // NOI18N
     RESOURCES(createQName("resources")), // NOI18N
     TESTRESOURCES(createQName("testResources")), // NOI18N
+    REPORTPLUGINS(createQName("reportPlugins")), // NOI18N
+    REPORTSETS(createQName("reportSets")), // NOI18N
 
 
     ID(createQName("id")), //NOI18N
@@ -128,6 +129,21 @@ public enum POMQName {
 
     INHERITED(createQName("inherited")), //NOI18N
     PHASE(createQName("phase")), //NOI18N
+
+    CIMANAG_SYSTEM(createQName("system")), //NOI18N
+
+    DIRECTORY(createQName("directory")), //NOI18N
+    DEFAULTGOAL(createQName("defaultGoal")), //NOI18N
+    FINALNAME(createQName("finalName")), //NOI18N
+
+    SOURCEDIRECTORY(createQName("sourceDirectory")), //NOI18N
+    SCRIPTSOURCEDIRECTORY(createQName("scriptSourceDirectory")), //NOI18N
+    TESTSOURCEDIRECTORY(createQName("testSourceDirectory")), //NOI18N
+    OUTPUTDIRECTORY(createQName("outputDirectory")), //NOI18N
+    TESTOUTPUTDIRECTORY(createQName("testOutputDirectory")), //NOI18N
+
+    EXCLUDEDEFAULTS(createQName("excludeDefaults")), //NOI18N
+
     ;
     
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N

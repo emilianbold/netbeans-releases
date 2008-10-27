@@ -47,7 +47,7 @@ import org.netbeans.modules.maven.model.pom.visitor.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class ProfileImpl extends POMComponentImpl implements Profile {
+public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public ProfileImpl(POMModel model, Element element) {
         super(model, element);
@@ -66,7 +66,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 
     public void setActivation(Activation activation) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Activation.class, ACTIVATION_PROPERTY, activation, empty);
+        setChild(Activation.class, POMQName.ACTIVATION.getName(), activation, empty);
     }
 
     public BuildBase getBuildBase() {
@@ -75,7 +75,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 
     public void setBuildBase(BuildBase buildBase) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(BuildBase.class, BUILDBASE_PROPERTY, buildBase, empty);
+        setChild(BuildBase.class, POMQName.BUILD.getName(), buildBase, empty);
     }
 
 //    public List<Module> getModules() {
@@ -91,39 +91,87 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 //    }
 
     public java.util.List<Repository> getRepositories() {
-        return getChildren(Repository.class);
+        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addRepository(Repository buildBase) {
-        appendChild(REPOSITORY_PROPERTY, buildBase);
+    public void addRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
+        if (childs == null) {
+            setChild(RepositoryImpl.RepoList.class,
+                    POMQName.REPOSITORIES.getName(),
+                    getModel().getFactory().create(this, POMQName.REPOSITORIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(RepositoryImpl.RepoList.class);
+            assert childs != null;
+        }
+        childs.addListChild(repo);
     }
 
-    public void removeRepository(Repository buildBase) {
-        removeChild(REPOSITORY_PROPERTY, buildBase);
+    public void removeRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
+        if (childs != null) {
+            childs.removeListChild(repo);
+        }
     }
 
     public java.util.List<Repository> getPluginRepositories() {
-        return getChildren(Repository.class);
+        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addPluginRepository(Repository buildBase) {
-        appendChild(PLUGINREPOSITORY_PROPERTY, buildBase);
+    public void addPluginRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
+        if (childs == null) {
+            setChild(RepositoryImpl.PluginRepoList.class,
+                    POMQName.PLUGINREPOSITORIES.getName(),
+                    getModel().getFactory().create(this, POMQName.PLUGINREPOSITORIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(RepositoryImpl.PluginRepoList.class);
+            assert childs != null;
+        }
+        childs.addListChild(repo);
     }
 
-    public void removePluginRepository(Repository buildBase) {
-        removeChild(PLUGINREPOSITORY_PROPERTY, buildBase);
+    public void removePluginRepository(Repository repo) {
+        ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
+        if (childs != null) {
+            childs.removeListChild(repo);
+        }
     }
 
     public java.util.List<Dependency> getDependencies() {
-        return getChildren(Dependency.class);
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addDependency(Dependency buildBase) {
-        appendChild(DEPENDENCY_PROPERTY, buildBase);
+    public void addDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs == null) {
+            setChild(DependencyImpl.List.class,
+                    POMQName.DEPENDENCIES.getName(),
+                    getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(DependencyImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(dep);
     }
 
-    public void removeDependency(Dependency buildBase) {
-        removeChild(DEPENDENCY_PROPERTY, buildBase);
+    public void removeDependency(Dependency dep) {
+        ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(dep);
+        }
     }
 
     public Reporting getReporting() {
@@ -132,7 +180,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 
     public void setReporting(Reporting reporting) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Reporting.class, REPORTING_PROPERTY, reporting, empty);
+        setChild(Reporting.class, POMQName.REPORTING.getName(), reporting, empty);
     }
 
     public DependencyManagement getDependencyManagement() {
@@ -141,7 +189,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 
     public void setDependencyManagement(DependencyManagement dependencyManagement) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DependencyManagement.class, DEPENDENCYMANAGEMENT_PROPERTY, dependencyManagement, empty);
+        setChild(DependencyManagement.class, POMQName.DEPENDENCYMANAGEMENT.getName(), dependencyManagement, empty);
     }
 
     public DistributionManagement getDistributionManagement() {
@@ -150,7 +198,7 @@ public class ProfileImpl extends POMComponentImpl implements Profile {
 
     public void setDistributionManagement(DistributionManagement distributionManagement) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DistributionManagement.class, DISTRIBUTIONMANAGEMENT_PROPERTY, distributionManagement, empty);
+        setChild(DistributionManagement.class, POMQName.DISTRIBUTIONMANAGEMENT.getName(), distributionManagement, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {

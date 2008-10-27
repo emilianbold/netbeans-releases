@@ -61,15 +61,31 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
 
     // child elements
     public List<Plugin> getPlugins() {
-        return getChildren(Plugin.class);
+        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
     public void addPlugin(Plugin plugin) {
-        appendChild(PLUGIN_PROPERTY, plugin);
+        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
+        if (childs == null) {
+            setChild(PluginImpl.List.class,
+                    POMQName.PLUGINS.getName(),
+                    getModel().getFactory().create(this, POMQName.PLUGINS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(PluginImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(plugin);
     }
 
     public void removePlugin(Plugin plugin) {
-        removeChild(PLUGIN_PROPERTY, plugin);
+        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(plugin);
+        }
     }
 
     public void accept(POMComponentVisitor visitor) {

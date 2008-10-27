@@ -54,34 +54,66 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
     }
     
     public BuildBaseImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.BUILDBASE));
+        this(model, createElementNS(model, POMQName.BUILD));
     }
 
     // attributes
 
     // child elements
     public List<Resource> getResources() {
-        return getChildren(Resource.class);
+        ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addResource(Resource plugin) {
-        appendChild(RESOURCE_PROPERTY, plugin);
+    public void addResource(Resource res) {
+        ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
+        if (childs == null) {
+            setChild(ResourceImpl.ResList.class,
+                    POMQName.RESOURCES.getName(),
+                    getModel().getFactory().create(this, POMQName.RESOURCES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ResourceImpl.ResList.class);
+            assert childs != null;
+        }
+        childs.addListChild(res);
     }
 
-    public void removeResource(Resource plugin) {
-        removeChild(RESOURCE_PROPERTY, plugin);
+    public void removeResource(Resource res) {
+        ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
+        if (childs != null) {
+            childs.removeListChild(res);
+        }
     }
 
     public List<Resource> getTestResources() {
-        return getChildren(Resource.class);
+        ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addTestResource(Resource plugin) {
-        appendChild(TESTRESOURCE_PROPERTY, plugin);
+    public void addTestResource(Resource res) {
+        ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
+        if (childs == null) {
+            setChild(ResourceImpl.TestResList.class,
+                    POMQName.TESTRESOURCES.getName(),
+                    getModel().getFactory().create(this, POMQName.TESTRESOURCES.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(ResourceImpl.TestResList.class);
+            assert childs != null;
+        }
+        childs.addListChild(res);
     }
 
-    public void removeTestResource(Resource plugin) {
-        removeChild(TESTRESOURCE_PROPERTY, plugin);
+    public void removeTestResource(Resource res) {
+        ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
+        if (childs != null) {
+            childs.removeListChild(res);
+        }
     }
 
     public PluginManagement getPluginManagement() {
@@ -90,19 +122,64 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
 
     public void setPluginManagement(PluginManagement pluginManagement) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(PluginManagement.class, PLUGINMANAGEMENT_PROPERTY, pluginManagement, empty);
+        setChild(PluginManagement.class, POMQName.PLUGINMANAGEMENT.getName(), pluginManagement, empty);
     }
 
     public List<Plugin> getPlugins() {
-        return getChildren(Plugin.class);
+        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
-    public void addPlugin(Plugin pluginManagement) {
-        appendChild(PLUGIN_PROPERTY, pluginManagement);
+    public void addPlugin(Plugin plugin) {
+        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
+        if (childs == null) {
+            setChild(PluginImpl.List.class,
+                    POMQName.PLUGINS.getName(),
+                    getModel().getFactory().create(this, POMQName.PLUGINS.getQName()),
+                    Collections.EMPTY_LIST);
+            childs = getChild(PluginImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(plugin);
     }
 
-    public void removePlugin(Plugin pluginManagement) {
-        removeChild(PLUGIN_PROPERTY, pluginManagement);
+    public void removePlugin(Plugin plugin) {
+        ModelList<Plugin> childs = getChild(PluginImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(plugin);
+        }
+    }
+
+
+    public String getDefaultGoal() {
+        return getChildElementText(POMQName.DEFAULTGOAL.getQName());
+    }
+
+    public void setDefaultGoal(String goal) {
+        setChildElementText(POMQName.DEFAULTGOAL.getName(), goal,
+                POMQName.DEFAULTGOAL.getQName());
+    }
+
+    public String getDirectory() {
+        return getChildElementText(POMQName.DIRECTORY.getQName());
+    }
+
+    public void setDirectory(String directory) {
+        setChildElementText(POMQName.DIRECTORY.getName(), directory,
+                POMQName.DIRECTORY.getQName());
+    }
+
+
+    public String getFinalName() {
+        return getChildElementText(POMQName.FINALNAME.getQName());
+    }
+
+    public void setFinalName(String finalName) {
+        setChildElementText(POMQName.FINALNAME.getName(), finalName,
+                POMQName.FINALNAME.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {

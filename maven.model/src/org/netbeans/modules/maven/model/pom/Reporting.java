@@ -55,8 +55,26 @@ public interface Reporting extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
     public List<ReportPlugin> getReportPlugins();
     public void addReportPlugin(ReportPlugin reportPlugin);
     public void removeReportPlugin(ReportPlugin reportPlugin);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Boolean isExcludeDefaults();
+    void setExcludeDefaults(Boolean exclude);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getOutputDirectory();
+    void setOutputDirectory(String directory);
 
 }

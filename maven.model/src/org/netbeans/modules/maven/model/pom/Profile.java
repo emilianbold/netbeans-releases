@@ -44,7 +44,7 @@ import java.util.*;
  *
  * @author mkleint
  */
-public interface Profile extends POMComponent {
+public interface Profile extends IdPOMComponent {
 
 //  <!--xs:complexType name="Profile">
 //    <xs:all>
@@ -75,6 +75,7 @@ public interface Profile extends POMComponent {
     public BuildBase getBuildBase();
     public void setBuildBase(BuildBase buildBase);
 
+    //TODO modules
 //    public List<Module> getModules();
 //    public void addModule(Module module);
 //    public void removeModule(Module module);
@@ -100,4 +101,5 @@ public interface Profile extends POMComponent {
     public DistributionManagement getDistributionManagement();
     public void setDistributionManagement(DistributionManagement distributionManagement);
 
+    //TODO properties
 }

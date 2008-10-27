@@ -165,11 +165,11 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
     }
 
     public RepositoryPolicy createReleaseRepositoryPolicy() {
-        return new RepositoryPolicyImpl(model, POMQName.RELEASE);
+        return new RepositoryPolicyImpl(model, POMQName.RELEASES);
     }
 
     public RepositoryPolicy createSnapshotRepositoryPolicy() {
-        return new RepositoryPolicyImpl(model, POMQName.SNAPSHOT);
+        return new RepositoryPolicyImpl(model, POMQName.SNAPSHOTS);
     }
 
 
