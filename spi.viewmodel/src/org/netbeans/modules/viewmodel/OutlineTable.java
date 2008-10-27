@@ -77,6 +77,7 @@ import org.netbeans.swing.outline.DefaultOutlineModel;
 import org.netbeans.swing.outline.Outline;
 import org.netbeans.swing.outline.OutlineModel;
 import org.openide.ErrorManager;
+import org.openide.awt.Actions;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.OutlineView;
@@ -432,7 +433,7 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (cs[i].getType() != null) {
                 columnList.add(c);
             } else {
-                nodesColumnName[0] = cs[i].getDisplayName();
+                nodesColumnName[0] = Actions.cutAmpersand(cs[i].getDisplayName());
                 addDefaultColumn = false;
                 defaultColumnIndex = i;
                 if (cs[i].getCurrentOrderNumber() == -1) {

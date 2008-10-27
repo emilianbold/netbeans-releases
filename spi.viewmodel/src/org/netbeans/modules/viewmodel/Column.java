@@ -44,6 +44,8 @@ package org.netbeans.modules.viewmodel;
 import java.beans.PropertyEditor;
 import javax.swing.SwingUtilities;
 import org.netbeans.spi.viewmodel.ColumnModel;
+import org.openide.awt.Actions;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.PropertySupport;
 
 /**
@@ -67,7 +69,7 @@ public class Column extends PropertySupport.ReadWrite {
             columnModel.getType () == null ? 
                 String.class : 
                 columnModel.getType (),
-            columnModel.getDisplayName (),
+            Actions.cutAmpersand(columnModel.getDisplayName ()),
             columnModel.getShortDescription ()
         );
         this.columnModel = columnModel;
@@ -82,6 +84,9 @@ public class Column extends PropertySupport.ReadWrite {
                 "TreeColumnTTV", 
                 Boolean.TRUE
             );
+        if (Mnemonics.findMnemonicAmpersand(columnModel.getDisplayName()) >= 0) {
+            setValue("ColumnDisplayNameWithMnemonicTTV", columnModel.getDisplayName ()); // NOI18N
+        }
         Character mnemonic = columnModel.getDisplayedMnemonic();
         if (mnemonic != null) {
             setValue("ColumnMnemonicCharTTV", mnemonic); // NOI18N

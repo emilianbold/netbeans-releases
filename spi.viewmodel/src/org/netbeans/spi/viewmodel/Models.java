@@ -68,6 +68,7 @@ import org.netbeans.modules.viewmodel.TreeTable;
 
 import org.openide.ErrorManager;
 
+import org.openide.awt.Actions;
 import org.openide.explorer.view.TreeView;
 import org.openide.nodes.Node;
 import org.openide.util.datatransfer.PasteType;
@@ -3022,7 +3023,7 @@ public final class Models {
                         ColumnModel[] columns = getColumns();
                         for (ColumnModel cm : columns) {
                             if (cm.getType() == null) {
-                                return cm.getDisplayName();
+                                return Actions.cutAmpersand(cm.getDisplayName());
                             }
                         }
                     }
