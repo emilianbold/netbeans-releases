@@ -199,7 +199,7 @@ public class Package extends Task {
         }
     }
     private String getShortPath(File file) {
-        return file.getAbsolutePath().substring(directory.getAbsolutePath().length() - 1);
+        return file.getAbsolutePath().substring(directory.getAbsolutePath().length() + 1);
     }
     // private //////////////////////////////////////////////////////////////////////
     private void browse(
