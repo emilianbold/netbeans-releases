@@ -483,7 +483,9 @@ public class Commit extends GeneralPHP
     */
 
     // Insert constructor
+    Sleep( 1500 );
     eoPHP.pressKey( KeyEvent.VK_INSERT, InputEvent.ALT_MASK );
+    Sleep( 1500 );
 
     JDialogOperator jdInsetter = new JDialogOperator( );
     JListOperator jlList = new JListOperator( jdInsetter );
