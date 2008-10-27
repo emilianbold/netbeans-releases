@@ -664,13 +664,14 @@ public class MakeConfiguration extends Configuration {
     public String getAbsoluteOutputValue() {
         String output = getOutputValue();
 
-        if (output == null || IpeUtils.isPathAbsolute(output)) {
-            return output;
-        } else {
-            output = getBaseDir() + "/" + output; // NOI18N
-            output = FilePathAdaptor.normalize(output);
+        if (output == null) {
             return output;
         }
+        if (!IpeUtils.isPathAbsolute(output)) {
+            output = getBaseDir() + "/" + output; // NOI18N
+            output = FilePathAdaptor.normalize(output);
+        }
+        return expandMacros(output);
     }
     
     public String expandMacros(String val) {
