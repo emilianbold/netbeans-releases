@@ -284,7 +284,7 @@
 
 
 	<set property="nb.full.version"
-             value="6.5.0.${nb.build.type.number}.${build.number}"/>
+             value="6.5.0.0.${build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -966,6 +966,8 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-product">
 	<antcall target="build-product">
 	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
+	    <param name="product.packaged.data.file.default"            value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar"/>
+	    <param name="product.packaged.data.properties.file.default" value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar.properties"/>
         </antcall>
     </target>
 
