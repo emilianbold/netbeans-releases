@@ -416,7 +416,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * with sending a signal "INT" (Unix) or signal TSTP (Windows).
      */
     public void exec_interrupt() {
-        if (debugger.getState().equals(GdbDebugger.STATE_RUNNING) || debugger.getState().equals(GdbDebugger.STATE_SILENT_STOP)) {
+        if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
             if (Utilities.isWindows()) {
                 debugger.kill(18);
             } else {

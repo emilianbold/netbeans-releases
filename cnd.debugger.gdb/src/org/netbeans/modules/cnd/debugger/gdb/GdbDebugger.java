@@ -126,14 +126,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public static final String          PROP_VALUE_CHANGED = "valueChanged"; // NOI18N
     public static final String          PROP_LOCALS_REFRESH = "localsRefresh"; // NOI18N
 
-    public static final String          STATE_NONE = "state_none"; // NOI18N
-    public static final String          STATE_STARTING = "state_starting"; // NOI18N
-    public static final String          STATE_LOADING = "state_loading"; // NOI18N
-    public static final String          STATE_READY = "state_ready"; // NOI18N
-    public static final String          STATE_RUNNING = "state_running"; // NOI18N
-    public static final String          STATE_STOPPED = "state_stopped"; // NOI18N
-    public static final String          STATE_SILENT_STOP = "state_silent_stop"; // NOI18N
-    public static final String          STATE_EXITED  = "state_exited"; // NOI18N
+    public static enum State {
+        NONE, STARTING, LOADING, READY, RUNNING, STOPPED, SILENT_STOP, EXITED;
+    }
 
     public static final Object          LAST_GO_WAS_CONTINUE = "lastGoWasContinue"; // NOI18N
     public static final Object          LAST_GO_WAS_FINISH = "lastGoWasFinish"; // NOI18N
@@ -166,7 +161,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     private GdbProxy gdb;
     private final ContextProvider lookupProvider;
-    private String state = STATE_NONE;
+    private State state = State.NONE;
     private final PropertyChangeSupport pcs;
     private String runDirectory;
     private String baseDir;
@@ -561,7 +556,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     public String[] getThreadsList() {
-        if (state.equals(STATE_STOPPED)) {
+        if (state == State.STOPPED) {
             if (threadsList == emptyThreadsList) {
                 while (gdb == null) {
                     try {
@@ -639,9 +634,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(PROP_STATE)) {
-            if (evt.getNewValue().equals(STATE_LOADING)) {
+            if (evt.getNewValue() == State.LOADING) {
                 shareToken = gdb.info_share(false).getID();
-            } else if (evt.getNewValue().equals(STATE_READY)) {
+            } else if (evt.getNewValue() == State.READY) {
                 if (platform == PlatformTypes.PLATFORM_WINDOWS) {
                     gdb.break_insert("dlopen"); // NOI18N
                 } else {
@@ -654,16 +649,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     gdb.stack_list_frames();
                     setStopped();
                 }
-            } else if (evt.getNewValue() == STATE_STOPPED) {
+            } else if (evt.getNewValue() == State.STOPPED) {
                 updateLocalVariables(0);
                 GdbContext.getInstance().update();
-            } else if (evt.getNewValue() == STATE_SILENT_STOP) {
+            } else if (evt.getNewValue() == State.SILENT_STOP) {
                 interrupt();
-            } else if (evt.getNewValue() == STATE_RUNNING &&
-                    (evt.getOldValue() == STATE_SILENT_STOP ||
-                     evt.getOldValue() == STATE_READY))  {
+            } else if (evt.getNewValue() == State.RUNNING &&
+                    (evt.getOldValue() == State.SILENT_STOP ||
+                     evt.getOldValue() == State.READY))  {
                 gdb.exec_continue();
-            } else if (evt.getNewValue() == STATE_EXITED) {
+            } else if (evt.getNewValue() == State.EXITED) {
                 finish(false);
             }
         } else if (evt.getPropertyName().equals(PROP_CURRENT_THREAD)) {
@@ -859,13 +854,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * Note: gdb can be null if we get an exception while starting a debug session.
      */
     public void finish(boolean killTerm) {
-        if (!state.equals(STATE_NONE)) {
+        if (state != State.NONE) {
             if (killTerm) {
                 firePropertyChange(PROP_KILLTERM, true, false);
             }
             if (gdb != null) {
                 ProjectActionEvent pae = (ProjectActionEvent) lookupProvider.lookupFirst(null, ProjectActionEvent.class);
-                if (state.equals(STATE_RUNNING)) {
+                if (state == State.RUNNING) {
                     gdb.exec_interrupt();
                     if (pae.getID() != DEBUG_ATTACH) {
                         gdb.exec_abort();
@@ -879,7 +874,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             }
 
             stackUpdate(new ArrayList<String>());
-            setState(STATE_NONE);
+            setState(State.NONE);
             programPID = 0;
             removeRTCBreakpoint();
             gdbEngineProvider.getDestructor().killEngine();
@@ -980,13 +975,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 msg = msg.substring(12, msg.length() - 1);
                 Map<String, String> map = GdbUtils.createMapFromString(msg);
                 boolean isTmp = breakpointValidation(token, map);
-                if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
+                if (!isTmp && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
                     setRunning();
                 }
             } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
-                if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+                if (state == State.STOPPED) { // Ignore data if we've resumed running
                     stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
-                } else if (state.equals(STATE_SILENT_STOP)) {
+                } else if (state == State.SILENT_STOP) {
 //                    CommandBuffer cb = gdb.getCommandBuffer(token);
 //                    if (cb != null) {
 //                        cb.append(msg.substring(13, msg.length() - 1));
@@ -994,13 +989,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 //                    }
                 }
             } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
-                if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+                if (state == State.STOPPED) { // Ignore data if we've resumed running
                     addLocalsToLocalVariables(msg.substring(13));
                 } else {
                     log.finest("GD.resultRecord: Skipping results from -stack-list-locals (not stopped)");
                 }
             } else if (msg.startsWith("^done,stack-args=")) { // NOI18N (-stack-list-arguments)
-                if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
+                if (state == State.STOPPED) { // Ignore data if we've resumed running
                     addArgsToLocalVariables(msg.substring(17));
                 } else {
                     log.finest("GD.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
@@ -1066,7 +1061,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             }
             // end of ^done block
-        } else if (msg.startsWith("^running") && getState().equals(STATE_STOPPED)) { // NOI18N
+        } else if (msg.startsWith("^running") && getState() == State.STOPPED) { // NOI18N
             setRunning();
         } else if (msg.startsWith("^error,msg=")) { // NOI18N
             msg = msg.substring(11);
@@ -1123,10 +1118,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     breakpoint.addError(msg);
                     breakpoint.completeValidation(null);
                 }
-                if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
+                if (pendingBreakpointMap.isEmpty() && state == State.LOADING) {
                     setReady();
                 }
-            } else if (!state.equals(STATE_NONE)) {
+            } else if (state != State.NONE) {
                 // ignore errors after we've terminated (they could have been in the input queue)
                 log.warning("Unexpected gdb error: " + msg);
             }
@@ -1173,10 +1168,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             Map<String, String> map = new HashMap<String, String>();
             map.put("number", num); // NOI18N
             boolean isTmp = breakpointValidation(token, map);
-            if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
+            if (!isTmp && getState() == State.SILENT_STOP && pendingBreakpointMap.isEmpty()) {
                 setRunning();
             }
-        } else if (msg.contains("(no debugging symbols found)") && state.equals(STATE_STARTING) && !isAttaching()) { // NOI18N
+        } else if (msg.contains("(no debugging symbols found)") && state == State.STARTING && !isAttaching()) { // NOI18N
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                            "ERR_NoDebuggingSymbolsFound"))); // NOI18N
             setExited();
@@ -1332,7 +1327,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     // currently not called - should do more than set state (see JPDADebuggerImpl)
     public void suspend() {
-        setState(STATE_STOPPED);
+        setState(State.STOPPED);
     }
 
     /**
@@ -1414,7 +1409,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * breakpoint is encountered, or until the inferior exits.
      */
     public void resume() {
-        setState(STATE_RUNNING);
+        setState(State.RUNNING);
         gdb.exec_continue();
     }
 
@@ -1425,7 +1420,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void stepInto() {
         GdbTimer.getTimer("Step").start("Step1", 10); // NOI18N
-        setState(STATE_RUNNING);
+        setState(State.RUNNING);
         gdb.exec_step();
     }
 
@@ -1434,7 +1429,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * when the beginning of the next source line is reached.
      */
     public void stepOver() {
-        setState(STATE_RUNNING);
+        setState(State.RUNNING);
         gdb.exec_next();
     }
 
@@ -1442,7 +1437,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * Step one instruction
      */
     public void stepI() {
-        setState(STATE_RUNNING);
+        setState(State.RUNNING);
         gdb.exec_step_instruction();
     }
 
@@ -1450,23 +1445,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * Step over function inside dis
      */
     public void stepOverInstr() {
-        setState(STATE_RUNNING);
+        setState(State.RUNNING);
         gdb.exec_next_instruction();
-        /*Disassembly dis = Disassembly.getCurrent();
-        if (dis == null) {
-            return;
-        }
-        CallStackFrame sf = getCurrentCallStackFrame();
-        if (sf == null) {
-            return;
-        }
-        String newAddress = dis.getNextAddress(getCurrentCallStackFrame().getAddr());
-        if (newAddress.length() == 0) {
-            stepI();
-        } else {
-            gdb.break_insert(GDB_TMP_BREAKPOINT, "*" + newAddress); // NOI18N
-            resume();
-        }*/
     }
 
     /**
@@ -1478,7 +1458,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void stepOut() {
         if (callstack.size() > 0 || isValidStackFrame(callstack.get(1))) {
-            setState(STATE_RUNNING);
+            setState(State.RUNNING);
             gdb.stack_select_frame(0);
             gdb.exec_finish();
         } else {
@@ -1514,45 +1494,45 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *
      * @return current state of gdb debugger
      */
-    public String getState() {
+    public State getState() {
         return state;
     }
 
-    private void setState(String state) {
-        if (state.equals(this.state)) {
+    private void setState(State state) {
+        if (state == this.state) {
             return;
         }
-        String oldState = this.state;
+        State oldState = this.state;
         this.state = state;
         firePropertyChange(PROP_STATE, oldState, state);
     }
 
-    public void setStarting() {
-        setState(STATE_STARTING);
+    private void setStarting() {
+        setState(State.STARTING);
     }
 
-    public void setLoading() {
-        setState(STATE_LOADING);
+    private void setLoading() {
+        setState(State.LOADING);
     }
 
     public void setReady() {
-        setState(STATE_READY);
+        setState(State.READY);
     }
 
     public void setRunning() {
-        setState(STATE_RUNNING);
+        setState(State.RUNNING);
     }
 
-    public void setStopped() {
-        setState(STATE_STOPPED);
+    private void setStopped() {
+        setState(State.STOPPED);
     }
 
     public void setSilentStop() {
-        setState(STATE_SILENT_STOP);
+        setState(State.SILENT_STOP);
     }
 
-    public void setExited() {
-        setState(STATE_EXITED);
+    private void setExited() {
+        setState(State.EXITED);
     }
 
     /*public Boolean evaluateIn(Expression expression, final Object frame) {
@@ -1581,7 +1561,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public void stopped(int token, Map<String, String> map) {
         String reason = map.get("reason"); // NOI18N
 
-        if (state.equals(STATE_STARTING)) {
+        if (state == State.STARTING) {
             String frame = map.get("frame"); // NOI18N
             if (frame != null) {
                 map = GdbUtils.createMapFromString(frame);
@@ -1594,7 +1574,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             setLoading();
             return;
         }
-        if (!state.equals(STATE_RUNNING)) {
+        if (state != State.RUNNING) {
             log.warning("GdbDebugger.stopped while not in STATE_RUNNING");
             return;
         }
@@ -1705,7 +1685,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             } else if (reason.equals("shlib-event")) { // NOI18N
                  checkSharedLibs();
             } else if (reason.equals("signal-received")) { // NOI18N
-                if (getState().equals(STATE_RUNNING)) {
+                if (getState() == State.RUNNING) {
                     String tid = map.get("thread-id"); // NOI18N
                     if (tid != null && !tid.equals(currentThreadID)) {
                         currentThreadID = tid;
@@ -1821,8 +1801,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * have a valid stack.
      */
     private void stepOutOfDlopen() {
-        String oldState = state;
-        state = STATE_SILENT_STOP;
+        State oldState = state;
+        state = State.SILENT_STOP;
         String msg = gdb.stack_list_framesEx().getResponse();
         int i = 0;
         boolean valid = true;
@@ -1933,7 +1913,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
             }
-            if (pendingBreakpointMap.isEmpty() && state.equals(STATE_LOADING)) {
+            if (pendingBreakpointMap.isEmpty() && state == State.LOADING) {
                 setReady();
             } else if (impl.isRunWhenValidated()) {
                 impl.setRunWhenValidated(false);
@@ -2160,7 +2140,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public String requestValueEx(String name) throws GdbErrorException {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
-        if (state.equals(STATE_STOPPED)) {
+        if (state == State.STOPPED) {
             CommandBuffer cb = gdb.data_evaluate_expressionEx(name);
             String info = cb.getResponse();
             if (info.length() == 0 || !cb.isOK()) {
@@ -2184,7 +2164,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public String requestWhatis(String name) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
-        if (state.equals(STATE_STOPPED) && name != null && name.length() > 0) {
+        if (state == State.STOPPED && name != null && name.length() > 0) {
             CommandBuffer cb = gdb.whatis(name);
             String info = cb.getResponse();
             if (info.length() == 0 || !cb.isOK()) {
@@ -2208,7 +2188,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public String requestSymbolType(String type) {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
 
-        if (state.equals(STATE_STOPPED) && type != null && type.length() > 0) {
+        if (state == State.STOPPED && type != null && type.length() > 0) {
             CommandBuffer cb = gdb.symbol_type(type);
             String info = cb.getResponse();
             if (info.length() == 0 || !cb.isOK()) {
