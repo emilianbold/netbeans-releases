@@ -19,8 +19,8 @@ CLASS C (C ) [4:1/23-6:2/59] lcurly=31 SCOPE: $Global$
         CLASS_FORWARD_DECLARATION PRIVATE C2 [5:13/45-5:22/54] ClassImpl$ClassMemberForwardDeclaration
         TYPEDEF B  [5:5/37-5:25/57] TYPE: C::C2 TEXT=C2  [5:5/37-5:25/57] SCOPE: C 
 NAMESPACE DEFINITOIN N [8:1/62-10:2/102] SCOPE: forward_declarations.cc
-    CLASS_FORWARD_DECLARATION C3 [9:13/88-9:22/97]
     TYPEDEF C  [9:5/80-9:25/100] TYPE: C3 TEXT=C3  [9:5/80-9:25/100] SCOPE: N 
+    CLASS_FORWARD_DECLARATION C3 [9:13/88-9:22/97]
 
 ========== Dumping model of PROJECT DummyProject
 TYPEDEF A  [2:1/1-2:21/21] TYPE: C1 TEXT=C1  [2:1/1-2:21/21] SCOPE: $Global$ 
