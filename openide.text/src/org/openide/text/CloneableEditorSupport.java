@@ -2301,7 +2301,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return null;
         }
     }
-    
+
+    @Deprecated
     final Pane openReuse(final PositionRef pos, final int column, int mode) {
         if (mode == Line.SHOW_REUSE_NEW) lastReusable.clear();
         return openAtImpl(pos, column, true);
