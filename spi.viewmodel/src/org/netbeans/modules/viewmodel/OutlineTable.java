@@ -125,26 +125,6 @@ ExplorerManager.Provider, PropertyChangeListener {
             treeTable.setHorizontalScrollBarPolicy 
                 (JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         add (treeTable, "Center");  //NOI18N
-        /*treeTable.getTable().getModel().addTableModelListener(new TableModelListener() {
-
-            public void tableChanged(TableModelEvent e) {
-                int type = e.getType();
-                System.err.println("tableChanged("+e+") type = "+type+", column = "+e.getColumn());
-                if ((type == TableModelEvent.DELETE || type == TableModelEvent.INSERT) &&
-                    e.getColumn() >= 0 && tableColumns != null) {
-
-                    TableColumnModel tcm = treeTable.getTable().getColumnModel();
-                    ETableColumnModel ecm = (ETableColumnModel) tcm;
-                    System.err.println("Columns = "+columns.length+", table columns = "+tableColumns.length);
-                    for (int i = 0; i < tableColumns.length; i++) {
-                        System.err.println("column["+i+"] = "+columns[i].getDisplayName()+", tableColumn = "+tableColumns[i].getHeaderValue()+", isHidden = "+ecm.isColumnHidden(tableColumns[i]));
-                        if (tableColumns[i] != null) {
-                            columns[i].setHidden(ecm.isColumnHidden(tableColumns[i]));
-                        }
-                    }
-                }
-            }
-        });*/
         treeTable.getTable().getColumnModel().addColumnModelListener(new TableColumnModelListener() {
 
             // Track column visibility changes.
@@ -170,13 +150,6 @@ ExplorerManager.Provider, PropertyChangeListener {
                         }
                     }
                     logger.fine("  to index = "+visibleIndex+", column index = "+columnIndex);
-                    /*int visibleIndex = e.getToIndex();
-                    int columnIndex = -1;
-                    for (int i = 0; i < columnVisibleMap.length; i++) {
-                        if (visibleIndex == columnVisibleMap[i] && columns[i].isHidden()) {
-                            columnIndex = i;
-                        }
-                    }*/
                     if (columnIndex != -1) {
                         int prefferedVisibleIndex = columnVisibleMap[columnIndex];
                         // check if there's a visible column with the same visible index and lower order
@@ -210,20 +183,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                         }
                     }
                 }
-                dumpColumnVisibleMap();
-
-                /*System.err.println("columnAdded("+e+")");
-                if (tableColumns != null && e.getToIndex() >= 0) {
-                    TableColumnModel tcm = treeTable.getTable().getColumnModel();
-                    ETableColumnModel ecm = (ETableColumnModel) tcm;
-                    System.err.println("Columns = "+columns.length+", table columns = "+tableColumns.length);
-                    for (int i = 0; i < tableColumns.length; i++) {
-                        if (tableColumns[i] != null) {
-                            System.err.println("column["+i+"] = "+columns[i].getDisplayName()+", tableColumn = "+tableColumns[i].getHeaderValue()+", isHidden = "+ecm.isColumnHidden(tableColumns[i]));
-                            columns[i].setHidden(ecm.isColumnHidden(tableColumns[i]));
-                        }
-                    }
-                }*/
+                if (logger.isLoggable(Level.FINE)) {
+                    dumpColumnVisibleMap();
+                }
             }
 
             public void columnRemoved(TableColumnModelEvent e) {
@@ -241,20 +203,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                         }
                     }
                 }
-                dumpColumnVisibleMap();
-                
-                /*System.err.println("columnRemoved("+e+")");
-                if (tableColumns != null && e.getFromIndex() >= 0) {
-                    TableColumnModel tcm = treeTable.getTable().getColumnModel();
-                    ETableColumnModel ecm = (ETableColumnModel) tcm;
-                    System.err.println("Columns = "+columns.length+", table columns = "+tableColumns.length);
-                    for (int i = 0; i < tableColumns.length; i++) {
-                        if (tableColumns[i] != null) {
-                            System.err.println("column["+i+"] = "+columns[i].getDisplayName()+", tableColumn = "+tableColumns[i].getHeaderValue()+", isHidden = "+ecm.isColumnHidden(tableColumns[i]));
-                            columns[i].setHidden(ecm.isColumnHidden(tableColumns[i]));
-                        }
-                    }
-                }*/
+                if (logger.isLoggable(Level.FINE)) {
+                    dumpColumnVisibleMap();
+                }
             }
 
             public void columnMoved(TableColumnModelEvent e) {
@@ -265,12 +216,14 @@ ExplorerManager.Provider, PropertyChangeListener {
                     // Ignore Swing strangeness
                     return ;
                 }
-                logger.fine("columnMoved("+e+")");
-                logger.fine("  from = "+from+", to = "+to);
                 int fc = getColumnIndex(from);
                 int tc = getColumnIndex(to);
-                logger.fine("  fc = "+fc+", tc = "+tc);
-                dumpColumnVisibleMap();
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("columnMoved("+e+")");
+                    logger.fine("  from = "+from+", to = "+to);
+                    logger.fine("  fc = "+fc+", tc = "+tc);
+                    dumpColumnVisibleMap();
+                }
                 int toColumnOrder = getColumnOrder(columns[tc]);
                 if (from < to) {
                     for (int i = from + 1; i <= to; i++) {
@@ -305,8 +258,10 @@ ExplorerManager.Provider, PropertyChangeListener {
                 }
                 setColumnOrder(columns[fc], toColumnOrder);
                 columnVisibleMap[fc] = to;
-                logger.fine("After move:");
-                dumpColumnVisibleMap();
+                if (logger.isLoggable(Level.FINE)) {
+                    logger.fine("After move:");
+                    dumpColumnVisibleMap();
+                }
             }
             
             public void columnMarginChanged(ChangeEvent e) {}
@@ -351,15 +306,6 @@ ExplorerManager.Provider, PropertyChangeListener {
         return -1;
     }
     
-    private int getColumnIndex(int visibleIndex, int exclude) {
-        for (int i = 0; i < columnVisibleMap.length; i++) {
-            if (i != exclude && visibleIndex == columnVisibleMap[i] && !columns[i].isHidden()) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public void setModel (Models.CompoundModel model) {
         // 2) save current settings (like columns, expanded paths)
         //List ep = treeTable.getExpandedPaths ();
@@ -533,8 +479,10 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
         }
 
-        logger.fine("createColumns:");
-        dumpColumnVisibleMap();
+        if (logger.isLoggable(Level.FINE)) {
+            logger.fine("createColumns:");
+            dumpColumnVisibleMap();
+        }
 
         Node.Property[] columnProps = columnList.toArray(new Node.Property[]{});
         tableColumns = null;
@@ -610,44 +558,12 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
 
-    /*private Node.Property[] createColumns (Models.CompoundModel model, String[] nodesColumnName) {
-        ColumnModel[] cs = model.getColumns ();
-        int i, k = cs.length;
-        List<Node.Property> columnList = new ArrayList<Node.Property>(k);
-        List<IndexedColumn> icolumnList = new ArrayList<IndexedColumn>(k);
-        for (i = 0; i < k; i++) {
-            Column c = new Column(cs [i], this);
-            if (cs[i].getType() != null) {
-                columnList.add(c);
-                IndexedColumn ic = new IndexedColumn(c, i, cs[i].getCurrentOrderNumber());
-                icolumnList.add(ic);
-            } else {
-                nodesColumnName[0] = cs[i].getDisplayName();
-            }
-        }
-        Node.Property[] columns = columnList.toArray(new Node.Property[]{});
-        icolumns = icolumnList.toArray(new IndexedColumn[]{});
-        if (nodesColumnName[0] == null) {
-            nodesColumnName[0] = new DefaultColumn().getDisplayName();
-        }
-        return columns;
-    }*/
-
     private void updateTableColumns(Property[] columnsToSet) {
         TableColumnModel tcm = treeTable.getTable().getColumnModel();
         ETableColumnModel ecm = (ETableColumnModel) tcm;
         int d = (isDefaultColumnAdded) ? 0 : 1;
         int ci = 0;
         int tci = d;
-        /*int n = columnsToSet.length;
-        tableColumns = new TableColumn[n];
-        for (int i = 0; i < n; i++, ci++) {
-            if (columns[ci] != columnsToSet[i]) {
-                i--;
-                continue;
-            }
-            tableColumns[i] = tcm.getColumn(i);
-        }*/
         TableColumn[] tableColumns = new TableColumn[columns.length];
         for (int i = 0; i < columns.length; i++) {
             if (i < columnsToSet.length && columns[i] == columnsToSet[ci]) {
@@ -673,50 +589,6 @@ ExplorerManager.Provider, PropertyChangeListener {
         this.tableColumns = tableColumns;
     }
 
-    /*/ Re-order the UI columns according to the defined order
-    private void setColumnsOrder() {
-        System.err.println("setColumnsOrder()");
-        TableColumnModel tcm = treeTable.getTable().getColumnModel();
-        int[] shift = new int[columns.length];
-        int[] dshift = new int[columns.length];
-        int order = getColumnOrder(columns[defaultColumnIndex]);
-        // First, adjust the position of the default column.
-        if (order == 0 && defaultColumnIndex != 0) {
-            // defaultColumnIndex is at the first column, but we need to adjust the shifts
-            for (int j = 0; j < defaultColumnIndex; j++) {
-                dshift[j]++;
-            }
-        } else if (order > 0) {
-            System.err.println(" move default column("+0+", "+order+")");
-            tcm.moveColumn(0, order);
-            if (order != defaultColumnIndex) {
-                for (int j = order; j < defaultColumnIndex; j++) {
-                    dshift[j]++;
-                }
-                for (int j = defaultColumnIndex + 1; j < order; j++) {
-                    shift[j]++;
-                }
-            }
-        }
-        for (int i = 0; i < columns.length; i++) {
-            if (i == defaultColumnIndex) continue;
-            int index = i + dshift[i];
-            order = getColumnOrder(columns[i]) + shift[i];// + dshift[index];
-            System.err.println("  index["+i+"] = "+index+", order = "+order+" (= "+getColumnOrder(columns[i])+" + "+shift[i]+")");
-            if (order == index) {
-                continue;
-            }
-            if (order > index) {
-                for (int j = i + 1; j < order; j++) {
-                    shift[j]++;
-                }
-            }
-            System.err.println(" move column("+index+", "+order+")");
-            tcm.moveColumn(index, order);
-        }
-
-    }*/
-
     // Re-order the UI columns according to the defined order
     private void setColumnsOrder() {
         logger.fine("setColumnsOrder()");
@@ -730,54 +602,14 @@ ExplorerManager.Provider, PropertyChangeListener {
             logger.fine(" move default column("+0+", "+defaultColumnVisibleIndex+")");
             tcm.moveColumn(0, defaultColumnVisibleIndex);
         }
-        /*int ci = 0;
-        for (int i = 0; i < tcm.getColumnCount(); i++, ci++) {
-            //int ci = getColumnIndex(i);
-            while (columns[ci].isHidden()) ci++;
-            int order = getColumnOrder(columns[ci]);
-            if (i != order) {
-                System.err.println(" move column("+i+", "+order+")");
-                tcm.moveColumn(i, order);
-            }
-        }*/
-
-        /*
-        int[] shift = new int[tcm.getColumnCount()];
-        for (int i = 0; i < tcm.getColumnCount(); i++) {
-            //int ci = getColumnIndex(i);
-            int ci = -1;
-            int currentOrder = -1;
-            do {
-                ci++;
-                currentOrder++;
-                while (columns[ci].isHidden()) ci++;
-            } while (getColumnOrder(columns[ci]) != i);
-            System.err.println("  at visible index "+i+": currentOrder = "+currentOrder+", shift = "+shift[currentOrder]);
-            //currentOrder += shift[currentOrder];
-            if ((currentOrder + shift[currentOrder]) != i) {
-                System.err.println(" move column("+(currentOrder + shift[currentOrder])+", "+i+")");
-                tcm.moveColumn(currentOrder + shift[currentOrder], i);
-                for (int j = 0; j < currentOrder; j++) {
-                    int si = j + shift[j];
-                    if (si >= i && si < currentOrder) {
-                        shift[j]++;
-                    }
-                    //shift[si = (j - shift[j])]++;
-                    System.err.println("    shift["+j+"] = "+shift[j]);
-                }
-            }
-        }
-         */
 
         int n = tcm.getColumnCount();
         int[] order = new int[n];
-        //int[] cs = new int[n];
         int ci = 0;
         for (int i = 0; i < n; i++, ci++) {
             while (columns[ci].isHidden()) ci++;
-            order[i] = columnVisibleMap[ci];//getColumnOrder(columns[ci]);
+            order[i] = columnVisibleMap[ci];
             logger.fine("    order["+i+"] = "+order[i]);
-            //cs[i] = ci;
         }
         for (int i = 0; i < n; i++) {
             int j = 0;
@@ -788,35 +620,14 @@ ExplorerManager.Provider, PropertyChangeListener {
             }
             logger.fine("  order["+j+"] = "+i);
             if (j != i) {
-                //int c = cs[j];
                 for (int k = j; k > i; k--) {
                     order[k] = order[k-1];
-                    //cs[k] = cs[k-1];
                 }
                 order[i] = i;
-                //cs[i] = c;
                 logger.fine(" move column("+j+", "+i+")");
                 tcm.moveColumn(j, i);
             }
         }
-
-        /*
-        for (int i = 0; i < columns.length; i++) {
-            //if (i == defaultColumnIndex) continue;
-            int order = getColumnOrder(columns[i]) + shift[i];// + dshift[index];
-            System.err.println("  index["+i+"] = "+i+", order = "+order+" (= "+getColumnOrder(columns[i])+" + "+shift[i]+")");
-            if (order == i) {
-                continue;
-            }
-            if (order > i) {
-                for (int j = i + 1; j < order; j++) {
-                    shift[j]++;
-                }
-            }
-            System.err.println(" move column("+i+", "+order+")");
-            tcm.moveColumn(i, order);
-        }
-        */
     }
 
     private boolean isHiddenColumn(int index) {
@@ -827,91 +638,6 @@ ExplorerManager.Provider, PropertyChangeListener {
         return ecm.isColumnHidden(tableColumns[index]);
     }
 
-    /** @return visible index >= globalIndex */
-    int getColumnVisibleIndex(Column c, int globalIndex) {
-        int a = (isDefaultColumnAdded) ? 1 : 0;
-        int visibleIndex = 0;
-        ColumnModel[] cs = model.getColumns ();
-        if (cs.length == 0) return -1;
-        for (int i = 0; i < columns.length - a; i++) {
-            if (!isHiddenColumn(i)) {//!Boolean.TRUE.equals(columns[i].getValue("InvisibleInTreeTableView"))) {
-                //if (cs[i].getType() == null) {
-                //    visibleIndex++;
-                //    continue;
-                //}
-                int gi = cs[i].getCurrentOrderNumber();
-                if (gi < 0) gi = i;
-                //System.err.println("   CurrentOrderNumber("+cs[i].getDisplayName()+") = "+gi);
-                if (gi >= 0 && gi < globalIndex) {
-                    visibleIndex++;
-                }
-            }
-        }
-        //System.err.println("getColumnVisibleIndex("+c.getDisplayName()+", "+globalIndex+") = "+visibleIndex);
-        return visibleIndex;
-    }
-    
-    /** @return global index >= visibleIndex */
-    /*int getColumnGlobalIndex(Column c, int visibleIndex) {
-        ColumnModel[] models = model.getColumns();
-        if (models.length == 0) return -1;
-        for (int i = 0; i < icolumns.length; i++) {
-            icolumns[i].order = models[icolumns[i].index].getCurrentOrderNumber();
-        }
-        Arrays.sort(icolumns, new IndexedColumn.Cmp());
-        //System.err.print("getColumnGlobalIndex("+c.getDisplayName()+", "+visibleIndex+") = ");
-        for (int i = 0; i < icolumns.length; i++) {
-            if (!isHiddenColumn(i)) {//!Boolean.TRUE.equals(icolumns[i].getColumn().getValue("InvisibleInTreeTableView"))) {
-                if (visibleIndex <= 0) {
-                    //System.err.println(i);
-                    return i;
-                }
-                visibleIndex--;
-            }
-        }
-        //System.err.println(icolumns.length+" (END)");
-        return icolumns.length;
-    }*/
-    
-    /*void updateColumnWidths () {
-        int i, k = columns.length;
-        int d = (isDefaultColumnAdded) ? 0 : 1;
-        TableColumnModel tcm = treeTable.getTable().getColumnModel();
-        ETableColumnModel ecm = (ETableColumnModel) tcm;
-        for (i = 0; i < k; i++) {
-            /*if (Boolean.TRUE.equals (columns [i].getValue
-                ("InvisibleInTreeTableView"))
-            ) continue;*//*
-            if (isHiddenColumn(i)) {
-                continue;
-            }
-            if (columns [i] instanceof Column) {
-                Column column = (Column) columns [i];
-                int order;
-                if (column.isDefault()) {
-                    order = 0;
-                    d--;
-                } else {
-                    order = column.getModelOrderNumber();
-                    if (order < 0) order = i;
-                    order = getColumnVisibleIndex(column, order);
-                }
-                TableColumn tc;
-                try {
-                    tc = tcm.getColumn (order + d);
-                } catch (ArrayIndexOutOfBoundsException aioobex) {
-                    ErrorManager.getDefault().notify(
-                            ErrorManager.getDefault().annotate(aioobex,
-                            "Column("+i+") "+column.getName()+" model order = "+column.getModelOrderNumber()+" visible index = "+order+" => column index = "+(order + d)));
-                    continue ;
-                }
-                //if (!ecm.isColumnHidden(tc)) {
-                    tc.setPreferredWidth(column.getColumnWidth());
-                //}
-            }
-        }
-    }*/
-    
     void updateColumnWidths () {
         logger.fine("\nupdateColumnWidths():");
         int i, k = columns.length;
@@ -959,41 +685,6 @@ ExplorerManager.Provider, PropertyChangeListener {
             // It's very likely that the table was not fully initialized => do not save anything.
             return ;
         }
-        /*int d = (isDefaultColumnAdded) ? 0 : 1;
-        for (i = 0; i < k; i++) {
-            /*if (Boolean.TRUE.equals (columns [i].getValue
-                ("InvisibleInTreeTableView"))
-            ) continue;*//*
-            if (isHiddenColumn(i)) {
-                continue;
-            }
-            if (!(columns [i] instanceof Column)) continue;
-            Column column = (Column) columns [i];
-            if (column.isDefault ()) {
-                TableColumn tc = tcm.getColumn (0);
-                int width = tc.getWidth ();
-                column.setColumnWidth (width);
-                d--;
-            } else {
-                int order = column.getModelOrderNumber();
-                if (order < 0) order = i;
-                order = getColumnVisibleIndex(column, order);
-                //System.err.println("  Column("+i+") "+column.getName()+" visible index = "+order+" => column index = "+(order + d));
-                TableColumn tc;
-                try {
-                    tc = tcm.getColumn (order + d);
-                } catch (ArrayIndexOutOfBoundsException aioobex) {
-                    ErrorManager.getDefault().notify(
-                            ErrorManager.getDefault().annotate(aioobex,
-                            "Column("+i+") "+column.getName()+" model order = "+column.getModelOrderNumber()+" visible index = "+order+" => column index = "+(order + d)));
-                    continue ;
-                }
-                int width = tc.getWidth ();
-                //if (!ecm.isColumnHidden(tc)) {
-                    column.setColumnWidth (width);
-                //}
-            }
-        }*/
         logger.fine("\nsaveWidths():");
         for (i = 0; i < k; i++) {
             if (isHiddenColumn(i)) {
@@ -1098,12 +789,6 @@ ExplorerManager.Provider, PropertyChangeListener {
             if (m instanceof DefaultOutlineModel) {
                 ((DefaultOutlineModel) m).setNodesColumnLabel(name);
             }
-            /*if (m instanceof NodesColumnNameOutlineModel) {
-                ((NodesColumnNameOutlineModel) m).setNodesColumnName(name);
-            } else {
-                m = new NodesColumnNameOutlineModel(m, name);
-                getOutline().setModel(m);
-            }*/
         }
         
         /*
@@ -1201,145 +886,5 @@ ExplorerManager.Provider, PropertyChangeListener {
         }
     }
     
-    private static class IndexedColumn extends Object {
-        private Node.Property column;
-        public int index;
-        public int order;
-        
-        public IndexedColumn(Node.Property column, int index, int order) {
-            this.column = column;
-            this.index = index;
-            this.order = order;
-        }
-        
-        public Node.Property getColumn() {
-            return column;
-        }
-        
-        public static class Cmp implements Comparator<IndexedColumn> {
-
-            public int compare(IndexedColumn ic1, IndexedColumn ic2) {
-                if (ic1.order == -1 && ic2.order >= 0) {
-                    return +1;
-                }
-                if (ic2.order == -1 && ic1.order >= 0) {
-                    return -1;
-                }
-                return ic1.order - ic2.order;
-            }
-            
-        }
-    }
-
-    /*private static final class NodesColumnNameOutlineModel implements OutlineModel {
-
-        private OutlineModel delegate;
-        private String nodesColumnName;
-
-        public NodesColumnNameOutlineModel(OutlineModel delegate, String nodesColumnName) {
-            this.delegate = delegate;
-            this.nodesColumnName = nodesColumnName;
-        }
-
-        public void setNodesColumnName(String nodesColumnName) {
-            this.nodesColumnName = nodesColumnName;
-        }
-
-        public TreePathSupport getTreePathSupport() {
-            //System.err.println("NodesColumnNameOutlineModel.getTreePathSupport() = "+delegate.getTreePathSupport());
-            return delegate.getTreePathSupport();
-        }
-
-        public AbstractLayoutCache getLayout() {
-            //System.err.println("NodesColumnNameOutlineModel.getLayout() = "+delegate.getLayout());
-            return delegate.getLayout();
-        }
-
-        public boolean isLargeModel() {
-            return delegate.isLargeModel();
-        }
-
-        public int getRowCount() {
-            //System.err.println("NodesColumnNameOutlineModel.getRowCount() = "+delegate.getRowCount());
-            return delegate.getRowCount();
-        }
-
-        public int getColumnCount() {
-            //System.err.println("NodesColumnNameOutlineModel.getColumnCount() = "+delegate.getColumnCount());
-            return delegate.getColumnCount();
-        }
-
-        public String getColumnName(int columnIndex) {
-            if (columnIndex == 0) {
-                return nodesColumnName;
-            } else {
-                return delegate.getColumnName(columnIndex);
-            }
-        }
-
-        public Class<?> getColumnClass(int columnIndex) {
-            return delegate.getColumnClass(columnIndex);
-        }
-
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return delegate.isCellEditable(rowIndex, columnIndex);
-        }
-
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            //System.err.println("NodesColumnNameOutlineModel.getValueAt("+rowIndex+", "+columnIndex+") = "+delegate.getValueAt(rowIndex, columnIndex));
-            return delegate.getValueAt(rowIndex, columnIndex);
-        }
-
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            delegate.setValueAt(aValue, rowIndex, columnIndex);
-        }
-
-        public void addTableModelListener(TableModelListener l) {
-            //System.err.println("NodesColumnNameOutlineModel.addTableModelListener("+l+").");
-            delegate.addTableModelListener(l);
-        }
-
-        public void removeTableModelListener(TableModelListener l) {
-            //System.err.println("NodesColumnNameOutlineModel.removeTableModelListener("+l+").");
-            delegate.removeTableModelListener(l);
-        }
-
-        public Object getRoot() {
-            //System.err.println("NodesColumnNameOutlineModel.getRoot() = "+delegate.getRoot());
-            return delegate.getRoot();
-        }
-
-        public Object getChild(Object parent, int index) {
-            //System.err.println("NodesColumnNameOutlineModel.getChild("+parent+", "+index+") = "+delegate.getChild(parent, index));
-            return delegate.getChild(parent, index);
-        }
-
-        public int getChildCount(Object parent) {
-            //System.err.println("NodesColumnNameOutlineModel.getChildCount("+parent+") = "+delegate.getChildCount(parent));
-            return delegate.getChildCount(parent);
-        }
-
-        public boolean isLeaf(Object node) {
-            //System.err.println("NodesColumnNameOutlineModel.isLeaf("+node+") = "+delegate.isLeaf(node));
-            return delegate.isLeaf(node);
-        }
-
-        public void valueForPathChanged(TreePath path, Object newValue) {
-            delegate.valueForPathChanged(path, newValue);
-        }
-
-        public int getIndexOfChild(Object parent, Object child) {
-            return delegate.getIndexOfChild(parent, child);
-        }
-
-        public void addTreeModelListener(TreeModelListener l) {
-            delegate.addTreeModelListener(l);
-        }
-
-        public void removeTreeModelListener(TreeModelListener l) {
-            delegate.removeTreeModelListener(l);
-        }
-
-    }*/
 }
 
