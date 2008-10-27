@@ -57,6 +57,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -292,23 +293,27 @@ public final class ClassPath {
             current = this.invalidEntries;
         }
         List<? extends PathResourceImplementation> resources = impl.getResources();
+        final List<Object[]> snapshot = new ArrayList<Object[]>();
+        for (PathResourceImplementation pr : resources) {
+            snapshot.add(new Object[] {pr, pr.getRoots()});
+        }
         List<ClassPath.Entry> result;
         synchronized (this) {
             if (this.invalidEntries == current) {
                 if (this.entriesCache == null) {                    
-                    this.entriesCache = createEntries (resources);
+                    this.entriesCache = createEntries (snapshot);
                 }
                 result = this.entriesCache;
             }
             else {                
-                result = createEntries (resources);
+                result = createEntries (snapshot);
             }         
         }
         assert result != null;
         return result;
     }
     
-    private List<ClassPath.Entry> createEntries (final List<? extends PathResourceImplementation> resources) {
+    private List<ClassPath.Entry> createEntries (final List<Object[]> resources) {
         //The ClassPathImplementation.getResources () should never return
         // null but it was not explicitly stated in the javadoc
         if (resources == null) {
@@ -316,10 +321,12 @@ public final class ClassPath {
         }
         else {
             List<ClassPath.Entry> cache = new ArrayList<ClassPath.Entry> ();
-            for (PathResourceImplementation pr : resources) {
+            for (Object[] pair : resources) {
+                PathResourceImplementation pr = (PathResourceImplementation) pair[0];
+                URL[] roots = (URL[]) pair[1];
                 pr.removePropertyChangeListener(weakPListener);
                 pr.addPropertyChangeListener(weakPListener = WeakListeners.propertyChange(pListener, pr));
-                for (URL root : pr.getRoots()) {
+                for (URL root : roots) {
                     cache.add(new Entry(root,
                             pr instanceof FilteringPathResourceImplementation ? (FilteringPathResourceImplementation) pr : null));
                 }

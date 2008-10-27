@@ -976,16 +976,14 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 cb.done();
             }
 
-            String afterDoneMsg = msg.substring(DONE_PREFIX.length());
-
-            if (afterDoneMsg.startsWith(",bkpt=")) { // NOI18N (-break-insert)
+            if (msg.startsWith("^done,bkpt=")) { // NOI18N (-break-insert)
                 msg = msg.substring(12, msg.length() - 1);
                 Map<String, String> map = GdbUtils.createMapFromString(msg);
                 boolean isTmp = breakpointValidation(token, map);
                 if (!isTmp && getState().equals(STATE_SILENT_STOP) && pendingBreakpointMap.isEmpty()) {
                     setRunning();
                 }
-            } else if (afterDoneMsg.startsWith(",stack=")) { // NOI18N (-stack-list-frames)
+            } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
                 if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                     stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
                 } else if (state.equals(STATE_SILENT_STOP)) {
@@ -995,19 +993,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 //                        cb.done();
 //                    }
                 }
-            } else if (afterDoneMsg.startsWith(",locals=")) { // NOI18N (-stack-list-locals)
+            } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
                 if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                     addLocalsToLocalVariables(msg.substring(13));
                 } else {
                     log.finest("GD.resultRecord: Skipping results from -stack-list-locals (not stopped)");
                 }
-            } else if (afterDoneMsg.startsWith(",stack-args=")) { // NOI18N (-stack-list-arguments)
+            } else if (msg.startsWith("^done,stack-args=")) { // NOI18N (-stack-list-arguments)
                 if (state.equals(STATE_STOPPED)) { // Ignore data if we've resumed running
                     addArgsToLocalVariables(msg.substring(17));
                 } else {
                     log.finest("GD.resultRecord: Skipping results from -stack-list-arguments (not stopped)");
                 }
-            } else if (afterDoneMsg.startsWith(",new-thread-id=")) { // NOI18N (-thread-select)
+            } else if (msg.startsWith("^done,new-thread-id=")) { // NOI18N (-thread-select)
                 String tid = msg.substring(21, msg.indexOf('"', 22));
                 if (!tid.equals(currentThreadID)) {
                     String otid = currentThreadID;
@@ -1015,23 +1013,23 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     log.finest("GD.resultRecord: Thread change, firing PROP_CURRENT_THREAD");
                     firePropertyChange(PROP_CURRENT_THREAD, otid, currentThreadID);
                 }
-            } else if (afterDoneMsg.startsWith(",value=") && msg.contains("auto; currently c")) { // NOI18N
+            } else if (msg.startsWith("^done,value=") && msg.contains("auto; currently c")) { // NOI18N
                 if (msg.contains("auto; currently c++")) { // NOI18N
                     cplusplus = true;
                     DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
                 }
-            } else if (afterDoneMsg.startsWith(",value=")) { // NOI18N (-data-evaluate-expression)
+            } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
 //                CommandBuffer cb = gdb.getCommandBuffer(token);
 //                if (cb != null) {
 //                    cb.append(msg.substring(13, msg.length() - 1));
 //                    cb.done();
 //                }
-            } else if (afterDoneMsg.startsWith(",thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
+            } else if (msg.startsWith("^done,thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
 //                CommandBuffer cb = gdb.getCommandBuffer(token);
 //                if (cb != null) {
 //                    cb.done();
 //                }
-            } else if (afterDoneMsg.startsWith(",addr=")) { // NOI18N
+            } else if (msg.startsWith("^done,addr=")) { // NOI18N
 //                CommandBuffer cb = gdb.getCommandBuffer(token);
 //                if (cb != null) {
 //                    cb.append(msg.substring(6));
