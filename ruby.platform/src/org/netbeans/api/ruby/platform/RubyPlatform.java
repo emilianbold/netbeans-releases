@@ -46,7 +46,6 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
-import java.text.Collator;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -951,7 +950,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             return false;
         }
         final RubyPlatform other = (RubyPlatform) obj;
-        if (this.id != other.id && (this.id == null || !this.id.equals(other.id))) {
+        if ((this.interpreter == null) ? (other.interpreter != null) : !this.interpreter.equals(other.interpreter)) {
             return false;
         }
         return true;
@@ -959,19 +958,13 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 59 * hash + (this.id != null ? this.id.hashCode() : 0);
+        int hash = 3;
+        hash = 97 * hash + (this.interpreter != null ? this.interpreter.hashCode() : 0);
         return hash;
     }
 
     public int compareTo(final RubyPlatform other) {
-        int result = Collator.getInstance().compare(
-                getInfo().getLongDescription(), other.getInfo().getLongDescription());
-        if (result != 0) {
-            result = getInterpreter().compareTo(other.getInterpreter());
-        }
-        assert result != 0 : "same platform cannot be added twice: " + this + " vs. " + other;
-        return result;
+        return getInterpreter().compareTo(other.getInterpreter());
     }
 
     public @Override String toString() {

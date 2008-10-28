@@ -448,21 +448,8 @@ public final class NbMainExplorer extends CloneableTopComponent {
 
     /** @return The mode for main explorer on given workspace.
     * Creates explorer mode if no such mode exists on given workspace */
-    @SuppressWarnings("deprecation")
-    private static Mode explorerMode (org.openide.windows.Workspace workspace) {
-        Mode result = workspace.findMode("explorer"); // NOI18N
-        if (result == null) {
-            // create explorer mode on current workspace
-            String displayName = NbBundle.getBundle(NbMainExplorer.class).
-                                 getString("CTL_ExplorerTitle");
-            result = workspace.createMode(
-                         "explorer", // NOI18N
-                         displayName,
-                         NbMainExplorer.class.getResource(
-                             "/org/netbeans/core/resources/frames/explorer.gif" // NOI18N
-                         )
-                     );
-        }
+    private static Mode explorerMode() {
+        Mode result = WindowManager.getDefault().findMode("explorer"); // NOI18N
         return result;
     }
 
@@ -588,12 +575,11 @@ public final class NbMainExplorer extends CloneableTopComponent {
         }
 
         /** Ensures that component is valid before opening */
-        @SuppressWarnings("deprecation")
         @Override
-        public void open (org.openide.windows.Workspace workspace) {
+        public void open() {
             setValidRootContext();
 
-            super.open(workspace);
+            super.open();
         }
 
         /** Sets new root context to view. Name, icon, tooltip
@@ -873,17 +859,16 @@ public final class NbMainExplorer extends CloneableTopComponent {
             return getDefaultMainTab();
         }
 
-        @SuppressWarnings("deprecation")
         @Override
-        public void open (org.openide.windows.Workspace workspace) {
-            org.openide.windows.Workspace realWorkspace = (workspace == null)
-                                      ? WindowManager.getDefault().getCurrentWorkspace()
-                                      : workspace;
-            Mode ourMode = realWorkspace.findMode(this);
+        public void open() {
+            Mode ourMode = WindowManager.getDefault().findMode(this);
             if (ourMode == null) {
-                explorerMode(realWorkspace).dockInto(this);
+                ourMode = explorerMode();
+                if (ourMode != null) {
+                    ourMode.dockInto(this);
+                }
             }
-            super.open(workspace);
+            super.open();
         }
 
         /** Called when the explored context changes.

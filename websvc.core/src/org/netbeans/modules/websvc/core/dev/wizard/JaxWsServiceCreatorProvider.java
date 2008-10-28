@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.core.ServerType;
 import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;
 import org.openide.WizardDescriptor;
 import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 
 /**
  *
@@ -60,24 +61,26 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
     }
     
     public ServiceCreator getServiceCreator(Project project, WizardDescriptor wiz) {
-        ProjectInfo projectInfo = new ProjectInfo(project);
-        int projectType = projectInfo.getProjectType();
-        if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
-                ((Util.isJavaEE5orHigher(project) &&
-                (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)))
-                ) {
-            return new JaxWsServiceCreator(projectInfo, wiz, false);
-        } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
-            return new JaxWsServiceCreator(projectInfo, wiz, false);
-        } else if (!Util.isJavaEE5orHigher(project) &&
-                   (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
-                   if (!(projectInfo.isJsr109Supported()/* || projectInfo.isJsr109oldSupported()*/)) {                   
-                       boolean addLibraries = !projectInfo.isWsgenSupported() || !projectInfo.isWsimportSupported();
-                       return new JaxWsServiceCreator(projectInfo, wiz, addLibraries);
-                   } 
-                   if (ServerType.JBOSS == projectInfo.getServerType()) {
-                       return new JaxWsServiceCreator(projectInfo, wiz, false);
-                   }
+        if (JAXWSSupport.getJAXWSSupport(project.getProjectDirectory()) != null) {
+            ProjectInfo projectInfo = new ProjectInfo(project);
+            int projectType = projectInfo.getProjectType();
+            if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Util.isSourceLevel16orHigher(project)) ||
+                    ((Util.isJavaEE5orHigher(project) &&
+                    (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)))
+                    ) {
+                return new JaxWsServiceCreator(projectInfo, wiz, false);
+            } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
+                return new JaxWsServiceCreator(projectInfo, wiz, false);
+            } else if (!Util.isJavaEE5orHigher(project) &&
+                       (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
+                       if (!(projectInfo.isJsr109Supported()/* || projectInfo.isJsr109oldSupported()*/)) {                   
+                           boolean addLibraries = !projectInfo.isWsgenSupported() || !projectInfo.isWsimportSupported();
+                           return new JaxWsServiceCreator(projectInfo, wiz, addLibraries);
+                       } 
+                       if (ServerType.JBOSS == projectInfo.getServerType()) {
+                           return new JaxWsServiceCreator(projectInfo, wiz, false);
+                       }
+            }
         }
         return null;
     }

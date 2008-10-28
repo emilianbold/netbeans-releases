@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,50 +31,56 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.beaninfo;
+package org.openide.awt;
 
-import java.beans.*;
-import java.util.ResourceBundle;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+import java.awt.EventQueue;
+import java.util.logging.Level;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.netbeans.junit.Log;
+import static org.junit.Assert.*;
 
 /**
-*
-* @author jtulach
-*/
-public abstract class IndentEngine {
-    private IndentEngine () {}
-    /** Object that provides beaninfo for {@link DebuggerType.Default}.
-    *
-    * @author Jaroslav Tulach
-    */
-    public static class DefaultBeanInfo extends SimpleBeanInfo {
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
+ */
+public class AWTTaskTest {
+    @Test
+    public void testRun() throws Exception {
+        System.out.println("run");
 
-        public BeanDescriptor getBeanDescriptor () {
-            Class c;
-            try {
-                c = Class.forName("org.openide.text.IndentEngine$Default"); // NOI18N
-            } catch (Exception e) {
+        class R implements Runnable {
+            public void run() {
                 throw new IllegalStateException();
             }
-            BeanDescriptor descr = new BeanDescriptor (c);
-            ResourceBundle bundle = NbBundle.getBundle(IndentEngine.class);
-
-            descr.setDisplayName (bundle.getString("LAB_IndentEngineDefault"));
-            descr.setShortDescription (bundle.getString("HINT_IndentEngineDefault"));
-            return descr;
         }
+        R run = new R();
 
-        public BeanInfo[] getAdditionalBeanInfo () {
-            try {
-                return new BeanInfo[] { Introspector.getBeanInfo (org.openide.text.IndentEngine.class) };
-            } catch (IntrospectionException ie) {
-                Exceptions.printStackTrace(ie);
-                return null;
-            }
+        CharSequence log = Log.enable("org.openide.awt", Level.WARNING);
+        AWTTask instance = new AWTTask(run);
+
+        waitEQ();
+        assertTrue("Finished", instance.isFinished());
+
+        if (!log.toString().contains("IllegalStateException")) {
+            fail("There should be IllegalStateException:\n" + log);
         }
-
     }
+
+    static void waitEQ() throws Exception {
+        EventQueue.invokeAndWait(new Runnable() {
+            public void run() {
+            }
+        });
+    }
+
 }

@@ -70,6 +70,9 @@ public final class MetaElementHandler {
         return new MetaElementHandler(info);
     }
 
+    // FIXME ideally there should be something like nice CompletionRequest once public and stable
+    // then this class could implement some common interface
+    // FIXME SPI to plug here for Grails dynamic methods
     public Map<MethodSignature, ? extends CompletionItem> getMethods(String className,
             String prefix, int anchor) {
 

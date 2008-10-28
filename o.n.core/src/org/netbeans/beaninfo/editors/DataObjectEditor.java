@@ -314,7 +314,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
      * based on presence of specified cookies.
      */
     private static class CookieFilter implements DataFilter {
-        private Class[] cookieArray;
+        private Class<?>[] cookieArray;
         private DataFilter originalFilter;
 
         /** Just remember the cookie array and original filter.*/
@@ -338,7 +338,7 @@ public class DataObjectEditor extends PropertyEditorSupport implements ExPropert
                 }
             }
             for (int i = 0; i < cookieArray.length; i++) {
-                if (obj.getCookie(cookieArray[i]) == null) {
+                if (obj.getLookup().lookup(cookieArray[i]) == null) {
                     return false;
                 }
             }

@@ -107,8 +107,8 @@ public class J2eeRecoPrivTemplates implements RecommendedTemplates, PrivilegedTe
                 "servlet-types",        // NOI18N
                 "web-types",            // NOI18N
                 "web-types-server",     // NOI18N
-//                "web-services",         // NOI18N
-//                "web-service-clients",  // NOI18N
+                "web-services",         // NOI18N
+                "web-service-clients",  // NOI18N
     };
     
     private static final String[] WEB_PRIVILEGED_NAMES = new String[] {

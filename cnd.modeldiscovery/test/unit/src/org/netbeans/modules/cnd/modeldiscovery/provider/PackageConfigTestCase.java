@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,34 +31,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.beaninfo;
+package org.netbeans.modules.cnd.modeldiscovery.provider;
 
-import java.beans.*;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
-import org.openide.ServiceType;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
+/**
+ *
+ * @author Alexander Simon
+ */
+public class PackageConfigTestCase {
 
-/** BeanInfo for ServiceType. Has name property.
-* @author Jesse Glick
-*/
-public class ServiceTypeBeanInfo extends SimpleBeanInfo {
-
-    public PropertyDescriptor[] getPropertyDescriptors () {
-        try {
-            PropertyDescriptor name = new PropertyDescriptor ("name", ServiceType.class); // NOI18N
-            name.setDisplayName (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("PROP_ServiceType_name"));
-            name.setShortDescription (NbBundle.getBundle (ServiceTypeBeanInfo.class).getString ("HINT_ServiceType_name"));
-            // Is there an easier way to prevent this from appearing??
-            PropertyDescriptor helpCtx = new PropertyDescriptor ("helpCtx", ServiceType.class, "getHelpCtx", null); // NOI18N
-            helpCtx.setHidden (true);
-            return new PropertyDescriptor[] { name, helpCtx };
-        } catch (IntrospectionException ie) {
-            Exceptions.printStackTrace(ie);
-            return null;
-        }
+    public PackageConfigTestCase() {
     }
 
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    @Test
+    public void testMethod() {
+        PackageConfig pc = new PackageConfig();
+        //pc.traceConfig("gtk+-2.0");
+        //pc.traceRecursiveConfig("gtk+-2.0");
+        pc.trace();
+    }
 }

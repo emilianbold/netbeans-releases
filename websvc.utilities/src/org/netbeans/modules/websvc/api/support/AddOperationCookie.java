@@ -38,57 +38,26 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.api.support;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
 
-package org.netbeans.core.projects;
-
-import java.awt.Image;
-import java.beans.*;
-import org.netbeans.core.startup.layers.SystemFileSystem;
-import org.openide.util.Exceptions;
-
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
-
-/** Object that provides beaninfo for a SystemFileSystem.
-*
-* @author Ian Formanek
-* // JST-PENDING this bean info in not in right place...
-*/
-public class SystemFileSystemBeanInfo extends SimpleBeanInfo {
-
-    public BeanDescriptor getBeanDescriptor () {
-        BeanDescriptor descr = new BeanDescriptor (SystemFileSystem.class);
-        descr.setValue ("helpID", SystemFileSystem.class.getName ()); // NOI18N
-        return descr;
-    }
+/*
+ * Provides a facility for obtaining the addOperation feature
+ * for both JAX-WS and JAX-RPC web service.
+ */
+public interface AddOperationCookie extends Node.Cookie {
     
-    /** Provides the LocalFileSystem's icon */
-    public Image getIcon(int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return ImageUtilities.loadImage("org/netbeans/core/resources/systemFS.gif"); // NOI18N
-        else
-            return null;
-    }
-
-    public BeanInfo[] getAdditionalBeanInfo () {
-        BeanInfo[] beanInfos = new BeanInfo [1];
-        beanInfos[0] = new org.netbeans.beaninfo.FileSystemBeanInfo ();
-        return beanInfos;
-    }
-
-
-    /** Descriptor of valid properties
-    * @return array of properties
-    */
-    public PropertyDescriptor[] getPropertyDescriptors () {
-        try {
-            PropertyDescriptor[] desc = new PropertyDescriptor[1];
-            desc[0] = new PropertyDescriptor ("propagateMasks", SystemFileSystem.class, "getPropagateMasks", null);
-            desc[0].setHidden (true);
-    	    return desc;
-        } catch (IntrospectionException ie) {
-	    Exceptions.printStackTrace(ie);
-	    return null;
-        }
-    }
+    /**
+     * Adds a method definition to the the implementation class, possibly to SEI
+     */
+    public void addOperation(FileObject implementationClass);
+    
+    /**
+     * Determines if the Add Operation pop up menu should be enabled
+     * in the source editor.
+     * @param implClass Implementation class that is shown in the editor
+     */ 
+    public boolean isEnabled(FileObject implClass);
+    
 }

@@ -541,7 +541,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             counterPrepareDocument--;
                             if (isStrongSet && canReleaseDoc()) {
                                 isStrongSet = false;
-                                CloneableEditorSupport.this.doc.setStrong(false);
+                                if (CloneableEditorSupport.this.doc != null) {
+                                    CloneableEditorSupport.this.doc.setStrong(false);
+                                }
                             }
                             task.removeTaskListener(this);
                         }
@@ -760,7 +762,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 counterOpenDocument--;
                 if (isStrongSet && canReleaseDoc()) {
                     isStrongSet = false;
-                    this.doc.setStrong(false);
+                    if (this.doc != null) {
+                        this.doc.setStrong(false);
+                    }
                 }
             }
         }
@@ -855,7 +859,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterGetDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            this.doc.setStrong(false);
+                            if (this.doc != null) {
+                                this.doc.setStrong(false);
+                            }
                         }
                     }
                 }
@@ -2295,7 +2301,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return null;
         }
     }
-    
+
+    @Deprecated
     final Pane openReuse(final PositionRef pos, final int column, int mode) {
         if (mode == Line.SHOW_REUSE_NEW) lastReusable.clear();
         return openAtImpl(pos, column, true);
@@ -2398,7 +2405,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterOpenAtImpl--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            CloneableEditorSupport.this.doc.setStrong(false);
+                            if (CloneableEditorSupport.this.doc != null) {
+                                CloneableEditorSupport.this.doc.setStrong(false);
+                            }
                         }
                     }
                 }

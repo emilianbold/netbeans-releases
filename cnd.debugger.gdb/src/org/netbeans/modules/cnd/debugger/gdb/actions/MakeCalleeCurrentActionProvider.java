@@ -80,8 +80,8 @@ public class MakeCalleeCurrentActionProvider extends ActionsProviderSupport impl
         MakeCallerCurrentActionProvider.setCurrentCallStackFrameIndex(debugger, i-1);
     }
     
-    protected void checkEnabled(String debuggerState) {
-        if (GdbDebugger.STATE_STOPPED.equals(debuggerState)) {
+    protected void checkEnabled(GdbDebugger.State debuggerState) {
+        if (debuggerState == GdbDebugger.State.STOPPED) {
 	    int i = MakeCallerCurrentActionProvider.getCurrentCallStackFrameIndex(debugger);
 	    setEnabled(ActionsManager.ACTION_MAKE_CALLEE_CURRENT, i > 0);
         } else {

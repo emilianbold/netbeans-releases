@@ -163,7 +163,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     protected void setRequests() {
         String st = getState();
-        if (debugger.getState().equals(GdbDebugger.STATE_RUNNING) && !st.equals(BPSTATE_REVALIDATE)) {
+        if (debugger.getState() == GdbDebugger.State.RUNNING && !st.equals(BPSTATE_REVALIDATE)) {
             debugger.setSilentStop();
             setRunWhenValidated(true);
         }
@@ -221,7 +221,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
      * Called from set () and propertyChanged.
      */
     final void update() {
-        if (!debugger.getState().equals(GdbDebugger.STATE_NONE)) {
+        if (debugger.getState() != GdbDebugger.State.NONE) {
             setRequests();
         }
     }

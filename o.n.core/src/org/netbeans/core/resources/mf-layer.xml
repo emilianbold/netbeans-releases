@@ -45,22 +45,13 @@ made subject to such option by the copyright holder.
 <filesystem>
 
     <folder name="Services">
-        <folder name="NoOps">
-            <file name="NoIndentEngine.instance">
-                <attr name="instanceOf" stringvalue="org.openide.ServiceType,org.openide.text.IndentEngine,org.openide.text.IndentEngine$Default" />
-                <attr name="instanceClass" stringvalue="org.openide.text.IndentEngine$Default" />
-                <attr name="instanceCreate" methodvalue="org.openide.text.IndentEngine.getDefault" />
-            </file>
-        </folder>
-    
         <folder name="MIMEResolver"/>
-
         <folder name="Hidden">
             <attr name="hidden" boolvalue="true" />
             <file name="HtmlBrowserFactoryEditorForGeneralOptionsPanel.instance">
                 <attr name="instanceOf" stringvalue="org.netbeans.beaninfo.editors.HtmlBrowser$FactoryEditor"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.core.IDESettings.createHtmlBrowserFactoryEditor"/>
-            </file>                                
+            </file>
         </folder>
     </folder> 
 

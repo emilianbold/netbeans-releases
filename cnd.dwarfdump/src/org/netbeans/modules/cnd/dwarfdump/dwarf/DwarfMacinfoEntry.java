@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import java.io.PrintStream;
 
@@ -60,5 +61,13 @@ public class DwarfMacinfoEntry {
 
     public void dump(PrintStream out) {
         out.printf("%s\t%d\t[%d]\t%s\n", type, fileIdx, lineNum, definition); // NOI18N
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
 }

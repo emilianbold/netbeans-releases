@@ -64,7 +64,7 @@ import java.util.logging.Logger;
 */
 public abstract class Line extends Annotatable implements Serializable {
     /** generated Serialized Version UID */
-    static final long serialVersionUID = 9113186289600795476L;
+    private static final long serialVersionUID = 9113186289600795476L;
 
     static final Logger LOG = Logger.getLogger(Line.class.getName());
 
@@ -76,6 +76,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#NONE}
      * and {@link ShowVisibilityType#NONE} instead.
      */
+    @Deprecated
     public final static int SHOW_TRY_SHOW = 0;
 
     /** Opens the editor if necessary and shows the line.
@@ -83,6 +84,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
      * and {@link ShowVisibilityType#NONE} instead.
      */
+    @Deprecated
     public final static int SHOW_SHOW = 1;
 
     /** Opens the editor if necessary, shows the line, and takes the focus.
@@ -90,6 +92,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
      * and {@link ShowVisibilityType#FOCUS} instead.
      */
+    @Deprecated
     public final static int SHOW_GOTO = 2;
 
     /** Same as SHOW_GOTO except that the Window Manager attempts to front the
@@ -100,6 +103,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#OPEN}
      * and {@link ShowVisibilityType#FRONT} instead.
      */
+    @Deprecated
     public final static int SHOW_TOFRONT = 3;
 
     /** Takes the focus in case the editor is already opened and shows the line.
@@ -112,6 +116,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#REUSE}
      * and {@link ShowVisibilityType#FOCUS} instead.
      */
+    @Deprecated
     public final static int SHOW_REUSE = 4;
 
     /** Focuses or opens given editor, marking it as reusable editor if it
@@ -122,6 +127,7 @@ public abstract class Line extends Annotatable implements Serializable {
      * @deprecated Deprecated since 6.21. Use {@link ShowOpenType#REUSE_NEW}
      * and {@link ShowVisibilityType#FOCUS} instead.
      */
+    @Deprecated
     public final static int SHOW_REUSE_NEW = 5;
 
     /** ShowOpenType and ShowVisibilityType is replacement for constants SHOW_TRY_SHOW, SHOW_SHOW,

@@ -39,50 +39,15 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.beaninfo;
+package org.netbeans.modules.websvc.spi.support;
 
-import java.awt.Image;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
+import org.openide.filesystems.FileObject;
 
-import java.beans.*;
-import java.util.ResourceBundle;
-import org.openide.util.Exceptions;
-
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
-/** Object that provides beaninfo for all indentation engines.
-*
-* @author Jaroslav Tulach
-*/
-public class IndentEngineBeanInfo extends SimpleBeanInfo {
-
-    public BeanDescriptor getBeanDescriptor () {
-        BeanDescriptor descr = new BeanDescriptor (org.openide.text.IndentEngine.class);
-        ResourceBundle bundle = NbBundle.getBundle(IndentEngineBeanInfo.class);
-        descr.setDisplayName (bundle.getString ("LAB_IndentEngine")); // NOI18N
-        descr.setShortDescription (bundle.getString ("HINT_IndentEngine")); // NOI18N
-        descr.setValue("global", Boolean.TRUE); // NOI18N
-        
-        return descr;
-    }
-
-    public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (org.openide.ServiceType.class) };
-        } catch (IntrospectionException ie) {
-            Exceptions.printStackTrace(ie);
-            return null;
-        }
-    }
-
-    /**
-    * Return the icon
-    */
-    public Image getIcon(int type) {
-        if ((type == java.beans.BeanInfo.ICON_COLOR_16x16) || (type == java.beans.BeanInfo.ICON_MONO_16x16))
-            return ImageUtilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
-        else
-            return ImageUtilities.loadImage("org/netbeans/core/resources/indentEngines.gif"); // NOI18N
-    }
+/**
+ *
+ * @author mkuchtiak
+ */
+public interface AddOperationActionProvider {
+    public AddOperationCookie getAddOperationCookie(FileObject fileObject);
 }

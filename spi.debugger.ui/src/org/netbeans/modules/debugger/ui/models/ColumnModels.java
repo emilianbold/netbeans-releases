@@ -116,11 +116,7 @@ public class ColumnModels {
             return NbBundle.getBundle (ColumnModels.class).getString(displayName);
         }
 
-        public Character getDisplayedMnemonic() {
-            return new Character(NbBundle.getBundle(ColumnModels.class).
-                    getString(displayName+"_Mnc").charAt(0));   // NOI18N
-        }
-        
+        @Override
         public String getShortDescription() {
             return NbBundle.getBundle (ColumnModels.class).getString(shortDescription);
         }
@@ -134,6 +130,7 @@ public class ColumnModels {
          *
          * @param visible set true if column is visible
          */
+        @Override
         public void setVisible (boolean visible) {
             properties.setBoolean (getID () + ".visible", visible);
         }
@@ -143,6 +140,7 @@ public class ColumnModels {
          *
          * @param sorted set true if column should be sorted by default 
          */
+        @Override
         public void setSorted (boolean sorted) {
             if (sortable) {
                 properties.setBoolean (getID () + ".sorted", sorted);
@@ -155,6 +153,7 @@ public class ColumnModels {
          * @param sortedDescending set true if column should be 
          *        sorted by default in descending order
          */
+        @Override
         public void setSortedDescending (boolean sortedDescending) {
             if (sortable) {
                 properties.setBoolean (
@@ -169,6 +168,7 @@ public class ColumnModels {
          *
          * @return current order number of this column
          */
+        @Override
         public int getCurrentOrderNumber () {
             return properties.getInt (getID () + ".currentOrderNumber", -1);
         }
@@ -178,6 +178,7 @@ public class ColumnModels {
          *
          * @param newOrderNumber new order number
          */
+        @Override
         public void setCurrentOrderNumber (int newOrderNumber) {
             properties.setInt (
                 getID () + ".currentOrderNumber",
@@ -190,6 +191,7 @@ public class ColumnModels {
          *
          * @return column width of this column
          */
+        @Override
         public int getColumnWidth () {
             return properties.getInt (getID () + ".columnWidth", 150);
         }
@@ -199,6 +201,7 @@ public class ColumnModels {
          *
          * @param newColumnWidth a new column width
          */
+        @Override
         public void setColumnWidth (int newColumnWidth) {
             properties.setInt (getID () + ".columnWidth", newColumnWidth);
         }
@@ -208,10 +211,12 @@ public class ColumnModels {
          *
          * @return true if column should be visible by default
          */
+        @Override
         public boolean isVisible () {
             return properties.getBoolean (getID () + ".visible", defaultVisible);
         }
         
+        @Override
         public boolean isSortable() {
             return sortable;
         }
@@ -221,6 +226,7 @@ public class ColumnModels {
          *
          * @return true if column should be sorted by default
          */
+        @Override
         public boolean isSorted () {
             if (sortable) {
                 return properties.getBoolean (getID () + ".sorted", false);
@@ -235,6 +241,7 @@ public class ColumnModels {
          * @return true if column should be sorted by default in descending 
          * order
          */
+        @Override
         public boolean isSortedDescending () {
             if (sortable) {
                 return properties.getBoolean (
@@ -254,6 +261,7 @@ public class ColumnModels {
          * @return {@link java.beans.PropertyEditor} to be used for 
          *         this column
          */
+        @Override
         public PropertyEditor getPropertyEditor() {
             return propertyEditor;
         }
