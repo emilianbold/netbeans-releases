@@ -57,7 +57,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.ejb.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
@@ -83,7 +84,7 @@ import org.netbeans.modules.j2ee.dd.spi.webservices.WebservicesMetadataModelFact
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 
 
@@ -120,7 +121,7 @@ public final class EjbJarProvider extends J2eeModuleProvider
         if (metaInfFo != null) {
             ddFO = metaInfFo.getFileObject(FILE_DD);
         }
-        if (ddFO == null && !ProjectProperties.JAVA_EE_5.equals(getJ2eePlatformVersion())) {
+        if (ddFO == null && !J2EEProjectProperties.JAVA_EE_5.equals(getJ2eePlatformVersion())) {
             // ...generate the DD from template...
         }
         return ddFO;
@@ -159,8 +160,8 @@ public final class EjbJarProvider extends J2eeModuleProvider
 
     /** Package-private for unit test only. */
     static boolean needConfigurationFolder(final String version) {
-        return ProjectProperties.J2EE_1_3.equals(version) ||
-                ProjectProperties.J2EE_1_4.equals(version);
+        return J2EEProjectProperties.J2EE_1_3.equals(version) ||
+                J2EEProjectProperties.J2EE_1_4.equals(version);
     }
     
     public File getMetaInfAsFile() {
