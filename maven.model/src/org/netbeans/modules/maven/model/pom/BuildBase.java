@@ -94,6 +94,8 @@ public interface BuildBase extends POMComponent {
     public void addPlugin(Plugin plugin);
     public void removePlugin(Plugin plugin);
 
+    Plugin findPluginById(String groupId, String artifactId);
+
     /**
      * POM RELATED PROPERTY
      * @return
