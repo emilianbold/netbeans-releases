@@ -386,14 +386,14 @@
 
 	<!--
 	<set property="glassfish-mod.milestone.number"      value="28"/>
-	<set property="glassfish-mod.milestone.number.real" value="28b"/>
+	<set property="glassfish-mod.milestone.number.real" value="28c"/>
 	<set property="glassfish-mod.build.type"            value="prelude"/>
 
 	<if property="gf-mod.build.type" value="">
-	    <set property="glassfish-mod.build.number"          value="20081017"/>
+	    <set property="glassfish-mod.build.number"          value="20081022"/>
 	</if>
 	<if property="gf-mod.build.type" value="ml">
-	    <set property="glassfish-mod.build.number"          value="20081017"/>
+	    <set property="glassfish-mod.build.number"          value="20081022"/>
 	</if>
 	-->
 
