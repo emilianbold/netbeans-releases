@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -81,7 +82,7 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
-    private final LinkedList<CommandInfo> tokenList = new LinkedList<CommandInfo>();
+    private final List<CommandInfo> tokenList = Collections.synchronizedList(new LinkedList<CommandInfo>());
     
     //TODO: int may not be enough here, consider using long
     private int nextToken = MIN_TOKEN;
@@ -277,7 +278,7 @@ public class GdbProxyEngine {
         return token;
     }
 
-    private void sendCommand(int token, String cmd) {
+    private synchronized void sendCommand(int token, String cmd) {
         if (active) {
             String time = CommandBuffer.getTimePrefix(timerOn);
             if (cmd.charAt(0) != '-') {
