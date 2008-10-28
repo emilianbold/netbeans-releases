@@ -53,6 +53,9 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
@@ -86,6 +89,7 @@ public class LogReader {
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
                 BufferedReader in = new BufferedReader(new FileReader(file));
                 long length = file.length();
                 long read = 0;
@@ -111,7 +115,7 @@ public class LogReader {
                         }
                         line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                     }
-                    line = trimBackApostropheCalls(line);
+                    line = trimBackApostropheCalls(line, pkgConfig);
 
                     String[] cmds = pattern.split(line);
                     for (int i = 0; i < cmds.length; i++) {
@@ -322,7 +326,8 @@ public class LogReader {
        return false;
     }
 
-    private static String trimBackApostropheCalls(String line) {
+    private static final String PKG_CONFIG_PATTERN = "pkg-config --cflags "; //NOI18N
+    private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
         int i = line.indexOf('`');
         if (line.lastIndexOf('`') == i) { // do not trim unclosed `quotes`
             return line;
@@ -336,8 +341,22 @@ public class LogReader {
             if (j < 0) {
                 return line;
             }
+            String pkg = line.substring(0,j);
+            if (pkg.startsWith(PKG_CONFIG_PATTERN)) { //NOI18N
+                pkg = pkg.substring(PKG_CONFIG_PATTERN.length());
+                PackageConfiguration pc = pkgConfig.getPkgConfig(pkg);
+                if (pc != null) {
+                    for(String p : pc.getIncludePaths()){
+                        out +=" -I"+p;
+                    }
+                    for(String p : pc.getMacros()){
+                        out +=" -D"+p;
+                    }
+                    out +=" ";
+                }
+            }
             out += line.substring(j+1);
-            return trimBackApostropheCalls(out);
+            return trimBackApostropheCalls(out, pkgConfig);
         }
     }
     
