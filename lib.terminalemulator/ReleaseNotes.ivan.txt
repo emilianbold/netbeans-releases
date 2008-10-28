@@ -1,3 +1,32 @@
+================================================================================
+nobugid (Term and ActiveTerm support for hyperlinks)
+	Term will now recognize the sequence 
+		<ESC>]10;<clientData>;<text><BEL>;
+	as analogous to 
+		<a href="clientData">text</a>
+	and create hyperlinks.
+
+	See http://wiki.netbeans.org/TerminalEmulatorHyperlinking for
+	usage details.
+
+	In addition to interpretation of the sequence in InterpDtTerm
+	and it's implementation in Term.op_hyperlink ...
+
+	This required a bit of support internally to help save and
+	restore text attributes of regions enclosing hyperlinks:
+		ActiveRegion.getParentAttrs()
+		ActiveRegion.setParentAttrs()
+		Term.attrSave()
+		Term.attrRestore()
+
+nobugid (de-publicize RegionManager)
+
+24760 (Eye candy for hyperlink navigation.)
+	Partial fix.
+	When the mouse hovers over a hyperlink the cursor shape changes to
+	a pointing finger.
+
+================================================================================
 nobugid (TermSupport works on solaris now)
 	- OS.UNIX -> OS.LINUX + OS.SOLARIS
 	- JNAPty needs to do some ioctl(I_PUSH's) only on solaris.
