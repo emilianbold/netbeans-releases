@@ -79,7 +79,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
  *    tell low level to send a signal to the application to interrupt the execution
  *    tell low level to kill the debugger
  */
-public class GdbProxy implements GdbMiDefinitions {
+public class GdbProxy {
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
@@ -361,7 +361,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * If it is, stop at the first instruction of the called function.
      */
     public void exec_step() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_STEP);
+        debugger.setLastGo(GdbDebugger.LastGoState.STEP);
         engine.sendCommand("-exec-step"); // NOI18N
     }
 
@@ -371,7 +371,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * when the beginning of the next source line is reached.
      */
     public void exec_next() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_NEXT);
+        debugger.setLastGo(GdbDebugger.LastGoState.NEXT);
         engine.sendCommand("-exec-next"); // NOI18N
     }
     
@@ -379,6 +379,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * Execute single instruction
      */
     public void exec_step_instruction() {
+        // TODO: don't we need to set last go state here?
         engine.sendCommand("-exec-step-instruction"); // NOI18N
     }
 
@@ -386,6 +387,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * Execute next instruction
      */
     public void exec_next_instruction() {
+        // TODO: don't we need to set last go state here?
         engine.sendCommand("-exec-next-instruction"); // NOI18N
     }
 
@@ -395,7 +397,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * the current function is exited.
      */
     public void exec_finish() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_FINISH);
+        debugger.setLastGo(GdbDebugger.LastGoState.FINISH);
         engine.sendCommand("-exec-finish"); // NOI18N
     }
 
@@ -405,7 +407,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * breakpoint is encountered, or until the inferior exits.
      */
     public void exec_continue() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_CONTINUE);
+        debugger.setLastGo(GdbDebugger.LastGoState.CONTINUE);
         engine.sendCommand("-exec-continue"); // NOI18N
     }
 
@@ -416,7 +418,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * with sending a signal "INT" (Unix) or signal TSTP (Windows).
      */
     public void exec_interrupt() {
-        if (debugger.getState().equals(GdbDebugger.STATE_RUNNING) || debugger.getState().equals(GdbDebugger.STATE_SILENT_STOP)) {
+        if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
             if (Utilities.isWindows()) {
                 debugger.kill(18);
             } else {
@@ -614,7 +616,7 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command tells gdb to execute inferior program with console.
      */
     public void set_new_console() {
-        engine.sendCommand(CLI_CMD_SET_NEW_CONSOLE);
+        engine.sendCommand("set new-console"); // NOI18N
     }
 
     /**

@@ -168,7 +168,7 @@ public class BreakpointOutput extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {
         synchronized (lock) {
             if (debugger == null || !evt.getPropertyName().equals(GdbDebugger.PROP_STATE) ||
-                        !debugger.getState().equals(GdbDebugger.STATE_RUNNING)) {
+                        debugger.getState() != GdbDebugger.State.RUNNING) {
                 return;
             }
         }
