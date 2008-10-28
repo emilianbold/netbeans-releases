@@ -1,4 +1,14 @@
 ================================================================================
+151644 (Return of the terminalemulator)
+	Second large chunk of work.
+	Additional functionality and a more conventional module and pkg 
+	organization.
+
+	See
+	http://wiki.netbeans.org/TerminalEmulator
+	http://wiki.netbeans.org/TerminalEmulatorDemoModuleOrg
+
+================================================================================
 nobugid (Term and ActiveTerm support for hyperlinks)
 	Term will now recognize the sequence 
 		<ESC>]10;<clientData>;<text><BEL>;
