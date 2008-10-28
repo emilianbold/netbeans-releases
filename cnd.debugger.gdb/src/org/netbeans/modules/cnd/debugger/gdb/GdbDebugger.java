@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -516,6 +517,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         return sig;
     }
 
+    // TODO: use IPEUtils
     private String getFullPath(String rundir, String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
             return path;
@@ -698,7 +700,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (ep.equals(exepath)) { // NOI18N
                     return true;
                 } else if (ep.startsWith("/cygdrive/") && ep.charAt(11) == '/') { // NOI18N
-                    String lc_exepath = exepath.toLowerCase();
+                    // TODO: use win2UnixPath method or smth like IPEUtils
+                    String lc_exepath = exepath.toLowerCase().replace('\\', '/');
                     ep = ep.substring(10, 11).toLowerCase() + ':' + ep.substring(11).toLowerCase();
                     if (ep.equals(lc_exepath) || ep.equals(lc_exepath + ".exe")) { // NOI18N
                         return true;
@@ -1987,8 +1990,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
             MakeArtifact ma = new MakeArtifact(mcd, conf);
-            String runDirectory = conf.getProfile().getRunDirectory().replace("\\", "/");  // NOI18N
-            String path = runDirectory + '/' + ma.getOutput();
+            String runDirectory = conf.getProfile().getRunDirectory();
+            String path = IpeUtils.toAbsolutePath(runDirectory, ma.getOutput());
             if (isExecutableOrSharedLibrary(conf, path)) {
                 ProjectActionEvent pae = new ProjectActionEvent(
                         project,
