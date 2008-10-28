@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.java.api.common</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.apache.tools.ant.module</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -69,12 +78,28 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.projectuiapi</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.queries</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.11</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.actions</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -133,6 +158,14 @@
                         <specification-version>7.11</specification-version>
                     </run-dependency>
                 </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
             </module-dependencies>
             <test-dependencies>
                 <test-type>
@@ -178,6 +211,11 @@
                 <friend>org.netbeans.modules.xtest</friend>
                 <package>org.netbeans.modules.java.api.common</package>
                 <package>org.netbeans.modules.java.api.common.ant</package>
+                <package>org.netbeans.modules.java.api.common.classpath</package>
+                <package>org.netbeans.modules.java.api.common.project</package>
+                <package>org.netbeans.modules.java.api.common.project.ui</package>
+                <package>org.netbeans.modules.java.api.common.project.ui.customizer</package>
+                <package>org.netbeans.modules.java.api.common.project.ui.wizards</package>
                 <package>org.netbeans.modules.java.api.common.queries</package>
                 <package>org.netbeans.modules.java.api.common.ui</package>
                 <package>org.netbeans.modules.java.api.common.util</package>

@@ -63,8 +63,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -76,6 +76,7 @@ import org.netbeans.modules.j2ee.earproject.ui.actions.AddModuleAction;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.J2eeProjectView;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ActionProvider;
@@ -487,7 +488,7 @@ public class J2eeArchiveLogicalViewProvider implements LogicalViewProvider {
                 String j2eeSpec = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).
                         getProperty(EarProjectProperties.J2EE_PLATFORM);
                 if (j2eeSpec == null) {
-                    j2eeSpec = ProjectProperties.JAVA_EE_5; // NOI18N
+                    j2eeSpec = J2EEProjectProperties.JAVA_EE_5; // NOI18N
                     Logger.getLogger(J2eeArchiveLogicalViewProvider.class.getName()).warning(
                             "project ["+project.getProjectDirectory()+"] is missing "+EarProjectProperties.J2EE_PLATFORM+". " + // NOI18N
                             "default value will be used instead: "+j2eeSpec); // NOI18N

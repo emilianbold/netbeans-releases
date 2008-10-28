@@ -110,7 +110,6 @@ public class BinaryForSourceQueryImplTest extends NbTestCase {
         result = BinaryForSourceQuery.findBinaryRoots(sources.getURL());        
         assertEquals("Project build folder must have source folder", 1, result.getRoots().length);
         assertEquals("Project build folder must have source folder",buildClasses.getURL(),result.getRoots()[0]);        
-        assertEquals(BinaryForSourceQueryImpl.R.class, result.getClass());
         BinaryForSourceQuery.Result result2 = BinaryForSourceQuery.findBinaryRoots(sources.getURL());
         assertTrue (result == result2);
     }               
