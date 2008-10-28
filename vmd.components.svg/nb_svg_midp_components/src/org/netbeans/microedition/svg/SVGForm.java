@@ -27,6 +27,7 @@ import javax.microedition.m2g.SVGImage;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGRect;
 
@@ -118,6 +119,19 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     }
     
     private class SvgFormEventListener implements SVGEventListener {
+        
+        /**
+         * Value in milliseconds that is used for determination
+         * event with multiple click count.
+         * If two clicks on the same point was less then 
+         * <code>MILLIS_ON_CLICK</code> seconds then 
+         * there will be generated PointerEvent with incremented 
+         * click count.
+         * Otherwise there will be just separate PointerEvents with
+         * click count equals to 1. 
+         */
+        private int MILLIS_ON_CLICK = 300;
+        
         public void keyPressed( int keyCode ) {
             synchronized (SVGForm.this) {
                 if (focusedComponent != null) {
@@ -177,13 +191,28 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         }
         
         public void pointerPressed(int x, int y) {
+            long currentTime = System.currentTimeMillis();
+            if ( myLastEvent != null && x == myLastEvent.getX() 
+                    && y == myLastEvent.getY() && 
+                    ( currentTime - myLastEvent.getWhen()) <= MILLIS_ON_CLICK)
+            {
+                SVGComponent component = myLastEvent.getComponent();
+                component.getInputHandler().handlePointerPress( 
+                        new PointerEvent(component, x, y, 
+                                myLastEvent.getClickCount() +1));
+                return;
+            }
+            else {
+                myLastEvent = null;
+            }
             synchronized(SVGForm.this){
                 Enumeration en = components.elements();
                 while ( en.hasMoreElements() ){
                     SVGComponent next = (SVGComponent)en.nextElement();
                     SVGRectangle rectangle = next.getBounds();
                     if ( rectangle != null && rectangle.contains(x, y)){
-                        next.getInputHandler().handlePointerPress( next, x, y);
+                        next.getInputHandler().handlePointerPress( 
+                                new PointerEvent(next, x, y));
                         return;
                     }
                 }
@@ -191,13 +220,29 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         }
         
         public void pointerReleased(int x, int y) {
+            long currentTime = System.currentTimeMillis();
+            if ( myLastEvent != null && x == myLastEvent.getX() 
+                    && y == myLastEvent.getY() && 
+                    ( currentTime - myLastEvent.getWhen()) <= MILLIS_ON_CLICK)
+            {
+                SVGComponent component = myLastEvent.getComponent();
+                myLastEvent = new PointerEvent(component, x, y, 
+                        myLastEvent.getClickCount() +1);
+                component.getInputHandler().handlePointerRelease( myLastEvent );
+                return;
+            }
+            else {
+                myLastEvent = null;
+            }
             synchronized(SVGForm.this){
                 Enumeration en = components.elements();
                 while ( en.hasMoreElements() ){
                     SVGComponent next = (SVGComponent)en.nextElement();
                     SVGRectangle rectangle = next.getBounds();
                     if ( rectangle != null && rectangle.contains(x, y)){
-                        next.getInputHandler().handlePointerRelease( next, x, y);
+                        myLastEvent = new PointerEvent(next, x, y);
+                        next.getInputHandler().handlePointerRelease( 
+                                myLastEvent);
                         return;
                     }
                 }
@@ -212,6 +257,8 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         
         public void sizeChanged(int width, int height) {
         }
+        
+        private PointerEvent myLastEvent;
     }
 
 }

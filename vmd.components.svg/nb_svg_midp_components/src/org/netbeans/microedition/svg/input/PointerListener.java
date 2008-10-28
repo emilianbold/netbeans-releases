@@ -47,8 +47,8 @@ package org.netbeans.microedition.svg.input;
  */
 public interface PointerListener {
 
-    void pointerPressed(int x, int y);
+    void pointerPressed(PointerEvent event);
     
-    void pointerReleased(int x, int y);
+    void pointerReleased(PointerEvent event);
     
 }

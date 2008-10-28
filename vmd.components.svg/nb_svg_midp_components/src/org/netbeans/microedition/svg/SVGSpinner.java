@@ -46,6 +46,7 @@ import java.util.Vector;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
@@ -365,40 +366,40 @@ public class SVGSpinner extends SVGComponent implements DataListener {
             return ret;
         }
         
-        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+        public void handlePointerPress( PointerEvent event ) {
             SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
-            if( rect != null && rect.getX()<= x && 
-                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
-                    rect.getY() + rect.getHeight() >=y )
-            {
-                pressUpButton();
+            if( rect != null ) {
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    pressUpButton();
+                }
             }
             rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
-            if( rect != null && rect.getX()<= x && 
-                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
-                    rect.getY() + rect.getHeight() >=y )
-            {
-                pressDownButton();
+            if( rect != null ){
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    pressDownButton();
+                }
             }
-            super.handlePointerPress(comp, x, y);
+            super.handlePointerPress(event);
         }
         
-        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+        public void handlePointerRelease( PointerEvent event ) {
             SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
-            if( rect != null && rect.getX()<= x && 
-                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
-                    rect.getY() + rect.getHeight() >=y )
-            {
-                releaseUpButton();
+            if( rect != null ) {
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    releaseUpButton();
+                }
             }
             rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
-            if( rect != null && rect.getX()<= x && 
-                    rect.getX() +rect.getWidth() >= x && rect.getY()<=y &&
-                    rect.getY() + rect.getHeight() >=y )
-            {
-                releaseDownButton();
+            if( rect != null ){
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    releaseDownButton();
+                }
             }
-            super.handlePointerRelease(comp, x, y);
+            super.handlePointerRelease(event);
         }
         
     }

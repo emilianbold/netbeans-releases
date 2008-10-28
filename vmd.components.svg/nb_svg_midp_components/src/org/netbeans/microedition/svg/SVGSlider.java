@@ -41,6 +41,7 @@
 package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
@@ -208,24 +209,26 @@ public class SVGSlider extends SVGComponent {
             return ret;
         }
         
-        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+        public void handlePointerPress( PointerEvent event ) {
             SVGRect rect = myKnobElement.getScreenBBox();
             if ( rect == null ){
-                super.handlePointerPress(comp, x, y);
+                super.handlePointerPress(event);
                 return;
             }
             myStartKnobX = rect.getX();
             myStartKnobY = rect.getY();
-            if ( myStartKnobX <= x && myStartKnobX +rect.getWidth()>= x ){
+            if ( myStartKnobX <= event.getX() && 
+                    myStartKnobX +rect.getWidth()>= event.getX() )
+            {
                 isKnobPressed = true;
             }
-            super.handlePointerPress(comp, x, y);
+            super.handlePointerPress(event);
         }
         
-        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+        public void handlePointerRelease( PointerEvent event ) {
             SVGRect rect = myKnobElement.getScreenBBox();
             if ( rect == null ){
-                super.handlePointerRelease(comp, x, y);
+                super.handlePointerRelease( event );
                 return;
             }
             float knobX = rect.getX();
@@ -233,19 +236,19 @@ public class SVGSlider extends SVGComponent {
                 isKnobPressed = false;
                 SVGRect ruleRect = myRuleElement.getScreenBBox();
                 if ( ruleRect == null ){
-                    super.handlePointerRelease(comp, x, y);
+                    super.handlePointerRelease(event);
                     return;
                 }
-                float factor = (x-ruleRect.getX())/ruleRect.getWidth();
+                float factor = (event.getX()-ruleRect.getX())/ruleRect.getWidth();
                 setValue(myMin + (int)(factor*(myMax - myMin)));
             }
-            else if ( knobX > x ){
+            else if ( knobX > event.getX() ){
                 setValue( Math.max( myMin , myValue - myStep ) );
             }
             else {
                 setValue(  Math.min( myMax , myValue + myStep ) );
             }
-            super.handlePointerRelease(comp, x, y);
+            super.handlePointerRelease(event);
         }
         
         private boolean isKnobPressed;
