@@ -47,22 +47,22 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.spi.viewmodel</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.openide.util</code-name-base>
+                    <code-name-base>org.netbeans.swing.outline</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
-                    <code-name-base>org.openide.nodes</code-name-base>
+                <dependency>
+                    <code-name-base>org.openide.awt</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>6.2</specification-version>
+                        <specification-version>7.3</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
+                <dependency>
                     <code-name-base>org.openide.explorer</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -70,7 +70,23 @@ made subject to such option by the copyright holder.
                         <specification-version>6.8</specification-version>
                     </run-dependency>
                 </dependency>
-            <dependency>
+                <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.util</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.2</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.windows</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>

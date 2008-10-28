@@ -53,6 +53,7 @@ import org.netbeans.spi.viewmodel.ModelEvent;
 import org.netbeans.spi.viewmodel.ModelListener;
 
 import org.netbeans.spi.viewmodel.Models.TreeFeatures;
+import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.TreeView;
 import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.Children;
@@ -86,6 +87,12 @@ public class TreeModelRoot implements ModelListener {
     public TreeModelRoot (Models.CompoundModel model, TreeView treeView) {
         this.model = model;
         this.treeFeatures = new DefaultTreeFeatures(treeView);
+        model.addModelListener (this);
+    }
+
+    public TreeModelRoot (Models.CompoundModel model, OutlineView outlineView) {
+        this.model = model;
+        this.treeFeatures = new DefaultTreeFeatures(outlineView);
         model.addModelListener (this);
     }
     
@@ -198,6 +205,7 @@ public class TreeModelRoot implements ModelListener {
     private final class DefaultTreeFeatures extends TreeFeatures implements TreeExpansionListener {
         
         private TreeView view;
+        private OutlineView outline;
         
         private DefaultTreeFeatures (TreeView view) {
             this.view = view;
@@ -212,18 +220,27 @@ public class TreeModelRoot implements ModelListener {
             }
             tree.addTreeExpansionListener(this);
         }
+
+        private DefaultTreeFeatures (OutlineView view) {
+            this.outline = view;
+            view.addTreeExpansionListener(this);
+        }
         
         public void destroy() {
-            JTree tree;
-            try {
-                java.lang.reflect.Field treeField = TreeView.class.getDeclaredField("tree");
-                treeField.setAccessible(true);
-                tree = (JTree) treeField.get(view);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                return ;
+            if (outline != null) {
+                outline.removeTreeExpansionListener(this);
+            } else {
+                JTree tree;
+                try {
+                    java.lang.reflect.Field treeField = TreeView.class.getDeclaredField("tree");
+                    treeField.setAccessible(true);
+                    tree = (JTree) treeField.get(view);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    return ;
+                }
+                tree.removeTreeExpansionListener(this);
             }
-            tree.removeTreeExpansionListener(this);
         }
         
         /**
@@ -237,7 +254,12 @@ public class TreeModelRoot implements ModelListener {
         ) {
             Node n = findNode (node);
             if (n == null) return false; // Something what does not exist is not expanded ;-)
-            return view.isExpanded (n);
+            if (outline != null) {
+                return outline.isExpanded(n);
+            } else {
+                return view.isExpanded (n);
+            }
+
         }
 
         /**
@@ -249,9 +271,13 @@ public class TreeModelRoot implements ModelListener {
             Object node
         ) {
             Node n = findNode (node);
-            if (n != null)
-                view.expandNode (n);
-
+            if (n != null) {
+                if (outline != null) {
+                    outline.expandNode(n);
+                } else {
+                    view.expandNode (n);
+                }
+            }
         }
 
         /**
@@ -263,8 +289,13 @@ public class TreeModelRoot implements ModelListener {
             Object node
         ) {
             Node n = findNode (node);
-            if (n != null)
-                view.collapseNode (n);
+            if (n != null) {
+                if (outline != null) {
+                    outline.collapseNode(n);
+                } else {
+                    view.collapseNode (n);
+                }
+            }
         }
         
         /**

@@ -37,10 +37,7 @@
 package org.netbeans.installer.utils.system;
 
 import java.io.IOException;
-import org.netbeans.installer.utils.LogManager;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
-import org.netbeans.installer.utils.helper.ExecutionResults;
 import org.netbeans.installer.utils.helper.Platform;
 /**
  *
@@ -87,26 +84,10 @@ public class SolarisNativeUtils extends UnixNativeUtils {
         initializeForbiddenFiles(FORBIDDEN_DELETING_FILES_SOLARIS);
     }
     @Override
-
-    protected Platform getPlatform() {
+    protected Platform getPlatform() {        
         final String osArch = System.getProperty("os.arch");
-
-        String systemArch = "";
-        try {
-            ExecutionResults er = SystemUtils.executeCommand("isainfo", "-k");
-            systemArch = StringUtils.splitByLines(er.getStdOut())[0];
-        } catch (IOException e) {
-            LogManager.log(e);
-        }
-
-        if (osArch.equals("sparcv9") || systemArch.equals("sparcv9")) {
-            return Platform.SOLARIS_SPARCV9;
-        } else if (osArch.equals("sparc")) {
-            return Platform.SOLARIS_SPARC;
-        } else if (osArch.equals("amd64") || systemArch.equals("amd64")) { // ????? not sure about that value
-            return Platform.SOLARIS_X64;
-        } else {
-            return Platform.SOLARIS_X86;
-        }
+        return osArch.contains("sparc") ? 
+            Platform.SOLARIS_SPARC : 
+            Platform.SOLARIS_X86;
     }
 }

@@ -66,6 +66,7 @@ import org.netbeans.spi.viewmodel.Models.TreeFeatures;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.ErrorManager;
 
+import org.openide.awt.Actions;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -938,7 +939,7 @@ public class TreeModelNode extends AbstractNode {
             super (
                 columnModel.getID (),
                 (columnModel.getType() == null) ? String.class : columnModel.getType (),
-                columnModel.getDisplayName (),
+                Actions.cutAmpersand(columnModel.getDisplayName ()),
                 columnModel.getShortDescription (), 
                 true,
                 true
