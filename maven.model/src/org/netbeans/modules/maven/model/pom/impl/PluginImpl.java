@@ -157,6 +157,19 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
         setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
     }
+
+    public PluginExecution findExecutionById(String id) {
+        assert id != null;
+        java.util.List<PluginExecution> execs = getExecutions();
+        if (execs != null) {
+            for (PluginExecution e : execs) {
+                if (id.equals(e.getId())) {
+                    return e;
+                }
+            }
+        }
+        return null;
+    }
     
     public static class List extends ListImpl<Plugin> {
         public List(POMModel model, Element element) {

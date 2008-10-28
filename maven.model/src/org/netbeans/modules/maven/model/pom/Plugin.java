@@ -71,6 +71,7 @@ public interface Plugin extends VersionablePOMComponent {
     List<PluginExecution> getExecutions();
     void addExecution(PluginExecution execution);
     void removeExecution(PluginExecution execution);
+    PluginExecution findExecutionById(String id);
 
     /**
      * POM RELATED PROPERTY
