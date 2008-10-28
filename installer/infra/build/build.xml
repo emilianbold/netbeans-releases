@@ -275,7 +275,7 @@
 
 
 	<set property="nb.full.version"
-             value="7.0.0.${nb.build.type.number}.${build.number}"/>
+             value="7.0.0.0.${build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -948,7 +948,17 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-    <target name="build-nb-product">
+    <target name="build-nb-product" depends="build-nb-product-default-mapping,build-nb-product-custom-mapping"/>
+
+    <target name="build-nb-product-default-mapping" unless="use.custom.package.data.mapping">
+	<antcall target="build-product">
+	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
+            <param name="product.packaged.data.file"            value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar"/>
+	    <param name="product.packaged.data.properties.file" value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar.properties"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-product-custom-mapping" if="use.custom.package.data.mapping">
 	<antcall target="build-product">
 	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
         </antcall>
@@ -1002,6 +1012,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-javame">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javame"/>
+	    <param name="use.custom.package.data.mapping" value="1"/>
         </antcall>
     </target>
 
