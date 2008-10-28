@@ -64,6 +64,8 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JScrollPane;
+import javax.swing.event.AncestorEvent;
+import javax.swing.event.AncestorListener;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -89,6 +91,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -631,39 +634,40 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             if (e.getValueIsAdjusting()) {
                 return;
             }
-            this.handleImageSelectionChange();
+            TiledLayerDialog.this.handleImageStateChange();
         }
 
-        private void handleImageSelectionChange() {
-            TiledLayerDialog.this.sliderWidth.setEnabled(true);
-            TiledLayerDialog.this.sliderHeight.setEnabled(true);
-            String errMsg = null;
-
-            errMsg = TiledLayerDialog.this.getFieldLayerNameError();
-            try {
-                TiledLayerDialog.this.loadImagePreview();
-            } catch (MalformedURLException e) {
-                errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
-                e.printStackTrace();
-            } catch (IllegalArgumentException iae) {
-                errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
-                iae.printStackTrace();
-            }
-
-            if (errMsg == null) {
-                errMsg = TiledLayerDialog.this.getFieldImageFileNameError();
-            }
-
-            if (errMsg != null) {
-                TiledLayerDialog.this.labelError.setText(errMsg);
-                TiledLayerDialog.this.setOKButtonEnabled(false);
-            } else {
-                TiledLayerDialog.this.labelError.setText("");
-                TiledLayerDialog.this.setOKButtonEnabled(true);
-            }
-        }
     }
 
+    private void handleImageStateChange() {
+        TiledLayerDialog.this.sliderWidth.setEnabled(true);
+        TiledLayerDialog.this.sliderHeight.setEnabled(true);
+        String errMsg = null;
+
+        errMsg = TiledLayerDialog.this.getFieldLayerNameError();
+        try {
+            TiledLayerDialog.this.loadImagePreview();
+        } catch (MalformedURLException e) {
+            errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
+            e.printStackTrace();
+        } catch (IllegalArgumentException iae) {
+            errMsg = NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
+            iae.printStackTrace();
+        }
+
+        if (errMsg == null) {
+            errMsg = TiledLayerDialog.this.getFieldImageFileNameError();
+        }
+
+        if (errMsg != null) {
+            TiledLayerDialog.this.labelError.setText(errMsg);
+            TiledLayerDialog.this.setOKButtonEnabled(false);
+        } else {
+            TiledLayerDialog.this.labelError.setText("");
+            TiledLayerDialog.this.setOKButtonEnabled(true);
+        }
+    }
+        
     private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
         if (DEBUG) {
             System.out.println("load image preview"); // NOI18N
@@ -778,7 +782,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
             }
         }
         this.listImageFileName.setModel(this.getImageListModel());
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.imgImportedMsg.txt"), NotifyDescriptor.INFORMATION_MESSAGE));
+        handleImageStateChange();
     }
 
     private void handleOKButton() {
