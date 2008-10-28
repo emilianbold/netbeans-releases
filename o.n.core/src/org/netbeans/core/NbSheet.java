@@ -76,7 +76,6 @@ import org.openide.util.io.NbMarshalledObject;
 import org.openide.util.io.SafeException;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
-import org.openide.windows.Workspace;
 import org.openide.windows.WindowManager;
 
 /**
@@ -179,6 +178,7 @@ public final class NbSheet extends TopComponent {
         return sharedSheet;
     }
     
+    @Override
     protected String preferredID () {
         return "properties"; //NOI18N
     }
@@ -195,10 +195,12 @@ public final class NbSheet extends TopComponent {
     
     /** Overriden to explicitely set persistence type of NbSheet
      * to PERSISTENCE_ALWAYS */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
     
+    @Override
     public HelpCtx getHelpCtx () {
         // #40372 fix - for non-global properties display (assumed to be in a dialog), don't show the help button
         return (global ? org.openide.explorer.ExplorerUtils.getHelpCtx (nodes, new HelpCtx (NbSheet.class)) : null);
@@ -206,7 +208,8 @@ public final class NbSheet extends TopComponent {
 
     /** Transfer the focus to the property sheet.
      */
-    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
     public void requestFocus () {
         super.requestFocus();
         propertySheet.requestFocus();
@@ -214,35 +217,16 @@ public final class NbSheet extends TopComponent {
     
     /** Transfer the focus to the property sheet.
      */
-    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
     public boolean requestFocusInWindow () {
         super.requestFocusInWindow();
         return propertySheet.requestFocusInWindow();
     }
 
-    /** always open global property sheet in its special mode */
-    @SuppressWarnings("deprecation")
-    public void open (Workspace workspace) {
-        if (global) {
-            Workspace realWorkspace = (workspace == null)
-                                      ? WindowManager.getDefault().getCurrentWorkspace()
-                                      : workspace;
-            Mode tcMode = realWorkspace.findMode(this);
-            if (tcMode == null) {
-                // dock into our mode if not docked yet
-                Mode mode = realWorkspace.findMode("properties"); // NOI18N
-                if (mode == null) {
-                    mode = realWorkspace.createMode(
-                        "properties", // NOI18N
-                        NbBundle.getBundle(NbSheet.class).getString("CTL_PropertiesWindow"),
-                        null
-                    );
-                }
-                mode.dockInto(this);
-            }
-        }
-        // behave like superclass
-        super.open(workspace);
+    @Override
+    public void open () {
+        super.open();
 
         if(global) {
             // Set the nodes when opening.
@@ -323,13 +307,9 @@ public final class NbSheet extends TopComponent {
             }
         });
     }
-/*
-    public Dimension getPreferredSize () {
-        return propertySheet.getPreferredSize();
-    }
- */
 
     /** Serialize this property sheet */
+    @Override
     public void writeExternal (ObjectOutput out)
     throws IOException {
         super.writeExternal(out);
@@ -346,6 +326,7 @@ public final class NbSheet extends TopComponent {
     }
 
     /** Deserialize this property sheet. */
+    @Override
     public void readExternal (ObjectInput in)
     throws IOException, ClassNotFoundException {
         try {
@@ -360,29 +341,29 @@ public final class NbSheet extends TopComponent {
             // old version read the Boolean
             global = ((Boolean)in.readObject()).booleanValue();
         } else {
-            Node[] nodes;
+            Node[] ns;
 
             if (obj == null) {
                 // handles can also be null for global 
                 // property sheet
-                nodes = TopComponent.getRegistry().getActivatedNodes();
+                ns = TopComponent.getRegistry().getActivatedNodes();
             } else {
                 // new version, first read the nodes and then the global boolean
                 Node.Handle[] arr = (Node.Handle[])obj;
 
                 try {
-                    nodes = NodeOp.fromHandles (arr);
+                    ns = NodeOp.fromHandles (arr);
                 } catch (IOException ex) {
                     Exceptions.attachLocalizedMessage(ex,
                                                       NbBundle.getBundle(NbSheet.class).getString("EXC_CannotLoadNodes"));
                     Logger.getLogger(NbSheet.class.getName()).log(Level.WARNING, null, ex);
-                    nodes = new Node[0];
+                    ns = new Node[0];
                 }
             }
 
             global = in.readBoolean ();
 
-            setNodes (nodes);
+            setNodes (ns);
         }
 
         /*
@@ -420,6 +401,7 @@ public final class NbSheet extends TopComponent {
         return this;
     }
 
+    @Override
     protected Object writeReplace() throws ObjectStreamException {
         if (global) {
             return new Replacer();
@@ -449,15 +431,18 @@ public final class NbSheet extends TopComponent {
         }
     }
     
+    @Override
     protected void componentOpened() {
         updateGlobalListening (true);
     }
     
+    @Override
     protected void componentClosed() {
         updateGlobalListening (false);
         setNodes(new Node[0]);
     }
     
+    @Override
     protected void componentDeactivated() {
         super.componentDeactivated();
         if (Utilities.isMac()) {
@@ -510,6 +495,7 @@ public final class NbSheet extends TopComponent {
         /** Fired when the node is deleted.
          * @param ev event describing the node
          */
+        @Override
         public void nodeDestroyed(NodeEvent ev) {
             Node destroyedNode = ev.getNode();
             NodeListener listener = listenerMap.get(destroyedNode);
@@ -542,14 +528,14 @@ public final class NbSheet extends TopComponent {
             PropertyChangeListener pListener = null;
             // start to listen to all given nodes and map nodes to
             // their listeners
-            for (int i = 0; i < nodes.length; i++) {
-                curListener = org.openide.nodes.NodeOp.weakNodeListener (this, nodes[i]);
-                pListener = org.openide.util.WeakListeners.propertyChange(this, nodes[i]);
-                listenerMap.put(nodes[i], curListener);
-                pListenerMap.put(nodes[i], pListener);
-                nodes[i].addNodeListener(curListener);
-                nodes[i].addPropertyChangeListener(pListener);
-            };
+            for (Node n : nodes) {
+                curListener = org.openide.nodes.NodeOp.weakNodeListener(this, n);
+                pListener = org.openide.util.WeakListeners.propertyChange(this, n);
+                listenerMap.put(n, curListener);
+                pListenerMap.put(n, pListener);
+                n.addNodeListener(curListener);
+                n.addPropertyChangeListener(pListener);
+            }
         }
 
         public void detach () {
@@ -570,6 +556,7 @@ public final class NbSheet extends TopComponent {
             pListenerMap = null;
         }
 
+        @Override
         public void propertyChange(PropertyChangeEvent pce) {
             if (Node.PROP_DISPLAY_NAME.equals(pce.getPropertyName())) {
                 SwingUtilities.invokeLater(this);
