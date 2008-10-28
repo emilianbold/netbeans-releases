@@ -1018,24 +1018,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     cplusplus = true;
                     DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
                 }
-            } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
-//                CommandBuffer cb = gdb.getCommandBuffer(token);
-//                if (cb != null) {
-//                    cb.append(msg.substring(13, msg.length() - 1));
-//                    cb.done();
-//                }
-            } else if (msg.startsWith("^done,thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-//                CommandBuffer cb = gdb.getCommandBuffer(token);
-//                if (cb != null) {
-//                    cb.done();
-//                }
-            } else if (msg.startsWith("^done,addr=")) { // NOI18N
-//                CommandBuffer cb = gdb.getCommandBuffer(token);
-//                if (cb != null) {
-//                    cb.append(msg.substring(6));
-//                    cb.done();
-//                }
-            }
+            } 
             // Should now work in the last if-branch
             /*else if (afterDoneMsg.startsWith(",shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
                 String info = msg.substring(6);
@@ -1808,7 +1791,11 @@ public class GdbDebugger implements PropertyChangeListener {
     private void stepOutOfDlopen() {
         State oldState = state;
         state = State.SILENT_STOP;
+        
         String msg = gdb.stack_list_framesEx().getResponse();
+        // response have the form ",stack=...", so we trim it
+        msg = msg.substring(7, msg.length()-1);
+        
         int i = 0;
         boolean valid = true;
         boolean checkNextFrame = false;
@@ -2109,10 +2096,14 @@ public class GdbDebugger implements PropertyChangeListener {
             restoreBreakpointsAndSignals();
         }
 
-        String response = cb.getResponse();
         if (cb.isError()) {
             return NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
         }
+
+        String response = cb.getResponse();
+        // response have the form ",value=...", so we trim it
+        response = response.substring(7, response.length()-1);
+
         if (response.startsWith("@0x")) { // NOI18N
             cb = gdb.print(expression);
             response = cb.getResponse();

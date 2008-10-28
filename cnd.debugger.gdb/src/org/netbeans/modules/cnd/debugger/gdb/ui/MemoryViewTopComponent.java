@@ -187,12 +187,11 @@ final class MemoryViewTopComponent extends TopComponent {
             return;
         }
         CommandBuffer cb = gdb.data_read_memory(addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
-        String msg = cb.getResponse();
         if (cb.isError()) {
             taResult.setText(cb.getError());
         } else {
             // parse output
-            Map<String,String> res = GdbUtils.createMapFromString(msg);
+            Map<String,String> res = GdbUtils.createMapFromString(cb.getResponse());
             String mem = res.get("memory"); // NOI18N
             List<String> lines = GdbUtils.createListOfValues(mem);
             StringBuilder text = new StringBuilder();
