@@ -48,6 +48,7 @@ import org.netbeans.microedition.svg.SVGList.DefaultListMoldel;
 import org.netbeans.microedition.svg.SVGList.ListModel;
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.Element;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
@@ -336,6 +337,7 @@ public class SVGComboBox extends SVGComponent implements
         }
         myList = new SVGList(getForm(), (SVGLocatableElement) listElement);
         myList.setFocusable( false);
+        
     }
     
     private void initEditor( ) {
@@ -559,13 +561,13 @@ public class SVGComboBox extends SVGComponent implements
             return ret;
         }
         
-        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+        public void handlePointerPress( PointerEvent event ) {
             requestFocus();
             SVGLocatableElement button = (SVGLocatableElement)myButton;
             SVGRect rect = button.getScreenBBox();
             if (rect != null) {
                 SVGRectangle rectangle = new SVGRectangle(rect);
-                if (rectangle.contains(x, y)) {
+                if (rectangle.contains(event.getX(), event.getY())) {
                     getForm().invokeLaterSafely(new Runnable() {
 
                         public void run() {
@@ -574,18 +576,20 @@ public class SVGComboBox extends SVGComponent implements
                     });
                 }
             }
-            if ( myList.getBounds()!= null && myList.getBounds().contains(x, y)){
-                myList.getInputHandler().handlePointerPress( myList, x, y);
+            if ( myList.getBounds()!= null && myList.getBounds().contains(
+                    event.getX(), event.getY())){
+                myList.getInputHandler().handlePointerPress( 
+                        new PointerEvent( myList, event.getX(), event.getY()));
             }
-            super.handlePointerPress(comp, x, y);
+            super.handlePointerPress(event);
         }
         
-        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+        public void handlePointerRelease( PointerEvent event ) {
             SVGLocatableElement button = (SVGLocatableElement)myButton;
             SVGRect rect = button.getScreenBBox();
             if (rect != null) {
                 SVGRectangle rectangle = new SVGRectangle(rect);
-                if (rectangle.contains(x, y)) {
+                if (rectangle.contains(event.getX() , event.getY())) {
                     getForm().invokeLaterSafely(new Runnable() {
 
                         public void run() {
@@ -600,11 +604,24 @@ public class SVGComboBox extends SVGComponent implements
                     }
                 }
             }
-            if ( myList.getBounds()!= null && myList.getBounds().contains(x, y)){
-                myList.getInputHandler().handlePointerRelease( myList, x, y);
+            if ( myList.getBounds()!= null && myList.getBounds().contains(
+                    event.getX(), event.getY()))
+            {
+                myList.getInputHandler().handlePointerRelease( 
+                        new PointerEvent( myList , event.getX(), event.getY()));
                 myIndex = myList.getSelectionModel().getSelectedIndex();
+                
+                if ( event.getClickCount() >1 ){
+                    hideList();
+                    synchronized (myUILock) {
+                        isUIAction = true;
+                        getModel().setSelectedIndex(myIndex);
+                    }
+                    setItem();
+                    fireActionPerformed();
+                }
             }
-            super.handlePointerRelease(comp, x, y);
+            super.handlePointerRelease( event );
         }
         
     }

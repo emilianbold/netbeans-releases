@@ -48,7 +48,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.Module;

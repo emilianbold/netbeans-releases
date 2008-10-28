@@ -138,17 +138,20 @@ public class TiledLayer extends Layer implements ImageResourceListener {
 	}
 
 	public Tile getTileAt(Position position) {
-		return getTileAt(position.getRow(), position.getCol());
+            return getTileAt(position.getRow(), position.getCol());
 	}
 	
-	public Tile getTileAt(int rowIndex, int columnIndex) {
-		if (rowIndex < 0 || rowIndex >= this.getRowCount() || columnIndex < 0 || columnIndex >= this.getColumnCount())
-			return this.getImageResource().getTile(Tile.EMPTY_TILE_INDEX, this.getTileWidth(), this.getTileHeight(), false);
-		Tile tile = null;
-		int tileIndex = this.grid[rowIndex][columnIndex];
-		tile = this.getImageResource().getTile(tileIndex, this.getTileWidth(), this.getTileHeight(), false);
-		return tile;
-	}
+        public Tile getTileAt(int rowIndex, int columnIndex) {
+            if (rowIndex < 0 || rowIndex >= this.getRowCount() ||
+                    columnIndex < 0 || columnIndex >= this.getColumnCount()) 
+            {
+                return this.getImageResource().getTile(Tile.EMPTY_TILE_INDEX, this.getTileWidth(), this.getTileHeight(), false);
+            }
+            Tile tile = null;
+            int tileIndex = this.grid[rowIndex][columnIndex];
+            tile = this.getImageResource().getTile(tileIndex, this.getTileWidth(), this.getTileHeight(), false);
+            return tile;
+        }
 	
 	/**
 	 * Assigns a tile index to multiple positions.

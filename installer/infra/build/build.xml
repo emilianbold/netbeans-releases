@@ -273,6 +273,15 @@
 		 value="ml"/>
         </if>
 
+        <if property="gf-mod.build.type" value="">
+            <set property="gf-mod.build.suffix"
+	         value="en"/>
+        </if>
+        <if property="gf-mod.build.type" value="ml">
+            <set property="gf-mod.build.suffix"
+		 value="ml"/>
+        </if>
+
 
 	<set property="nb.full.version"
              value="7.0.0.0.${build.number}"/>
@@ -376,10 +385,16 @@
             prefix="glassfish-mod"/>
 
 	<!--
-	<set property="glassfish-mod.milestone.number"      value="15"/>
-	<set property="glassfish-mod.milestone.number.real" value="15a"/>
-	<set property="glassfish-mod.build.type"            value="express"/>
-	<set property="glassfish-mod.build.number"          value="20080722"/>
+	<set property="glassfish-mod.milestone.number"      value="28"/>
+	<set property="glassfish-mod.milestone.number.real" value="28c"/>
+	<set property="glassfish-mod.build.type"            value="prelude"/>
+
+	<if property="gf-mod.build.type" value="">
+	    <set property="glassfish-mod.build.number"          value="20081022"/>
+	</if>
+	<if property="gf-mod.build.type" value="ml">
+	    <set property="glassfish-mod.build.number"          value="20081022"/>
+	</if>
 	-->
 
         <!--
@@ -948,11 +963,19 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-    <target name="build-nb-product">
+    <target name="build-nb-product" depends="build-nb-product-default-mapping,build-nb-product-custom-mapping"/>
+
+    <target name="build-nb-product-default-mapping" unless="use.custom.package.data.mapping">
 	<antcall target="build-product">
 	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
-	    <param name="product.packaged.data.file.default"            value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar"/>
-	    <param name="product.packaged.data.properties.file.default" value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar.properties"/>
+            <param name="product.packaged.data.file"            value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar"/>
+	    <param name="product.packaged.data.properties.file" value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar.properties"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-product-custom-mapping" if="use.custom.package.data.mapping">
+	<antcall target="build-product">
+	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
         </antcall>
     </target>
 
@@ -1004,6 +1027,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-javame">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javame"/>
+	    <param name="use.custom.package.data.mapping" value="1"/>
         </antcall>
     </target>
 

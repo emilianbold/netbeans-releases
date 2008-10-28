@@ -43,12 +43,10 @@ package org.netbeans.modules.web.project;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
-import java.io.File;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
 
 import org.netbeans.api.project.Sources;
@@ -56,8 +54,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.SourcesHelper;

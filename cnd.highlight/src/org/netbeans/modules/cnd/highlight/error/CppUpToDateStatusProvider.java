@@ -55,7 +55,7 @@ public class CppUpToDateStatusProvider extends UpToDateStatusProvider {
     private static final boolean TRACE = Boolean.getBoolean("cnd.uptodate.trace");
 
     public CppUpToDateStatusProvider() {
-	current = UpToDateStatus.UP_TO_DATE_DIRTY;
+        current = UpToDateStatus.UP_TO_DATE_DIRTY;
     }
     
     @Override
