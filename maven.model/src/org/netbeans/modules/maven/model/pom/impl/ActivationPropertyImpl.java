@@ -59,8 +59,28 @@ public class ActivationPropertyImpl extends POMComponentImpl implements Activati
     // attributes
 
     // child elements
+
+    public String getName() {
+        return getChildElementText(POMQName.NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(POMQName.NAME.getName(), name,
+                POMQName.NAME.getQName());
+    }
+
+    public String getValue() {
+        return getChildElementText(POMQName.VALUE.getQName());
+    }
+
+    public void setValue(String value) {
+        setChildElementText(POMQName.VALUE.getName(), value,
+                POMQName.VALUE.getQName());
+    }
+
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }
+
 
 }

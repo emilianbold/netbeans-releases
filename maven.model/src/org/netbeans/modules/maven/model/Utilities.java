@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
@@ -147,11 +148,7 @@ public class Utilities {
     }
     
     public static ModelSource getModelSource(FileObject bindingHandlerFO, boolean editable){
-        try {
-            return createModelSource(bindingHandlerFO, editable);
-        } catch (CatalogModelException ex) {
-            return null;
-        }
+        return createModelSource(bindingHandlerFO, editable);
     }
     
     /**
@@ -160,27 +157,34 @@ public class Utilities {
      * This is optional if both getDocument(FO) and createCatalogModel(FO) are overridden.
      */
     public static ModelSource createModelSource(FileObject thisFileObj,
-            boolean editable) throws CatalogModelException{
+            boolean editable) {
         assert thisFileObj != null : "Null file object.";
 
 
-        final DataObject dobj;
+        DataObject dobj = null;
         try {
             dobj = DataObject.find(thisFileObj);
         } catch (DataObjectNotFoundException ex) {
-            throw new CatalogModelException(ex);
+            //does this ever happen?
         }
         InstanceContent ic = new InstanceContent();
         Lookup lookup = new AbstractLookup(ic);
-        ic.add(dobj);
+        if (dobj != null) {
+            ic.add(dobj);
+        }
         ic.add(thisFileObj);
         ic.add(FileUtil.toFile(thisFileObj));
 
         ModelSource ms = new ModelSource(lookup, editable);
-        final CatalogModel catalogModel = CatalogModelFactory.getDefault().getCatalogModel(ms);
-        assert catalogModel != null;
-        if (catalogModel != null) {
-            ic.add(catalogModel);
+        final CatalogModel catalogModel;
+        try {
+            catalogModel = CatalogModelFactory.getDefault().getCatalogModel(ms);
+            assert catalogModel != null;
+            if (catalogModel != null) {
+                ic.add(catalogModel);
+            }
+        } catch (CatalogModelException ex) {
+            Exceptions.printStackTrace(ex);
         }
         Document document = null;
         try {

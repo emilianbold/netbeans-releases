@@ -52,4 +52,18 @@ public interface ActivationProperty extends POMComponent {
 //    </xs:all>
 //  </xs:complexType-->
 
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getName();
+    void setName(String name);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getValue();
+    void setValue(String value);
+
 }
