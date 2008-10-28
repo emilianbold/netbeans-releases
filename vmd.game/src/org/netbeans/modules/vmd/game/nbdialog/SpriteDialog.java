@@ -643,20 +643,22 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 		return errMsg;
 	}
 	
-	private class ImageListListener implements ListSelectionListener {
-		
-		public void valueChanged(ListSelectionEvent e) {
-			if (e.getValueIsAdjusting()) {
-				return;
-			}
-			this.handleImageSelectionChange();
-		}
-		
-		private void handleImageSelectionChange() {
-			SpriteDialog.this.sliderWidth.setEnabled(true);
-			SpriteDialog.this.sliderHeight.setEnabled(true);
-			String errMsg = null;
-            
+        private class ImageListListener implements ListSelectionListener {
+
+            public void valueChanged(ListSelectionEvent e) {
+                if (e.getValueIsAdjusting()) {
+                    return;
+                }
+                SpriteDialog.this.handleImageStateChange();
+            }
+
+        }
+	
+        private void handleImageStateChange() {
+            SpriteDialog.this.sliderWidth.setEnabled(true);
+            SpriteDialog.this.sliderHeight.setEnabled(true);
+            String errMsg = null;
+
             errMsg = SpriteDialog.this.getFieldLayerNameError();
             try {
                 SpriteDialog.this.loadImagePreview();
@@ -667,22 +669,20 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
                 errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
                 iae.printStackTrace();
             }
-			
+
             if (errMsg == null) {
                 errMsg = SpriteDialog.this.getFieldImageFileNameError();
             }
-			
-			if (errMsg != null) {
-				SpriteDialog.this.labelError.setText(errMsg);
-				SpriteDialog.this.setOKButtonEnabled(false);
-			} 
-			else {
-				SpriteDialog.this.labelError.setText("");
-				SpriteDialog.this.setOKButtonEnabled(true);
-			}
-		}
-	}
-	
+
+            if (errMsg != null) {
+                SpriteDialog.this.labelError.setText(errMsg);
+                SpriteDialog.this.setOKButtonEnabled(false);
+            } else {
+                SpriteDialog.this.labelError.setText("");
+                SpriteDialog.this.setOKButtonEnabled(true);
+            }
+        }
+            
 	private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
 		if (DEBUG) System.out.println("load image preview"); // NOI18N
 		
@@ -793,7 +793,7 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			}
 		}
 		this.listImageFileName.setModel(this.getImageListModel());
-		DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.imgImportedMsg.txt"), NotifyDescriptor.INFORMATION_MESSAGE));		
+                handleImageStateChange();
 	}
 	
 	private void handleOKButton() {
