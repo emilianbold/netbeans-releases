@@ -383,28 +383,14 @@
             <set 
                 property="current.temp.dir" 
                 value="${work.dir}/temp"/>
-
+            
             <set 
                 property="current.packaged.data.file" 
-                value="${product.packaged.data.file.default}"/>
-
+                value="${product.packaged.data.file}"/>
             <set 
                 property="current.packaged.data.properties.file" 
-                value="${product.packaged.data.properties.file.default}"/>
-
-            <if property="product.packaged.data.file">
-                <set 
-                    property="current.packaged.data.file" 
-                    value="${product.packaged.data.file}"/>
-            </if>
-
-            <if property="product.packaged.data.properties.file">
-                <set 
-                    property="current.packaged.data.properties.file" 
-                    value="${product.packaged.data.properties.file}"/>
-            </if>
-
-
+                value="${product.packaged.data.properties.file}"/>
+            
             <condition property="do.package.data.${i}" value="true">
                 <or>
                     <equals arg1="${package.data}" arg2="true"/>
