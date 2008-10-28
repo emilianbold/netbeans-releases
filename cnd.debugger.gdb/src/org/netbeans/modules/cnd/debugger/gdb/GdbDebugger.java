@@ -909,9 +909,9 @@ public class GdbDebugger implements PropertyChangeListener {
        gdb.exec_continue();
     }
 
-    public long getProcessID() {
+    /*public long getProcessID() {
         return programPID;
-    }
+    }*/
 
     public void unexpectedGdbExit(int rc) {
         String msg;
@@ -1061,7 +1061,7 @@ public class GdbDebugger implements PropertyChangeListener {
                 log.warning("Failed type lookup for " + type);
             } else if (msg.equals("\"\\\"finish\\\" not meaningful in the outermost frame.\"")) { // NOI18N
                 finish_from_main();
-            } else if (msg.contains("(corrupt stack?)")) { // NOI18N
+            } else if (msg.contains("(corrupt stack?)") && gdbVersion > 6.3) { // NOI18N
                 DialogDisplayer.getDefault().notify(
                        new NotifyDescriptor.Message(NbBundle.getMessage(GdbDebugger.class,
                        "ERR_CorruptedStack"))); // NOI18N
@@ -1454,6 +1454,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * Set the temporary breakpoint at the current line and continue execution
      */
     public void runToCursor() {
+        // TODO: better use until debugger command
         removeRTCBreakpoint();
         rtcBreakpoint = LineBreakpoint.create(
             EditorContextBridge.getContext().getCurrentURL(),
