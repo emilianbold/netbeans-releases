@@ -46,9 +46,14 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
 /**
  * CustomizerProvider enhanced with ability to open customizer on given
  * category and/or subcategory.
+ * 
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public interface CustomizerProvider2 extends CustomizerProvider {
 
+    /**
+     * Show customizer and preselect a category.
+     */
     void showCustomizer(String preselectedCategory, String preselectedSubCategory);
 
 }

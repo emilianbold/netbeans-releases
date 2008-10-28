@@ -82,7 +82,7 @@ import org.openide.util.Exceptions;
  * to both file and package nodes. It also adds {@link RemoveClassPathRootAction} to
  * class path roots.
  */
-public class ActionFilterNode extends FilterNode {
+final class ActionFilterNode extends FilterNode {
 
     private static final int MODE_ROOT = 1;
     private static final int MODE_PACKAGE = 2;
@@ -103,7 +103,7 @@ public class ActionFilterNode extends FilterNode {
      * the node should not have the {@link RemoveClassPathRootAction}
      * @return ActionFilterNode
      */
-    public static ActionFilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
+    static FilterNode create (Node original, UpdateHelper helper, String classPathId, String entryId, String webModuleElementName,
             ClassPathSupport cs, ReferenceHelper rh) {
         DataObject dobj = (DataObject) original.getLookup().lookup(DataObject.class);
         assert dobj != null;

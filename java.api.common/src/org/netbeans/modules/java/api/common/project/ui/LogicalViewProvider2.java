@@ -46,9 +46,14 @@ import org.netbeans.spi.project.ui.LogicalViewProvider;
 /**
  * CustomizerProvider enhanced with ability to update node state.
  * category and/or subcategory.
+ * 
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public interface LogicalViewProvider2 extends LogicalViewProvider {
 
+    /**
+     * Test and update project's broken references state.
+     */
     void testBroken();
     
 }

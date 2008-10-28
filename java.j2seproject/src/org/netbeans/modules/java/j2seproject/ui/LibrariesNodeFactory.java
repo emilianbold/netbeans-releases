@@ -56,8 +56,8 @@ import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
-import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -147,7 +147,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                             null,
-                            new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
+                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), // NOI18N
                         },
                         null,
                         cs,
@@ -168,7 +168,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(project.getReferenceHelper(), project.getTestSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                             null,
-                            new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
+                            ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), // NOI18N
                         },
                         null,
                         cs,

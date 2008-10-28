@@ -60,8 +60,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.queries.VisibilityQuery;
-import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
@@ -333,7 +333,7 @@ public final class DocBaseNodeFactory implements NodeFactory {
                 actions[5] = null;
                 actions[6] = SystemAction.get(FileSystemAction.class);
                 actions[7] = null;
-                actions[8] = new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Sources"); //NOI18N
+                actions[8] = ProjectUISupport.createPreselectPropertiesAction(project, "Sources", null); //NOI18N
             }
             return actions;
         }

@@ -75,7 +75,7 @@ import org.openide.util.NbPreferences;
  * artifacts.
  * @author Petr Hrebejk
  */
-public final class AntArtifactChooser extends JPanel implements PropertyChangeListener {
+final class AntArtifactChooser extends JPanel implements PropertyChangeListener {
     
 
     private String[] artifactTypes;
@@ -196,7 +196,7 @@ public final class AntArtifactChooser extends JPanel implements PropertyChangeLi
             for(AntArtifact artifact : artifacts) {
                 URI uris[] = artifact.getArtifactLocations();
                 for( int y = 0; y < uris.length; y++ ) {
-                    model.addElement( new ArtifactItem(artifact, uris[y]));
+                    model.addElement( new AntArtifactItem(artifact, uris[y]));
                 }
             }
             jListArtifacts.setSelectionInterval(0, model.size());
@@ -217,7 +217,7 @@ public final class AntArtifactChooser extends JPanel implements PropertyChangeLi
     /** Shows dialog with the artifact chooser 
      * @return null if canceled selected jars if some jars selected
      */
-    public static ArtifactItem[] showDialog( String[] artifactTypes, Project master, Component parent ) {
+    static AntArtifactItem[] showDialog( String[] artifactTypes, Project master, Component parent ) {
         
         JFileChooser chooser = ProjectChooser.projectChooser();
         chooser.setDialogTitle( NbBundle.getMessage( AntArtifactChooser.class, "LBL_AACH_Title" ) ); // NOI18N
@@ -272,7 +272,7 @@ public final class AntArtifactChooser extends JPanel implements PropertyChangeLi
                     count++;
                 }
             }
-            ArtifactItem artifactItems[] = new ArtifactItem[count];
+            AntArtifactItem artifactItems[] = new AntArtifactItem[count];
             System.arraycopy(tmp, 0, artifactItems, 0, count);
             return artifactItems;
         }
@@ -303,33 +303,5 @@ public final class AntArtifactChooser extends JPanel implements PropertyChangeLi
         assert folder != null : "Folder can not be null";
         String path = folder.getAbsolutePath();
         getPreferences().put(LAST_USED_ARTIFACT_FOLDER, path);        
-    }
-
-    /**
-     * Pair of AntArtifact and one of jars it produces.
-     */
-    public static class ArtifactItem {
-        
-        private AntArtifact artifact;
-        private URI artifactURI;
-        
-        public ArtifactItem(AntArtifact artifact, URI artifactURI) {
-            this.artifact = artifact;
-            this.artifactURI = artifactURI;
-        }
-        
-        public AntArtifact getArtifact() {
-            return artifact;
-        }
-        
-        public URI getArtifactURI() {
-            return artifactURI;
-        }
-        
-        @Override
-        public String toString() {
-            return artifactURI.toString();
-        }
-        
     }
 }

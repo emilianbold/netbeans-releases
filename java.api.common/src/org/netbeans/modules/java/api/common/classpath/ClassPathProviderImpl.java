@@ -61,8 +61,9 @@ import org.openide.util.WeakListeners;
 
 /**
  * Defines the various class paths for a J2SE project.
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
-public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
+public final class ClassPathProviderImpl implements ClassPathProvider {
 
     private String buildClassesDir = "build.classes.dir"; // NOI18N
     private String distJar = "dist.jar"; // NOI18N
@@ -81,6 +82,8 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
 
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
 
+    private PropertyChangeListener listener;
+
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, SourceRoots sourceRoots,
                                  SourceRoots testSourceRoots) {
         this.helper = helper;
@@ -89,7 +92,12 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         this.evaluator = evaluator;
         this.sourceRoots = sourceRoots;
         this.testSourceRoots = testSourceRoots;
-        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
+        listener = new PropertyChangeListener() {
+                public synchronized void propertyChange(PropertyChangeEvent evt) {
+                    dirCache.remove(evt.getPropertyName());
+                }
+            };
+        evaluator.addPropertyChangeListener(WeakListeners.propertyChange(listener, evaluator));
     }
 
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator,
@@ -351,10 +359,6 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         return null;
     }
 
-    public synchronized void propertyChange(PropertyChangeEvent evt) {
-        dirCache.remove(evt.getPropertyName());
-    }
-    
     public String[] getPropertyName (final SourceRoots roots, final String type) {
         if (roots.isTest()) {
             if (ClassPath.COMPILE.equals(type)) {

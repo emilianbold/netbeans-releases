@@ -51,7 +51,6 @@ import org.openide.util.actions.NodeAction;
 import org.netbeans.api.project.Project;
 
 
-import java.util.Iterator;
 import java.util.Set;
 import org.netbeans.api.project.ProjectManager;
 import org.openide.util.Exceptions;

@@ -42,9 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
-import org.netbeans.modules.java.api.common.project.ui.ActionFilterNode;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
-import org.netbeans.modules.java.api.common.project.ui.LibrariesSourceGroup;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -67,6 +65,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
@@ -241,7 +240,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         }
 
         protected Node[] createNodes(SourceGroup sg) {
-            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null, null)};
+            return new Node[] {ProjectUISupport.createFilteredLibrariesNode(PackageView.createPackageView(sg), null, null, null, null, null, null)};
         }
 
         private List<SourceGroup> getKeys () {
@@ -256,7 +255,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
                     if (file != null) {
                         FileObject archiveFile = FileUtil.getArchiveRoot(file);
                         if (archiveFile != null) {
-                            result.add(new LibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
+                            result.add(ProjectUISupport.createLibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
                         }
                     }
                 }

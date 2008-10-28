@@ -93,6 +93,7 @@ import org.openide.util.NbBundle;
 /** Handles adding, removing, reordering of source roots.
  *
  * @author Tomas Zezula
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class SourceRootsUi {
     

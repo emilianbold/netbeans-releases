@@ -46,6 +46,7 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 
 /**
  * Support class for creating different types of classpath related implementations.
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class ClassPathSupportFactory {
 

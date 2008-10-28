@@ -72,11 +72,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 /**
- * This class decorates package nodes and file nodes under the Libraries Nodes.
- * It removes all actions from these nodes except of file node's {@link OpenAction}
- * and package node's {@link FindAction} It also adds the {@link ShowJavadocAction}
- * to both file and package nodes. It also adds {@link RemoveClassPathRootAction} to
- * class path roots.
+ * Visual classpath customizer support.
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public class ClassPathListCellRenderer extends DefaultListCellRenderer {
 

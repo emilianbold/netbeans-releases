@@ -67,8 +67,8 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 /**
- *
- * @author mkleint
+ * Java sources node factory.
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class JavaSourceNodeFactory implements NodeFactory {
     public JavaSourceNodeFactory() {
@@ -218,7 +218,7 @@ public final class JavaSourceNodeFactory implements NodeFactory {
     
     /** The special properties action
      */
-    public static class PreselectPropertiesAction extends AbstractAction {
+    static class PreselectPropertiesAction extends AbstractAction {
         
         private final Project project;
         private final String nodeName;

@@ -91,9 +91,8 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.project.libraries.LibraryChooser;
 import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser.ArtifactItem;
 import org.netbeans.modules.java.api.common.SourceRoots;
-import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactItem;
 import org.netbeans.modules.java.api.common.project.ui.customizer.EditMediator;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -109,7 +108,8 @@ import org.openide.util.lookup.Lookups;
 /**
  * LibrariesNode displays the content of classpath and optionaly Java platform.
  * @author Tomas Zezula
- */
+ * @since org.netbeans.modules.java.api.common/1 1.5
+*/
 public final class LibrariesNode extends AbstractNode {
 
     private static final Image ICON_BADGE = ImageUtilities.loadImage("org/netbeans/modules/java/api/common/project/ui/resources/libraries-badge.png");    //NOI18N
@@ -622,7 +622,7 @@ public final class LibrariesNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent e) {
-            ArtifactItem ai[] = AntArtifactChooser.showDialog(
+            AntArtifactItem ai[] = AntArtifactItem.showAntArtifactItemChooser(
                     new String[] {JavaProjectConstants.ARTIFACT_TYPE_JAR, JavaProjectConstants.ARTIFACT_TYPE_FOLDER},
                     project, null);
                 if ( ai != null ) {
@@ -630,7 +630,7 @@ public final class LibrariesNode extends AbstractNode {
                 }
         }
 
-        private void addArtifacts (AntArtifactChooser.ArtifactItem[] artifactItems) {
+        private void addArtifacts (AntArtifactItem[] artifactItems) {
             AntArtifact[] artifacts = new AntArtifact[artifactItems.length];
             URI[] artifactURIs = new URI[artifactItems.length];
             for (int i = 0; i < artifactItems.length; i++) {

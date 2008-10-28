@@ -54,14 +54,15 @@ import javax.swing.ListSelectionModel;
 import org.netbeans.api.project.libraries.LibrariesCustomizer;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactChooser;
+import org.netbeans.modules.java.api.common.project.ui.customizer.AntArtifactItem;
 import org.netbeans.spi.java.project.support.ui.EditJarSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.NbCollections;
 
 /**
- *
+ * Support for visual classpath customizer.
  * @author Petr Hrebejk, Radko Najman, David Konecny
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class ClassPathUiSupport {
     
@@ -261,7 +262,7 @@ public final class ClassPathUiSupport {
 
     }
     
-    public static int[] addArtifacts( DefaultListModel listModel, int[] indices, AntArtifactChooser.ArtifactItem artifactItems[],
+    public static int[] addArtifacts( DefaultListModel listModel, int[] indices, AntArtifactItem artifactItems[],
             Callback callback) {
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[artifactItems.length];
@@ -283,9 +284,12 @@ public final class ClassPathUiSupport {
     }
    
     /**
-     * Perform optional initialization of item
+     * Optional callback to perform initialization of item.
      */
     public static interface Callback {
+
+        /** Initialize additional data associated with given Item.*/
         void initItem(ClassPathSupport.Item item);
+
     }
 }

@@ -42,10 +42,6 @@
 package org.netbeans.modules.java.api.common.project;
 
 import javax.swing.ImageIcon;
-import javax.swing.ListCellRenderer;
-import javax.swing.table.TableCellRenderer;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 
 
@@ -53,6 +49,7 @@ import org.openide.util.ImageUtilities;
  *  place where to store the properties.
  * 
  * @author Petr Hrebejk, Radko Najman, David Konecny
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class ProjectProperties {
 

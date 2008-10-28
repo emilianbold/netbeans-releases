@@ -62,8 +62,9 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
- *@author Tomas Zezula, David Konecny
- *
+ * Implementation of classpath modifier.
+ * @author Tomas Zezula, David Konecny
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class ClassPathModifier extends ProjectClassPathModifierImplementation {
     
@@ -201,6 +202,7 @@ public final class ClassPathModifier extends ProjectClassPathModifierImplementat
         /**
          * Returns project XML element under which extra classpath related information
          * is stored. See also {@link ClassPathSupport#Callback}
+         * @return can return null if not applicable
          */
         String getElementName(String classpathProperty);
     }

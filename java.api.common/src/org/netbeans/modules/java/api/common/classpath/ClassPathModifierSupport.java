@@ -66,8 +66,8 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 
 /**
- * Helper methods for adding/removing items from project classpath. Used from ClassPathModifier
- * and WebProjectLibrariesModifierImpl.
+ * Helper methods for adding/removing items from project classpath.
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public class ClassPathModifierSupport {
 

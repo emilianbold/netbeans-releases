@@ -54,7 +54,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
-import org.netbeans.modules.java.api.common.project.ui.JavaSourceNodeFactory;
 import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
@@ -63,6 +62,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -154,7 +154,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                             LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                         null,
-                        new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
+                        ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
                     cs,
@@ -179,7 +179,7 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         LibrariesNode.createAddLibraryAction(refHelper, project.getTestSourceRoots(), null),
                         LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                         null,
-                        new JavaSourceNodeFactory.PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
+                        ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
                     null,
                     cs,

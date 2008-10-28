@@ -71,8 +71,9 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
 
 /**
- *
+ * Support for reading/writting classpath like properties.
  * @author Petr Hrebejk, Radko Najman, David Konecny
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class ClassPathSupport {
                 
@@ -874,7 +875,7 @@ public final class ClassPathSupport {
     }
     
     /**
-     * Callback to customize classpath support behaviour.
+     * Optional callback to customize classpath support behaviour.
      */
     public static interface Callback {
         

@@ -83,6 +83,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
+ * Visual classpath customizer support.
+ * 
+ * @since org.netbeans.modules.java.api.common/1 1.5
  */
 public final class EditMediator implements ActionListener, ListSelectionListener {
 
@@ -315,7 +318,7 @@ public final class EditMediator implements ActionListener, ListSelectionListener
             }
         }
         else if ( source == addAntArtifact ) { 
-            AntArtifactChooser.ArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
+            AntArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
                     antArtifactTypes, project, list.getComponent().getParent());
             if (artifactItems != null) {
                 int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems, callback);

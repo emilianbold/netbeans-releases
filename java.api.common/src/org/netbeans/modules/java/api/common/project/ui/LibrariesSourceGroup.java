@@ -56,7 +56,7 @@ import org.openide.util.Exceptions;
  * {@link org.netbeans.spi.java.project.support.ui.PackageView#createPackageView(SourceGroup)}
  * @author Tomas Zezula
  */
-public final class LibrariesSourceGroup implements SourceGroup {
+final class LibrariesSourceGroup implements SourceGroup {
 
     private final FileObject root;
     private final String displayName;
@@ -79,7 +79,7 @@ public final class LibrariesSourceGroup implements SourceGroup {
      * @param icon closed icon
      * @param openIcon opened icon
      */          
-    public LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
+    LibrariesSourceGroup (FileObject root, String displayName, Icon icon, Icon openIcon) {
         assert root != null;
         this.root = root;
         this.displayName = displayName;
@@ -113,6 +113,7 @@ public final class LibrariesSourceGroup implements SourceGroup {
         return root.equals(file) || FileUtil.isParentOf(root,file);
     }
 
+    @Override
     public boolean equals (Object other) {
         if (!(other instanceof LibrariesSourceGroup)) {
             return false;
@@ -122,6 +123,7 @@ public final class LibrariesSourceGroup implements SourceGroup {
             root == null ? osg.root == null : root.equals (osg.root);  
     }
 
+    @Override
     public int hashCode () {
         return ((displayName == null ? 0 : displayName.hashCode())<<16) | ((root==null ? 0 : root.hashCode()) & 0xffff);
     }
