@@ -52,16 +52,17 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.LibrariesNode;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.ExtraLibrariesNode;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
-import org.netbeans.modules.j2ee.ejbjarproject.ui.SourceNodeFactory.PreselectPropertiesAction;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerLibraries;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -148,17 +149,16 @@ public final class LibrariesNodeFactory implements NodeFactory {
                     ProjectProperties.JAVAC_CLASSPATH,
                     new String[] { ProjectProperties.BUILD_CLASSES_DIR },
                     "platform.active", //NOI18N
-                    EjbJarProjectProperties.J2EE_SERVER_INSTANCE,
-                    EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH,
                     new Action[] {
                             LibrariesNode.createAddProjectAction(project, project.getSourceRoots()),
                             LibrariesNode.createAddLibraryAction(refHelper, project.getSourceRoots(), null),
                             LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getSourceRoots()),
                         null,
-                        new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
+                        ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE), //NOI18N
                     },
                     ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES,
-                    cs
+                    cs,
+                    new ExtraLibrariesNode(project, evaluator, EjbJarProjectProperties.J2EE_SERVER_INSTANCE, cs)
                 );
             } else if (key == TEST_LIBRARIES) {
                 return  new LibrariesNode(
@@ -174,17 +174,16 @@ public final class LibrariesNodeFactory implements NodeFactory {
                         ProjectProperties.BUILD_CLASSES_DIR,
                     },
                     null,
-                    null,
-                    null,
                     new Action[] {
                         LibrariesNode.createAddProjectAction(project, project.getTestSourceRoots()),
                         LibrariesNode.createAddLibraryAction(refHelper, project.getTestSourceRoots(), null),
                         LibrariesNode.createAddFolderAction(project.getAntProjectHelper(), project.getTestSourceRoots()),
                         null,
-                        new PreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
+                        ProjectUISupport.createPreselectPropertiesAction(project, "Libraries", CustomizerLibraries.COMPILE_TESTS), //NOI18N
                     },
                     null,
-                    cs
+                    cs,
+                    null
                     );
             }
             assert false: "No node for key: " + key; // NOI18N
