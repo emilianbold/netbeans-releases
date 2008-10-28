@@ -140,7 +140,7 @@ public class insert_0001 extends insert
       "function __construct() {",
       "}"
     };
-    CheckResult( eoPHP, asResult, -4 );
+    CheckResult( eoPHP, asResult, -2 );
 
     endTest( );
   }

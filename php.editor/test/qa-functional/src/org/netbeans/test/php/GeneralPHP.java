@@ -130,7 +130,7 @@ public class GeneralPHP extends JellyTestCase {
   }
 
   // All defaults including name
-  protected String CreatePHPApplicationInternal( )
+  protected String CreatePHPApplicationInternal( int iPort )
   {
     // Create PHP application
 
@@ -153,6 +153,7 @@ public class GeneralPHP extends JellyTestCase {
 
     String sProjectPath = GetWorkDir( ) + File.separator + sResult;
 
+    /*
     JComboBoxOperator jcPath = new JComboBoxOperator( jdNew, 0 );
 
     Timeouts t =  jcPath.getTimeouts( );
@@ -164,20 +165,55 @@ public class GeneralPHP extends JellyTestCase {
 
     t.setTimeout( "JTextComponentOperator.TypeTextTimeout", lBack );
     jcPath.setTimeouts( t );
+    */
 
     //NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
     //opNewProjectNameLocationStep.txtProjectLocation( ).setText( GetWorkDir( ) );
 
-    //opNewProjectWizard.next( );
+    opNewProjectWizard.next( );
 
     //opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
+
+    if( -1 != iPort )
+    {
+      //opNewProjectWizard.next( );
+
+      // Set new port based URL here
+      jdNew = new JDialogOperator( "New PHP Project" );
+      JTextComponentOperator jtUrl = new JTextComponentOperator( jdNew, 1 );
+      String sUrl = jtUrl.getText( );
+      System.out.println( "== Original: " + sUrl );
+      sUrl = sUrl.replace( "localhost", "localhost:" + iPort );
+      System.out.println( "== Fixed: " + sUrl );
+      jtUrl.setText( sUrl );
+    }
+
     opNewProjectWizard.finish( );
+
+    // Wait for warnings
+    Sleep( 5000 );
+    try
+    {
+      JDialogOperator jdWarning = new JDialogOperator( "Warning" );
+      JButtonOperator jbCancel = new JButtonOperator( jdWarning, "Cancel" );
+      jbCancel.push( );
+      jdWarning.waitClosed( );
+    }
+    catch( JemmyException ex )
+    {
+      // No warning? Nice to know.
+    }
 
     return sResult;
   }
 
+  protected String CreatePHPApplicationInternal( )
+  {
+    return CreatePHPApplicationInternal( -1 );
+  }
+
   // All defaults including name
-  protected void CreatePHPApplicationInternal( String sProjectName )
+  protected void CreatePHPApplicationInternal( String sProjectName, int iPort )
   {
     // Create PHP application
 
@@ -216,10 +252,41 @@ public class GeneralPHP extends JellyTestCase {
     //NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
     //opNewProjectNameLocationStep.txtProjectLocation( ).setText( GetWorkDir( ) );
 
-    //opNewProjectWizard.next( );
+    if( -1 != iPort )
+    {
+      //opNewProjectWizard.next( );
 
-    //opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
+      // Set new port based URL here
+      jdNew = new JDialogOperator( "New PHP Project" );
+      JTextComponentOperator jtUrl = new JTextComponentOperator( jdNew, 1 );
+      String sUrl = jtUrl.getText( );
+      System.out.println( "== Original: " + sUrl );
+      sUrl = sUrl.replace( "localhost", "localhost:" + iPort );
+      System.out.println( "== Fixed: " + sUrl );
+      jtUrl.setText( sUrl );
+    }
+
     opNewProjectWizard.finish( );
+
+    // Wait for warnings
+    Sleep( 5000 );
+    try
+    {
+      JDialogOperator jdWarning = new JDialogOperator( "Warning" );
+      JButtonOperator jbCancel = new JButtonOperator( jdWarning, "Cancel" );
+      jbCancel.push( );
+      jdWarning.waitClosed( );
+    }
+    catch( JemmyException ex )
+    {
+      // No warning? Nice to know.
+    }
+
+  }
+
+  protected void CreatePHPApplicationInternal( String sProjectName )
+  {
+    CreatePHPApplicationInternal( sProjectName, -1 );
   }
 
   protected void TypeCode( EditorOperator edit, String code )
