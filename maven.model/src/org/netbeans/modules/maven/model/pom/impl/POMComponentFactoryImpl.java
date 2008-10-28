@@ -275,4 +275,8 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
         return new PropertiesImpl(model);
     }
 
+    public POMExtensibilityElement createPOMExtensibilityElement(QName name) {
+        return new POMExtensibilityElementBase(model, name);
+    }
+
 }

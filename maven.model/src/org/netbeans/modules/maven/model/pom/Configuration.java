@@ -51,5 +51,7 @@ public interface Configuration extends POMComponent {
 //  </xs:complexType-->
 
     List<POMExtensibilityElement> getConfigurationElements();
+    
+    void setSimpleParameter(String parameter, String value);
 
 }

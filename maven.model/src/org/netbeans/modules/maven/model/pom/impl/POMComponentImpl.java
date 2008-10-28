@@ -95,8 +95,13 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
     }  
     
     public static Element createElementNS(POMModel model, POMQName rq) {
+        return createElementNS(model, rq.getQName());
+    }
+
+    public static Element createElementNS(POMModel model, QName rq) {
+        String qualified = rq.getPrefix() + ":" + rq.getLocalPart();
         return model.getDocument().createElementNS(
-                rq.getQName().getNamespaceURI(), rq.getQualifiedName());
+                rq.getNamespaceURI(), qualified);
     }
         
     public void removeExtensibilityElement(POMExtensibilityElement ee) {

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.impl.POMComponentImpl;
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 import org.netbeans.modules.xml.xam.dom.Attribute;
@@ -57,6 +58,10 @@ public class POMExtensibilityElementBase extends POMComponentImpl
     
     public POMExtensibilityElementBase(POMModel model, Element e) {
         super(model, e);
+    }
+
+    public POMExtensibilityElementBase(POMModel model, QName name) {
+        this(model, createElementNS(model, name));
     }
      
     public void accept(POMComponentVisitor visitor) {

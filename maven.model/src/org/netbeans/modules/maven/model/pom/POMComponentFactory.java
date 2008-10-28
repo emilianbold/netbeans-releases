@@ -97,4 +97,5 @@ public interface POMComponentFactory extends ComponentFactory<POMComponent>  {
     Developer createDeveloper();
     Configuration createConfiguration();
     Properties createProperties();
+    POMExtensibilityElement createPOMExtensibilityElement(QName name);
 }

@@ -154,12 +154,12 @@ public enum POMQName {
     public static QName createQName(String localName){
         return new QName(NS_URI, localName, NS_PREFIX);
     }
-    
+
     private POMQName(QName name) {
         qName = name;
     }
     
-    public QName getQName(){
+    public QName getQName() {
         return qName;
     }
 

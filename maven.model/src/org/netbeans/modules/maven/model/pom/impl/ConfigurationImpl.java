@@ -69,5 +69,24 @@ public class ConfigurationImpl extends POMComponentImpl implements Configuration
         return getChildren(POMExtensibilityElement.class);
     }
 
+    public void setSimpleParameter(String parameter, String value) {
+        List<POMExtensibilityElement> list = getConfigurationElements();
+        for (POMExtensibilityElement e : list) {
+            if (parameter.equals(e.getQName().getLocalPart())) {
+                if (value == null) {
+                    removeChild(e.getQName().getLocalPart(), e);
+                } else {
+                    e.setElementText(value);
+                }
+                return;
+            }
+        }
+        if (value != null) {
+            POMExtensibilityElement el = getModel().getFactory().createPOMExtensibilityElement(POMQName.createQName(parameter));
+            el.setElementText(value);
+            addExtensibilityElement(el);
+        }
+    }
+
 
 }
