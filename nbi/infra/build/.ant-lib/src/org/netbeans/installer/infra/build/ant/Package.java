@@ -244,12 +244,13 @@ public class Package extends Task {
                 boolean mirrorFileExist = false;
                 File mirrorFile = null;
                 if (child.getName().endsWith(".jar.pack.gz")) {
-                    mirrorFile = new File(child.getParentFile(), child.getName().substring(child.getName().length() - (".pack.gz".length())));
+                    mirrorFile = new File(child.getParentFile(), child.getName().substring(0, child.getName().length() - (".pack.gz".length())));
                 } else if (child.getName().endsWith(".jar")) {
                     mirrorFile = new File(child + ".pack.gz");
                 }
 
                 if (mirrorFile != null && mirrorFile.exists()) {
+                    log("        mirror packing files exists, skipping repacking : " + mirrorFile);
                     mirrorFileExist = true;
                     usePacking = false;
                 }									
