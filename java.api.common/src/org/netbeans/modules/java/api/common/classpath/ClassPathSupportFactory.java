@@ -58,7 +58,6 @@ public final class ClassPathSupportFactory {
      * property.
      * @param evaluator project's property evaluator
      * @return classpath implementation
-     * @since X.X
      */
     public static ClassPathImplementation createBootClassPathImplementation(PropertyEvaluator evaluator) {
         return new BootClassPathImplementation(evaluator);
@@ -72,7 +71,6 @@ public final class ClassPathSupportFactory {
      * @param projectHelper AntProjectHelper
      * @param evaluator PropertyEvaluator
      * @return classpath implementation
-     * @since X.X
      */
     public static ClassPathImplementation createSourcePathImplementation(SourceRoots sourceRoots, AntProjectHelper projectHelper, PropertyEvaluator evaluator) {
         return new SourcePathImplementation(sourceRoots, projectHelper, evaluator);

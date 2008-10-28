@@ -253,7 +253,7 @@ public final class QuerySupport {
      * @param sourceProp name of property pointing to a folder with built classes
      * @param testProp name of property pointing to a folder with built test classes
      * @return BinaryForSourceQueryImplementation
-     * @since X.X
+     * @since org.netbeans.modules.java.api.common/1 1.5
      */
     public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(
             SourceRoots src, SourceRoots test, AntProjectHelper helper, 
@@ -274,7 +274,7 @@ public final class QuerySupport {
      * @param sourceProps array of properties pointing to source folders
      * @param testProps array of properties pointing to test folders
      * @return BinaryForSourceQueryImplementation
-     * @since X.X
+     * @since org.netbeans.modules.java.api.common/1 1.5
      */
     public static BinaryForSourceQueryImplementation createBinaryForSourceQueryImplementation(SourceRoots src, SourceRoots test, 
             AntProjectHelper helper, PropertyEvaluator eval) {
