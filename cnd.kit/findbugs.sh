@@ -4,7 +4,12 @@ fb_home="$1"
 workspace="$2"
 out="$3"
 
-#${fb_home}="/Users/vk155633/opensource/4hudson/findbugs-1.3.6-rc2"
+#don't want to clean everything - for example, jars are needed...
+rm ${workspace}/cnd.apt/src/org/netbeans/modules/cnd/apt/impl/support/generated/*
+rm ${workspace}/cnd.apt/build/classes/org/netbeans/modules/cnd/apt/impl/support/generated/*
+rm ${workspace}/cnd.modelimpl/src/org/netbeans/modules/cnd/modelimpl/parser/generated/*
+rm ${workspace}/cnd.modelimpl/build/classes/org/netbeans/modules/cnd/modelimpl/parser/generated/*
+
 prj="/tmp/cnd.fbp"
 echo "<Project filename=\"CND\" projectName=\"CND\">" > ${prj}
 for D in `ls -d ${workspace}/cnd* | grep -v cnd.antlr`; do 
