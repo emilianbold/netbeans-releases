@@ -44,6 +44,7 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.netbeans.microedition.svg.meta.MetaData;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -537,7 +538,7 @@ public class SVGList extends SVGComponent implements DataListener {
             return ret;
         }
         
-        public void handlePointerPress( SVGComponent comp, int x, int y ) {
+        public void handlePointerPress( PointerEvent event ) {
             requestFocus();
             synchronized ( SVGList.this ){
                 for ( int i=0; i<myRenderedComponents.size(); i++ ){
@@ -550,18 +551,18 @@ public class SVGList extends SVGComponent implements DataListener {
                     }
                     rect.setSize((int)mySelection.getScreenBBox().getWidth(), 
                             (int)rect.getHeight()); 
-                    if ( rect.contains(x, y)){
+                    if ( rect.contains(event.getX(), event.getY())){
                         myPressedIndex  = i;
-                        myPressedY = y;
+                        myPressedY = event.getY();
                         myPressedComponent = component;
                         break;
                     }
                 }
             }
-            super.handlePointerPress(comp, x, y);
+            super.handlePointerPress(event);
         }
         
-        public void handlePointerRelease( SVGComponent comp, int x, int y ) {
+        public void handlePointerRelease( PointerEvent event ) {
             int index = myPressedIndex +myTopIndex;
             if (myPressedComponent != null && 
                     myPressedComponent.getBounds() != null) 
@@ -570,7 +571,7 @@ public class SVGList extends SVGComponent implements DataListener {
                 if (rect != null) {
                     rect.setSize((int)mySelection.getScreenBBox().getWidth(), 
                             (int)rect.getHeight()); 
-                    if (rect.contains(x, y)) {
+                    if (rect.contains( event.getX(), event.getY())) {
                         myCurrentIndex = index;
                         synchronized (myUILock) {
                             isUIAction = true;
@@ -582,12 +583,12 @@ public class SVGList extends SVGComponent implements DataListener {
                         renderList();
                     }
                     else {
-                        int count = (int)((y-myPressedY)/rect.getHeight());
+                        int count = (int)(( event.getY()-myPressedY)/rect.getHeight());
                         renderList( count);
                     }
                 }
             }
-            super.handlePointerRelease(comp, x, y);
+            super.handlePointerRelease( event );
             myPressedIndex = 0;
             myPressedComponent = null;
         }

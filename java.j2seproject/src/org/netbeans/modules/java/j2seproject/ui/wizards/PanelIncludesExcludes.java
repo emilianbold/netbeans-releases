@@ -44,7 +44,7 @@ package org.netbeans.modules.java.j2seproject.ui.wizards;
 import java.awt.Component;
 import java.io.File;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
@@ -78,18 +78,18 @@ class PanelIncludesExcludes implements WizardDescriptor.FinishablePanel {
 
     public void storeSettings(Object wiz) {
         WizardDescriptor w = (WizardDescriptor) wiz;
-        w.putProperty(J2SEProjectProperties.INCLUDES, viz.getIncludePattern());
-        w.putProperty(J2SEProjectProperties.EXCLUDES, viz.getExcludePattern());
+        w.putProperty(ProjectProperties.INCLUDES, viz.getIncludePattern());
+        w.putProperty(ProjectProperties.EXCLUDES, viz.getExcludePattern());
     }
 
     public void readSettings(Object wiz) {
         WizardDescriptor w = (WizardDescriptor) wiz;
-        String includes = (String) w.getProperty(J2SEProjectProperties.INCLUDES);
+        String includes = (String) w.getProperty(ProjectProperties.INCLUDES);
         if (includes == null) {
             includes = "**"; // NOI18N
         }
         viz.setIncludePattern(includes);
-        String excludes = (String) w.getProperty(J2SEProjectProperties.EXCLUDES);
+        String excludes = (String) w.getProperty(ProjectProperties.EXCLUDES);
         if (excludes == null) {
             excludes = ""; // NOI18N
         }

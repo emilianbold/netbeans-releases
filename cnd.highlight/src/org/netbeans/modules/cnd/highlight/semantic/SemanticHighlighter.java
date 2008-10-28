@@ -52,7 +52,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -194,7 +193,8 @@ public final class SemanticHighlighter extends HighlighterBase {
             // to show inactive code and macros first
             PositionsBag old = getHighlightsBag(doc);
             if (old != null) {
-                // TODO: it seems to me there is a logic flaw above...
+                // this is done to prevent loss of other highlightings during adding ones managed by this highlighter
+                // otherwise document will "blink" on editing
                 PositionsBag tempBag = new PositionsBag(doc);
                 tempBag.addAllHighlights(newBag);
                 HighlightsSequence seq = newBag.getHighlights(0, Integer.MAX_VALUE);

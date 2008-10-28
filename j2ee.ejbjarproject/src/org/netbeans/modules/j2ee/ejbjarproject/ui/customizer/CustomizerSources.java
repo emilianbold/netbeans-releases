@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.j2ee.ejbjarproject.ui.customizer;
 
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -102,23 +103,23 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         
         jTextFieldConfigFilesFolder.setDocument(uiProperties.META_INF_MODEL);
         
-        EjbJarSourceRootsUi.EditMediator emSR = EjbJarSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
                 (EjbJarProject)uiProperties.getProject(),
                 ((EjbJarProject)uiProperties.getProject()).getSourceRoots(),
                 sourceRoots,
                 addSourceRoot,
                 removeSourceRoot,
                 upSourceRoot,
-                downSourceRoot,false);
+                downSourceRoot,null,false);
         
-        EjbJarSourceRootsUi.EditMediator emTSR = EjbJarSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
                 (EjbJarProject)uiProperties.getProject(),
                 ((EjbJarProject)uiProperties.getProject()).getTestSourceRoots(),
                 testRoots,
                 addTestRoot,
                 removeTestRoot,
                 upTestRoot,
-                downTestRoot,true);
+                downTestRoot,null,true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

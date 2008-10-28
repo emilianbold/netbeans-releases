@@ -59,7 +59,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.modules.j2ee.clientproject.AppClientProjectUtil;
+import org.netbeans.modules.j2ee.clientproject.Utils;
 import org.openide.awt.Mnemonics;
 import org.openide.awt.MouseUtils;
 import org.openide.filesystems.FileObject;
@@ -186,7 +186,7 @@ public class MainClassChooser extends JPanel {
      * or SourceCookie doesn't contain the main method
      */    
     public static boolean hasMainMethod (FileObject classFO) {
-        return AppClientProjectUtil.hasMainMethod (classFO);
+        return Utils.hasMainMethod (classFO);
     }
 
     /** This method is called from within the constructor to

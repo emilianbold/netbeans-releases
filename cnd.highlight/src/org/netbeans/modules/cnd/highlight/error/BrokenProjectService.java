@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
  */
 public class BrokenProjectService implements BrokenIncludes, ChangeListener {
     private static WeakHashMap<ChangeListener,Boolean> listeners = new WeakHashMap<ChangeListener,Boolean>();
-    private Object lock = new String("BrokenProjectService lock"); // NOI18N
+    private final Object lock = new String("BrokenProjectService lock"); // NOI18N
     
     public BrokenProjectService() {
     }

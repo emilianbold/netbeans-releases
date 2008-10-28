@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.BreakpointImpl;
@@ -524,6 +525,7 @@ public class GdbDebugger implements PropertyChangeListener {
         return versionPeculiarity;
     }
 
+    // TODO: use IPEUtils
     private String getFullPath(String rundir, String path) {
         if (platform == PlatformTypes.PLATFORM_WINDOWS && Character.isLetter(path.charAt(0)) && path.charAt(1) == ':') {
             return path;
@@ -705,6 +707,13 @@ public class GdbDebugger implements PropertyChangeListener {
                 String ep = line.substring(15, line.length() - 3);
                 if (ep.equals(exepath)) { // NOI18N
                     return true;
+                } else if (ep.startsWith("/cygdrive/") && ep.charAt(11) == '/') { // NOI18N
+                    // TODO: use win2UnixPath method or smth like IPEUtils
+                    String lc_exepath = exepath.toLowerCase().replace('\\', '/');
+                    ep = ep.substring(10, 11).toLowerCase() + ':' + ep.substring(11).toLowerCase();
+                    if (ep.equals(lc_exepath) || ep.equals(lc_exepath + ".exe")) { // NOI18N
+                        return true;
+                    }
                 }
             }
         }
@@ -1009,24 +1018,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     cplusplus = true;
                     DebuggerManager.getDebuggerManager().getCurrentSession().setCurrentLanguage("C++"); // NOI18N
                 }
-            } else if (msg.startsWith("^done,value=")) { // NOI18N (-data-evaluate-expression)
-//                CommandBuffer cb = gdb.getCommandBuffer(token);
-//                if (cb != null) {
-//                    cb.append(msg.substring(13, msg.length() - 1));
-//                    cb.done();
-//                }
-            } else if (msg.startsWith("^done,thread-id=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
-//                CommandBuffer cb = gdb.getCommandBuffer(token);
-//                if (cb != null) {
-//                    cb.done();
-//                }
-            } else if (msg.startsWith("^done,addr=")) { // NOI18N
-//                CommandBuffer cb = gdb.getCommandBuffer(token);
-//                if (cb != null) {
-//                    cb.append(msg.substring(6));
-//                    cb.done();
-//                }
-            }
+            } 
             // Should now work in the last if-branch
             /*else if (afterDoneMsg.startsWith(",shlib-info=") && platform == PlatformTypes.PLATFORM_MACOSX) { // NOI18N
                 String info = msg.substring(6);
@@ -1799,7 +1791,11 @@ public class GdbDebugger implements PropertyChangeListener {
     private void stepOutOfDlopen() {
         State oldState = state;
         state = State.SILENT_STOP;
+        
         String msg = gdb.stack_list_framesEx().getResponse();
+        // response have the form ",stack=...", so we trim it
+        msg = msg.substring(7, msg.length()-1);
+        
         int i = 0;
         boolean valid = true;
         boolean checkNextFrame = false;
@@ -1950,8 +1946,8 @@ public class GdbDebugger implements PropertyChangeListener {
                     (MakeConfigurationDescriptor) cdp.getConfigurationDescriptor();
             MakeConfiguration conf = (MakeConfiguration) mcd.getConfs().getActive();
             MakeArtifact ma = new MakeArtifact(mcd, conf);
-            String runDirectory = conf.getProfile().getRunDirectory().replace("\\", "/");  // NOI18N
-            String path = runDirectory + '/' + ma.getOutput();
+            String runDirectory = conf.getProfile().getRunDirectory();
+            String path = IpeUtils.toAbsolutePath(runDirectory, ma.getOutput());
             if (isExecutableOrSharedLibrary(conf, path)) {
                 ProjectActionEvent pae = new ProjectActionEvent(
                         project,
@@ -2100,10 +2096,14 @@ public class GdbDebugger implements PropertyChangeListener {
             restoreBreakpointsAndSignals();
         }
 
-        String response = cb.getResponse();
         if (cb.isError()) {
             return NbBundle.getMessage(GdbDebugger.class, "ERR_WatchedFunctionAborted");
         }
+
+        String response = cb.getResponse();
+        // response have the form ",value=...", so we trim it
+        response = response.substring(7, response.length()-1);
+
         if (response.startsWith("@0x")) { // NOI18N
             cb = gdb.print(expression);
             response = cb.getResponse();

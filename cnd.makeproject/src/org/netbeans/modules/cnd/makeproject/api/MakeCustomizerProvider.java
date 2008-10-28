@@ -58,7 +58,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -115,7 +114,7 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
     
     public void showCustomizer(final String preselectedNodeName, final Item item, final Folder folder) {
-        if (!canShow()) {
+        if (!projectDescriptorProvider.gotDescriptor()) {
             //TODO: show warning dialog
             return;
         }
@@ -124,10 +123,6 @@ public class MakeCustomizerProvider implements CustomizerProvider {
                 showCustomizerWorker(preselectedNodeName, item, folder);
             }
         });     
-    }
-    
-    private boolean canShow(){
-        return projectDescriptorProvider.getConfigurationDescriptor().getState() != State.READING;
     }
 
     private void showCustomizerWorker(String preselectedNodeName, Item item, Folder folder) {
