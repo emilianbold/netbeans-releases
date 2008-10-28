@@ -986,12 +986,6 @@ public class GdbDebugger implements PropertyChangeListener {
             } else if (msg.startsWith("^done,stack=")) { // NOI18N (-stack-list-frames)
                 if (state == State.STOPPED) { // Ignore data if we've resumed running
                     stackUpdate(GdbUtils.createListFromString((msg.substring(13, msg.length() - 1))));
-                } else if (state == State.SILENT_STOP) {
-//                    CommandBuffer cb = gdb.getCommandBuffer(token);
-//                    if (cb != null) {
-//                        cb.append(msg.substring(13, msg.length() - 1));
-//                        cb.done();
-//                    }
                 }
             } else if (msg.startsWith("^done,locals=")) { // NOI18N (-stack-list-locals)
                 if (state == State.STOPPED) { // Ignore data if we've resumed running
