@@ -43,7 +43,7 @@ package org.netbeans.modules.maven.model.pom;
  *
  * @author mkleint
  */
-public interface Repository extends POMComponent {
+public interface Repository extends IdPOMComponent {
 
 //  <!--xs:complexType name="Repository">
 //    <xs:all>
@@ -61,5 +61,26 @@ public interface Repository extends POMComponent {
 
     public RepositoryPolicy getSnapshots();
     public void setSnapshots(RepositoryPolicy snapshots);
+
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getName();
+    void setName(String name);
+    
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getUrl();
+    void setUrl(String url);
+    
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    String getLayout();
+    void setLayout(String layout);
 
 }

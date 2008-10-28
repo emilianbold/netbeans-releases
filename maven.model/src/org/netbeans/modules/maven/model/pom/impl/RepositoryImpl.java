@@ -47,7 +47,7 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
  *
  * @author mkleint
  */
-public class RepositoryImpl extends POMComponentImpl implements Repository {
+public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
 
     public RepositoryImpl(POMModel model, Element element) {
         super(model, element);
@@ -79,8 +79,31 @@ public class RepositoryImpl extends POMComponentImpl implements Repository {
         setChild(RepositoryPolicy.class, POMQName.SNAPSHOTS.getName(), snapshots, empty);
     }
 
-    public void accept(POMComponentVisitor visitor) {
-        visitor.visit(this);
+    public String getName() {
+        return getChildElementText(POMQName.NAME.getQName());
+    }
+
+    public void setName(String name) {
+        setChildElementText(POMQName.NAME.getName(), name,
+                POMQName.NAME.getQName());
+    }
+
+    public String getUrl() {
+        return getChildElementText(POMQName.URL.getQName());
+    }
+
+    public void setUrl(String url) {
+        setChildElementText(POMQName.URL.getName(), url,
+                POMQName.URL.getQName());
+    }
+
+    public String getLayout() {
+        return getChildElementText(POMQName.LAYOUT.getQName());
+    }
+
+    public void setLayout(String layout) {
+        setChildElementText(POMQName.LAYOUT.getName(), layout,
+                POMQName.LAYOUT.getQName());
     }
 
     public static class RepoList extends ListImpl<Repository> {
@@ -91,6 +114,10 @@ public class RepositoryImpl extends POMComponentImpl implements Repository {
         public RepoList(POMModel model) {
             this(model, createElementNS(model, POMQName.REPOSITORIES));
         }
+    }
+
+    public void accept(POMComponentVisitor visitor) {
+        visitor.visit(this);
     }
 
     public static class PluginRepoList extends ListImpl<Repository> {

@@ -146,6 +146,8 @@ public enum POMQName {
     EXCLUDEDEFAULTS(createQName("excludeDefaults")), //NOI18N
 
     VALUE(createQName("value")), //NOI18N
+
+    LAYOUT(createQName("layout")), //NOI18N
     ;
     
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N
