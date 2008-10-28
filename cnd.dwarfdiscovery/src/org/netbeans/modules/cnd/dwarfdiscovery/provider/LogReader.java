@@ -328,8 +328,8 @@ public class LogReader {
 
     private static final String PKG_CONFIG_PATTERN = "pkg-config --cflags "; //NOI18N
     private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
-        int i = line.indexOf('`');
-        if (line.lastIndexOf('`') == i) { // do not trim unclosed `quotes`
+        int i = line.indexOf('`'); //NOI18N
+        if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
             return line;
         }
         if (i < 0 || i == line.length() - 1) {
@@ -337,7 +337,7 @@ public class LogReader {
         } else {
             String out = line.substring(0, i-1);
             line = line.substring(i+1);
-            int j = line.indexOf('`');
+            int j = line.indexOf('`'); //NOI18N
             if (j < 0) {
                 return line;
             }
@@ -347,12 +347,12 @@ public class LogReader {
                 PackageConfiguration pc = pkgConfig.getPkgConfig(pkg);
                 if (pc != null) {
                     for(String p : pc.getIncludePaths()){
-                        out +=" -I"+p;
+                        out +=" -I"+p; //NOI18N
                     }
                     for(String p : pc.getMacros()){
-                        out +=" -D"+p;
+                        out +=" -D"+p; //NOI18N
                     }
-                    out +=" ";
+                    out +=" "; //NOI18N
                 }
             }
             out += line.substring(j+1);

@@ -79,6 +79,7 @@ public class PkgConfigImpl implements PkgConfig {
             String base = aset.getDirectory();
             initPackages("c:/cygwin/lib/pkgconfig/"); // NOI18N
         } else {
+            //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
             initPackages("/usr/lib/pkgconfig/"); // NOI18N
         }
     }
@@ -114,15 +115,10 @@ public class PkgConfigImpl implements PkgConfig {
         List<String> sort = new ArrayList<String>(configurations.keySet());
         Collections.sort(sort);
         for(String pkg: sort){
-            PackageConfiguration pc = getConfig(pkg);
-            if (pc != null){
-                System.out.println("Package:\t"+pkg); // NOI18N
-                System.out.println("Macros:\t"+pc.getMacros()); // NOI18N
-                System.out.println("Paths:\t"+pc.getIncludePaths()); // NOI18N
-            }
+            traceConfig(pkg, false);
         }
         Map<String, Pair> res = getLibraryItems();
-        System.out.println("Known innludes size: "+res.size()); // NOI18N
+        System.out.println("Known includes size: "+res.size()); // NOI18N
         sort = new ArrayList<String>(res.keySet());
         Collections.sort(sort);
         for(String key: sort){
@@ -139,22 +135,40 @@ public class PkgConfigImpl implements PkgConfig {
 
     }
 
-    /*package-local*/ void traceConfig(String pkg){
+    /*package-local*/ void traceConfig(String pkg, boolean recursive){
+        traceConfig(pkg, recursive, new HashSet<String>(), "");
+
+    }
+    private void traceConfig(String pkg, boolean recursive, Set<String> visited, String tab){
+        if (visited.contains(pkg)) {
+            return;
+        }
+        visited.add(pkg);
         PackageConfigurationImpl pc = configurations.get(pkg);
         if (pc != null){
-            System.out.println("Package:\t"+pkg); // NOI18N
-            System.out.println("Requires:\t"+pc.requires); // NOI18N
-            System.out.println("Macros:\t"+pc.macros); // NOI18N
-            System.out.println("Paths:\t"+pc.paths); // NOI18N
+            System.out.println(tab+"Package definition"); // NOI18N
+            System.out.println(tab+"Name:     "+pkg); // NOI18N
+            System.out.println(tab+"Requires: "+pc.requires); // NOI18N
+            System.out.println(tab+"Macros:   "+pc.macros); // NOI18N
+            System.out.println(tab+"Paths:    "+pc.paths); // NOI18N
+            if (recursive) {
+                for(String p : pc.requires){
+                    traceConfig(p, recursive, visited, tab+"    ");
+                }
+            }
+        } else {
+            System.out.println("Not found package definition "+pkg); // NOI18N
         }
     }
 
     /*package-local*/ void traceRecursiveConfig(String pkg){
         PackageConfiguration pc = getConfig(pkg);
         if (pc != null){
-            System.out.println("Package:\t"+pkg); // NOI18N
-            System.out.println("Macros:\t"+pc.getMacros()); // NOI18N
-            System.out.println("Paths:\t"+pc.getIncludePaths()); // NOI18N
+            System.out.println("Recursive package definition"); // NOI18N
+            System.out.println("Name:    "+pkg); // NOI18N
+            System.out.println("Package: "+pkg); // NOI18N
+            System.out.println("Macros:  "+pc.getMacros()); // NOI18N
+            System.out.println("Paths:   "+pc.getIncludePaths()); // NOI18N
         }
     }
 
@@ -171,9 +185,9 @@ public class PkgConfigImpl implements PkgConfig {
                     master.macros.add(m);
                 }
             }
-            for(String P : pc.paths){
-                if (!master.paths.contains(P)){
-                    master.paths.add(P);
+            for(String p : pc.paths){
+                if (!master.paths.contains(p)){
+                    master.paths.add(p);
                 }
             }
             for(String require : pc.requires){
@@ -200,7 +214,7 @@ public class PkgConfigImpl implements PkgConfig {
             PackageConfigurationImpl pc = configurations.get(pkg);
             if (pc != null){
                 for (String p : pc.paths){
-                    if (p.equals("usr/include") || p.equals("usr/sfw/include")){ // NOI18N
+                    if (p.equals("/usr/include") || p.equals("/usr/sfw/include")){ // NOI18N
                         continue;
                     }
                     Set<PackageConfiguration> set = map.get(p);
@@ -252,6 +266,7 @@ public class PkgConfigImpl implements PkgConfig {
     }
 
 //prefix=/usr
+//prefix=${pcfiledir}/../..
 //exec_prefix=${prefix}
 //libdir=${exec_prefix}/lib
 //includedir=${prefix}/include
@@ -271,6 +286,7 @@ public class PkgConfigImpl implements PkgConfig {
     private void readConfig(File file, PackageConfigurationImpl pc) {
         try {
             Map<String, String> vars = new HashMap<String, String>();
+            vars.put("pcfiledir", file.getParent()); // NOI18N
             BufferedReader in = new BufferedReader(new FileReader(file));
             while (true) {
                 String line = in.readLine();
@@ -281,18 +297,34 @@ public class PkgConfigImpl implements PkgConfig {
                 if (line.startsWith("#")) { // NOI18N
                     continue;
                 }
-                if (line.indexOf("=")>0){ // NOI18N
-                    int i = line.indexOf("="); // NOI18N
-                    String name = line.substring(0, i).trim();
-                    String value = line.substring(i+1).trim();
-                    vars.put(name, expandMacros(value, vars));
-                } else if (line.startsWith("Requires:")){ // NOI18N
+                if (line.startsWith("Requires:")){ // NOI18N
                     String value = line.substring(9).trim();
                     value = expandMacros(value,vars);
-                    StringTokenizer st = new StringTokenizer(value, " "); // NOI18N
+                    StringTokenizer st = new StringTokenizer(value, " ,"); // NOI18N
                     while(st.hasMoreTokens()) {
-                        pc.requires.add(st.nextToken());
+                        String s = st.nextToken();
+                        if (s.startsWith("<") || s.startsWith(">") || s.startsWith("=")|| Character.isDigit(s.charAt(0))){ // NOI18N
+                            continue;
+                        }
+                        pc.requires.add(s);
                     }
+                } else if (line.startsWith("Requires.private:")){ // NOI18N
+                    if (false){
+                        // It seems the pkg-config has a bug. It shouln't take into account "Requires.private" for --cflags option.
+                        // See bug: https://bugs.freedesktop.org/show_bug.cgi?id=3097#c6
+                        String value = line.substring(17).trim();
+                        value = expandMacros(value,vars);
+                        StringTokenizer st = new StringTokenizer(value, " ,"); // NOI18N
+                        while(st.hasMoreTokens()) {
+                            String s = st.nextToken();
+                            if (s.startsWith("<") || s.startsWith(">") || s.startsWith("=")|| Character.isDigit(s.charAt(0))){ // NOI18N
+                                continue;
+                            }
+                            pc.requires.add(s);
+                        }
+                    }
+                } else if (line.startsWith("Version:")){ // NOI18N
+                    pc.version = line.substring(8).trim();
                 } else if (line.startsWith("Cflags:")){ // NOI18N
                     String value = line.substring(7).trim();
                     value = expandMacros(value,vars);
@@ -305,6 +337,11 @@ public class PkgConfigImpl implements PkgConfig {
                             pc.macros.add(v.substring(2));
                         }
                     }
+                } else if (line.indexOf("=")>0){ // NOI18N
+                    int i = line.indexOf("="); // NOI18N
+                    String name = line.substring(0, i).trim();
+                    String value = line.substring(i+1).trim();
+                    vars.put(name, expandMacros(value, vars));
                 }
             }
             in.close();
@@ -339,6 +376,7 @@ public class PkgConfigImpl implements PkgConfig {
         List<String> macros = new ArrayList<String>();
         List<String> paths = new ArrayList<String>();
         private String name;
+        private String version;
         private PackageConfigurationImpl(String name){
             this.name = name;
         }

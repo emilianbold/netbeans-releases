@@ -44,7 +44,6 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
 
 /**
@@ -70,13 +69,14 @@ public class PackageConfigTestCase {
 
     @Test
     public void testMethod() {
-        PkgConfig pc = (PkgConfig)new PkgConfigManagerImpl().getPkgConfig(null);
-        //pc.traceConfig("gtk+-2.0");
-        //pc.traceRecursiveConfig("gtk+-2.0");
+        PkgConfigImpl pc = (PkgConfigImpl)new PkgConfigManagerImpl().getPkgConfig(null);
+        pc.traceConfig("gtk+-2.0",true);
+        pc.traceRecursiveConfig("gtk+-2.0");
         //pc.trace();
         String include = "gtk/gtk.h";
         ResolvedPath rp = pc.getResolvedPath(include);
         if (rp != null){
+            System.out.println("Resolved include paths");
             String path = rp.getIncludePath();
             System.out.println("Include: "+include);
             System.out.println("Path:    "+path);
