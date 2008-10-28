@@ -399,10 +399,12 @@ public class GdbProxyEngine {
     
     private CommandInfo getCommandInfo(String msg) {
         msg = msg.substring(2, msg.length() - 1).replace("\\n", ""); // NOI18N
-        
-        for (CommandInfo ci : tokenList) {
-            if (ci.getCommand().equals(msg)) {
-                return ci;
+
+        synchronized (tokenList) {
+            for (CommandInfo ci : tokenList) {
+                if (ci.getCommand().equals(msg)) {
+                    return ci;
+                }
             }
         }
         return null;
