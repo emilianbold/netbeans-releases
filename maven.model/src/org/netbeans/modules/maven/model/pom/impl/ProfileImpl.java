@@ -78,18 +78,6 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         setChild(BuildBase.class, POMQName.BUILD.getName(), buildBase, empty);
     }
 
-//    public List<Module> getModules() {
-//        return getChildren(Module.class);
-//    }
-//
-//    public void addModule(Module buildBase) {
-//        appendChild(MODULE_PROPERTY, buildBase);
-//    }
-//
-//    public void removeModule(Module buildBase) {
-//        removeChild(MODULE_PROPERTY, buildBase);
-//    }
-
     public java.util.List<Repository> getRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs != null) {
@@ -203,6 +191,56 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
+    }
+
+    public Properties getProperties() {
+        return getChild(Properties.class);
+    }
+
+    public void setProperties(Properties props) {
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        setChild(Reporting.class, POMQName.PROPERTIES.getName(), props, empty);
+    }
+
+    public java.util.List<String> getModules() {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addModule(String module) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(module);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 POMQName.MODULES.getName(),
+                 getModel().getFactory().create(this, POMQName.MODULES.getQName()),
+                 Collections.EMPTY_LIST);
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(module);
+                return;
+            }
+        }
+    }
+
+    public void removeModule(String module) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(module);
+                return;
+            }
+        }
     }
 
     public static class List extends ListImpl<Profile> {

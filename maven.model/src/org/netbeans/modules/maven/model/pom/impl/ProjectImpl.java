@@ -266,17 +266,6 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
-//    public List<String> getModules() {
-//        return getChildren(Module.class);
-//    }
-//
-//    public void addModule(String build) {
-//        appendChild(MODULE_PROPERTY, build);
-//    }
-//
-//    public void removeModule(String build) {
-//        removeChild(MODULE_PROPERTY, build);
-//    }
 
     public List<Repository> getRepositories() {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);

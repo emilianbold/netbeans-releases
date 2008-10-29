@@ -75,10 +75,9 @@ public interface Profile extends IdPOMComponent {
     public BuildBase getBuildBase();
     public void setBuildBase(BuildBase buildBase);
 
-    //TODO modules
-//    public List<Module> getModules();
-//    public void addModule(Module module);
-//    public void removeModule(Module module);
+    public List<String> getModules();
+    public void addModule(String module);
+    public void removeModule(String module);
 
     public List<Repository> getRepositories();
     public void addRepository(Repository repository);
@@ -101,5 +100,7 @@ public interface Profile extends IdPOMComponent {
     public DistributionManagement getDistributionManagement();
     public void setDistributionManagement(DistributionManagement distributionManagement);
 
-    //TODO properties
+    Properties getProperties();
+    void setProperties(Properties properties);
+
 }
