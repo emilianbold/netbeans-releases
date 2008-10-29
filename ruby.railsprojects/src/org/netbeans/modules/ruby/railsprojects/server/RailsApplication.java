@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.ruby.railsprojects.server;
 
+import java.util.concurrent.Future;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 
 /**
@@ -59,9 +60,9 @@ public class RailsApplication {
     /**
      * The execution process of the application.
      */
-    private final RubyExecution execution;
+    private final Future<Integer> execution;
 
-    public RailsApplication(String name, int port, RubyExecution execution) {
+    public RailsApplication(String name, int port, Future<Integer> execution) {
         this.name = name;
         this.port = port;
         this.execution = execution;
@@ -76,7 +77,7 @@ public class RailsApplication {
     }
     
     public void stop(){
-        execution.kill();
+        execution.cancel(true);
     }
     
 }

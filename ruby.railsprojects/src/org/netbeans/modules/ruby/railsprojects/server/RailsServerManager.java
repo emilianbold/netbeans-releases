@@ -63,10 +63,13 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.print.ConvertedLine;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
@@ -123,8 +126,8 @@ public final class RailsServerManager {
     /** Actual port in use (trying other ports for ones not in use) */
     private int port = -1;
     
-    private RailsProject project;
-    private RubyExecution execution;
+    private final RailsProject project;
+    private Future<Integer> execution;
     private File dir;
     private String projectName;
     private boolean debug;
@@ -182,8 +185,8 @@ public final class RailsServerManager {
         }
         if (debugSemaphore != null) {
             try {
-                if(execution != null) {
-                    execution.kill();
+                if (execution != null) {
+                    execution.cancel(true);
                 }
                 debugSemaphore.acquire();
                 debugSemaphore = null;
@@ -233,17 +236,13 @@ public final class RailsServerManager {
                 desc.postBuild(getFinishAction());
                 desc.jvmArguments(jvmArgs);
                 desc.addStandardRecognizers();
-                desc.addOutputRecognizer(new GrizzlyServerRecognizer(instance));
                 desc.frontWindow(false);
                 desc.debug(debug);
                 desc.fastDebugRequired(debug);
                 desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
                 desc.showSuspended(true);
                 
-                String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
-                IN_USE_PORTS.add(port);
-                execution = new RubyExecution(desc, charsetName);
-                execution.run();
+                runServer(desc, displayName, new GrizzlyServerLineConvertor(instance));
                 return false;
             }
         }
@@ -278,18 +277,22 @@ public final class RailsServerManager {
         desc.jvmArguments(jvmArgs);
         desc.classPath(classPath);
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(new RailsServerRecognizer(server));
         desc.frontWindow(false);
         desc.debug(debug);
         desc.fastDebugRequired(debug);
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(dir)));
         //desc.showProgress(false); // http://ruby.netbeans.org/issues/show_bug.cgi?id=109261
         desc.showSuspended(true);
-        String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
-        IN_USE_PORTS.add(port);
-        execution = new RubyExecution(desc, charsetName);
-        execution.run();
+        runServer(desc, displayName, new RailsServerLineConverter(server));
         return false;
+    }
+
+    private void runServer(RubyExecutionDescriptor desc, String displayName, LineConvertor... convertors) {
+        IN_USE_PORTS.add(port);
+        String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
+        RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName, convertors);
+        ExecutionService executionService = ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
+        this.execution = executionService.run();
     }
     
     private String[] buildStartupArgs() {
@@ -582,77 +585,59 @@ public final class RailsServerManager {
         return outputLine.matches(".*in.*: Address.+in use.+(Errno::EADDRINUSE).*"); //NOI18N
     }
     
-    private class RailsServerRecognizer extends OutputRecognizer {
+    private class RailsServerLineConverter implements LineConvertor {
 
         private final RubyServer server;
-        
-        RailsServerRecognizer(RubyServer server) {
+
+        RailsServerLineConverter(RubyServer server) {
             this.server = server;
         }
 
-        @Override
-        public ActionText processLine(String outputLine) {
-            
-            if (LOGGER.isLoggable(Level.FINER)){
-                LOGGER.log(Level.FINER, "Processing output line: " + outputLine);
+        public List<ConvertedLine> convert(String line) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "Processing output line: " + line);
             }
 
-            String line = outputLine;
-            
             // This is ugly, but my attempts to use URLConnection on the URL repeatedly
             // and check for connection.getResponseCode()==HttpURLConnection.HTTP_OK didn't
             // work - try that again later
-            if (server.isStartupMsg(outputLine)) {
+            if (server.isStartupMsg(line)) {
                 synchronized (RailsServerManager.this) {
                     LOGGER.fine("Identified " + server + " as running");
                     status = ServerStatus.RUNNING;
                     String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
                     server.addApplication(new RailsApplication(projectName, port, execution));
                 }
-            } else if (isAddressInUseMsg(outputLine)) {
-                LOGGER.fine("Detected port conflict: " + outputLine);
+            } else if (isAddressInUseMsg(line)) {
+                LOGGER.fine("Detected port conflict: " + line);
                 portConflict = true;
-            }
-
-            if (!line.equals(outputLine)) {
-                return new ActionText(new String[] { line }, null, null, null);
             }
 
             return null;
         }
     }
 
-    private class GrizzlyServerRecognizer extends OutputRecognizer {
+    private class GrizzlyServerLineConvertor implements LineConvertor {
 
         private RubyInstance server;
 
-        GrizzlyServerRecognizer(RubyInstance server) {
+        GrizzlyServerLineConvertor(RubyInstance server) {
             this.server = server;
         }
 
-        @Override
-        public ActionText processLine(String outputLine) {
-            
-            if (LOGGER.isLoggable(Level.FINER)){
-                LOGGER.log(Level.FINER, "Processing output line: " + outputLine);
+        public List<ConvertedLine> convert(String line) {
+            if (LOGGER.isLoggable(Level.FINER)) {
+                LOGGER.log(Level.FINER, "Processing output line: " + line);
             }
 
-            String line = outputLine;
-            
-            if (isStartupMsg(outputLine)) {
+            if (isStartupMsg(line)) {
                 synchronized (RailsServerManager.this) {
                     LOGGER.fine("Identified " + server + " as running");
                     status = ServerStatus.RUNNING;
-//                    String projectName = project.getLookup().lookup(ProjectInformation.class).getDisplayName();
-//                    server.addApplication(new RailsApplication(projectName, port, execution));
                 }
-            } else if (isAddressInUseMsg(outputLine)) {
-                LOGGER.fine("Detected port conflict: " + outputLine);
+            } else if (isAddressInUseMsg(line)) {
+                LOGGER.fine("Detected port conflict: " + line);
                 portConflict = true;
-            }
-
-            if (!line.equals(outputLine)) {
-                return new ActionText(new String[] { line }, null, null, null);
             }
 
             return null;
