@@ -85,8 +85,9 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
         initComponents();
         createCompressionGroup( compressionLevelCombo, compressionQualitySpinner);
         
-        m_startTime = createTimeGroup( startTimeSpinner, startTimeSlider, true);
-        m_stopTime  = createTimeGroup( stopTimeSpinner, stopTimeSlider, false);
+        final float duration = m_dObj.getSceneManager().getAnimationDuration();
+        m_startTime = createTimeGroup( startTimeSpinner, startTimeSlider, duration, true);
+        m_stopTime  = createTimeGroup( stopTimeSpinner, stopTimeSlider, duration, false);
                 
         radioExportAll.setEnabled(isInProject());
         m_ratio = m_dim.getHeight() / m_dim.getWidth();
@@ -148,10 +149,10 @@ public final class SVGAnimationRasterizerPanel extends SVGRasterizerPanel {
         reductionCombo = new JComboBox( AnimationRasterizer.ColorReductionMethod.values());
         transparentCheckBox = new javax.swing.JCheckBox();
         timeLinePanel = new javax.swing.JPanel();
-        startTimeSpinner = new JSpinner( new SpinnerNumberModel( 0.0, 0.0, 30.0, 1.0));
+        startTimeSpinner = new JSpinner( new SpinnerNumberModel( (double)0.0, (double)0.0, (double)30.0, (double)1.0));
         javax.swing.JLabel startTimeLabel = new javax.swing.JLabel();
         javax.swing.JLabel stopTimeLabel = new javax.swing.JLabel();
-        stopTimeSpinner = new javax.swing.JSpinner();
+        stopTimeSpinner = new JSpinner( new SpinnerNumberModel( (double)30.0, (double)0.0, (double)30.0, (double)1.0));
         startTimeSlider = new javax.swing.JSlider();
         stopTimeSlider = new javax.swing.JSlider();
         javax.swing.JLabel framesPerSecLabel = new javax.swing.JLabel();
