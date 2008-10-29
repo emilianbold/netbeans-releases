@@ -59,8 +59,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.csl.api.IndexSearcher.Descriptor;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.csl.source.usages.ClassIndexManager;
@@ -384,7 +384,7 @@ public class GsfTypeProvider implements TypeProvider, IndexSearcher.Helper {
     }
 
     public void open(FileObject fileObject, ElementHandle element) {
-        Source js = Source.forFileObject(fileObject);
+        Source js = Source.create(fileObject);
         if (js != null) {
             UiUtils.open(js, element);
         }

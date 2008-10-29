@@ -42,6 +42,7 @@ package org.netbeans.modules.csl.core;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,15 +53,20 @@ import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
 import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
-import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.tasklist.PushTaskScanner;
@@ -277,10 +283,11 @@ public class GsfTaskProvider extends PushTaskScanner  {
                     applicable = true;
                     break;
                 }
-                if (language.getParser() != null) {
-                    applicable = true;
-                    break;
-                }
+                //HANZ
+//                if (language.getParser() != null) {
+//                    applicable = true;
+//                    break;
+//                }
             }
             if (!applicable) {
                 // No point compiling the file if there are no hintsproviders
@@ -302,108 +309,118 @@ public class GsfTaskProvider extends PushTaskScanner  {
             
             final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
             
-            Source source = Source.forFileObject(file);
+            Source source = Source.create(file);
             if (source == null) {
                 return;
             }
 
             final List<Task> tasks = new ArrayList<Task>();
 
-            CancellableTask<CompilationController> runner = new CancellableTask<CompilationController>() {
-                public void cancel() {
-                }
+            MultiLanguageUserTask task = new MultiLanguageUserTask () {
 
-                public void run(CompilationController info) throws Exception {
+                public void run (ResultIterator resultIterator) throws Exception {
                     // Ensure document is forced open
-                    GsfUtilities.getDocument(info.getFileObject(), true);
-
-                    info.toPhase(Phase.RESOLVED);
-
-                    for (String mimeType : info.getEmbeddedMimeTypes()) {
-                        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(mimeType);
-                        for (ParserResult parserResult : embeddedResults) {
-                            Language language = registry.getLanguageByMimeType(mimeType);
-                            HintsProvider provider = language.getHintsProvider();
-                            List<Error> errors = new ArrayList<Error>();
-
-                            if (provider == null) {
-                                // Just parser errors, no hints
-                                List<Error> parserErrors = parserResult.getDiagnostics();
-                                if (parserErrors != null) {
-                                    errors.addAll(parserErrors);
-                                }
-                            } else {
-                                GsfHintsManager manager = language.getHintsManager();
-                                if (manager == null) {
-                                    continue;
-                                }
-                                RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
-                                if (ruleContext == null) {
-                                    continue;
-                                }
-                                final List<Hint> hints = new ArrayList<Hint>();
-                                provider.computeErrors(manager, ruleContext, hints, errors);
-                                provider.computeHints(manager, ruleContext, hints);
-
-                                if (!file.isValid()) {
-                                    continue;
-                                }
-                                for (Hint desc : hints) {
-                                    ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
-                                    if (errorDesc != null) {
-                                        result.add(errorDesc);
-                                    }
-                                }
-                            }
-
-                            for (Error error : errors) {
-                                StyledDocument doc = (StyledDocument) info.getDocument();
-                                if (doc == null) {
-                                    continue;
-                                }
-
-                                int astOffset = error.getStartPosition();
-                                int lexOffset;
-                                if (parserResult.getTranslatedSource() != null) {
-                                    lexOffset = parserResult.getTranslatedSource().getLexicalOffset(astOffset);
-                                    if (lexOffset == -1) {
-                                        continue;
-                                    }
-                                } else {
-                                    lexOffset = astOffset;
-                                }
-
-                                int lineno = NbDocument.findLineNumber(doc, lexOffset) + 1;
-                                Task task = Task.create(file, 
-                                        error.getSeverity() == org.netbeans.modules.csl.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
-                                        error.getDisplayName(),
-                                        lineno);
-                                tasks.add(task);
-                            }
-                        }
-                    }
+                    GsfUtilities.getDocument(resultIterator.getSnapshot ().getSource ().getFileObject (), true);
+                    refreshEmbedding (file, resultIterator, result, tasks);
                 }
             };
             
             try {
-                source.runUserActionTask(runner, true);
-            } catch (IOException ex) {
+                ParserManager.parse (Collections.singleton (source), task);
+            } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
 
             for (final ErrorDescription hint : result) {
                 try {
-                    Task task = Task.create(file,
+                    Task tasklistTask = Task.create(file,
                             severityToTaskListString(hint.getSeverity()),
                             hint.getDescription(),
                             hint.getRange().getBegin().getLine()+1);
-                    tasks.add(task);
+                    tasks.add(tasklistTask);
                 } catch (IOException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
             }
 
             callback.setTasks(file, tasks);
+        }
+    }
+
+    private static void refreshEmbedding (
+        FileObject              file, 
+        ResultIterator          resultIterator,
+        List<ErrorDescription>  result,
+        List<Task>              tasks
+    ) throws ParseException {
+        Snapshot snapshot = resultIterator.getSnapshot ();
+        ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();
+        refreshEmbedding (file, parserResult, snapshot, result, tasks);
+        for (Embedding embedding : resultIterator.getEmbeddings ())
+            refreshEmbedding (file, resultIterator.getResultIterator (embedding), result, tasks);
+    }
+    
+    private static void refreshEmbedding (
+        FileObject              file, 
+        ParserResult            parserResult,
+        Snapshot                snapshot,
+        List<ErrorDescription>  result,
+        List<Task>              tasks
+    ) throws ParseException {
+        String mimeType = snapshot.getMimeType ();
+        final LanguageRegistry registry = LanguageRegistry.getInstance ();
+        Language language = registry.getLanguageByMimeType (mimeType);
+        HintsProvider provider = language.getHintsProvider();
+        List<Error> errors = new ArrayList<Error>();
+
+        if (provider == null) {
+            // Just parser errors, no hints
+            List<Error> parserErrors = parserResult.getDiagnostics();
+            if (parserErrors != null) {
+                errors.addAll(parserErrors);
+            }
+        } else {
+            GsfHintsManager manager = language.getHintsManager();
+            if (manager == null) {
+                return;
+            }
+            RuleContext ruleContext = manager.createRuleContext(parserResult, language, -1, -1, -1);
+            if (ruleContext == null) {
+                return;
+            }
+            final List<Hint> hints = new ArrayList<Hint>();
+            provider.computeErrors(manager, ruleContext, hints, errors);
+            provider.computeHints(manager, ruleContext, hints);
+
+            if (!file.isValid()) {
+                return;
+            }
+            for (Hint desc : hints) {
+                ErrorDescription errorDesc = manager.createDescription(desc, ruleContext, false);
+                if (errorDesc != null) {
+                    result.add(errorDesc);
+                }
+            }
+        }
+
+        for (Error error : errors) {
+            StyledDocument doc = (StyledDocument) snapshot.getSource ().getDocument ();
+            if (doc == null) {
+                continue;
+            }
+
+            int astOffset = error.getStartPosition();
+            int lexOffset = snapshot.getOriginalOffset (astOffset);
+            if (lexOffset == -1) {
+                continue;
+            }
+
+            int lineno = NbDocument.findLineNumber(doc, lexOffset) + 1;
+            Task task = Task.create(file, 
+                    error.getSeverity() == org.netbeans.modules.csl.api.Severity.ERROR ? TASKLIST_ERROR : TASKLIST_WARNING,
+                    error.getDisplayName(),
+                    lineno);
+            tasks.add(task);
         }
     }
     

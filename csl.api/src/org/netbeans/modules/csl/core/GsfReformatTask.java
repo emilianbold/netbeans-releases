@@ -42,6 +42,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 
 
@@ -49,7 +50,7 @@ public class GsfReformatTask implements ReformatTask {
 
     private Context                 context;
     private Formatter               formatter;
-    private CompilationController   controller;
+    private ParserResult            controller;
     private Source                  source;
     
     
@@ -92,15 +93,15 @@ public class GsfReformatTask implements ReformatTask {
                         source,
                         new UserTask () {
 
-                            @Override
-                            public void run (ParserResult result, Snapshot snapshot) throws Exception {
-                                controller.toPhase (Phase.PARSED);
-                                GsfReformatTask.this.controller = controller;
+                            public void run (Result result, Snapshot snapshot) throws Exception {
+                                ParserResult parserResult = (ParserResult) result;
+                                parserResult.toPhase (Phase.PARSED);
+                                GsfReformatTask.this.controller = parserResult;
                             }
                         },
                         context.caretOffset ()
                     );
-                } catch (IOException ioe) {
+                } catch (Exception ioe) {
                     //SourceAccessor.getINSTANCE().unlockJavaCompiler();
                 }
                 if (controller == null) {

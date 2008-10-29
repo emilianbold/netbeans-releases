@@ -73,6 +73,7 @@ import org.netbeans.modules.csl.api.Rule.ErrorRule;
 import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -578,10 +579,10 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
 
     
-    public RuleContext createRuleContext(CompilationInfo info, Language language, int caretOffset, int selectionStart, int selectionEnd) {
+    public RuleContext createRuleContext (ParserResult parserResult, Language language, int caretOffset, int selectionStart, int selectionEnd) {
         RuleContext context = provider.createRuleContext();
         context.manager = this;
-        context.compilationInfo = info;
+        context.compilationInfo = parserResult;
         context.caretOffset = caretOffset;
         context.selectionStart = selectionStart;
         context.selectionEnd = selectionEnd;

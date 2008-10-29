@@ -51,14 +51,20 @@ import javax.swing.event.CaretListener;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+
 import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
 
@@ -131,7 +137,7 @@ public final class SelectCodeElementAction extends BaseAction {
         }
     }
 
-    private static final class SelectionHandler implements CaretListener, CancellableTask<CompilationController>, Runnable {
+    private static final class SelectionHandler extends UserTask implements CaretListener, Runnable {
         
         private JTextComponent target;
         private SelectionInfo[] selectionInfos;
@@ -144,10 +150,10 @@ public final class SelectCodeElementAction extends BaseAction {
 
         public void selectNext() {
             if (selectionInfos == null) {
-                Source js = Source.forDocument(target.getDocument());
+                Source source = Source.create (target.getDocument());
                 try {
-                    js.runUserActionTask(this, true);
-                } catch (IOException ex) {
+                    ParserManager.parse (source, this, target.getCaretPosition ());
+                } catch (ParseException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
             }
@@ -190,13 +196,10 @@ public final class SelectCodeElementAction extends BaseAction {
         public void cancel() {
         }
 
-        public void run(CompilationController cc) {
-            try {
-                cc.toPhase(Phase.RESOLVED);
-                selectionInfos = initSelectionPath(target, cc);
-            } catch (IOException ex) {
-                ErrorManager.getDefault().notify(ex);
-            }
+        public void run (Parser.Result result, Snapshot snapshot) {
+            ParserResult parserResult = (ParserResult) result;
+            parserResult.toPhase(Phase.RESOLVED);
+            selectionInfos = initSelectionPath(target, parserResult);
         }
         
         private KeystrokeHandler getBracketCompletion(Document doc, int offset) {
@@ -211,10 +214,10 @@ public final class SelectCodeElementAction extends BaseAction {
             return null;
         }
         
-        private SelectionInfo[] initSelectionPath(JTextComponent target, CompilationController ci) {
+        private SelectionInfo[] initSelectionPath(JTextComponent target, ParserResult parserResult) {
             KeystrokeHandler bc = getBracketCompletion(target.getDocument(), target.getCaretPosition());
             if (bc != null) {
-                List<OffsetRange> ranges = bc.findLogicalRanges(ci, target.getCaretPosition());
+                List<OffsetRange> ranges = bc.findLogicalRanges(parserResult, target.getCaretPosition());
                 SelectionInfo[] result = new SelectionInfo[ranges.size()];
                 for (int i = 0; i < ranges.size(); i++) {
                     OffsetRange range = ranges.get(i);

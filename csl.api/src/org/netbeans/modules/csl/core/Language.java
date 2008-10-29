@@ -43,6 +43,7 @@ package org.netbeans.modules.csl.core;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
+
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.DeclarationFinder;
@@ -50,7 +51,6 @@ import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.Parser;
 import org.netbeans.modules.csl.api.GsfLanguage;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
@@ -59,7 +59,6 @@ import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.StructureScanner;
-//import org.netbeans.spi.palette.PaletteController;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.editor.semantic.ColoringManager;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
@@ -88,7 +87,6 @@ public final class Language {
     private List<Action> actions;
     private GsfLanguage language;
     private DefaultLanguageConfig languageConfig;
-    private Parser parser;
     private CodeCompletionHandler completionProvider;
     private InstantRenamer renamer;
     private DeclarationFinder declarationFinder;
@@ -125,14 +123,13 @@ public final class Language {
 
     /** For testing purposes only!*/
     public Language(String iconBase, String mime, List<Action> actions,
-            GsfLanguage gsfLanguage, Parser parser, CodeCompletionHandler completionProvider, InstantRenamer renamer,
+            GsfLanguage gsfLanguage, CodeCompletionHandler completionProvider, InstantRenamer renamer,
             DeclarationFinder declarationFinder, Formatter formatter, KeystrokeHandler bracketCompletion, Indexer indexer,
             StructureScanner structure, /*PaletteController*/Object palette, boolean useCustomEditorKit) {
         this.iconBase = iconBase;
         this.mime = mime;
         this.actions = actions;
         this.language = gsfLanguage;
-        this.parser = parser;
         this.completionProvider = completionProvider;
         this.renamer = renamer;
         this.declarationFinder = declarationFinder;
@@ -240,35 +237,35 @@ public final class Language {
         this.languageFile = languageFile;
     }
     
-    /** Return a parser for use with this language. A parser is optional (in which
-     * case getParser() may return null) but in that case a lot of functionality
-     * will be disabled for this language.
-     * @todo Clarify whether clients should cache instances of this or if it will
-     *  be called only once and management done by the IDE
-     */
-    @CheckForNull
-    public Parser getParser() {
-        if (parser == null) {
-            if (parserFile != null) {
-                // Lazily construct Parser
-                parser = (Parser)createInstance(parserFile);
-                if (parser == null) {
-                    // Don't keep trying
-                    parserFile = null;
-                }
-            } else {
-                getGsfLanguage(); // Also initializes languageConfig
-                if (languageConfig != null) {
-                    parser = languageConfig.getParser();
-                }
-            }
-        }
-        return parser;
-    }
-
-    void setParser(Parser parser) {
-        this.parser = parser;
-    }
+//HANZ    /** Return a parser for use with this language. A parser is optional (in which
+//     * case getParser() may return null) but in that case a lot of functionality
+//     * will be disabled for this language.
+//     * @todo Clarify whether clients should cache instances of this or if it will
+//     *  be called only once and management done by the IDE
+//     */
+//    @CheckForNull
+//    public Parser getParser() {
+//        if (parser == null) {
+//            if (parserFile != null) {
+//                // Lazily construct Parser
+//                parser = (Parser)createInstance(parserFile);
+//                if (parser == null) {
+//                    // Don't keep trying
+//                    parserFile = null;
+//                }
+//            } else {
+//                getGsfLanguage(); // Also initializes languageConfig
+//                if (languageConfig != null) {
+//                    parser = languageConfig.getParser();
+//                }
+//            }
+//        }
+//        return parser;
+//    }
+//
+//    void setParser(Parser parser) {
+//        this.parser = parser;
+//    }
     
     void setParserFile(FileObject parserFile) {
         this.parserFile = parserFile;
