@@ -512,22 +512,22 @@ public class CPPParserEx extends CPPParser {
         return false;
     }
 
-    private boolean isClassName(String  s) { 
-        return isValidIdentifier(s);
-        /* TODO: revive the original code:
-	CPPSymbol *cs = (CPPSymbol *) symbols->lookup(s);
-	
-	if (cs != NULL && (cs->getType() == CPPSymbol::otClass ||
-		cs->getType() == CPPSymbol::otStruct ||
-		cs->getType() == CPPSymbol::otUnion)) {
-	    return 1;
-	} else if (cs == NULL && codeFoldingParse && isValidIdentifier(s)) {
-	    return 1;
-	} else {
-	    return 0;
-	}
-        */
-    }
+//    private boolean isClassName(String  s) {
+//        return isValidIdentifier(s);
+//        /* TODO: revive the original code:
+//	CPPSymbol *cs = (CPPSymbol *) symbols->lookup(s);
+//
+//	if (cs != NULL && (cs->getType() == CPPSymbol::otClass ||
+//		cs->getType() == CPPSymbol::otStruct ||
+//		cs->getType() == CPPSymbol::otUnion)) {
+//	    return 1;
+//	} else if (cs == NULL && codeFoldingParse && isValidIdentifier(s)) {
+//	    return 1;
+//	} else {
+//	    return 0;
+//	}
+//        */
+//    }
     
     //protected void beginFunctionDefinition() {
         //functionDefinition = 1;

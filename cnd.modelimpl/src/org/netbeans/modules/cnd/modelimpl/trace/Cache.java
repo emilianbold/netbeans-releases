@@ -53,8 +53,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  */
 public class Cache {
     
-    private boolean useZip;
-    
     private interface Delegate {
         public void writeAst(AST tree, File file) throws IOException ;
         public AST readAst(File file) throws IOException, ClassNotFoundException;

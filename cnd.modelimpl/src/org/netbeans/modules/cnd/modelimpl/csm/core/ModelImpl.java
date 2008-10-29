@@ -85,30 +85,30 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 	startup();
     }
     
-    private void initThreasholds() {
-	String value, propertyName;
-	propertyName = "cnd.model.memory.warning.threashold"; // NOI18N
-	value = System.getProperty(propertyName);
-	if( value != null ) {
-	    try {
-		warningThreshold = Double.parseDouble(value);
-	    }
-	    catch(NumberFormatException e) {
-		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value); // NOI18N
-		DiagnosticExceptoins.register(e);
-	    }
-	}
-//	propertyName = "cnd.model.memory.fatal.threashold";
+//    private void initThreasholds() {
+//	String value, propertyName;
+//	propertyName = "cnd.model.memory.warning.threashold"; // NOI18N
 //	value = System.getProperty(propertyName);
 //	if( value != null ) {
 //	    try {
-//		fatalThreshold = Double.parseDouble(value);
+//		warningThreshold = Double.parseDouble(value);
 //	    }
 //	    catch(NumberFormatException e) {
-//		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value);
+//		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value); // NOI18N
+//		DiagnosticExceptoins.register(e);
 //	    }
 //	}
-    }
+////	propertyName = "cnd.model.memory.fatal.threashold";
+////	value = System.getProperty(propertyName);
+////	if( value != null ) {
+////	    try {
+////		fatalThreshold = Double.parseDouble(value);
+////	    }
+////	    catch(NumberFormatException e) {
+////		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value);
+////	    }
+////	}
+//    }
     
     public CsmProject findProject(Object id) {
         ProjectBase prj = null;
