@@ -640,14 +640,7 @@ tokens {
 	//protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected int getLine()	{ /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected void printf(String pattern, int i) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i, Object o1, Object o2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i1, int i2, boolean b1, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i1, int i2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf (String pattern, int i1, Object o1, int i2, Object o2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf (String pattern, int i1, int i2, int i3, String s) { /*TODO: implement*/ throw new NotImplementedException(); }
+	protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
 
