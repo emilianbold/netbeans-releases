@@ -723,15 +723,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             data = new StatePair(state, pcState);
         }
         
-        private static int countValidStates(Collection<StatePair> states) {
-            int cnt = 0;
-            for (StatePair pair : states) {
-                if (pair.state != null && pair.state.isValid()) {
-                    cnt++;
-                }
-            }
-            return cnt;
-        }
+//        private static int countValidStates(Collection<StatePair> states) {
+//            int cnt = 0;
+//            for (StatePair pair : states) {
+//                if (pair.state != null && pair.state.isValid()) {
+//                    cnt++;
+//                }
+//            }
+//            return cnt;
+//        }
         
         /**
          * Sets (replaces) new conditions state for the existent pair
