@@ -100,7 +100,7 @@ public final class Snapshot {
     ) {
         if (offset < 0 || length < 0)
             throw new ArrayIndexOutOfBoundsException ();
-        if (offset + length >= getText ().length ())
+        if (offset + length > getText ().length ())
             throw new ArrayIndexOutOfBoundsException ();
         List<int[]> newCurrentToOriginal = new ArrayList<int[]> ();
         List<int[]> newOriginalToCurrent = new ArrayList<int[]> ();

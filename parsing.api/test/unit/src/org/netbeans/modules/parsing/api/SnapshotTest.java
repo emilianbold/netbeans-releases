@@ -161,6 +161,10 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (20));
         assertEquals (15, petaSnapshot.getEmbeddedOffset (30));
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (35));
+        
+        Embedding fullSpanEmbedding = originalSnapshot.create (0, originalSnapshot.getText().length(), "peta");
+        Snapshot fullSpanSnapshot = fullSpanEmbedding.getSnapshot ();
+        assertEquals(originalSnapshot.getText().toString(), fullSpanSnapshot.getText().toString());
     }
 
     public void testSnapshotCreationDeadlock () throws Exception {  //Originally JavaSourceTest.testRTB_005
