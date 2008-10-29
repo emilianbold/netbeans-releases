@@ -53,6 +53,12 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * Some random utility methods to allow post creation modifications of the project model.
@@ -65,7 +71,9 @@ public final class ModelHandleUtils {
     
     public static ModelHandle createModelHandle(Project prj) throws IOException, XmlPullParserException {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
-        Model model = project.getEmbedder().readModel(project.getPOMFile());
+        FileObject pom = FileUtil.toFileObject(project.getPOMFile());
+        ModelSource source = Utilities.createModelSource(pom, true);
+        POMModel model = POMModelFactory.getDefault().getModel(source);
         ProfilesRoot prof = MavenSettingsSingleton.createProfilesModel(project.getProjectDirectory());
         UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
         ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getRawMappingsAsString()));

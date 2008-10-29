@@ -80,12 +80,18 @@ import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.jdom.NetbeansBuildActionJDOMWriter;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.ui.CustomizerProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -143,7 +149,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
     
     private void init() throws XmlPullParserException, FileNotFoundException, IOException {
-        Model model = project.getEmbedder().readModel(project.getPOMFile());
+        FileObject pom = FileUtil.toFileObject(project.getPOMFile());
+        ModelSource source = Utilities.createModelSource(pom, true);
+        POMModel model = POMModelFactory.getDefault().getModel(source);
+
         ProfilesRoot prof = MavenSettingsSingleton.createProfilesModel(project.getProjectDirectory());
         UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
@@ -222,7 +231,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     
     public static abstract class ModelAccessor {
         
-        public abstract ModelHandle createHandle(Model model, ProfilesRoot prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp, 
+        public abstract ModelHandle createHandle(POMModel model, ProfilesRoot prof, MavenProject proj, Map<String, ActionToGoalMapping> mapp,
                 List<ModelHandle.Configuration> configs, ModelHandle.Configuration active);
         
     }
@@ -281,7 +290,14 @@ public class CustomizerProviderImpl implements CustomizerProvider {
 
    public static void writeAll(ModelHandle handle, NbMavenProjectImpl project) throws IOException {
         if (handle.isModified(handle.getPOMModel())) {
-            WriterUtils.writePomModel(FileUtil.toFileObject(project.getPOMFile()), handle.getPOMModel());
+            handle.getPOMModel().endTransaction();
+            DataObject dobj = handle.getPOMModel().getModelSource().getLookup().lookup(DataObject.class);
+            SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
+            if (save != null) {
+                save.save();
+            } else {
+                //not changed?
+            }
         }
         if (handle.isModified(handle.getProfileModel())) {
             WriterUtils.writeProfilesModel(project.getProjectDirectory(), handle.getProfileModel());
