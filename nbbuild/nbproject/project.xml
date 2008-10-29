@@ -43,9 +43,6 @@ made subject to such option by the copyright holder.
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.ant.freeform</type>
     <configuration>
-        <general-data xmlns="http://www.netbeans.org/ns/freeform-project/1">
-            <name>NetBeans Build System</name>
-        </general-data>
         <general-data xmlns="http://www.netbeans.org/ns/freeform-project/2">
             <name>NetBeans Build System</name>
             <properties>
@@ -80,24 +77,19 @@ made subject to such option by the copyright holder.
             </folders>
             <ide-actions>
                 <action name="build">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>bootstrap</target>
                 </action>
                 <action name="rebuild">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>localclean</target>
                     <target>bootstrap</target>
                 </action>
                 <action name="clean">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>localclean</target>
                 </action>
                 <action name="test">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest</target>
                 </action>
                 <action name="run.single">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest</target>
                     <context>
                         <property>includes</property>
@@ -110,7 +102,6 @@ made subject to such option by the copyright holder.
                     </context>
                 </action>
                 <action name="debug.single">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>localtest-single-nb-debug</target>
                     <context>
                         <property>includes</property>
@@ -123,46 +114,19 @@ made subject to such option by the copyright holder.
                     </context>
                 </action>
                 <action name="javadoc">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>bootstrap-javadoc</target>
                 </action>
                 <action name="run">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>tryme</target>
                 </action>
                 <action name="debug">
-                    <script>nbproject/nbjdk.xml</script>
                     <target>tryme-debug</target>
                 </action>
             </ide-actions>
             <export>
-                <type>folder</type>
-                <location>build/antclasses</location>
-                <script>nbproject/nbjdk.xml</script>
-                <build-target>bootstrap</build-target>
-            </export>
-            <export>
                 <type>jar</type>
                 <location>nbantext.jar</location>
-                <script>nbproject/nbjdk.xml</script>
-                <build-target>bootstrap</build-target>
-            </export>
-            <export>
-                <type>folder</type>
-                <location>build/test/unit/classes</location>
-                <script>nbproject/nbjdk.xml</script>
-                <build-target>bootstrap</build-target>
-            </export>
-            <export>
-                <type>folder</type>
-                <location>build/testdistclasses</location>
-                <script>nbproject/nbjdk.xml</script>
-                <build-target>bootstrap</build-target>
-            </export>
-            <export>
-                <type>jar</type>
-                <location>build/testdist/tasks.jar</location>
-                <script>nbproject/nbjdk.xml</script>
+                <script>${ant.script}</script>
                 <build-target>bootstrap</build-target>
             </export>
             <view>
@@ -171,7 +135,7 @@ made subject to such option by the copyright holder.
                         <label>Ant Tasks</label>
                         <location>antsrc</location>
                     </source-folder>
-                    <source-folder style="packages">
+		    <source-folder style="packages">
                         <label>Tests for Ant Tasks</label>
                         <location>test/unit/src</location>
                     </source-folder>
@@ -179,7 +143,7 @@ made subject to such option by the copyright holder.
                         <label>Test Distribution Tasks</label>
                         <location>testdist/src</location>
                     </source-folder>
-                    <source-folder style="packages">
+		    <source-folder style="packages">
                         <label>Tests for Test Distribution Tasks</label>
                         <location>testdist/test</location>
                     </source-folder>
@@ -241,7 +205,6 @@ made subject to such option by the copyright holder.
                     </action>
                 </context-menu>
             </view>
-            <subprojects/>
             <project-license>cddl-netbeans-sun</project-license>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
