@@ -880,6 +880,13 @@ public class Installer extends ModuleInstall implements Runnable {
         return displaySummary("EXIT_URL", false, false,true); // NOI18N
     }
 
+    static void logDeactivated(){
+        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
+            a.deactivated(log);
+        }
+    }
+    
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
 
     private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType) {
@@ -1359,10 +1366,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         public void doShow(DataType dataType) {
             if (dataType == DataType.DATA_UIGESTURE) {
-                Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
-                for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
-                    a.deactivated(log);
-                }
+                logDeactivated();
             }
             if (report) {
                 dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
@@ -1554,7 +1558,7 @@ public class Installer extends ModuleInstall implements Runnable {
                                 return;
                             }
                         }
-                        LOG.fine("posting upload UIGESTRUE");// NOI18N
+                        LOG.fine("posting upload UIGESTURES");// NOI18N
                     } else if (dataType == DataType.DATA_METRICS) {
                         recs = getLogsMetrics();
                         saveUserName();
