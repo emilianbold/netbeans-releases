@@ -84,8 +84,12 @@ public final class PropertyEditorComboBoxNoUserCode extends DesignPropertyEditor
         super.cleanUp(component);
         tags = null;
         enableTypeID = null;
-        values.clear();
-        values = null;
+        //Fix Issue 151708
+        if (values != null) {
+            values.clear();
+            values = null;
+        }
+        //End of the Fix Issue 151708
     }
 
     @Override
