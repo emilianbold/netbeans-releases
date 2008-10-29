@@ -106,8 +106,15 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         public SVGRasterizerComponentGroup( Object ... comps) {
             super(comps);
         }
+        @Override
         public void refresh(JComponent source) {
-            updateImage(source, true);
+            if ( !componentIsAdjustingSlider(source) ) {
+                updateImage(source, true);
+            }
+        }
+
+        private boolean componentIsAdjustingSlider(JComponent comp) {
+            return ((comp instanceof JSlider) && ((JSlider) comp).getValueIsAdjusting());
         }
     };
     
@@ -132,8 +139,30 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         }
     }
     
-    protected ComponentGroup createTimeGroup( JSpinner spinner, final JSlider slider, boolean isStart) {
-        final float duration = m_dObj.getSceneManager().getAnimationDuration();
+    /**
+     * creates ComponentGroup from provided spinner and slider for adjusting time limits
+     * @param spinner JSpinner for time limit adjusting
+     * @param slider JSlider for time limit adjusting
+     * @param isStart true if this group is for starty time adjusting. false otherwise.
+     * @return ComponentGroup object
+     */
+    protected ComponentGroup createTimeGroup( JSpinner spinner, JSlider slider, boolean isStart) {
+        float duration = m_dObj.getSceneManager().getAnimationDuration();
+        return createTimeGroup(spinner, slider, duration, isStart);
+    }
+        
+    /**
+     * creates ComponentGroup from provided spinner and slider for adjusting time limits.
+     * Use this method if you create several groups that should have the same maximum value.
+     * @param spinner JSpinner for time limit adjusting
+     * @param slider JSlider for time limit adjusting
+     * @param duration Current animation duration. Will be used to set maximum value
+     * @param isStart true if this group is for starty time adjusting. false otherwise.
+     * @return ComponentGroup object
+     */
+    protected ComponentGroup createTimeGroup( JSpinner spinner, final JSlider slider, 
+            final float duration, boolean isStart) {
+        
         int p = Math.round(duration * 100);
         slider.setMinimum( 0);
         slider.setMaximum( p);
@@ -142,10 +171,12 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         if (!isStart) {
             slider.setInverted(true);
             sliderWrapper = new ComponentGroup.SliderWrapper(slider) {
+                @Override
                 public float getValue() {
                     return duration - super.getValue();
                 }
 
+                @Override
                 public void setValue(float value) {
                     super.setValue(duration - value);
                 }
@@ -153,7 +184,7 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         } else {
             sliderWrapper = ComponentWrapper.wrap(slider);
         }
-       
+
         final SpinnerNumberModel model = new SpinnerNumberModel( (double) (isStart ? 0 : duration), 0.0, duration, 1.0);
         spinner.setModel( model);
         return new SVGRasterizerComponentGroup( spinner, sliderWrapper);
@@ -223,6 +254,7 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
             //TODO Revisit, update of the model will probably cause deadlock
             if ( SwingUtilities.isEventDispatchThread()) {
                 Thread th = new Thread() {
+                    @Override
                     public void run() {
                         loadSVGImage();
                     }
