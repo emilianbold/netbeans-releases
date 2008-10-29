@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;

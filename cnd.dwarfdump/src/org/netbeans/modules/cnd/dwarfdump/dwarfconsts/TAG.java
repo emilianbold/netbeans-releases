@@ -137,8 +137,8 @@ public enum TAG {
     static HashMap<Integer, TAG> hashmap = new HashMap<Integer, TAG>();
  
     static {
-        for (TAG elem : TAG.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (TAG elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
  
@@ -147,7 +147,7 @@ public enum TAG {
     }
     
     public static TAG get(int val) {
-        TAG kind = hashmap.get(new Integer(val));
+        TAG kind = hashmap.get(val);
         return (kind != null) ? kind : DW_TAG_unknown;
     }
     

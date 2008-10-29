@@ -60,8 +60,8 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
@@ -222,7 +222,7 @@ public final class EarProjectGenerator {
             SharabilityUtility.createLibrary(
                 h.resolveFile(h.getLibrariesLocation()), serverlibraryName, serverInstanceId);
         }
-        ClassPathSupport.makeSureProjectHasCopyLibsLibrary(h, rh);
+        SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
      }
     
     private AntProjectHelper doImportProject(final File srcPrjDir,
@@ -478,7 +478,7 @@ public final class EarProjectGenerator {
      * @throws java.io.IOException if any error occurs.
      */
     public static FileObject setupDD(final String j2eeLevel, final FileObject docBase,
-            final EarProject earProject, boolean force) throws IOException {
+            final Project earProject, boolean force) throws IOException {
         FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
         if (dd != null) {
             return dd; // already created
@@ -515,8 +515,8 @@ public final class EarProjectGenerator {
             // API for retrieval of getJarContentAdditional() not present.
             EarProject defInst = earProject.getLookup().lookup(EarProject.class);
             if (defInst != null) {
-                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(earProject)) {
-                    EarProjectProperties.addItemToAppDD(earProject, app, vcpi);
+                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(defInst)) {
+                    EarProjectProperties.addItemToAppDD(defInst, app, vcpi);
                 }
             }
             app.write(dd);
@@ -600,7 +600,7 @@ public final class EarProjectGenerator {
         ep.setProperty(EarProjectProperties.J2EE_SERVER_TYPE, deployment.getServerID(serverInstanceID));
         
         if (h.isSharableProject() && serverLibraryName != null) {
-            ep.setProperty(ProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
+            ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, "${libs." + serverLibraryName + ".classpath}"); //NOI18N
         }
         
         String srcLevel = sourceLevel;

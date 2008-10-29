@@ -55,7 +55,7 @@ import org.netbeans.modules.asm.model.util.EmptyModel;
 
 public abstract class BaseModelProvider implements AsmModelProvider {   
 
-    private String resource;
+    private final String resource;
     private Reference<AsmModel> modelRef;
 
     public BaseModelProvider(String resource) {

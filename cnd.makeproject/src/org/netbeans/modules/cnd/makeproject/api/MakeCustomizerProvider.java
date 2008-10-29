@@ -114,13 +114,17 @@ public class MakeCustomizerProvider implements CustomizerProvider {
     }
     
     public void showCustomizer(final String preselectedNodeName, final Item item, final Folder folder) {
+        if (!projectDescriptorProvider.gotDescriptor()) {
+            //TODO: show warning dialog
+            return;
+        }
         RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 showCustomizerWorker(preselectedNodeName, item, folder);
             }
         });     
     }
-    
+
     private void showCustomizerWorker(String preselectedNodeName, Item item, Folder folder) {
         
         if (customizerPerProject.containsKey (project)) {

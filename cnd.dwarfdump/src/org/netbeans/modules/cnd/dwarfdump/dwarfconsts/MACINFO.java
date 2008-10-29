@@ -58,8 +58,8 @@ public enum MACINFO {
     private final int value;
     
     static {
-        for (MACINFO elem : MACINFO.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (MACINFO elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
 
@@ -68,12 +68,11 @@ public enum MACINFO {
     }
     
     public static MACINFO get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     
     public int value() {
         return value;
-        
     }
 }

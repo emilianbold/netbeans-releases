@@ -29,7 +29,7 @@ METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     getAt(String)                              Object
 METHOD     getAuthority()                             String
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getContent()                               Object
 METHOD     getContent(Class[])                        Object
 METHOD     getDefaultPort()                           int
@@ -82,7 +82,7 @@ METHOD     toString()                                 String
 METHOD     toURI()                                    URI
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void

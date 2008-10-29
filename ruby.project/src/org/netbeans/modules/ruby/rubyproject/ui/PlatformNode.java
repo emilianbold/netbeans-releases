@@ -39,17 +39,31 @@
 package org.netbeans.modules.ruby.rubyproject.ui;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.rubyproject.PlatformChangeListener;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.util.NbBundle;
+import org.openide.util.actions.Presenter;
 
 /**
  * Represents Ruby Platform node in the Ruby project's logical view.
  */
 final class PlatformNode extends AbstractNode {
 
+    private static final Logger LOGGER = Logger.getLogger(PlatformNode.class.getName());
+    
     private static final String PLATFORM_ICON = "org/netbeans/modules/ruby/rubyproject/resources/platform.gif"; // NOI18N
     private final RubyBaseProject project;
 
@@ -76,7 +90,37 @@ final class PlatformNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[0];
+        return new Action[] {
+            new ChangePlatformAction()
+        };
+    }
 
+    private final class ChangePlatformAction extends AbstractAction implements Presenter.Popup {
+
+        public void actionPerformed(ActionEvent e) {
+            assert false : "Action should not be called directly";
+        }
+
+        public JMenuItem getPopupPresenter() {
+            return createMenu();
+        }
+
+        private JMenuItem createMenu() {
+            JMenu menu = new JMenu(NbBundle.getMessage(PlatformNode.class, "PlatformNode.Change"));
+            for (final RubyPlatform platform : RubyPlatformManager.getSortedPlatforms()) {
+                JMenuItem item = new JMenuItem(platform.getLabel());
+                item.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        try {
+                            project.changeAndStorePlatform(platform);
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.SEVERE, "Unable to change the platform: " + ex.getLocalizedMessage(), ex);
+                        }
+                    }
+                });
+                menu.add(item);
+            }
+            return menu;
+        }
     }
 }

@@ -57,7 +57,7 @@ public class InstructionListPanel extends JPanel implements NavigatorTab {
     private static NavigatorTab instance;        
     
     private AsmModel model;
-    private InstructionInfoPanel info;
+    private final InstructionInfoPanel info;
     
     public static synchronized NavigatorTab getInstance() {
         if (instance == null) {
@@ -67,7 +67,6 @@ public class InstructionListPanel extends JPanel implements NavigatorTab {
     }       
     
     private InstructionListPanel() {
-        this.model = model;   
         this.info = new InstructionInfoPanel();
         initComponents();
         

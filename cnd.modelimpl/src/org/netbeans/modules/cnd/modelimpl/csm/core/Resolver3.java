@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassForwardDeclarationImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionDefinitionImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NamespaceImpl;
@@ -69,6 +70,7 @@ public class Resolver3 implements Resolver {
     
     private ProjectBase project;
     private CsmFile file;
+    private final CsmFile startFile;
     private int offset;
     private final int origOffset;
     private Resolver parentResolver;
@@ -116,20 +118,22 @@ public class Resolver3 implements Resolver {
     
     //private CsmNamespace currentNamespace;
     
-    public Resolver3(CsmFile file, int offset, Resolver parent) {
+    public Resolver3(CsmFile file, int offset, Resolver parent, CsmFile startFile) {
         this.file = file;
         this.offset = offset;
         this.origOffset = offset;
         parentResolver = parent;
         this.project = (ProjectBase) file.getProject();
+        this.startFile = startFile;
+    }
+    
+    public Resolver3(CsmFile file, int offset, Resolver parent) {
+        this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
     }
     
     public Resolver3(CsmOffsetable context, Resolver parent) {
-        this.file = context.getContainingFile();
-        this.offset = context.getStartOffset();
-        this.origOffset = offset;
-        parentResolver = parent;
-        this.project = (ProjectBase) context.getContainingFile().getProject();
+        this(context.getContainingFile(), context.getStartOffset(), parent,
+                (parent == null) ? context.getContainingFile() : parent.getStartFile());
     }
     
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart) {
@@ -144,8 +148,12 @@ public class Resolver3 implements Resolver {
     
     private CsmClassifier findClassifier(CharSequence qualifiedName) {
         // try to find visible classifier
-        CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, file, true);
+        CsmClassifier result = CsmClassifierResolver.getDefault().findClassifierUsedInFile(qualifiedName, getStartFile(), needClasses());
         return result;
+    }
+    
+    public CsmFile getStartFile() {
+        return startFile;
     }
     
     public CsmNamespace findNamespace(CharSequence qualifiedName) {
@@ -166,22 +174,19 @@ public class Resolver3 implements Resolver {
         AntiLoop set = new AntiLoop(100);
         while (true) {
             set.add(orig);
+            CsmClassifier resovedClassifier = null;
             if (CsmKindUtilities.isClassForwardDeclaration(orig)){
                 CsmClassForwardDeclaration fd = (CsmClassForwardDeclaration) orig;
-                CsmClass definition;
                 if (fd instanceof ClassForwardDeclarationImpl) {
-                    definition = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
+                    resovedClassifier = ((ClassForwardDeclarationImpl)fd).getCsmClass(this);
                 } else {
-                    definition = fd.getCsmClass();
+                    resovedClassifier = fd.getCsmClass();
                 }
-                if (definition != null){
-                    orig = definition;
-                } else {
+                if (resovedClassifier == null){
                     break;
                 }
             } else if (CsmKindUtilities.isTypedef(orig)) {
                 CsmType t = ((CsmTypedef)orig).getType();
-                CsmClassifier resovedClassifier = null;
                 if (t instanceof Resolver.SafeClassifierProvider) {
                     resovedClassifier = ((Resolver.SafeClassifierProvider)t).getClassifier(this);
                 } else {
@@ -191,18 +196,18 @@ public class Resolver3 implements Resolver {
                     // have to stop with current 'orig' value
                     break;
                 }
-                if (set.contains(resovedClassifier)) {
-                    // try to recover from this error
-                    resovedClassifier = findOtherClassifier(orig);
-                    if (resovedClassifier == null) {
-                        // have to stop with current 'orig' value
-                        break;
-                    }
-                }
-                orig = resovedClassifier;
             } else {
                 break;
             }
+            if (set.contains(resovedClassifier)) {
+                // try to recover from this error
+                resovedClassifier = findOtherClassifier(orig);
+                if (resovedClassifier == null) {
+                    // have to stop with current 'orig' value
+                    break;
+                }
+            }
+            orig = resovedClassifier;            
         }
         return orig;
         
@@ -218,7 +223,9 @@ public class Resolver3 implements Resolver {
                 if (CsmKindUtilities.isClassifier(decl) && decl.getQualifiedName().equals(fqn)) {
                     if (!decl.getUID().equals(uid)) {
                         cls = (CsmClassifier)decl;
-                        break;
+                        if (!isForwardClass(cls)) {
+                            break;
+                        }
                     }
                 }
             }
@@ -304,7 +311,11 @@ public class Resolver3 implements Resolver {
         buf.append(file.getAbsolutePath()+":"+origOffset); // NOI18N
         buf.append(":Looking for "); // NOI18N
         if (needClassifiers()) {
-            buf.append("C"); // NOI18N
+            if (needClasses()) {
+                buf.append("c"); // NOI18N
+            } else {
+                buf.append("C"); // NOI18N
+            }
         }
         if (needNamespaces()) {
             buf.append("N"); // NOI18N
@@ -816,11 +827,18 @@ public class Resolver3 implements Resolver {
     }
     
     private boolean needClassifiers() {
-        return (interestedKind & CLASSIFIER) == CLASSIFIER;
+        return ((interestedKind & CLASSIFIER) == CLASSIFIER) || needClasses();
     }
     
     private boolean needNamespaces() {
         return (interestedKind & NAMESPACE) == NAMESPACE;
     }    
 
+    private boolean needClasses() {
+        return (interestedKind & CLASS) == CLASS;
+    }
+    
+    private static boolean isForwardClass(CsmClassifier first) {
+        return first instanceof ForwardClass;
+    }    
 }

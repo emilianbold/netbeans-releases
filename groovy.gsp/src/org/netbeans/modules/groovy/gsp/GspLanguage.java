@@ -58,9 +58,9 @@ import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.spi.DefaultLanguageConfig;
-import org.netbeans.modules.groovy.editor.StructureAnalyzer;
-import org.netbeans.modules.groovy.editor.GroovyUtils;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
+import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 
 public class GspLanguage extends DefaultLanguageConfig {

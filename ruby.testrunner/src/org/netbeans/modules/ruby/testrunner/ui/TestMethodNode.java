@@ -167,17 +167,18 @@ final class TestMethodNode extends AbstractNode {
     @Override
     public Action getPreferredAction() {
         // the location to jump from the node
-        String testLocation = getTestLocation();
-        String jumpToLocation = testLocation != null
-                ? testLocation
-                : getTestCaseLineFromStackTrace();
+        String testLocation = getTestLocation(testcase, project);
+        String stackTrace = testcase.getTestCaseLineFromStackTrace();
+        String jumpToLocation = stackTrace != null
+                ? stackTrace
+                : testLocation;
 
         return jumpToLocation == null
-                ? new JumpToTestMethodAction(testcase, project)
+                ? new JumpToTestAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_GoToSource"), false)
                 : new JumpToCallStackAction(this, jumpToLocation);
     }
     
-    private String getTestLocation() {
+    static String getTestLocation(Report.Testcase testcase, Project project) {
         if (testcase.getLocation() == null) {
             return null;
         }
@@ -190,37 +191,17 @@ final class TestMethodNode extends AbstractNode {
         return testcase.getLocation();
     }
     
-    /**
-     * Gets the line from the stack trace representing the last line in the test class. 
-     * If that can't be resolved
-     * then returns the second line of the stack trace (the
-     * first line represents the error message) or <code>null</code> if there 
-     * was no (usable) stack trace attached.
-     * 
-     * @return
-     */
-    private String getTestCaseLineFromStackTrace() {
-        if (testcase.trouble == null) {
-            return null;
+    @Override
+    public Action[] getActions(boolean context) {
+        if (context) {
+            return new Action[0];
         }
-        String[] stacktrace = testcase.trouble.stackTrace;
-        if (stacktrace == null || stacktrace.length <= 1) {
-            return null;
-        }
-        if (stacktrace.length > 2) {
-            String underscoreName = RubyUtils.camelToUnderlinedName(testcase.className);
-            for (int i = 0; i < stacktrace.length; i++) {
-                if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(testcase.name)) {
-                    return stacktrace[i];
-                }
-            }
-        }
-        return stacktrace[1];
-        
-    }
-    
-    public SystemAction[] getActions(boolean context) {
-        return new SystemAction[0];
+        Action[] actions = new Action[3];
+        actions[0] = getPreferredAction();
+        actions[1] = new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_RerunTest"), false);
+        actions[2] = new RunTestMethodAction(testcase, project, NbBundle.getMessage(TestMethodNode.class, "LBL_DebugTest"), true);
+//        actions[1] = new JumpToTestMethodAction(testcase, project);
+        return actions;
     }
     
     @Override

@@ -78,10 +78,13 @@ import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.web.project.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 
 /**
@@ -731,12 +734,22 @@ public class WebProjectWebServicesSupport implements WebServicesSupportImpl {
                 ClassPathProviderImpl cpProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getJ2eePlatformClassPath(),
+                    getJ2eePlatformClassPath(),
                 });
             }
             return projectSourcesClassPath;
         }
     }
+    
+    public synchronized ClassPath getJ2eePlatformClassPath() {
+        if (platformClassPath == null) {
+            platformClassPath = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    FileUtil.toFile(project.getProjectDirectory()), project.evaluator(), new String[] {WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
+        }
+        return platformClassPath;
+    }
+    
+    private ClassPath platformClassPath = null;
         
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(

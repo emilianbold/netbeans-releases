@@ -43,7 +43,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.ExecutionService;
 import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
 import org.openide.LifecycleManager;
@@ -91,7 +91,7 @@ public final class TestExecutionManager {
      * @param executionDescriptor
      * @param testRecognizer
      */
-    synchronized void start(ExecutionDescriptor executionDescriptor, TestRecognizer testRecognizer) {
+    synchronized void start(RubyExecutionDescriptor executionDescriptor, TestRecognizer testRecognizer) {
         assert executionDescriptor != null;
         assert testRecognizer != null;
         

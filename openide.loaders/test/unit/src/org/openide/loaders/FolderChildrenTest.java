@@ -85,7 +85,7 @@ public class FolderChildrenTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 15000;
+        return 65000;
     }
 
     @Override

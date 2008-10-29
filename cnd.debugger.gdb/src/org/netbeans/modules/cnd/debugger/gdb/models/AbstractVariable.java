@@ -160,7 +160,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             int count = 20;
 
             // this can get called while var is waiting for its type to be returned
-            while (type == null && count-- > 0 && debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+            while (type == null && count-- > 0 && debugger.getState() == GdbDebugger.State.STOPPED) {
                 if (log.isLoggable(Level.FINE) && count == 19) {
                     log.fine("AV.waitForType: Waiting on type for " + name);
                 }
@@ -418,7 +418,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     * @return 0 if the variable shouldn't have a turner and fields.length if it should
     */
     public int getFieldsCount() {
-        if (getDebugger() == null || !getDebugger().getState().equals(GdbDebugger.STATE_STOPPED)) {
+        if (getDebugger() == null || getDebugger().getState() != GdbDebugger.State.STOPPED) {
             return 0;
         } else if (fields.length > 0) {
             return fields.length;
@@ -951,6 +951,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return l;
     }
 
+    // We have the same in BreakpointsNodeModel
     private static final String ZEROS = "            "; // NOI18N
 
     static String zeros(int n) {
@@ -1053,7 +1054,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    public class AbstractField extends AbstractVariable implements Field {
+    private static class AbstractField extends AbstractVariable implements Field {
 
         private AbstractVariable parent;
 

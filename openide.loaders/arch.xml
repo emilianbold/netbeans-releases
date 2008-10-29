@@ -538,7 +538,7 @@ for more information about this.
     <api type="import" group="property" name="expectedTime" category="friend" >
         When the DataObject is moved to new location, we
         we need to adjust the time to the new file object.
-        <a href="@TOP@/org/openide/text/CloneableEditorSupport.html">CloneableEditorSupport</a>
+        <a href="@org-openide-text@/org/openide/text/CloneableEditorSupport.html">CloneableEditorSupport</a>
         exports special "expectedTime" property for this purpose. Tested
         in <code>DataEditorSupportTest.testChangeFileWhileOpen</code>.
     </api>

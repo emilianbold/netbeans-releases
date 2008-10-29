@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
  */
 public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     private APTMacroMap sysMacroMap;
-    private Set<String> notMacroIds = new HashSet<String>();
+    private Map<String,APTMacro> macroCache = new HashMap<String,APTMacro>();
 
     public APTFileMacroMap() {
     }
@@ -82,16 +82,17 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
     public APTMacro getMacro(Token token) {
         // check own map
         String macroText = token.getText();
-        APTMacro res = null;
-        if (!notMacroIds.contains(macroText)) {
+        APTMacro res = macroCache.get(macroText);
+        if (res == null) {
             res = super.getMacro(token);
-            if (res == APTMacroMapSnapshot.UNDEFINED_MACRO || res == null) {
-                notMacroIds.add(macroText);
+            // then check system map
+            if (res == null && sysMacroMap != null) {
+                res = sysMacroMap.getMacro(token);
             }
-        }
-        // then check system map
-        if (res == null && sysMacroMap != null) {
-            res = sysMacroMap.getMacro(token);
+            if (res == null) {
+                res = APTMacroMapSnapshot.UNDEFINED_MACRO;
+            }
+            macroCache.put(macroText, res);
         }
         // If UNDEFINED_MACRO is found then the requested macro is undefined, return null
         return (res != APTMacroMapSnapshot.UNDEFINED_MACRO) ? res : null;
@@ -103,7 +104,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
             // TODO: report error about redefining system macros
         } else {
             super.define(name, params, value);
-            notMacroIds.remove(name.getText());
+            macroCache.remove(name.getText());
         }
     }
 
@@ -113,7 +114,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
             // TODO: report error about undefined system macros
         }
         super.undef(name);
-        notMacroIds.remove(name.getText());
+        macroCache.remove(name.getText());
     }
 
     protected APTMacro createMacro(Token name, Collection<Token> params, List<Token> value) {
@@ -137,7 +138,7 @@ public class APTFileMacroMap extends APTBaseMacroMap implements APTMacroMap {
         if (state instanceof FileStateImpl) {
             sysMacroMap = ((FileStateImpl)state).sysMacroMap;
         }
-        notMacroIds.clear();
+        macroCache.clear();
     }
 
     public static class FileStateImpl extends StateImpl {

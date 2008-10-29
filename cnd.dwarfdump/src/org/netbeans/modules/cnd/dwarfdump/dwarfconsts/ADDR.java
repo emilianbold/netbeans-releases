@@ -59,8 +59,8 @@ public enum ADDR {
     private final int value;
     
     static {
-        for (ADDR elem : ADDR.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (ADDR elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
@@ -69,7 +69,7 @@ public enum ADDR {
     }
     
     public static ADDR get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     public int value() {

@@ -216,6 +216,31 @@ public class WrappedTextView extends View {
         return getPreferredSpan(axis);
     }
 
+    float viewWidth = -1;
+    @Override
+    public void setSize(float width, float height) {
+        super.setSize(width, height);
+        if (viewWidth != width) {
+            viewWidth = width;
+            updateMetrics();
+        }
+    }
+
+    void updateMetrics() {
+        Font font = comp.getFont();
+        FontMetrics fm = comp.getFontMetrics(font);
+        charWidth = fm.charWidth('m'); //NOI18N
+        charHeight = fm.getHeight();
+        fontDescent = fm.getMaxDescent();
+
+        Graphics2D g2d = ((Graphics2D) comp.getGraphics());
+        if (g2d != null) {
+            aa = g2d.getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
+                    RenderingHints.VALUE_ANTIALIAS_ON;
+        }
+        updateWidth();
+    }
+
     /**
      * Get the component's document as an instance of OutputDocument, if it
      * is one, returning null if it is not (briefly it will not be after the
@@ -231,39 +256,6 @@ public class WrappedTextView extends View {
         return null;
     }
 
-    /**
-     * Set a flag indicating that on the next paint, widths, character widths,
-     * etc. need to be recalculated.
-     *
-     */
-    public void setChanged() {
-        changed = true;
-        updateInfo(null);
-        preferenceChanged(this, true, true);
-    }
-
-    /**
-     * Update metrics we use when painting, such as the visible area of the component,
-     * the charcter width/height, etc.
-     * @param g
-     */
-    public void updateInfo(Graphics g) {
-        if (changed) {
-            if (g != null) {
-                aa = ((Graphics2D) g).getRenderingHint(RenderingHints.KEY_ANTIALIASING) ==
-                    RenderingHints.VALUE_ANTIALIAS_ON;
-
-                FontMetrics fm = g.getFontMetrics(comp.getFont());
-                charWidth = fm.charWidth('m'); //NOI18N
-                charHeight = fm.getHeight();
-                fontDescent = fm.getMaxDescent();
-                charsPerLine = width / charWidth;
-                changed = false;
-            }
-            updateWidth();
-        }
-    }
-    
     private void updateWidth() {
         if (comp.getParent() instanceof JViewport) {
             JViewport jv = (JViewport) comp.getParent();
@@ -290,7 +282,6 @@ public class WrappedTextView extends View {
         
         ((Graphics2D)g).addRenderingHints(getHints());
         
-        updateInfo(g);
         comp.getHighlighter().paint(g);
         
         OutputDocument doc = odoc();
@@ -408,7 +399,6 @@ public class WrappedTextView extends View {
             for (int k = 1; k < lenToDraw; k++) {
                 if (Character.isWhitespace(seg.array[charpos + k])) {
                     underlineStart += charWidth;
-                    underlineEnd -= charWidth;
                 } else {
                     break;
                 }

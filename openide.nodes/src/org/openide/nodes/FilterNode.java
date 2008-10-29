@@ -1641,7 +1641,7 @@ public class FilterNode extends Node {
             }
 
             public Node[] callGetNodes(boolean optimalResult) {
-                Node[] hold;
+                Node[] hold = null;
                 if (optimalResult) {
                     hold = original.getChildren().getNodes(true);
                 }
@@ -1650,7 +1650,7 @@ public class FilterNode extends Node {
             }
 
             public int callGetNodesCount(boolean optimalResult) {
-                Node[] hold;
+                Node[] hold = null;
                 if (optimalResult) {
                     hold = original.getChildren().getNodes(optimalResult);
                 }
@@ -1658,7 +1658,7 @@ public class FilterNode extends Node {
             }
 
             public Node findChild(String name) {
-                original.getChildren().findChild(name);
+                Node dontGC = original.getChildren().findChild(name);
                 return Children.super.findChild(name);
             }
 
@@ -1732,6 +1732,10 @@ public class FilterNode extends Node {
                     if (node == null) {
                         node = info.getNode(false, origSnapshot);
                     }
+                    if (isDummyNode(node)) {
+                        // force new snapshot
+                        hideEmpty(null, entry);
+                    }
                     return node;
                 }
             }
@@ -1749,7 +1753,12 @@ public class FilterNode extends Node {
             }
         
             public Node[] callGetNodes(boolean optimalResult) {
-                return Children.this.getNodes();
+                Node[] hold = null;
+                if (optimalResult) {
+                    hold = original.getChildren().getNodes(true);
+                }
+                hold = Children.this.getNodes();
+                return hold;
             }
 
             public int callGetNodesCount(boolean optimalResult) {

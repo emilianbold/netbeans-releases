@@ -62,7 +62,7 @@ import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyLineBreakpoint;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -181,7 +181,7 @@ public abstract class TestBase extends RubyTestBase {
     }
 
     private Process startDebugging(final File toTest, final boolean waitForSuspension, final RubyPlatform platform) throws RubyDebuggerException, IOException, InterruptedException {
-        ExecutionDescriptor desc = new ExecutionDescriptor(platform,
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform,
                 toTest.getName(), toTest.getParentFile(), toTest.getAbsolutePath());
         assertTrue(platform.hasFastDebuggerInstalled());
         desc.fileLocator(new DirectoryFileLocator(FileUtil.toFileObject(toTest.getParentFile())));
@@ -278,7 +278,7 @@ public abstract class TestBase extends RubyTestBase {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {
             public void onDebugEvent(RubyDebugEvent e) {
-                Util.finer("Received event: " + e);
+                Util.LOGGER.finer("Received event: " + e);
                 events.countDown();
             }
         };

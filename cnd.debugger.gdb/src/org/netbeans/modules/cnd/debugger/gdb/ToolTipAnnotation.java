@@ -130,7 +130,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             return;
         }
         
-        if (!GdbDebugger.STATE_STOPPED.equals(debugger.getState())) {
+        if (debugger.getState() != GdbDebugger.State.STOPPED) {
             return;
         }
         

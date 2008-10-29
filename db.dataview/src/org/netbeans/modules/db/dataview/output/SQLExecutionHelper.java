@@ -524,6 +524,7 @@ class SQLExecutionHelper {
             stmt = conn.createStatement();
         }
         int pageSize = dataView.getDataViewPageContext().getPageSize();
+        
         try {
             stmt.setFetchSize(pageSize);
         } catch (SQLException e) {
@@ -531,10 +532,14 @@ class SQLExecutionHelper {
             LOGGER.log(Level.INFO, e.getMessage(), e);
         }
 
-        if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
-            stmt.setMaxRows(pageSize);
-        } else {
-            stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+        try {
+            if (dataView.isLimitSupported() && select && sql.toUpperCase().indexOf(LIMIT_CLAUSE) == -1) {
+                stmt.setMaxRows(pageSize);
+            } else {
+                stmt.setMaxRows(dataView.getDataViewPageContext().getCurrentPos() + pageSize);
+            }
+        } catch (SQLException exc) {
+            mLogger.log(Level.WARNING, "Unable to set Max row size" + exc);
         }
         return stmt;
     }

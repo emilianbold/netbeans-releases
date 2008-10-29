@@ -160,8 +160,10 @@ public abstract class NbTestCase extends TestCase implements NbTest {
     
     /** Provides support for tests that can have problems with terminating.
      * Runs the test in a "watchdog" that measures the time the test shall
-     * take and if it does not terminate it reports a failure.
-     *
+     * take and if it does not terminate it reports a failure including a thread dump.
+     * <p>Best to specify a duration less than 600000, which is the default timeout
+     * for any JUnit test in an NBM project specified in {@code common.xml},
+     * as these "hard" timeouts (covering even VM crashes) do not capture a thread dump.
      * @return amount ms to give one test to finish or 0 (default) to disable time outs
      * @since 1.20
      */

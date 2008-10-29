@@ -120,7 +120,6 @@ public class NbServiceTagCreateAction extends WizardAction {
         final Registry registry = Registry.getInstance();
         products.addAll(registry.getProducts(INSTALLED_SUCCESSFULLY));
         products.addAll(registry.getProducts(INSTALLED_WITH_WARNINGS));
-        Product jdkProduct = null;
         source = SOURCE_NAME;
 
         try {
@@ -146,22 +145,21 @@ public class NbServiceTagCreateAction extends WizardAction {
         }
 
         for (Product product : products) {
-            String uid = product.getUid();
-            if (uid.startsWith("nb-")) {
+            if (product.getUid().startsWith("nb-")) {
                 createSTNetBeans(product);
-            } else if (uid.equals("glassfish")) {
+            }
+        }
+        for (Product product : products) {
+            String uid = product.getUid();
+            if (uid.equals("glassfish")) {
                 createSTGlassFish(product, true);
             } else if (uid.equals("glassfish-mod")) {
                 createSTGlassFish(product, false);
             } else if (uid.equals("sjsas")) {
                 createSTGlassFish(product, false);
             } else if (uid.equals("jdk")) {
-                jdkProduct = product;
+                createSTJDK(product);
             }
-        }
-        // JDK ST should be created at the end since it requires netbeans.home to be set
-        if(jdkProduct!=null) {
-            createSTJDK(jdkProduct);
         }
         LogManager.logExit("... finished service tags action");
     }

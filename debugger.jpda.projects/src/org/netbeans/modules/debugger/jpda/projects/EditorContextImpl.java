@@ -123,6 +123,7 @@ import org.openide.util.WeakListeners;
 import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -1481,12 +1482,53 @@ public class EditorContextImpl extends EditorContext {
         //t1 = System.nanoTime();
         try {
             CompilationController ci = getPreferredCompilationController(fo, js);
-            if (ci == null) {
-                return null;
-            }
             //t2 = System.nanoTime();
+            ParseExpressionTask task = new ParseExpressionTask(expression, line, context);
+            if (ci == null) {
+                 js.runUserActionTask(task, false);
+            } else {
+                try {
+                    task.run(ci);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                    return null;
+                }
+            }
+            TreePath treePath = task.getTreePath();
+            Tree tree = task.getTree();
+            //t3 = System.nanoTime();
+            R retValue;
+            if (treePath != null) {
+                retValue = visitor.scan(treePath, context);
+            } else {
+                retValue = tree.accept(visitor, context);
+            }
+            //t4 = System.nanoTime();
+            //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
+            return retValue;
+        } catch (IOException ioex) {
+            ErrorManager.getDefault().notify(ioex);
+            return null;
+        }
+    }
+
+    private static class ParseExpressionTask<D> implements Task<CompilationController> {
+        
+        private int line;
+        private String expression;
+        private D context;
+        private TreePath treePath;
+        private Tree tree;
+
+        public ParseExpressionTask(String expression, int line, D context) {
+            this.expression = expression;
+            this.line = line;
+            this.context = context;
+        }
+
+        public void run(CompilationController ci) throws Exception {
             if (ci.toPhase(Phase.PARSED).compareTo(Phase.PARSED) < 0)
-                return null;
+                return ;
             Scope scope = null;
             int offset = 0;
             StyledDocument doc = (StyledDocument) ci.getDocument();
@@ -1495,7 +1537,7 @@ public class EditorContextImpl extends EditorContext {
                 scope = ci.getTreeUtilities().scopeFor(offset);
             }
             SourcePositions[] sourcePtr = new SourcePositions[] { null };
-            Tree tree = ci.getTreeUtilities().parseExpression(
+            tree = ci.getTreeUtilities().parseExpression(
                     expression,
                     sourcePtr
             );
@@ -1514,7 +1556,7 @@ public class EditorContextImpl extends EditorContext {
                         context.getClass().getMethod("setCompilationUnit", new Class[] { CompilationUnitTree.class });
                 setCompilationUnitMethod.invoke(context, ci.getCompilationUnit());
             } catch (Exception ex) {}
-            TreePath treePath = null;
+            treePath = null;
             try {
                 //context.setTrees(ci.getTrees());
                 java.lang.reflect.Method setTreePathMethod =
@@ -1524,20 +1566,15 @@ public class EditorContextImpl extends EditorContext {
                     treePath = new TreePath(treePath, tree);
                     setTreePathMethod.invoke(context, treePath);
                 }
-            } catch (Exception ex) { return null;}
-            //t3 = System.nanoTime();
-            R retValue;
-            if (treePath != null) {
-                retValue = visitor.scan(treePath, context);
-            } else {
-                retValue = tree.accept(visitor, context);
-            }
-            //t4 = System.nanoTime();
-            //System.err.println("PARSE TIMES 1: "+(t2-t1)/1000000+", "+(t3-t2)/1000000+", "+(t4-t3)/1000000+" TOTAL: "+(t4-t1)/1000000+" ms.");
-            return retValue;
-        } catch (IOException ioex) {
-            ErrorManager.getDefault().notify(ioex);
-            return null;
+            } catch (Exception ex) { return;}
+        }
+
+        public TreePath getTreePath() {
+            return treePath;
+        }
+
+        public Tree getTree() {
+            return tree;
         }
     }
 

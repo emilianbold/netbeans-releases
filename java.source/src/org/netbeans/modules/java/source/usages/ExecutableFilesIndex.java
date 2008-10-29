@@ -49,7 +49,6 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 
@@ -72,7 +71,7 @@ public class ExecutableFilesIndex {
     
     public synchronized Iterable<? extends URL> getMainClasses (URL root) {
         ensureLoad(root);
-        List<URL> result = new ArrayList(mainSources.size());
+        List<URL> result = new ArrayList<URL>(mainSources.size());
         for (String surl : mainSources) {
             try {
                 result.add(new URL(surl));

@@ -149,7 +149,8 @@ public class LookupNode extends DataFolder.FolderNode implements NewTemplateActi
     }
      */
 
-    public final Node.Cookie getCookie (Class type) {
+    @Override
+    public final <T extends Node.Cookie> T getCookie(Class<T> type) {
         if (isUISettingCategoryNode()) return null;
         return super.getCookie (type);
     }

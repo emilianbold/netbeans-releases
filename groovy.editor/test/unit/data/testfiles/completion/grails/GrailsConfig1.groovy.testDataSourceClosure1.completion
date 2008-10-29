@@ -29,7 +29,7 @@ METHOD     findIndexValues(int, Closure)              List
 METHOD     findLastIndexOf(Closure)                   int
 METHOD     findLastIndexOf(int, Closure)              int
 METHOD     getAt(String)                              Object
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getDelegate()                              Object
 METHOD     getDirective()                             int
 METHOD     getMaximumNumberOfParameters()             int
@@ -73,7 +73,7 @@ METHOD     sprintf(String, Object)                    String
 METHOD     toString()                                 String
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void

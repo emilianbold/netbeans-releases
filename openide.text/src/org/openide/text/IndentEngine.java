@@ -40,7 +40,6 @@
  */
 package org.openide.text;
 
-import org.openide.ServiceType;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -59,9 +58,12 @@ import javax.swing.text.*;
 * can find appropriate type of engine for type of document.
 *
 * @author Jaroslav Tulach
+ * @deprecated Please use Editor Indentation API instead, for details see
+ *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
 */
-public abstract class IndentEngine extends ServiceType {
-    static final long serialVersionUID = -8548906260608507035L;
+@Deprecated
+public abstract class IndentEngine extends org.openide.ServiceType {
+    private static final long serialVersionUID = -8548906260608507035L;
 
     /** hashtable mapping MIME type to engine */
     private static Map<String,IndentEngine> map = new HashMap<String,IndentEngine>(7);
@@ -206,10 +208,12 @@ public abstract class IndentEngine extends ServiceType {
             return writer;
         }
 
+        @Override
         protected boolean acceptMimeType(String mime) {
             return true;
         }
 
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(Default.class);
         }

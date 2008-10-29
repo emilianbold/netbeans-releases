@@ -50,7 +50,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.nio.charset.Charset;
-import java.nio.charset.Charset;
 import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CharsetEncoder;
 import java.nio.charset.IllegalCharsetNameException;
@@ -69,6 +68,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.plaf.UIResource;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -106,7 +106,7 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         this.projectLocation.setText( pf == null ? "" : pf.getPath() ); // NOI18N
         
         
-        J2SESourceRootsUi.EditMediator emSR = J2SESourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getSourceRoots(),
             sourceRoots,
@@ -114,9 +114,10 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             removeSourceRoot, 
             upSourceRoot, 
             downSourceRoot,
-            new LabelCellEditor(sourceRoots, testRoots));
+            new LabelCellEditor(sourceRoots, testRoots),
+            true);
         
-        J2SESourceRootsUi.EditMediator emTSR = J2SESourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
             uiProperties.getProject(),
             uiProperties.getProject().getTestSourceRoots(),
             testRoots,
@@ -124,7 +125,8 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
             removeTestRoot, 
             upTestRoot, 
             downTestRoot,
-            new LabelCellEditor(sourceRoots, testRoots));
+            new LabelCellEditor(sourceRoots, testRoots),
+            true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

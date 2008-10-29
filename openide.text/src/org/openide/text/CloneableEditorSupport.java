@@ -161,6 +161,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private int counterGetDocument = 0;
     private int counterOpenDocument = 0;
     private int counterPrepareDocument = 0;
+    private int counterOpenAtImpl = 0;
 
     /** Non default MIME type used to editing */
     private String mimeType;
@@ -502,7 +503,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     }
 
     private boolean canReleaseDoc () {
-        if ((counterGetDocument == 0) && (counterOpenDocument == 0) && (counterPrepareDocument == 0)) {
+        if ((counterGetDocument == 0) && (counterOpenDocument == 0) &&
+            (counterPrepareDocument == 0) && (counterOpenAtImpl == 0)) {
             return true;
         } else {
             return false;
@@ -539,7 +541,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                             counterPrepareDocument--;
                             if (isStrongSet && canReleaseDoc()) {
                                 isStrongSet = false;
-                                CloneableEditorSupport.this.doc.setStrong(false);
+                                if (CloneableEditorSupport.this.doc != null) {
+                                    CloneableEditorSupport.this.doc.setStrong(false);
+                                }
                             }
                             task.removeTaskListener(this);
                         }
@@ -758,7 +762,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                 counterOpenDocument--;
                 if (isStrongSet && canReleaseDoc()) {
                     isStrongSet = false;
-                    this.doc.setStrong(false);
+                    if (this.doc != null) {
+                        this.doc.setStrong(false);
+                    }
                 }
             }
         }
@@ -853,7 +859,9 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
                         counterGetDocument--;
                         if (isStrongSet && canReleaseDoc()) {
                             isStrongSet = false;
-                            this.doc.setStrong(false);
+                            if (this.doc != null) {
+                                this.doc.setStrong(false);
+                            }
                         }
                     }
                 }
@@ -2293,7 +2301,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             return null;
         }
     }
-    
+
+    @Deprecated
     final Pane openReuse(final PositionRef pos, final int column, int mode) {
         if (mode == Line.SHOW_REUSE_NEW) lastReusable.clear();
         return openAtImpl(pos, column, true);
@@ -2327,11 +2336,13 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         if (redirect != null) {
             return redirect.openAtImpl(pos, column, reuse);
         }
+        counterOpenAtImpl++;
         final Pane e = openPane(reuse);
         final Task t = prepareDocument();
         e.ensureVisible();
         class Selector implements TaskListener, Runnable {
             private boolean documentLocked = false;
+            private int counterRun = 0;
 
             public void taskFinished(org.openide.util.Task t2) {
                 javax.swing.SwingUtilities.invokeLater(this);
@@ -2339,51 +2350,65 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             }
 
             public void run() {
-                // #25435. Pane can be null.
-                JEditorPane ePane = e.getEditorPane();
+                counterRun++;
+                try {
+                    // #25435. Pane can be null.
+                    JEditorPane ePane = e.getEditorPane();
 
-                if (ePane == null) {
-                    return;
-                }
-
-                StyledDocument doc = getDocument();
-
-                if (doc == null) {
-                    return; // already closed or error loading
-                }
-
-                if (!documentLocked) {
-                    documentLocked = true;
-                    doc.render(this);
-                } else {
-                    Caret caret = ePane.getCaret();
-
-                    if (caret == null) {
+                    if (ePane == null) {
                         return;
                     }
 
-                    int offset;
+                    StyledDocument doc = getDocument();
 
-                    javax.swing.text.Element el = NbDocument.findLineRootElement(doc);
-                    el = el.getElement(el.getElementIndex(pos.getOffset()));
-                    offset = el.getStartOffset() + Math.max(0, column);
-
-                    if (offset > el.getEndOffset()) {
-                        offset = Math.max(el.getStartOffset(), el.getEndOffset() - 1);
+                    if (doc == null) {
+                        return; // already closed or error loading
                     }
 
-                    caret.setDot(offset);
+                    if (!documentLocked) {
+                        documentLocked = true;
+                        doc.render(this);
+                    } else {
+                        Caret caret = ePane.getCaret();
 
-                    try { // scroll to show reasonable part of the document
-                        Rectangle r = ePane.modelToView(offset);
-                        if (r != null) {
-                            r.height *= 5;
-                            ePane.scrollRectToVisible(r);
+                        if (caret == null) {
+                            return;
                         }
-                    } catch (BadLocationException ex) {
-                        ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
-                            + ", column=" + column + ", offset=" + offset //NOI18N
-                            + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
+
+                        int offset;
+
+                        javax.swing.text.Element el = NbDocument.findLineRootElement(doc);
+                        el = el.getElement(el.getElementIndex(pos.getOffset()));
+                        offset = el.getStartOffset() + Math.max(0, column);
+
+                        if (offset > el.getEndOffset()) {
+                            offset = Math.max(el.getStartOffset(), el.getEndOffset() - 1);
+                        }
+
+                        caret.setDot(offset);
+
+                        try { // scroll to show reasonable part of the document
+                            Rectangle r = ePane.modelToView(offset);
+                            if (r != null) {
+                                r.height *= 5;
+                                ePane.scrollRectToVisible(r);
+                            }
+                        } catch (BadLocationException ex) {
+                            ERR.log(Level.WARNING, "Can't scroll to text: pos.getOffset=" + pos.getOffset() //NOI18N
+                                + ", column=" + column + ", offset=" + offset //NOI18N
+                                + ", doc.getLength=" + doc.getLength(), ex); //NOI18N
+                        }
+                    }
+                } finally {
+                    counterRun--;
+                    if (counterRun == 0) {
+                        counterOpenAtImpl--;
+                        if (isStrongSet && canReleaseDoc()) {
+                            isStrongSet = false;
+                            if (CloneableEditorSupport.this.doc != null) {
+                                CloneableEditorSupport.this.doc.setStrong(false);
+                            }
+                        }
                     }
                 }
             }

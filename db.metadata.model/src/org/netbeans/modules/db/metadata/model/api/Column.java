@@ -46,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.spi.ColumnImplementation;
  *
  * @author Andrei Badea
  */
-public class Column extends MetadataObject {
+public class Column extends MetadataElement {
 
     private final ColumnImplementation impl;
 

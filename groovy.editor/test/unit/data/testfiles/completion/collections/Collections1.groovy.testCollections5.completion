@@ -29,7 +29,7 @@ METHOD     each(Closure)                              Object
 METHOD     eachWithIndex(Closure)                     Object
 METHOD     equals(List)                               boolean
 METHOD     equals(Object)                             boolean
-METHOD     equals(Object)                             boolean
+METHOD     equals(Object[])                           boolean
 METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
@@ -63,7 +63,6 @@ METHOD     identity(Closure)                          Object
 METHOD     indexOf(Object)                            int
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
-METHOD     inspect()                                  String
 METHOD     intersect(Collection)                      Collection
 METHOD     invokeMethod(String, Object)               Object
 METHOD     is(Object)                                 boolean
@@ -71,7 +70,6 @@ METHOD     isCase(Object)                             boolean
 METHOD     isEmpty()                                  boolean
 METHOD     isReverse()                                boolean
 METHOD     iterator()                                 Iterator
-METHOD     iterator()                                 Iterator<E>
 METHOD     join(String)                               String
 METHOD     last()                                     Object
 METHOD     lastIndexOf(Object)                        int
@@ -135,14 +133,13 @@ METHOD     toArray(T[])                               T[]
 METHOD     toList()                                   List
 METHOD     toListString()                             String
 METHOD     toString()                                 String
-METHOD     toString()                                 String
 METHOD     transpose()                                List
 METHOD     unique()                                   Collection
 METHOD     unique(Closure)                            Collection
 METHOD     unique(Comparator)                         Collection
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     wait()                                     void
 METHOD     wait(long)                                 void
 METHOD     wait(long, int)                            void

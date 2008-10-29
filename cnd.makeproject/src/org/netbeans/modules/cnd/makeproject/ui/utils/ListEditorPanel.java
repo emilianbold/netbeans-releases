@@ -645,6 +645,9 @@ public class ListEditorPanel extends javax.swing.JPanel {
 	addObjectAction(addAction());
     }
     public  void addObjectAction(Object newObject) {
+        if (newObject == null) {
+            return;
+        }
         ArrayList<Object> listToAdd = new ArrayList<Object>();
         listToAdd.add(newObject);
         addObjectsAction(listToAdd);

@@ -1292,6 +1292,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public void run (final CompilationInfo nullInfo) throws IOException {
             ACTIVITY_LOGGER.finest("START");    //NOI18N
+            final Logger PERF_LOGGER = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
+            PERF_LOGGER.log(Level.FINE, "start", RepositoryUpdater.class.getName()); // NOI18N
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
@@ -1629,6 +1631,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             finally {
                 ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
+                PERF_LOGGER.log(Level.FINE, "end", RepositoryUpdater.class.getName()); // NOI18N
             }
         }
         

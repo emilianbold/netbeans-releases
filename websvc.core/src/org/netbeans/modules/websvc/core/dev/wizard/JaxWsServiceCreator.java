@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.websvc.core.dev.wizard;
 
+import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.api.support.java.GenerationUtils;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core.ProjectInfo;
@@ -97,7 +98,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
-import org.netbeans.modules.websvc.core.ServiceCreator;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;

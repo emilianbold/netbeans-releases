@@ -49,7 +49,6 @@ import org.netbeans.modules.db.dataview.meta.DBConnectionFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -152,7 +151,7 @@ abstract class SQLStatementExecutor implements Runnable, Cancellable {
             errorMsg = cmdName + NbBundle.getMessage(SQLStatementExecutor.class,"MSG_failed") + errorMsg;
             dataView.setErrorStatusText(new DBException(errorMsg, ex));
             
-            NotifyDescriptor nd = new NotifyDescriptor.Exception(ex); 
+            NotifyDescriptor nd = new NotifyDescriptor.Exception(new DBException(errorMsg, ex));
             DialogDisplayer.getDefault().notify(nd);
         }
     }

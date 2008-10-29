@@ -49,7 +49,7 @@ import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
@@ -188,7 +188,7 @@ public class RSpecSupport {
         }
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        if (!platform.isValidRuby(warn)) {
+        if (!platform.isValid(warn)) {
             return;
         }
 
@@ -230,7 +230,7 @@ public class RSpecSupport {
 
         additionalArgs.add(FileUtil.toFile(specFile).getAbsolutePath());
 
-        ExecutionDescriptor desc = null;
+        RubyExecutionDescriptor desc = null;
         String charsetName = null;
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -249,7 +249,7 @@ public class RSpecSupport {
                 desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
             }
         } else {
-            desc = new ExecutionDescriptor(platform, displayName, pwd, spec);
+            desc = new RubyExecutionDescriptor(platform, displayName, pwd, spec);
 
             desc. additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
             desc.debug(debug);

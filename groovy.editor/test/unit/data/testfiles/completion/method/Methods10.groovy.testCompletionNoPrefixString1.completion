@@ -15,7 +15,6 @@ METHOD     codePointBefore(int)                       int
 METHOD     codePointCount(int, int)                   int
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
-METHOD     compareTo(Object)                          int
 METHOD     compareTo(String)                          int
 METHOD     compareToIgnoreCase(String)                int
 METHOD     concat(String)                             String
@@ -40,7 +39,7 @@ METHOD     every()                                    boolean
 METHOD     every(Closure)                             boolean
 METHOD     execute()                                  Process
 METHOD     execute(List, File)                        Process
-METHOD     execute(String, File)                      Process
+METHOD     execute(String[], File)                    Process
 METHOD     find(Closure)                              Object
 METHOD     findAll(Closure)                           List
 METHOD     findIndexOf(Closure)                       int
@@ -62,7 +61,7 @@ METHOD     getBytes(String)                           byte[]
 METHOD     getBytes(int, int, byte[], int             void
 METHOD     getChars()                                 char[]
 METHOD     getChars(int, int, char[], int             void
-METHOD     getClass()                                 Class
+METHOD     getClass()                                 Class<? extends Object>
 METHOD     getMetaClass()                             MetaClass
 METHOD     getMetaPropertyValues()                    List
 METHOD     getProperties()                            Map
@@ -161,7 +160,7 @@ METHOD     tokenize(String)                           List
 METHOD     trim()                                     String
 METHOD     use(Class, Closure)                        Object
 METHOD     use(List, Closure)                         Object
-METHOD     use(Object)                                Object
+METHOD     use(Object[])                              Object
 METHOD     valueOf(Object)                            String
 METHOD     valueOf(boolean)                           String
 METHOD     valueOf(char)                              String

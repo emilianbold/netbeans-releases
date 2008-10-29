@@ -256,7 +256,7 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
         public void propertyChange(PropertyChangeEvent e) {
             if ((e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                     e.getPropertyName().equals(GdbDebugger.PROP_CURRENT_THREAD)) &&
-                    (debugger.getState().equals(GdbDebugger.STATE_STOPPED))) {
+                    (debugger.getState() == GdbDebugger.State.STOPPED)) {
                 // IF state has been changed to STOPPED or
                 // IF current call stack frame has been changed & state is stopped
                 log.fine("LTM.propertyChange: Change for " + e.getPropertyName());
@@ -271,13 +271,13 @@ public class LocalsTreeModel implements TreeModel, TreeExpansionModel, PropertyC
                 }
                 task = RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
-                        if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                        if (debugger.getState() == GdbDebugger.State.STOPPED) {
                             ltm.fireTreeChanged();
                         }
                     }
                 }, 500);
             } else if ((e.getPropertyName().equals(GdbDebugger.PROP_STATE)) &&
-                    !(debugger.getState().equals(GdbDebugger.STATE_STOPPED)) && task != null) {
+                    !(debugger.getState() == GdbDebugger.State.STOPPED) && task != null) {
                 // debugger has been resumed
                 // =>> cancel task
                 task.cancel();
