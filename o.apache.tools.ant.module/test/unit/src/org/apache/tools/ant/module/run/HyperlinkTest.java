@@ -114,7 +114,7 @@ public class HyperlinkTest extends NbTestCase {
         assertEquals("#1\n", ep1.getDocument().getText(ep1.getCaretPosition(), 3));
         ep1.getDocument().insertString(ep1.getCaretPosition() + 3, "fixstuff\n", null);
         if (save) {
-            DataObject.find(f1).getCookie(SaveCookie.class).save();
+            DataObject.find(f1).getLookup().lookup(SaveCookie.class).save();
         }
         click(h11);
         assertEquals("#1\n", ep1.getDocument().getText(ep1.getCaretPosition(), 3));

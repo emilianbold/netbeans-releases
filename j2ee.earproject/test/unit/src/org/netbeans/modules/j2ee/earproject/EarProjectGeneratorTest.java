@@ -95,6 +95,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         "display.browser",
         "dist.dir",
         "dist.jar",
+        "j2ee.deploy.on.save",
         "j2ee.platform",
         "j2ee.server.type",
         "jar.compress",

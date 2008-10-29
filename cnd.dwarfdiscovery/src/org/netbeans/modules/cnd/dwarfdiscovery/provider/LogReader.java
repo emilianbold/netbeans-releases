@@ -53,6 +53,10 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,20 +82,31 @@ public class LogReader {
         setWorkingDir(root);
     }
     
-    private void run() {
+    private void run(Progress progress) {
         if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
                 BufferedReader in = new BufferedReader(new FileReader(file));
+                long length = file.length();
+                long read = 0;
+                int done = 0;
+                if (length <= 0){
+                    progress = null;
+                }
+                if (progress != null) {
+                    progress.start(100);
+                }
                 int nFoundFiles = 0;
                 while(true){
                     String line = in.readLine();
                     if (line == null){
                         break;
                     }
+                    read += line.length()+1;
                     line = line.trim();
                     while (line.endsWith("\\")) { // NOI18N
                         String oneMoreLine = in.readLine();
@@ -100,7 +115,7 @@ public class LogReader {
                         }
                         line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                     }
-                    line = trimBackApostropheCalls(line);
+                    line = trimBackApostropheCalls(line, pkgConfig);
 
                     String[] cmds = pattern.split(line);
                     for (int i = 0; i < cmds.length; i++) {
@@ -108,7 +123,15 @@ public class LogReader {
                             nFoundFiles++;
                         }
                     }
-
+                    if (read*100/length > done && done < 100){
+                        done++;
+                        if (progress != null) {
+                            progress.increment();
+                        }
+                    }
+                }
+                if (progress != null) {
+                    progress.done();
                 }
                 if (TRACE) {
                     System.out.println("Files found: " + nFoundFiles); //NOI18N
@@ -121,9 +144,9 @@ public class LogReader {
         }
     }
     
-    public List<SourceFileProperties> getResults() {
+    public List<SourceFileProperties> getResults(Progress progress) {
         if (result == null) {
-            run();
+            run(progress);
         }
         return result;
     }
@@ -303,9 +326,10 @@ public class LogReader {
        return false;
     }
 
-    private static String trimBackApostropheCalls(String line) {
-        int i = line.indexOf('`');
-        if (line.lastIndexOf('`') == i) { // do not trim unclosed `quotes`
+    private static final String PKG_CONFIG_PATTERN = "pkg-config --cflags "; //NOI18N
+    private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
+        int i = line.indexOf('`'); //NOI18N
+        if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
             return line;
         }
         if (i < 0 || i == line.length() - 1) {
@@ -313,12 +337,26 @@ public class LogReader {
         } else {
             String out = line.substring(0, i-1);
             line = line.substring(i+1);
-            int j = line.indexOf('`');
+            int j = line.indexOf('`'); //NOI18N
             if (j < 0) {
                 return line;
             }
+            String pkg = line.substring(0,j);
+            if (pkg.startsWith(PKG_CONFIG_PATTERN)) { //NOI18N
+                pkg = pkg.substring(PKG_CONFIG_PATTERN.length());
+                PackageConfiguration pc = pkgConfig.getPkgConfig(pkg);
+                if (pc != null) {
+                    for(String p : pc.getIncludePaths()){
+                        out +=" -I"+p; //NOI18N
+                    }
+                    for(String p : pc.getMacros()){
+                        out +=" -D"+p; //NOI18N
+                    }
+                    out +=" "; //NOI18N
+                }
+            }
             out += line.substring(j+1);
-            return trimBackApostropheCalls(out);
+            return trimBackApostropheCalls(out, pkgConfig);
         }
     }
     
@@ -472,7 +510,7 @@ public class LogReader {
         String root = args[1];
         LogReader.TRACE = true;
         LogReader clrf = new LogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults();
+        List<SourceFileProperties> list = clrf.getResults(null);
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();

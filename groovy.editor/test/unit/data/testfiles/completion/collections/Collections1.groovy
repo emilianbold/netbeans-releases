@@ -4,11 +4,14 @@ def rangeTest() {
     (1..10).a
     // this should offer cc for integer
     1..10.d
+    // test full list
+    (1..10).
 }
 
 def listTest() {
     // "java.util.List"
    ["one","two"].listIter
+   ["one","two"].it
 }
 
 def mapTest() {

@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 OpenIDE-Module: org.netbeans.modules.hibernateweb
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/hibernateweb/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
+OpenIDE-Module-Specification-Version: 1.1
 OpenIDE-Module-Layer: org/netbeans/modules/hibernateweb/resources/layer.xml
 

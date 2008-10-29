@@ -75,24 +75,25 @@ import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener.Artifact;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.jaxws.EjbProjectJAXWSSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.EjbJarLogicalViewProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.common.project.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbEnterpriseReferenceContainerSupport;
@@ -138,6 +139,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -202,7 +204,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     private EjbProjectJAXWSClientSupport jaxWsClientSupport;
     private SourceRoots sourceRoots;
     private SourceRoots testRoots;
-    private PropertyHelper propertyHelper;
     private final ClassPathExtender classPathExtender; 
     private final ClassPathModifier classPathModifier; 
     private PropertyChangeListener j2eePlatformListener;
@@ -276,7 +277,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         genFilesHelper = new GeneratedFilesHelper(helper, buildExtender);
         UpdateImplementation updateProject = new UpdateProjectImpl(this, helper, aux, genFilesHelper);
         this.updateHelper = new UpdateHelper(updateProject, helper);
-        this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots());
+        this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+                ProjectProperties.BUILD_CLASSES_DIR, EjbJarProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                new String[] {"javac.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {"javac.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {"debug.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {"run.test.classpath", EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
         ejbModule = new EjbJarProvider(this, helper, cpProvider);
         apiEjbJar = EjbJarFactory.createEjbJar(ejbModule);
         ejbJarWebServicesSupport = new EjbJarWebServicesSupport(this, helper, refHelper);
@@ -289,7 +295,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
         classPathModifier = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
-            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
+            getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(classPathModifier, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         css = new CopyOnSaveSupport();
@@ -314,11 +320,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
-                final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
-                if (classPathProperty == null) {
+                final String[] classPathProperty = getClassPathProvider().getPropertyName (sg, type);
+                if (classPathProperty == null || classPathProperty.length == 0) {
                     throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
-                return classPathProperty;
+                return classPathProperty[0];
             }
 
             public String getElementName(String classpathProperty) {
@@ -437,7 +443,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 new EjbJarPersistenceProvider(this, evaluator(), cpProvider),
                 new EjbJarEMGenStrategyResolver(),
                 new EjbJarJPASupport(this),
-                new EjbJarServerStatusProvider(this),
+                Util.createServerStatusProvider(getEjbModule()),
                 new EjbJarJPAModuleInfo(this),
                 UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                 UILookupMergerSupport.createRecommendedTemplatesMerger(),
@@ -447,7 +453,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 LookupMergerSupport.createSFBLookupMerger(),
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createJFBLookupMerger(),
-                BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+                QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
@@ -517,13 +523,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     /*public EjbJarProjectProperties getEjbJarProjectProperties() {
         return new EjbJarProjectProperties (this, helper, refHelper);
     }*/
-    
-    public PropertyHelper getPropertyHelper() {
-        if (propertyHelper == null) {
-            this.propertyHelper = new PropertyHelper(this, this.updateHelper);
-        }
-        return this.propertyHelper;
-    }
     
     public EjbJarProvider getEjbModule() {
         return ejbModule;
@@ -693,7 +692,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -984,8 +983,8 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
             
-            String disableDeployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE);
-            if (!Boolean.parseBoolean(disableDeployOnSave)) {
+            String deployOnSave = getProperty(AntProjectHelper.PROJECT_PROPERTIES_PATH, EjbJarProjectProperties.J2EE_DEPLOY_ON_SAVE);
+            if (Boolean.parseBoolean(deployOnSave)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(ejbModule);
             }
             artifactSupport.enableArtifactSynchronization(true);
@@ -1011,12 +1010,12 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
             // #134642 - use Ant task from copylibs library
-            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
             if (!props.containsKey(ProjectProperties.INCLUDES)) {
                 props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N
@@ -1025,20 +1024,6 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 props.setProperty(ProjectProperties.EXCLUDES, ""); // NOI18N
             }
             
-            // configure DoS
-            if (!props.containsKey(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE)) {
-                boolean deployOnSaveEnabled = false;
-                try {
-                    String instanceId = ep.getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
-                    if (instanceId != null) {
-                        deployOnSaveEnabled = Deployment.getDefault().getServerInstance(instanceId)
-                                .isDeployOnSaveSupported();
-                    }
-                } catch (InstanceRemovedException ex) {
-                    // false
-                }
-                props.setProperty(EjbJarProjectProperties.DISABLE_DEPLOY_ON_SAVE, Boolean.toString(!deployOnSaveEnabled));
-            }
 
             updateHelper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);            
             

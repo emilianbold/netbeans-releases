@@ -405,7 +405,7 @@ public class RubyElementCtx {
                     }
                 } else if (call == Call.LOCAL) {
                     // Look in the index to see which method it's coming from... 
-                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
                     String fqn = AstUtilities.getFqnName(getPath());
 
                     if ((fqn == null) || (fqn.length() == 0)) {

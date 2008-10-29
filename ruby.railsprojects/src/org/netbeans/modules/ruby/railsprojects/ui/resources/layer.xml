@@ -123,7 +123,7 @@ made subject to such option by the copyright holder.
         </folder>
         
         <folder name="Nodes">
-            <file name="org-netbeans-modules-ruby-railsprojects-ui-SourceNodeFactory.instance"/>
+            <file name="org-netbeans-modules-ruby-railsprojects-ui-ProjectRootNodeFactory.instance"/>
         </folder>
         
         <folder name="Lookup"/>

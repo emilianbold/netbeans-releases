@@ -44,6 +44,7 @@ import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -97,7 +98,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // resolve the dependency
         dependencies.get(0).setVersionResolved(sources.get(0).getVersion());
-        
+        /*
         final File javaExecutable;
         try {
             javaExecutable = JavaUtils.getExecutable(
@@ -137,7 +138,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.wsrp.installer"), // NOI18N
                     e);
         }
-        
+        */
+        try {
+            progress.setDetail(getString("CL.install.wsrp.installer")); // NOI18N
+	    final File targetFile = new File(glassfishLocation,
+                            "lib" + File.separator + "addons" + File.separator + WSRP_INSTALLER);
+            FileUtils.copyFile(wsrpInstaller, targetFile);
+            getProduct().getInstalledFiles().add(targetFile);            
+	} catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.wsrp.installer"), // NOI18N
+                    e);
+        }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }

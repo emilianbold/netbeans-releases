@@ -159,7 +159,6 @@ public class PropertiesTest {
             props.put(new TestProperty("float",                 float.class));            
             props.put(new TestProperty("Font",                  java.awt.Font.class));            
             props.put(new TestProperty("Html Browser",          org.openide.awt.HtmlBrowser.Factory.class));
-            props.put(new TestProperty("Indent Engine",         org.openide.text.IndentEngine.class));            
             props.put(new TestProperty("Insets",                java.awt.Insets.class));            
             props.put(new TestProperty("Integer",               java.lang.Integer.class));            
             props.put(new TestProperty("int",                   int.class));            
@@ -171,7 +170,6 @@ public class PropertiesTest {
             props.put(new TestProperty("Point",                 java.awt.Point.class));            
             props.put(new TestProperty("property_Properties",   java.util.Properties.class));            
             props.put(new TestProperty("Rectangle",             java.awt.Rectangle.class));            
-            props.put(new TestProperty("Service Type",          org.openide.ServiceType.class));            
             props.put(new TestProperty("Short",                 java.lang.Short.class));            
             props.put(new TestProperty("short",                 short.class));            
             props.put(new TestProperty("String",                java.lang.String.class));            

@@ -43,7 +43,7 @@ made subject to such option by the copyright holder.
 
 <toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="SunStudio" display="Sun Studio Compiler Collection" family="SunStudio"/>
-    <platforms stringvalue="sun_intel,sun_sparc,linux"/>
+    <platforms stringvalue="sun_intel,sun_sparc"/>
     <c>
         <compiler name="cc"/>
         <recognizer pattern=".*(SUNWspro|/prod/bin)" or_exist_folder="../prod"/>

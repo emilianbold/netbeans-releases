@@ -67,6 +67,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
 
     /** Shares the whm with other line sets based on the same support.
      */
+    @Override
     Map<Line,Reference<Line>> findWeakHashMap() {
         return support.findWeakHashMap();
     }
@@ -92,11 +93,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             super(obj, ref);
         }
 
-        /** Shows the line.
-        * @param kind one of SHOW_XXX constants.
-        * @column the column of this line which should be selected
-        * @deprecated Deprecated since 6.21. Use {@link #show(ShowOpenType, ShowVisibilityType, int)} instead.
-        */
+        @Deprecated
         public void show(int kind, int column) {
             CloneableEditorSupport support = pos.getCloneableEditorSupport();
 
@@ -117,14 +114,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             }
         }
 
-        /** Shows the line.
-        * @param openType one of {@link ShowOpenType#NONE}, {@link ShowOpenType#OPEN},
-        *   {@link ShowOpenType#REUSE} or {@link ShowOpenType#REUSE_NEW}
-        * @param visibilityType one of {@link ShowVisibilityType#NONE},
-        *   {@link ShowVisibilityType#FRONT} or {@link ShowVisibilityType#FOCUS}
-        * @column the column of this line which should be selected
-        * @since org.openide.text 6.21
-        */
+        @Override
         public void show(ShowOpenType openType, ShowVisibilityType visibilityType, int column) {
             CloneableEditorSupport support = pos.getCloneableEditorSupport();
 
@@ -151,7 +141,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             }
         }
 
-        /** This method will be used for annotation of part of the text on the line.*/
+        @Override
         public Line.Part createPart(int column, int length) {
             DocumentLine.Part part = new DocumentLine.Part(
                     this,
@@ -165,13 +155,14 @@ final class EditorSupportLineSet extends DocumentLine.Set {
             return part;
         }
 
-        /** Let's the support determine the name */
+        @Override
         public String getDisplayName() {
             CloneableEditorSupport support = pos.getCloneableEditorSupport();
 
             return support.messageLine(this);
         }
 
+        @Override
         public String toString() {
             return "SupportLine@" + Integer.toHexString(System.identityHashCode(this)) + " at line: " +
             getLineNumber(); // NOI18N
@@ -202,6 +193,7 @@ final class EditorSupportLineSet extends DocumentLine.Set {
 
         /** Shares the whm with other line sets based on the same support.
          */
+        @Override
         Map<Line,Reference<Line>> findWeakHashMap() {
             return support.findWeakHashMap();
         }

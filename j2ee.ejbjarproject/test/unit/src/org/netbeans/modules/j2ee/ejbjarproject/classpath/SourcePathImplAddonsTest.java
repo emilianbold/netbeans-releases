@@ -50,6 +50,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProject;
 import org.netbeans.modules.j2ee.ejbjarproject.TestPlatformProvider;
 import org.netbeans.modules.j2ee.ejbjarproject.test.TestBase;

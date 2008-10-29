@@ -54,12 +54,12 @@ import java.awt.Dimension;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
@@ -74,6 +74,7 @@ public class SaveAnimationAsImageAction extends CookieAction {
     public SaveAnimationAsImageAction() {
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
@@ -85,6 +86,7 @@ public class SaveAnimationAsImageAction extends CookieAction {
         dlg.setSize( dlg.getPreferredSize());
         
         dlg.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 int w = dlg.getWidth();
                 int h = dlg.getHeight();
@@ -103,6 +105,8 @@ public class SaveAnimationAsImageAction extends CookieAction {
     protected void performAction(Node[] n) {
         SVGDataObject doj = (SVGDataObject) n[0].getLookup().lookup(SVGDataObject.class);
         if (doj != null){   
+            int state = getAnimatorState(doj);
+            float time = stopAnimator(doj);
             try {
                 SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(doj);
                 DialogDescriptor            dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExport"));
@@ -125,9 +129,10 @@ public class SaveAnimationAsImageAction extends CookieAction {
             } catch( Exception e) {
                 SceneManager.error("Animation export failed", e);
             }
+            resumeAnimatorState(doj, state, time);
         }
     }
-
+    
     public String getName() {
         return NbBundle.getMessage(SaveAnimationAsImageAction.class, "LBL_ExportAnimationAction"); //NOI18N
     }
@@ -146,7 +151,60 @@ public class SaveAnimationAsImageAction extends CookieAction {
         };
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
+
+    private void resumeAnimatorState(SVGDataObject doj, int state, float time){
+        // resume cached state only if it was running or paused
+        if (state == PerseusController.ANIMATION_RUNNING){
+            startAnimator(doj, time);
+        } else if (state == PerseusController.ANIMATION_PAUSED){
+            pauseAnimation(doj, time);
+        }
+    }
+    
+    private PerseusController getPerseusController(SVGDataObject doj){
+        assert doj != null;
+        return doj.getSceneManager().getPerseusController();
+    }
+    
+    private int getAnimatorState(SVGDataObject doj){
+        PerseusController pc = getPerseusController(doj);
+        if (pc != null){
+            return pc.getAnimatorState();
+        }
+        return PerseusController.ANIMATION_NOT_RUNNING;
+    }
+    
+    private float stopAnimator(SVGDataObject doj){
+        float stoppedTime = 0;
+        PerseusController pc = getPerseusController(doj);
+        if (pc != null){
+            stoppedTime = pc.getAnimatorTime();
+            pc.stopAnimator();
+        }
+        return stoppedTime;
+    }
+
+    private void startAnimator(SVGDataObject doj, float time){
+        assert doj != null;
+        PerseusController pc = doj.getSceneManager().getPerseusController();
+        if (pc != null){
+            pc.setAnimatorTime(time);
+            pc.startAnimator();
+        }
+    }
+
+    private void pauseAnimation(SVGDataObject doj, float time){
+        assert doj != null;
+        PerseusController pc = doj.getSceneManager().getPerseusController();
+        if (pc != null){
+            pc.setAnimatorTime(time);
+            pc.startAnimator();
+            pc.pauseAnimator();
+        }
+    }
+    
 }

@@ -63,6 +63,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.hibernate.cfg.model.HibernateConfiguration;
 import org.netbeans.modules.hibernate.cfg.model.SessionFactory;
 import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataLoader;
@@ -70,6 +71,11 @@ import org.netbeans.modules.hibernate.loaders.cfg.HibernateCfgDataObject;
 import org.netbeans.modules.hibernate.loaders.mapping.HibernateMappingDataLoader;
 import org.netbeans.modules.hibernate.loaders.reveng.HibernateRevengDataLoader;
 import org.netbeans.modules.hibernate.service.TableColumn;
+import org.netbeans.modules.hibernate.wizards.support.DBSchemaManager;
+import org.netbeans.modules.hibernate.wizards.support.DBSchemaTableProvider;
+import org.netbeans.modules.hibernate.wizards.support.EmptyTableProvider;
+import org.netbeans.modules.hibernate.wizards.support.Table;
+import org.netbeans.modules.hibernate.wizards.support.TableProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -137,6 +143,31 @@ public class HibernateUtil {
             }
         }
         return allTables;
+    }
+    
+    /**
+     * This methods gets all database tables from the supplied Hibernate Configurations.
+     *
+     * @param configurations hibernate configrations used to connect to the DB.
+     * @return list of strings of table names.
+     * @throws java.sql.SQLException
+     */
+    public static List<String> getAllDatabaseTablesOnEventThread(FileObject configurationFO) 
+        throws SQLException, DatabaseException, DataObjectNotFoundException{
+        List<String> databaseTables = new ArrayList<String>();
+        DBSchemaManager dbSchemaManager = new DBSchemaManager();
+        DatabaseConnection dbConnection = getDBConnection(((HibernateCfgDataObject)DataObject.find(configurationFO)).getHibernateConfiguration());
+        SchemaElement schemaElement = dbSchemaManager.getSchemaElement(dbConnection);
+        TableProvider tableProvider = null;
+        if(schemaElement != null) {
+            tableProvider = new DBSchemaTableProvider(schemaElement);
+        } else {
+            tableProvider = new EmptyTableProvider();
+        }
+        for(Table table : tableProvider.getTables()) {
+            databaseTables.add(table.getName());
+        }
+        return databaseTables;
     }
 
     /**

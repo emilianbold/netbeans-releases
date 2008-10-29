@@ -46,6 +46,7 @@ import java.util.List;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -78,15 +79,15 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     private MethodType methodType = MethodType.METHOD;
     
     private IndexedMethod(String signature, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags);
+        String clz, String require, String attributes, int flags, FileObject context) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
         this.signature = signature;
     }
 
     public static IndexedMethod create(RubyIndex index, String signature, String fqn, String clz,
-        String fileUrl, String require, String attributes, int flags) {
+        String fileUrl, String require, String attributes, int flags, FileObject context) {
         IndexedMethod m =
-            new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags);
+            new IndexedMethod(signature, index, fileUrl, fqn, clz, require, attributes, flags, context);
 
         return m;
     }
@@ -240,6 +241,23 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         }
         
         return sb.toString();
+    }
+
+    // For testsuite
+    public static int stringToFlags(String string) {
+        int flags = IndexedElement.stringToFlags(string);
+
+        int blockIndex = string.indexOf("|BLOCK_OPTIONAL");
+        if (blockIndex != -1) {
+            flags += BLOCK_OPTIONAL;
+            if (string.indexOf("|BLOCK") != blockIndex || string.lastIndexOf("|BLOCK") != blockIndex) {
+                flags += BLOCK;
+            }
+        } else if (string.indexOf("|BLOCK") != -1) {
+            flags += BLOCK;
+        }
+
+        return flags;
     }
     
     public String getEncodedAttributes() {

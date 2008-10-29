@@ -102,7 +102,7 @@ public final class GemPanel extends JPanel {
 
     /** Preference key for storing lastly selected platform. */
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
-    
+
     static enum TabIndex { 
         UPDATED(0, "GemPanel.updatedPanel.TabConstraints.tabTitle"), // NOI18N
         INSTALLED(1, "GemPanel.installedPanel.TabConstraints.tabTitle"), // NOI18N
@@ -149,7 +149,7 @@ public final class GemPanel extends JPanel {
      *        <code>"generators$"</code> for displaying only generator gems.
      */
     public GemPanel(final String initialFilter) {
-        this(initialFilter, null);
+        this(initialFilter, null, true);
     }
 
     /**
@@ -158,8 +158,13 @@ public final class GemPanel extends JPanel {
      * @param preselected the platform that should be preselected in the panel;
      *        may be <code>null</code> in which case the last selected platform
      *        is preselected.
+     * @param canManagePlatforms whether the "Manage Platform" button is
+     *        visible. Is used when Gem Manager was called from Platform
+     *        Customizer to prevent creation of another Platform Customizer.
      */
-    public GemPanel(final String initialFilter, final RubyPlatform preselected) {
+    public GemPanel(final String initialFilter,
+            final RubyPlatform preselected,
+            final boolean canManagePlatforms) {
         emptyGemListModel = new GemListModel(Collections.<Gem>emptyList(), null);
         updateTasksQueue = new RequestProcessor("Gem Updater", 5); // NOI18N
         filterTask = FILTER_PROCESSOR.create(new Runnable() {
@@ -172,6 +177,9 @@ public final class GemPanel extends JPanel {
             }
         });
         initComponents();
+        if (!canManagePlatforms) {
+            manageButton.setVisible(false);
+        }
         oldRubyGemsText.setForeground(UIManager.getColor("nb.errorForeground"));
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
@@ -221,10 +229,11 @@ public final class GemPanel extends JPanel {
         cancelRunningTasks();
         
         boolean paltformsAreBeingLoaded = PlatformComponentFactory.isLoadingPlatforms(platforms);
-        if (paltformsAreBeingLoaded || getSelectedPlatform() == null || !getSelectedPlatform().hasRubyGemsInstalled()) {
+        RubyPlatform platform = getSelectedPlatform();
+        if (paltformsAreBeingLoaded || platform == null || !platform.isValid() || !platform.hasRubyGemsInstalled()) {
             if (!paltformsAreBeingLoaded) {
                 gemHomeValue.setForeground(PlatformComponentFactory.INVALID_PLAF_COLOR);
-                gemHomeValue.setText(getSelectedPlatform() == null
+                gemHomeValue.setText(platform == null
                         ? getMessage("GemPanel.select.valid.platform")
                         : GemManager.getNotInstalledMessage());
             }
@@ -398,7 +407,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsLocalReload() : "local gems are ready";
-        LOGGER.finer("Updating loca gems UI for: " + gemManager);
+        LOGGER.finer("Updating local gems UI for: " + gemManager);
         
         hideLocalProgressBars();
 
@@ -412,7 +421,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsRemoteReload() : "remote gems are ready";
-        LOGGER.finer("Updating loca gems UI for: " + gemManager);
+        LOGGER.finer("Updating local gems UI for: " + gemManager);
         
         hideRemoteProgressBars();
 
@@ -1152,7 +1161,7 @@ public final class GemPanel extends JPanel {
     }//GEN-LAST:event_reloadInstalledButtonActionPerformed
 
     private void manageButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageButtonActionPerformed
-        RubyPlatformCustomizer.manage(platforms);
+        RubyPlatformCustomizer.manage(platforms, false);
     }//GEN-LAST:event_manageButtonActionPerformed
 
     private void browseGemHomeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseGemHomeActionPerformed

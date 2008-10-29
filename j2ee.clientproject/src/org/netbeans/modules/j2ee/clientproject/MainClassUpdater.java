@@ -42,124 +42,170 @@ package org.netbeans.modules.j2ee.clientproject;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.io.IOException;
+import java.util.Collection;
+import javax.lang.model.element.TypeElement;
+import javax.swing.SwingUtilities;
 import org.openide.util.RequestProcessor;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
+import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
+import org.openide.util.WeakListeners;
 
-//TODO: RETOUCHE almost complete rewrite needed
-class MainClassUpdater implements PropertyChangeListener {
+class MainClassUpdater extends FileChangeAdapter implements PropertyChangeListener {
 
-    private static RequestProcessor performer = new RequestProcessor();
+    private static RequestProcessor RP = new RequestProcessor();
 
     private final Project project;
     private final PropertyEvaluator eval;
     private final UpdateHelper helper;
     private final ClassPath sourcePath;
     private final String mainClassPropName;
-//    private JavaClass mainClass;
-
-    public MainClassUpdater (Project project, PropertyEvaluator eval, UpdateHelper helper, ClassPath sourcePath, String mainClassPropName) {
+    private FileObject current;
+    private FileChangeListener listener;
+    
+    /** Creates a new instance of MainClassUpdater */
+    public MainClassUpdater(final Project project, final PropertyEvaluator eval,
+        final UpdateHelper helper, final ClassPath sourcePath, final String mainClassPropName) {
+        assert project != null;
+        assert eval != null;
+        assert helper != null;
+        assert sourcePath != null;
+        assert mainClassPropName != null;
         this.project = project;
         this.eval = eval;
         this.helper = helper;
         this.sourcePath = sourcePath;
-        this.mainClassPropName = mainClassPropName;
-        this.eval.addPropertyChangeListener (this);
-//        this.addClassListener ();
+        this.mainClassPropName = mainClassPropName;        
+        this.eval.addPropertyChangeListener(this);
+        this.addFileChangeListener ();
     }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (mainClassPropName.equals(evt.getPropertyName())) {
-//            this.addClassListener ();
+    
+    public synchronized void unregister () {
+        if (current != null && listener != null) {
+            current.removeFileChangeListener(listener);
         }
     }
-
-//    public void change(MDRChangeEvent event) {
-//        if (event.isOfType (AttributeEvent.EVENTMASK_ATTRIBUTE)) {
-//            AttributeEvent atEvent = (AttributeEvent) event;
-//            String attributeName = atEvent.getAttributeName();
-//            if ("name".equals(attributeName)) { //NOI18N
-//                final String newMainClassName = (String) atEvent.getNewElement();
-//                if (newMainClassName != null) {                    
-//                    Runnable r = new Runnable () {
-//                        public void run () {
-//                            try {
-//                                //#63048:Deadlock while renaming main class of older j2se project
-//                                //Don't show a modal dialog under mutex
-//                                final String oldMainClass = (String) ProjectManager.mutex().readAccess(
-//                                        new Mutex.ExceptionAction () {
-//                                            public Object run () throws Exception {
-//                                                EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//                                                return props.getProperty(mainClassPropName);
-//                                            }
-//                                });                        
-//                                if (!newMainClassName.equals(oldMainClass) && helper.requestSave()) {
-//                                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction () {
-//                                        public Object run() throws Exception {
-//                                            EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-//                                            props.put(mainClassPropName, newMainClassName);
-//                                            helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props); // #47609
-//                                            ProjectManager.getDefault().saveProject (project);
-//                                            return null;
-//                                        }
-//                                    });
-//                                }
-//                            } catch (MutexException e) {
-//                                ErrorManager.getDefault().notify (e);
-//                            }
-//                            catch (IOException ioe) {
-//                                ErrorManager.getDefault().notify (ioe);
-//                            }
-//                        }
-//                    };
-//                    //#63048:Deadlock while renaming main class of older j2se project
-//                    //If we are not in the AWT thread reschedule it,
-//                    //the UpdateHelper may need to display a dialog
-//                    if (SwingUtilities.isEventDispatchThread()) {
-//                        r.run();
-//                    }
-//                    else {
-//                        SwingUtilities.invokeLater(r);
-//                    }
-//                }
-//            }
-//        }
-//    }
-
-    public synchronized void unregister () {
-//        if (mainClass != null) {
-//            ((MDRChangeSource)mainClass).removeListener (this);
-//            mainClass = null;
-//        }
+    
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (this.mainClassPropName.equals(evt.getPropertyName())) {
+            //Go out of the ProjectManager.MUTEX, see #118722
+            RP.post(new Runnable () {
+                public void run() {
+                    MainClassUpdater.this.addFileChangeListener ();
+                }
+            });            
+        }
     }
+    
+    @Override
+    public void fileRenamed (final FileRenameEvent evt) {
+        if (!project.getProjectDirectory().isValid()) {
+            return;
+        }
+        final FileObject _current;
+        synchronized (this) {
+            _current = this.current;
+        }
+        if (evt.getFile() == _current) {
+            Runnable r = new Runnable () {
+                public void run () {  
+                    try {
+                        final String oldMainClass = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
+                            public String run() throws Exception {
+                                return eval.getProperty(mainClassPropName);
+                            }
+                        });
 
-//    private void addClassListener () {
-//        performer.post( new Runnable () {
-//            public void run() {
-//                //XXX: Implementation dependency, no way how to do it
-//                JMManager manager = (JMManager) JavaMetamodel.getManager();
-//                manager.waitScanFinished();
-//                JavaModel.getJavaRepository().beginTrans(false);
-//                try {
-//                    JavaModel.setClassPath (sourcePath);
-//                    String mainClassName = MainClassUpdater.this.eval.getProperty (mainClassPropName);
-//                    Type type = manager.getDefaultExtent().getType().resolve(mainClassName);
-//                    if ((type instanceof JavaClass) && ! (type instanceof UnresolvedClass)) {
-//                        synchronized (MainClassUpdater.this) {
-//                            if (MainClassUpdater.this.mainClass != null) {
-//                                ((MDRChangeSource)mainClass).removeListener (MainClassUpdater.this);
-//                            }
-//                            MainClassUpdater.this.mainClass = (JavaClass) type;
-//                            ((MDRChangeSource)MainClassUpdater.this.mainClass).addListener (MainClassUpdater.this);
-//                        }
-//                    }
-//                } finally {
-//                    JavaModel.getJavaRepository().endTrans();
-//                }
-//            }
-//        });
-//    }
+                        Collection<ElementHandle<TypeElement>> main = SourceUtils.getMainClasses(_current);
+                        String newMainClass = null;
+                        if (!main.isEmpty()) {
+                            ElementHandle<TypeElement> mainHandle = main.iterator().next();
+                            newMainClass = mainHandle.getQualifiedName();
+                        }                    
+                        if (newMainClass != null && !newMainClass.equals(oldMainClass) && helper.requestUpdate()) {
+                            final String newMainClassFinal = newMainClass;
+                            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                                public Void run() throws Exception {                                                                                    
+                                    EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                    props.put (mainClassPropName, newMainClassFinal);
+                                    helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                    ProjectManager.getDefault().saveProject (project);
+                                    return null;
+                                }
+                            });
+                        }
+                    } catch (IOException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                    catch (MutexException e) {
+                        Exceptions.printStackTrace(e);
+                    }
+                }
+            };
+            if (SwingUtilities.isEventDispatchThread()) {
+                r.run();
+            }
+            else {
+                SwingUtilities.invokeLater(r);
+            }
+        }
+    }
+    
+    private void addFileChangeListener () {
+        synchronized (MainClassUpdater.this) {
+            if (current != null && listener != null) {
+                current.removeFileChangeListener(listener);
+                current = null;
+                listener = null;
+            }            
+        }
+        final String mainClassName = MainClassUpdater.this.eval.getProperty(mainClassPropName);
+        if (mainClassName != null) {
+            try {
+                FileObject[] roots = sourcePath.getRoots();
+                if (roots.length>0) {
+                    ClassPath bootCp = ClassPath.getClassPath(roots[0], ClassPath.BOOT);
+                    ClassPath compileCp = ClassPath.getClassPath(roots[0], ClassPath.COMPILE);
+                    final ClasspathInfo cpInfo = ClasspathInfo.create(bootCp, compileCp, sourcePath);
+                    JavaSource js = JavaSource.create(cpInfo);
+                    js.runWhenScanFinished(new Task<CompilationController>() {
+
+                        public void run(CompilationController c) throws Exception {
+                            TypeElement te = c.getElements().getTypeElement(mainClassName);
+                             if (te != null) {
+                                synchronized (MainClassUpdater.this) {
+                                    current = SourceUtils.getFile(te, cpInfo);
+                                    listener = WeakListeners.create(FileChangeListener.class, MainClassUpdater.this, current);
+                                    if (current != null && sourcePath.contains(current)) {
+                                        current.addFileChangeListener(listener);
+                                    }
+                                }
+                            }                            
+                        }
+
+                    }, true);
+                }
+            } catch (IOException ioe) {
+            }
+        }        
+    }
 
 }

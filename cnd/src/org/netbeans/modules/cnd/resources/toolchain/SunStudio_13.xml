@@ -45,11 +45,26 @@ made subject to such option by the copyright holder.
     <toolchain name="SunStudio_13" display="Sun Studio 13 Compiler Collection" family="SunStudio"/>
     <c>
         <version flags="-V" pattern=".*Sun C 5.10"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
+        </architecture>
     </c>
     <cpp>
         <version flags="-V" pattern=".*Sun C\+\+ 5.10"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
+        </architecture>
     </cpp>
     <fortran>
         <version flags="-V" pattern=".*Sun Fortran 95 8.4"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
+        </architecture>
     </fortran>
 </toolchaindefinition>

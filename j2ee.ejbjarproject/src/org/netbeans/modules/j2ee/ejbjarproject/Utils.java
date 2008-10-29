@@ -47,6 +47,8 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -62,6 +64,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -242,4 +245,29 @@ public class Utils {
         }
         USG_LOGGER.log(logRecord);
     }
+    
+    /**
+     * Creates an URL of a classpath or sourcepath root
+     * For the existing directory it returns the URL obtained from {@link File#toUri()}
+     * For archive file it returns an URL of the root of the archive file
+     * For non existing directory it fixes the ending '/'
+     * @param root the file of a root
+     * @param offset a path relative to the root file or null (eg. src/ for jar:file:///lib.jar!/src/)" 
+     * @return an URL of the root
+     * @throws MalformedURLException if the URL cannot be created
+     */
+    public static URL getRootURL (File root, String offset) throws MalformedURLException {
+        URL url = root.toURI().toURL();
+        if (FileUtil.isArchiveFile(url)) {
+            url = FileUtil.getArchiveRoot(url);
+        } else if (!root.exists()) {
+            url = new URL(url.toExternalForm() + "/"); // NOI18N
+        }
+        if (offset != null) {
+            assert offset.endsWith("/");    //NOI18N
+            url = new URL(url.toExternalForm() + offset); // NOI18N
+        }
+        return url;
+    }
+
 }

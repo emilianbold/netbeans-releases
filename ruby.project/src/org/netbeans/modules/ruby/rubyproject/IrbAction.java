@@ -48,7 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
@@ -98,7 +98,7 @@ public final class IrbAction extends CallableSystemAction {
         }
         OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
         String target = irbPath;
-        ExecutionDescriptor desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
+        RubyExecutionDescriptor desc = descProvider.getScriptDescriptor(pwd, null/*specFile?*/, target, displayName, project.getLookup(), debug, extraRecognizers);
 
         // Override args
         desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));

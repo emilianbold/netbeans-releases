@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.TestUnitRunner;
 import org.openide.util.NbBundle;
 
@@ -65,9 +66,12 @@ public class TestUnitHandlerFactory {
         result.add(new SuiteFinishedHandler());
         result.add(new SuiteErrorOutputHandler());
         result.add(new TestStartedHandler());
+        result.add(new ShouldaTestStartedHandler());
+        result.add(new ShouldaTestFailedHandler());
         result.add(new TestFailedHandler());
         result.add(new TestErrorHandler());
         result.add(new TestFinishedHandler());
+        result.add(new ShouldaTestFinishedHandler());
         result.add(new TestLoggerHandler());
         result.add(new TestMiscHandler());
         result.add(new SuiteMiscHandler());
@@ -97,13 +101,17 @@ public class TestUnitHandlerFactory {
 
         private List<String> output;
 
+        public TestFailedHandler(String regex) {
+            super(regex);
+        }
+
         public TestFailedHandler() {
             super("%TEST_FAILED%\\stime=(.+)\\stestname=(.+)\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
+            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
             testcase.timeMillis = toMillis(matcher.group(1));
             testcase.name = matcher.group(2);
             testcase.className = matcher.group(3);
@@ -137,6 +145,16 @@ public class TestUnitHandlerFactory {
         }
     }
 
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestFailedHandler extends TestFailedHandler {
+
+        public ShouldaTestFailedHandler() {
+            super("%TEST_FAILED%\\stime=(.+)\\stestname=test:\\s(.*)\\.\\s\\((.+)\\)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+        }
+    }
+
     static class TestErrorHandler extends TestRecognizerHandler {
 
         private List<String> output;
@@ -147,7 +165,7 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
+            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
             testcase.timeMillis = toMillis(matcher.group(1));
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
@@ -190,7 +208,25 @@ public class TestUnitHandlerFactory {
         }
     }
 
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestStartedHandler extends TestRecognizerHandler {
+
+        public ShouldaTestStartedHandler() {
+            super("%TEST_STARTED%\\stest:\\s(.*)\\.\\s\\((.+)\\)"); //NOI18N
+        }
+
+        @Override
+        void updateUI( Manager manager, TestSession session) {
+        }
+    }
+
     static class TestFinishedHandler extends TestRecognizerHandler {
+
+        public TestFinishedHandler(String regex) {
+            super(regex);
+        }
 
         public TestFinishedHandler() {
             super("%TEST_FINISHED%\\stime=(.+)\\s([\\w]+)\\((.+)\\)"); //NOI18N
@@ -198,12 +234,23 @@ public class TestUnitHandlerFactory {
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
+            Report.Testcase testcase = new Report.Testcase(TestType.TEST_UNIT);
             testcase.timeMillis = toMillis(matcher.group(1));
             testcase.className = matcher.group(3);
             testcase.name = matcher.group(2);
             session.addTestCase(testcase);
         }
+    }
+
+    /**
+     * Support for Shoulda tests -- see #150613
+     */
+    static class ShouldaTestFinishedHandler extends TestFinishedHandler {
+
+        public ShouldaTestFinishedHandler() {
+            super("%TEST_FINISHED%\\stime=(.+)\\stest:\\s(.*)\\.\\s\\((.+)\\)"); //NOI18N
+        }
+
     }
 
     /**

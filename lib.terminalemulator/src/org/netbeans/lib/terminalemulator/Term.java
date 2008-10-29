@@ -1209,6 +1209,23 @@ public class Term extends JComponent implements Accessible {
     public void setAttribute(int value) {
         st.attr = Attr.setAttribute(st.attr, value);
     }
+
+    
+    /**
+     * Return the complete state of attributes.
+     * @return Complete state of attributes.
+     */
+    int attrSave() {
+        return st.attr;
+    }
+
+    /**
+     * Restore the complete set of attributes.
+     * @param attr Attributes to be restored.
+     */
+    void attrRestore(int attr) {
+        st.attr = attr;
+    }
     
     /**
      * Set or unset the display attribute for characters from 'begin' to 'end'
@@ -3692,6 +3709,10 @@ public class Term extends JComponent implements Accessible {
             repaint(true);
             // TMP setRefreshEnabled(repaint);
         }
+
+        public void op_hyperlink(String url, String text) {
+            hyperlink(url, text);
+        }
         
         public int op_get_width() {
             return horizontally_scrollable? buf.totalCols(): buf.visibleCols();
@@ -3754,6 +3775,18 @@ public class Term extends JComponent implements Accessible {
             }
         }
     }
+
+    /**
+     * Create a hyperlink.
+     * @param url
+     * @param text
+     */
+    protected void hyperlink(String url, String text) {
+        // default implementation just dumps out the text
+        for (char c : text.toCharArray())
+            ops.op_char(c);
+    }
+
     
     private void putc_work(char c) {
         interp.processChar(c);

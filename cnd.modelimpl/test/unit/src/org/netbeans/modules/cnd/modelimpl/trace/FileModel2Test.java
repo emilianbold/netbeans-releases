@@ -68,6 +68,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void testIZ149505() throws Exception {
+        // IZ#149505: special handling of __VA_ARGS__ with preceding comma
+        performTest("iz149505.cc");
+    }
+    
     public void testIZ145280() throws Exception {
         // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
         performTest("iz145280.cc");
@@ -133,6 +138,11 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ148014() throws Exception {
         // IZ#148014 Unable to resolve pure virtual method that throws
         performTest("iz148014.cc");
+    }
+
+    public void testIZ149225() throws Exception {
+        // IZ#149225 incorrect concatenation with token that starts with digit
+        performTest("iz149225.c");
     }
 
 }

@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.api.execute;
 
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
@@ -66,6 +67,8 @@ public final class RunUtils {
         MavenExecutor exec;
         boolean useEmbedded = false;
         if (config.getProject() != null) {
+            //TODO somehow use the config.getMavenProject() call rather than looking up the
+            // AuxiliaryProperties from lookup. The loaded project can be different from the executed one.
             AuxiliaryProperties props = config.getProject().getLookup().lookup(AuxiliaryProperties.class);
             String val = props.get(Constants.HINT_USE_EXTERNAL, true);
             if ("false".equalsIgnoreCase(val)) { //NOI18N
@@ -89,5 +92,33 @@ public final class RunUtils {
         return task;
     }
 
+    /**
+     *
+     * @param config
+     * @return true if compile on save is allowed for running the application.
+     */
+    public static boolean hasApplicationCompileOnSaveEnabled(RunConfig config) {
+        Project prj = config.getProject();
+        if (prj != null) {
+              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+              return cos != null && ("all".equalsIgnoreCase(cos) || "app".equalsIgnoreCase(cos));
+        }
+        return false;
+    }
+
+    /**
+     *
+     * @param config
+     * @return true if compile on save is allowed for running tests.
+     */
+    public static boolean hasTestCompileOnSaveEnabled(RunConfig config) {
+        Project prj = config.getProject();
+        if (prj != null) {
+              String cos = prj.getLookup().lookup(AuxiliaryProperties.class).get(Constants.HINT_COMPILE_ON_SAVE, true);
+              //COS for tests is the default value.
+              return cos == null || ("all".equalsIgnoreCase(cos) || "test".equalsIgnoreCase(cos));
+        }
+        return false;
+    }
 
 }

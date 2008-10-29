@@ -46,9 +46,11 @@ import java.util.Vector;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -362,6 +364,43 @@ public class SVGSpinner extends SVGComponent implements DataListener {
                 }
             }
             return ret;
+        }
+        
+        public void handlePointerPress( PointerEvent event ) {
+            requestFocus();
+            SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
+            if( rect != null ) {
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    pressUpButton();
+                }
+            }
+            rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
+            if( rect != null ){
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    pressDownButton();
+                }
+            }
+            super.handlePointerPress(event);
+        }
+        
+        public void handlePointerRelease( PointerEvent event ) {
+            SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
+            if( rect != null ) {
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    releaseUpButton();
+                }
+            }
+            rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
+            if( rect != null ){
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    releaseDownButton();
+                }
+            }
+            super.handlePointerRelease(event);
         }
         
     }

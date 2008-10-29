@@ -200,7 +200,12 @@ public final class Validator extends BpelValidator {
       }
     }
     for (Model wsdl : wsdls) {
-      Types types = ((WSDLModel) wsdl).getDefinitions().getTypes();
+      Definitions definitions = ((WSDLModel) wsdl).getDefinitions();
+
+      if (definitions == null) {
+        continue;
+      }
+      Types types = definitions.getTypes();
 
       if (types == null) {
         continue;

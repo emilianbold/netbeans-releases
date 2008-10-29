@@ -106,7 +106,7 @@ public final class ClasspathInfo {
     private EventListenerList listenerList =  null;
     private ClassIndex usagesQuery;
     
-    /** Creates a new instance of ClasspathInfo (private use the fatctory methods) */
+    /** Creates a new instance of ClasspathInfo (private use the factory methods) */
     private ClasspathInfo(CachingArchiveProvider archiveProvider, ClassPath bootCp, ClassPath compileCp, ClassPath srcCp,
         JavaFileFilterImplementation filter, boolean backgroundCompilation, boolean ignoreExcludes, boolean hasMemoryFileManager) {
         assert archiveProvider != null;

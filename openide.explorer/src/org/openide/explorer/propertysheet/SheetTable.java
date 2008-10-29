@@ -1152,7 +1152,13 @@ final class SheetTable extends BaseTable implements PropertySetModelListener, Cu
 
                     //get the current value
                     try {
-                        b = (Boolean) p.getValue();
+                        Object value = p.getValue();
+                        if( value instanceof Boolean ) {
+                            b = (Boolean) value;
+                        } else {
+                            //150048 - somebody has sneaked in a wrong value
+                            return false;
+                        }
                     } catch (ProxyNode.DifferentValuesException dve) {
                         //If we're represeting conflicting multi-selected 
                         //properties, we'll make them both true when we toggle

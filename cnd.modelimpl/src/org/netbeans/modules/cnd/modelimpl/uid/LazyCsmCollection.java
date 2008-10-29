@@ -107,8 +107,14 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
     public Object[] toArray() {
 	Object[] result = new Object[size()];
 	Iterator<Tfact> e = iterator();
-	for (int i=0; e.hasNext(); i++)
+        int i = 0;
+	for (; e.hasNext(); i++)
 	    result[i] = e.next();
+        if (i < size()) {
+            Object[] a = new Object[i];
+            System.arraycopy(result, 0, a, 0, i);
+            result = a;
+        }
 	return result;
     }
 
@@ -120,10 +126,14 @@ public class LazyCsmCollection<Tuid, Tfact extends Tuid> implements Collection<T
 
         Iterator<T> it = (Iterator<T>) iterator();
 	Object[] result = a;
-        for (int i=0; i<size; i++)
-            result[i] = it.next();
-        if (a.length > size)
-	    a[size] = null;
+        int i = 0;
+	for (; it.hasNext(); i++)
+	    result[i] = it.next();
+        if (i < size()) {
+            a = (T[])java.lang.reflect.Array
+		.newInstance(a.getClass().getComponentType(), i);
+            System.arraycopy(result, 0, a, 0, i);
+        }
         return a;
     }
 

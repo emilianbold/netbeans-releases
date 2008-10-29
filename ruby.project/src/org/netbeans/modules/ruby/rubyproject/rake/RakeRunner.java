@@ -51,10 +51,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
-import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
@@ -225,11 +224,11 @@ public final class RakeRunner {
         }
 
         final String finalCharSet = charsetName;
-        final List<ExecutionDescriptor> descs = getExecutionDescriptors(tasksToRun);
+        final List<RubyExecutionDescriptor> descs = getExecutionDescriptors(tasksToRun);
         RAKE_RUNNER_RP.post(new Runnable() {
 
             public void run() {
-                for (ExecutionDescriptor desc : descs) {
+                for (RubyExecutionDescriptor desc : descs) {
                     Task task = new RubyExecution(desc, finalCharSet).run();
                     try {
                         task.waitFinished(10000);
@@ -247,16 +246,15 @@ public final class RakeRunner {
      * @param tasks the tasks to build <code>ExecutionDescriptor</code>s for.
      * @return
      */
-    List<ExecutionDescriptor> getExecutionDescriptors(List<? extends RakeTask> tasks) {
+    List<RubyExecutionDescriptor> getExecutionDescriptors(List<? extends RakeTask> tasks) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
-        GemManager gemManager = platform.getGemManager();
-        String rake = gemManager.getRake();
+        String rake = platform.getRake();
         Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
-        List<ExecutionDescriptor> result = new ArrayList<ExecutionDescriptor>(5);
+        List<RubyExecutionDescriptor> result = new ArrayList<RubyExecutionDescriptor>(5);
 
         for (RakeTask task : tasks) {
-            ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, pwd, rake);
+            RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, rake);
             doStandardConfiguration(desc);
             String[] existingInitialArgs = desc.getInitialArgs() != null ? desc.getInitialArgs() : new String[0];
             List<String> initialArgs = new ArrayList<String>(Arrays.asList(existingInitialArgs));
@@ -291,7 +289,7 @@ public final class RakeRunner {
 
     }
 
-    private void doStandardConfiguration(ExecutionDescriptor desc) {
+    private void doStandardConfiguration(RubyExecutionDescriptor desc) {
 
         String charsetName = null;
         String classPath = null;
@@ -360,10 +358,10 @@ public final class RakeRunner {
 
     private class RakeErrorRecognizer extends OutputRecognizer implements Runnable {
 
-        private final ExecutionDescriptor desc;
+        private final RubyExecutionDescriptor desc;
         private final String charsetName;
 
-        RakeErrorRecognizer(ExecutionDescriptor desc, String charsetName) {
+        RakeErrorRecognizer(RubyExecutionDescriptor desc, String charsetName) {
             this.desc = desc;
             this.charsetName = charsetName;
         }

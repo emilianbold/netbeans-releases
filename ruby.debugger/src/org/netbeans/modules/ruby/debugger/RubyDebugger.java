@@ -48,6 +48,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
@@ -56,7 +58,7 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
@@ -74,10 +76,12 @@ import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResul
  * to point to the Ruby debugging.
  */
 public final class RubyDebugger implements RubyDebuggerImplementation {
+
+    private static final Logger LOGGER = Logger.getLogger(RubyDebugger.class.getName());
     
     private static final String PATH_TO_CLASSIC_DEBUG_DIR;
     
-    private ExecutionDescriptor descriptor;
+    private RubyExecutionDescriptor descriptor;
     
     private RubySession rubySession;
     
@@ -91,7 +95,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         PATH_TO_CLASSIC_DEBUG_DIR = classicDebug.getParentFile().getAbsolutePath();
     }
     
-    public void describeProcess(ExecutionDescriptor descriptor) {
+    public void describeProcess(RubyExecutionDescriptor descriptor) {
         this.descriptor = descriptor;
     }
     
@@ -130,7 +134,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     }
 
     private static void problemOccurred(final Exception e) {
-        Util.showWarning(NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getMessage()));
+        String message = NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getLocalizedMessage());
+        Util.showWarning(message);
+        LOGGER.log(Level.WARNING, message, e);
     }
     
     /**
@@ -143,7 +149,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
      * @throws java.io.IOException
      * @throws org.rubyforge.debugcommons.RubyDebuggerException
      */
-    static RubySession startDebugging(final ExecutionDescriptor descriptor)
+    static RubySession startDebugging(final RubyExecutionDescriptor descriptor)
             throws IOException, RubyDebuggerException {
         final RubyPlatform platform = descriptor.getPlatform();
         boolean jrubySet = platform.isJRuby();
@@ -188,24 +194,28 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         debugDesc.setEnvironment(env);
         RubyDebuggerProxy proxy;
         int timeout = Integer.getInteger("org.netbeans.modules.ruby.debugger.timeout", 15); // NOI18N
-        Util.finer("Using timeout: " + timeout + 's'); // NOI18N
+        LOGGER.finer("Using timeout: " + timeout + 's'); // NOI18N
         String interpreter = platform.getInterpreter();
         if (!platform.hasFastDebuggerInstalled()) {
-            Util.LOGGER.fine("Running classic(slow) debugger...");
+            LOGGER.fine("Running classic(slow) debugger...");
             proxy = RubyDebuggerFactory.startClassicDebugger(debugDesc,
                     PATH_TO_CLASSIC_DEBUG_DIR, interpreter, timeout);
         } else { // ruby-debug
             String version = platform.getLatestAvailableValidRDebugIDEVersions();
             debugDesc.setRubyDebugIDEVersion(version);
-            Util.LOGGER.fine("Running fast debugger...");
+            LOGGER.fine("Running fast debugger...");
             File rDebugF = new File(Util.findRDebugExecutable(platform));
             
             if(descriptor.useInterpreter()) {
                 proxy = RubyDebuggerFactory.startRubyDebug(debugDesc,
                         rDebugF.getAbsolutePath(), interpreter, timeout);
-            } else {
+            } else { // use 'java' executable
                 List<String> cmd = new ArrayList<String>(20);
                 cmd.add(descriptor.getCmd().getAbsolutePath());
+                assert jrubySet : "jruby is used";
+                if (descriptor.getJVMArguments() != null) {
+                    cmd.addAll(Arrays.asList(descriptor.getJVMArguments()));
+                }
                 cmd.addAll(Arrays.asList(descriptor.getInitialArgs()));
                 proxy = RubyDebuggerFactory.startRubyDebug(
                         debugDesc, cmd, rDebugF.getAbsolutePath(), timeout);
@@ -215,7 +225,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         return intializeIDEDebuggerEngine(proxy, descriptor.getFileLocator());
     }
 
-    private static Map<String, String> getJRubyEnvironment(final ExecutionDescriptor descriptor) {
+    private static Map<String, String> getJRubyEnvironment(final RubyExecutionDescriptor descriptor) {
         Map<String, String> env = new HashMap<String, String>();
         if (descriptor.getClassPath() != null) {
             env.put("CLASSPATH", descriptor.getClassPath()); // NOI18N
@@ -224,7 +234,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     }
 
     /** Package private for unit test. */
-    static boolean checkAndTuneSettings(final ExecutionDescriptor descriptor) {
+    static boolean checkAndTuneSettings(final RubyExecutionDescriptor descriptor) {
         final RubyPlatform platform = descriptor.getPlatform();
         if (platform.isRubinius()) { // no debugger support for Rubinius yet
             return false;

@@ -10,7 +10,7 @@
 <h1>SQL Update Execution</h1>
 
 
-<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead --!>
+<!-- NOTE: the sql:setDataSource tag is for prototyping and simple applications. You should really use a DataSource object instead -->
 
 <sql:setDataSource
   var="example"

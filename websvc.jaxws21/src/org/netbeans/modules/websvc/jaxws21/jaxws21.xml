@@ -73,4 +73,8 @@ made subject to such option by the copyright holder.
         <type>javadoc</type>
         <resource>jar:nbinst:///docs/jaxws-2_1-api-doc.zip!/</resource>
     </volume>
+    <volume>
+        <type>maven-pom</type>
+        <resource>http://download.java.net/maven/1/com.sun.xml.ws/poms/jaxws-rt-2.1.4.pom</resource>
+    </volume>
 </library>

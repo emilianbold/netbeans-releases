@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.maven.nodes;
 
+import hidden.org.codehaus.plexus.util.StringUtils;
 import java.awt.Image;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.PreferenceChangeEvent;
@@ -247,7 +248,8 @@ public class DependenciesNode extends AbstractNode {
                 boolean added = false;
                 for (Artifact a : arts) {
                     if (a.getGroupId().equals(d.getGroupId()) &&
-                            a.getArtifactId().equals(d.getArtifactId())) {
+                          a.getArtifactId().equals(d.getArtifactId()) &&
+                          StringUtils.equals(a.getClassifier(), d.getClassifier())) {
                         if (nonCP || a.getArtifactHandler().isAddedToClasspath()) {
                             lst.add(new DependencyWrapper(a, d));
                         } else {
@@ -465,7 +467,11 @@ public class DependenciesNode extends AbstractNode {
             if (!transitive1 && transitive2)  {
                 return -1;
             }
-            return art1.getArtifact().getArtifactId().compareTo(art2.getArtifact().getArtifactId());
+            int ret = art1.getArtifact().getArtifactId().compareTo(art2.getArtifact().getArtifactId());
+            if (ret != 0) {
+                return ret;
+            }
+            return art1.getArtifact().compareTo(art2.getArtifact());
         }
         
     }

@@ -53,7 +53,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.IndentTask;
-import org.netbeans.modules.groovy.gsp.lexer.api.GspTokenId;
+import org.netbeans.modules.groovy.gsp.lexer.GspTokenId;
 
 /**
  * Indent task for GSP.

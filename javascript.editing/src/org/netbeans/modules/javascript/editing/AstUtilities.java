@@ -122,7 +122,6 @@ public final class AstUtilities {
         if (!isNameNode(node)) {
             return false;
         }
-        String name = node.getString();
         JsParseResult rpr = AstUtilities.getParseResult(info);
         if (rpr == null) {
             return false;

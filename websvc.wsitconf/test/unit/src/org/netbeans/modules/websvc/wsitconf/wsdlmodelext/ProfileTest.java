@@ -93,7 +93,7 @@ public class ProfileTest extends NbTestCase {
             for (SecurityProfile sP : secProfiles) {
                 if (sP.isProfileSupported(null, b, false)) {
                     profiles.add(sP.getDisplayName());
-                };
+                }
             }
             for (int i=1; i<profiles.size(); i++) {
                 String profile = profiles.get(i);

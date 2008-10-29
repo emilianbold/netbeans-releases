@@ -1475,8 +1475,14 @@ public class SunDeploymentManager implements Constants, DeploymentManager, SunDe
         Properties antProps = new Properties();
         antProps.setProperty("sjsas.root", getPlatformRoot().getAbsolutePath()); // NOI18N
         antProps.setProperty("sjsas.url", getWebUrl());                // NOI18N
-        antProps.setProperty("sjsas.username", getUserName());         // NOI18N
-        antProps.setProperty("sjsas.password", getPassword());         // NOI18N
+        String val = getUserName();
+        if (null != val) {
+            antProps.setProperty("sjsas.username", val);         // NOI18N
+        }
+        val = getPassword();
+        if (null != val) {
+            antProps.setProperty("sjsas.password", val);         // NOI18N
+        }
         antProps.setProperty("sjsas.host",getHost());
         antProps.setProperty("sjsas.port",getPort()+"");
         // FIXME Get file object for parent folder and use FileObject.createData() here

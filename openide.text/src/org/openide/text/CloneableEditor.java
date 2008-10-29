@@ -122,6 +122,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Overriden to explicitely set persistence type of CloneableEditor
      * to PERSISTENCE_ONLY_OPENED */
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ONLY_OPENED;
     }
@@ -132,6 +133,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * then that it used, else general help on the editor is provided.
      * @return context help
      */
+    @Override
     public HelpCtx getHelpCtx() {
         Object kit = support.cesKit();
         HelpCtx fromKit = kit == null ? null : HelpCtx.findHelp(kit);
@@ -148,6 +150,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * Adds scheduling of "emptying" editor pane and removing all sub components.
      * {@inheritDoc}
      */
+    @Override
     public boolean canClose() {
         boolean result = super.canClose();
         return result;
@@ -155,6 +158,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Overrides superclass method. In case it is called first time,
      * initializes this <code>CloneableEditor</code>. */
+    @Override
     protected void componentShowing() {
         super.componentShowing();
         initialize();
@@ -520,13 +524,14 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         private void initRest() {
             //#132662 Post this task to another worker private thread
             //to avoid deadlock.
-            support.RPPostprocessing.post(new Runnable() {
+            CloneableEditorSupport.RPPostprocessing.post(new Runnable() {
                 public void run() {
                     support.ensureAnnotationsLoaded();
                 }
             });
         }
     } // end of DoInitialize
+    @Override
     protected CloneableTopComponent createClonedObject() {
         return support.createCloneableTopComponent();
     }
@@ -587,30 +592,10 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         }
     }
 
-    /** Overrides superclass version. Opens top component only if
-     * it is in valid state.
-     * (Editor top component may become invalid after deserialization).<br>
-     * Also tries to open all other top components which are docked
-     * in editor mode on given workspace, but not visible.<br>
-     */
-    @SuppressWarnings("deprecation")
-    public void open(Workspace workspace) {
-        if (discard()) {
-            Logger.getAnonymousLogger().warning(
-                "Can not open " + this + " component," // NOI18N
-                 +" its support environment is not valid" // NOI18N
-                 +" [support=" + support + ", env=" // NOI18N
-                 +((support == null) ? null : support.cesEnv()) + "]"
-            ); // NOI18N
-        } else {
-            dockIfNeeded();
-            super.open(workspace);
-        }
-    }
-
     /** When closing last view, also close the document.
      * @return <code>true</code> if close succeeded
      */
+    @Override
     protected boolean closeLast() {
         if (!support.canClose()) {
             // if we cannot close the last window
@@ -630,6 +615,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** The undo/redo manager of the support.
      * @return the undo/redo manager shared by all editors for this support
      */
+    @Override
     public UndoRedo getUndoRedo() {
         return support.getUndoRedo();
     }
@@ -666,7 +652,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Transfer the focus to the editor pane.
      */
-    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
     public void requestFocus() {
         super.requestFocus();
 
@@ -681,7 +668,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     /** Transfer the focus to the editor pane.
      */
-    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
 
@@ -696,7 +684,8 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return false;
     }
 
-    @SuppressWarnings("deprecation")
+    @Deprecated
+    @Override
     public boolean requestDefaultFocus() {
         if ((customComponent != null) && !SwingUtilities.isDescendingFrom(pane, customComponent)) {
             return customComponent.requestFocusInWindow();
@@ -709,6 +698,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
 
     // XXX is this method really needed?
     /** @return Preferred size of editor top component  */
+    @Override
     public Dimension getPreferredSize() {
         @SuppressWarnings("deprecation")
         Rectangle bounds = WindowManager.getDefault().getCurrentWorkspace().getBounds();
@@ -743,6 +733,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     /** Overrides superclass method. Remembers last selected component of
      * support belonging to this component.
      * @see #componentDeactivated */
+    @Override
     protected void componentActivated() {
         support.setLastSelected(this);
     }
@@ -775,6 +766,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     }
 
     // override for simple and consistent IDs
+    @Override
     protected String preferredID() {
         final CloneableEditorSupport ces = cloneableEditorSupport();
 
@@ -785,6 +777,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         return "";
     }
 
+    @Override
     public void writeExternal(ObjectOutput out) throws IOException {
         super.writeExternal(out);
 
@@ -839,6 +832,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
         out.writeObject(new Integer(pos));
     }
 
+    @Override
     public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException {
         super.readExternal(in);
 
@@ -871,6 +865,7 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
      * @throws ObjectStreamException When problem during serialization occures.
      * @throws NotSerializableException When this <code>CloneableEditor</code>
      *               is invalid and doesn't want to be serialized. */
+    @Override
     protected Object writeReplace() throws ObjectStreamException {
         if (discard()) {
             throw new NotSerializableException("Serializing component is invalid: " + this); // NOI18N
@@ -901,33 +896,6 @@ public class CloneableEditor extends CloneableTopComponent implements CloneableE
     */
     private boolean discard() {
         return (support == null) || !support.cesEnv().isValid();
-    }
-
-    /** Dock this top component to editor mode if it is not docked
-     * in some mode at this time  */
-    private void dockIfNeeded() {
-        // dock into editor mode if possible
-        Mode ourMode = WindowManager.getDefault().findMode(this);
-        if( null == ourMode ) {
-            //dock into 'editor' mode to avoid being tagged as a pre-version-4.0 
-            //TopComponent that is allowed to be drag and dropped outside the editor area
-            
-            //first check the active mode as it might be a floating editor window
-            TopComponent activeTc = TopComponent.getRegistry().getActivated();
-            if( null != activeTc ) {
-                ourMode = WindowManager.getDefault().findMode( activeTc );
-                if( !WindowManager.getDefault().isEditorMode( ourMode ) )
-                    ourMode = null;
-            }
-            if( null == ourMode )
-                ourMode = WindowManager.getDefault().findMode( "editor" );
-            if( null != ourMode ) {
-                 ourMode.dockInto( this );
-            } else {
-                //should not happen - editor mode is always defined
-                Logger.getAnonymousLogger().warning("The window system cannot find the default editor mode." );
-            }
-        }
     }
     
     //

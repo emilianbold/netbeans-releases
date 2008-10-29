@@ -60,6 +60,16 @@ import org.netbeans.junit.NbTestSuite;
  * @author Jiri.Skrivanek@sun.com
  */
 public class ImageNodeTest extends JellyTestCase {
+    public static final String[] tests = new String[] {
+        "testVerifyPopup",
+        "testOpen",
+        "testCut",
+        "testCopy",
+        "testDelete",
+        "testRename",
+        "testSaveAsTemplate",
+        "testProperties"
+    };
     
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
@@ -84,14 +94,7 @@ public class ImageNodeTest extends JellyTestCase {
         return suite;
          */
         return createModuleTest(ImageNodeTest.class, 
-        "testVerifyPopup",
-        "testOpen",
-        "testCut",
-        "testCopy",
-        "testDelete",
-        "testRename",
-        "testSaveAsTemplate",
-        "testProperties");
+        tests);
     }
     
     protected static ImageNode imageNode = null;

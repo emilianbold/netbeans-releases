@@ -49,6 +49,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.elf.SectionHeader;
 import org.netbeans.modules.cnd.dwarfdump.reader.ElfReader;
 import java.io.IOException;
@@ -84,6 +85,14 @@ public class ElfSection {
             header.dump(out);
         }
         out.println("\nContent of the section " + sectionName + "\n"); // NOI18N
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
     
     public ElfSection read() throws IOException {

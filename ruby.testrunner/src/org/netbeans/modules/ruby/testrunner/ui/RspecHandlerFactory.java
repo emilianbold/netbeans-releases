@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.netbeans.modules.ruby.testrunner.RspecRunner;
 
 /**
@@ -68,17 +69,21 @@ public class RspecHandlerFactory {
     static class TestFailedHandler extends TestRecognizerHandler {
 
         public TestFailedHandler() {
-            super(".*%RSPEC_TEST_FAILED%\\s(.*)\\stime=(\\d+\\.\\d+)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
+            super(".*%RSPEC_TEST_FAILED%\\sfile=(.*)\\sdescription=(.*)\\stime=(\\d+\\.\\d+)\\smessage=(.*)\\slocation=(.*)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(2));
-            testcase.className = matcher.group(1);
-            testcase.name = matcher.group(1);
+            Report.Testcase testcase = new Report.Testcase(TestType.RSPEC);
+            String location = matcher.group(1);
+            if (location != null && !"".equals(location)) {
+                testcase.setLocation(matcher.group(1));
+            }
+            testcase.timeMillis = toMillis(matcher.group(3));
+            testcase.className = matcher.group(2);
+            testcase.name = matcher.group(2);
             testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = filterStackTrace(matcher.group(3), matcher.group(4));
+            testcase.trouble.stackTrace = filterStackTrace(matcher.group(4), matcher.group(5));
             session.addTestCase(testcase);
             for (String line : testcase.trouble.stackTrace) {
                 manager.displayOutput(session, line, false);
@@ -116,15 +121,19 @@ public class RspecHandlerFactory {
     static class TestFinishedHandler extends TestRecognizerHandler {
 
         public TestFinishedHandler() {
-            super(".*%RSPEC_TEST_FINISHED%\\s(.*)\\stime=(.+)"); //NOI18N
+            super(".*%RSPEC_TEST_FINISHED%\\sfile=(.*)\\sdescription=(.*)\\stime=(.+)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(2));
+            Report.Testcase testcase = new Report.Testcase(TestType.RSPEC);
+            testcase.timeMillis = toMillis(matcher.group(3));
             testcase.className = session.getSuiteName();
-            testcase.name = matcher.group(1);
+            String location = matcher.group(1);
+            if (location != null && !"".equals(location)) {
+                testcase.setLocation(matcher.group(1));
+            }
+            testcase.name = matcher.group(2);
             session.addTestCase(testcase);
         }
     }
@@ -132,17 +141,21 @@ public class RspecHandlerFactory {
     static class TestPendingHandler extends TestRecognizerHandler {
 
         public TestPendingHandler() {
-            super(".*%RSPEC_TEST_PENDING%\\s(.*)\\stime=(.+)\\smessage=(.*)"); //NOI18N
+            super(".*%RSPEC_TEST_PENDING%\\sfile=(.*)\\sdescription=(.*)\\stime=(.+)\\smessage=(.*)"); //NOI18N
         }
 
         @Override
         void updateUI( Manager manager, TestSession session) {
-            Report.Testcase testcase = new Report.Testcase();
-            testcase.timeMillis = toMillis(matcher.group(2));
+            Report.Testcase testcase = new Report.Testcase(TestType.RSPEC);
+            testcase.timeMillis = toMillis(matcher.group(3));
             testcase.className = session.getSuiteName();
-            testcase.name = matcher.group(1);
+            String location = matcher.group(1);
+            if (location != null && !"".equals(location)) {
+                testcase.setLocation(matcher.group(1));
+            }
+            testcase.name = matcher.group(2);
             testcase.trouble = new Report.Trouble(false);
-            testcase.trouble.stackTrace = new String[]{matcher.group(3)};
+            testcase.trouble.stackTrace = new String[]{matcher.group(4)};
             testcase.setStatus(Status.PENDING);
             session.addTestCase(testcase);
         }

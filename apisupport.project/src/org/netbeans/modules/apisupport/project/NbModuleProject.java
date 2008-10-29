@@ -352,7 +352,8 @@ public final class NbModuleProject implements Project {
             return directoryCache.get(prop);
         } else {
             String v = evaluator().getProperty(prop);
-            assert v != null : "No value for " + prop;
+            if (v == null)
+                throw new NullPointerException("Property ${" + prop + "} returned null, probably undefined.");
             FileObject f = helper.resolveFileObject(v);
             directoryCache.put(prop, f);
             return f;

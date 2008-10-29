@@ -86,6 +86,7 @@ import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
+import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.StatusDisplayer;
@@ -607,7 +608,10 @@ class DataViewTableUI extends ExtendedJTable {
             } else {
                 Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
                 if (c instanceof JComponent) {
-                    ((JComponent) c).setToolTipText(value.toString());
+                    String tooltip = "<html><table border=0 cellspacing=0 cellpadding=0 width=40><tr><td>"+ 
+                    DataViewUtils.escapeHTML(value.toString()).replaceAll("\\n", "<br>")
+                            .replaceAll(" ", "&nbsp;") + "</td></tr></table></html>";
+                    ((JComponent) c).setToolTipText(tooltip);
                 }
                 return c;
             }
@@ -650,8 +654,6 @@ class DataViewTableUI extends ExtendedJTable {
         public ResultSetTableCellEditor(final JTextField textField) {
             super(textField);
             textField.setFont(getFont());
-//            textField.setForeground(Color.BLACK);
-//            textField.setBackground(Color.WHITE);
             delegate = new EditorDelegate() {
 
                 @Override

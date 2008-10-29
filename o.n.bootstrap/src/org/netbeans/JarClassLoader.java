@@ -99,14 +99,15 @@ public class JarClassLoader extends ProxyClassLoader {
      * additional request, if it was still doing so.
      */    
     public static void saveArchive() {
-        archive.stopGathering();
-        archive.stopServing();
         if (cache != null) {
             try {
                 archive.save(cache);
             } catch (IOException ioe) {
                 LOGGER.log(Level.WARNING, null, ioe);
             }
+        } else {
+            archive.stopGathering();
+            archive.stopServing();
         }
     }
     
@@ -501,9 +502,13 @@ public class JarClassLoader extends ProxyClassLoader {
         private void doCloseJar() throws IOException {
             synchronized(sources) {
                 if (jar != null) {
-                    if (!sources.remove(this)) System.err.println("Can't remove " + this);
+                    if (!sources.remove(this)) {
+                        LOGGER.warning("Can't remove " + this);
+                    }
+                    LOGGER.log(Level.FINE, "Closing JAR {0}", jar.getName());
                     jar.close();
                     jar = null;
+                    LOGGER.log(Level.FINE, "Remaining open JARs: {0}", sources.size());
                 }
             }
             
@@ -545,6 +550,8 @@ public class JarClassLoader extends ProxyClassLoader {
                 }
                 
                 sources.add(source); // now register the newly opened
+                LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});
+                LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
             }
         }
 

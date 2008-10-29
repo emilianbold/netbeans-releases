@@ -175,7 +175,7 @@ public final class TargetExecutor implements Runnable {
 
     private static final class StopAction extends AbstractAction {
 
-        public Thread t;
+        public LastTargetExecuted t;
 
         public StopAction() {
             setEnabledEQ(this, false); // initially, until ready
@@ -195,7 +195,7 @@ public final class TargetExecutor implements Runnable {
         public void actionPerformed(ActionEvent e) {
             setEnabled(false); // discourage repeated clicking
             if (t != null) { // #84688
-                stopProcess(t);
+                t.stopRunning();
             }
         }
 
@@ -394,7 +394,7 @@ public final class TargetExecutor implements Runnable {
     /** Call execute(), not this method directly!
      */
     synchronized public void run () {
-        final Thread[] thisProcess = new Thread[1];
+        final LastTargetExecuted[] thisExec = new LastTargetExecuted[1];
         final StopAction sa = stopActions.get(io);
         assert sa != null;
         RerunAction ra = rerunActions.get(io);
@@ -429,10 +429,11 @@ public final class TargetExecutor implements Runnable {
         }
 
         // #139185: do not record verbosity level; always pick it up from Ant Settings.
-        LastTargetExecuted.record(buildFile, /*verbosity,*/
+        thisExec[0] = LastTargetExecuted.record(buildFile, /*verbosity,*/
                 targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null,
                 properties,
-                suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(pcookie, targetNames));
+                suggestedDisplayName != null ? suggestedDisplayName : getProcessDisplayName(pcookie, targetNames), Thread.currentThread());
+        sa.t = thisExec[0];
         
         // Don't hog the CPU, the build might take a while:
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);
@@ -478,9 +479,6 @@ public final class TargetExecutor implements Runnable {
             }
         }
         
-        thisProcess[0] = Thread.currentThread();
-        StopBuildingAction.registerProcess(thisProcess[0], displayName);
-        sa.t = thisProcess[0];
 	    // #58513, #87801: register a progress handle for the task too.
         ProgressHandle handle = ProgressHandleFactory.createHandle(displayName, new Cancellable() {
             public boolean cancel() {
@@ -504,8 +502,8 @@ public final class TargetExecutor implements Runnable {
                     freeTabs.put(io, displayName);
                 }
             }
-            if (thisProcess[0] != null) {
-                StopBuildingAction.unregisterProcess(thisProcess[0]);
+            if (thisExec[0] != null) {
+                LastTargetExecuted.finish(thisExec[0]);
             }
             sa.t = null;
             setEnabledEQ(sa, false);

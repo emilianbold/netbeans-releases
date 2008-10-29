@@ -46,8 +46,7 @@ import com.sun.source.tree.MethodTree;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.core._RetoucheUtil;
 import org.netbeans.modules.websvc.core.AddWsOperationHelper;
-import org.netbeans.modules.websvc.core.AddOperationCookie;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -118,7 +117,7 @@ public class JaxRpcAddOperation implements AddOperationCookie {
         }
     }
 
-    public boolean isEnabledInEditor(FileObject implClass) {
+    public boolean isEnabled(FileObject implClass) {
         return isWsImplBeanOrInterface(implClass);
     }
 

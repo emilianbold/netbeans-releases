@@ -238,7 +238,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                             cls = _cls;
                         } else if (cls != _cls) {
                             String message = "Will not load class " + name + " arbitrarily from one of " +
-                                    cls.getClassLoader() + " and " + pcl +
+                                    cls.getClassLoader() + " and " + pcl + " starting from " + this +
                                     "; see http://wiki.netbeans.org/DevFaqModuleCCE";
                             LOGGER.warning(message);
                             throw new ClassNotFoundException(message);
@@ -248,12 +248,25 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             }
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
-        } 
-        if (cls == null && shouldDelegateResource(path, null)) cls = systemCL.loadClass(name); // may throw CNFE
-        if (cls == null) throw new ClassNotFoundException(name); 
+        }
+        if (cls == null && shouldDelegateResource(path, null)) {
+            try {
+                cls = systemCL.loadClass(name);
+            } catch (ClassNotFoundException e) {
+                throw new ClassNotFoundException(diagnosticCNFEMessage(e.getMessage(), del), e);
+            }
+        }
+        if (cls == null) {
+            throw new ClassNotFoundException(diagnosticCNFEMessage(name, del));
+        }
         if (resolve) resolveClass(cls); 
         return cls; 
-    }       
+    }
+    private String diagnosticCNFEMessage(String base, Set<ProxyClassLoader> del) {
+        return base + " starting from " + this +
+                " with possible defining loaders " + del +
+                " and declared parents " + parentSet;
+    }
 
     /** May return null */ 
     private synchronized Class selfLoadClass(String pkg, String name) { 

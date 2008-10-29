@@ -228,11 +228,11 @@ public class J2eePlatformUiSupport {
             initialJ2eeSpecVersion = new J2eePlatformComboBoxItem(j2eeSpecVersion);
             
             List<J2eePlatformComboBoxItem> orderedListItems = new ArrayList<J2eePlatformComboBoxItem>();
-            orderedListItems.add(new J2eePlatformComboBoxItem(ProjectProperties.JAVA_EE_5));
-            orderedListItems.add(new J2eePlatformComboBoxItem(ProjectProperties.J2EE_1_4));
-            if (!ProjectProperties.JAVA_EE_5.equals(initialJ2eeSpecVersion.getCode()) &&
-                    !ProjectProperties.J2EE_1_4.equals(initialJ2eeSpecVersion.getCode())) {
-                orderedListItems.add(0, new J2eePlatformComboBoxItem(ProjectProperties.J2EE_1_3));
+            orderedListItems.add(new J2eePlatformComboBoxItem(J2EEProjectProperties.JAVA_EE_5));
+            orderedListItems.add(new J2eePlatformComboBoxItem(J2EEProjectProperties.J2EE_1_4));
+            if (!J2EEProjectProperties.JAVA_EE_5.equals(initialJ2eeSpecVersion.getCode()) &&
+                    !J2EEProjectProperties.J2EE_1_4.equals(initialJ2eeSpecVersion.getCode())) {
+                orderedListItems.add(0, new J2eePlatformComboBoxItem(J2EEProjectProperties.J2EE_1_3));
             }
             
             j2eeSpecVersions = orderedListItems.toArray(new J2eePlatformComboBoxItem[orderedListItems.size()]);
@@ -273,13 +273,13 @@ public class J2eePlatformUiSupport {
             if (code == null) {
                 return "";
             }
-            if(code.equals(ProjectProperties.JAVA_EE_5)) {
+            if(code.equals(J2EEProjectProperties.JAVA_EE_5)) {
                 return JAVA_EE_5_DISPLAY_NAME;
             }
-            if(code.equals(ProjectProperties.J2EE_1_4)) {
+            if(code.equals(J2EEProjectProperties.J2EE_1_4)) {
                 return J2EE_1_4_DISPLAY_NAME;
             }
-            if(code.equals(ProjectProperties.J2EE_1_3)) {
+            if(code.equals(J2EEProjectProperties.J2EE_1_3)) {
                 return J2EE_1_3_DISPLAY_NAME;
             }
             return code; //version display name not found, use the version code for display name        

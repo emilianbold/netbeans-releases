@@ -680,7 +680,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                     switch (token.getTokenID().getNumericID()) {
                         case CCTokenContext.CPPINCLUDE_ID:
                         case CCTokenContext.CPPINCLUDE_NEXT_ID:
-                            return completionDisabled = false;
+                            return false; // return completionDisabled = false;
                     }
                 }
             }
@@ -695,7 +695,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
                             switch (token.getTokenID().getNumericID()) {
                                 case CCTokenContext.CPPINCLUDE_ID:
                                 case CCTokenContext.CPPINCLUDE_NEXT_ID:
-                                    return completionDisabled = false;
+                                    return false; // return completionDisabled = false;
                             }
                         }
                     }

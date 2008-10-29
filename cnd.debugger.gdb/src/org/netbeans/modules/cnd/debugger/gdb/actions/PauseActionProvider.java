@@ -54,6 +54,7 @@ import java.util.Set;
 import org.openide.util.RequestProcessor;
 
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 import org.netbeans.spi.debugger.ContextProvider;
 
 /**
@@ -108,6 +109,7 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
      *        done.
      * @since 1.5
      */
+    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -119,10 +121,10 @@ public class PauseActionProvider extends GdbDebuggerActionProvider {
             }
         });
     }    
-    protected void checkEnabled(String debuggerState) {
+    protected void checkEnabled(GdbDebugger.State debuggerState) {
         Iterator i = getActions().iterator();
         while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == getDebugger().STATE_RUNNING);
+            setEnabled(i.next(), debuggerState == GdbDebugger.State.RUNNING);
         }
     }
 }
