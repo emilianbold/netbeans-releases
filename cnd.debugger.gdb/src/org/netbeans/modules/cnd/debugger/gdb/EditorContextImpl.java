@@ -49,7 +49,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
@@ -61,7 +60,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.filesystems.URLMapper;
@@ -85,7 +83,7 @@ public class EditorContextImpl extends EditorContext {
     private Map                     timeStampToRegistry = new HashMap();
     private Set                     modifiedDataObjects;
 
-    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     
     /**
@@ -106,16 +104,16 @@ public class EditorContextImpl extends EditorContext {
         }
         if (fronting != null) {
             if (fronting.equals("true")) { // NOI18N
-                l.show(Line.SHOW_TOFRONT); //FIX 47825
+                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT); //FIX 47825
             } else {
-                l.show(Line.SHOW_GOTO);
+                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             }
             return true;
         }
         if (Utilities.isWindows()) {
-            l.show(Line.SHOW_TOFRONT); //FIX 47825
+            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT); //FIX 47825
         } else  {
-            l.show(Line.SHOW_GOTO);
+            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         }
         return true;
     }
@@ -311,15 +309,15 @@ public class EditorContextImpl extends EditorContext {
         if (doc == null) {
             return "";  // NOI18N
         }
-        int offset = ep.getCaret().getDot();
-        String t = null;
+        //int offset = ep.getCaret().getDot();
+        //String t = null;
 //        if ( (ep.getSelectionStart () <= offset) &&
 //             (offset <= ep.getSelectionEnd ())
 //        )   t = ep.getSelectedText ();
 //        if (t != null) return t;
         
-        int line = NbDocument.findLineNumber(doc, offset);
-        int col = NbDocument.findLineColumn(doc, offset);
+        //int line = NbDocument.findLineNumber(doc, offset);
+        //int col = NbDocument.findLineColumn(doc, offset);
         // XXX - Fixup
         /*
         try {

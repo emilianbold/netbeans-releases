@@ -167,7 +167,7 @@ public class FieldTokenizer {
      *
      * See IZ 112664 for a full test file.
      */
-    private final class MyStringTokenizer {
+    private static final class MyStringTokenizer {
         
         private String info;
         private int start, end;

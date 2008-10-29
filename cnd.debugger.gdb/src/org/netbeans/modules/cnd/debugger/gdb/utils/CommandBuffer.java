@@ -64,7 +64,7 @@ public class CommandBuffer {
     private String err = null;
     private State state = State.NONE;
     private final Object lock = new Object();
-    protected static Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
+    protected static final Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
     private final GdbProxy gdb;
     
     public CommandBuffer(GdbProxy gdb, int token) {

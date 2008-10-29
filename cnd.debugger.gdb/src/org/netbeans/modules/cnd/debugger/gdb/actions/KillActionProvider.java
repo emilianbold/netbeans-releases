@@ -66,13 +66,11 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  */
 public class KillActionProvider extends ActionsProvider {
     
-    private ContextProvider lookupProvider;
     private GdbDebugger debuggerImpl;
     
     public KillActionProvider(ContextProvider lookupProvider) {
         debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         //super (debuggerImpl);
-        this.lookupProvider = lookupProvider;
     }
     
     /**
@@ -121,6 +119,7 @@ public class KillActionProvider extends ActionsProvider {
      *        done.
      * @since 1.5
      */
+    @Override
     public void postAction(final Object action,
             final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
