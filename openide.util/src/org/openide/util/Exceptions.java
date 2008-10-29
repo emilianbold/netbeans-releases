@@ -68,6 +68,7 @@ public final class Exceptions extends Object {
     private Exceptions() {
     }
     
+    static final Logger LOG = Logger.getLogger(Exceptions.class.getName());
     private static final String LOC_MSG_PLACEHOLDER = "msg"; // NOI18N
 
     /** Attaches additional message to given exception. This message will
@@ -145,7 +146,7 @@ public final class Exceptions extends Object {
             try {
                 res = ((Callable) t).call();
             } catch (Exception ex) {
-                Logger.global.log(Level.WARNING, null, t);
+                LOG.log(Level.WARNING, null, t); // NOI18N
             }
             if (res instanceof LogRecord[]) {
                 for (LogRecord r : (LogRecord[])res) {
@@ -172,7 +173,7 @@ public final class Exceptions extends Object {
             assert t == extra.getCause();
             t = extra;
         }
-        Logger.global.log(OwnLevel.UNKNOWN, null, t);
+        LOG.log(OwnLevel.UNKNOWN, null, t);
     }
 
     /** An exception that has a log record associated with itself, so
@@ -221,7 +222,7 @@ public final class Exceptions extends Object {
                         if (ann == null) {
                             ann = new AnnException(t.getMessage());
                             ann.initCause(t);
-                            Logger.getLogger(Exceptions.class.getName()).log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
+                            LOG.log(Level.FINE, "getCause was null yet initCause failed for " + t, x);
                             extras.put(t, ann);
                         }
                         return ann;
