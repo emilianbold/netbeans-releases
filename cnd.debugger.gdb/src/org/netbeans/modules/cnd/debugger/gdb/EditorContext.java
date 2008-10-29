@@ -51,22 +51,21 @@ import org.openide.loaders.DataObject;
  */
 public abstract class EditorContext {
     
-    public static final String BREAKPOINT_ANNOTATION_TYPE = new String("Breakpoint"); //NOI18N
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledBreakpoint"); //NOI18N
-    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  new String("CondBreakpoint"); //NOI18N
-    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledCondBreakpoint"); //NOI18N
-    public static final String CURRENT_LINE_ANNOTATION_TYPE =  new String("CurrentPC"); //NOI18N
-    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =  new String("CallSite"); //NOI18N
-    public static final String PROP_LINE_NUMBER = new String("lineNumber"); //NOI18N
-    public static final String FUNCTION_BREAKPOINT_ANNOTATION_TYPE = new String("FunctionBreakpoint"); //NOI18N
-    public static final String DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledFunctionBreakpoint"); //NOI18N
-    public static final String CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  new String("CondFuncBreakpoint"); //NOI18N
-    public static final String DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledCondFuncBreakpoint"); //NOI18N
-    public static final String ADDRESS_BREAKPOINT_ANNOTATION_TYPE = new String("AddressBreakpoint"); //NOI18N
-    public static final String DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledAddressBreakpoint"); //NOI18N
-    public static final String CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  new String("CondAddrBreakpoint"); //NOI18N
-    public static final String DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  new String("DisabledCondAddrBreakpoint"); //NOI18N
-
+    public static final String BREAKPOINT_ANNOTATION_TYPE = "Breakpoint"; //NOI18N
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE =  "DisabledBreakpoint"; //NOI18N
+    public static final String CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  "CondBreakpoint"; //NOI18N
+    public static final String DISABLED_CONDITIONAL_BREAKPOINT_ANNOTATION_TYPE =  "DisabledCondBreakpoint"; //NOI18N
+    public static final String CURRENT_LINE_ANNOTATION_TYPE =  "CurrentPC"; //NOI18N
+    public static final String CALL_STACK_FRAME_ANNOTATION_TYPE =  "CallSite"; //NOI18N
+    public static final String PROP_LINE_NUMBER = "lineNumber"; //NOI18N
+    public static final String FUNCTION_BREAKPOINT_ANNOTATION_TYPE = "FunctionBreakpoint"; //NOI18N
+    public static final String DISABLED_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  "DisabledFunctionBreakpoint"; //NOI18N
+    public static final String CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  "CondFuncBreakpoint"; //NOI18N
+    public static final String DISABLED_CONDITIONAL_FUNCTION_BREAKPOINT_ANNOTATION_TYPE =  "DisabledCondFuncBreakpoint"; //NOI18N
+    public static final String ADDRESS_BREAKPOINT_ANNOTATION_TYPE = "AddressBreakpoint"; //NOI18N
+    public static final String DISABLED_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  "DisabledAddressBreakpoint"; //NOI18N
+    public static final String CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  "CondAddrBreakpoint"; //NOI18N
+    public static final String DISABLED_CONDITIONAL_ADDRESS_BREAKPOINT_ANNOTATION_TYPE =  "DisabledCondAddrBreakpoint"; //NOI18N
 
     /**
      * Shows source with given url on given line number.

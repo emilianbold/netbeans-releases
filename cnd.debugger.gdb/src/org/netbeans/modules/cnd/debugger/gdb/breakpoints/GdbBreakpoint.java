@@ -113,7 +113,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
             old = lineNumber;
             lineNumber = ln;
         }
-        firePropertyChange(PROP_LINE_NUMBER, new Integer(old), new Integer(ln));
+        firePropertyChange(PROP_LINE_NUMBER, Integer.valueOf(old), Integer.valueOf(ln));
     }
     
     protected void setValid() {
