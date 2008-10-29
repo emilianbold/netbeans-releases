@@ -131,6 +131,7 @@ public final class TerminalIOProviderSupport {
 
         // Hmm, what's the difference between the PtyProcess io streams
         // and the Pty's io streams?
+        // Nothing.
         OutputStream pin = pty.getOutputStream();
         InputStream pout = pty.getInputStream();
 
