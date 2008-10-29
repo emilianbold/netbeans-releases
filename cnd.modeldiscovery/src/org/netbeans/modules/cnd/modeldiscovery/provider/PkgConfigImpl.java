@@ -228,8 +228,14 @@ public class PkgConfigImpl implements PkgConfig {
             PackageConfigurationImpl pc = configurations.get(pkg);
             if (pc != null){
                 for (String p : pc.paths){
-                    if (p.equals("/usr/include") || p.equals("/usr/sfw/include")){ // NOI18N
-                        continue;
+                    if (drivePrefix != null) {
+                        if (p.substring(drivePrefix.length()).equals("/usr/include") || p.substring(drivePrefix.length()).equals("/usr/sfw/include")){ // NOI18N
+                            continue;
+                        }
+                    } else {
+                        if (p.equals("/usr/include") || p.equals("/usr/sfw/include")){ // NOI18N
+                            continue;
+                        }
                     }
                     Set<PackageConfiguration> set = map.get(p);
                     if (set == null){
