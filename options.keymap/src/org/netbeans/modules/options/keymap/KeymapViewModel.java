@@ -203,7 +203,6 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     // other methods ...........................................................
 
     void update() {
-        refreshActions();
         getDataVector().removeAllElements();
         for (String category : getCategories().get("")) {
             for (Object o : getItems(category)) {
@@ -491,7 +490,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
                 deletedProfiles = new HashSet<String> ();
                 shortcutsCache = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
                 model = new KeymapModel ();
-            }
+    }
         });
     }
     

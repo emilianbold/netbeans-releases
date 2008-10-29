@@ -199,14 +199,12 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     //todo: maerge with update
     private void narrowByShortcut() {
         if (searchSCField.getText().length() != 0) {
-            getModel().refreshActions();
             getModel().getDataVector().removeAllElements();
             for (String category : getModel().getCategories().get("")) {
                 for (Object o : getModel().getItems(category)) {
                     if (o instanceof ShortcutAction) {
                         ShortcutAction sca = (ShortcutAction) o;
                         String[] shortcuts = getModel().getShortcuts(sca);
-//                        String displayName = sca.getDisplayName();
                         for (int i = 0; i < shortcuts.length; i++) {
                             String shortcut = shortcuts[i];
                             if (shortcut.toString().equals(searchSCField.getText()))
@@ -217,7 +215,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
             }
             getModel().fireTableDataChanged();
         } else
-            update();
+            getModel().update();
     }
 
     static KeymapViewModel getModel() {
@@ -248,6 +246,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
     }
 
     void update() {
+        getModel().refreshActions();
         String searchText = searchField.getText().toLowerCase();
         getModel().setSearchText(searchText);
 
