@@ -64,11 +64,10 @@ import org.openide.util.Lookup;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
-import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author girix
+ * copied from xml.retriever and customized.
+ * @author mkleint
  */
 public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
