@@ -113,4 +113,5 @@ interface Ops {
     // ops unique to Term
     public void op_time(boolean refresh);	// dump time into output &
 						// control refreshEnabled prop
+    public void op_hyperlink(String url, String text);
 }
