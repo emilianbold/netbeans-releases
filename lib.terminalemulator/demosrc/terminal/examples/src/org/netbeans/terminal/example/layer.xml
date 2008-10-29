@@ -10,6 +10,13 @@
                 <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                 <attr name="noIconInMenu" stringvalue="false"/>
             </file>
+            <file name="org-netbeans-terminal-example-termdirect-CommandTermDirectAction.instance">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.terminal.example.Bundle"/>
+                <attr name="delegate" newvalue="org.netbeans.terminal.example.termdirect.CommandTermDirectAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.terminal.example.termdirect.Bundle#CTL_CommandTermDirectAction"/>
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="noIconInMenu" stringvalue="false"/>
+            </file>
         </folder>
         <folder name="Window">
             <file name="org-netbeans-terminal-example-dedicatedtc-CommandAction.instance"/>
@@ -35,6 +42,10 @@
             <file name="org-netbeans-terminal-example-listenio-ListenIOAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-terminal-example-listenio-ListenIOAction.instance"/>
                 <attr name="position" intvalue="-100"/>
+            </file>
+            <file name="org-netbeans-terminal-example-termdirect-CommandTermDirectAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/Other/org-netbeans-terminal-example-termdirect-CommandTermDirectAction.instance"/>
+                <attr name="position" intvalue="1"/>
             </file>
         </folder>
     </folder>
