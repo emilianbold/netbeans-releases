@@ -174,7 +174,7 @@ public final class CsmFinderFactory {
         CsmFile cf = CsmUtilities.getCsmFile(fo, true);
         
         ArrayList finders = new ArrayList();
-        ArrayList fileObjects = new ArrayList();
+//        ArrayList fileObjects = new ArrayList();
         if (cf!=null){
 //            ClassPath cp = ClassPath.getClassPath(fo, ClassPath.SOURCE);
 //            addClasspathFinders(finders, fileObjects, cp, false);
@@ -227,8 +227,8 @@ public final class CsmFinderFactory {
         if (finder != null) {
             return finder;
         }
-        ArrayList finders = new ArrayList();
-        ArrayList fileObjects = new ArrayList();
+//        ArrayList finders = new ArrayList();
+//        ArrayList fileObjects = new ArrayList();
 //        Iterator it = GlobalPathRegistry.getDefault().getPaths(ClassPath.SOURCE).iterator();
 //        while (it.hasNext()) {
 //            ClassPath cp = (ClassPath)it.next();

@@ -2137,7 +2137,7 @@ abstract public class CsmCompletionQuery {
         }
 
         public CsmResultItem.TypedefResultItem createLibTypedefResultItem(CsmTypedef def, int classDisplayOffset, boolean displayFQN) {
-            return createLibTypedefResultItem(def, classDisplayOffset, displayFQN);
+            return createTypedefResultItem(def, classDisplayOffset, displayFQN);
         }
 
         public CsmResultItem.FieldResultItem createFieldResultItem(CsmField fld){
@@ -2203,11 +2203,11 @@ abstract public class CsmCompletionQuery {
         }
 
         public TemplateParameterResultItem createTemplateParameterResultItem(CsmTemplateParameter par) {
-            return createTemplateParameterResultItem(par);
+            return new CsmResultItem.TemplateParameterResultItem(par, FAKE_PRIORITY);
         }
 
         public CsmResultItem createLabelResultItem(CsmLabel csmStatement) {
-            return createLabelResultItem(csmStatement);
+            return new CsmResultItem.LabelResultItem(csmStatement, FAKE_PRIORITY);
         }
     }
 

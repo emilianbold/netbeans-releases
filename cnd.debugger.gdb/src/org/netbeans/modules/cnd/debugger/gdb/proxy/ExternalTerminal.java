@@ -91,7 +91,7 @@ public class ExternalTerminal implements PropertyChangeListener {
             }
         }
         
-        Process proc = pb.start();
+        pb.start();
         
         final BufferedReader fromTerm = new BufferedReader(new FileReader(gdbHelperLog.getAbsolutePath()));
         new RequestProcessor("TermReader").post(new Runnable() { // NOI18N

@@ -83,7 +83,8 @@ public class BreakpointsNodeModel implements NodeModel {
         }
         return l;
     }
-    
+
+    // We have the same in AbstractVariable
     private static final String ZEROS = "            "; // NOI18N
     
     static String zeros(int n) {

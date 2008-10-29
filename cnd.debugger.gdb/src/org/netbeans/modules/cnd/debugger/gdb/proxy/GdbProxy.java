@@ -327,8 +327,8 @@ public class GdbProxy {
      *
      * @return null if action is accepted, otherwise return error message
      */
-    public void file_list_exec_source_file() {
-        engine.sendCommand("-file-list-exec-source-file"); // NOI18N
+    public CommandBuffer file_list_exec_source_file() {
+        return engine.sendCommandEx("-file-list-exec-source-file"); // NOI18N
     }
 
     /**
