@@ -1,3 +1,2 @@
 org.netbeans.modules.java.editor.overridden.IsOverriddenAnnotationHandlerFactory
-org.netbeans.modules.java.editor.semantic.MarkOccurrencesHighlighterFactory
 org.netbeans.modules.java.editor.fold.JavaElementFoldManagerTaskFactory

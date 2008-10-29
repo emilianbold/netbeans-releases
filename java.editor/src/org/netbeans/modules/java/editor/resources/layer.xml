@@ -106,6 +106,7 @@ made subject to such option by the copyright holder.
 -->
     <folder name="Editors">
         <file name="org-netbeans-modules-java-editor-semantic-SemanticHighlighterFactory.instance" />
+        <file name="org-netbeans-modules-java-editor-semantic-MarkOccurrencesHighlighterFactory.instance" />
 
         <folder name="text">
             <folder name="x-jsp">
