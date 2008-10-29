@@ -697,6 +697,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 String ep = line.substring(15, line.length() - 3);
                 if (ep.equals(exepath)) { // NOI18N
                     return true;
+                } else if (ep.startsWith("/cygdrive/") && ep.charAt(11) == '/') { // NOI18N
+                    String lc_exepath = exepath.toLowerCase();
+                    ep = ep.substring(10, 11).toLowerCase() + ':' + ep.substring(11).toLowerCase();
+                    if (ep.equals(lc_exepath) || ep.equals(lc_exepath + ".exe")) { // NOI18N
+                        return true;
+                    }
                 }
             }
         }
