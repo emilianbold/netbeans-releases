@@ -951,6 +951,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         return l;
     }
 
+    // We have the same in BreakpointsNodeModel
     private static final String ZEROS = "            "; // NOI18N
 
     static String zeros(int n) {
@@ -1053,7 +1054,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
         }
     }
 
-    public class AbstractField extends AbstractVariable implements Field {
+    private static class AbstractField extends AbstractVariable implements Field {
 
         private AbstractVariable parent;
 

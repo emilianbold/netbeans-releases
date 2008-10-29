@@ -147,7 +147,11 @@ public class RubyLogicalViewProvider implements LogicalViewProvider {
                         return n;
                     }
                 }
-                FileObject childFO = rootChildren[i].getLookup().lookup(DataObject.class).getPrimaryFile();
+                DataObject dObj = rootChildren[i].getLookup().lookup(DataObject.class);
+                if (dObj == null) {
+                    continue;
+                }
+                FileObject childFO = dObj.getPrimaryFile();
                 if (targetFO.equals(childFO)) {
                     return rootChildren[i];
                 }

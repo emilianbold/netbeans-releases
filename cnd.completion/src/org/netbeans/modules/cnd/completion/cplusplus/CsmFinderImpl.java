@@ -757,23 +757,24 @@ public class CsmFinderImpl implements CsmFinder {
         return ret;
     }    
     
-    /** Get outer classes to search
-    * the fields and methods there. The original class is added
-    * as the first member of the resulting list.
-    */
-    private List getOuterClasses(CsmClass jc) {        
-        ArrayList outers = new ArrayList();
-        outers.add(jc);
-        while (jc != null) {
-            Collection/*<CsmClass>*/ baseCls = jc.getBaseClasses();
-            if (baseCls != null) {
-                // [PENDING] check for deprecated classes ...
-                // if (showDeprecated || !JCUtilities.isDeprecated(cls)) 
-                outers.add (baseCls);
-            }
-        }
-        return outers;
-    }
+//    /** Get outer classes to search
+//    * the fields and methods there. The original class is added
+//    * as the first member of the resulting list.
+//    */
+//    private List getOuterClasses(CsmClass jc) {
+//        ArrayList outers = new ArrayList();
+//        outers.add(jc);
+//        // NB: that's an INFINITE loop!
+//        while (jc != null) {
+//            Collection/*<CsmClass>*/ baseCls = jc.getBaseClasses();
+//            if (baseCls != null) {
+//                // [PENDING] check for deprecated classes ...
+//                // if (showDeprecated || !JCUtilities.isDeprecated(cls))
+//                outers.add (baseCls);
+//            }
+//        }
+//        return outers;
+//    }
     
 //    //......................................
 //    public Iterator getClasses () {

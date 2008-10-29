@@ -48,6 +48,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -133,7 +134,9 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     }
 
     private static void problemOccurred(final Exception e) {
-        Util.showWarning(NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getMessage()));
+        String message = NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getLocalizedMessage());
+        Util.showWarning(message);
+        LOGGER.log(Level.WARNING, message, e);
     }
     
     /**

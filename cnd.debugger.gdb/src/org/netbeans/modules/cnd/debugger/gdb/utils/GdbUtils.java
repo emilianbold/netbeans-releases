@@ -357,7 +357,7 @@ public class GdbUtils {
         return string;
     }
     
-    public static String utfToGdb(String string) {
+    /*public static String utfToGdb(String string) {
         String lang = System.getenv("LANG") + System.getenv("LC_ALL"); // NOI18N
         
         if (lang != null && (lang.contains("UTF-8") || lang.contains("UTF8"))) { // NOI18N
@@ -373,7 +373,7 @@ public class GdbUtils {
             }
         }
         return string;
-    }
+    }*/
     
     public static boolean isMultiByte(String file) {
         char[] ch = file.toCharArray();
