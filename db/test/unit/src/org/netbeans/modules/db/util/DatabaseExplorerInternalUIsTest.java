@@ -93,7 +93,7 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
         JComboBox combo = new JComboBox();
         DatabaseExplorerInternalUIs.connect(combo, JDBCDriverManager.getDefault());
 
-        assertEquals(4, combo.getItemCount());
+        assertEquals(3, combo.getItemCount());
         JdbcUrl url = (JdbcUrl)combo.getItemAt(0);
         assertDriversEqual(driver2, url.getDriver());
         assertEquals(driver2.getClassName(), url.getClassName());
@@ -123,7 +123,7 @@ public class DatabaseExplorerInternalUIsTest extends TestBase {
         JComboBox combo = new JComboBox();
         DatabaseExplorerInternalUIs.connect(combo, JDBCDriverManager.getDefault());
 
-        assertEquals(4, combo.getItemCount());
+        assertEquals(3, combo.getItemCount());
 
         JdbcUrl url = (JdbcUrl)combo.getItemAt(0);
         assertDriversEqual(driver1, url.getDriver());
