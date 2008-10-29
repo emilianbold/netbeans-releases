@@ -55,6 +55,7 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
@@ -75,9 +76,21 @@ public class PkgConfigImpl implements PkgConfig {
 
     private void initPackages(CompilerSet set) {
         if (Utilities.isWindows()){
-            CompilerSet aset = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
-            String base = aset.getDirectory();
-            initPackages("c:/cygwin/lib/pkgconfig/"); // NOI18N
+            String baseDirectory = null;
+            if (set == null) {
+                set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
+            }
+            if (set != null){
+                baseDirectory = set.getDirectory();
+                //"C:\cygwin\bin"
+                if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
+                    baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
+                }
+            }
+            if (baseDirectory == null) {
+                baseDirectory = "c:/cygwin/lib/pkgconfig/";
+            }
+            initPackages(baseDirectory); // NOI18N
         } else {
             //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
             initPackages("/usr/lib/pkgconfig/"); // NOI18N
@@ -208,7 +221,6 @@ public class PkgConfigImpl implements PkgConfig {
         return res;
     }
     private Map<String, Pair> _getLibraryItems(){
-
         Map<String, Set<PackageConfiguration>> map = new HashMap<String, Set<PackageConfiguration>>();
         for(String pkg : configurations.keySet()){
             PackageConfigurationImpl pc = configurations.get(pkg);

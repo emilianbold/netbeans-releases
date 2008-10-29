@@ -103,6 +103,11 @@ public class ConfigurationXMLReader extends XMLDocReader {
         Task task = RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 try {
+                    //try {
+                    //    Thread.sleep(10000); // to emulate long reading for testing purpose
+                    //} catch (InterruptedException ex) {
+                    //    ex.printStackTrace();
+                    //}
                     if (_read(relativeOffset, tag, xml, configurationDescriptor) == null){
                         // TODO configurationDescriptor is broken
                         configurationDescriptor.setState(State.BROKEN);
