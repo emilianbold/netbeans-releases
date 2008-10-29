@@ -119,20 +119,23 @@ public final class TimesCollectorPeer {
                 ((FileObject)fo).addFileChangeListener(new FileChangeAdapter() {
                     @Override
                     public void fileDeleted(FileEvent ev) {
-                        for (Reference<Object> r : files) {
-                            if (r.get() == fo) {
-                                files.remove(r);
-                                break;
-                            }
-                        }
-                        fo2Key2Desc.remove(fo);
-                        pcs.firePropertyChange("fos", null, null);
+                        fileDeletedSync(ev, (FileObject)fo);
                     }
                 });
             }
         }
-        
-         return result;
+        return result;
+    }
+
+    synchronized final void fileDeletedSync(FileEvent ev, FileObject fo) {
+        for (Reference<Object> r : files) {
+            if (r.get() == fo) {
+                files.remove(r);
+                break;
+            }
+        }
+        fo2Key2Desc.remove(fo);
+        pcs.firePropertyChange("fos", null, null);
     }
     
     public Description getDescription(Object fo, String key) {
