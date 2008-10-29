@@ -50,7 +50,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -87,6 +86,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private final List<Line> lines = new ArrayList<Line>();
     private static String functionName = "";
+    private static String fileName = "";
     private boolean withSource = true;
     private boolean opened = false;
     private boolean opening = false;
@@ -145,6 +145,12 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
             int pos = RESPONSE_HEADER.length();
             boolean nameSet = false;
+
+            File srcFile = null;
+            if (fileName != null) {
+                srcFile = new File(fileName);
+            }
+
             for (;;) {
                 int combinedPos = msg.indexOf(COMBINED_HEADER, pos);
                 int addressPos = msg.indexOf(ADDRESS_HEADER, pos);
@@ -155,18 +161,19 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
 
                 if (combinedPos != -1 && combinedPos < addressPos) {
                     int lineIdx = Integer.valueOf(readValue(LINE_HEADER, msg, combinedPos));
-                    String path = debugger.getRunDirectory();
+                    //String path = debugger.getRunDirectory();
                     String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                    File file = new File(path, fileStr);
-                    FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(file));
-                    if (src_fo != null) {
-                        try {
-                            text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
-                        } catch (DataObjectNotFoundException doe) {
-                            // do nothing
+                    if (srcFile != null && srcFile.getName().equals(fileStr)) {
+                        FileObject src_fo = FileUtil.toFileObject(FileUtil.normalizeFile(srcFile));
+                        if (src_fo != null) {
+                            try {
+                                text.addLine("!" + DataObject.find(src_fo).getCookie(LineCookie.class).getLineSet().getCurrent(lineIdx-1).getText()); // NOI18N
+                            } catch (DataObjectNotFoundException doe) {
+                                // do nothing
+                            }
+                        } else {
+                            text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                         }
-                    } else {
-                        text.addLine("!" + NbBundle.getMessage(Disassembly.class, "MSG_Source_Not_Found", fileStr, lineIdx)); // NOI18N
                     }
                     pos = combinedPos+1;
                 } else {
@@ -313,9 +320,9 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
             return;
         }
         if (force || getAddressLine(frame.getAddr()) == -1) {
-            String filename = frame.getFileName();
-            if (filename != null && filename.length() > 0) {
-                debugger.getGdbProxy().data_disassemble(filename, frame.getLineNumber(), withSource);
+            fileName = frame.getFullname();
+            if (fileName != null && fileName.length() > 0) {
+                debugger.getGdbProxy().data_disassemble(fileName, frame.getLineNumber(), withSource);
             } else {
                 // if filename is not known - just disassemble using address
                 debugger.getGdbProxy().data_disassemble(1000, withSource);
