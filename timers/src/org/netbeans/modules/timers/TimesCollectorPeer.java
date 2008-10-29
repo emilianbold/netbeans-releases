@@ -228,20 +228,26 @@ public final class TimesCollectorPeer {
         }
         
     }
-    
+
+    final void cleanFiles(CleanableWeakReference cwr) {
+        synchronized (this) {
+            files.remove(cwr);
+        }
+        pcs.firePropertyChange("fos", null, null);
+    }
+
+    private static final RequestProcessor CLEANER = new RequestProcessor("CleanableWeakReference"); // NOI18N
     private class CleanableWeakReference<T> extends WeakReference<T> implements Runnable {
-        
         public CleanableWeakReference(T o) {
             super(o, Utilities.activeReferenceQueue());
         }
 
         public void run() {
-            files.remove(this);
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    pcs.firePropertyChange("fos", null, null);
-                }
-            });
+            if (!CLEANER.isRequestProcessorThread()) {
+                CLEANER.post(this);
+                return;
+            }
+            cleanFiles(this);
         }
         
     }
