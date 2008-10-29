@@ -814,10 +814,12 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
         return ((Double)startTimeSpinner.getValue()).floatValue();
     }
 
+    @Override
     public float getEndTime(){
         return ((Double)stopTimeSpinner.getValue()).floatValue();
     }
     
+    @Override
     public float getFramesPerSecond(){
         return ((Double)framesPerSecSpinner.getValue()).floatValue();
     }
@@ -926,6 +928,7 @@ private void formatComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 }
                 final boolean [] blockUpdate = { false};
                 m_sizeCalculationThread = new Thread() {
+                    @Override
                     public void run() {
                         try {
                             AnimationRasterizer.calculateAnimationSize(getSVGImage(), 

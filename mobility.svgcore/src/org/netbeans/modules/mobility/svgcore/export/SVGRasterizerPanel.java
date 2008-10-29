@@ -106,8 +106,15 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         public SVGRasterizerComponentGroup( Object ... comps) {
             super(comps);
         }
+        @Override
         public void refresh(JComponent source) {
-            updateImage(source, true);
+            if ( !componentIsAdjustingSlider(source) ) {
+                updateImage(source, true);
+            }
+        }
+
+        private boolean componentIsAdjustingSlider(JComponent comp) {
+            return ((comp instanceof JSlider) && ((JSlider) comp).getValueIsAdjusting());
         }
     };
     
@@ -153,7 +160,7 @@ public abstract class SVGRasterizerPanel extends JPanel implements AnimationRast
         } else {
             sliderWrapper = ComponentWrapper.wrap(slider);
         }
-       
+
         final SpinnerNumberModel model = new SpinnerNumberModel( (double) (isStart ? 0 : duration), 0.0, duration, 1.0);
         spinner.setModel( model);
         return new SVGRasterizerComponentGroup( spinner, sliderWrapper);
