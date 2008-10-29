@@ -280,13 +280,11 @@ class Util {
 	        return stclient;
 	    }
 	    // try the default hard coded path, maybe wow64 registry is missing
-            stclient = new File(WIN32_STCLIENT);
-            if (stclient.canExecute()) {
-	        if (isVerbose()) {
-                    System.out.println("stclient(default)=" + stclient);
-                }
-	        return stclient;
-	    }
+        stclient = new File(WIN32_STCLIENT);
+        if (isVerbose()) {
+                System.out.println("stclient(default)=" + stclient);
+            }
+        return stclient;
 	}
 	if (isVerbose()) {
             System.out.println("stclient not found");
