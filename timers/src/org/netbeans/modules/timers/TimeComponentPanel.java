@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -232,7 +233,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
     public void propertyChange(final PropertyChangeEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                if ("fos".equals(evt.getPropertyName())) {
+                if ("fos".equals(evt.getPropertyName())) { // NOI18N
                     DefaultListModel model = (DefaultListModel) jList1.getModel();
                     
                     if (evt.getNewValue() != null) {
@@ -242,7 +243,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                     }
                 }
                 
-                if ("PROP".equals(evt.getPropertyName())) {
+                if ("PROP".equals(evt.getPropertyName())) { // NOI18N
                     Object fo  = evt.getOldValue();
                     String     key = (String) evt.getNewValue();
                     Reference ref = (Reference)jList1.getSelectedValue();
@@ -251,7 +252,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
                     }
                 }
                 
-                if ("selected".equals(evt.getPropertyName())) {
+                if ("selected".equals(evt.getPropertyName())) { // NOI18N
                     Object fo = evt.getNewValue();
                     ListModel dm = jList1.getModel();
                     for(int i=0; i < dm.getSize(); i++) {
@@ -272,10 +273,11 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         JPanel inner = new JPanel();
         inner.setLayout(new BorderLayout());
         JProgressBar bar = new JProgressBar();
-        inner.add(new JLabel("Computing object reachability"), BorderLayout.CENTER);
+        JLabel msg = new JLabel(NbBundle.getBundle(TimeComponentPanel.class).getString("Computing_object_reachability"));
+        inner.add(msg, BorderLayout.CENTER);
         inner.add(bar, BorderLayout.SOUTH);
         Dialog d = DialogDisplayer.getDefault().createDialog(new DialogDescriptor(
-                inner, "Please wait"));
+                inner, NbBundle.getBundle(TimeComponentPanel.class).getString("Please_wait")));
         d.pack();
         d.setModal(false);
         d.setVisible(true);
@@ -285,6 +287,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         inner.removeAll();
         JScrollPane pane = new JScrollPane();
         JTextArea editor = new JTextArea(report);
+        msg.setText(NbBundle.getBundle(TimeComponentPanel.class).getString("Object_Reachability"));
         editor.setColumns(80);
         editor.setEditable(false);
         pane.setViewportView(editor);
@@ -324,7 +327,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             
             final TimesCollectorPeer.ObjectCountDescripton oc = (TimesCollectorPeer.ObjectCountDescripton) desc;
             JPopupMenu popup = new JPopupMenu();
-            popup.add(new AbstractAction("Find refs") {
+            popup.add(new AbstractAction(NbBundle.getBundle(TimeComponentPanel.class).getString("Find_refs")) {
 
                 public void actionPerformed(ActionEvent arg0) {
                     dumpRoots(oc.getInstances());
@@ -357,7 +360,7 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
             if (! (wr.get() instanceof FileObject)) return;
 
             JPopupMenu popup = new JPopupMenu();
-            popup.add(new AbstractAction("Find refs") {
+            popup.add(new AbstractAction(NbBundle.getBundle(TimeComponentPanel.class).getString("Find_refs")) {
 
                 public void actionPerformed(ActionEvent arg0) {
                     try {
@@ -394,9 +397,9 @@ public class TimeComponentPanel extends javax.swing.JPanel implements PropertyCh
         
         for (Object inst : traces.keySet()) {
             sb.append(inst);
-            sb.append(":\n");
+            sb.append(":\n"); // NOI18N
             sb.append(traces.get(inst));
-            sb.append("\n\n");
+            sb.append("\n\n"); // NOI18N
         }
   
         return sb.toString();
