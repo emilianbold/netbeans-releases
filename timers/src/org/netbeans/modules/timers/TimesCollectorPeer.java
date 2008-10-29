@@ -117,6 +117,7 @@ public final class TimesCollectorPeer {
             
             if (fo instanceof FileObject) {
                 ((FileObject)fo).addFileChangeListener(new FileChangeAdapter() {
+                    @Override
                     public void fileDeleted(FileEvent ev) {
                         for (Reference<Object> r : files) {
                             if (r.get() == fo) {
@@ -202,6 +203,7 @@ public final class TimesCollectorPeer {
             iw.addChangeListener( this );
         }
 
+        @Override
         public long getTime( ) {
             return iw.size();
         }
