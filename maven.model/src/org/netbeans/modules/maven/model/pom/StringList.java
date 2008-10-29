@@ -38,53 +38,19 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.List;
+
 
 /**
  *
  * @author mkleint
  */
-public interface POMComponentVisitor {
-    
-    void visit(Project target);
-    void visit(Parent target);
-    void visit(Organization target);
-    void visit(DistributionManagement target);
-    void visit(Site target);
-    void visit(DeploymentRepository target);
-    void visit(Prerequisites target);
-    void visit(Contributor target);
-    void visit(Scm target);
-    void visit(IssueManagement target);
-    void visit(CiManagement target);
-    void visit(Notifier target);
-    void visit(Repository target);
-    void visit(RepositoryPolicy target);
-    void visit(Profile target);
-    void visit(BuildBase target);
-    void visit(Plugin target);
-    void visit(Dependency target);
-    void visit(Exclusion target);
-    void visit(PluginExecution target);
-    void visit(Resource target);
-    void visit(PluginManagement target);
-    void visit(Reporting target);
-    void visit(ReportPlugin target);
-    void visit(ReportSet target);
-    void visit(Activation target);
-    void visit(ActivationProperty target);
-    void visit(ActivationOS target);
-    void visit(ActivationFile target);
-    void visit(ActivationCustom target);
-    void visit(DependencyManagement target);
-    void visit(Build target);
-    void visit(Extension target);
-    void visit(License target);
-    void visit(MailingList target);
-    void visit(Developer target);
-    void visit(POMExtensibilityElement target);
-    void visit(ModelList target);
-    void visit(Configuration target);
-    void visit(Properties target);
-    void visit(StringList target);
+public interface StringList extends POMComponent {
+
+    List<String> getListChildren();
+
+    void addListChild(String child);
+
+    void removeListChild(String child);
 
 }

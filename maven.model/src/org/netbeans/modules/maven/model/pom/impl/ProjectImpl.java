@@ -447,7 +447,49 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
     }
 
     public void setProperties(Properties props) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        setChild(Reporting.class, POMQName.PROPERTIES.getName(), props, empty);
+    }
+
+    public List<String> getModules() {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addModule(String module) {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(module);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 POMQName.MODULES.getName(),
+                 getModel().getFactory().create(this, POMQName.MODULES.getQName()),
+                 Collections.EMPTY_LIST);
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(module);
+                return;
+            }
+        }
+    }
+
+    public void removeModule(String module) {
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(module);
+                return;
+            }
+        }
     }
 
 }

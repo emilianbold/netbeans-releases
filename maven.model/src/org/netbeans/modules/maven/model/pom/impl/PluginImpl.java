@@ -170,6 +170,48 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         }
         return null;
     }
+
+    public java.util.List<String> getGoals() {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addGoal(String goal) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(goal);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 POMQName.GOALS.getName(),
+                 getModel().getFactory().create(this, POMQName.GOALS.getQName()),
+                 Collections.EMPTY_LIST);
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(goal);
+                return;
+            }
+        }
+    }
+
+    public void removeGoal(String goal) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(goal);
+                return;
+            }
+        }
+    }
+
     
     public static class List extends ListImpl<Plugin> {
         public List(POMModel model, Element element) {

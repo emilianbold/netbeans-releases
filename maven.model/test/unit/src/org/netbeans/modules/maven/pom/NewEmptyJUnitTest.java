@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.pom;
 
 import java.io.File;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import junit.framework.TestCase;
@@ -52,6 +53,7 @@ import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Parent;
 import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -121,6 +123,17 @@ public class NewEmptyJUnitTest extends TestCase {
         POMExtensibilityElement el = lst.get(1);
         assertEquals("version", el.getQName().getLocalPart());
         assertEquals("1.0.0", el.getElementText());
+        List<PluginExecution> execs = plug.getExecutions();
+        assertNotNull(execs);
+        PluginExecution ex = execs.get(0);
+        assertEquals("build", ex.getId());
+        String[] goals = new String[] {
+            "xpp3-reader",
+            "java",
+            "xdoc",
+            "xsd"
+        };
+        assertEquals(Arrays.asList(goals), ex.getGoals());
 
 //        model.startTransaction();
 //        try {

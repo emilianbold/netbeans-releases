@@ -36,55 +36,68 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.model.pom;
+package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.w3c.dom.Element;
+import org.netbeans.modules.maven.model.pom.*;	
+import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
 
 /**
  *
  * @author mkleint
  */
-public interface POMComponentVisitor {
-    
-    void visit(Project target);
-    void visit(Parent target);
-    void visit(Organization target);
-    void visit(DistributionManagement target);
-    void visit(Site target);
-    void visit(DeploymentRepository target);
-    void visit(Prerequisites target);
-    void visit(Contributor target);
-    void visit(Scm target);
-    void visit(IssueManagement target);
-    void visit(CiManagement target);
-    void visit(Notifier target);
-    void visit(Repository target);
-    void visit(RepositoryPolicy target);
-    void visit(Profile target);
-    void visit(BuildBase target);
-    void visit(Plugin target);
-    void visit(Dependency target);
-    void visit(Exclusion target);
-    void visit(PluginExecution target);
-    void visit(Resource target);
-    void visit(PluginManagement target);
-    void visit(Reporting target);
-    void visit(ReportPlugin target);
-    void visit(ReportSet target);
-    void visit(Activation target);
-    void visit(ActivationProperty target);
-    void visit(ActivationOS target);
-    void visit(ActivationFile target);
-    void visit(ActivationCustom target);
-    void visit(DependencyManagement target);
-    void visit(Build target);
-    void visit(Extension target);
-    void visit(License target);
-    void visit(MailingList target);
-    void visit(Developer target);
-    void visit(POMExtensibilityElement target);
-    void visit(ModelList target);
-    void visit(Configuration target);
-    void visit(Properties target);
-    void visit(StringList target);
+public class StringListImpl extends POMComponentImpl implements StringList {
+    private POMQName childname;
+
+    protected StringListImpl(POMModel model, Element element, POMQName childs) {
+        super(model, element);
+        this.childname = childs;
+    }
+
+    public StringListImpl(POMModel model, POMQName listName, POMQName childs) {
+        this(model, createElementNS(model, listName), childs);
+    }
+
+
+    // child elements
+    public List<String> getListChildren() {
+        List<POMExtensibilityElement> el = getChildren(POMExtensibilityElement.class);
+        List<String> toRet = new ArrayList<String>();
+        for (POMExtensibilityElement elem : el) {
+            if (elem.getQName().getLocalPart().equals(childname.getQName().getLocalPart())) {
+                toRet.add(elem.getElementText());
+            }
+        }
+        return toRet.size() > 0 ? toRet : null;
+    }
+
+    public void addListChild(String child) {
+        assert child != null;
+        POMExtensibilityElement el = getModel().getFactory().createPOMExtensibilityElement(childname.getQName());
+        el.setElementText(child);
+        appendChild(childname.getName(), el);
+
+    }
+
+    public void removeListChild(String child) {
+        assert child != null;
+        List<POMExtensibilityElement> el = getChildren(POMExtensibilityElement.class);
+        for (POMExtensibilityElement elem : el) {
+            if (elem.getQName().getLocalPart().equals(childname.getQName().getLocalPart()) && child.equals(elem.getElementText())) {
+                removeChild(childname.getName(), elem);
+                return;
+            }
+        }
+    }
+
+
+
+    // child elements
+    public void accept(POMComponentVisitor visitor) {
+        visitor.visit(this);
+    }
+
 
 }

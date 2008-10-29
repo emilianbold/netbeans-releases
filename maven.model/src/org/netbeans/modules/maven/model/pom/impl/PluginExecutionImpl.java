@@ -38,9 +38,11 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.Collections;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
+import org.w3c.dom.NodeList;
 
 /**
  *
@@ -86,6 +88,55 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
                 POMQName.INHERITED.getQName());
     }
 
+    public Configuration getConfiguration() {
+        return getChild(Configuration.class);
+    }
+
+    public void setConfiguration(Configuration config) {
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
+    }
+
+    public java.util.List<String> getGoals() {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                return list.getListChildren();
+            }
+        }
+        return null;
+    }
+
+    public void addGoal(String goal) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(goal);
+                return;
+            }
+        }
+        setChild(StringListImpl.class,
+                 POMQName.GOALS.getName(),
+                 getModel().getFactory().create(this, POMQName.GOALS.getQName()),
+                 Collections.EMPTY_LIST);
+        lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                list.addListChild(goal);
+                return;
+            }
+        }
+    }
+
+    public void removeGoal(String goal) {
+        java.util.List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(goal);
+                return;
+            }
+        }
+    }
 
     public static class List extends ListImpl<PluginExecution> {
         public List(POMModel model, Element element) {

@@ -96,14 +96,13 @@ public interface Plugin extends VersionablePOMComponent {
     Boolean isInherited();
     void setInherited(Boolean inherited);
 
-    //TODO add goals processing
     /**
      * POM RELATED PROPERTY
      * @return
      */
-//    List<String> getGoals();
-//    void addGoal(String goal);
-//    void removeGoal(String goal);
+    List<String> getGoals();
+    void addGoal(String goal);
+    void removeGoal(String goal);
 
     /**
      * POM RELATED PROPERTY

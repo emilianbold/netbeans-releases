@@ -222,9 +222,9 @@ public interface Project extends VersionablePOMComponent {
     public void addProfile(Profile profile);
     public void removeProfile(Profile profile);
 
-//    public List<String> getModules();
-//    public void addModule(String module);
-//   public void removeModule(String module);
+    public List<String> getModules();
+    public void addModule(String module);
+    public void removeModule(String module);
 
     /**
      * POM RELATED PROPERTY

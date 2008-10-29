@@ -151,10 +151,10 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-//        if (isElementQName(POMQName.MODULE)) {
-//            created = new ModuleImpl(context.getModel(), element);
-//            return;
-//        }
+        if (isElementQName(POMQName.MODULES)) {
+            created = new StringListImpl(context.getModel(), element, POMQName.MODULE);
+            return;
+        }
 
         if (isElementQName(POMQName.REPOSITORIES)) {
             created = new RepositoryImpl.RepoList(context.getModel(), element);
@@ -302,10 +302,10 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-//        if (isElementQName(POMQName.MODULE)) {
-//            created = new ModuleImpl(context.getModel(), element);
-//            return;
-//        }
+        if (isElementQName(POMQName.MODULES)) {
+            created = new StringListImpl(context.getModel(), element, POMQName.MODULE);
+            return;
+        }
 
         if (isElementQName(POMQName.REPOSITORIES)) {
             created = new RepositoryImpl.RepoList(context.getModel(), element);
@@ -387,7 +387,17 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
+        if (isElementQName(POMQName.GOALS)) {
+            created = new StringListImpl(context.getModel(), element, POMQName.GOAL);
+            return;
+        }
+
         //createExtensibilityElement(context);
+    }
+
+    @Override
+    public void visit(StringList context) {
+        created = new POMExtensibilityElementBase(context.getModel(), element);
     }
 
     @Override
@@ -407,6 +417,15 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(PluginExecution context) {
+        if (isElementQName(POMQName.GOALS)) {
+            created = new StringListImpl(context.getModel(), element, POMQName.GOAL);
+            return;
+        }
+        if (isElementQName(POMQName.CONFIGURATION)) {
+            created = new ConfigurationImpl(context.getModel(), element);
+            return;
+        }
+
         //createExtensibilityElement(context);
     }
 

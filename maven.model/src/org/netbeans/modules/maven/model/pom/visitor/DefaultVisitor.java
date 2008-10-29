@@ -38,8 +38,50 @@
  */
 package org.netbeans.modules.maven.model.pom.visitor;
 
+import org.netbeans.modules.maven.model.pom.Activation;
+import org.netbeans.modules.maven.model.pom.ActivationCustom;
+import org.netbeans.modules.maven.model.pom.ActivationFile;
+import org.netbeans.modules.maven.model.pom.ActivationOS;
+import org.netbeans.modules.maven.model.pom.ActivationProperty;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.BuildBase;
+import org.netbeans.modules.maven.model.pom.CiManagement;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.Contributor;
+import org.netbeans.modules.maven.model.pom.Dependency;
+import org.netbeans.modules.maven.model.pom.DependencyManagement;
+import org.netbeans.modules.maven.model.pom.DeploymentRepository;
+import org.netbeans.modules.maven.model.pom.Developer;
+import org.netbeans.modules.maven.model.pom.DistributionManagement;
+import org.netbeans.modules.maven.model.pom.Exclusion;
+import org.netbeans.modules.maven.model.pom.Extension;
+import org.netbeans.modules.maven.model.pom.IssueManagement;
+import org.netbeans.modules.maven.model.pom.License;
+import org.netbeans.modules.maven.model.pom.MailingList;
+import org.netbeans.modules.maven.model.pom.ModelList;
+import org.netbeans.modules.maven.model.pom.Notifier;
+import org.netbeans.modules.maven.model.pom.Organization;
+import org.netbeans.modules.maven.model.pom.POMComponent;
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
-import org.netbeans.modules.maven.model.pom.*;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.Parent;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginExecution;
+import org.netbeans.modules.maven.model.pom.PluginManagement;
+import org.netbeans.modules.maven.model.pom.Prerequisites;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.maven.model.pom.Project;
+import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.model.pom.ReportPlugin;
+import org.netbeans.modules.maven.model.pom.ReportSet;
+import org.netbeans.modules.maven.model.pom.Reporting;
+import org.netbeans.modules.maven.model.pom.Repository;
+import org.netbeans.modules.maven.model.pom.RepositoryPolicy;
+import org.netbeans.modules.maven.model.pom.Resource;
+import org.netbeans.modules.maven.model.pom.Scm;
+import org.netbeans.modules.maven.model.pom.Site;
+import org.netbeans.modules.maven.model.pom.StringList;
+
 
 /**
  * Default shallow visitor.
@@ -209,6 +251,10 @@ public class DefaultVisitor implements POMComponentVisitor {
     }
 
     protected void visitComponent(POMComponent target) {
+    }
+
+    public void visit(StringList target) {
+        visitComponent(target);
     }
 
 }

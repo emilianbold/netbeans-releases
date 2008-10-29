@@ -148,6 +148,12 @@ public enum POMQName {
     VALUE(createQName("value")), //NOI18N
 
     LAYOUT(createQName("layout")), //NOI18N
+
+    GOALS(createQName("goals")), //NOI18N
+    GOAL(createQName("goal")), //NOI18N
+
+    MODULES(createQName("moduless")), //NOI18N
+    MODULE(createQName("module")), //NOI18N
     ;
     
     public static final String NS_URI = "http://maven.apache.org/POM/4.0.0";  // NOI18N

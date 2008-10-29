@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
+import java.util.List;
+
 
 /**
  *
@@ -76,10 +78,15 @@ public interface PluginExecution extends IdPOMComponent {
      * POM RELATED PROPERTY
      * @return
      */
-//    List<String> getGoals();
-//    void addGoal(String goal);
-//    void removeGoal(String goal);
+    List<String> getGoals();
+    void addGoal(String goal);
+    void removeGoal(String goal);
 
-    //TODO configuration
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Configuration getConfiguration();
+    void setConfiguration(Configuration config);
 
 }
