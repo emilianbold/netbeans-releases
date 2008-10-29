@@ -51,6 +51,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -80,7 +81,7 @@ public class GdbProxyEngine {
     private PrintStream toGdb;
     private final GdbDebugger debugger;
     private final GdbProxy gdbProxy;
-    private final LinkedList<CommandInfo> tokenList = new LinkedList<CommandInfo>();
+    private final List<CommandInfo> tokenList = Collections.synchronizedList(new LinkedList<CommandInfo>());
     private int nextToken = MIN_TOKEN;
     private int currentToken = MIN_TOKEN;
     private boolean active;
@@ -276,7 +277,7 @@ public class GdbProxyEngine {
         return sendCommand(cb, cmd, false);
     }
     
-    public int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
+    public synchronized int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
         if (active) {
             String time;
             if (timerOn) {
@@ -400,10 +401,12 @@ public class GdbProxyEngine {
     
     private CommandInfo getCommandInfo(String msg) {
         msg = msg.substring(2, msg.length() - 1).replace("\\n", ""); // NOI18N
-        
-        for (CommandInfo ci : tokenList) {
-            if (ci.getCommand().equals(msg)) {
-                return ci;
+
+        synchronized (tokenList) {
+            for (CommandInfo ci : tokenList) {
+                if (ci.getCommand().equals(msg)) {
+                    return ci;
+                }
             }
         }
         return null;
