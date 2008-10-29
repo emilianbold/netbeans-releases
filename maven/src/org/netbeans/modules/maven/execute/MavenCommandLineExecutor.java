@@ -127,7 +127,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             ProcessBuilder builder = new ProcessBuilder(cmdLine);
             builder.redirectErrorStream(true);
             builder.directory(workingDir);
-//            builder.environment();
             
             ioput.getOut().println("NetBeans: Executing '" + StringUtils.join(builder.command().iterator(), " ") + "'");//NOI18N - to be shown in log.
             boolean hasJavaSet = false;
@@ -162,7 +161,13 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                     if (path != null) {
                         builder.environment().put(ENV_JAVAHOME.substring(ENV_PREFIX.length()), path.getAbsolutePath());
                         ioput.getOut().println("NetBeans:      JAVA_HOME =" + path.getAbsolutePath());
+                        hasJavaSet = true;
                     }
+                }
+                //#151559
+                if (!hasJavaSet && System.getenv("JAVA_HOME") == null) { //NOI18N
+                    builder.environment().put("JAVA_HOME", System.getProperty("java.home")); //NOI18N
+                    ioput.getOut().println("NetBeans:      JAVA_HOME =" + System.getProperty("java.home"));
                 }
             }
 //debugging..            
