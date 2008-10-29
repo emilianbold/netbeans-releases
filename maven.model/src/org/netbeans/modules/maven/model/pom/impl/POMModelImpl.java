@@ -77,6 +77,9 @@ public class POMModelImpl extends POMModel {
         if (root != null ) {
             if (POMQName.PROJECT.getQName().equals(q)) {
                 rootComponent = new ProjectImpl(this, root);
+//TODO            } else if (root.getNamespaceURI() == null &&
+//                    POMQName.PROJECT.getName().equals(root.getNodeName())) {
+//                rootComponent = new ProjectImpl(this, root);
             }
         } 
         
