@@ -148,6 +148,9 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     /** Actions factory provided for this explorer manager */
     private ExplorerActionsImpl actions;
 
+    /** private lock */
+    private final Object LOCK = new Object();
+
     /** Construct a new manager. */
     public ExplorerManager() {
         init();
@@ -466,32 +469,34 @@ public final class ExplorerManager extends Object implements Serializable, Clone
             throw new IllegalArgumentException(getString("EXC_CannotHaveNullRootContext"));
         }
 
-        if (rootContext.equals(value)) {
-            return;
-        }
-
-        class SetRootContext implements Runnable {
-            public void run() {
-                addRemoveListeners(false);
-                Node oldValue = rootContext;
-                rootContext = value;
-
-                oldValue.removeNodeListener(weakListener);
-                rootContext.addNodeListener(weakListener);
-
-                fireInAWT(PROP_ROOT_CONTEXT, oldValue, rootContext);
-
-                Node[] newselection = getSelectedNodes();
-
-                if (!areUnderTarget(newselection, rootContext)) {
-                    newselection = new Node[0];
-                }
-                setExploredContext(rootContext, newselection);
+        synchronized (LOCK) {
+            if (rootContext.equals(value)) {
+                return;
             }
+
+            class SetRootContext implements Runnable {
+                public void run() {
+                    addRemoveListeners(false);
+                    Node oldValue = rootContext;
+                    rootContext = value;
+
+                    oldValue.removeNodeListener(weakListener);
+                    rootContext.addNodeListener(weakListener);
+
+                    fireInAWT(PROP_ROOT_CONTEXT, oldValue, rootContext);
+
+                    Node[] newselection = getSelectedNodes();
+
+                    if (!areUnderTarget(newselection, rootContext)) {
+                        newselection = new Node[0];
+                    }
+                    setExploredContext(rootContext, newselection);
+                }
+            }
+
+            SetRootContext run = new SetRootContext();
+            Children.MUTEX.readAccess(run);
         }
-        
-        SetRootContext run = new SetRootContext();
-        Children.MUTEX.readAccess(run);
     }
 
     /** @return true iff all nodes are under the target node */
