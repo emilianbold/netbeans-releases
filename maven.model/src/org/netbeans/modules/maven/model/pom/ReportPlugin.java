@@ -66,7 +66,12 @@ public interface ReportPlugin extends VersionablePOMComponent {
     Boolean isInherited();
     void setInherited(Boolean inherited);
 
-    //TODO configuration
+    /**
+     * POM RELATED PROPERTY
+     * @return
+     */
+    Configuration getConfiguration();
+    void setConfiguration(Configuration config);
 
 
 }

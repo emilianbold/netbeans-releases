@@ -103,6 +103,14 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
                 POMQName.INHERITED.getQName());
     }
 
+    public Configuration getConfiguration() {
+        return getChild(Configuration.class);
+    }
+
+    public void setConfiguration(Configuration config) {
+        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
+        setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
+    }
 
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);

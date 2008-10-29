@@ -73,7 +73,6 @@ public interface PluginExecution extends IdPOMComponent {
     Boolean isInherited();
     void setInherited(Boolean inherited);
 
-    //TODO add goals processing
     /**
      * POM RELATED PROPERTY
      * @return
