@@ -109,7 +109,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
             return false;
         }
         model.removeShortcut((ShortcutAction) action, orig);
-        model.addShortcut((ShortcutAction) action, s);
+        if (!(s.length() == 0)) // do not add empty shortcuts
+            model.addShortcut((ShortcutAction) action, s);
         boolean stopCellEditing = super.stopCellEditing();
         model.update();
         return stopCellEditing;
