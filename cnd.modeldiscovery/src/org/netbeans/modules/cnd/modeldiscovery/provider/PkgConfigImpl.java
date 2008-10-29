@@ -55,7 +55,6 @@ import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
@@ -69,6 +68,7 @@ import org.openide.util.Utilities;
 public class PkgConfigImpl implements PkgConfig {
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
     private Map<String, Pair> seachBase;
+    private String drivePrefix;
 
     public PkgConfigImpl(CompilerSet set) {
         initPackages(set);
@@ -84,11 +84,13 @@ public class PkgConfigImpl implements PkgConfig {
                 baseDirectory = set.getDirectory();
                 //"C:\cygwin\bin"
                 if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
+                    drivePrefix = baseDirectory.substring(0, baseDirectory.length()-4);
                     baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
                 }
             }
             if (baseDirectory == null) {
-                baseDirectory = "c:/cygwin/lib/pkgconfig/";
+                drivePrefix = "c:/cygwin"; // NOI18N
+                baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
             }
             initPackages(baseDirectory); // NOI18N
         } else {
@@ -344,7 +346,11 @@ public class PkgConfigImpl implements PkgConfig {
                     while(st.hasMoreTokens()) {
                         String v = st.nextToken();
                         if (v.startsWith("-I")){ // NOI18N
-                            pc.paths.add(v.substring(2));
+                            v = v.substring(2);
+                            if (drivePrefix != null) {
+                                v = drivePrefix+v;
+                            }
+                            pc.paths.add(v);
                         } else if (v.startsWith("-D")){ // NOI18N
                             pc.macros.add(v.substring(2));
                         }
