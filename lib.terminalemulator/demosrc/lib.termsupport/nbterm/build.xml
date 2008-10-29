@@ -22,6 +22,10 @@
                         includes="**/*.jar" />
             <tarfileset dir="dist"
                         prefix="termapp"
+                        includes="nbterm"
+                        filemode="775"/>
+            <tarfileset dir="dist"
+                        prefix="termapp"
                         includes="term,lib/process_start.sh,lib/process_start-*"
                         filemode="775"/>
         </tar>

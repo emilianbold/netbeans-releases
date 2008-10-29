@@ -45,32 +45,4 @@ path_to_cmd=`/usr/bin/dirname $0`
 INSTALLDIR=`cd ${path_to_cmd}; /bin/pwd`
 echo INSTALLDIR=$INSTALLDIR
 
-fromwhere=build
-fromwhere=dist
-
-case $fromwhere in
-    build)
-	if	[ ! $NETBEANS ]
-	then	echo need to define '$NETBEANS'
-		exit 1
-	fi
-
-	PTYTEST="$INSTALLDIR/build/classes"
-	JNA=$NETBEANS/platform8/modules/ext/jna-3.0.2.jar
-	TERM=$NETBEANS/cnd2/modules/org-netbeans-lib-terminalemulator.jar
-
-	export CLASSPATH="$PTYTEST":"$JNA":"$TERM"
-	echo CLASSPATH=$CLASSPATH
-
-	exec java ptytest.Main $*
-	;;
-    dist)
-	exec java -jar $INSTALLDIR/TermApp.jar $*
-	;;
-esac
-
-
-# Reproduce SIGINT getting ignored:
-# eval "java ptytest.Main" &
-# PID=$1
-
+exec java -jar $INSTALLDIR/TermApp.jar $*
