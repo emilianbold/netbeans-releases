@@ -58,8 +58,8 @@ public enum LNE {
     static private final HashMap<Integer, LNE> hashmap = new HashMap<Integer, LNE>();
     
     static {
-        for (LNE elem : LNE.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (LNE elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
@@ -68,7 +68,7 @@ public enum LNE {
     }
     
     public static LNE get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     public int value() {

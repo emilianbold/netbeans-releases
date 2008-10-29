@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.hibernate.editor;
 
-import org.netbeans.modules.hibernate.completion.*;
 import javax.xml.XMLConstants;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.modules.xml.text.api.XMLDefaultTokenContext;
@@ -101,6 +100,10 @@ public final class ContextUtilities {
             while(equalsToken != null && equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
                 equalsToken = equalsToken.getPrevious();
             }
+            
+            if(equalsToken == null) {
+                return null;
+            }
         
             TokenItem argumentToken = equalsToken.getPrevious();
             if(argumentToken == null)
@@ -143,6 +146,10 @@ public final class ContextUtilities {
             }
             while(equalsToken != null && equalsToken.getTokenID().getNumericID() != XMLDefaultTokenContext.OPERATOR_ID) {
                 equalsToken = equalsToken.getPrevious();
+            }
+            
+            if(equalsToken == null) {
+                return null;
             }
         
             TokenItem argumentToken = equalsToken.getPrevious();

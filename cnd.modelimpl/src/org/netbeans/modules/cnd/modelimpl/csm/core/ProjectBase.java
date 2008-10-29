@@ -1379,9 +1379,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
     
-    private static final boolean isValid(APTPreprocHandler.State state) {
-        return state != null && state.isValid();
-    }
+//    private static final boolean isValid(APTPreprocHandler.State state) {
+//        return state != null && state.isValid();
+//    }
     
     public ProjectBase findFileProject(CharSequence absPath) {
         // check own files
@@ -1742,15 +1742,15 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         return requiredUnits;
     }
 
-    private void disposeFiles() {
-        Collection<FileImpl> list = getFileContainer().getFileImpls();
-        getFileContainer().clear();
-        for (FileImpl file : list){
-            file.onProjectClose();
-            APTDriver.getInstance().invalidateAPT(file.getBuffer());
-        }
-        //clearNativeFileContainer();
-    }
+//    private void disposeFiles() {
+//        Collection<FileImpl> list = getFileContainer().getFileImpls();
+//        getFileContainer().clear();
+//        for (FileImpl file : list){
+//            file.onProjectClose();
+//            APTDriver.getInstance().invalidateAPT(file.getBuffer());
+//        }
+//        //clearNativeFileContainer();
+//    }
 
     private NamespaceImpl _getGlobalNamespace() {
         NamespaceImpl ns = (NamespaceImpl) UIDCsmConverter.UIDtoNamespace(globalNamespaceUID);

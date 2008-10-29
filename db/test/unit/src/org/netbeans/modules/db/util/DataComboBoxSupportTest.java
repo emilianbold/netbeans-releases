@@ -80,8 +80,7 @@ public class DataComboBoxSupportTest extends NbTestCase {
 
         assertEquals("foo", comboBox.getItemAt(0));
         assertEquals("bar", comboBox.getItemAt(1));
-        assertSame(support.SEPARATOR_ITEM, comboBox.getItemAt(2));
-        assertEquals("Add", comboBox.getItemAt(3).toString());
+        assertEquals("Add", comboBox.getItemAt(2).toString());
         assertEquals("The old selected item was removed, nothing should be selected now", -1, comboBox.getSelectedIndex());
 
         comboBox.setSelectedIndex(1); // bar
@@ -89,8 +88,7 @@ public class DataComboBoxSupportTest extends NbTestCase {
         listModel.setItems(items);
 
         assertEquals("bar", comboBox.getItemAt(0));
-        assertSame(support.SEPARATOR_ITEM, comboBox.getItemAt(1));
-        assertEquals("Add", comboBox.getItemAt(2).toString());
+        assertEquals("Add", comboBox.getItemAt(1).toString());
         assertEquals("Bar should still be selected", 0, comboBox.getSelectedIndex());
 
         items.add("new");
@@ -98,8 +96,7 @@ public class DataComboBoxSupportTest extends NbTestCase {
 
         assertEquals("bar", comboBox.getItemAt(0));
         assertEquals("new", comboBox.getItemAt(1));
-        assertSame(support.SEPARATOR_ITEM, comboBox.getItemAt(2));
-        assertEquals("Add", comboBox.getItemAt(3).toString());
+        assertEquals("Add", comboBox.getItemAt(2).toString());
         assertEquals("new", comboBox.getSelectedItem());
         assertEquals("New should be selected", 1, comboBox.getSelectedIndex());
     }

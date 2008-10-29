@@ -53,20 +53,20 @@ public class NoType implements CsmType {
 
     private static final NoType instance = new NoType();
 
-    private Position position = new Position() {
-
-        public int getOffset() {
-            return 0;
-        }
-
-        public int getLine() {
-            return 0;
-        }
-
-        public int getColumn() {
-            return 0;
-        }
-    };
+//    private Position position = new Position() {
+//
+//        public int getOffset() {
+//            return 0;
+//        }
+//
+//        public int getLine() {
+//            return 0;
+//        }
+//
+//        public int getColumn() {
+//            return 0;
+//        }
+//    };
     
     /** prevents external creation */
     private NoType() {

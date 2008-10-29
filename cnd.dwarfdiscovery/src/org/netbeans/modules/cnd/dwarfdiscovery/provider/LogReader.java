@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
@@ -326,7 +327,7 @@ public class LogReader {
        return false;
     }
 
-    private static final String PKG_CONFIG_PATTERN = "pkg-config --cflags "; //NOI18N
+    private static final String PKG_CONFIG_PATTERN = "pkg-config "; //NOI18N
     private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
         int i = line.indexOf('`'); //NOI18N
         if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
@@ -344,15 +345,30 @@ public class LogReader {
             String pkg = line.substring(0,j);
             if (pkg.startsWith(PKG_CONFIG_PATTERN)) { //NOI18N
                 pkg = pkg.substring(PKG_CONFIG_PATTERN.length());
-                PackageConfiguration pc = pkgConfig.getPkgConfig(pkg);
-                if (pc != null) {
-                    for(String p : pc.getIncludePaths()){
-                        out +=" -I"+p; //NOI18N
+                StringTokenizer st = new StringTokenizer(pkg);
+                boolean readFlags = false;
+                while(st.hasMoreTokens()) {
+                    String aPkg = st.nextToken();
+                    if (aPkg.equals("--cflags")) { //NOI18N
+                        readFlags = true;
+                        continue;
                     }
-                    for(String p : pc.getMacros()){
-                        out +=" -D"+p; //NOI18N
+                    if (aPkg.startsWith("-")) { //NOI18N
+                        readFlags = false;
+                        continue;
                     }
-                    out +=" "; //NOI18N
+                    if (readFlags) {
+                        PackageConfiguration pc = pkgConfig.getPkgConfig(aPkg);
+                        if (pc != null) {
+                            for(String p : pc.getIncludePaths()){
+                                out +=" -I"+p; //NOI18N
+                            }
+                            for(String p : pc.getMacros()){
+                                out +=" -D"+p; //NOI18N
+                            }
+                            out +=" "; //NOI18N
+                        }
+                    }
                 }
             }
             out += line.substring(j+1);
