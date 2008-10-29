@@ -189,12 +189,6 @@ public class GoToSupport {
             if (fo == null)
                 return null;
             
-            final JavaSource js = JavaSource.forFileObject(fo);
-            
-            if (js == null) { //#123488
-                return null;
-            }
-            
             final String[] result = new String[1];
             final int[] offsetToOpen = new int[] {-1};
             final ElementHandle[] elementToOpen = new ElementHandle[1];
@@ -407,7 +401,7 @@ public class GoToSupport {
                             openSucceeded = CALLER.open(fo, offsetToOpen[0]);
                         } else {
                             if (elementToOpen[0] != null) {
-                                openSucceeded = CALLER.open(js.getClasspathInfo(), elementToOpen[0]);
+                                openSucceeded = CALLER.open(cpInfo[0], elementToOpen[0]);
                             }
                         }
                         if (!openSucceeded) {
