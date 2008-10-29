@@ -85,7 +85,7 @@ public class DatabaseExplorerUIsTest extends TestBase {
         initConnections();
         JComboBox combo = connect();
 
-        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 4);
+        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 3);
 
         assertSame(dbconn2, combo.getItemAt(0));
         assertSame(dbconn1, combo.getItemAt(1));
