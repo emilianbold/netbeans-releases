@@ -39,12 +39,15 @@
 
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -69,6 +72,8 @@ public class PackageConfigTestCase {
 
     @Test
     public void testMethod() {
+        Logger logger = Logger.getLogger(NbPreferences.class.getName());
+        logger.setLevel(Level.SEVERE);
         PkgConfigImpl pc = (PkgConfigImpl)new PkgConfigManagerImpl().getPkgConfig(null);
         pc.traceConfig("gtk+-2.0",true);
         pc.traceRecursiveConfig("gtk+-2.0");
