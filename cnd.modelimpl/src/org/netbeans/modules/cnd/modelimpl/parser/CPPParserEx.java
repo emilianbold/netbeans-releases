@@ -1016,7 +1016,7 @@ public class CPPParserEx extends CPPParser {
     
     @Override
     protected final void printf(String pattern, int i) { 
-        Printf.printf(pattern, new Object[] { new Integer(i) });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i) });
     }
     
     @Override
@@ -1026,41 +1026,41 @@ public class CPPParserEx extends CPPParser {
     
     @Override
     protected final void printf(String pattern, int i, Object o) { 
-        Printf.printf(pattern, new Object[] { new Integer(i), o });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i), o });
     }
     
     @Override
     protected final void printf(String pattern, int i, Object o1, Object o2) { 
-        Printf.printf(pattern, new Object[] { new Integer(i), o1, o2 });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i), o1, o2 });
     }
     
     @Override
     protected final void printf(String pattern, int i1, int i2, boolean b1, Object o) { 
-        Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), Boolean.valueOf(b1), o });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i1), Integer.valueOf(i2), Boolean.valueOf(b1), o });
     }
     
     @Override
     protected final void printf (String pattern, int i1, Object o1, int i2, Object o2) {
-        Printf.printf(pattern, new Object[] { new Integer(i1), o1, new Integer(i2), o2 });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i1), o1, Integer.valueOf(i2), o2 });
     }
 
     protected final void printf (String pattern, int i1, int i2, int i3, Object o) {
-        Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), new Integer(i3), o });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i1), Integer.valueOf(i2), Integer.valueOf(i3), o });
     }
     
     @Override
     protected final void printf (String pattern, int i1, int i2, int i3, String s) {
-        Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2), new Integer(i3), s });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i1), Integer.valueOf(i2), Integer.valueOf(i3), s });
     }
     
     @Override
     protected final void printf(String pattern, int i1, int i2) {
-        Printf.printf(pattern, new Object[] { new Integer(i1), new Integer(i2) });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i1), Integer.valueOf(i2) });
     }
 
 
     private void printf(String pattern, int i1, Object o1, Object o2, Object o3) { 
-        Printf.printf(pattern, new Object[] { new Integer(i1), o1, o2, o3 });
+        Printf.printf(pattern, new Object[] { Integer.valueOf(i1), o1, o2, o3 });
     }
     
     
