@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.vmd.game.editor.scene;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;
@@ -58,17 +57,14 @@ import java.awt.dnd.DropTargetAdapter;
 import java.awt.dnd.DropTargetDropEvent;
 import java.awt.dnd.DropTargetEvent;
 import java.io.IOException;
-import javax.swing.DefaultCellEditor;
-import javax.swing.JComponent;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
-import javax.swing.border.LineBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableColumn;
+import org.netbeans.modules.vmd.game.editor.common.NonEmptyStringTableCellEditor;
 import org.netbeans.modules.vmd.game.model.Layer;
 import org.netbeans.modules.vmd.game.model.LayerDataFlavor;
 import org.netbeans.modules.vmd.game.model.Scene;
@@ -162,35 +158,6 @@ public class SceneLayerNavigator extends JTable {
 		return super.getPreferredSize();
 	}
 	
-	
-        static class NonEmptyStringTableCellEditor extends DefaultCellEditor {
-            
-            private final static Color ERROR_COLOR = Color.red;
-            private final static Color CORRECT_COLOR = Color.black;
-
-            public NonEmptyStringTableCellEditor() {
-                super(new JTextField());
-            }
-
-            @Override
-            public boolean stopCellEditing() {
-                String s = (String) super.getCellEditorValue();
-                if ("".equals(s)) {
-                    ((JComponent) getComponent()).setBorder(new LineBorder(ERROR_COLOR));
-                    return false;
-                }
-                return super.stopCellEditing();
-            }
-
-            @Override
-            public Component getTableCellEditorComponent(JTable table, Object value,
-                    boolean isSelected, int row, int column) {
-                ((JComponent) getComponent()).setBorder(new LineBorder(CORRECT_COLOR));
-                return super.getTableCellEditorComponent(table, value, isSelected, row, column);
-            }
-
-        }
-
         private class SceneTableSelectionListener implements ListSelectionListener {
 		
 		public void valueChanged(ListSelectionEvent e) {
