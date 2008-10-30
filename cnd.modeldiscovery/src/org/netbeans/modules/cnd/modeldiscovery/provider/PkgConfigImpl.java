@@ -168,7 +168,7 @@ public class PkgConfigImpl implements PkgConfig {
             System.out.println(tab+"Paths:    "+pc.paths); // NOI18N
             if (recursive) {
                 for(String p : pc.requires){
-                    traceConfig(p, recursive, visited, tab+"    ");
+                    traceConfig(p, recursive, visited, tab+"    "); // NOI18N
                 }
             }
         } else {
