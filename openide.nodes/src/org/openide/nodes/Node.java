@@ -1259,7 +1259,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
     * and after deserialization
     * use {@link #getNode} to obtain the original node.
     * 
-    * <b>Related documentation</b>
+    * <p><b>Related documentation</b>
     * 
     * <ul>
     * <li><a href="http://blogs.sun.com/geertjan/entry/serializing_nodes">Serializing Nodes</a> 
