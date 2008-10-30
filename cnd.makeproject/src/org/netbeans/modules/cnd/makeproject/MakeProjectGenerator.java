@@ -55,6 +55,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
@@ -232,6 +233,7 @@ public class MakeProjectGenerator {
         final MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
+        projectDescriptor.setState(State.READY);
 
         Project project = projectDescriptor.getProject();
         if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
