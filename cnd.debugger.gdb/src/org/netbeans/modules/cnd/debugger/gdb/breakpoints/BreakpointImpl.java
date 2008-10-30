@@ -82,6 +82,20 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         
         String number = (map != null) ? map.get("number") : null; // NOI18N
         if (number != null) {
+            String fullname = map.get("fullname"); // NOI18N
+            if (fullname != null) {
+                // We set a valid breakpoint, but its not in the exact source file we meant it to
+                // be. This can happen when a source path has embedded spaces and we shorten the
+                // path to a possiby non-unique relative path and another project has a similar
+                // relative path. See IZ #151761.
+                String path = getBreakpoint().getPath();
+                if (!path.equals(fullname)) {
+                    debugger.getGdbProxy().break_delete(number);
+                    breakpoint.setInvalid(err);
+                    setState(BPSTATE_VALIDATION_FAILED);
+                    return;
+                }
+            }
             breakpointNumber = Integer.parseInt(number);
             setState(BPSTATE_VALIDATED);
             if (!breakpoint.isEnabled()) {
