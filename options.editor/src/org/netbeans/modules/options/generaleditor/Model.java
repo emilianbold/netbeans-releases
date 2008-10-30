@@ -102,66 +102,6 @@ public class Model {
         }
     }
     
-    
-    // code completion options 
-    
-    boolean isPairCharacterCompletion () {
-        return getParameter("pair-characters-completion", true); //NOI18N
-    }
-    
-    boolean isCompletionAutoPopup () {
-        return getParameter(SimpleValueNames.COMPLETION_AUTO_POPUP, true);
-    }
-    
-    boolean isDocumentationAutoPopup () {
-        return getParameter(SimpleValueNames.JAVADOC_AUTO_POPUP, true);
-    }
-
-    boolean isDocumentationNextToCC () {
-        return getParameter(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC, false);
-    }
-    
-    boolean isShowDeprecatedMembers () {
-        return getParameter(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true);
-    }
-    
-    boolean isCompletionInstantSubstitution () {
-        return getParameter(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, true);
-    }
-    
-    boolean isCompletionCaseSensitive () {
-        return getParameter(SimpleValueNames.COMPLETION_CASE_SENSITIVE, true);
-    }
-
-    boolean isGuessMethodArguments () {
-        return getParameter("guessMethodArguments", true); //NOI18N
-    }
-    
-    void setCompletionOptions (
-        boolean pairCharacterCompletion,
-        boolean completionAutoPopup,
-        boolean documentationAutoPopup,
-        boolean javadocNextToCC,
-        boolean showDeprecatedMembers,
-        boolean completionInstantSubstitution,
-        boolean completionCaseSensitive,
-        boolean guessMethodArguments
-    ) {
-        Set<String> mimeTypes = EditorSettings.getDefault().getMimeTypes();
-        for(String mimeType : mimeTypes) {
-            Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
-
-            prefs.putBoolean("pair-characters-completion", pairCharacterCompletion); //NOI18N
-            prefs.putBoolean(SimpleValueNames.COMPLETION_AUTO_POPUP, completionAutoPopup);
-            prefs.putBoolean(SimpleValueNames.JAVADOC_AUTO_POPUP, documentationAutoPopup);
-            prefs.putBoolean(SimpleValueNames.JAVADOC_POPUP_NEXT_TO_CC, javadocNextToCC);
-            prefs.putBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, showDeprecatedMembers);
-            prefs.putBoolean(SimpleValueNames.COMPLETION_INSTANT_SUBSTITUTION, completionInstantSubstitution);
-            prefs.putBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, completionCaseSensitive);
-            prefs.putBoolean("guessMethodArguments", guessMethodArguments); //NOI18N
-        }
-    }
-    
     Boolean isCamelCaseJavaNavigation() {
         Preferences p = getJavaModulePreferenes();
         if ( p == null ) {
