@@ -49,8 +49,8 @@ import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 
 public class CustomizerNode {
-    public static String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
-    public static String icon = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
+    public static final String iconbase = "org/netbeans/modules/cnd/makeproject/ui/resources/general"; // NOI18N
+    public static final String icon = "org/netbeans/modules/cnd/makeproject/ui/resources/general.gif"; // NOI18N
 
     public String name;
     public String displayName;
