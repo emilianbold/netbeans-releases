@@ -100,7 +100,7 @@ public class BaseSampleProvider implements SampleProvider {
         }
 
         if (! checkInnodbSupport(dbconn.getJDBCConnection())) {
-            throw new DatabaseException("MSG_NoSampleWithoutInnoDB"); // NOI8N
+            throw new DatabaseException(getMessage("MSG_NoSampleWithoutInnoDB")); // NOI8N
         }
 
         String sql = getSqlText(sampleName);
