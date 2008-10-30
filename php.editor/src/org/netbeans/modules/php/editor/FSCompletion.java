@@ -58,8 +58,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -273,10 +271,10 @@ public class FSCompletion implements CompletionProvider {
             // Update the text
             doc.atomicLock();
             try {
-                String prefix = doc.getText(anchor, caretOffset - anchor);
+                String pfx = doc.getText(anchor, caretOffset - anchor);
 
-                doc.remove(caretOffset - prefix.length(), prefix.length());
-                doc.insertString(caretOffset - prefix.length(), value, null);
+                doc.remove(caretOffset - pfx.length(), pfx.length());
+                doc.insertString(caretOffset - pfx.length(), value, null);
 
                 component.setCaretPosition(component.getCaretPosition() - backOffset);
             } catch (BadLocationException e) {
@@ -295,11 +293,11 @@ public class FSCompletion implements CompletionProvider {
 
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
-                String toAdd = null;
+                String strToAdd = null;
 
                 switch (evt.getKeyChar()) {
-                    case '/': if (toAdd == null) toAdd = "/";
-                    doSubstitute((JTextComponent) evt.getSource(), toAdd, toAdd.length() - 1);
+                    case '/': if (strToAdd == null) strToAdd = "/";
+                    doSubstitute((JTextComponent) evt.getSource(), strToAdd, strToAdd.length() - 1);
                     evt.consume();
                     break;
                 }
@@ -342,10 +340,12 @@ public class FSCompletion implements CompletionProvider {
             return prefix + file.getNameExt() + (file.isFolder() ? "/" : "");
         }
 
+        @Override
         public int hashCode() {
             return getText().hashCode();
         }
 
+        @Override
         public boolean equals(Object o) {
             if (!(o instanceof FSCompletionItem)) 
                 return false;
