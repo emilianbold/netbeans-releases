@@ -56,6 +56,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -197,12 +198,18 @@ public final class RakeSupport {
      * @param project project for which tasks are read
      */
     public static void refreshTasks(final Project project) {
+        final FileObject projectDir = project.getProjectDirectory();
+
         try {
-            FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
-            // clean old content
-            if (rakeD != null && rakeD.isData()) {
-                rakeD.delete();
-            }
+            projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
+                    // clean old content
+                    if (rakeD != null && rakeD.isData()) {
+                        rakeD.delete();
+                    }
+                }
+            });
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -328,10 +335,10 @@ public final class RakeSupport {
             ExecutionService.logProcess(pb);
             Process process = pb.start();
 
-            exitCode = process.waitFor();
-
             stdout = readInputStream(process.getInputStream(), false);
             String stderr = readInputStream(process.getErrorStream(), true);
+            
+            exitCode = process.waitFor();
 
             if (exitCode != 0) {
                 LOGGER.severe("rake process failed (workdir: " + pwd + "):\nstdout:\n\n" + stdout + // NOI18N
@@ -372,6 +379,12 @@ public final class RakeSupport {
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+            }
         }
         return sb.toString();
     }
@@ -393,8 +406,11 @@ public final class RakeSupport {
 
                     OutputStream os = rakeTasksFile.getOutputStream();
                     Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-                    writer.write(rakeDOutput);
-                    writer.close();
+                    try {
+                        writer.write(rakeDOutput);
+                    } finally {
+                        writer.close();
+                    }
                 }
             });
         } catch (IOException ioe) {
