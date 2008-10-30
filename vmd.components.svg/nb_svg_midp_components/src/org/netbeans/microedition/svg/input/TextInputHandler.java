@@ -117,6 +117,13 @@ public class TextInputHandler extends InputHandler implements CommandListener {
         getDisplay().setCurrent(lcduiText);
     }
     
+    public void handlePointerRelease( PointerEvent event ) {
+        if( event.getClickCount() > 1 ){
+            showTextBox( event.getComponent() );
+        }
+        super.handlePointerRelease(event);
+    }
+    
     private final Display myDisplay;
     private SVGTextField myCurrentTextField = null;
     private Displayable  myPreviousDisp = null;
