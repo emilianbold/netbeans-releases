@@ -68,6 +68,9 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
 /**
+ * Utility class to create ModelSource (environment) for the
+ * to be created models.
+ *
  * copied from xml.retriever and customized.
  * @author mkleint
  */
@@ -188,6 +191,14 @@ public class Utilities {
         return ms;
     }
 
+    /**
+     * attempts to save the document model to disk.
+     * if model is in transaction, the transaction is ended first,
+     * then dataobject's SaveCookie is called.
+     *
+     * @param model
+     * @throws java.io.IOException if saving fails.
+     */
     public static void saveChanges(AbstractDocumentModel model) throws IOException {
         if (model.isIntransaction()) {
             model.endTransaction();
