@@ -149,7 +149,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
     private ExplorerActionsImpl actions;
 
     /** private lock */
-    private final Object LOCK = new Object();
+    private transient Object LOCK;
 
     /** Construct a new manager. */
     public ExplorerManager() {
@@ -163,6 +163,7 @@ public final class ExplorerManager extends Object implements Serializable, Clone
         selectedNodes = new Node[0];
         listener = new Listener();
         weakListener = NodeOp.weakNodeListener(listener, null);
+        LOCK = new Object();
     }
 
     /** Clones the manager.
