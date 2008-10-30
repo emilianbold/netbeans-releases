@@ -60,8 +60,11 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.modules.db.explorer.dlg.LabeledComboDialog;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 public class AddToIndexAction extends DatabaseAction {
@@ -98,7 +101,8 @@ public class AddToIndexAction extends DatabaseAction {
                         doAddToIndex(drvSpec, tablename, index, ixrm, spec, info);
                     } catch (Exception exc) {
                         LOGGER.log(Level.INFO, exc.getMessage(), exc);
-                        DbUtilities.reportError(bundle().getString("ERR_UnableToAddColumn"), exc.getMessage()); // NOI18N
+                        String message = NbBundle.getMessage(AddToIndexAction.class, "MSG_UnableToAddColumn", exc.getMessage());
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
                     }
                 }
             });
