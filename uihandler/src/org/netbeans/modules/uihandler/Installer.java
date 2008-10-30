@@ -1037,7 +1037,14 @@ public class Installer extends ModuleInstall implements Runnable {
                     String value = attrValue(in, "value");
                     String align = attrValue(in, "align");
                     String alt = attrValue(in, "alt");
-                    boolean enabled = !"true".equals(attrValue(in, "disabled")); // NOI18N
+                    //Incorrect value but we keep it here for backward compatibility
+                    //Correct value of atribute "disabled" is "disabled"
+                    boolean enabled = true;
+                    if ("true".equals(attrValue(in, "disabled"))) { // NOI18N
+                        enabled = false;
+                    } else if ("disabled".equals(attrValue(in, "disabled"))) { // NOI18N
+                        enabled = false;
+                    }
 
                     List<Object> addTo = "left".equals(align) ? left : buttons;
 

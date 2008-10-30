@@ -212,9 +212,12 @@ public class AnalyzeModel implements DiscoveryProvider {
     public boolean isApplicable(ProjectProxy project) {
         if (project.getProject() != null){
             Project makeProject = project.getProject();
-            CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
-            if (langProject != null/* && langProject.isStable(null)*/){
-                return true;
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp.gotDescriptor()) {
+                CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
+                if (langProject != null/* && langProject.isStable(null)*/){
+                    return true;
+                }
             }
         }
         return false;

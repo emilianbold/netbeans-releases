@@ -152,6 +152,12 @@ implements PropertyChangeListener, ChangeListener, FileChangeListener {
                     Arrays.sort(arr, order);
                     List<FolderChildrenPair> positioned = new ArrayList<FolderChildrenPair>(arr.length);
                     for (FileObject fo : FileUtil.getOrder(Arrays.asList(arr), false)) {
+                        if (filter instanceof DataFilter.FileBased) {
+                            DataFilter.FileBased f =(DataFilter.FileBased)filter;
+                            if (!f.acceptFileObject(fo)) {
+                                continue;
+                            }
+                        }
                         positioned.add(new FolderChildrenPair(fo));
                     }
 

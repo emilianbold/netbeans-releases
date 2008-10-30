@@ -365,7 +365,7 @@ public class Occurrences {
         assert webModule != null;
         assert oldName != null;
         
-        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase().getPath() + ", " + oldName + ", " + newName + ")"); //NOI18N
+        LOGGER.fine("getAllOccurences("+ webModule.getDocumentBase() + ", " + oldName + ", " + newName + ")"); //NOI18N
         if (webModule != null){
             // find all jsf configuration files in the web module
             FileObject[] configs = ConfigurationUtils.getFacesConfigFiles(webModule);

@@ -68,6 +68,7 @@ import org.openide.util.Utilities;
 public class PkgConfigImpl implements PkgConfig {
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
     private Map<String, Pair> seachBase;
+    private String drivePrefix;
 
     public PkgConfigImpl(CompilerSet set) {
         initPackages(set);
@@ -75,9 +76,23 @@ public class PkgConfigImpl implements PkgConfig {
 
     private void initPackages(CompilerSet set) {
         if (Utilities.isWindows()){
-            CompilerSet aset = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
-            String base = aset.getDirectory();
-            initPackages("c:/cygwin/lib/pkgconfig/"); // NOI18N
+            String baseDirectory = null;
+            if (set == null) {
+                set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
+            }
+            if (set != null){
+                baseDirectory = set.getDirectory();
+                //"C:\cygwin\bin"
+                if (baseDirectory != null && baseDirectory.endsWith("bin")){ // NOI18N
+                    drivePrefix = baseDirectory.substring(0, baseDirectory.length()-4);
+                    baseDirectory = baseDirectory.substring(0, baseDirectory.length()-3)+"lib/pkgconfig/"; // NOI18N
+                }
+            }
+            if (baseDirectory == null) {
+                drivePrefix = "c:/cygwin"; // NOI18N
+                baseDirectory = "c:/cygwin/lib/pkgconfig/"; // NOI18N
+            }
+            initPackages(baseDirectory); // NOI18N
         } else {
             //initPackages("/net/elif/export1/sside/as204739/pkgconfig/"); // NOI18N
             initPackages("/usr/lib/pkgconfig/"); // NOI18N
@@ -208,14 +223,19 @@ public class PkgConfigImpl implements PkgConfig {
         return res;
     }
     private Map<String, Pair> _getLibraryItems(){
-
         Map<String, Set<PackageConfiguration>> map = new HashMap<String, Set<PackageConfiguration>>();
         for(String pkg : configurations.keySet()){
             PackageConfigurationImpl pc = configurations.get(pkg);
             if (pc != null){
                 for (String p : pc.paths){
-                    if (p.equals("/usr/include") || p.equals("/usr/sfw/include")){ // NOI18N
-                        continue;
+                    if (drivePrefix != null) {
+                        if (p.substring(drivePrefix.length()).equals("/usr/include") || p.substring(drivePrefix.length()).equals("/usr/sfw/include")){ // NOI18N
+                            continue;
+                        }
+                    } else {
+                        if (p.equals("/usr/include") || p.equals("/usr/sfw/include")){ // NOI18N
+                            continue;
+                        }
                     }
                     Set<PackageConfiguration> set = map.get(p);
                     if (set == null){
@@ -332,7 +352,11 @@ public class PkgConfigImpl implements PkgConfig {
                     while(st.hasMoreTokens()) {
                         String v = st.nextToken();
                         if (v.startsWith("-I")){ // NOI18N
-                            pc.paths.add(v.substring(2));
+                            v = v.substring(2);
+                            if (drivePrefix != null) {
+                                v = drivePrefix+v;
+                            }
+                            pc.paths.add(v);
                         } else if (v.startsWith("-D")){ // NOI18N
                             pc.macros.add(v.substring(2));
                         }

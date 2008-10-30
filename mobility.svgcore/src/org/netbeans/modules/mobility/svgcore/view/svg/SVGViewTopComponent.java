@@ -194,6 +194,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             setPriority(Thread.MIN_PRIORITY);
         }
 
+        @Override
         public void run() {
             PerseusController pctrl;
 
@@ -218,6 +219,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     }
     
     private final transient AbstractSVGToggleAction allowEditAction = new AbstractSVGToggleAction("svg_allow_edit") { //NOI18N
+        @Override
         public void actionPerformed(ActionEvent e) {
             SceneManager smgr = getSceneManager();
 
@@ -241,6 +243,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     };
     
     private final transient AbstractSVGToggleAction startAnimationAction = new AbstractSVGToggleAction("svg_anim_start") { //NOI18N
+        @Override
         public void actionPerformed(ActionEvent e) {
             PerseusController pc = getPerseusController();
             if (pc != null) {
@@ -269,6 +272,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     };
     
     private final transient AbstractSVGToggleAction pauseAnimationAction = new AbstractSVGToggleAction("svg_anim_pause", false) { //NOI18N
+        @Override
         public void actionPerformed(ActionEvent e) {
             PerseusController pc = getPerseusController();
 
@@ -295,6 +299,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
                     return;
                 } else {
                     Thread th = new Thread("InsertGraphicsTask") { //NOI18N
+                        @Override
                         public void run() {
                             try {
                                 getSceneManager().setBusyState(SceneManager.OPERATION_TOKEN, true);
@@ -465,6 +470,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         return basePanel;
     }
 
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ONLY_OPENED;
     }
@@ -476,6 +482,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             assert obj[0] != null;
             Thread th = new Thread() {
 
+                @Override
                 public void run() {
                     try {
                         String elId = obj[0].getElementId();
@@ -497,6 +504,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
 
+    @Override
     public void componentOpened() {
         getModel().setChanged(true);
         SwingUtilities.invokeLater(new Runnable() {
@@ -513,6 +521,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         getSceneManager().addSelectionListener(this);
     }
 
+    @Override
     public void componentClosed() {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -523,15 +532,18 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         removeSvgPanel();
     }
 
+    @Override
     public boolean isFocusable() {
         return true;
     }
     
+    @Override
     public void componentActivated() {
         super.componentActivated();
         updateDataTransferActions();
     }
 
+    @Override
     public void componentDeactivated() {
         super.componentDeactivated();
     }
@@ -551,6 +563,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
         }
     }
 
+    @Override
     public void componentHidden() {
         PerseusController perseus = getPerseusController();
 
@@ -585,6 +598,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
     return new SVGViewTopComponent(m_svgDataObject);
     }
      */
+    @Override
     protected String preferredID() {
         return PREFERRED_ID;
     }
@@ -1217,12 +1231,14 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
             return new Class[]{SVGObject.class};
         }
 
+        @Override
         public Action[] getActions(boolean context) {
             return new SystemAction[]{SystemAction.get(SaveElementAsImage.class)};
         }
     }
 
     private class ButtonMouseListener extends MouseUtils.PopupMouseAdapter {
+        @Override
         public void mouseEntered(MouseEvent evt) {
             if (evt.getSource() instanceof JButton) {
                 JButton button = (JButton) evt.getSource();
@@ -1235,6 +1251,7 @@ public final class SVGViewTopComponent extends TopComponent implements SceneMana
 //            b.getModel().setRollover(true);
         }
 
+        @Override
         public void mouseExited(MouseEvent evt) {
             if (evt.getSource() instanceof JButton) {
                 JButton button = (JButton) evt.getSource();

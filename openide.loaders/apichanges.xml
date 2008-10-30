@@ -106,6 +106,32 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+     <change id="DataFilter.FileBased">
+        <api name="loaders"/>
+        <summary>Faster Filtering based on FileObjects</summary>
+        <version major="7" minor="4"/>
+        <date day="30" month="10" year="2008"/>
+        <author login="jtulach"/>
+        <compatibility binary="compatible" semantic="compatible" addition="yes"/>
+        <description>
+        <p>
+            <a href="@TOP@/org/openide/loaders/DataFilter.html">DataFilter</a>
+            interface used to support filtering based on
+            <a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a>s.
+            With the introduction of more
+            <a href="@org-openide-nodes@/apichanges.html#Children.Keys.lazy">effective nodes</a>,
+            this is slowing down the visualization of folders significantly.
+            That is why we introduce new 
+            <a href="@TOP@/org/openide/loaders/DataFilter.FileBased.html">pre-filter</a>
+            which can operate
+            on <a href="@org-openide-filesystems@/org/openide/filesystems/FileObject.html">FileObject</a>s,
+            whithout the need to instantiate
+            <a href="@TOP@/org/openide/loaders/DataObject.html">DataObject</a>s.
+        </p>
+        </description>
+        <class package="org.openide.loaders" name="DataFilter"/>
+        <issue number="150747"/>
+    </change>
      <change id="FolderLookup.dispatch">
         <api name="loaders"/>
         <summary>Changes in <code>FolderLookup</code> are delivered in dedicated thread</summary>
