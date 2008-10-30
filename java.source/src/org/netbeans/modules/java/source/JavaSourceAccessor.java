@@ -114,7 +114,7 @@ public abstract class JavaSourceAccessor {
         final int tp = translatePriority(priority);
         final ParserResultTask wrapper = new ParserResultTask() {            
             @Override
-            public void run(Result _null, Snapshot _null2) {
+            public void run(Result _null) {
                 try {
                     task.run();
                 } catch (Exception e) {
@@ -246,6 +246,9 @@ public abstract class JavaSourceAccessor {
     public abstract void invalidateCachedClasspathInfo (final FileObject file);
     
     
+    public abstract CompilationInfoImpl getCompilationInfoImpl (final CompilationInfo info);
+    
+    
     /**
      * Invalidates given {@link CompilationInfo}
      * @param info
@@ -287,7 +290,7 @@ public abstract class JavaSourceAccessor {
         }
 
         @Override
-        public void run(Result result, Snapshot snapshot) {
+        public void run(Result result) {
             final CompilationInfo info = CompilationInfo.get(result);
             assert info != null;
             try {

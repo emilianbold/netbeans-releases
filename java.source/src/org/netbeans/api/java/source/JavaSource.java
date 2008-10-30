@@ -684,7 +684,7 @@ public final class JavaSource {
             final JavacParser parser = factory.createPrivateParser(snapshot);
             final UserTask dummy = new UserTask() {
                 @Override
-                public void run(Result result, Snapshot snapshot) throws Exception {                    
+                public void run(Result result) throws Exception {                    
                 }
             };
             parser.parse(snapshot,dummy, null);            
@@ -731,6 +731,12 @@ public final class JavaSource {
                     js.cachedCpInfo = null;
                 }
             }
+        }
+
+        @Override
+        public CompilationInfoImpl getCompilationInfoImpl(CompilationInfo info) {
+            assert info != null;
+            return info.impl;
         }
     }
     
