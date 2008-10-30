@@ -47,20 +47,20 @@ import java.util.List;
 import java.util.ListIterator;
 import javax.swing.text.BadLocationException;
 
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.IncrementalParser;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.ParseEvent;
-import org.netbeans.modules.gsf.api.ParseListener;
-import org.netbeans.modules.gsf.api.Parser;
-import org.netbeans.modules.gsf.api.ParserFile;
-import org.netbeans.modules.gsf.api.ParserResult;
-import org.netbeans.modules.gsf.api.PositionManager;
-import org.netbeans.modules.gsf.api.Severity;
-import org.netbeans.modules.gsf.api.SourceFileReader;
-import org.netbeans.modules.gsf.spi.DefaultError;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.IncrementalParser;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.ParseEvent;
+import org.netbeans.modules.csl.api.ParseListener;
+import org.netbeans.modules.csl.api.Parser;
+import org.netbeans.modules.csl.api.ParserFile;
+import org.netbeans.modules.csl.api.ParserResult;
+import org.netbeans.modules.csl.api.PositionManager;
+import org.netbeans.modules.csl.api.Severity;
+import org.netbeans.modules.csl.api.SourceFileReader;
+import org.netbeans.modules.csl.spi.DefaultError;
 import org.openide.util.Exceptions;
 import org.mozilla.nb.javascript.CompilerEnvirons;
 import org.mozilla.nb.javascript.ScriptOrFnNode;
@@ -69,9 +69,9 @@ import org.mozilla.nb.javascript.EvaluatorException;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.EditHistory;
-import org.netbeans.modules.gsf.api.TranslatedSource;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.EditHistory;
+import org.netbeans.modules.csl.api.TranslatedSource;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 
 
 /**

@@ -45,10 +45,10 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -60,7 +60,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class JsOccurrenceFinder implements OccurrencesFinder {
+public class JsOccurrenceFinder extends OccurrencesFinder {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;

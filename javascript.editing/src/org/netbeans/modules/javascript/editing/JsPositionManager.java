@@ -44,10 +44,10 @@ package org.netbeans.modules.javascript.editing;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.PositionManager;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.PositionManager;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 

@@ -46,10 +46,10 @@ import java.util.Set;
 import java.util.Map;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 

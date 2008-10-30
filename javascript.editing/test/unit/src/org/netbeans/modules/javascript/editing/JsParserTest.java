@@ -47,9 +47,7 @@ import java.util.List;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.gsf.GsfTestCompilationInfo;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.api.ParseEvent;
 import org.netbeans.modules.gsf.api.ParseListener;
 import org.netbeans.modules.gsf.api.Parser.Job;
@@ -59,6 +57,8 @@ import org.netbeans.modules.gsf.api.SourceFileReader;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.gsf.spi.DefaultParserFile;
 import org.openide.filesystems.FileObject;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.OffsetRange;
 
 /**
  *
