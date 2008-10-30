@@ -302,7 +302,7 @@ public final class APTBuilderImpl {
         assert (!APTUtils.isEOF(token));
         assert (APTUtils.isConditionsBlockToken(token)) : "Not conditional token found:" + token;
         int ttype = token.getType();
-        APTBaseNode newNode;
+        APTBaseNode newNode = null;
         switch (ttype) {
             case APTTokenTypes.IF:
                 newNode = new APTIfNode(token);
