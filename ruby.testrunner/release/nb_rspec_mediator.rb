@@ -156,7 +156,7 @@ class NbSpecParser < Spec::Runner::SpecParser
   def spec_name_for(file, line_number)
     best_match.clear
     file = File.expand_path(file)
-    rspec_options.example_groups.each do |example_group|
+    safe_get_options.example_groups.each do |example_group|
       consider_example_groups_for_best_match example_group, file, line_number
       example_group.examples.each do |example|
         consider_example_for_best_match example, example_group, file, line_number
@@ -175,4 +175,9 @@ class NbSpecParser < Spec::Runner::SpecParser
     end
   end
   
+  def safe_get_options
+    # there's no 'rspec_options' method in rspec 1.1.11
+    respond_to?(:rspec_options, true) ? rspec_options : Spec::Runner.options
+  end
+
 end
