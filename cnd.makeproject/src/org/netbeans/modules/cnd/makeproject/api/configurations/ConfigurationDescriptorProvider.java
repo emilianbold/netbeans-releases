@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
@@ -82,7 +83,7 @@ public class ConfigurationDescriptorProvider {
     
     private final Object readLock = new Object();
     public ConfigurationDescriptor getConfigurationDescriptor() {
-        return getConfigurationDescriptor(false);
+        return getConfigurationDescriptor(true);
     }
     public ConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
         if (projectDescriptor == null || needReload) {
@@ -114,14 +115,14 @@ public class ConfigurationDescriptorProvider {
                         }
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
 
-                        //if (SwingUtilities.isEventDispatchThread()) {
-                        //    new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
-                        //    // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-                        //    // CHANGE YOUR LOGIC INSTEAD
-                        //
-                        //    // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                        //    // return null;
-                        //}
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
+                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+                            // CHANGE YOUR LOGIC INSTEAD
+                        
+                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+                            // return null;
+                        }
                         try {
                             projectDescriptor = reader.read(relativeOffset);
                         } catch (java.io.IOException x) {
