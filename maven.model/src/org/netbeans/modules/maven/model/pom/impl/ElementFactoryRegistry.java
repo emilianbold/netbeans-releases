@@ -107,7 +107,7 @@ public class ElementFactoryRegistry {
         resetQNameCache();
     }
     
-    public ElementFactory get(QName type){
+    public ElementFactory get(QName type) {
         return factories.get(type);
     }
     

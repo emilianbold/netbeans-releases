@@ -55,7 +55,7 @@ public final class POMQName {
         if (ns) {
             return new QName(NS_URI, localName, NS_PREFIX);
         } else {
-            return new QName(localName);
+            return new QName("", localName);
         }
     }
 
