@@ -359,20 +359,21 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
 
     private void insertSQL() {
-        int rowSelected = sqlHistoryTable.getSelectedRow();
         try {
             // Make sure to insert the entire SQL, not just what appears in the Table
             List<SQLHistory> sqlHistoryList = view.getCurrentSQLHistoryList();
             int i = 0;
             String sqlToInsert = ""; // NOI18N
+            InsertSQLUtility insertUtility = new InsertSQLUtility();
             for (SQLHistory sqlHistory : sqlHistoryList) {
-                if (rowSelected == i) {
+                if (sqlHistoryTable.isRowSelected(i)) {
                     sqlToInsert = sqlHistory.getSql().trim();
+                    insertUtility.insert(sqlToInsert, editorPane);
                 }
                 // increment for the next row
                 i++;
             }
-            new InsertSQLUtility().insert(sqlToInsert, editorPane);
+            
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
         }
