@@ -44,6 +44,16 @@ made subject to such option by the copyright holder.
 
     <import file="../nbbuild/templates/projectized.xml"/>
 
+    <target name="-download-javacapi">
+        <taskdef name="downloadbinaries" classname="org.netbeans.nbbuild.extlibs.DownloadBinaries" classpath="${nb_all}/nbbuild/nbantext.jar"/>
+        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
+            <manifest dir="..">
+                <include name="libs.javacapi/external/binaries-list"/>
+            </manifest>
+        </downloadbinaries>
+    </target>
+    <target name="-release.files" depends="-download-javacapi,projectized.-release.files"/>
+
     <target name="nbantext" depends="build-init">
         <jar jarfile="${cluster}/tasks.jar" compress="${build.package.compress}" index="${build.package.index}">
             <manifest>
@@ -55,24 +65,6 @@ made subject to such option by the copyright holder.
         </jar>
     </target>
 
-    <target name="netbeans-extra" depends="nbantext,jar-jnlp-launcher">
-        <copy file="${nb_all}/nbbuild/templates/common.xml" tofile="${cluster}/common.xml"/>
-        <copy file="${nb_all}/nbbuild/jdk.xml" tofile="${cluster}/jdk.xml"/>
-        <downloadbinaries cache="${binaries.cache}" server="${binaries.server}">
-            <manifest dir="..">
-                <include name="libs.javacapi/external/binaries-list"/>
-                <include name="libs.javacimpl/external/binaries-list"/>
-            </manifest>
-        </downloadbinaries>
-        <copy todir="${cluster}/antlib">
-            <fileset dir="..">
-                <include name="apisupport.harness/external/jsearch*.jar"/>
-                <include name="libs.javacapi/external/javac*.jar"/>
-                <include name="libs.javacimpl/external/javac*.jar"/>
-            </fileset>
-        </copy>
-    </target>
- 
     <target name="compile-jnlp-launcher" depends="init,compile">
         <mkdir dir="build/jnlp-launcher-classes"/>
         <javac srcdir="jnlp-src" destdir="build/jnlp-launcher-classes" deprecation="${build.compiler.deprecation}" debug="${build.compiler.debug}" source="1.5" includeantruntime="false">
@@ -92,27 +84,6 @@ made subject to such option by the copyright holder.
         </jar>
     </target>
 
-    <target name="nbm" depends="init,netbeans,-nbm-prompt-for-storepass,-create-dest-dir-nbm" description="Build NBM archive.">
-        <mkdir dir="build"/>
-        <property name="nbm.target.cluster" value=""/> <!-- fallback -->        
-        <makenbm file="build/${nbm}"
-                 productdir="${cluster}"
-                 module="${module.jar}"
-                 homepage="${nbm.homepage}"
-                 distribution="${nbm.distribution}"
-                 needsrestart="${nbm.needs.restart}"
-                 global="${nbm.is.global}"
-                 releasedate="${nbm.release.date}"
-		 moduleauthor="${nbm.module.author}"
-                 targetcluster="${nbm.target.cluster}"> 
-            <license>
-                <text>For the main build harness:</text>
-                <file location="${license.file}"/>
-                <text>For the bundled JavaHelp search indexer library:</text>
-                <file location="external/jsearch-2.0_05-license.txt"/>
-            </license>
-            <signature keystore="${keystore}" storepass="${storepass}" alias="${nbm_alias}"/>
-        </makenbm>
-    </target>
-
+    <target name="netbeans-extra" depends="nbantext,jar-jnlp-launcher"/>
+ 
 </project>
