@@ -50,6 +50,7 @@ import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,7 +74,6 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -136,6 +136,8 @@ import org.openide.util.io.NullOutputStream;
 import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -996,6 +998,17 @@ public class Installer extends ModuleInstall implements Runnable {
         factory.setValidating(false);
         factory.setIgnoringComments(true);
         DocumentBuilder builder = factory.newDocumentBuilder();
+        builder.setEntityResolver(new EntityResolver() {
+            //Avoid connecting out to get DTD
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                if (systemId.equals("http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd")) {
+                    InputStream is = new ByteArrayInputStream(new byte[0]);
+                    return new InputSource(is);
+                 } else {
+                    return null;
+                 }
+            }
+        });
 
         PushbackInputStream isWithProlog = new PushbackInputStream(is, 255);
         byte[] xmlHeader = new byte[5];
