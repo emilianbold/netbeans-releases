@@ -173,7 +173,6 @@ public final class APTBuilderImpl {
                     if (activeNode.getType() == APT.Type.ENDIF) {
                         assert (!nodeStack.empty()) : "endif found without corresponding if: " + nextToken;
                         root = nodeStack.pop();
-                        activeNode = null;
                     } else if (root.getType() == APT.Type.CONDITION_CONTAINER) {
                         nodeStack.push(root);
                         root = activeNode;
@@ -191,7 +190,7 @@ public final class APTBuilderImpl {
         assert(stream != null);
         APTBaseNode lastChild = null;
         while (!APTUtils.isEOF(nextToken)) {
-            APTBaseNode newNode = null;
+            APTBaseNode newNode;
             if (breakOnEndBlockToken && APTUtils.isEndCondition(nextToken)) {
                 return nextToken;
             } else {
@@ -220,8 +219,7 @@ public final class APTBuilderImpl {
         assert(stream != null);
         APTBaseNode lastChild = null;
         while (!APTUtils.isEOF(nextToken)) {
-            APTBaseNode newNode = null;
-            newNode = createConditionChildNode(nextToken);
+            APTBaseNode newNode = createConditionChildNode(nextToken);
             // add new node to children on the root
             if (lastChild == null) {
                 root.setFirstChild(newNode);
@@ -255,7 +253,7 @@ public final class APTBuilderImpl {
     private APTBaseNode createNode(Token token) {
         assert (!APTUtils.isEOF(token));
         int ttype = token.getType();
-        APTBaseNode newNode = null;
+        APTBaseNode newNode;
         switch (ttype) {
             case APTTokenTypes.IF:
             case APTTokenTypes.IFDEF:
@@ -304,7 +302,7 @@ public final class APTBuilderImpl {
         assert (!APTUtils.isEOF(token));
         assert (APTUtils.isConditionsBlockToken(token)) : "Not conditional token found:" + token;
         int ttype = token.getType();
-        APTBaseNode newNode = null;
+        APTBaseNode newNode;
         switch (ttype) {
             case APTTokenTypes.IF:
                 newNode = new APTIfNode(token);
