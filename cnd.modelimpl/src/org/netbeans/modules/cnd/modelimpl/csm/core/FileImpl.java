@@ -335,10 +335,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return getProjectImpl(true)==null ? Collections.<APTPreprocHandler>emptyList() : getProjectImpl(true).getPreprocHandlers(this.getFile());
     }
     
-    private Collection<APTPreprocHandler.State> getPreprocStates() {
-        ProjectBase project = getProjectImpl(true);
-        return (project == null) ? Collections.<APTPreprocHandler.State>emptyList() : project.getPreprocStates(this);
-    }
+//    private Collection<APTPreprocHandler.State> getPreprocStates() {
+//        ProjectBase project = getProjectImpl(true);
+//        return (project == null) ? Collections.<APTPreprocHandler.State>emptyList() : project.getPreprocStates(this);
+//    }
     
     public void setBuffer(FileBuffer fileBuffer) {
         synchronized (changeStateLock) {

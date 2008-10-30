@@ -413,7 +413,6 @@ public class UIDObjectFactory extends AbstractObjectFactory {
             CsmUID shared = UIDManager.instance().getSharedUID((CsmUID)anUID);
             assert shared != null;
             assert shared instanceof SelfPersistent;
-            anUID = (SelfPersistent)anUID;
         }
         return anUID;
     }

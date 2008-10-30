@@ -577,7 +577,7 @@ public class WSDeploymentManager implements DeploymentManager {
             }
 
         }
-        if (realFile.exists() && realFile.getPath().endsWith(".ear")) {
+        if (realFile.exists() && realFile.getPath().endsWith(".ear")) { // NOI18N
             try {
                 JarFileSystem jfs = new JarFileSystem();
                 jfs.setJarFile(realFile);
@@ -1042,37 +1042,51 @@ public class WSDeploymentManager implements DeploymentManager {
 
 
             if (webUrl != null && result != null && result.length == 1
-                    && result[0].getChildTargetModuleID() == null
                     && result[0].getModuleID().contains("type=Application")) { // NOI18N
 
-                try {
-                    loader.updateLoader();
-                    WSTargetModuleID child = new WSTargetModuleID((TargetModuleID) loader.loadClass(
-                        "com.ibm.ws.management.application.j2ee.deploy.spi.TargetModuleIDImpl").newInstance()); // NOI18N
+                if (result[0].getChildTargetModuleID() == null) {
+                    try {
+                        loader.updateLoader();
+                        WSTargetModuleID child = new WSTargetModuleID((TargetModuleID) loader.loadClass(
+                            "com.ibm.ws.management.application.j2ee.deploy.spi.TargetModuleIDImpl").newInstance()); // NOI18N
 
-                    child.setTarget(result[0].getTarget());
-                    child.setParentTargetModuleID(result[0]);
+                        child.setTarget(result[0].getTarget());
+                        child.setParentTargetModuleID(result[0]);
 
-                    String id = "WebSphere:name=" + webUrl.substring(1) + ",type=WebModule"; // NOI18N
-                    child.setObjectName(new ObjectName(id + ",*")); // NOI18N
-                    child.setModuleID(id);
+                        String id = "WebSphere:name=" + webUrl.substring(1) + ",type=WebModule"; // NOI18N
+                        child.setObjectName(new ObjectName(id + ",*")); // NOI18N
+                        child.setModuleID(id);
 
-                    child.setModuleType("WebModule"); // NOI18N
-                    child.setStartable(true);
-                    child.setWebURL(fullUrl);
+                        child.setModuleType("WebModule"); // NOI18N
+                        child.setStartable(true);
+                        child.setWebURL(fullUrl);
 
-                    new WSTargetModuleID(result[0]).setChildTargetModuleID(new TargetModuleID[] {child.getDelegate()});
+                        new WSTargetModuleID(result[0]).setChildTargetModuleID(
+                                new TargetModuleID[] {child.getDelegate()});
 
-                } catch (ClassNotFoundException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } catch (InstantiationException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } catch (IllegalAccessException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } catch (MalformedObjectNameException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
-                } finally {
-                    loader.restoreLoader();
+                    } catch (ClassNotFoundException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (InstantiationException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (IllegalAccessException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } catch (MalformedObjectNameException ex) {
+                        LOGGER.log(Level.INFO, null, ex);
+                    } finally {
+                        loader.restoreLoader();
+                    }
+                } else {
+                    try {
+                        loader.updateLoader();
+                        for (TargetModuleID childModuleId : result[0].getChildTargetModuleID()) {
+                            if (childModuleId.getModuleID().contains("type=WebModule")) { // NOI18N
+                                // lets set all web modules
+                                new WSTargetModuleID(childModuleId).setWebURL(fullUrl);
+                            }
+                        }
+                    } finally {
+                        loader.restoreLoader();
+                    }
                 }
             }
 

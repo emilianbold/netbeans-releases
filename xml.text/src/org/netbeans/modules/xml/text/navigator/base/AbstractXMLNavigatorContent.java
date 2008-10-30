@@ -177,7 +177,7 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
 
         @java.lang.Override
         public java.lang.String getDisplayName() {
-            return "Please Wait...";
+            return NbBundle.getMessage(AbstractXMLNavigatorContent.class, "LBL_Wait");
         }
         
     }

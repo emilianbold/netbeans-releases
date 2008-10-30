@@ -63,8 +63,8 @@ public enum ATE {
     private final int value;
     
     static {
-        for (ATE elem : ATE.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (ATE elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
@@ -73,7 +73,7 @@ public enum ATE {
     }
     
     public static ATE get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     

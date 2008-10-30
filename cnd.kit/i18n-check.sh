@@ -1,5 +1,5 @@
 #!/bin/sh
-perl ../nbbuild/misc/i18ncheck.pl ../cnd.* ../asm* | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/"
+perl ../nbbuild/misc/i18ncheck.pl ../cnd.* ../asm* ../lib.terminalemulator/src | grep -v "/test/" | grep -v "cnd.antlr/" | grep -v "generated/"
 rc=$?
 echo ""
 if [ ${rc} -eq 0 ]; then

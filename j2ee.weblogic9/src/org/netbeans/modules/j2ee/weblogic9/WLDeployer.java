@@ -46,11 +46,14 @@ import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
@@ -75,6 +78,9 @@ import org.openide.util.NbBundle;
  * @author Ivan Sidorkin
  */
 public class WLDeployer implements ProgressObject, Runnable {
+
+    private static final Logger LOGGER = Logger.getLogger(WLDeployer.class.getName());
+
     private static final String AUTO_DEPLOY_DIR = "/autodeploy"; //NOI18N
     /** timeout for waiting for URL connection */
     private static final int TIMEOUT = 60000;
@@ -132,12 +138,43 @@ public class WLDeployer implements ProgressObject, Runnable {
                         module_id.addChild(mod_id);
                     }
                 } else {
-                    System.out.println("Cannot file META-INF/application.xml in " + file);
+                    // Java EE 5
+                    for (FileObject child : jfs.getRoot().getChildren()) {
+                        if (child.hasExt("war") || child.hasExt("jar")) { // NOI18N
+                            WLTargetModuleID mod_id = new WLTargetModuleID(target[0]);
+
+                            if (child.hasExt("war")) { // NOI18N
+                                String contextRoot = "/" + child.getName();
+                                ZipInputStream zis = new ZipInputStream(child.getInputStream());
+                                try {
+
+                                    ZipEntry entry = null;
+                                    while ((entry = zis.getNextEntry()) != null) {
+                                        if ("WEB-INF/weblogic.xml".equals(entry.getName())) { // NOI18N
+                                            String[] ddContextRoots =
+                                                    WeblogicWebApp.createGraph(new ZipEntryInputStream(zis)).getContextRoot();
+                                            if (ddContextRoots != null && ddContextRoots.length > 0) {
+                                                contextRoot = ddContextRoots[0];
+                                            }
+                                            break;
+                                        }
+                                    }
+                                } catch (IOException ex) {
+                                    LOGGER.log(Level.INFO, "Error reading context-root", ex); // NOI18N
+                                } finally {
+                                    zis.close();
+                                }
+
+                                mod_id.setContextURL(server_url + contextRoot);
+                            }
+                            module_id.addChild(mod_id);
+                        }
+                    }
                 }
             }
 
-        } catch(Exception e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+        } catch (Exception e) {
+            LOGGER.log(Level.INFO, null, e);
         }
 
         this.file = file;
@@ -202,6 +239,41 @@ public class WLDeployer implements ProgressObject, Runnable {
         fireHandleProgressEvent(null, new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.COMPLETED, "Applicaton Deployed"));
     }
 
+    private static class ZipEntryInputStream extends InputStream {
+        private final ZipInputStream zis;
+
+        public ZipEntryInputStream(ZipInputStream zis) {
+            this.zis = zis;
+        }
+
+        @Override
+        public int available() throws IOException {
+            return zis.available();
+        }
+
+        @Override
+        public void close() throws IOException {
+            zis.closeEntry();
+        }
+
+        @Override
+        public int read() throws IOException {
+            if (available() > 0) {
+                return zis.read();
+            }
+            return -1;
+        }
+
+        @Override
+        public int read(byte[] b, int off, int len) throws IOException {
+            return zis.read(b, off, len);
+        }
+
+        @Override
+        public long skip(long n) throws IOException {
+            return zis.skip(n);
+        }
+    }
 
     // ----------  Implementation of ProgressObject interface
     private List<ProgressListener> listeners = new CopyOnWriteArrayList<ProgressListener>();

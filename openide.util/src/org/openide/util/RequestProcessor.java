@@ -565,6 +565,7 @@ public final class RequestProcessor implements Executor{
             this.priority = priority;
         }
 
+        @Override
         public void run() {
             try {
                 notifyRunning();
@@ -704,8 +705,10 @@ public final class RequestProcessor implements Executor{
         * request processor thread and in such case runs the task immediatelly
         * to prevent deadlocks.
         */
+        @Override
         public void waitFinished() {
             if (isRequestProcessorThread()) { //System.err.println(
+                boolean runAtAll;
                 boolean toRun;
                 
                 Logger em = logger();
@@ -719,7 +722,8 @@ public final class RequestProcessor implements Executor{
                 synchronized (processorLock) {
                     // correct line:    toRun = (item == null) ? !isFinished (): (item.clear() && !isFinished ());
                     // the same:        toRun = !isFinished () && (item == null ? true : item.clear ());
-                    toRun = !isFinished() && ((item == null) || item.clear(null));
+                    runAtAll = !isFinished();
+                    toRun = runAtAll && ((item == null) || item.clear(null));
                     if (loggable) {
                         em.fine("    ## finished: " + isFinished()); // NOI18N
                         em.fine("    ## item: " + item); // NOI18N
@@ -737,7 +741,7 @@ public final class RequestProcessor implements Executor{
                         em.fine("    ## not running it synchronously"); // NOI18N
                     }
 
-                    if (lastThread != Thread.currentThread()) {
+                    if (runAtAll && lastThread != Thread.currentThread()) {
                         if (loggable) {
                             em.fine("    ## waiting for it to be finished: " + lastThread + " now: " + Thread.currentThread()); // NOI18N
                         }
@@ -770,6 +774,7 @@ public final class RequestProcessor implements Executor{
         *    timeout period, false otherwise
         *  @since 5.0
         */
+        @Override
         public boolean waitFinished(long timeout) throws InterruptedException {
             if (isRequestProcessorThread()) {
                 boolean toRun;
@@ -795,6 +800,7 @@ public final class RequestProcessor implements Executor{
             }
         }
 
+        @Override
         public String toString() {
             return "RequestProcessor.Task [" + name + ", " + priority + "] for " + super.toString(); // NOI18N
         }
@@ -839,6 +845,7 @@ public final class RequestProcessor implements Executor{
             return getTask().getPriority();
         }
 
+        @Override
         public Throwable fillInStackTrace() {
             return SLOW ? super.fillInStackTrace() : this;
         }
@@ -940,6 +947,7 @@ public final class RequestProcessor implements Executor{
         /**
          * The method that will repeatedly wait for a request and perform it.
          */
+        @Override
         public void run() {
             for (;;) {
                 RequestProcessor current = null;
