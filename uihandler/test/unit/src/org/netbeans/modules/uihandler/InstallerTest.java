@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import java.net.URL;
@@ -473,7 +474,7 @@ public class InstallerTest extends NbTestCase {
         }
     }
     
-    private static Object[] parseButtons(InputStream is, Object def) throws IOException, ParserConfigurationException, SAXException {
+    private static Object[] parseButtons(InputStream is, Object def) throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
         DialogDescriptor dd = new DialogDescriptor(null, null);
         Installer.parseButtons(is, def, dd);
         return dd.getOptions();

@@ -108,11 +108,6 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
         } catch (Exception ex) {
         }
         remove = new ChoiceView();
-        remove.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeActionPerformed(evt);
-            }
-        });
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SubmitPanel.class, "SubmitPanel.jLabel1.text_1")); // NOI18N
 
@@ -130,7 +125,7 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(jLabel1)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(remove, 0, 534, Short.MAX_VALUE)))
+                        .add(remove, 0, 514, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -145,10 +140,6 @@ implements ExplorerManager.Provider, PropertyChangeListener, CaretListener, Comp
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void removeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_removeActionPerformed
 
     public ExplorerManager getExplorerManager() {
         return manager;

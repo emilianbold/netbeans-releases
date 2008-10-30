@@ -42,6 +42,7 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,8 +62,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PushbackInputStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -73,7 +74,6 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -104,8 +104,6 @@ import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
@@ -134,8 +132,6 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
 import org.openide.windows.WindowManager;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -978,122 +974,33 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
 
-    private static boolean isChild(org.w3c.dom.Node child, org.w3c.dom.Node parent) {
-        while (child != null) {
-            if (child == parent) {
-                return true;
-            }
-            child = child.getParentNode();
-        }
-        return false;
-    }
-
-    private static String attrValue(org.w3c.dom.Node in, String attrName) {
-        org.w3c.dom.Node n = in.getAttributes().getNamedItem(attrName);
-        return n == null ? null : n.getNodeValue();
-    }
-
     /** Tries to parse a list of buttons provided by given page.
      * @param u the url to read the page from
      * @param defaultButton the button to add always to the list
      */
-    static void parseButtons(InputStream is, Object defaultButton, DialogDescriptor dd)
-            throws IOException, ParserConfigurationException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setIgnoringComments(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        PushbackInputStream isWithProlog = new PushbackInputStream(is, 255);
-        byte[] xmlHeader = new byte[5];
-        int len = isWithProlog.read(xmlHeader);
-        isWithProlog.unread(xmlHeader, 0, len);
-
-        if (len < 5 || xmlHeader[0] != '<' ||
-            xmlHeader[1] != '?' ||
-            xmlHeader[2] != 'x' ||
-            xmlHeader[3] != 'm' ||
-            xmlHeader[4] != 'l'
-        ) {
-            String header = "<?xml version='1.0' encoding='utf-8'?>";
-            isWithProlog.unread(header.getBytes("utf-8"));
-        }
-
-        Document doc = builder.parse(isWithProlog);
-
-        List<Object> buttons = new ArrayList<Object>();
-        List<Object> left = new ArrayList<Object>();
-
-        NodeList forms = doc.getElementsByTagName("form");
-        for (int i = 0; i < forms.getLength(); i++) {
-            String action = forms.item(i).getAttributes().getNamedItem("action").getNodeValue();
-            if ((action == null) || ("".equals(action))){// logging for issue #145167
-                Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
-                LogRecord rec = new LogRecord(Level.WARNING, "invalid action from doc:");
-                String[] params = new String[]{forms.item(i).toString(), doc.getTextContent(), doc.getDocumentURI()};
-                rec.setParameters(params);
-                logger.log(rec);
-            }
-            Form f = new Form(action);
-            NodeList inputs = doc.getElementsByTagName("input");
-            for (int j = 0; j < inputs.getLength(); j++) {
-                if (isChild(inputs.item(j), forms.item(i))) {
-                    org.w3c.dom.Node in = inputs.item(j);
-                    String type = attrValue(in, "type");
-                    String name = attrValue(in, "name");
-                    String value = attrValue(in, "value");
-                    String align = attrValue(in, "align");
-                    String alt = attrValue(in, "alt");
-                    boolean enabled = !"true".equals(attrValue(in, "disabled")); // NOI18N
-
-                    List<Object> addTo = "left".equals(align) ? left : buttons;
-
-                    if ("hidden".equals(type) && Button.isSubmitTrigger(name)) { // NOI18N
-                        f.submitValue = value;
-                        JButton b = new JButton();
-                        Mnemonics.setLocalizedText(b, f.submitValue);
-                        b.setActionCommand(name); // NOI18N
-                        b.putClientProperty("url", f.url); // NOI18N
-                        b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
-                        b.putClientProperty("alt", alt); // NOI18N
-                        b.putClientProperty("now", f.submitValue); // NOI18N
-                        b.setEnabled(enabled);
-                        addTo.add(b);
-                        continue;
-                    }
-
-
-                    if ("hidden".equals(type)) { // NOI18N
-                        JButton b = new JButton();
-                        Mnemonics.setLocalizedText(b, value);
-                        b.setActionCommand(name);
-                        b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
-                        b.putClientProperty("alt", alt); // NOI18N
-                        b.putClientProperty("now", value); // NOI18N
-                        b.setEnabled(enabled && Button.isKnown(name));
-                        addTo.add(b);
-                        if (Button.EXIT.isCommand(name)) { // NOI18N
-                            defaultButton = null;
-                        }else if (Button.REDIRECT.isCommand(name)){
-                            b.putClientProperty("url", f.url); // NOI18N
-                        }
-                    }
+    static void parseButtons(InputStream is, final Object defaultButton, final DialogDescriptor dd)
+            throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
+        final ButtonsParser bp = new ButtonsParser(is);
+        bp.parse();
+        Runnable buttonsCreation = new Runnable() {
+            public void run() {
+                bp.createButtons();
+                List<Object> options = bp.getOptions();
+                if (!bp.containsExitButton() && (defaultButton != null)){
+                    options.add(defaultButton);
+                }
+                dd.setOptions(options.toArray());
+                dd.setAdditionalOptions(bp.getAditionalOptions().toArray());
+                if (bp.getTitle() != null){
+                    dd.setTitle(bp.getTitle());
                 }
             }
-        }
-        if (defaultButton != null) {
-            buttons.add(defaultButton);
-        }
-        dd.setOptions(buttons.toArray());
-        dd.setAdditionalOptions(left.toArray());
-
-        NodeList title = doc.getElementsByTagName("title");
-        for (int i = 0; i < title.getLength(); i++) {
-            String t = title.item(i).getTextContent();
-            if (t != null) {
-                dd.setTitle(t);
-                break;
-            }
+        };
+        
+        if (EventQueue.isDispatchThread()){
+            buttonsCreation.run();
+        }else{
+            EventQueue.invokeAndWait(buttonsCreation);
         }
     }
     
@@ -1424,6 +1331,10 @@ public class Installer extends ModuleInstall implements Runnable {
                     alterMessage(dd);
                     is.close();
                     url = tmp.toURI().toURL();
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                } catch (InvocationTargetException ex) {
+                    LOG.log(Level.WARNING, null, ex);
                 } catch (ParserConfigurationException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
@@ -1561,13 +1472,6 @@ public class Installer extends ModuleInstall implements Runnable {
                         LOG.fine("posting upload UIGESTURES");// NOI18N
                     } else if (dataType == DataType.DATA_METRICS) {
                         recs = getLogsMetrics();
-                        saveUserName();
-                        if ((report) && !(reportPanel.asAGuest())) {
-                            if (!checkUserName()) {
-                                reportPanel.showWrongPassword();
-                                return;
-                            }
-                        }
                         LOG.fine("posting upload METRICS");// NOI18N
                     }
                     final List<LogRecord> recsFinal = recs;
@@ -1650,23 +1554,23 @@ public class Installer extends ModuleInstall implements Runnable {
             checkingResult=true;
             RequestProcessor.Task checking;
             checking = RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                ExceptionsSettings settings = new ExceptionsSettings();
-                String login = settings.getUserName();
-                String passwd = settings.getPasswd();
-                try {
-                    char[] array = new char[100];
-                    URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
-                    URLConnection connection = url.openConnection();
-                    connection.setRequestProperty("User-Agent", "NetBeans");
-                    Reader reader = new InputStreamReader(connection.getInputStream());
-                    int length = reader.read(array);
-                    checkingResult = new Boolean(new String(array, 0, length));
-                } catch (Exception exception) {
-                    Logger.getLogger(Installer.class.getName()).log(Level.INFO, "CHECKING PASSWORD FAILED", exception); // NOI18N
+                public void run() {
+                    ExceptionsSettings settings = new ExceptionsSettings();
+                    String login = settings.getUserName();
+                    String passwd = settings.getPasswd();
+                    try {
+                        char[] array = new char[100];
+                        URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
+                        URLConnection connection = url.openConnection();
+                        connection.setRequestProperty("User-Agent", "NetBeans");
+                        Reader reader = new InputStreamReader(connection.getInputStream());
+                        int length = reader.read(array);
+                        checkingResult = new Boolean(new String(array, 0, length));
+                    } catch (Exception exception) {
+                        Logger.getLogger(Installer.class.getName()).log(Level.INFO, "CHECKING PASSWORD FAILED", exception); // NOI18N
+                    }
                 }
-            }
-            });
+                });
             checking.waitFinished(10000);
             return checkingResult;
         }
@@ -2043,7 +1947,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    private static enum Button {
+    static enum Button {
         EXIT("exit"),
         NEVER_AGAIN("never-again"),
         VIEW_DATA("view-data"),
