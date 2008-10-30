@@ -105,7 +105,7 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
         return null;
     }
     public static final String UNINSTALLATION_SURVEY_URL =
-            "http://quality.netbeans.org/survey/uninstall.jsp?version={0}&id={1}&life={2}";//NOI18N
+            "http://quality.netbeans.org/survey/uninstall?version={0}&id={1}&life={2}";//NOI18N
     public static final String SHOW_UNINSTALLATION_SURVEY_PROPERTY = 
             "show.uninstallation.survey";
 }
