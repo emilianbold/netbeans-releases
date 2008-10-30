@@ -50,6 +50,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.libraries.Library;
+import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathExtender;
 import org.netbeans.spi.java.project.classpath.ProjectClassPathModifierImplementation;
 import org.openide.filesystems.FileObject;
@@ -124,7 +125,7 @@ public class CPExtender extends ProjectClassPathModifierImplementation implement
                 ModelHandle handle = ModelHandleUtils.createModelHandle(project);
                 
                 // checking source doesn't work anymore, the wizard requires the level to be 1.5 up front.
-                PluginPropertyUtils.checkSourceLevel(handle, SL_15);
+                ModelUtils.checkSourceLevel(handle, SL_15);
                 ModelHandleUtils.writeModelHandle(handle, project);
                 
                 //shall not return true, needs processing by the fallback impl as well.
