@@ -47,12 +47,12 @@ import java.util.Map;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.api.StructureItem;
-import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
-import org.netbeans.modules.gsf.api.TranslatedSource;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner.Configuration;
+import org.netbeans.modules.csl.api.TranslatedSource;
 
 /**
  * Analyzer for JSON

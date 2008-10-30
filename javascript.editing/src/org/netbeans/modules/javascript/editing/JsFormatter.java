@@ -54,9 +54,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.CompilationInfo;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.JsPretty.Diff;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -76,7 +76,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
+public class JsFormatter implements org.netbeans.modules.csl.api.Formatter {
     private boolean embeddedJavaScript;
     private int embeddededIndent = 0;
     private int indentSize;

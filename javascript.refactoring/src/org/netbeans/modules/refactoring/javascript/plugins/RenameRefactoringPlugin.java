@@ -46,10 +46,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Error;
-import org.netbeans.modules.gsf.api.Severity;
+import org.netbeans.modules.csl.api.CancellableTask;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Error;
+import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.ModificationResult.Difference;
@@ -76,9 +76,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.CancellableTask;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
@@ -151,7 +151,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
                     }
                     
                     public void run(CompilationController co) throws Exception {
-                        co.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+                        co.toPhase(org.netbeans.modules.csl.api.Phase.RESOLVED);
                         org.mozilla.nb.javascript.Node root = AstUtilities.getRoot(co);
                         if (root != null) {
                             JsParseResult rpr = AstUtilities.getParseResult(co);
@@ -201,7 +201,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
     protected Problem preCheck(CompilationController info) throws IOException {
         Problem preCheckProblem = null;
         fireProgressListenerStart(refactoring.PRE_CHECK, 4);
-        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+        info.toPhase(org.netbeans.modules.csl.api.Phase.RESOLVED);
 //        Element el = treePathHandle.resolveElement(info);
 //        preCheckProblem = isElementAvail(treePathHandle, info);
 //        if (preCheckProblem != null) {
@@ -284,7 +284,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
     
     protected Problem fastCheckParameters(CompilationController info) throws IOException {
         Problem fastCheckProblem = null;
-        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+        info.toPhase(org.netbeans.modules.csl.api.Phase.RESOLVED);
         ElementKind kind = treePathHandle.getKind();
         String newName = refactoring.getNewName();
         String oldName = treePathHandle.getSimpleName();
@@ -405,7 +405,7 @@ public class RenameRefactoringPlugin extends JsRefactoringPlugin {
         
         fireProgressListenerStart(refactoring.PARAMETERS_CHECK, 8 + 3*steps);
         
-        info.toPhase(org.netbeans.napi.gsfret.source.Phase.RESOLVED);
+        info.toPhase(org.netbeans.modules.csl.api.Phase.RESOLVED);
 //        Element element = treePathHandle.resolveElement(info);
         
         fireProgressListenerStep();

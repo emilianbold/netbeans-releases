@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<filesystem>
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="GsfTaskProvider.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.FileTaskScanner"/>
+                <attr name="instanceClass" stringvalue="org.netbeans.modules.csl.core.GsfTaskProvider"/>
+                <!-- I don't know why this instead of instanceClass doesn't work
+                <attr name="instanceCreate" stringvalue="org.netbeans.modules.gsf.GsfTaskProvider.getInstance"/>
+                -->
+            </file>
+        </folder>
+        
+        <folder name="Groups">
+            <file name="hint-error.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+
+                <attr name="localizingBundle" stringvalue="org.netbeans.modules.csl.core.Bundle"/>
+                <attr name="groupName" stringvalue="nb-tasklist-errorhint"/>
+                <attr name="diplayNameKey" stringvalue="LBL_error_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_error_group"/>
+                <attr name="iconKey" stringvalue="ICON_error"/>
+                <attr name="position" intvalue="110"/>
+            </file>
+
+            <file name="hint-warning.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.spi.tasklist.Task.createGroup"/>
+
+                <attr name="localizingBundle" stringvalue="org.netbeans.modules.csl.core.Bundle"/>
+                <attr name="groupName" stringvalue="nb-tasklist-warninghint"/>
+                <attr name="diplayNameKey" stringvalue="LBL_warning_group"/>
+                <attr name="descriptionKey" stringvalue="HINT_warning_group"/>
+                <attr name="iconKey" stringvalue="ICON_warning"/>
+                <attr name="position" intvalue="210"/>
+            </file>
+        </folder>
+        
+    </folder>
+
+</filesystem>
