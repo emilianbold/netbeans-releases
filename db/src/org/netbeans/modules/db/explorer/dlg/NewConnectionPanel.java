@@ -884,6 +884,7 @@ private void showUrl() {
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(getMessage("ConnectionProgress_Connecting"));
                 progressHandle.start();
+                enableInput(false);
             }
         });
     }
@@ -911,11 +912,28 @@ private void showUrl() {
             public void run() {
                 if (progressHandle != null) {
                     progressHandle.finish();
+                    enableInput(true);
                 }
             }
         });
     }
 
+    private void enableInput(boolean enable) {
+        fieldInputCheckBox.setEnabled(enable);
+        directInputCheckBox.setEnabled(enable);
+        templateComboBox.setEnabled(enable);
+        userField.setEnabled(enable);
+        passwordField.setEnabled(enable);
+        passwordCheckBox.setEnabled(enable);
+        showUrlCheckBox.setEnabled(enable);
+        urlField.setEnabled(enable);
+        directUrlField.setEnabled(enable);
+        
+        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+            entry.getValue().getField().setEnabled(enable);
+        }
+    }
+    
     private void resetProgress() {
         if (progressHandle != null) {
             progressHandle.setDisplayName(""); // NOI18N
