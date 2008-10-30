@@ -58,6 +58,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerInfo;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -1887,7 +1888,7 @@ public class GdbDebugger implements PropertyChangeListener {
             } else if (o instanceof Map || o == null) {
                 pendingBreakpointMap.remove(token);
                 impl.completeValidation((Map<String, String>) o);
-                if (o != null && impl.getBreakpoint().isEnabled()) {
+                if (o != null && impl.getBreakpoint().getValidity() == Breakpoint.VALIDITY.VALID && impl.getBreakpoint().isEnabled()) {
                     Map<String, String> map = (Map) o;
                     String fullname = map.get("fullname"); // NOI18N
                     String file = map.get("file"); // NOI18N
