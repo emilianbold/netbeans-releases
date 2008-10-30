@@ -84,10 +84,10 @@ import org.openide.util.NbBundle;
  */
 public class JavaCompletionProvider implements CompletionProvider {
     
-    private static final boolean autoMode = Boolean.getBoolean("org.netbeans.modules.editor.java.completionAutoMode");
-
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (".".equals(typedText) || (autoMode && JavaCompletionQuery.isJavaIdentifierPart(typedText))) {
+        if (typedText != null && typedText.length() > 0
+                && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(typedText.length() - 1)) >= 0
+                || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText)))) {
             if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
                 return COMPLETION_QUERY_TYPE;
         }
@@ -306,8 +306,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         try {
                             String prefix = component.getDocument().getText(offset, newOffset - offset);
                             filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
-                            if (filterPrefix != null && filterPrefix.length() == 0)
+                            if (filterPrefix == null) {
+                                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
+                                    return false;
+                            } else if (filterPrefix.length() == 0) {
                                 anchorOffset = newOffset;
+                            }
                         } catch (BadLocationException e) {}
                         return true;
                     }

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,43 +37,45 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.options.editor.completion;
 
-package org.netbeans.modules.java.editor.javadoc;
-
-import javax.swing.text.JTextComponent;
-import org.netbeans.modules.editor.java.Utilities;
-import org.netbeans.spi.editor.completion.CompletionProvider;
-import org.netbeans.spi.editor.completion.CompletionTask;
-import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import java.util.prefs.Preferences;
+import javax.swing.JComponent;
+import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
+import org.openide.util.HelpCtx;
 
 /**
+ * Implementation of one panel in Options Dialog.
  *
- * @author Jan Pokorsky
+ * @author Jan Jancura
  */
-public final class JavadocCompletionProvider implements CompletionProvider {
-    // complete @TAG, {@TAG}, @param NAME, @see LINK, {@link LINK}
+public final class GeneralCompletionOptionsPanelController implements  PreferencesCustomizer {
 
-    public CompletionTask createTask(int queryType, JTextComponent component) {
-        CompletionTask task = null;
-        if (queryType == COMPLETION_QUERY_TYPE || queryType == COMPLETION_ALL_QUERY_TYPE) {
-            task = new AsyncCompletionTask(new JavadocCompletionQuery(queryType), component);
-        }
-        return task;
+    private Preferences preferences;
+    private GeneralCompletionOptionsPanel generalCompletionOptionsPanel;
+
+    public GeneralCompletionOptionsPanelController(Preferences p) {
+        this.preferences = p;
     }
 
-    public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        char c;
-        if (typedText != null && typedText.length() == 1
-                && Utilities.getJavadocCompletionAutoPopupTriggers().indexOf(typedText.charAt(0)) >= 0
-                && JavadocCompletionUtils.isJavadocContext(component.getDocument(), component.getCaretPosition())) {
-            return COMPLETION_QUERY_TYPE;
-        }
-        return 0;
+    public String getId() {
+        throw new UnsupportedOperationException("Not supported yet.");
     }
 
+    public String getDisplayName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("netbeans.optionsDialog.editor.codeCompletion"); //NOI18N
+    }
+
+    public JComponent getComponent() {
+        if (generalCompletionOptionsPanel == null) {
+            generalCompletionOptionsPanel = new GeneralCompletionOptionsPanel(preferences);
+        }
+        return generalCompletionOptionsPanel;
+    }
 }
+
