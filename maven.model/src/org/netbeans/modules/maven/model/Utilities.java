@@ -51,10 +51,12 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.cookies.EditorCookie;
+import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -73,18 +75,7 @@ public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
     
     
-    public static File toFile(URL url){
-        URI uri;
-        try {
-            uri = url.toURI();
-        } catch (URISyntaxException ex) {
-            return null;
-        }
-        return new File(uri);
-    }
-    
-    
-    public static Document getDocument(FileObject modelSourceFileObject){
+    public static Document getDocument(FileObject modelSourceFileObject) {
         Document result = null;
         try {
             DataObject dObject = DataObject.find(modelSourceFileObject);
@@ -138,7 +129,7 @@ public class Utilities {
     }
     
     
-    public static FileObject getFileObject(ModelSource ms){
+    public static FileObject getFileObject(ModelSource ms) {
         return (FileObject) ms.getLookup().lookup(FileObject.class);
     }
     
@@ -195,5 +186,18 @@ public class Utilities {
             ic.add(document);
         }
         return ms;
-    }    
+    }
+
+    public static void saveChanges(AbstractDocumentModel model) throws IOException {
+        if (model.isIntransaction()) {
+            model.endTransaction();
+        }
+        DataObject dobj = model.getModelSource().getLookup().lookup(DataObject.class);
+        SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
+        if (save != null) {
+            save.save();
+        } else {
+            //not changed?
+        }
+    }
 }
