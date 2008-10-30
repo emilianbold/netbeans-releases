@@ -45,7 +45,6 @@ import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;

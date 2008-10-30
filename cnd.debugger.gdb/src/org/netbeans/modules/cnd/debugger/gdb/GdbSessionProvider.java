@@ -49,14 +49,12 @@ import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 
 public class GdbSessionProvider extends SessionProvider {
 
-    private final ContextProvider contextProvider;
     private String sessionName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION"); // NOI18N
     //private String locationName = NbBundle.getMessage(GdbSessionProvider.class, "CTL_GDB_SESSION"); // NOI18N
     private final String [] supportedLanguages = new String [] { "C++", "C", "Fortran" }; // NOI18N
     private final ProjectActionEvent projectActionEvent;
 
     public GdbSessionProvider(ContextProvider contextProvider) {
-        this.contextProvider = contextProvider;
         projectActionEvent = (ProjectActionEvent) contextProvider.lookupFirst(null, ProjectActionEvent.class);
     };
 

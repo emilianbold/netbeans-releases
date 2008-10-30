@@ -49,11 +49,8 @@ import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.cookies.EditorCookie;
 import org.openide.text.NbDocument;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
-
 
 /**
 * Helper methods for debugging.
@@ -61,6 +58,10 @@ import org.openide.util.Utilities;
 * @author  Jan Jancura
 */
 public class Utils {
+
+    private Utils() {
+        // to prevent instantiation
+    }
     
     public static String getIdentifier() {
         JEditorPane ep = EditorContextDispatcher.getDefault().getCurrentEditor();

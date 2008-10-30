@@ -767,8 +767,7 @@ public class GdbDebugger implements PropertyChangeListener {
         String info = gdb.info_files().getResponse();
         for (String line : info.split("\\\\n")) { // NOI18N
             if (line.contains("Symbols from ")) { // NOI18N
-                String ep = line.substring(15, line.length() - 3);
-                return ep;
+                return line.substring(15, line.length() - 3);
             }
         }
         return null;
@@ -1065,7 +1064,7 @@ public class GdbDebugger implements PropertyChangeListener {
             } else if (msg.contains(MSG_BREAKPOINT_ERROR)) { // NOI18N
                 setStopped();
                 int start = msg.indexOf(MSG_BREAKPOINT_ERROR) + MSG_BREAKPOINT_ERROR.length();
-                int end = msg.indexOf(".", start); // NOI18N
+                int end = msg.indexOf('.', start); // NOI18N
                 if (end != -1) {
                     String breakpoinIdx = msg.substring(start, end).trim();
                     BreakpointImpl breakpoint = findBreakpoint(breakpoinIdx);
@@ -1341,7 +1340,7 @@ public class GdbDebugger implements PropertyChangeListener {
                     }
                 }
             }
-            if (killcmd.size() > 0) {
+            if (!killcmd.isEmpty()) {
                 killcmd.add("-s"); // NOI18N
                 
                 String signalName = Integer.toString(signal);
@@ -1420,7 +1419,7 @@ public class GdbDebugger implements PropertyChangeListener {
      * out of. This makes the behavior match the Java debugger in NB.
      */
     public void stepOut() {
-        if (callstack.size() > 0 || isValidStackFrame(callstack.get(1))) {
+        if (!callstack.isEmpty() || isValidStackFrame(callstack.get(1))) {
             setState(State.RUNNING);
             gdb.stack_select_frame(0);
             gdb.exec_finish();
@@ -2296,7 +2295,7 @@ public class GdbDebugger implements PropertyChangeListener {
     }
 
     public void popTopmostCall() {
-        if (callstack.size() > 0 && isValidStackFrame(callstack.get(1))) {
+        if (!callstack.isEmpty() && isValidStackFrame(callstack.get(1))) {
             gdb.stack_select_frame(0);
             gdb.exec_finish();
         } else {

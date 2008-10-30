@@ -74,10 +74,8 @@ public class VariablesActionsProvider implements NodeActionsProvider {
     );
     
     private GdbDebugger      debugger;
-    private ContextProvider  lookupProvider;
     
     public VariablesActionsProvider(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     

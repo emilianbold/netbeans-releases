@@ -109,7 +109,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                 b.removePropertyChangeListener(this);
             }
         }
-        return unloaded.toArray(new Breakpoint[0]);
+        return unloaded.toArray(new Breakpoint[unloaded.size()]);
     }
     
     public void initWatches() {

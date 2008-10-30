@@ -54,8 +54,7 @@ public class AddressBreakpoint extends GdbBreakpoint implements Comparable {
     }
     
     public static AddressBreakpoint create(String address) {
-        AddressBreakpoint ab = new AddressBreakpoint(address);
-        return ab;
+        return new AddressBreakpoint(address);
     }
 
     public String getAddress() {

@@ -492,10 +492,11 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         try {
-            if (timeStamp == null)
+            if (timeStamp == null) {
                 return ls.getCurrent(lineNumber - 1);
-            else
+            } else {
                 return ls.getOriginal(lineNumber - 1);
+            }
         } catch (IndexOutOfBoundsException e) {
         } catch (IllegalArgumentException e) {
         }

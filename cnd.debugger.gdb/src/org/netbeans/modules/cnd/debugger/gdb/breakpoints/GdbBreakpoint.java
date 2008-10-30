@@ -157,7 +157,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
             // The code below is a protection against "invalid" URL values.
             url = url.replace(" ", "%20"); // NOI18N
             if (!url.startsWith("file:/")) { // NOI18N
-                if (url.startsWith("/")) { // NOI18N
+                if (url.charAt(0) == '/') { // NOI18N
                     url = "file:" + url; // NOI18N
                 } else {
                     url = "file:/" + url; // NOI18N
