@@ -55,30 +55,30 @@ public abstract class VersionablePOMComponentImpl extends POMComponentImpl imple
 
 
     public String getGroupId() {
-        return getChildElementText(POMQName.GROUPID.getQName());
+        return getChildElementText(getModel().getPOMQNames().GROUPID.getQName());
     }
 
     public void setGroupId(String groupId) {
-        setChildElementText(POMQName.GROUPID.getName(), groupId,
-                POMQName.GROUPID.getQName());
+        setChildElementText(getModel().getPOMQNames().GROUPID.getName(), groupId,
+                getModel().getPOMQNames().GROUPID.getQName());
     }
 
     public String getArtifactId() {
-        return getChildElementText(POMQName.ARTIFACTID.getQName());
+        return getChildElementText(getModel().getPOMQNames().ARTIFACTID.getQName());
     }
 
     public void setArtifactId(String artifactId) {
-        setChildElementText(POMQName.ARTIFACTID.getName(), artifactId,
-                POMQName.ARTIFACTID.getQName());
+        setChildElementText(getModel().getPOMQNames().ARTIFACTID.getName(), artifactId,
+                getModel().getPOMQNames().ARTIFACTID.getQName());
     }
 
     public String getVersion() {
-        return getChildElementText(POMQName.VERSION.getQName());
+        return getChildElementText(getModel().getPOMQNames().VERSION.getQName());
     }
 
     public void setVersion(String version) {
-        setChildElementText(POMQName.VERSION.getName(), version,
-                POMQName.VERSION.getQName());
+        setChildElementText(getModel().getPOMQNames().VERSION.getName(), version,
+                getModel().getPOMQNames().VERSION.getQName());
     }
 
 }

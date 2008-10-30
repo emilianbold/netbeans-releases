@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.HashSet;
 import java.util.Set;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.*;
@@ -53,8 +54,19 @@ import org.w3c.dom.Element;
  */
 public class POMElementFactoryProvider implements ElementFactory {
 
+    private POMQNames ns = new POMQNames(true);
+    private POMQNames nonns = new POMQNames(false);
+    private Set<QName> all;
+
+
+    public POMElementFactoryProvider() {
+        all = new HashSet<QName>();
+        all.addAll(ns.getElementQNames());
+        all.addAll(nonns.getElementQNames());
+    }
+
     public Set<QName> getElementQNames() {
-        return POMQName.getQNames();
+        return all;
     }
 
     public POMComponent create(POMComponent context, Element element) {
@@ -81,7 +93,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     }
 /* 
     private boolean isForeignElement() {
-        return !POMQName.NS_URI.equals(AbstractDocumentComponent.getQName(element).getNamespaceURI());
+        return !context.getModel().getPOMQNames().NS_URI.equals(AbstractDocumentComponent.getQName(element).getNamespaceURI());
     }
 
     private void createExtensibilityElement(SCAComponent context) {
@@ -91,102 +103,102 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 */
     @Override
     public void visit(Project context) {
-        if (isElementQName(POMQName.PARENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().PARENT)) {
             created = new ParentImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PREREQUISITES)) {
+        if (isElementQName(context.getModel().getPOMQNames().PREREQUISITES)) {
             created = new PrerequisitesImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.ISSUEMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().ISSUEMANAGEMENT)) {
             created = new IssueManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.CIMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().CIMANAGEMENT)) {
             created = new CiManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.MAILINGLISTS)) {
+        if (isElementQName(context.getModel().getPOMQNames().MAILINGLISTS)) {
             created = new MailingListImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DEVELOPERS)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEVELOPERS)) {
             created = new DeveloperImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.CONTRIBUTORS)) {
+        if (isElementQName(context.getModel().getPOMQNames().CONTRIBUTORS)) {
             created = new DeveloperImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.LICENSES)) {
+        if (isElementQName(context.getModel().getPOMQNames().LICENSES)) {
             created = new LicenseImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.SCM)) {
+        if (isElementQName(context.getModel().getPOMQNames().SCM)) {
             created = new ScmImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.ORGANIZATION)) {
+        if (isElementQName(context.getModel().getPOMQNames().ORGANIZATION)) {
             created = new OrganizationImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.BUILD)) {
+        if (isElementQName(context.getModel().getPOMQNames().BUILD)) {
             created = new BuildImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PROFILES)) {
+        if (isElementQName(context.getModel().getPOMQNames().PROFILES)) {
             created = new ProfileImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.MODULES)) {
-            created = new StringListImpl(context.getModel(), element, POMQName.MODULE);
+        if (isElementQName(context.getModel().getPOMQNames().MODULES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().MODULE);
             return;
         }
 
-        if (isElementQName(POMQName.REPOSITORIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPOSITORIES)) {
             created = new RepositoryImpl.RepoList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINREPOSITORIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINREPOSITORIES)) {
             created = new RepositoryImpl.PluginRepoList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCIES)) {
             created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.REPORTING)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPORTING)) {
             created = new ReportingImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCYMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCYMANAGEMENT)) {
             created = new DependencyManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DISTRIBUTIONMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().DISTRIBUTIONMANAGEMENT)) {
             created = new DistributionManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PROPERTIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().PROPERTIES)) {
             created = new PropertiesImpl(context.getModel(), element);
             return;
         }
@@ -206,17 +218,17 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(DistributionManagement context) {
-        if (isElementQName(POMQName.DIST_REPOSITORY)) {
+        if (isElementQName(context.getModel().getPOMQNames().DIST_REPOSITORY)) {
             created = new DeploymentRepositoryImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DIST_SNAPSHOTREPOSITORY)) {
+        if (isElementQName(context.getModel().getPOMQNames().DIST_SNAPSHOTREPOSITORY)) {
             created = new DeploymentRepositoryImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.SITE)) {
+        if (isElementQName(context.getModel().getPOMQNames().SITE)) {
             created = new SiteImpl(context.getModel(), element);
             return;
         }
@@ -256,7 +268,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(CiManagement context) {
-        if (isElementQName(POMQName.NOTIFIER)) {
+        if (isElementQName(context.getModel().getPOMQNames().NOTIFIER)) {
             created = new NotifierImpl(context.getModel(), element);
             return;
         }
@@ -271,12 +283,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Repository context) {
-        if (isElementQName(POMQName.RELEASES)) {
+        if (isElementQName(context.getModel().getPOMQNames().RELEASES)) {
             created = new RepositoryPolicyImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.SNAPSHOTS)) {
+        if (isElementQName(context.getModel().getPOMQNames().SNAPSHOTS)) {
             created = new RepositoryPolicyImpl(context.getModel(), element);
             return;
         }
@@ -292,52 +304,52 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Profile context) {
-        if (isElementQName(POMQName.ACTIVATION)) {
+        if (isElementQName(context.getModel().getPOMQNames().ACTIVATION)) {
             created = new ActivationImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.BUILD)) {
+        if (isElementQName(context.getModel().getPOMQNames().BUILD)) {
             created = new BuildBaseImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.MODULES)) {
-            created = new StringListImpl(context.getModel(), element, POMQName.MODULE);
+        if (isElementQName(context.getModel().getPOMQNames().MODULES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().MODULE);
             return;
         }
 
-        if (isElementQName(POMQName.REPOSITORIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPOSITORIES)) {
             created = new RepositoryImpl.RepoList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINREPOSITORIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINREPOSITORIES)) {
             created = new RepositoryImpl.PluginRepoList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCIES)) {
             created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.REPORTING)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPORTING)) {
             created = new ReportingImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCYMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCYMANAGEMENT)) {
             created = new DependencyManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DISTRIBUTIONMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().DISTRIBUTIONMANAGEMENT)) {
             created = new DistributionManagementImpl(context.getModel(), element);
             return;
         }
         
-        if (isElementQName(POMQName.PROPERTIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().PROPERTIES)) {
             created = new PropertiesImpl(context.getModel(), element);
             return;
         }
@@ -347,22 +359,22 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(BuildBase context) {
-        if (isElementQName(POMQName.RESOURCES)) {
+        if (isElementQName(context.getModel().getPOMQNames().RESOURCES)) {
             created = new ResourceImpl.ResList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.TESTRESOURCES)) {
+        if (isElementQName(context.getModel().getPOMQNames().TESTRESOURCES)) {
             created = new ResourceImpl.TestResList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINMANAGEMENT)) {
             created = new PluginManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINS)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINS)) {
             created = new PluginImpl.List(context.getModel(), element);
             return;
         }
@@ -372,23 +384,23 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Plugin context) {
-        if (isElementQName(POMQName.EXECUTIONS)) {
+        if (isElementQName(context.getModel().getPOMQNames().EXECUTIONS)) {
             created = new PluginExecutionImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.DEPENDENCIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCIES)) {
             created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.CONFIGURATION)) {
+        if (isElementQName(context.getModel().getPOMQNames().CONFIGURATION)) {
             created = new ConfigurationImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.GOALS)) {
-            created = new StringListImpl(context.getModel(), element, POMQName.GOAL);
+        if (isElementQName(context.getModel().getPOMQNames().GOALS)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().GOAL);
             return;
         }
 
@@ -402,7 +414,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Dependency context) {
-        if (isElementQName(POMQName.EXCLUSIONS)) {
+        if (isElementQName(context.getModel().getPOMQNames().EXCLUSIONS)) {
             created = new ExclusionImpl.List(context.getModel(), element);
             return;
         }
@@ -417,11 +429,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(PluginExecution context) {
-        if (isElementQName(POMQName.GOALS)) {
-            created = new StringListImpl(context.getModel(), element, POMQName.GOAL);
+        if (isElementQName(context.getModel().getPOMQNames().GOALS)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getPOMQNames().GOAL);
             return;
         }
-        if (isElementQName(POMQName.CONFIGURATION)) {
+        if (isElementQName(context.getModel().getPOMQNames().CONFIGURATION)) {
             created = new ConfigurationImpl(context.getModel(), element);
             return;
         }
@@ -436,7 +448,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(PluginManagement context) {
-        if (isElementQName(POMQName.PLUGINS)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINS)) {
             created = new PluginImpl.List(context.getModel(), element);
             return;
         }
@@ -446,7 +458,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Reporting context) {
-        if (isElementQName(POMQName.REPORTPLUGINS)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPORTPLUGINS)) {
             created = new ReportPluginImpl.List(context.getModel(), element);
             return;
         }
@@ -456,11 +468,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ReportPlugin context) {
-        if (isElementQName(POMQName.REPORTSET)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPORTSET)) {
             created = new ReportSetImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.CONFIGURATION)) {
+        if (isElementQName(context.getModel().getPOMQNames().CONFIGURATION)) {
             created = new ConfigurationImpl(context.getModel(), element);
             return;
         }
@@ -475,22 +487,22 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Activation context) {
-        if (isElementQName(POMQName.ACTIVATIONOS)) {
+        if (isElementQName(context.getModel().getPOMQNames().ACTIVATIONOS)) {
             created = new ActivationOSImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.ACTIVATIONPROPERTY)) {
+        if (isElementQName(context.getModel().getPOMQNames().ACTIVATIONPROPERTY)) {
             created = new ActivationPropertyImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.ACTIVATIONFILE)) {
+        if (isElementQName(context.getModel().getPOMQNames().ACTIVATIONFILE)) {
             created = new ActivationFileImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.ACTIVATIONCUSTOM)) {
+        if (isElementQName(context.getModel().getPOMQNames().ACTIVATIONCUSTOM)) {
             created = new ActivationCustomImpl(context.getModel(), element);
             return;
         }
@@ -520,7 +532,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(DependencyManagement context) {
-        if (isElementQName(POMQName.DEPENDENCIES)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCIES)) {
             created = new DependencyImpl.List(context.getModel(), element);
             return;
         }
@@ -532,27 +544,27 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     public void visit(Build context) {
         visit((BuildBase) context);
 
-        if (isElementQName(POMQName.EXTENSIONS)) {
+        if (isElementQName(context.getModel().getPOMQNames().EXTENSIONS)) {
             created = new ExtensionImpl.List(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.RESOURCES)) {
+        if (isElementQName(context.getModel().getPOMQNames().RESOURCES)) {
             created = new ResourceImpl.ResList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.TESTRESOURCE)) {
+        if (isElementQName(context.getModel().getPOMQNames().TESTRESOURCE)) {
             created = new ResourceImpl.TestResList(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINMANAGEMENT)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINMANAGEMENT)) {
             created = new PluginManagementImpl(context.getModel(), element);
             return;
         }
 
-        if (isElementQName(POMQName.PLUGINS)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINS)) {
             created = new PluginImpl.List(context.getModel(), element);
             return;
         }
@@ -582,59 +594,59 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(ModelList context) {
-        if (isElementQName(POMQName.MAILINGLIST) && context.getListClass().equals(MailingList.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().MAILINGLIST) && context.getListClass().equals(MailingList.class)) {
             created = new MailingListImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.DEPENDENCY) && context.getListClass().equals(Dependency.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEPENDENCY) && context.getListClass().equals(Dependency.class)) {
             created = new DependencyImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.DEVELOPER) && context.getListClass().equals(Developer.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().DEVELOPER) && context.getListClass().equals(Developer.class)) {
             created = new DeveloperImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.CONTRIBUTOR) && context.getListClass().equals(Contributor.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().CONTRIBUTOR) && context.getListClass().equals(Contributor.class)) {
             created = new ContributorImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.LICENSE) && context.getListClass().equals(License.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().LICENSE) && context.getListClass().equals(License.class)) {
             created = new LicenseImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.PROFILE) && context.getListClass().equals(Profile.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().PROFILE) && context.getListClass().equals(Profile.class)) {
             created = new ProfileImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.REPOSITORY) && context.getListClass().equals(Repository.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().REPOSITORY) && context.getListClass().equals(Repository.class)) {
             created = new RepositoryImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.PLUGINREPOSITORY) && context.getListClass().equals(Repository.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGINREPOSITORY) && context.getListClass().equals(Repository.class)) {
             created = new RepositoryImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.EXCLUSION) && context.getListClass().equals(Exclusion.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().EXCLUSION) && context.getListClass().equals(Exclusion.class)) {
             created = new ExclusionImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.PLUGIN) && context.getListClass().equals(Plugin.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().PLUGIN) && context.getListClass().equals(Plugin.class)) {
             created = new PluginImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.EXTENSION) && context.getListClass().equals(Extension.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().EXTENSION) && context.getListClass().equals(Extension.class)) {
             created = new ExtensionImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.EXECUTION) && context.getListClass().equals(PluginExecution.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().EXECUTION) && context.getListClass().equals(PluginExecution.class)) {
             created = new PluginExecutionImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.RESOURCE) && context.getListClass().equals(Resource.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().RESOURCE) && context.getListClass().equals(Resource.class)) {
             created = new ResourceImpl(context.getModel(), element);
             return;
         }
-        if (isElementQName(POMQName.TESTRESOURCE) && context.getListClass().equals(Resource.class)) {
+        if (isElementQName(context.getModel().getPOMQNames().TESTRESOURCE) && context.getListClass().equals(Resource.class)) {
             created = new ResourceImpl(context.getModel(), element);
             return;
         }

@@ -53,7 +53,7 @@ public class ParentImpl extends VersionablePOMComponentImpl implements Parent {
     }
     
     public ParentImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PARENT));
+        this(model, createElementNS(model, model.getPOMQNames().PARENT));
     }
 
     // attributes
@@ -64,12 +64,12 @@ public class ParentImpl extends VersionablePOMComponentImpl implements Parent {
     }
 
     public String getRelativePath() {
-        return getChildElementText(POMQName.RELATIVEPATH.getQName());
+        return getChildElementText(getModel().getPOMQNames().RELATIVEPATH.getQName());
     }
 
     public void setRelativePath(String relPath) {
-        setChildElementText(POMQName.RELATIVEPATH.getQName().getLocalPart(), relPath,
-                POMQName.RELATIVEPATH.getQName());
+        setChildElementText(getModel().getPOMQNames().RELATIVEPATH.getQName().getLocalPart(), relPath,
+                getModel().getPOMQNames().RELATIVEPATH.getQName());
     }
 
 }

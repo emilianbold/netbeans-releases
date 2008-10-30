@@ -53,7 +53,7 @@ public class LicenseImpl extends POMComponentImpl implements License {
     }
     
     public LicenseImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.LICENSE));
+        this(model, createElementNS(model, model.getPOMQNames().LICENSE));
     }
 
     // attributes
@@ -65,11 +65,11 @@ public class LicenseImpl extends POMComponentImpl implements License {
 
     public static class List extends ListImpl<License> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.LICENSE, License.class);
+            super(model, element, model.getPOMQNames().LICENSE, License.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.LICENSES));
+            this(model, createElementNS(model, model.getPOMQNames().LICENSES));
         }
     }
 

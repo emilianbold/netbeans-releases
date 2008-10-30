@@ -53,7 +53,7 @@ public class ActivationOSImpl extends POMComponentImpl implements ActivationOS {
     }
     
     public ActivationOSImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ACTIVATIONOS));
+        this(model, createElementNS(model, model.getPOMQNames().ACTIVATIONOS));
     }
 
     // attributes

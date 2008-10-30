@@ -55,7 +55,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     }
     
     public PluginExecutionImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.EXECUTION));
+        this(model, createElementNS(model, model.getPOMQNames().EXECUTION));
     }
 
     // attributes
@@ -66,16 +66,16 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     }
 
     public String getPhase() {
-        return getChildElementText(POMQName.PHASE.getQName());
+        return getChildElementText(getModel().getPOMQNames().PHASE.getQName());
     }
 
     public void setPhase(String phase) {
-        setChildElementText(POMQName.PHASE.getName(), phase,
-                POMQName.PHASE.getQName());
+        setChildElementText(getModel().getPOMQNames().PHASE.getName(), phase,
+                getModel().getPOMQNames().PHASE.getQName());
     }
 
     public Boolean isInherited() {
-        String str = getChildElementText(POMQName.INHERITED.getQName());
+        String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
         if (str != null) {
             return Boolean.valueOf(str);
         }
@@ -83,9 +83,9 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     }
 
     public void setInherited(Boolean inherited) {
-        setChildElementText(POMQName.INHERITED.getName(),
+        setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
                 inherited == null ? null : inherited.toString(),
-                POMQName.INHERITED.getQName());
+                getModel().getPOMQNames().INHERITED.getQName());
     }
 
     public Configuration getConfiguration() {
@@ -94,13 +94,13 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
 
     public void setConfiguration(Configuration config) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
+        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config, empty);
     }
 
     public java.util.List<String> getGoals() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 return list.getListChildren();
             }
         }
@@ -110,18 +110,18 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     public void addGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 list.addListChild(goal);
                 return;
             }
         }
         setChild(StringListImpl.class,
-                 POMQName.GOALS.getName(),
-                 getModel().getFactory().create(this, POMQName.GOALS.getQName()),
+                 getModel().getPOMQNames().GOALS.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().GOALS.getQName()),
                  Collections.EMPTY_LIST);
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 list.addListChild(goal);
                 return;
             }
@@ -131,7 +131,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     public void removeGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 list.removeListChild(goal);
                 return;
             }
@@ -140,11 +140,11 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
 
     public static class List extends ListImpl<PluginExecution> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.EXECUTION, PluginExecution.class);
+            super(model, element, model.getPOMQNames().EXECUTION, PluginExecution.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.EXECUTIONS));
+            this(model, createElementNS(model, model.getPOMQNames().EXECUTIONS));
         }
     }
 

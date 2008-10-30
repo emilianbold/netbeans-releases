@@ -54,7 +54,7 @@ public class CiManagementImpl extends POMComponentImpl implements CiManagement {
     }
     
     public CiManagementImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.CIMANAGEMENT));
+        this(model, createElementNS(model, model.getPOMQNames().CIMANAGEMENT));
     }
 
     // attributes
@@ -65,30 +65,30 @@ public class CiManagementImpl extends POMComponentImpl implements CiManagement {
         }
 
     public void addNotifier(Notifier notifier) {
-        appendChild(POMQName.NOTIFIER.getName(), notifier);
+        appendChild(getModel().getPOMQNames().NOTIFIER.getName(), notifier);
         }
 
     public void removeNotifier(Notifier notifier) {
-        removeChild(POMQName.NOTIFIER.getName(), notifier);
+        removeChild(getModel().getPOMQNames().NOTIFIER.getName(), notifier);
     }
 
 
     public String getSystem() {
-        return getChildElementText(POMQName.CIMANAG_SYSTEM.getQName());
+        return getChildElementText(getModel().getPOMQNames().CIMANAG_SYSTEM.getQName());
     }
 
     public void setSystem(String system) {
-        setChildElementText(POMQName.CIMANAG_SYSTEM.getName(), system,
-                POMQName.CIMANAG_SYSTEM.getQName());
+        setChildElementText(getModel().getPOMQNames().CIMANAG_SYSTEM.getName(), system,
+                getModel().getPOMQNames().CIMANAG_SYSTEM.getQName());
     }
 
     public String getUrl() {
-        return getChildElementText(POMQName.URL.getQName());
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
     public void setUrl(String url) {
-        setChildElementText(POMQName.URL.getName(), url,
-                POMQName.URL.getQName());
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {

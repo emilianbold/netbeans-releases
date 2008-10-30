@@ -54,7 +54,7 @@ public class ConfigurationImpl extends POMComponentImpl implements Configuration
     }
     
     public ConfigurationImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.CONFIGURATION));
+        this(model, createElementNS(model, model.getPOMQNames().CONFIGURATION));
     }
 
     // attributes
@@ -86,6 +86,16 @@ public class ConfigurationImpl extends POMComponentImpl implements Configuration
             el.setElementText(value);
             addExtensibilityElement(el);
         }
+    }
+
+    public String getSimpleParameter(String parameter) {
+        List<POMExtensibilityElement> list = getConfigurationElements();
+        for (POMExtensibilityElement e : list) {
+            if (parameter.equals(e.getQName().getLocalPart())) {
+                return e.getElementText();
+            }
+        }
+        return null;
     }
 
 

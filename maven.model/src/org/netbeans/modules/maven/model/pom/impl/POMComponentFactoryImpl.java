@@ -125,11 +125,11 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
     }
 
     public DeploymentRepository createDistRepository() {
-        return new DeploymentRepositoryImpl(model, POMQName.DIST_REPOSITORY);
+        return new DeploymentRepositoryImpl(model, model.getPOMQNames().DIST_REPOSITORY);
     }
 
     public DeploymentRepository createDistSnapshotRepository() {
-        return new DeploymentRepositoryImpl(model, POMQName.DIST_SNAPSHOTREPOSITORY);
+        return new DeploymentRepositoryImpl(model, model.getPOMQNames().DIST_SNAPSHOTREPOSITORY);
     }
 
     public Prerequisites createPrerequisites() {
@@ -165,11 +165,11 @@ public class POMComponentFactoryImpl implements POMComponentFactory {
     }
 
     public RepositoryPolicy createReleaseRepositoryPolicy() {
-        return new RepositoryPolicyImpl(model, POMQName.RELEASES);
+        return new RepositoryPolicyImpl(model, model.getPOMQNames().RELEASES);
     }
 
     public RepositoryPolicy createSnapshotRepositoryPolicy() {
-        return new RepositoryPolicyImpl(model, POMQName.SNAPSHOTS);
+        return new RepositoryPolicyImpl(model, model.getPOMQNames().SNAPSHOTS);
     }
 
 

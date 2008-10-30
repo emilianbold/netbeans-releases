@@ -55,12 +55,12 @@ public abstract class IdPOMComponentImpl extends POMComponentImpl implements IdP
 
 
     public String getId() {
-        return getChildElementText(POMQName.ID.getQName());
+        return getChildElementText(getModel().getPOMQNames().ID.getQName());
     }
 
     public void setId(String id) {
-        setChildElementText(POMQName.ID.getQName().getLocalPart(), id,
-                POMQName.ID.getQName());
+        setChildElementText(getModel().getPOMQNames().ID.getQName().getLocalPart(), id,
+                getModel().getPOMQNames().ID.getQName());
     }
 
 

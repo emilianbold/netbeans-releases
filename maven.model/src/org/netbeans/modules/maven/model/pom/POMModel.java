@@ -53,6 +53,8 @@ public abstract class POMModel extends AbstractDocumentModel<POMComponent> {
     
     public abstract POMComponentFactory getFactory();
 
+    public abstract POMQNames getPOMQNames();
+
     /**
      * Gets domain-specific root component.
      */

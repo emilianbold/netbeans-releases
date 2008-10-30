@@ -53,7 +53,7 @@ public class ScmImpl extends POMComponentImpl implements Scm {
     }
     
     public ScmImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.SCM));
+        this(model, createElementNS(model, model.getPOMQNames().SCM));
     }
 
     // attributes

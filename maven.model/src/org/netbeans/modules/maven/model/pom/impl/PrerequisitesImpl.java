@@ -53,7 +53,7 @@ public class PrerequisitesImpl extends POMComponentImpl implements Prerequisites
     }
     
     public PrerequisitesImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PREREQUISITES));
+        this(model, createElementNS(model, model.getPOMQNames().PREREQUISITES));
     }
 
     // attributes

@@ -53,7 +53,7 @@ public class SiteImpl extends IdPOMComponentImpl implements Site {
     }
     
     public SiteImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.SITE));
+        this(model, createElementNS(model, model.getPOMQNames().SITE));
     }
 
     // attributes

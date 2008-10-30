@@ -53,25 +53,25 @@ public class ExclusionImpl extends POMComponentImpl implements Exclusion {
     }
     
     public ExclusionImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.EXCLUSION));
+        this(model, createElementNS(model, model.getPOMQNames().EXCLUSION));
     }
 
     public String getGroupId() {
-        return getChildElementText(POMQName.GROUPID.getQName());
+        return getChildElementText(getModel().getPOMQNames().GROUPID.getQName());
     }
 
     public void setGroupId(String groupId) {
-        setChildElementText(POMQName.GROUPID.getName(), groupId,
-                POMQName.GROUPID.getQName());
+        setChildElementText(getModel().getPOMQNames().GROUPID.getName(), groupId,
+                getModel().getPOMQNames().GROUPID.getQName());
     }
 
     public String getArtifactId() {
-        return getChildElementText(POMQName.ARTIFACTID.getQName());
+        return getChildElementText(getModel().getPOMQNames().ARTIFACTID.getQName());
     }
 
     public void setArtifactId(String artifactId) {
-        setChildElementText(POMQName.ARTIFACTID.getName(), artifactId,
-                POMQName.ARTIFACTID.getQName());
+        setChildElementText(getModel().getPOMQNames().ARTIFACTID.getName(), artifactId,
+                getModel().getPOMQNames().ARTIFACTID.getQName());
     }
     // attributes
 
@@ -82,11 +82,11 @@ public class ExclusionImpl extends POMComponentImpl implements Exclusion {
 
     public static class List extends ListImpl<Exclusion> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.EXCLUSION, Exclusion.class);
+            super(model, element, model.getPOMQNames().EXCLUSION, Exclusion.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.EXCLUSIONS));
+            this(model, createElementNS(model, model.getPOMQNames().EXCLUSIONS));
         }
     }
 

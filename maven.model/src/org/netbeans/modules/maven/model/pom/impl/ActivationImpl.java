@@ -54,7 +54,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
     }
     
     public ActivationImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ACTIVATION));
+        this(model, createElementNS(model, model.getPOMQNames().ACTIVATION));
     }
 
     // attributes
@@ -66,7 +66,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationOS(ActivationOS activationOS) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationOS.class, POMQName.ACTIVATIONOS.getName(), activationOS, empty);
+        setChild(ActivationOS.class, getModel().getPOMQNames().ACTIVATIONOS.getName(), activationOS, empty);
     }
 
     public ActivationProperty getActivationProperty() {
@@ -75,7 +75,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationProperty(ActivationProperty activationProperty) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationProperty.class, POMQName.ACTIVATIONPROPERTY.getName(), activationProperty, empty);
+        setChild(ActivationProperty.class, getModel().getPOMQNames().ACTIVATIONPROPERTY.getName(), activationProperty, empty);
     }
 
     public ActivationFile getActivationFile() {
@@ -84,7 +84,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationFile(ActivationFile activationFile) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationFile.class, POMQName.ACTIVATIONFILE.getName(), activationFile, empty);
+        setChild(ActivationFile.class, getModel().getPOMQNames().ACTIVATIONFILE.getName(), activationFile, empty);
     }
 
     public ActivationCustom getActivationCustom() {
@@ -93,7 +93,7 @@ public class ActivationImpl extends POMComponentImpl implements Activation {
 
     public void setActivationCustom(ActivationCustom activationCustom) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(ActivationCustom.class, POMQName.ACTIVATIONCUSTOM.getName(), activationCustom, empty);
+        setChild(ActivationCustom.class, getModel().getPOMQNames().ACTIVATIONCUSTOM.getName(), activationCustom, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {

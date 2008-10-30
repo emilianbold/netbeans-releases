@@ -53,7 +53,7 @@ public class MailingListImpl extends POMComponentImpl implements MailingList {
     }
     
     public MailingListImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.MAILINGLIST));
+        this(model, createElementNS(model, model.getPOMQNames().MAILINGLIST));
     }
 
     // attributes
@@ -65,11 +65,11 @@ public class MailingListImpl extends POMComponentImpl implements MailingList {
 
     public static class List extends ListImpl<MailingList> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.MAILINGLIST, MailingList.class);
+            super(model, element, model.getPOMQNames().MAILINGLIST, MailingList.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.MAILINGLISTS));
+            this(model, createElementNS(model, model.getPOMQNames().MAILINGLISTS));
         }
     }
 

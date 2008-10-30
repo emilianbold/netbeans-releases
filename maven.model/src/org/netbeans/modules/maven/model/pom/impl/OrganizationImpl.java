@@ -53,7 +53,7 @@ public class OrganizationImpl extends POMComponentImpl implements Organization {
     }
     
     public OrganizationImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ORGANIZATION));
+        this(model, createElementNS(model, model.getPOMQNames().ORGANIZATION));
     }
 
     // attributes

@@ -53,7 +53,7 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
     }
     
     public ReportSetImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.REPORTSET));
+        this(model, createElementNS(model, model.getPOMQNames().REPORTSET));
     }
 
     // attributes
@@ -65,11 +65,11 @@ public class ReportSetImpl extends IdPOMComponentImpl implements ReportSet {
 
     public static class List extends ListImpl<ReportSet> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.REPORTSET, ReportSet.class);
+            super(model, element, model.getPOMQNames().REPORTSET, ReportSet.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.REPORTSETS));
+            this(model, createElementNS(model, model.getPOMQNames().REPORTSETS));
         }
     }
 

@@ -53,7 +53,7 @@ public class NotifierImpl extends POMComponentImpl implements Notifier {
     }
     
     public NotifierImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.NOTIFIER));
+        this(model, createElementNS(model, model.getPOMQNames().NOTIFIER));
     }
 
     // attributes

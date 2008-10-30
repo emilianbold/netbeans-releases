@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.POMQName;
 import org.netbeans.modules.xml.xam.dom.Attribute;
@@ -72,6 +71,7 @@ public enum POMAttribute implements Attribute {
         this.subtype = subtype;
     }
     
+    @Override
     public String toString() { 
         return name; 
     }

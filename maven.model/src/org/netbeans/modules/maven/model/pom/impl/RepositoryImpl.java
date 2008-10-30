@@ -55,7 +55,7 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
     
     public RepositoryImpl(POMModel model, boolean pluginRepo) {
         this(model, createElementNS(model,
-                pluginRepo ? POMQName.PLUGINREPOSITORY : POMQName.REPOSITORY));
+                pluginRepo ? model.getPOMQNames().PLUGINREPOSITORY : model.getPOMQNames().REPOSITORY));
     }
 
     // attributes
@@ -67,7 +67,7 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
 
     public void setReleases(RepositoryPolicy releases) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(RepositoryPolicy.class, POMQName.RELEASES.getName(), releases, empty);
+        setChild(RepositoryPolicy.class, getModel().getPOMQNames().RELEASES.getName(), releases, empty);
     }
 
     public RepositoryPolicy getSnapshots() {
@@ -76,43 +76,43 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
 
     public void setSnapshots(RepositoryPolicy snapshots) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(RepositoryPolicy.class, POMQName.SNAPSHOTS.getName(), snapshots, empty);
+        setChild(RepositoryPolicy.class, getModel().getPOMQNames().SNAPSHOTS.getName(), snapshots, empty);
     }
 
     public String getName() {
-        return getChildElementText(POMQName.NAME.getQName());
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
     public void setName(String name) {
-        setChildElementText(POMQName.NAME.getName(), name,
-                POMQName.NAME.getQName());
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
     }
 
     public String getUrl() {
-        return getChildElementText(POMQName.URL.getQName());
+        return getChildElementText(getModel().getPOMQNames().URL.getQName());
     }
 
     public void setUrl(String url) {
-        setChildElementText(POMQName.URL.getName(), url,
-                POMQName.URL.getQName());
+        setChildElementText(getModel().getPOMQNames().URL.getName(), url,
+                getModel().getPOMQNames().URL.getQName());
     }
 
     public String getLayout() {
-        return getChildElementText(POMQName.LAYOUT.getQName());
+        return getChildElementText(getModel().getPOMQNames().LAYOUT.getQName());
     }
 
     public void setLayout(String layout) {
-        setChildElementText(POMQName.LAYOUT.getName(), layout,
-                POMQName.LAYOUT.getQName());
+        setChildElementText(getModel().getPOMQNames().LAYOUT.getName(), layout,
+                getModel().getPOMQNames().LAYOUT.getQName());
     }
 
     public static class RepoList extends ListImpl<Repository> {
         public RepoList(POMModel model, Element element) {
-            super(model, element, POMQName.REPOSITORY, Repository.class);
+            super(model, element, model.getPOMQNames().REPOSITORY, Repository.class);
         }
 
         public RepoList(POMModel model) {
-            this(model, createElementNS(model, POMQName.REPOSITORIES));
+            this(model, createElementNS(model, model.getPOMQNames().REPOSITORIES));
         }
     }
 
@@ -122,11 +122,11 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
 
     public static class PluginRepoList extends ListImpl<Repository> {
         public PluginRepoList(POMModel model, Element element) {
-            super(model, element, POMQName.PLUGINREPOSITORY, Repository.class);
+            super(model, element, model.getPOMQNames().PLUGINREPOSITORY, Repository.class);
         }
 
         public PluginRepoList(POMModel model) {
-            this(model, createElementNS(model, POMQName.PLUGINREPOSITORIES));
+            this(model, createElementNS(model, model.getPOMQNames().PLUGINREPOSITORIES));
         }
     }
 

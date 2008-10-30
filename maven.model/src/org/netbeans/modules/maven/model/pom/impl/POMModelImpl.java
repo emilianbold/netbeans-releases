@@ -54,6 +54,9 @@ public class POMModelImpl extends POMModel {
     
     private POMComponent rootComponent;
     private POMComponentFactory componentFactory;
+    private POMQNames pomqnames;
+    private QName PROJECT_NS = POMQName.createQName("project", true);
+    private QName PROJECT = POMQName.createQName("project", false);
     
     public POMModelImpl(ModelSource source) {
         super(source);
@@ -75,11 +78,12 @@ public class POMModelImpl extends POMModel {
     public POMComponent createRootComponent(Element root) {
         QName q = root == null ? null : AbstractDocumentComponent.getQName(root);
         if (root != null ) {
-            if (POMQName.PROJECT.getQName().equals(q)) {
+            if (PROJECT.equals(q)) {
+                pomqnames = new POMQNames(false);
                 rootComponent = new ProjectImpl(this, root);
-//TODO            } else if (root.getNamespaceURI() == null &&
-//                    POMQName.PROJECT.getName().equals(root.getNodeName())) {
-//                rootComponent = new ProjectImpl(this, root);
+            } else if (PROJECT_NS.equals(q)) {
+                pomqnames = new POMQNames(true);
+                rootComponent = new ProjectImpl(this, root);
             }
         } 
         
@@ -92,6 +96,11 @@ public class POMModelImpl extends POMModel {
 
     public POMComponent createComponent(POMComponent parent, Element element) {
         return getFactory().create(element, parent);
+    }
+
+    @Override
+    public POMQNames getPOMQNames() {
+        return pomqnames;
     }
 
 }

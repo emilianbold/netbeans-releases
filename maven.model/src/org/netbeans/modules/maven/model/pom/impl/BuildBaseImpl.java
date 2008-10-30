@@ -54,7 +54,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
     }
     
     public BuildBaseImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.BUILD));
+        this(model, createElementNS(model, model.getPOMQNames().BUILD));
     }
 
     // attributes
@@ -72,8 +72,8 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         ModelList<Resource> childs = getChild(ResourceImpl.ResList.class);
         if (childs == null) {
             setChild(ResourceImpl.ResList.class,
-                    POMQName.RESOURCES.getName(),
-                    getModel().getFactory().create(this, POMQName.RESOURCES.getQName()),
+                    getModel().getPOMQNames().RESOURCES.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().RESOURCES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(ResourceImpl.ResList.class);
             assert childs != null;
@@ -100,8 +100,8 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         ModelList<Resource> childs = getChild(ResourceImpl.TestResList.class);
         if (childs == null) {
             setChild(ResourceImpl.TestResList.class,
-                    POMQName.TESTRESOURCES.getName(),
-                    getModel().getFactory().create(this, POMQName.TESTRESOURCES.getQName()),
+                    getModel().getPOMQNames().TESTRESOURCES.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().TESTRESOURCES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(ResourceImpl.TestResList.class);
             assert childs != null;
@@ -122,7 +122,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
 
     public void setPluginManagement(PluginManagement pluginManagement) {
         List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(PluginManagement.class, POMQName.PLUGINMANAGEMENT.getName(), pluginManagement, empty);
+        setChild(PluginManagement.class, getModel().getPOMQNames().PLUGINMANAGEMENT.getName(), pluginManagement, empty);
     }
 
     public List<Plugin> getPlugins() {
@@ -137,8 +137,8 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs == null) {
             setChild(PluginImpl.List.class,
-                    POMQName.PLUGINS.getName(),
-                    getModel().getFactory().create(this, POMQName.PLUGINS.getQName()),
+                    getModel().getPOMQNames().PLUGINS.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().PLUGINS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(PluginImpl.List.class);
             assert childs != null;
@@ -157,44 +157,46 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
         assert groupId != null;
         assert artifactId != null;
         List<Plugin> plugs = getPlugins();
-        for (Plugin plug : plugs) {
-            String plugGroupId = plug.getGroupId();
-            if (plugGroupId == null) {
-                plugGroupId = "org.apache.maven.plugins"; //the default groupId
-            }
-            if (groupId.equals(plugGroupId) && artifactId.equals(plug.getArtifactId())) {
-                return plug;
+        if (plugs != null) {
+            for (Plugin plug : plugs) {
+                String plugGroupId = plug.getGroupId();
+                if (plugGroupId == null) {
+                    plugGroupId = "org.apache.maven.plugins"; //the default groupId
+                }
+                if (groupId.equals(plugGroupId) && artifactId.equals(plug.getArtifactId())) {
+                    return plug;
+                }
             }
         }
         return null;
     }
 
     public String getDefaultGoal() {
-        return getChildElementText(POMQName.DEFAULTGOAL.getQName());
+        return getChildElementText(getModel().getPOMQNames().DEFAULTGOAL.getQName());
     }
 
     public void setDefaultGoal(String goal) {
-        setChildElementText(POMQName.DEFAULTGOAL.getName(), goal,
-                POMQName.DEFAULTGOAL.getQName());
+        setChildElementText(getModel().getPOMQNames().DEFAULTGOAL.getName(), goal,
+                getModel().getPOMQNames().DEFAULTGOAL.getQName());
     }
 
     public String getDirectory() {
-        return getChildElementText(POMQName.DIRECTORY.getQName());
+        return getChildElementText(getModel().getPOMQNames().DIRECTORY.getQName());
     }
 
     public void setDirectory(String directory) {
-        setChildElementText(POMQName.DIRECTORY.getName(), directory,
-                POMQName.DIRECTORY.getQName());
+        setChildElementText(getModel().getPOMQNames().DIRECTORY.getName(), directory,
+                getModel().getPOMQNames().DIRECTORY.getQName());
     }
 
 
     public String getFinalName() {
-        return getChildElementText(POMQName.FINALNAME.getQName());
+        return getChildElementText(getModel().getPOMQNames().FINALNAME.getQName());
     }
 
     public void setFinalName(String finalName) {
-        setChildElementText(POMQName.FINALNAME.getName(), finalName,
-                POMQName.FINALNAME.getQName());
+        setChildElementText(getModel().getPOMQNames().FINALNAME.getName(), finalName,
+                getModel().getPOMQNames().FINALNAME.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {

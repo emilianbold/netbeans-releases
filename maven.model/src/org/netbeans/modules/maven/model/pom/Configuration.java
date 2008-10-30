@@ -54,4 +54,5 @@ public interface Configuration extends POMComponent {
     
     void setSimpleParameter(String parameter, String value);
 
+    String getSimpleParameter(String parameter);
 }

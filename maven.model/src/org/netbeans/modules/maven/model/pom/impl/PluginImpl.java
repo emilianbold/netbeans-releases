@@ -54,7 +54,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     }
     
     public PluginImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PLUGIN));
+        this(model, createElementNS(model, model.getPOMQNames().PLUGIN));
     }
 
     // attributes
@@ -72,8 +72,8 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         ModelList<PluginExecution> childs = getChild(PluginExecutionImpl.List.class);
         if (childs == null) {
             setChild(DependencyImpl.List.class,
-                    POMQName.EXECUTIONS.getName(),
-                    getModel().getFactory().create(this, POMQName.EXECUTIONS.getQName()),
+                    getModel().getPOMQNames().EXECUTIONS.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().EXECUTIONS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(PluginExecutionImpl.List.class);
             assert childs != null;
@@ -100,8 +100,8 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs == null) {
             setChild(DependencyImpl.List.class,
-                    POMQName.DEPENDENCIES.getName(),
-                    getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
+                    getModel().getPOMQNames().DEPENDENCIES.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().DEPENDENCIES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(DependencyImpl.List.class);
             assert childs != null;
@@ -118,7 +118,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
 
     public Boolean isExtensions() {
-        String str = getChildElementText(POMQName.EXTENSIONS.getQName());
+        String str = getChildElementText(getModel().getPOMQNames().EXTENSIONS.getQName());
         if (str != null) {
             return Boolean.valueOf(str);
         }
@@ -126,13 +126,13 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     }
 
     public void setExtensions(Boolean extensions) {
-        setChildElementText(POMQName.EXTENSIONS.getName(),
+        setChildElementText(getModel().getPOMQNames().EXTENSIONS.getName(),
                 extensions == null ? null : extensions.toString(),
-                POMQName.EXTENSIONS.getQName());
+                getModel().getPOMQNames().EXTENSIONS.getQName());
     }
 
     public Boolean isInherited() {
-        String str = getChildElementText(POMQName.INHERITED.getQName());
+        String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
         if (str != null) {
             return Boolean.valueOf(str);
         }
@@ -140,9 +140,9 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     }
 
     public void setInherited(Boolean inherited) {
-        setChildElementText(POMQName.INHERITED.getName(),
+        setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
                 inherited == null ? null : inherited.toString(),
-                POMQName.INHERITED.getQName());
+                getModel().getPOMQNames().INHERITED.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {
@@ -155,7 +155,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
     public void setConfiguration(Configuration config) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
+        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config, empty);
     }
 
     public PluginExecution findExecutionById(String id) {
@@ -174,7 +174,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     public java.util.List<String> getGoals() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 return list.getListChildren();
             }
         }
@@ -184,18 +184,18 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     public void addGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 list.addListChild(goal);
                 return;
             }
         }
         setChild(StringListImpl.class,
-                 POMQName.GOALS.getName(),
-                 getModel().getFactory().create(this, POMQName.GOALS.getQName()),
+                 getModel().getPOMQNames().GOALS.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().GOALS.getQName()),
                  Collections.EMPTY_LIST);
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 list.addListChild(goal);
                 return;
             }
@@ -205,7 +205,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     public void removeGoal(String goal) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.GOALS.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
                 list.removeListChild(goal);
                 return;
             }
@@ -215,11 +215,11 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     
     public static class List extends ListImpl<Plugin> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.PLUGIN, Plugin.class);
+            super(model, element, model.getPOMQNames().PLUGIN, Plugin.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.PLUGINS));
+            this(model, createElementNS(model, model.getPOMQNames().PLUGINS));
         }
     }
 

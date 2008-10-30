@@ -57,7 +57,7 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
     }
     
     public PropertiesImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PROPERTIES));
+        this(model, createElementNS(model, model.getPOMQNames().PROPERTIES));
     }
 
     // attributes
@@ -65,12 +65,12 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
     // child elements
 
     public String getType() {
-        return getChildElementText(POMQName.TYPE.getQName());
+        return getChildElementText(getModel().getPOMQNames().TYPE.getQName());
     }
 
     public void setType(String type) {
-        setChildElementText(POMQName.TYPE.getName(), type,
-                POMQName.TYPE.getQName());
+        setChildElementText(getModel().getPOMQNames().TYPE.getName(), type,
+                getModel().getPOMQNames().TYPE.getQName());
     }
 
     public void setProperty(String key, String value) {

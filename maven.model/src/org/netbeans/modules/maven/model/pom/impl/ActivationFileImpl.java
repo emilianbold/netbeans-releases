@@ -53,7 +53,7 @@ public class ActivationFileImpl extends POMComponentImpl implements ActivationFi
     }
     
     public ActivationFileImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ACTIVATIONFILE));
+        this(model, createElementNS(model, model.getPOMQNames().ACTIVATIONFILE));
     }
 
     // attributes

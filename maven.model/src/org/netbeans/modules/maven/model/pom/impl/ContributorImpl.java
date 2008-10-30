@@ -53,7 +53,7 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
     }
     
     public ContributorImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.CONTRIBUTOR));
+        this(model, createElementNS(model, model.getPOMQNames().CONTRIBUTOR));
     }
 
     // attributes
@@ -65,11 +65,11 @@ public class ContributorImpl extends POMComponentImpl implements Contributor {
 
     public static class List extends ListImpl<Contributor> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.CONTRIBUTOR, Contributor.class);
+            super(model, element, model.getPOMQNames().CONTRIBUTOR, Contributor.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.CONTRIBUTORS));
+            this(model, createElementNS(model, model.getPOMQNames().CONTRIBUTORS));
         }
     }
 

@@ -54,7 +54,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
     }
     
     public PluginManagementImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PLUGINMANAGEMENT));
+        this(model, createElementNS(model, model.getPOMQNames().PLUGINMANAGEMENT));
     }
 
     // attributes
@@ -72,8 +72,8 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
         ModelList<Plugin> childs = getChild(PluginImpl.List.class);
         if (childs == null) {
             setChild(PluginImpl.List.class,
-                    POMQName.PLUGINS.getName(),
-                    getModel().getFactory().create(this, POMQName.PLUGINS.getQName()),
+                    getModel().getPOMQNames().PLUGINS.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().PLUGINS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(PluginImpl.List.class);
             assert childs != null;

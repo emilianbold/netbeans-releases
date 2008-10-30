@@ -54,7 +54,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
     }
     
     public ReportingImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.REPORTING));
+        this(model, createElementNS(model, model.getPOMQNames().REPORTING));
     }
 
     // attributes
@@ -72,8 +72,8 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
         ModelList<ReportPlugin> childs = getChild(ReportPluginImpl.List.class);
         if (childs == null) {
             setChild(ReportPluginImpl.List.class,
-                    POMQName.REPORTPLUGINS.getName(),
-                    getModel().getFactory().create(this, POMQName.REPORTPLUGINS.getQName()),
+                    getModel().getPOMQNames().REPORTPLUGINS.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().REPORTPLUGINS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(ReportPluginImpl.List.class);
             assert childs != null;
@@ -90,7 +90,7 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
 
 
     public Boolean isExcludeDefaults() {
-        String str = getChildElementText(POMQName.EXCLUDEDEFAULTS.getQName());
+        String str = getChildElementText(getModel().getPOMQNames().EXCLUDEDEFAULTS.getQName());
         if (str != null) {
             return Boolean.valueOf(str);
         }
@@ -98,18 +98,18 @@ public class ReportingImpl extends POMComponentImpl implements Reporting {
     }
 
     public void setExcludeDefaults(Boolean exclude) {
-        setChildElementText(POMQName.EXCLUDEDEFAULTS.getName(),
+        setChildElementText(getModel().getPOMQNames().EXCLUDEDEFAULTS.getName(),
                 exclude == null ? null : exclude.toString(),
-                POMQName.EXCLUDEDEFAULTS.getQName());
+                getModel().getPOMQNames().EXCLUDEDEFAULTS.getQName());
     }
 
     public String getOutputDirectory() {
-        return getChildElementText(POMQName.OUTPUTDIRECTORY.getQName());
+        return getChildElementText(getModel().getPOMQNames().OUTPUTDIRECTORY.getQName());
     }
 
     public void setOutputDirectory(String directory) {
-        setChildElementText(POMQName.OUTPUTDIRECTORY.getName(), directory,
-                POMQName.OUTPUTDIRECTORY.getQName());
+        setChildElementText(getModel().getPOMQNames().OUTPUTDIRECTORY.getName(), directory,
+                getModel().getPOMQNames().OUTPUTDIRECTORY.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {

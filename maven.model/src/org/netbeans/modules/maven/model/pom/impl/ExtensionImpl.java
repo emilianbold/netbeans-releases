@@ -53,7 +53,7 @@ public class ExtensionImpl extends VersionablePOMComponentImpl implements Extens
     }
     
     public ExtensionImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.EXTENSION));
+        this(model, createElementNS(model, model.getPOMQNames().EXTENSION));
     }
 
     // attributes
@@ -65,11 +65,11 @@ public class ExtensionImpl extends VersionablePOMComponentImpl implements Extens
 
     public static class List extends ListImpl<Extension> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.EXTENSION, Extension.class);
+            super(model, element, model.getPOMQNames().EXTENSION, Extension.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.EXTENSIONS));
+            this(model, createElementNS(model, model.getPOMQNames().EXTENSIONS));
         }
     }
 

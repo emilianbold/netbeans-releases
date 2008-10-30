@@ -54,7 +54,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
     }
     
     public ReportPluginImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.REPORTPLUGIN));
+        this(model, createElementNS(model, model.getPOMQNames().REPORTPLUGIN));
     }
 
     // attributes
@@ -72,8 +72,8 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
         ModelList<ReportSet> childs = getChild(ReportSetImpl.List.class);
         if (childs == null) {
             setChild(ReportSetImpl.List.class,
-                    POMQName.REPORTSETS.getName(),
-                    getModel().getFactory().create(this, POMQName.REPORTSETS.getQName()),
+                    getModel().getPOMQNames().REPORTSETS.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().REPORTSETS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(ReportSetImpl.List.class);
             assert childs != null;
@@ -90,7 +90,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
 
 
     public Boolean isInherited() {
-        String str = getChildElementText(POMQName.INHERITED.getQName());
+        String str = getChildElementText(getModel().getPOMQNames().INHERITED.getQName());
         if (str != null) {
             return Boolean.valueOf(str);
         }
@@ -98,9 +98,9 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
     }
 
     public void setInherited(Boolean inherited) {
-        setChildElementText(POMQName.INHERITED.getName(),
+        setChildElementText(getModel().getPOMQNames().INHERITED.getName(),
                 inherited == null ? null : inherited.toString(),
-                POMQName.INHERITED.getQName());
+                getModel().getPOMQNames().INHERITED.getQName());
     }
 
     public Configuration getConfiguration() {
@@ -109,7 +109,7 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
 
     public void setConfiguration(Configuration config) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Configuration.class, POMQName.CONFIGURATION.getName(), config, empty);
+        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {
@@ -119,11 +119,11 @@ public class ReportPluginImpl extends VersionablePOMComponentImpl implements Rep
     
     public static class List extends ListImpl<ReportPlugin> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.REPORTPLUGIN, ReportPlugin.class);
+            super(model, element, model.getPOMQNames().REPORTPLUGIN, ReportPlugin.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.REPORTPLUGINS));
+            this(model, createElementNS(model, model.getPOMQNames().REPORTPLUGINS));
         }
     }
 

@@ -53,7 +53,7 @@ public class ActivationPropertyImpl extends POMComponentImpl implements Activati
     }
     
     public ActivationPropertyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ACTIVATIONPROPERTY));
+        this(model, createElementNS(model, model.getPOMQNames().ACTIVATIONPROPERTY));
     }
 
     // attributes
@@ -61,21 +61,21 @@ public class ActivationPropertyImpl extends POMComponentImpl implements Activati
     // child elements
 
     public String getName() {
-        return getChildElementText(POMQName.NAME.getQName());
+        return getChildElementText(getModel().getPOMQNames().NAME.getQName());
     }
 
     public void setName(String name) {
-        setChildElementText(POMQName.NAME.getName(), name,
-                POMQName.NAME.getQName());
+        setChildElementText(getModel().getPOMQNames().NAME.getName(), name,
+                getModel().getPOMQNames().NAME.getQName());
     }
 
     public String getValue() {
-        return getChildElementText(POMQName.VALUE.getQName());
+        return getChildElementText(getModel().getPOMQNames().VALUE.getQName());
     }
 
     public void setValue(String value) {
-        setChildElementText(POMQName.VALUE.getName(), value,
-                POMQName.VALUE.getQName());
+        setChildElementText(getModel().getPOMQNames().VALUE.getName(), value,
+                getModel().getPOMQNames().VALUE.getQName());
     }
 
     public void accept(POMComponentVisitor visitor) {

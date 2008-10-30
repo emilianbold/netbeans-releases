@@ -54,7 +54,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
     
     public DependencyImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DEPENDENCY));
+        this(model, createElementNS(model, model.getPOMQNames().DEPENDENCY));
     }
 
     // attributes
@@ -72,8 +72,8 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
         ModelList<Exclusion> childs = getChild(ExclusionImpl.List.class);
         if (childs == null) {
             setChild(ExclusionImpl.List.class,
-                    POMQName.EXCLUSIONS.getName(),
-                    getModel().getFactory().create(this, POMQName.EXCLUSIONS.getQName()),
+                    getModel().getPOMQNames().EXCLUSIONS.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().EXCLUSIONS.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(ExclusionImpl.List.class);
             assert childs != null;
@@ -93,43 +93,43 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public String getType() {
-        return getChildElementText(POMQName.TYPE.getQName());
+        return getChildElementText(getModel().getPOMQNames().TYPE.getQName());
     }
 
     public void setType(String type) {
-        setChildElementText(POMQName.TYPE.getName(), type,
-                POMQName.TYPE.getQName());
+        setChildElementText(getModel().getPOMQNames().TYPE.getName(), type,
+                getModel().getPOMQNames().TYPE.getQName());
     }
 
     public String getClassifier() {
-        return getChildElementText(POMQName.CLASSIFIER.getQName());
+        return getChildElementText(getModel().getPOMQNames().CLASSIFIER.getQName());
     }
 
     public void setClassifier(String classifier) {
-        setChildElementText(POMQName.CLASSIFIER.getName(), classifier,
-                POMQName.CLASSIFIER.getQName());
+        setChildElementText(getModel().getPOMQNames().CLASSIFIER.getName(), classifier,
+                getModel().getPOMQNames().CLASSIFIER.getQName());
     }
 
     public String getScope() {
-        return getChildElementText(POMQName.SCOPE.getQName());
+        return getChildElementText(getModel().getPOMQNames().SCOPE.getQName());
     }
 
     public void setScope(String scope) {
-        setChildElementText(POMQName.SCOPE.getName(), scope,
-                POMQName.SCOPE.getQName());
+        setChildElementText(getModel().getPOMQNames().SCOPE.getName(), scope,
+                getModel().getPOMQNames().SCOPE.getQName());
     }
 
     public String getSystemPath() {
-        return getChildElementText(POMQName.SYSTEMPATH.getQName());
+        return getChildElementText(getModel().getPOMQNames().SYSTEMPATH.getQName());
     }
 
     public void setSystemPath(String systemPath) {
-        setChildElementText(POMQName.SYSTEMPATH.getName(), systemPath,
-                POMQName.SYSTEMPATH.getQName());
+        setChildElementText(getModel().getPOMQNames().SYSTEMPATH.getName(), systemPath,
+                getModel().getPOMQNames().SYSTEMPATH.getQName());
     }
 
     public Boolean isOptional() {
-        String str = getChildElementText(POMQName.OPTIONAL.getQName());
+        String str = getChildElementText(getModel().getPOMQNames().OPTIONAL.getQName());
         if (str != null) {
             return Boolean.valueOf(str);
         }
@@ -137,18 +137,18 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
     }
 
     public void setOptional(Boolean optional) {
-        setChildElementText(POMQName.OPTIONAL.getName(),
+        setChildElementText(getModel().getPOMQNames().OPTIONAL.getName(),
                 optional == null ? null : optional.toString(),
-                POMQName.OPTIONAL.getQName());
+                getModel().getPOMQNames().OPTIONAL.getQName());
     }
 
     public static class List extends ListImpl<Dependency> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.DEPENDENCY, Dependency.class);
+            super(model, element, model.getPOMQNames().DEPENDENCY, Dependency.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.DEPENDENCIES));
+            this(model, createElementNS(model, model.getPOMQNames().DEPENDENCIES));
         }
     }
 

@@ -53,7 +53,7 @@ public class IssueManagementImpl extends POMComponentImpl implements IssueManage
     }
     
     public IssueManagementImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ISSUEMANAGEMENT));
+        this(model, createElementNS(model, model.getPOMQNames().ISSUEMANAGEMENT));
     }
 
     // attributes

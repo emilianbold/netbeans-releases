@@ -54,7 +54,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     }
     
     public ProfileImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.PROFILE));
+        this(model, createElementNS(model, model.getPOMQNames().PROFILE));
     }
 
     // attributes
@@ -66,7 +66,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void setActivation(Activation activation) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Activation.class, POMQName.ACTIVATION.getName(), activation, empty);
+        setChild(Activation.class, getModel().getPOMQNames().ACTIVATION.getName(), activation, empty);
     }
 
     public BuildBase getBuildBase() {
@@ -75,7 +75,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void setBuildBase(BuildBase buildBase) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(BuildBase.class, POMQName.BUILD.getName(), buildBase, empty);
+        setChild(BuildBase.class, getModel().getPOMQNames().BUILD.getName(), buildBase, empty);
     }
 
     public java.util.List<Repository> getRepositories() {
@@ -90,8 +90,8 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         ModelList<Repository> childs = getChild(RepositoryImpl.RepoList.class);
         if (childs == null) {
             setChild(RepositoryImpl.RepoList.class,
-                    POMQName.REPOSITORIES.getName(),
-                    getModel().getFactory().create(this, POMQName.REPOSITORIES.getQName()),
+                    getModel().getPOMQNames().REPOSITORIES.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().REPOSITORIES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(RepositoryImpl.RepoList.class);
             assert childs != null;
@@ -118,8 +118,8 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         ModelList<Repository> childs = getChild(RepositoryImpl.PluginRepoList.class);
         if (childs == null) {
             setChild(RepositoryImpl.PluginRepoList.class,
-                    POMQName.PLUGINREPOSITORIES.getName(),
-                    getModel().getFactory().create(this, POMQName.PLUGINREPOSITORIES.getQName()),
+                    getModel().getPOMQNames().PLUGINREPOSITORIES.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().PLUGINREPOSITORIES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(RepositoryImpl.PluginRepoList.class);
             assert childs != null;
@@ -146,8 +146,8 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
         ModelList<Dependency> childs = getChild(DependencyImpl.List.class);
         if (childs == null) {
             setChild(DependencyImpl.List.class,
-                    POMQName.DEPENDENCIES.getName(),
-                    getModel().getFactory().create(this, POMQName.DEPENDENCIES.getQName()),
+                    getModel().getPOMQNames().DEPENDENCIES.getName(),
+                    getModel().getFactory().create(this, getModel().getPOMQNames().DEPENDENCIES.getQName()),
                     Collections.EMPTY_LIST);
             childs = getChild(DependencyImpl.List.class);
             assert childs != null;
@@ -168,7 +168,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void setReporting(Reporting reporting) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Reporting.class, POMQName.REPORTING.getName(), reporting, empty);
+        setChild(Reporting.class, getModel().getPOMQNames().REPORTING.getName(), reporting, empty);
     }
 
     public DependencyManagement getDependencyManagement() {
@@ -177,7 +177,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void setDependencyManagement(DependencyManagement dependencyManagement) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DependencyManagement.class, POMQName.DEPENDENCYMANAGEMENT.getName(), dependencyManagement, empty);
+        setChild(DependencyManagement.class, getModel().getPOMQNames().DEPENDENCYMANAGEMENT.getName(), dependencyManagement, empty);
     }
 
     public DistributionManagement getDistributionManagement() {
@@ -186,7 +186,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void setDistributionManagement(DistributionManagement distributionManagement) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(DistributionManagement.class, POMQName.DISTRIBUTIONMANAGEMENT.getName(), distributionManagement, empty);
+        setChild(DistributionManagement.class, getModel().getPOMQNames().DISTRIBUTIONMANAGEMENT.getName(), distributionManagement, empty);
     }
 
     public void accept(POMComponentVisitor visitor) {
@@ -199,13 +199,13 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public void setProperties(Properties props) {
         java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Reporting.class, POMQName.PROPERTIES.getName(), props, empty);
+        setChild(Reporting.class, getModel().getPOMQNames().PROPERTIES.getName(), props, empty);
     }
 
     public java.util.List<String> getModules() {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
                 return list.getListChildren();
             }
         }
@@ -215,18 +215,18 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     public void addModule(String module) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
                 list.addListChild(module);
                 return;
             }
         }
         setChild(StringListImpl.class,
-                 POMQName.MODULES.getName(),
-                 getModel().getFactory().create(this, POMQName.MODULES.getQName()),
+                 getModel().getPOMQNames().MODULES.getName(),
+                 getModel().getFactory().create(this, getModel().getPOMQNames().MODULES.getQName()),
                  Collections.EMPTY_LIST);
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
                 list.addListChild(module);
                 return;
             }
@@ -236,7 +236,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     public void removeModule(String module) {
         java.util.List<StringList> lists = getChildren(StringList.class);
         for (StringList list : lists) {
-            if (POMQName.MODULES.getName().equals(list.getPeer().getNodeName())) {
+            if (getModel().getPOMQNames().MODULES.getName().equals(list.getPeer().getNodeName())) {
                 list.removeListChild(module);
                 return;
             }
@@ -245,11 +245,11 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
 
     public static class List extends ListImpl<Profile> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.PROFILE, Profile.class);
+            super(model, element, model.getPOMQNames().PROFILE, Profile.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.PROFILES));
+            this(model, createElementNS(model, model.getPOMQNames().PROFILES));
         }
     }
 

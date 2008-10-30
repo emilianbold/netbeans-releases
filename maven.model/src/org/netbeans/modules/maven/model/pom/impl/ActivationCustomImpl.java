@@ -53,7 +53,7 @@ public class ActivationCustomImpl extends POMComponentImpl implements Activation
     }
     
     public ActivationCustomImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.ACTIVATIONCUSTOM));
+        this(model, createElementNS(model, model.getPOMQNames().ACTIVATIONCUSTOM));
     }
 
     // attributes

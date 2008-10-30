@@ -53,7 +53,7 @@ public class DeveloperImpl extends POMComponentImpl implements Developer {
     }
     
     public DeveloperImpl(POMModel model) {
-        this(model, createElementNS(model, POMQName.DEVELOPER));
+        this(model, createElementNS(model, model.getPOMQNames().DEVELOPER));
     }
 
     // attributes
@@ -65,11 +65,11 @@ public class DeveloperImpl extends POMComponentImpl implements Developer {
 
     public static class List extends ListImpl<Developer> {
         public List(POMModel model, Element element) {
-            super(model, element, POMQName.DEVELOPER, Developer.class);
+            super(model, element, model.getPOMQNames().DEVELOPER, Developer.class);
         }
 
         public List(POMModel model) {
-            this(model, createElementNS(model, POMQName.DEVELOPERS));
+            this(model, createElementNS(model, model.getPOMQNames().DEVELOPERS));
         }
     }
 

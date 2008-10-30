@@ -52,12 +52,10 @@ import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author mkleint
- *
- * Registry for factories of WSDL elements. In order to register an ElementFactory,
+ * Registry for factories of POM elements. In order to register an ElementFactory,
  * a QName must be provided of an element for which the factory will create a
- * WSDLComponent.
+ * POMComponent.
+ * @author mkleint
  */
 public class ElementFactoryRegistry {
     
