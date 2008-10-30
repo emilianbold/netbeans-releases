@@ -124,7 +124,7 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
         if (text == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("<html>"); // NOI18N
         if (bold) {
             sb.append("<b>"); // NOI18N
@@ -135,7 +135,7 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
         if (color != null) {
             sb.append("<font color="); // NOI18N
             sb.append(Integer.toHexString ((color.getRGB () & 0xffffff)));
-            sb.append(">"); // NOI18N
+            sb.append('>'); // NOI18N
         }
         text = text.replaceAll("&", "&amp;"); // NOI18N
         text = text.replaceAll("<", "&lt;"); // NOI18N

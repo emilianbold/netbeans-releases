@@ -690,7 +690,7 @@ public class GdbDebugger implements PropertyChangeListener {
         if (platform == PlatformTypes.PLATFORM_WINDOWS) {
             return winpath(path1).equals(winpath(path2));
         }
-        return path1.equals(path1);
+        return path1.equals(path2);
     }
     
     private String winpath(String path) {
@@ -1748,9 +1748,9 @@ public class GdbDebugger implements PropertyChangeListener {
     }
     
     private ShareInfo getNewShareInfo(Map<String, ShareInfo> map) {
-        for (String path : map.keySet()) {
-            if (!shareTab.containsKey(path)) {
-                return map.get(path);
+        for (Map.Entry<String, ShareInfo> entry : map.entrySet()) {
+            if (!shareTab.containsKey(entry.getKey())) {
+                return entry.getValue();
             }
         }
         assert false : "No new shared library found";
