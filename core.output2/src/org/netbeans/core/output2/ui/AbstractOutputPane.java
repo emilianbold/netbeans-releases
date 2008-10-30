@@ -454,9 +454,8 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
         //it can cause the controller to send events to OutputListeners which
         //should only happen for user events
         if ((!locked && caretLineChanged()) && !inSendCaretToLine) {
-            int line = getCaretLine();
             boolean sel = textView.getSelectionStart() != textView.getSelectionEnd();
-            if (line != -1 && !sel) {
+            if (!sel) {
                 caretEnteredLine(getCaretLine());
             }
             if (sel != hadSelection) {

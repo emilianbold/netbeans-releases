@@ -67,7 +67,7 @@ public class ProfileNodeProvider implements CustomizerNodeProvider {
 	return new CndProfileGeneralCustomizerNode("Debug", getString("Debug"),null); // NOI18N
     }
 
-    class CndProfileGeneralCustomizerNode extends CustomizerNode {
+    static class CndProfileGeneralCustomizerNode extends CustomizerNode {
 
 	public CndProfileGeneralCustomizerNode(String name, String displayName, CustomizerNode[] children) {
 	    super(name, displayName, children);

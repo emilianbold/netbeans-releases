@@ -56,19 +56,31 @@ public class ActiveTerm extends StreamTerm {
 
     private ActiveTermListener at_listener;
 
-    private RegionManager rm;
+    private final RegionManager rm;
 
     private Coord last_begin = null;
     private Coord last_end = null;
 
+    /** Remembers the default mouse pointer icon used by Term */
+    private final Cursor regularCursor;
+
+    /** The mouse pointer icon to use why flying over hyperlinks */
+    private final Cursor pointerCursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR);
+
+    /** Remember what cursor is currently active */
+    private Cursor currentCursor;
+
     public ActiveTerm() {
 	super();
+
+        regularCursor = getScreen().getCursor();
 
 	setCursorVisible(false);
 
 	rm = regionManager();
 
 	getScreen().addMouseListener(new MouseAdapter() {
+            @Override
 	    public void mouseClicked(MouseEvent e) {
 		if ( (e.getModifiers() & InputEvent.BUTTON1_MASK) !=
 		    InputEvent.BUTTON1_MASK) {
@@ -89,13 +101,19 @@ public class ActiveTerm extends StreamTerm {
 	} );
 
 	getScreen().addMouseMotionListener(new MouseMotionAdapter() {
+            @Override
 	    public void mouseMoved(MouseEvent e) {
 		Point p = mapToBufRowCol(e.getPoint());
 		BCoord c = new BCoord(p.y, p.x);
 		Coord ac = new Coord(c, firsta);
-		ActiveRegion region = rm.findRegion(ac);
-		ActiveRegion hl_region = findRegionToHilite(region);
 
+		ActiveRegion region = rm.findRegion(ac);
+                if (region.isLink())
+                    setCursorEfficiently(pointerCursor);
+                else
+                    setCursorEfficiently(regularCursor);
+
+		ActiveRegion hl_region = findRegionToHilite(region);
 		if (hl_region == null)
 		    hilite(null, null);
 		else 
@@ -103,6 +121,13 @@ public class ActiveTerm extends StreamTerm {
 	    }
 	} );
     } 
+
+    private void setCursorEfficiently(Cursor cursor) {
+        if (cursor == currentCursor)
+            return;
+        currentCursor = cursor;
+        getScreen().setCursor(cursor);
+    }
 
     private ActiveRegion findRegionToHilite(ActiveRegion region) {
 	if (region == null)
@@ -145,6 +170,7 @@ public class ActiveTerm extends StreamTerm {
 	} catch (RegionException x) {
 	    ;
 	} 
+        region.setParentAttrs(attrSave());
 	if (hyperlink) {
 	    setAttribute(34);		// fg -> blue
 	    setAttribute(4);		// underline
@@ -161,18 +187,21 @@ public class ActiveTerm extends StreamTerm {
 	if (bcursor == null)
 	    bcursor = cursor;
 
+        ActiveRegion endedRegion = null;
 	try {
-	    rm.endRegion(bcursor);
+	    endedRegion = rm.endRegion(bcursor);
 	} catch (RegionException x) {
 	    ;
 	}
-	setAttribute(0);		// reset
+	// OLD setAttribute(0);		// reset
+        attrRestore(endedRegion.getParentAttrs());
     } 
 
     public ActiveRegion findRegion(Coord coord) {
 	return rm.findRegion(coord);
     }
 
+    @SuppressWarnings("empty-statement")
     public void cancelRegion() {
 	try {
 	    rm.cancelRegion();
@@ -181,14 +210,32 @@ public class ActiveTerm extends StreamTerm {
 	} 
     }
     
+    @Override
     public void clear() {
         nullLasts();
         super.clear ();
     }
 
+    @Override
     public void clearHistoryNoRefresh() {
         nullLasts();
 	super.clearHistoryNoRefresh ();
+    }
+
+    /**
+     * Create a hyperlink.
+     * @param url
+     * @param text
+     */
+    @Override
+    protected void hyperlink(String url, String text) {
+        // default implementation just dumps out the text
+        ActiveRegion ar = beginRegion(true);
+        ar.setLink(true);
+        ar.setUserObject(url);
+        for (char c : text.toCharArray())
+            ops().op_char(c);
+        endRegion();
     }
     
     private void nullLasts() {

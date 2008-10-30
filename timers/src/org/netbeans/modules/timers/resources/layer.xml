@@ -60,6 +60,7 @@
             <file name="org-netbeans-modules-timers-OpenTimeComponentAction.instance">
                 <attr name="position" intvalue="200"/>
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.timers.OpenTimeComponentAction.create" />
+                <attr name="instanceOf" stringvalue="javax.swing.Action" />
             </file>
         </folder>
     </folder>

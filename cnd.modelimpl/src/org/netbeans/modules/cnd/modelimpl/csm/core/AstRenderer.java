@@ -1413,7 +1413,7 @@ public class AstRenderer {
             AST child = type;
             while((child=child.getNextSibling())!=null){
                 if (child.getType() == CPPTokenTypes.GREATERTHAN){
-                    child = child=child.getNextSibling();
+                    child = child.getNextSibling();
                     if (child != null && (child.getType() == CPPTokenTypes.LITERAL_class ||
                             child.getType() == CPPTokenTypes.LITERAL_struct)){
                         return true;

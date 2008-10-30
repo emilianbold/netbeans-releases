@@ -86,6 +86,10 @@ public class DocumentLoad {
         } catch (IOException e) {
             throw Debug.error(e);
         }
+        if (rootNode == null) {
+            Debug.warning("Mobility: Root not not fould"); // NOI18N
+            return false;
+        }
 
         if (!DocumentSave.VERSION_VALUE_1.equals(getAttributeValue(rootNode, DocumentSave.VERSION_ATTR))) {
             Debug.warning("Invalid version of VisualDesign"); // NOI18N
@@ -162,7 +166,7 @@ public class DocumentLoad {
         Collections.sort(list, new Comparator<ComponentElement>() {
 
             public int compare(ComponentElement o1, ComponentElement o2) {
-                return (int) (o1.getUID () - o2.getUID ());
+                return (int) (o1.getUID() - o2.getUID());
             }
         });
 
@@ -328,24 +332,26 @@ public class DocumentLoad {
     private static Node getRootNode(final FileObject fileObject) throws IOException {
         synchronized (DocumentSave.sync) {
             final Node[] node = new Node[1];
-            fileObject.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            if (fileObject != null) {
+                fileObject.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
 
-                public void run() throws IOException {
-                    Document document = null;
-                    if (fileObject != null) {
-                        FileLock lock = null;
-                        try {
-                            lock = fileObject.lock();
-                            document = getXMLDocument(fileObject);
-                        } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
+                    public void run() throws IOException {
+                        Document document = null;
+                        if (fileObject != null) {
+                            FileLock lock = null;
+                            try {
+                                lock = fileObject.lock();
+                                document = getXMLDocument(fileObject);
+                            } finally {
+                                if (lock != null) {
+                                    lock.releaseLock();
+                                }
                             }
                         }
+                        node[0] = document != null ? document.getFirstChild() : null;
                     }
-                    node[0] = document != null ? document.getFirstChild() : null;
-                }
-            });
+                });
+            }
             return node[0];
         }
     }
@@ -403,6 +409,10 @@ public class DocumentLoad {
         final Node rootNode;
         try {
             rootNode = getRootNode(IOSupport.getDesignFile(context));
+            if (rootNode == null) {
+                Debug.warning("Mobility: Root not not fould"); // NOI18N
+                return ""; //NOI18N
+            }
         } catch (IOException e) {
             throw Debug.error(e);
         }

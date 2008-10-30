@@ -235,7 +235,7 @@ public class GdbConsoleWindow extends TopComponent implements ActionListener, Pr
         programStatus.setText(status);
     }
     
-    class HideTextAction extends AbstractAction {
+    static class HideTextAction extends AbstractAction {
         public HideTextAction() {
             super("Hide Text", new ImageIcon("cut.gif")); //FIXUP //NOI18N
         }

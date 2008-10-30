@@ -58,6 +58,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProviderProperty;
@@ -210,9 +212,12 @@ public class AnalyzeModel implements DiscoveryProvider {
     public boolean isApplicable(ProjectProxy project) {
         if (project.getProject() != null){
             Project makeProject = project.getProject();
-            CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
-            if (langProject != null/* && langProject.isStable(null)*/){
-                return true;
+            ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+            if (pdp.gotDescriptor()) {
+                CsmProject langProject = CsmModelAccessor.getModel().getProject(makeProject);
+                if (langProject != null/* && langProject.isStable(null)*/){
+                    return true;
+                }
             }
         }
         return false;
@@ -258,6 +263,7 @@ public class AnalyzeModel implements DiscoveryProvider {
         private List<SourceFileProperties> getSourceFileProperties(String root){
             List<SourceFileProperties> res = new ArrayList<SourceFileProperties>();
             Map<String,List<String>> searchBase = search(root);
+            PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
             Item[] items = makeConfigurationDescriptor.getProjectItems();
             for (int i = 0; i < items.length; i++){
                 if (isStoped) {
@@ -268,7 +274,7 @@ public class AnalyzeModel implements DiscoveryProvider {
                     Language lang = item.getLanguage();
                     if (lang == Language.C || lang == Language.CPP){
                         CsmFile langFile = langProject.findFile(item);
-                        SourceFileProperties source = new ModelSource(item, langFile, searchBase);
+                        SourceFileProperties source = new ModelSource(item, langFile, searchBase, pkgConfig);
                         res.add(source);
                     }
                 }

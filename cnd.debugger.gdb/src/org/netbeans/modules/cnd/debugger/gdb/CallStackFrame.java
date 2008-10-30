@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.debugger.gdb;
 
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.debugger.gdb.models.AbstractVariable;
 
@@ -66,7 +65,7 @@ public class CallStackFrame {
     private final String address;
     
     private LocalVariable[] cachedLocalVariables = null;
-    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public CallStackFrame(GdbDebugger debugger, String func, String file, String fullname, String lnum, String address, int frameNumber) {
         this.debugger = debugger;

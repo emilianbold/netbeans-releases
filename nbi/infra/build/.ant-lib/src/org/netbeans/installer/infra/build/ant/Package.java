@@ -241,9 +241,23 @@ public class Package extends Task {
                 final String pack200Enabled = getProject().getProperty("pack200.enabled"); //NOI18N
                 boolean usePacking = ! "false".equals(pack200Enabled); //NOI18N
                 
+                boolean mirrorFileExist = false;
+                File mirrorFile = null;
+                if (child.getName().endsWith(".jar.pack.gz")) {
+                    mirrorFile = new File(child.getParentFile(), child.getName().substring(0, child.getName().length() - (".pack.gz".length())));
+                } else if (child.getName().endsWith(".jar")) {
+                    mirrorFile = new File(child + ".pack.gz");
+                }
+
+                if (mirrorFile != null && mirrorFile.exists()) {
+                    log("        mirror packing files exists, skipping repacking : " + mirrorFile);
+                    mirrorFileExist = true;
+                    usePacking = false;
+                }									
+
                 // if the source file comes in already packed, we need to unpack it
                 // first and then process normally                
-                if (child.getName().endsWith(".jar.pack.gz")) { // NOI18N
+                if (!mirrorFileExist && child.getName().endsWith(".jar.pack.gz")) { // NOI18N
                     if(usePacking) {
                         log("        it is a packed jar - unpacking"); // NOI18N
                         File unpacked = new File(child.getPath().substring(

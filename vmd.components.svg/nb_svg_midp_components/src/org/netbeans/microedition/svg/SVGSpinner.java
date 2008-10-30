@@ -367,6 +367,7 @@ public class SVGSpinner extends SVGComponent implements DataListener {
         }
         
         public void handlePointerPress( PointerEvent event ) {
+            requestFocus();
             SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
             if( rect != null ) {
                 SVGRectangle rectangle = new SVGRectangle( rect );

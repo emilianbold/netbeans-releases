@@ -616,7 +616,7 @@
             </Property>
           </AccessibilityProperties>
           <AuxValues>
-            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JSpinner( new SpinnerNumberModel( 0.0, 0.0, 30.0, 1.0))"/>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JSpinner( new SpinnerNumberModel( (double)0.0, (double)0.0, (double)30.0, (double)1.0))"/>
           </AuxValues>
         </Component>
         <Component class="javax.swing.JLabel" name="startTimeLabel">
@@ -674,6 +674,9 @@
               <ResourceString bundle="org/netbeans/modules/mobility/svgcore/export/Bundle.properties" key="A11Y_stopTimeSpinner_description" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new JSpinner( new SpinnerNumberModel( (double)30.0, (double)0.0, (double)30.0, (double)1.0))"/>
+          </AuxValues>
         </Component>
         <Component class="javax.swing.JSlider" name="startTimeSlider">
           <AccessibilityProperties>

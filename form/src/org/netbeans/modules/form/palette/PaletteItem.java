@@ -119,7 +119,7 @@ public final class PaletteItem implements Node.Cookie {
 
     /** @return a node visually representing this palette item */
     public Node getNode() {
-        return (itemDataObject == null) ? null : itemDataObject.getNodeDelegate();
+        return ((itemDataObject == null) || !itemDataObject.isValid()) ? null : itemDataObject.getNodeDelegate();
     }
 
     /** @return a String identifying this palette item */

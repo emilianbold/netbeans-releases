@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
@@ -59,42 +58,41 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 public class MakeProjectOperations implements DeleteOperationImplementation, CopyOperationImplementation, MoveOperationImplementation {
-    
+
     private MakeProject project;
-    
+
     public MakeProjectOperations(MakeProject project) {
         this.project = project;
     }
-    
+
     private static void addFile(FileObject projectDirectory, String fileName, List/*<FileObject>*/ result) {
         FileObject file = projectDirectory.getFileObject(fileName);
-        
+
         if (file != null) {
             result.add(file);
         }
     }
-    
+
     public List/*<FileObject>*/ getMetadataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
         List/*<FileObject>*/ files = new ArrayList();
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         addFile(projectDirectory, "nbproject", files); // NOI18N
-        addFile(projectDirectory, ((MakeConfigurationDescriptor)pdp.getConfigurationDescriptor()).getProjectMakefileName(), files); // NOI18N
-        
+        addFile(projectDirectory, ((MakeConfigurationDescriptor) pdp.getConfigurationDescriptor()).getProjectMakefileName(), files); // NOI18N
+
         return files;
     }
-    
+
     public List/*<FileObject>*/ getDataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
-        String projectMakefileName = ((MakeConfigurationDescriptor)pdp.getConfigurationDescriptor()).getProjectMakefileName();
-        
+
         List/*<FileObject>*/ files = new ArrayList();
         FileObject[] children = projectDirectory.getChildren();
         List metadataFiles = getMetadataFiles();
         for (int i = 0; i < children.length; i++) {
-            if (metadataFiles.indexOf(children[i]) < 0)
+            if (metadataFiles.indexOf(children[i]) < 0) {
                 files.add(children[i]);
+            }
         }
         if (files.size() == 0) {
             // FIXUP: Don't return empty list. If the list is empty, the "Also Delete Sources" checkbox in the dialog is disabled and the project dir cannot be deleted.
@@ -103,7 +101,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         }
         return files;
     }
-    
+
     public void notifyDeleting() throws IOException {
 //        J2SEActionProvider ap = (J2SEActionProvider) project.getLookup().lookup(J2SEActionProvider.class);
 //        
@@ -119,29 +117,29 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //        
 //        ActionUtils.runTarget(buildXML, targetNames, p).waitFinished();
     }
-    
+
     public void notifyDeleted() throws IOException {
         project.getAntProjectHelper().notifyDeleted();
-	NativeProject nativeProject = (NativeProject) project.getLookup().lookup(NativeProject.class);
-	if( nativeProject instanceof NativeProjectProvider ) {
-	    ((NativeProjectProvider) nativeProject).fireProjectDeleted();
-	}
+        NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+        if (nativeProject instanceof NativeProjectProvider) {
+            ((NativeProjectProvider) nativeProject).fireProjectDeleted();
+        }
     }
-    
+
     public void notifyCopying() {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor().save();
         // Also move private
-        MakeSharabilityQuery makeSharabilityQuery = (MakeSharabilityQuery)project.getLookup().lookup(MakeSharabilityQuery.class );
+        MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
     }
-    
+
     public void notifyCopied(Project original, File originalPath, String nueName) {
         if (original == null) {
             //do nothing for the original project.
-            return ;
+            return;
         }
-        
+
         // Update all external relative paths
         String originalFilePath = originalPath.getPath();
         String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
@@ -149,33 +147,33 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             //String fromOriginalToNew = IpeUtils.getRelativePath(originalFilePath, newFilePath);
             String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
             fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
-        
+
 //      fixDistJarProperty (nueName);
 //      project.getReferenceHelper().fixReferences(originalPath);
-        
+
         project.setName(nueName);
-        
-        MakeSharabilityQuery makeSharabilityQuery = (MakeSharabilityQuery)original.getLookup().lookup(MakeSharabilityQuery.class );
+
+        MakeSharabilityQuery makeSharabilityQuery = original.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(false);
     }
-    
+
     public void notifyMoving() throws IOException {
-        ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
         pdp.getConfigurationDescriptor().save();
         notifyDeleting();
         // Also move private
-        MakeSharabilityQuery makeSharabilityQuery = (MakeSharabilityQuery)project.getLookup().lookup(MakeSharabilityQuery.class );
+        MakeSharabilityQuery makeSharabilityQuery = project.getLookup().lookup(MakeSharabilityQuery.class);
         makeSharabilityQuery.setPrivateShared(true);
     }
-    
+
     public void notifyMoved(Project original, File originalPath, String nueName) {
         if (original == null) {
             project.getAntProjectHelper().notifyDeleted();
-            return ;
-        }                
+            return;
+        }
         // Update all external relative paths
         String originalFilePath = originalPath.getPath();
         String newFilePath = FileUtil.toFile(project.getProjectDirectory()).getPath();
@@ -183,28 +181,29 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
             //String fromOriginalToNew = IpeUtils.getRelativePath(originalFilePath, newFilePath);
             String fromNewToOriginal = IpeUtils.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
             fromNewToOriginal = FilePathAdaptor.normalize(fromNewToOriginal);
-            ConfigurationDescriptorProvider pdp = (ConfigurationDescriptorProvider)project.getLookup().lookup(ConfigurationDescriptorProvider.class );
+            ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
 //      fixDistJarProperty (nueName);
-        project.setName(nueName);        
+        project.setName(nueName);
 //	project.getReferenceHelper().fixReferences(originalPath);
     }
-    
+
     private static boolean isParent(File folder, File fo) {
-        if (folder.equals(fo))
+        if (folder.equals(fo)) {
             return false;
-        
+        }
+
         while (fo != null) {
-            if (fo.equals(folder))
+            if (fo.equals(folder)) {
                 return true;
-            
+            }
+
             fo = fo.getParentFile();
         }
-        
+
         return false;
     }
-    
 //    private void fixDistJarProperty (final String newName) {
 //        ProjectManager.mutex().writeAccess(new Runnable () {
 //            public void run () {
@@ -219,5 +218,4 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 //            }
 //        });
 //    }
-    
 }

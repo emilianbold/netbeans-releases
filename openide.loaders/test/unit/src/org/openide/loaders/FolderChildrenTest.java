@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -58,12 +59,15 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.*;
 
 import org.openide.loaders.DefaultDataObjectTest.JspLoader;
 import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -95,7 +99,7 @@ public class FolderChildrenTest extends NbTestCase {
 
     public static Test suite() {
         Test t = null;
-//        t = new FolderChildrenTest("testDeadlockWithChildrenMutex");
+//        t = new FolderChildrenTest("testALotOfHiddenEntries");
         if (t == null) {
             t = new NbTestSuite(FolderChildrenTest.class);
         }
@@ -731,6 +735,84 @@ public class FolderChildrenTest extends NbTestCase {
 
         assertNodes( arr, new String[] { "A" } );
     }
+
+    public void testALotOfHiddenEntries() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileObject folder = FileUtil.createFolder(fs.getRoot(), "aLotOf");
+        List<FileObject> arr = new ArrayList<FileObject>();
+        final int FILES = 1000;
+        for (int i = 0; i < FILES; i++) {
+            arr.add(FileUtil.createData(folder, "" + i + ".dat"));
+        }
+
+        DataFolder df = DataFolder.findFolder(folder);
+
+        VisQ visq = new VisQ();
+
+        FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(df.createNodeChildren(visq))));
+        class L implements NodeListener {
+            int cnt;
+
+            public void childrenAdded(NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            public void childrenRemoved(NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            public void childrenReordered(NodeReorderEvent ev) {
+                cnt++;
+            }
+
+            public void nodeDestroyed(NodeEvent ev) {
+                cnt++;
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                cnt++;
+            }
+        }
+        L listener = new L();
+        fn.addNodeListener(listener);
+
+        List<Node> nodes = new ArrayList<Node>();
+        int cnt = fn.getChildren().getNodesCount(true);
+        List<Node> snapshot = fn.getChildren().snapshot();
+        assertEquals("Count as expected", cnt, snapshot.size());
+        for (int i = 0; i < cnt; i++) {
+            nodes.add(snapshot.get(i));
+        }
+        assertEquals("No events delivered", 0, listener.cnt);
+        assertEquals("Size is half cut", FILES / 2, fn.getChildren().getNodesCount(true));
+    }
+
+    public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {
+        public boolean isVisible(FileObject file) {
+            try {
+                int number = Integer.parseInt(file.getName());
+                return number % 2 == 0;
+            } catch (NumberFormatException numberFormatException) {
+                return true;
+            }
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+        }
+
+        public boolean acceptDataObject(DataObject obj) {
+            return isVisible(obj.getPrimaryFile());
+        }
+
+        public boolean acceptFileObject(FileObject obj) {
+            return isVisible(obj);
+        }
+
+    }
+
 
     public static final class Pool extends DataLoaderPool {
         private static Class<? extends DataLoader> loader;

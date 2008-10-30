@@ -58,15 +58,12 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 public class StartActionProvider extends ActionsProvider {
     
     private GdbDebugger debuggerImpl;
-    private ContextProvider lookupProvider;
 
     /**
      * Creates a new instance of StartActionProvider
      */
     public StartActionProvider(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
         debuggerImpl = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        
     }
     
     /**

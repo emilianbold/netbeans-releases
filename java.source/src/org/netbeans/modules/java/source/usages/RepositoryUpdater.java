@@ -283,11 +283,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             assert changedCp != null;
             if (LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "ClassPath change, cp={0}", changedCp.toString());
-            for (ClassPath.Entry e : changedCp.entries()) {
-                URL root = e.getURL();
-                scheduleCompilation(root,root, true, false);
+            final List<ClassPath.Entry> entries = changedCp.entries();
+            final List<URL> roots = new ArrayList<URL>(entries.size());            
+            for (ClassPath.Entry e : entries) {
+                roots.add (e.getURL());                
             }
-            
+            submit(Work.filterChange(roots, true));
             return ;
         }
         

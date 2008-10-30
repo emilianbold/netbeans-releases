@@ -71,7 +71,7 @@ public class UIDCsmConverter {
     ////////////////////////////////////////////////////////////////////////////
     // UID -> Object
     
-    private static int lastHash = 0;
+//    private static int lastHash = 0;
 	    
     public static CsmFile UIDtoFile(CsmUID<CsmFile> uid) {
         try {

@@ -734,11 +734,11 @@ public class TraceModel extends TraceModelBase {
 	return wasWait;
     }
 
-    private void sleep(int timeout, String message) {
-	System.err.printf("Sleeping: %s\n", message);
-	sleep(timeout);
-	System.err.printf("Awoke (%s)\n", message);
-    }
+//    private void sleep(int timeout, String message) {
+//	System.err.printf("Sleeping: %s\n", message);
+//	sleep(timeout);
+//	System.err.printf("Awoke (%s)\n", message);
+//    }
     
     private void sleep(int timeout) {
 	try {
@@ -776,10 +776,10 @@ public class TraceModel extends TraceModelBase {
 	return map;
     }
 
-    private APTPreprocHandler getPreprocHandler(File file) {
-	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
-	return preprocHandler;
-    }
+//    private APTPreprocHandler getPreprocHandler(File file) {
+//	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
+//	return preprocHandler;
+//    }
 
     private APTMacroMap getSysMap(File file) {
 	APTMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
@@ -1268,9 +1268,9 @@ public class TraceModel extends TraceModelBase {
 	frame.setVisible(true);
     }
 
-    private boolean isDummyUnresolved(CsmDeclaration decl) {
-	return decl == null || decl instanceof Unresolved.UnresolvedClass;
-    }
+//    private boolean isDummyUnresolved(CsmDeclaration decl) {
+//	return decl == null || decl instanceof Unresolved.UnresolvedClass;
+//    }
 
     public static void dumpAst(AST ast) {
 	ASTVisitor visitor = new ASTVisitor() {

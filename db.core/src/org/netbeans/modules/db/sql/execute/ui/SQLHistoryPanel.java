@@ -815,7 +815,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void insertUpdate(DocumentEvent evt) {
-            List<String> currentSQLList = view.getSQLList(sortData());
+            List<String> currentSQLList = view.getSQLList(view.getCurrentSQLHistoryList());
 
             // Read the contents
             try {
@@ -856,7 +856,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
 
         public void removeUpdate(DocumentEvent evt) {
-            List<String> currentSQLList = view.getSQLList(sortData());
+            List<String> currentSQLList = view.getSQLList(view.getCurrentSQLHistoryList());
 
              // Read the contents
             try {
@@ -912,9 +912,6 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
 
         public List<SQLHistory> sortData() {
             // Refresh the table
-//            sqlHistoryTable.revalidate();
-            List<SQLHistory> sqlHistoryList = view.getSQLHistoryList();
-//            searchTextField.setText(""); // NOI18N
             List<SQLHistory> filteredSQLHistoryList = view.filterSQLHistoryList();
             SQLComparator sqlComparator = new SQLComparator(sortCol, sortAsc);
             Collections.sort(filteredSQLHistoryList, sqlComparator);
