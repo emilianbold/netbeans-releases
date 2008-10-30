@@ -490,7 +490,7 @@ public class TaskProcessor {
                                     assert r.task instanceof ParserResultTask : "Illegal request: EmbeddingProvider has to be bound to Source";     //NOI18N
                                     parserLock.lock ();
                                     try {
-                                        ((ParserResultTask)r.task).run (null, null);
+                                        ((ParserResultTask)r.task).run (null);
                                     } catch (RuntimeException re) {
                                         Exceptions.printStackTrace(re);
                                     }
@@ -548,7 +548,7 @@ public class TaskProcessor {
                                                                         if (LOGGER.isLoggable(Level.FINE)) {
                                                                             LOGGER.fine("Running Task: " + r.toString());
                                                                         }
-                                                                        ((ParserResultTask)r.task).run (currentResult,sourceCache.getSnapshot ());                                                                        
+                                                                        ((ParserResultTask)r.task).run (currentResult);                                                                        
                                                                     }
                                                                     else {
                                                                         assert false : "Unknown task type: " + r.task.getClass();   //NOI18N
@@ -651,7 +651,7 @@ public class TaskProcessor {
             public void cancel() {
             }
             @Override
-            public void run(Result result, Snapshot snapshot) {
+            public void run(Result result) {
             }
         },null, false, null);
         

@@ -123,10 +123,28 @@ public abstract class Parser {
      */
     public abstract static class Result {
         
+        private final Snapshot snapshot;
+        
+        /**
+         * Creates a {@link Result} for given snapshot
+         * @param snapshot
+         */
+        protected Result (final Snapshot snapshot) {
+            this.snapshot = snapshot;
+        }
+        
+        /**
+         * Returns a {@link Snapshot} represented by this {@link Result}
+         * @return
+         */
+        public Snapshot getSnapshot () {
+            return this.snapshot;
+        }                        
         /**
          * This method is called by Parsing API, when {@link Task} is finished.
          */
         protected abstract void invalidate ();
+        
     }
     
     

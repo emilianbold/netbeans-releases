@@ -44,7 +44,6 @@ import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
 
 
 /**
@@ -81,6 +80,6 @@ public class UserTaskImpl extends MultiLanguageUserTask {
                 return;
             }
         }
-        userTask.run (resultIterator.getParserResult (), resultIterator.getSnapshot ());
+        userTask.run (resultIterator.getParserResult ());
     }
 }

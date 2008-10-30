@@ -54,10 +54,9 @@ public abstract class UserTask extends Task {
      * Called when parser is finished.
      * 
      * @param result        A result of parsing.
-     * @param snapshot      A snapshot that was parsed.
      * @throws Exception rethrown by the infrastructure as a {@link org.netbeans.modules.parsing.spi.ParseException}.
      */
-    public abstract void run (Parser.Result result, Snapshot snapshot) throws Exception;
+    public abstract void run (Parser.Result result) throws Exception;
 }
 
 

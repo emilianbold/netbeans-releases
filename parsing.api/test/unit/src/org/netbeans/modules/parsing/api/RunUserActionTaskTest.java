@@ -128,15 +128,18 @@ public class RunUserActionTaskTest extends NbTestCase {
                     assertEquals ("stovaci fi", snapshots[0].getText ().toString ());
                     counter.check (4);
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             assertEquals (snapshot, snapshots [0]);
                             counter.check (5);
+                            last = snapshot;
                         }
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (6);
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (8);
                                 }
@@ -170,7 +173,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         // 3) call user action task
         counter.check (1);
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (7);
             }
         }, 15);
@@ -197,11 +200,14 @@ public class RunUserActionTaskTest extends NbTestCase {
                     assertEquals ("text/foo", snapshots[0].getMimeType ());
                     counter.check (2);
                     Parser p = new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             assertEquals (snapshot, snapshots [0]);
                             assertEquals (parser [0], this);
                             counter.check (3);
+                            last = snapshot;
                         }
 
                         Stack<Integer> s1 = new Stack<Integer> ();
@@ -213,7 +219,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             assertEquals (parser [0], this);
                             counter.check (s1.pop ());
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -249,7 +255,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         // 3) call user action task
         counter.check (1);
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (5);
             }
         }, 15);
@@ -257,7 +263,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         // 4) call user action task again
         counter.check (7); 
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (9); 
             }
         }, 15);
@@ -316,6 +322,8 @@ public class RunUserActionTaskTest extends NbTestCase {
                     assertEquals ("stovaci fi", snapshots[0].getText ().toString ());
                     counter.check (3);
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             assertEquals (snapshot, snapshots [0]);
@@ -330,7 +338,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -364,7 +372,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         // 3) call user action task
         counter.check (1);
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (6);
             }
         }, 15);
@@ -372,7 +380,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         // 4) call user action task again
         counter.check (8);
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (10);
             }
         }, 15);
@@ -435,6 +443,8 @@ public class RunUserActionTaskTest extends NbTestCase {
                     assertEquals ("stovaci fi", snapshots[0].getText ().toString ());
                     counter.check (3);
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         Stack<Integer> s3 = new Stack<Integer> ();
                         {s3.push (14);s3.push (4);}
@@ -443,6 +453,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s3.pop ());
+                            last = snapshot;
                         }
 
                         Stack<Integer> s1 = new Stack<Integer> ();
@@ -453,7 +464,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -489,18 +500,18 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (1);
         final String text[] = new String [1];
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (6);
-                text[0] = snapshot.getText ().toString ();
+                text[0] = result.getSnapshot().getText ().toString ();
             }
         }, 15);
 
         // 4) call user action task again
         counter.check (8);
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (10);
-                assertEquals (text [0], snapshot.getText ().toString ());
+                assertEquals (text [0], result.getSnapshot().getText ().toString ());
             }
         }, 15);
         
@@ -521,9 +532,9 @@ public class RunUserActionTaskTest extends NbTestCase {
         
         // 6) call user action task
         ParserManager.parse (source, new UserTask() {
-            public void run (Result result, Snapshot snapshot) throws Exception {
+            public void run (Result result) throws Exception {
                 counter.check (16);
-                assertNotSame (text [0], snapshot.getText ().toString ());
+                assertNotSame (text [0], result.getSnapshot().getText ().toString ());
             }
         }, 15);
         counter.check (18);

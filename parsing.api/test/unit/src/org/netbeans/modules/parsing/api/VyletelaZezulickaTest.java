@@ -83,14 +83,17 @@ public class VyletelaZezulickaTest extends NbTestCase {
         MockMimeLookup.setInstances (
             MimePath.get ("text/foo"), 
             new ParserFactory () {
-                public Parser createParser (Collection<Snapshot> snapshots2) {
+                public Parser createParser (Collection<Snapshot> snapshots2) {                                                            
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                            last = snapshot;
                         }
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                 }
                             };
@@ -118,18 +121,18 @@ public class VyletelaZezulickaTest extends NbTestCase {
 
                             boolean done = false;
                             
-                            public void run (Result result, Snapshot snapshot) {
+                            public void run (Result result) {
                                 if (!done) {
-                                    counter.check ("text/foo", snapshot.getMimeType ());
+                                    counter.check ("text/foo", result.getSnapshot().getMimeType ());
                                     counter.check (1);
                                     counter.wait (4);
                                     try {
-                                        final String original = snapshot.getText ().toString ();
+                                        final String original = result.getSnapshot().getText ().toString ();
                                         ParserManager.parse (
-                                            snapshot.getSource (), 
+                                            result.getSnapshot().getSource (), 
                                             new UserTask() {
-                                                public void run (Result result, Snapshot snapshot) throws Exception {
-                                                    counter.check (original, snapshot.getText ().toString ());
+                                                public void run (Result result) throws Exception {
+                                                    counter.check (original, result.getSnapshot().getText ().toString ());
                                                     counter.check (5);
                                                 }
                                             }, 
@@ -191,8 +194,8 @@ public class VyletelaZezulickaTest extends NbTestCase {
         ParserManager.parse (
             source, 
             new UserTask () {
-                public void run (Result result, Snapshot snapshot) throws Exception {
-                    counter.check ("Toto je testovaci2 file, na kterem se budou delat hnusne pokusy!!!", snapshot.getText ().toString ());
+                public void run (Result result) throws Exception {
+                    counter.check ("Toto je testovaci2 file, na kterem se budou delat hnusne pokusy!!!", result.getSnapshot().getText ().toString ());
                     counter.wait (7);
                 }
             }, 

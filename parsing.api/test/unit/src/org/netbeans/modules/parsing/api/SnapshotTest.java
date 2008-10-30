@@ -171,12 +171,15 @@ public class SnapshotTest extends NbTestCase {
         MockMimeLookup.setInstances(MimePath.get("text/foo"), new ParserFactory(){
             public Parser createParser (Collection<Snapshot> snapshots) {
                 return new Parser () {
+                    
+                    private Snapshot last;
+                    
                     public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
-
+                        last = snapshot;
                     }
 
                     public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-                        return new Result () {
+                        return new Result (last) {
                             protected void invalidate (){}
                         };
                     }
@@ -212,7 +215,7 @@ public class SnapshotTest extends NbTestCase {
 
         final Source src = Source.create(testFile);
         final ParserResultTask<Parser.Result> pr = new ParserResultTask<Parser.Result>() {
-            public void run (Parser.Result r, Snapshot s) {
+            public void run (Parser.Result r) {
 
             }
 

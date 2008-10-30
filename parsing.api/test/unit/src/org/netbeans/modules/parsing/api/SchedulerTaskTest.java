@@ -88,14 +88,17 @@ public class SchedulerTaskTest extends NbTestCase {
             new ParserFactory () {
                 public Parser createParser (Collection<Snapshot> snapshots2) {
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             counter.check (2);
+                            last = snapshot;
                         }
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (3);
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (5);
                                 }
@@ -145,8 +148,8 @@ public class SchedulerTaskTest extends NbTestCase {
                         },
                         new ParserResultTask () {
 
-                            public void run (Result result, Snapshot snapshot) {
-                                counter.check ("text/foo", snapshot.getMimeType ());
+                            public void run (Result result) {
+                                counter.check ("text/foo", result.getSnapshot().getMimeType ());
                                 counter.check (4);
                             }
 
@@ -176,15 +179,18 @@ public class SchedulerTaskTest extends NbTestCase {
             new ParserFactory () {
                 public Parser createParser (Collection<Snapshot> snapshots2) {
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             counter.check ("text/boo", snapshot.getMimeType ());
                             counter.check (6);
+                            last = snapshot;
                         }
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (7);
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (9);
                                 }
@@ -211,7 +217,7 @@ public class SchedulerTaskTest extends NbTestCase {
                     return Arrays.asList (new SchedulerTask[] {
                         new ParserResultTask () {
 
-                            public void run (Result result, Snapshot snapshot) {
+                            public void run (Result result) {
                                 counter.check (8);
                             }
 
@@ -267,9 +273,12 @@ public class SchedulerTaskTest extends NbTestCase {
             new ParserFactory () {
                 public Parser createParser (Collection<Snapshot> snapshots2) {
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             counter.check (2);
+                            last = snapshot;
                         }
 
                         Stack<Integer> s1 = new Stack<Integer> ();
@@ -283,7 +292,7 @@ public class SchedulerTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -345,8 +354,8 @@ public class SchedulerTaskTest extends NbTestCase {
                             Stack<String> results = new Stack<String> ();
                             {results.push ("foo3");results.push ("foo1");}
                             
-                            public void run (Result result, Snapshot snapshot) {
-                                counter.check ("text/foo", snapshot.getMimeType ());
+                            public void run (Result result) {
+                                counter.check ("text/foo", result.getSnapshot().getMimeType ());
                                 counter.check (results.pop (), result.toString ());
                                 counter.check (s1.pop ());
                             }
@@ -377,10 +386,13 @@ public class SchedulerTaskTest extends NbTestCase {
             new ParserFactory () {
                 public Parser createParser (Collection<Snapshot> snapshots2) {
                     return new Parser () {
+                        
+                        private Snapshot last;
 
                         public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
                             counter.check ("text/boo", snapshot.getMimeType ());
                             counter.check (6);
+                            last = snapshot;
                         }
 
                         Stack<Integer> s1 = new Stack<Integer> ();
@@ -394,7 +406,7 @@ public class SchedulerTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result () {
+                            return new Result (last) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                     synchronized (LOCK) {
@@ -432,9 +444,9 @@ public class SchedulerTaskTest extends NbTestCase {
                             Stack<String> results = new Stack<String> ();
                             {results.push ("boo3");results.push ("boo1");}
 
-                            public void run (Result result, Snapshot snapshot) {
+                            public void run (Result result) {
                                 counter.check (results.pop (), result.toString ());
-                                counter.check ("text/boo", snapshot.getMimeType ());
+                                counter.check ("text/boo", result.getSnapshot().getMimeType ());
                                 counter.check (s1.pop ());
                             }
 
