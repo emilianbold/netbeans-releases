@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
 import javax.xml.parsers.ParserConfigurationException;
 import java.net.URL;
@@ -95,7 +96,7 @@ public class InstallerTest extends NbTestCase {
     }
     
     public void testEmptyLog() throws Exception {
-        List<LogRecord> list = Installer.getLogs();
+        List<LogRecord> list = ScreenSizeTest.removeScreenSizeLogs(Installer.getLogs());
         assertEquals("Empty", 0, list.size());
         list.add(null);
         assertEquals("One", 1, list.size());
@@ -111,20 +112,20 @@ public class InstallerTest extends NbTestCase {
         
         installer.restored();
         UIHandler.waitFlushed();
-        assertEquals("One log is available: " + Installer.getLogs(), 1, Installer.getLogsSize());
+        assertEquals("One log is available: " + Installer.getLogs(), 1, InstallerTest.getLogsSize());
         assertEquals("The right message is there", 
-            "Something happened", Installer.getLogs().get(0).getMessage()
+            "Something happened", Installer.getLogs().get(1).getMessage()
         );
         log.warning("Something happened");
         log.warning("Something happened");
         log.warning("Something happened");
-        assertEquals("Four logs available: " + Installer.getLogs(), 4, Installer.getLogsSize());
+        assertEquals("Four logs available: " + Installer.getLogs(), 4, InstallerTest.getLogsSize());
         
         // upload done
         Installer.clearLogs();
         
         log.warning("Something happened");
-        assertEquals("One log available: " + Installer.getLogs(), 1, Installer.getLogsSize());
+        assertEquals("One log available: " + Installer.getLogs(), 1, InstallerTest.getLogsSize());
         
     }
 
@@ -473,7 +474,7 @@ public class InstallerTest extends NbTestCase {
         }
     }
     
-    private static Object[] parseButtons(InputStream is, Object def) throws IOException, ParserConfigurationException, SAXException {
+    private static Object[] parseButtons(InputStream is, Object def) throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
         DialogDescriptor dd = new DialogDescriptor(null, null);
         Installer.parseButtons(is, def, dd);
         return dd.getOptions();
@@ -501,7 +502,7 @@ public class InstallerTest extends NbTestCase {
 
             @Override
             public void publish(LogRecord record) {
-                if ("posting upload".equals(record.getMessage())){
+                if ("posting upload UIGESTURES".equals(record.getMessage())){
                     interactive.actionPerformed(evt);
                 }
                 if ("ALREADY SUBMITTING".equals(record.getMessage())){
@@ -519,6 +520,12 @@ public class InstallerTest extends NbTestCase {
         });
         interactive.actionPerformed(evt);
         assertTrue(submittingTwiceStopped.get());
+    }
+
+    static int getLogsSize(){
+        List<LogRecord> logs = Installer.getLogs();
+        logs = ScreenSizeTest.removeScreenSizeLogs(logs);
+        return logs.size();
     }
 
 }
