@@ -51,6 +51,7 @@ var BUILD_LOCATION = "";
 var LOAD_OMNITURE_CODE = 1;
 var LOAD_GOOGLE_ANALYTICS_CODE = 1;
 var USE_BOUNCER = 0;
+var ADD_VERSION_INFO_TO_URL = 0;
 
 var BOUNCER_URL = "http://services.netbeans.org/bouncer/index.php";
 
