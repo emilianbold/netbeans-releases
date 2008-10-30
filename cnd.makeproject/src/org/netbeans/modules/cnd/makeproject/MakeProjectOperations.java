@@ -85,7 +85,6 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
 
     public List/*<FileObject>*/ getDataFiles() {
         FileObject projectDirectory = project.getProjectDirectory();
-        ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
 
         List/*<FileObject>*/ files = new ArrayList();
         FileObject[] children = projectDirectory.getChildren();
