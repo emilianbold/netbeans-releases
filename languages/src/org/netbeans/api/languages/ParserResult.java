@@ -44,6 +44,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.parser.SyntaxError;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 
 /**
@@ -54,11 +55,13 @@ public class ParserResult extends Parser.Result {
 
     
     public static ParserResult create (
+        Snapshot            snapshot,
         Document            document,
         ASTNode             rootNode, 
         List<SyntaxError>   syntaxErrors
     ) {
         return new ParserResult (
+            snapshot,
             document, 
             rootNode, 
             syntaxErrors
@@ -78,10 +81,12 @@ public class ParserResult extends Parser.Result {
                             syntaxErrors;
 
     private ParserResult (
+        Snapshot            snapshot,
         Document            document,
         ASTNode             rootNode, 
         List<SyntaxError>   syntaxErrors
     ) {
+        super (snapshot);
         this.document =     document;
         this.rootNode =     rootNode;
         this.syntaxErrors = syntaxErrors;

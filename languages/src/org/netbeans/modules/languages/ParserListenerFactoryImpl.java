@@ -120,7 +120,7 @@ public class ParserListenerFactoryImpl extends TaskFactory {
         }
 
         @Override
-        public void run (ParserResult parserResult, Snapshot snapshot) {
+        public void run (ParserResult parserResult) {
             Iterator<Set<ASTEvaluator>> it = evaluators.values ().iterator ();
             while (it.hasNext ()) {
                 Iterator<ASTEvaluator> it2 = it.next ().iterator ();

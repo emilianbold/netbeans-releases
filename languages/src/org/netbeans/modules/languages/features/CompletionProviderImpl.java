@@ -353,7 +353,7 @@ public class CompletionProviderImpl implements CompletionProvider {
             try {
                 ParserManager.parse (source, new UserTask () {
                     @Override
-                    public void run(Parser.Result result, Snapshot snapshot) {
+                    public void run(Parser.Result result) {
                         if (resultSet.isFinished ()) return;
                         addParserTags ((ParserResult) result, resultSet, language);
                         resultSet.finish ();
