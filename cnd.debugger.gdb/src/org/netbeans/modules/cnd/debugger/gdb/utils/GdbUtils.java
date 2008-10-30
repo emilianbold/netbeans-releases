@@ -638,7 +638,7 @@ public class GdbUtils {
             } else if (ch == rbrace && count == 0) {
                 return idx;
             } else if (ch == '\"' && !isSlashBefore(s, idx)) {
-                inDoubleQuote = !inDoubleQuote;
+                inDoubleQuote ^= inDoubleQuote; // fast boolean inversion
             } else if (ch == '\'') {
                 inSingleQuote = true;
             } else {

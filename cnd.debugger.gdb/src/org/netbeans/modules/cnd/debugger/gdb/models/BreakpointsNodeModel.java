@@ -149,7 +149,7 @@ public class BreakpointsNodeModel implements NodeModel {
         if (o instanceof LineBreakpoint) {
             return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Line_Breakpoint", // NOI18N
                     EditorContextBridge.getFileName((LineBreakpoint) o),
-                    "" + ((LineBreakpoint) o).getLineNumber()); // NOI18N
+                    ((LineBreakpoint) o).getLineNumber()); // NOI18N
         } else if (o instanceof FunctionBreakpoint) {
             FunctionBreakpoint b = (FunctionBreakpoint) o;
             String className = "";
@@ -167,7 +167,6 @@ public class BreakpointsNodeModel implements NodeModel {
             }
         } else if (o instanceof AddressBreakpoint) {
             return NbBundle.getMessage(BreakpointsNodeModel.class, "CTL_Address_Breakpoint", // NOI18N
-                    EditorContextBridge.getFileName((AddressBreakpoint) o),
                     ((AddressBreakpoint) o).getAddress()); // NOI18N
         } else {
             throw new UnknownTypeException(o);
