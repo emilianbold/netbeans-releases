@@ -36,22 +36,20 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.maven.bridges.debugger;
+package org.netbeans.modules.maven.spi.debug;
 
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
+import org.openide.windows.InputOutput;
 
 /**
- *
+ * instance to be found in project's lookup. allows to attach a debugger to the
+ * maven project execution.
  * @author mkleint
  */
 public interface MavenDebugger {
     
-    void attachDebugger(MavenProject project, Log log, String name, 
+    void attachDebugger(InputOutput log, String name,
             final String transport,
             final String host, 
-            final String address) throws MojoFailureException, MojoExecutionException;
+            final String address) throws Exception;
     
 }
