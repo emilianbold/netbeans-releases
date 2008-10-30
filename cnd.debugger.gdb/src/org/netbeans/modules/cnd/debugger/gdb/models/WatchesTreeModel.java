@@ -78,7 +78,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     private final Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
     private final Set<Object> expandedNodes = new WeakSet<Object>();
     private final Set<Object> collapsedNodes = new WeakSet<Object>();
-    private final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);

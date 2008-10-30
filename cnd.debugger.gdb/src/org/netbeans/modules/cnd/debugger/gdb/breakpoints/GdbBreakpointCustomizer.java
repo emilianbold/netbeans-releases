@@ -55,18 +55,13 @@ import org.netbeans.spi.debugger.ui.Controller;
  */
 public class GdbBreakpointCustomizer extends JPanel implements Customizer, Controller {
     
-    private GdbBreakpoint b;
     private JComponent c;
     
-    public GdbBreakpointCustomizer() {
-    }
-
     public void setObject(Object bean) {
         if (!(bean instanceof GdbBreakpoint)) {
             throw new IllegalArgumentException(bean.toString());
         }
-        this.b = (GdbBreakpoint) bean;
-        init(b);
+        init((GdbBreakpoint) bean);
     }
     
     private void init(GdbBreakpoint b) {

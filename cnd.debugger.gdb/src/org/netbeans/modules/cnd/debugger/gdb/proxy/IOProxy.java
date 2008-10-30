@@ -115,7 +115,11 @@ public abstract class IOProxy {
 
     @Override
     protected void finalize() throws Throwable {
-        stop();
+        try {
+            stop();
+        } finally {
+            super.finalize();
+        }
     }
 
     public abstract String getInFilename();
