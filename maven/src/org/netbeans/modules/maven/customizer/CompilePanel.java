@@ -39,16 +39,9 @@
 
 package org.netbeans.modules.maven.customizer;
 
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
 import org.apache.maven.profiles.Profile;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -56,6 +49,11 @@ import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
 import org.openide.util.NbBundle;
 
@@ -129,7 +127,10 @@ public class CompilePanel extends javax.swing.JPanel {
                     val = prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE);
                 }
                 if (val == null) {
-                    val = handle.getPOMModel().getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE);
+                    Properties props = handle.getPOMModel().getProject().getProperties();
+                    if (props != null) {
+                        val = props.getProperty(Constants.HINT_COMPILE_ON_SAVE);
+                    }
                 }
                 if (val == null) {
                     MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
@@ -163,7 +164,12 @@ public class CompilePanel extends javax.swing.JPanel {
                 }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_COMPILE_ON_SAVE)) {
-                    handle.getPOMModel().addProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value); //NOI18N
+                    Properties modprops = handle.getPOMModel().getProject().getProperties();
+                    if (modprops == null) {
+                        modprops = handle.getPOMModel().getFactory().createProperties();
+                        handle.getPOMModel().getProject().setProperties(modprops);
+                    }
+                    modprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value); //NOI18N
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
@@ -314,51 +320,45 @@ public class CompilePanel extends javax.swing.JPanel {
         if (debug != null && debug.contains(value)) {
             return;
         }
-        Plugin plugin = new Plugin();
-        plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
-        plugin.setArtifactId(Constants.PLUGIN_COMPILER);
-        plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_COMPILER));
+        POMModel model = handle.getPOMModel();
         Plugin old = null;
-        Build bld = handle.getPOMModel().getBuild();
+        Plugin plugin;
+        Build bld = model.getProject().getBuild();
         if (bld != null) {
-            old = (Plugin) bld.getPluginsAsMap().get(plugin.getKey());
+            old = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
         } else {
-            handle.getPOMModel().setBuild(new Build());
+            bld = model.getFactory().createBuild();
+            model.getProject().setBuild(bld);
         }
         if (old != null) {
             plugin = old;
         } else {
-            handle.getPOMModel().getBuild().addPlugin(plugin);
+            plugin = model.getFactory().createPlugin();
+            plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
+            plugin.setArtifactId(Constants.PLUGIN_COMPILER);
+            plugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_COMPILER));
+            bld.addPlugin(plugin);
         }
-        Xpp3Dom dom = (Xpp3Dom) plugin.getConfiguration();
-        if (dom == null) {
-            dom = new Xpp3Dom(CONFIGURATION_EL);
-            plugin.setConfiguration(dom);
+        Configuration config = plugin.getConfiguration();
+        if (config == null) {
+            config = model.getFactory().createConfiguration();
+            plugin.setConfiguration(config);
         }
-        Xpp3Dom dom2 = dom.getChild(param);
-        if (dom2 == null) {
-            dom2 = new Xpp3Dom(param);
-            dom.addChild(dom2);
-        }
-        dom2.setValue(value);
+        config.setSimpleParameter(param, value);
         handle.markAsModified(handle.getPOMModel());
     }
 
     public static String getCompilerParam(ModelHandle handle, String param) {
-        Plugin plugin = new Plugin();
-        plugin.setGroupId(Constants.GROUP_APACHE_PLUGINS);
-        plugin.setArtifactId(Constants.PLUGIN_COMPILER);
-        Plugin old = null;
-        Build bld = handle.getPOMModel().getBuild();
+        Build bld = handle.getPOMModel().getProject().getBuild();
         if (bld != null) {
-            old = (Plugin) bld.getPluginsAsMap().get(plugin.getKey());
-        }
-        if (old != null) {
-            Xpp3Dom dom = (Xpp3Dom) old.getConfiguration();
-            if (dom != null) {
-                Xpp3Dom dom2 = dom.getChild(param);
-                if (dom2 != null) {
-                    return dom2.getValue();
+            Plugin plugin = bld.findPluginById(Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER);
+            if (plugin != null) {
+                Configuration config = plugin.getConfiguration();
+                if (config != null) {
+                    String val = config.getSimpleParameter(param);
+                    if (val != null) {
+                        return val;
+                    }
                 }
             }
         }

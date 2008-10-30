@@ -56,6 +56,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Properties;
 
 
 /**
@@ -113,11 +115,19 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
                     wr = findWrapperByInstance(id);
                 }
                 if (wr == null) {
-                    String str = handle.getPOMModel().getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
+                    POMModel model = handle.getPOMModel();
+                    Properties props = model.getProject().getProperties();
+                    String str = null;
+                    if (props != null) {
+                        str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER);
+                    }
                     if (str == null) {
-                        org.apache.maven.model.Profile prof = handle.getNetbeansPublicProfile(false);
+                        org.netbeans.modules.maven.model.pom.Profile prof = handle.getNetbeansPublicProfile(false);
                         if (prof != null) {
-                            str = prof.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
+                            props = prof.getProperties();
+                            if (props != null) {
+                                str = props.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
+                            }
                         }
                     }
                     if (str != null) {
@@ -135,32 +145,46 @@ public class EjbRunCustomizerPanel extends javax.swing.JPanel {
                 String iID = wr.getServerInstanceID();
                 Profile privateProf = handle.getNetbeansPrivateProfile(false);
                 //remove old deprecated data.
-                org.apache.maven.model.Profile pub = handle.getNetbeansPublicProfile(false);
+                org.netbeans.modules.maven.model.pom.Profile pub = handle.getNetbeansPublicProfile(false);
                 if (pub != null) {
-                    pub.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER_OLD);
+                    Properties props = pub.getProperties();
+                    if (props != null) {
+                        pub.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_OLD, null);
+                    }
                 }
-
+                POMModel model = handle.getPOMModel();
                 if (ExecutionChecker.DEV_NULL.equals(iID)) {
                     //check if someone moved the property to netbeans-private profile, remove from there then.
+                    Properties props = model.getProject().getProperties();
                     if (privateProf != null) {
                         if (privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
                             privateProf.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER);
                         } else {
-                            handle.getPOMModel().getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER);
-                            handle.markAsModified(handle.getPOMModel());
+                            if (props != null) {
+                                props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
+                                handle.markAsModified(handle.getPOMModel());
+                            }
                         }
                         privateProf.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
                         handle.markAsModified(handle.getProfileModel());
                     } else {
-                        handle.getPOMModel().getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER);
-                        handle.markAsModified(handle.getPOMModel());
+                        if (props != null) {
+                            props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
+                            handle.markAsModified(handle.getPOMModel());
+                        }
                     }
                 } else {
+                    Properties props = model.getProject().getProperties();
+                    if (props == null) {
+                        props = model.getFactory().createProperties();
+                        model.getProject().setProperties(props);
+                    }
+
                     //check if someone moved the property to netbeans-private profile, remove from there then.
                     if (privateProf != null && privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
                         privateProf.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                     } else {
-                        handle.getPOMModel().getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
+                        props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                         handle.markAsModified(handle.getPOMModel());
                     }
                     handle.getNetbeansPrivateProfile().getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
