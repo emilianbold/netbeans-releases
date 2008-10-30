@@ -40,31 +40,21 @@
  */
 package org.netbeans.modules.java.editor.semantic;
 
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.JavaSource.Priority;
-import org.netbeans.api.java.source.support.EditorAwareJavaSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  *
  * @author Jan Lahoda
  */
-public class SemanticHighlighterFactory extends EditorAwareJavaSourceTaskFactory {
+public class SemanticHighlighterFactory extends TaskFactory {
     
-    /** Creates a new instance of SemanticHighlighterFactory */
-    public SemanticHighlighterFactory() {
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL, "*");
-    }
-
-    public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new SemanticHighlighter(file);
-    }
-
-    final void rescheduleImpl(FileObject file) throws IllegalArgumentException {
-        reschedule(file);
+    @Override
+    public Collection<SchedulerTask> create(Snapshot snapshot) {
+        return Collections.<SchedulerTask>singleton(new SemanticHighlighter(snapshot.getSource().getFileObject()));
     }
     
 }

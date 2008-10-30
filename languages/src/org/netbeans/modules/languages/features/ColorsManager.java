@@ -86,27 +86,27 @@ public class ColorsManager {
     
     public static final String COLOR = "COLOR";
     
-    static List<AttributeSet> getColors(Language l, ASTPath path, Document doc) {
-        List<AttributeSet> result = new ArrayList<AttributeSet> ();
-        Context context = SyntaxContext.create(doc, path);
-        List<Feature> fs = l.getFeatureList ().getFeatures(COLOR, path);
-        Iterator<Feature> it = fs.iterator();
-        while (it.hasNext()) {
-            Feature f = it.next();
-            if (!f.getBoolean("condition", context, true)) continue;
-            result.add(createColoring(f, null));
-        }
-        ASTNode node = (ASTNode) path.getRoot ();
-        DatabaseContext root = DatabaseManager.getRoot (node);
-        if (root == null) return result;
-        ASTItem item = path.getLeaf ();
-        DatabaseItem i = root.getDatabaseItem (item.getOffset ());
-        if (i == null || i.getEndOffset () != item.getEndOffset ()) return result;
-        AttributeSet as = getAttributes (i);
-        if (as != null)
-            result.add (as);
-        return result;
-    }
+//    static List<AttributeSet> getColors(Language l, ASTPath path, Document doc) {
+//        List<AttributeSet> result = new ArrayList<AttributeSet> ();
+//        Context context = SyntaxContext.create(doc, path);
+//        List<Feature> fs = l.getFeatureList ().getFeatures(COLOR, path);
+//        Iterator<Feature> it = fs.iterator();
+//        while (it.hasNext()) {
+//            Feature f = it.next();
+//            if (!f.getBoolean("condition", context, true)) continue;
+//            result.add(createColoring(f, null));
+//        }
+//        ASTNode node = (ASTNode) path.getRoot ();
+//        DatabaseContext root = DatabaseManager.getRoot (node);
+//        if (root == null) return result;
+//        ASTItem item = path.getLeaf ();
+//        DatabaseItem i = root.getDatabaseItem (item.getOffset ());
+//        if (i == null || i.getEndOffset () != item.getEndOffset ()) return result;
+//        AttributeSet as = getAttributes (i);
+//        if (as != null)
+//            result.add (as);
+//        return result;
+//    }
     
     private static AttributeSet getAttributes (DatabaseItem item) {
         if (item instanceof DatabaseDefinition) {
