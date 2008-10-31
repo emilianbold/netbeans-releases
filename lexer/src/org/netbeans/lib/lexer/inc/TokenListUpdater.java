@@ -278,7 +278,7 @@ public final class TokenListUpdater {
 
         tokenList.replaceTokens(change, eventInfo, true);
         if (loggable) {
-            LOG.log(Level.FINE, "\nchange:" + change + "\nMods:" + change.toStringMods(4) + // NOI18N
+            LOG.log(Level.FINE, "\nTLChange: " + change + "\nMods:" + change.toStringMods(4) + // NOI18N
                     "UPDATE-REGULAR FINISHED\n"); // NOI18N
         }
     }
@@ -570,12 +570,12 @@ public final class TokenListUpdater {
             sb.append('\n');
             LOG.log(Level.FINE, sb.toString());
         }
+        change.setIndex(relexIndex);
+        change.setOffset(relexOffset);
         if (relex) {
             lexerInputOperation = new MutableJoinLexerInputOperation<T>(
                     jtl, relexIndex, relexState, relexTokenListIndex, relexOffset, tokenListListUpdate);
             lexerInputOperation.init();
-            change.setIndex(relexIndex);
-            change.setOffset(relexOffset);
             change.setStartInfo(lexerInputOperation, relexLocalIndex);
             // setMatchIndex() and setMatchOffset() called later below
             relex(change, lexerInputOperation, tokenCount);
@@ -587,7 +587,7 @@ public final class TokenListUpdater {
         
         jtl.replaceTokens(change, eventInfo, true);
         if (loggable) {
-            LOG.log(Level.FINE, "\nchange:" + change + "\nMods:" + change.toStringMods(4) + // NOI18N
+            LOG.log(Level.FINE, "\nTLChange:" + change + "\nMods:" + change.toStringMods(4) + // NOI18N
                     "UPDATE-JOINED FINISHED\n"); // NOI18N
         }
     }
