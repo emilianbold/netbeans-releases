@@ -46,6 +46,8 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.Profile;
+import org.netbeans.modules.xml.xam.Model.State;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -86,6 +88,29 @@ public class ProfileGenerator implements CodeGenerator {
     }
 
     public void invoke() {
-        System.out.println("TODO");
+        if (!model.getState().equals(State.VALID)) {
+            return;
+        }
+        NewProfilePanel panel = new NewProfilePanel(model);
+        DialogDescriptor dd = new DialogDescriptor(panel, "Add new profile");
+        Object ret = DialogDisplayer.getDefault().notify(dd);
+        if (ret == DialogDescriptor.OK_OPTION) {
+            String id = panel.getProfileId();
+            Profile prof = model.getProject().findProfileById(id);
+            if (prof == null) {
+                prof = model.getFactory().createProfile();
+                model.startTransaction();
+                prof.setId(id);
+                model.getProject().addProfile(prof);
+                model.endTransaction();
+                try {
+                    model.sync();
+                    int pos = prof.getModel().getAccess().findPosition(prof.getPeer());
+                    component.setCaretPosition(pos);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
     }
 }
