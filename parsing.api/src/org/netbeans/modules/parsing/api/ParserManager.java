@@ -42,12 +42,18 @@ package org.netbeans.modules.parsing.api;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.UserTaskImpl;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.openide.util.Lookup;
+import org.openide.util.Mutex;
 
 
 /**
@@ -119,8 +125,8 @@ public final class ParserManager {
         if (sources.size() == 1) {
             SourceAccessor.getINSTANCE().assignListeners(sources.iterator().next());
         }
-        TaskProcessor.runUserTask (new GenericUserTask () {
-            public void run () throws Exception {
+        TaskProcessor.runUserTask (new Mutex.ExceptionAction<Void>() {
+            public Void run () throws Exception {
                 //tzezula: Wrong - doesn't work for multiple files!
                 for (Source source : sources) {
                     SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
@@ -132,20 +138,39 @@ public final class ParserManager {
                     }
                     
                 }
+                return null;
             }
         }, sources);
     }
     
     /**
      * Runs given task in parser thread.
-     * 
+     * @param mimetype      specifying the parser
      * @param userTask      a user task
      * @throws ParseException encapsulating the user exception
      */
-    public static void run (
-        GenericUserTask     userTask
+    public static void parse (
+        final String mimeType,
+        final UserTask     userTask
     ) throws ParseException {
-        TaskProcessor.runUserTask (userTask, Collections.<Source>emptyList ());
+        final Lookup lookup = MimeLookup.getLookup (mimeType);
+        final ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+        if (parserFactory == null) {
+            throw new IllegalArgumentException("No parser for mime type: " + mimeType);
+        }
+        final Parser p = parserFactory.createParser(Collections.<Snapshot>emptyList());
+        TaskProcessor.runUserTask (new Mutex.ExceptionAction<Void>() {
+            public Void run() throws Exception {
+                p.parse(null, userTask, null);
+                Parser.Result result = p.getResult(userTask, null);
+                try {
+                    userTask.run(result);
+                } finally {
+                    ParserAccessor.getINSTANCE().invalidate(result);
+                }
+                return null;
+            }
+        }, Collections.<Source>emptyList ());
     }
 }
 

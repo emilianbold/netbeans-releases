@@ -56,8 +56,6 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.PositionConverter;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoProvider;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
-import org.netbeans.modules.parsing.api.GenericUserTask;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -67,6 +65,7 @@ import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -110,7 +109,7 @@ public abstract class JavaSourceAccessor {
         return tmp;
     }
         
-    public void runSpecialTask (final GenericUserTask task, final JavaSource.Priority priority) {        
+    public void runSpecialTask (final Mutex.ExceptionAction task, final JavaSource.Priority priority) {        
         final int tp = translatePriority(priority);
         final ParserResultTask wrapper = new ParserResultTask() {            
             @Override

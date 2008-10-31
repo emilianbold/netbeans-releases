@@ -68,12 +68,12 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.ClasspathInfoMultiLanguageTask;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -163,8 +163,6 @@ public final class JavaSource {
     private final Collection<Source> sources;
     //Files being processed, may be empty
     private final Collection<FileObject> files;
-    //Cached parser for case when JavaSource was constructed without sources => special case no parsing API support
-    private CompilationInfoImpl cachedCi;
     //Classpath info when explicitely given, may be null
     private final ClasspathInfo classpathInfo;
     //Cached classpath info
@@ -387,19 +385,13 @@ public final class JavaSource {
         long currentId = -1;
         if (sources.isEmpty()) {
             try {
-                ParserManager.run(new GenericUserTask() {
-                    public void run() throws Exception {
-                        if (cachedCi == null) {
-                            assert classpathInfo != null;
-                            cachedCi = new CompilationInfoImpl(classpathInfo);
-                        }
-                        final CompilationController cc = new CompilationController(cachedCi);
-                        try {
-                            cc.setJavaSource(JavaSource.this);
-                            task.run(cc);
-                        } finally {
-                            cc.invalidate();
-                        }
+                ParserManager.parse(JavacParser.MIME_TYPE,new ClasspathInfoTask(this.classpathInfo) {
+                    @Override
+                    public void run(Result result) throws Exception {
+                        final CompilationController cc = CompilationController.get(result);
+                        assert cc != null;
+                        cc.setJavaSource(JavaSource.this);
+                        task.run (cc);
                     }
                 });
             } catch (final ParseException pe) {
@@ -421,7 +413,7 @@ public final class JavaSource {
         }
         else {
             try {
-                    final MultiLanguageUserTask _task = new ClasspathInfoTask (this.classpathInfo) {
+                    final MultiLanguageUserTask _task = new ClasspathInfoMultiLanguageTask (this.classpathInfo) {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             final Snapshot snapshot = resultIterator.getSnapshot();
@@ -569,7 +561,7 @@ public final class JavaSource {
             long start = System.currentTimeMillis();
             try {
                 final JavacParser[] theParser = new JavacParser[1];
-                final MultiLanguageUserTask _task = new ClasspathInfoTask(this.classpathInfo) {
+                final MultiLanguageUserTask _task = new ClasspathInfoMultiLanguageTask(this.classpathInfo) {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         final Snapshot snapshot = resultIterator.getSnapshot();
