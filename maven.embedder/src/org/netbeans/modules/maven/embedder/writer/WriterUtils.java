@@ -62,7 +62,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
 /**
- *
  * @author mkleint
  */
 public class WriterUtils {
@@ -72,7 +71,12 @@ public class WriterUtils {
     /** Creates a new instance of WriterUtils */
     private WriterUtils() {
     }
-    
+
+    /**
+     * @deprecated use the XAM-based model for editing the pom file,
+     * see org.netbeans.modules.maven.model package
+     *
+     */
     public static void writePomModel(FileObject pom, Model newModel) throws IOException {
         InputStream inStr = null;
         FileLock lock = null;
