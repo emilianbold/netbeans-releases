@@ -74,7 +74,7 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
             setChild(ExclusionImpl.List.class,
                     getModel().getPOMQNames().EXCLUSIONS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().EXCLUSIONS.getQName()),
-                    Collections.EMPTY_LIST);
+                    Collections.<Class<? extends POMComponent>>emptyList());
             childs = getChild(ExclusionImpl.List.class);
             assert childs != null;
         }

@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
@@ -49,6 +48,13 @@ import org.netbeans.modules.maven.model.pom.POMComponentVisitor;
  */
 public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
 
+    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
+        PluginExecutionImpl.List.class,
+        DependencyImpl.List.class,
+        StringList.class, //goals
+        Configuration.class
+    };
+    
     public PluginImpl(POMModel model, Element element) {
         super(model, element);
     }
@@ -71,10 +77,10 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     public void addExecution(PluginExecution execution) {
         ModelList<PluginExecution> childs = getChild(PluginExecutionImpl.List.class);
         if (childs == null) {
-            setChild(DependencyImpl.List.class,
+            setChild(PluginExecutionImpl.List.class,
                     getModel().getPOMQNames().EXECUTIONS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().EXECUTIONS.getQName()),
-                    Collections.EMPTY_LIST);
+                    getClassesBefore(ORDER, PluginExecutionImpl.List.class));
             childs = getChild(PluginExecutionImpl.List.class);
             assert childs != null;
         }
@@ -102,7 +108,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
             setChild(DependencyImpl.List.class,
                     getModel().getPOMQNames().DEPENDENCIES.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().DEPENDENCIES.getQName()),
-                    Collections.EMPTY_LIST);
+                    getClassesBefore(ORDER, DependencyImpl.List.class));
             childs = getChild(DependencyImpl.List.class);
             assert childs != null;
         }
@@ -154,8 +160,8 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
     }
 
     public void setConfiguration(Configuration config) {
-        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config, empty);
+        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config,
+                getClassesBefore(ORDER, Configuration.class));
     }
 
     public PluginExecution findExecutionById(String id) {
@@ -192,7 +198,7 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
         setChild(StringListImpl.class,
                  getModel().getPOMQNames().GOALS.getName(),
                  getModel().getFactory().create(this, getModel().getPOMQNames().GOALS.getQName()),
-                 Collections.EMPTY_LIST);
+                 getClassesBefore(ORDER, StringList.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
             if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {
@@ -222,5 +228,6 @@ public class PluginImpl extends VersionablePOMComponentImpl implements Plugin {
             this(model, createElementNS(model, model.getPOMQNames().PLUGINS));
         }
     }
+
 
 }

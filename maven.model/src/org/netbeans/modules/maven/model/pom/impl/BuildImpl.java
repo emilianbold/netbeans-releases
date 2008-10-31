@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+import java.util.List;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
@@ -57,6 +57,18 @@ public class BuildImpl extends BuildBaseImpl implements Build {
         this(model, createElementNS(model, model.getPOMQNames().BUILD));
     }
 
+    @Override
+    protected Class<? extends POMComponent>[] getOrder() {
+        return new Class[] {
+            ExtensionImpl.List.class,
+            ResourceImpl.ResList.class,
+            ResourceImpl.TestResList.class,
+            PluginManagement.class,
+            PluginImpl.List.class
+        };
+    }
+
+
     // attributes
 
     // child elements
@@ -74,7 +86,7 @@ public class BuildImpl extends BuildBaseImpl implements Build {
             setChild(ExtensionImpl.List.class,
                     getModel().getPOMQNames().EXTENSIONS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().EXTENSIONS.getQName()),
-                    Collections.EMPTY_LIST);
+                    getClassesBefore(getOrder(), ExtensionImpl.List.class));
             childs = getChild(ExtensionImpl.List.class);
             assert childs != null;
         }

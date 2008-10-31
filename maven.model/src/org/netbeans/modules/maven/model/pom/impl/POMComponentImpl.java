@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.POMComponent;
@@ -154,7 +156,14 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         super.setChildElementText(propertyName, text, qname);
     }
 
-
+    protected final Collection<Class<? extends POMComponent>> getClassesBefore(Class<? extends POMComponent>[] ordering, Class current) {
+        ArrayList<Class<? extends POMComponent>> toRet = new ArrayList<Class<? extends POMComponent>>();
+        for (Class<? extends POMComponent> ord : ordering) {
+            if (ord.equals(current)) break;
+            toRet.add(ord);
+        }
+        return toRet;
+    }
     
 }
 

@@ -74,7 +74,7 @@ public class PluginManagementImpl extends POMComponentImpl implements PluginMana
             setChild(PluginImpl.List.class,
                     getModel().getPOMQNames().PLUGINS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().PLUGINS.getQName()),
-                    Collections.EMPTY_LIST);
+                    Collections.<Class<? extends POMComponent>>emptyList());
             childs = getChild(PluginImpl.List.class);
             assert childs != null;
         }

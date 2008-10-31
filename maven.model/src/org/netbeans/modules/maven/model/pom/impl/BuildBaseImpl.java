@@ -38,10 +38,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.*;
+import java.util.List;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
 
 /**
  *
@@ -55,6 +54,15 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
     
     public BuildBaseImpl(POMModel model) {
         this(model, createElementNS(model, model.getPOMQNames().BUILD));
+    }
+
+    protected Class<? extends POMComponent>[] getOrder() {
+        return new Class[] {
+            ResourceImpl.ResList.class,
+            ResourceImpl.TestResList.class,
+            PluginManagement.class,
+            PluginImpl.List.class
+        };
     }
 
     // attributes
@@ -74,7 +82,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
             setChild(ResourceImpl.ResList.class,
                     getModel().getPOMQNames().RESOURCES.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().RESOURCES.getQName()),
-                    Collections.EMPTY_LIST);
+                    getClassesBefore(getOrder(), ResourceImpl.ResList.class));
             childs = getChild(ResourceImpl.ResList.class);
             assert childs != null;
         }
@@ -102,7 +110,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
             setChild(ResourceImpl.TestResList.class,
                     getModel().getPOMQNames().TESTRESOURCES.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().TESTRESOURCES.getQName()),
-                    Collections.EMPTY_LIST);
+                    getClassesBefore(getOrder(), ResourceImpl.TestResList.class));
             childs = getChild(ResourceImpl.TestResList.class);
             assert childs != null;
         }
@@ -121,8 +129,8 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
     }
 
     public void setPluginManagement(PluginManagement pluginManagement) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(PluginManagement.class, getModel().getPOMQNames().PLUGINMANAGEMENT.getName(), pluginManagement, empty);
+        setChild(PluginManagement.class, getModel().getPOMQNames().PLUGINMANAGEMENT.getName(), pluginManagement,
+                getClassesBefore(getOrder(), PluginManagement.class));
     }
 
     public List<Plugin> getPlugins() {
@@ -139,7 +147,7 @@ public class BuildBaseImpl extends POMComponentImpl implements BuildBase {
             setChild(PluginImpl.List.class,
                     getModel().getPOMQNames().PLUGINS.getName(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().PLUGINS.getQName()),
-                    Collections.EMPTY_LIST);
+                    getClassesBefore(getOrder(), PluginImpl.List.class));
             childs = getChild(PluginImpl.List.class);
             assert childs != null;
         }

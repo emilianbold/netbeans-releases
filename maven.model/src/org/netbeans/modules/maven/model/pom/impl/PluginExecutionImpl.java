@@ -38,17 +38,19 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
-import java.util.Collections;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
-import org.netbeans.modules.maven.model.pom.POMComponentVisitor;	
-import org.w3c.dom.NodeList;
 
 /**
  *
  * @author mkleint
  */
 public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExecution {
+
+    private static final Class<? extends POMComponent>[] ORDER = new Class[] {
+        StringList.class, //goals
+        Configuration.class
+    };
 
     public PluginExecutionImpl(POMModel model, Element element) {
         super(model, element);
@@ -93,8 +95,8 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
     }
 
     public void setConfiguration(Configuration config) {
-        java.util.List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config, empty);
+        setChild(Configuration.class, getModel().getPOMQNames().CONFIGURATION.getName(), config,
+                getClassesBefore(ORDER, Configuration.class));
     }
 
     public java.util.List<String> getGoals() {
@@ -118,7 +120,7 @@ public class PluginExecutionImpl extends IdPOMComponentImpl implements PluginExe
         setChild(StringListImpl.class,
                  getModel().getPOMQNames().GOALS.getName(),
                  getModel().getFactory().create(this, getModel().getPOMQNames().GOALS.getQName()),
-                 Collections.EMPTY_LIST);
+                 getClassesBefore(ORDER, StringListImpl.class));
         lists = getChildren(StringList.class);
         for (StringList list : lists) {
             if (getModel().getPOMQNames().GOALS.getName().equals(list.getPeer().getNodeName())) {

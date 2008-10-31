@@ -73,7 +73,7 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
             setChild(DependencyImpl.List.class,
                     getModel().getPOMQNames().DEPENDENCIES.getQName().getLocalPart(),
                     getModel().getFactory().create(this, getModel().getPOMQNames().DEPENDENCIES.getQName()),
-                    Collections.EMPTY_LIST);
+                    Collections.<Class<? extends POMComponent>>emptyList());
             childs = getChild(DependencyImpl.List.class);
             assert childs != null;
         }

@@ -66,8 +66,8 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
     }
 
     public void setReleases(RepositoryPolicy releases) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(RepositoryPolicy.class, getModel().getPOMQNames().RELEASES.getName(), releases, empty);
+        setChild(RepositoryPolicy.class, getModel().getPOMQNames().RELEASES.getName(), releases,
+                Collections.<Class<? extends POMComponent>>emptyList());
     }
 
     public RepositoryPolicy getSnapshots() {
@@ -75,8 +75,8 @@ public class RepositoryImpl extends IdPOMComponentImpl implements Repository {
     }
 
     public void setSnapshots(RepositoryPolicy snapshots) {
-        List<Class<? extends POMComponent>> empty = Collections.emptyList();
-        setChild(RepositoryPolicy.class, getModel().getPOMQNames().SNAPSHOTS.getName(), snapshots, empty);
+        setChild(RepositoryPolicy.class, getModel().getPOMQNames().SNAPSHOTS.getName(), snapshots,
+                Collections.<Class<? extends POMComponent>>emptyList());
     }
 
     public String getName() {
