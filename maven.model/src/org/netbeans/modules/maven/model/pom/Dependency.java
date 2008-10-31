@@ -68,6 +68,7 @@ public interface Dependency extends VersionablePOMComponent {
     List<Exclusion> getExclusions();
     void addExclusion(Exclusion exclusion);
     void removeExclusion(Exclusion exclusion);
+    Exclusion findExclusionById(String groupId, String artifactId);
 
 
     /**

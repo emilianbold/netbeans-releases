@@ -142,6 +142,20 @@ public class DependencyImpl extends VersionablePOMComponentImpl implements Depen
                 getModel().getPOMQNames().OPTIONAL.getQName());
     }
 
+    public Exclusion findExclusionById(String groupId, String artifactId) {
+        assert groupId != null;
+        assert artifactId != null;
+        java.util.List<Exclusion> excs = getExclusions();
+        if (excs != null) {
+            for (Exclusion e : excs) {
+                if (groupId.equals(e.getGroupId()) && artifactId.equals(e.getArtifactId())) {
+                    return e;
+                }
+            }
+        }
+        return null;
+    }
+
     public static class List extends ListImpl<Dependency> {
         public List(POMModel model, Element element) {
             super(model, element, model.getPOMQNames().DEPENDENCY, Dependency.class);
