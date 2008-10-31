@@ -55,16 +55,39 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
+ * This class contains factory methods for typing interceptor implementations
+ * that can be used for automated text indenting.
  *
- * @author vita
+ * <p>The interceptors provided by this class are implementations of Typing Hooks SPI
+ * interfaces that can be registered in <code>MimeLookup</code>. Typically there are
+ * two factory methods for each interceptor implementation. One factory method creates
+ * the implementated interceptor and is suitable for direct use from java code. The
+ * other factory method creates a factory object that can be registred in an XML layer
+ * as an <code>.instance</code> file.
+ *
+ * @author Vita Stejskal
  * @since 1.11
  */
 public final class AutomatedIndenting {
 
     /**
-     * 
-     * @param linePatterns
-     * @return
+     * Creates <code>TypedTextInterceptor</code> that automatically
+     * indents a line depending on text typed on that line.
+     *
+     * <p>The text patterns recognized by the intercetor are defined in form
+     * of regular expressions passed to this method. The interceptor will match
+     * all text before the caret on the line where a user is typing (including
+     * the last typed character) against the regular expression patterns. If the text
+     * matches at least one pattern the interceptor will reindent the line by
+     * calling {@link Indent#reindent(int)} method.
+     *
+     * @param linePatterns The regular expressions that will be used for matching
+     *   text typed on a line. Any matching pattern will trigger the line reindentation.
+     *
+     * @return The interceptor that checks text typed on a line and reindents the line
+     *   if it matches any of the <code>linePatterns</code>.
+     *
+     * @since 1.11
      */
     public static TypedTextInterceptor createHotCharsIndenter(Pattern... linePatterns) {
         return new RegExBasedIndenter(linePatterns);
@@ -73,13 +96,39 @@ public final class AutomatedIndenting {
     /**
      * This is a version of {@link #createHotCharsIndenter(java.util.regex.Pattern[])} method suitable
      * for XML layers registration.
-     * 
+     *
+     * <div class="nonnormative">
+     * <p>Here is an example of an XML layer registration done
+     * for <code>text/x-java</code> mime type. The registered interceptor will indent
+     * any line that contains whitespace followed by 'else'. The ending 'e' character is
+     * the last character typed on the line.
+     *
+     * <pre>
+     * &lt;folder name="Editors"&gt;
+     *  &lt;folder name="text"&gt;
+     *   &lt;folder name="x-java"&gt;
+     *    &lt;file name="org-something-AutoIndenter.instance"&gt;
+     *     &lt;attr name="instanceOf" stringvalue="org.netbeans.spi.editor.typinghooks.TypedTextInterceptor"/&gt;
+     *     &lt;attr name="instanceCreate"
+     *              methodvalue="org.netbeans.modules.editor.indent.spi.support.AutomatedIndenting.createHotCharsIndenter"/&gt;
+     *     &lt;attr name="regex1" stringvalue="\s*else"/&gt;
+     *    &lt;/file&gt;
+     *   &lt;/folder&gt;
+     *  &lt;/folder&gt;
+     * &lt;/folder&gt;
+     * </pre>
+     * </div>
+     *
      * @param fileAttributes The map of <code>FileObject</code> attributes. This method
      *   will recognize any attributes, which name starts with <code>regex</code> and will
-     *   try to interpret their value as a regular expression.
+     *   try to interpret their value as a regular expression. These regular expressions
+     *   will then be used as <code>linePatterns</code> when calling <code>createHotCharsIndenter(Pattern...)</code> method.
      * 
-     * @return The result of {@link #createHotCharsIndenter(java.util.regex.Pattern[])} called with
-     *   the list of regex patterns recovered from the <code>fileAttributes</code>.
+     * @return The interceptor factory that will provide a regular expressions based
+     *   automated indenter returned from the {@link #createHotCharsIndenter(java.util.regex.Pattern[])} method.
+     *   The list of line patterns will be recovered from the <code>fileAttributes</code>.
+     * 
+     * @since 1.11
      */
     public static TypedTextInterceptor.Factory createHotCharsIndenter(Map<Object, Object> fileAttributes) {
         final ArrayList<Pattern> linePatterns = new ArrayList<Pattern>();
