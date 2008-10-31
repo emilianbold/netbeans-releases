@@ -38,13 +38,11 @@
  */
 package org.netbeans.modules.hibernate.wizards;
 
-import org.netbeans.api.project.Project;
 import java.awt.Component;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.openide.util.ChangeSupport;
 import org.netbeans.api.project.Project;
-
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
@@ -58,11 +56,13 @@ public class HibernateMappingWizardDescriptor implements WizardDescriptor.Panel,
     private WizardDescriptor wizardDescriptor;
     private HibernateMappingWizardPanel panel;
     private Project project;
+    private String title;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /** Create the wizard panel descriptor. */
-    public HibernateMappingWizardDescriptor(Project project) {
+    public HibernateMappingWizardDescriptor(Project project, String title) {
         this.project = project;
+        this.title = title;
     }
 
     public boolean isFinishPanel() {
@@ -97,6 +97,8 @@ public class HibernateMappingWizardDescriptor implements WizardDescriptor.Panel,
     }
 
     public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        wizardDescriptor.putProperty("NewFileWizard_Title", title); 
     }
 
     public void storeSettings(Object settings) {
@@ -104,8 +106,7 @@ public class HibernateMappingWizardDescriptor implements WizardDescriptor.Panel,
         panel = (HibernateMappingWizardPanel) getComponent();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(wizardDescriptor.getValue())) {
             return;
-        }
-        wizardDescriptor.putProperty("NewFileWizard_Title", null); // NOI18N
+        }       
     }
     
     public String getClassName() {

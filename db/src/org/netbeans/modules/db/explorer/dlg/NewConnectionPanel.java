@@ -624,18 +624,46 @@ public class NewConnectionPanel extends ConnectionDialog.FocusablePanel {
     private void templateComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_templateComboBoxItemStateChanged
         if (evt.getStateChange() == evt.SELECTED)
         {
-            setUpFields();
+            Object item = templateComboBox.getSelectedItem();
+            if ( item != null && !(item instanceof JdbcUrl)) {
+                // This is an item indicating "Create a New Driver", and if
+                // we futz with the fields, then the ComboBox wants to make the
+                // drop-down invisible and the dialog never gets a chance to
+                // get invoked.
+                return;
+            }
+
+            JdbcUrl jdbcurl = (JdbcUrl)item;
+
+            // Field entry mode doesn't make sense if this URL isn't parsed.  change the mode
+            // now if appropriate
+            if (! jdbcurl.isParseUrl()) {
+                fieldInputCheckBox.setVisible(false);
+                inputModelLabel.setVisible(false);
+                directInputCheckBox.setVisible(false);
+                if (fieldEntryMode) {
+                    directInputCheckBox.setSelected(true);
+                    updateInputMode(false);
+                }
+            } else {
+                fieldInputCheckBox.setVisible(true);
+                inputModelLabel.setVisible(true);
+                directInputCheckBox.setVisible(true);
+                directUrlField.setText("");
+                setUpFields();
+            }
+
             updateUrlFromFields();
             fireChange();
         }
     }//GEN-LAST:event_templateComboBoxItemStateChanged
 
     private void fieldInputCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fieldInputCheckBoxActionPerformed
-        updateInputMode();
+        updateInputMode(false);
     }//GEN-LAST:event_fieldInputCheckBoxActionPerformed
 
     private void directInputCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directInputCheckBoxActionPerformed
-        updateInputMode();
+        updateInputMode(true);
     }//GEN-LAST:event_directInputCheckBoxActionPerformed
 
 private void showUrlCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {
@@ -722,8 +750,14 @@ private void showUrl() {
         }
     }
 
-    private void updateInputMode() {
+    private void updateInputMode(boolean copyUrl) {
         fieldEntryMode = fieldInputCheckBox.isSelected();
+        
+        if (copyUrl) {
+            // copy the url to the direct entry url field
+            directUrlField.setText(urlField.getText());
+        }
+        
         setUpFields();
     }
     
@@ -765,19 +799,6 @@ private void showUrl() {
 
         passwordCheckBox.setVisible(true);
 
-
-        // Field entry mode doesn't make sense if this URL isn't parsed.
-        if (! jdbcurl.isParseUrl()) {
-            fieldEntryMode = false;
-            this.fieldInputCheckBox.setVisible(false);
-            this.inputModelLabel.setVisible(false);
-            this.directInputCheckBox.setVisible(false);
-        } else {
-            this.fieldInputCheckBox.setVisible(true);
-            this.inputModelLabel.setVisible(true);
-            this.directInputCheckBox.setVisible(true);
-        }
-
         if (fieldEntryMode) {
             directUrlLabel.setVisible(false);
             directUrlScroll.setVisible(false);
@@ -804,9 +825,6 @@ private void showUrl() {
         else {
             directUrlLabel.setVisible(true);
             directUrlScroll.setVisible(true);
-            
-            // copy the url to the direct entry url field
-            directUrlField.setText(urlField.getText());
             
             showUrlCheckBox.setVisible(false);
             urlField.setVisible(false);
@@ -887,6 +905,7 @@ private void showUrl() {
             public void run() {
                 progressHandle = ProgressHandleFactory.createHandle(getMessage("ConnectionProgress_Connecting"));
                 progressHandle.start();
+                enableInput(false);
             }
         });
     }
@@ -914,11 +933,28 @@ private void showUrl() {
             public void run() {
                 if (progressHandle != null) {
                     progressHandle.finish();
+                    enableInput(true);
                 }
             }
         });
     }
 
+    private void enableInput(boolean enable) {
+        fieldInputCheckBox.setEnabled(enable);
+        directInputCheckBox.setEnabled(enable);
+        templateComboBox.setEnabled(enable);
+        userField.setEnabled(enable);
+        passwordField.setEnabled(enable);
+        passwordCheckBox.setEnabled(enable);
+        showUrlCheckBox.setEnabled(enable);
+        urlField.setEnabled(enable);
+        directUrlField.setEnabled(enable);
+        
+        for (Entry<String,UrlField> entry : urlFields.entrySet()) {
+            entry.getValue().getField().setEnabled(enable);
+        }
+    }
+    
     private void resetProgress() {
         if (progressHandle != null) {
             progressHandle.setDisplayName(""); // NOI18N

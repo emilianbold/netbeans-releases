@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
@@ -56,49 +55,51 @@ import org.openide.nodes.PropertySupport;
 import org.openide.util.HelpCtx;
 
 public class VectorNodeProp extends PropertySupport {
+
     private VectorConfiguration vectorConfiguration;
     private BooleanConfiguration inheritValues;
     private String baseDir;
     private String[] texts;
     boolean addPathPanel;
     private HelpCtx helpCtx;
-    
+
     public VectorNodeProp(VectorConfiguration vectorConfiguration, BooleanConfiguration inheritValues, String baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
-	this.baseDir = baseDir;
-	this.texts = texts;
-	this.addPathPanel = addPathPanel;
+        this.baseDir = baseDir;
+        this.texts = texts;
+        this.addPathPanel = addPathPanel;
         this.helpCtx = helpCtx;
     }
 
     @Override
     public String getHtmlDisplayName() {
-        if (vectorConfiguration.getModified())
+        if (vectorConfiguration.getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        else
+        } else {
             return null;
+        }
     }
-    
+
     public Object getValue() {
         return vectorConfiguration.getValue();
     }
-    
+
     public void setValue(Object v) {
-        vectorConfiguration.setValue((List)v);
+        vectorConfiguration.setValue((List) v);
     }
-    
+
     @Override
     public void restoreDefaultValue() {
         vectorConfiguration.reset();
     }
-    
+
     @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
     @Override
     public boolean isDefaultValue() {
         return vectorConfiguration.getValue().size() == 0;
@@ -106,61 +107,63 @@ public class VectorNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new DirectoriesEditor((List)((ArrayList)vectorConfiguration.getValue()).clone());
+        return new DirectoriesEditor((List) ((ArrayList) vectorConfiguration.getValue()).clone());
     }
 
     /*
     public Object getValue(String attributeName) {
-        if (attributeName.equals("canEditAsText")) // NOI18N
-            return Boolean.FALSE;
-        return super.getValue(attributeName);
+    if (attributeName.equals("canEditAsText")) // NOI18N
+    return Boolean.FALSE;
+    return super.getValue(attributeName);
     }
-    */
-
+     */
     private class DirectoriesEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
         private List value;
         private PropertyEnv env;
-        
+
         public DirectoriesEditor(List value) {
             this.value = value;
         }
-        
+
         @Override
         public void setAsText(String text) {
-	    List newList = new ArrayList();
-	    StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
-	    while (st.hasMoreTokens()) {
-		newList.add(st.nextToken());
-	    }
-	    setValue(newList);
+            List newList = new ArrayList();
+            StringTokenizer st = new StringTokenizer(text, File.pathSeparator); // NOI18N
+            while (st.hasMoreTokens()) {
+                newList.add(st.nextToken());
+            }
+            super.setValue(newList);
         }
-        
+
         @Override
         public String getAsText() {
-	    boolean addSep = false;
-	    StringBuilder ret = new StringBuilder();
-	    for (int i = 0; i < value.size(); i++) {
-		if (addSep)
-		    ret.append(File.pathSeparator);
-		ret.append((String)value.get(i));
-		addSep = true;
-	    }
-	    return ret.toString();
+            boolean addSep = false;
+            StringBuilder ret = new StringBuilder();
+            for (int i = 0; i < value.size(); i++) {
+                if (addSep) {
+                    ret.append(File.pathSeparator);
+                }
+                ret.append((String) value.get(i));
+                addSep = true;
+            }
+            return ret.toString();
         }
-        
+
         @Override
         public java.awt.Component getCustomEditor() {
-	    String text = null;
-	    if (inheritValues != null)
-		text = texts[3];
-            return new DirectoryChooserPanel(baseDir, (String[])value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
+            String text = null;
+            if (inheritValues != null) {
+                text = texts[3];
+            }
+            return new DirectoryChooserPanel(baseDir, (String[]) value.toArray(new String[value.size()]), addPathPanel, inheritValues, text, this, env, helpCtx);
         }
-        
+
         @Override
         public boolean supportsCustomEditor() {
             return true;
         }
-        
+
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }

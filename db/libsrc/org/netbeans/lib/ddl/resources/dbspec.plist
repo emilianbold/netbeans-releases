@@ -904,7 +904,7 @@
     };
 
     RemoveColumnCommand = {
-      Supported = false;
+      Supported = true;
     };
 
   };

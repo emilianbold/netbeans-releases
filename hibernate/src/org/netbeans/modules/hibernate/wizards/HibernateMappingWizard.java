@@ -148,7 +148,8 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         project = Templates.getProject(wizard);
-        descriptor = new HibernateMappingWizardDescriptor(project);
+        String wizardTitle = NbBundle.getMessage(HibernateMappingWizard.class, "LBL_MappingWizardTitle"); // NOI18N   
+        descriptor = new HibernateMappingWizardDescriptor(project, wizardTitle);
         if (Templates.getTargetFolder(wizard) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
             FileObject location = provider != null ? provider.getSourceLocation() : null;
@@ -263,7 +264,7 @@ public class HibernateMappingWizard implements WizardDescriptor.InstantiatingIte
     }
 
     public String name() {
-        return NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_MappingWizardTitle"); // NOI18N
+        return NbBundle.getMessage(HibernateMappingWizard.class, "LBL_MappingWizardTitle"); // NOI18N
 
     }
 
