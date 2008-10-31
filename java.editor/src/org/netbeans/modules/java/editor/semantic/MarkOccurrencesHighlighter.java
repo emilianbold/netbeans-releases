@@ -113,7 +113,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
 
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); // new Color(244, 164, 113);
 
-    public void run(Result parseResult, Snapshot snaphot) {
+    public void run(Result parseResult) {
         resume();
 
         CompilationInfo info = CompilationInfo.get(parseResult);
@@ -122,7 +122,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
             return ;
         }
 
-        Document doc = snaphot.getSource().getDocument();
+        Document doc = parseResult.getSnapshot().getSource().getDocument();
 
         if (doc == null) {
             Logger.getLogger(MarkOccurrencesHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");

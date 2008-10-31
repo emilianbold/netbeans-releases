@@ -198,7 +198,7 @@ public class GoToSupport {
             
             ParserManager.parse(Source.create(doc), new UserTask() {
                 @Override
-                public void run(Result res, Snapshot snapshot) throws Exception {
+                public void run(Result res) throws Exception {
                     if (atStart != null && atStart.run() == Boolean.FALSE)
                         return ;
                     CompilationController controller = CompilationController.get(res);

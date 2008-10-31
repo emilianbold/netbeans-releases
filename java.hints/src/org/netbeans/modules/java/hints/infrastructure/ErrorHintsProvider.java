@@ -440,7 +440,7 @@ public final class ErrorHintsProvider extends ParserResultTask {
     }
     
     @Override
-    public void run(Result result, Snapshot snapshot) {
+    public void run(Result result) {
         resume();
 
         CompilationInfo info = CompilationInfo.get(result);
@@ -449,7 +449,7 @@ public final class ErrorHintsProvider extends ParserResultTask {
             return ;
         }
 
-        Document doc = snapshot.getSource().getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument();
         
         if (doc == null) {
             Logger.getLogger(ErrorHintsProvider.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");

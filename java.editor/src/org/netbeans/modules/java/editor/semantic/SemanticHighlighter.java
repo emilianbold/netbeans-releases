@@ -170,7 +170,7 @@ public class SemanticHighlighter extends ParserResultTask {
     }
 
     @Override
-    public void run(Result result, Snapshot snapshot) {
+    public void run(Result result) {
         CompilationInfo info = CompilationInfo.get(result);
         
         if (info == null) {
@@ -179,7 +179,7 @@ public class SemanticHighlighter extends ParserResultTask {
         
         cancel.set(false);
         
-        Document doc = snapshot.getSource().getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument();
 
         if (doc == null) {
             Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");

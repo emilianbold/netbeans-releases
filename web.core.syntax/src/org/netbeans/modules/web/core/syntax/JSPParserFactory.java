@@ -60,13 +60,18 @@ public class JSPParserFactory extends ParserFactory {
     }
     
     private static final class FakeParser extends Parser {
+        private Snapshot snapshot;
         @Override
         public void parse(Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+            this.snapshot = snapshot;
         }
 
         @Override
         public Result getResult(Task task, SchedulerEvent event) throws ParseException {
-            return new Result() {
+            if (snapshot == null) {
+                return null;
+            }
+            return new Result(snapshot) {
                 @Override
                 public void invalidate() {
                 }
