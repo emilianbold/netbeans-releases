@@ -249,6 +249,7 @@ public interface Project extends VersionablePOMComponent {
     public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
+    Dependency findDependencyById(String groupId, String artifactId, String classifier);
 
     /**
      * POM RELATED PROPERTY

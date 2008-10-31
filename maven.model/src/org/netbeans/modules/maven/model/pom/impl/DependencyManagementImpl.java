@@ -87,6 +87,22 @@ public class DependencyManagementImpl extends POMComponentImpl implements Depend
         }
     }
 
+    public Dependency findDependencyById(String groupId, String artifactId, String classifier) {
+        assert groupId != null;
+        assert artifactId != null;
+        java.util.List<Dependency> deps = getDependencies();
+        if (deps != null) {
+            for (Dependency d : deps) {
+                if (groupId.equals(d.getGroupId()) && artifactId.equals(d.getArtifactId()) &&
+                        (classifier == null || classifier.equals(d.getClassifier()))) {
+                    return d;
+                }
+            }
+        }
+        return null;
+    }
+
+
     public void accept(POMComponentVisitor visitor) {
         visitor.visit(this);
     }

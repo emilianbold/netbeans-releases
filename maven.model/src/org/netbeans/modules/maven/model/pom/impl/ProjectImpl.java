@@ -481,4 +481,19 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         }
     }
 
+    public Dependency findDependencyById(String groupId, String artifactId, String classifier) {
+        assert groupId != null;
+        assert artifactId != null;
+        java.util.List<Dependency> deps = getDependencies();
+        if (deps != null) {
+            for (Dependency d : deps) {
+                if (groupId.equals(d.getGroupId()) && artifactId.equals(d.getArtifactId()) &&
+                        (classifier == null || classifier.equals(d.getClassifier()))) {
+                    return d;
+                }
+            }
+        }
+        return null;
+    }
+
 }

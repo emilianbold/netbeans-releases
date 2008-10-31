@@ -56,5 +56,6 @@ public interface DependencyManagement extends POMComponent {
     public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
+    Dependency findDependencyById(String groupId, String artifactId, String classifier);
 
 }

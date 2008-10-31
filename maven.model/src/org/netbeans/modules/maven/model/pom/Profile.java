@@ -90,6 +90,7 @@ public interface Profile extends IdPOMComponent {
     public List<Dependency> getDependencies();
     public void addDependency(Dependency dependency);
     public void removeDependency(Dependency dependency);
+    Dependency findDependencyById(String groupId, String artifactId, String classifier);
 
     public Reporting getReporting();
     public void setReporting(Reporting reporting);
