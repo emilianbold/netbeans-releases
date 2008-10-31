@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.websvc.core.ClientCreator;
+import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.CreatorProvider;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.openide.WizardDescriptor;

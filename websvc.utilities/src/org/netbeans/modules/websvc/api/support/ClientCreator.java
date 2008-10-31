@@ -39,15 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core;
+package org.netbeans.modules.websvc.api.support;
 
-import org.netbeans.api.project.Project;
-import org.openide.WizardDescriptor;
+import java.io.IOException;
 
 /**
  *
  * @author mkuchtiak
  */
-public interface ClientCreatorProvider {
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz);
+public interface ClientCreator {
+    public void createClient() throws IOException ;
 }
