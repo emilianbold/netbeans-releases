@@ -143,10 +143,6 @@ public class Utilities {
         return CatalogModelFactory.getDefault().getCatalogModel(ms);
     }
     
-    public static ModelSource getModelSource(FileObject bindingHandlerFO, boolean editable){
-        return createModelSource(bindingHandlerFO, editable);
-    }
-    
     /**
      * This method could be overridden by the Unit testcase to return a special
      * ModelSource object for a FileObject with custom impl of classes added to the lookup.
