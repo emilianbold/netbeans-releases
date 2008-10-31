@@ -40,13 +40,14 @@ package org.netbeans.modules.ruby.rubyproject;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JPanel;
 
 /**
  * Panel for Ruby IDE logging options.
  *
  * @author Erno Mononen
  */
-public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
+public final class RubyLoggingOptionsPanel extends JPanel {
 
     /** Creates new form RubyLoggingOptionsPanel */
     public RubyLoggingOptionsPanel() {
@@ -62,11 +63,11 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jLabel1 = new javax.swing.JLabel();
+        loggingLabel = new javax.swing.JLabel();
         standardLogging = new javax.swing.JCheckBox();
         debuggerLogging = new javax.swing.JCheckBox();
 
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "RubyLoggingOptionsPanel.jLabel1.text")); // NOI18N
+        loggingLabel.setText(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "RubyLoggingOptionsPanel.loggingLabel.text")); // NOI18N
 
         standardLogging.setText(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "RubyLoggingOptionsPanel.standardLogging.text")); // NOI18N
         standardLogging.addItemListener(new java.awt.event.ItemListener() {
@@ -74,21 +75,11 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
                 standardLoggingItemStateChanged(evt);
             }
         });
-        standardLogging.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                standardLoggingActionPerformed(evt);
-            }
-        });
 
         debuggerLogging.setText(org.openide.util.NbBundle.getMessage(RubyLoggingOptionsPanel.class, "RubyLoggingOptionsPanel.debuggerLogging.text")); // NOI18N
         debuggerLogging.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 debuggerLoggingItemStateChanged(evt);
-            }
-        });
-        debuggerLogging.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                debuggerLoggingActionPerformed(evt);
             }
         });
 
@@ -99,7 +90,7 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
+                    .add(loggingLabel)
                     .add(standardLogging)
                     .add(debuggerLogging))
                 .addContainerGap(58, Short.MAX_VALUE))
@@ -108,7 +99,7 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
+                .add(loggingLabel)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(standardLogging)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -116,14 +107,6 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void standardLoggingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_standardLoggingActionPerformed
-
-}//GEN-LAST:event_standardLoggingActionPerformed
-
-    private void debuggerLoggingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_debuggerLoggingActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_debuggerLoggingActionPerformed
 
     private void standardLoggingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_standardLoggingItemStateChanged
         Logger rubyLogger = Logger.getLogger("org.netbeans.modules.ruby"); //NOI18N
@@ -171,12 +154,11 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
             Level original = loggingSettings.getOriginalLoggingLevel(logger);
             logger.setLevel(original);
         }
-
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox debuggerLogging;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel loggingLabel;
     private javax.swing.JCheckBox standardLogging;
     // End of variables declaration//GEN-END:variables
 
