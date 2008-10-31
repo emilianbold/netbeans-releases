@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.uihandler;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PushbackInputStream;
@@ -56,6 +57,8 @@ import org.openide.awt.Mnemonics;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.EntityResolver;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 /**
@@ -97,6 +100,17 @@ final class ButtonsParser {
         }
 
         nodes = new ArrayList<Node>();
+        builder.setEntityResolver(new EntityResolver() {
+            //Avoid connecting out to get DTD
+            public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                if (systemId.equals("http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd")) {
+                    InputStream is = new ByteArrayInputStream(new byte[0]);
+                    return new InputSource(is);
+                } else {
+                    return null;
+                }
+            }
+        });
         Document doc = builder.parse(isWithProlog);
         NodeList forms = doc.getElementsByTagName("form");
         for (int i = 0; i < forms.getLength(); i++) {
