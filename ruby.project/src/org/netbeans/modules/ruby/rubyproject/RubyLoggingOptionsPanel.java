@@ -131,7 +131,7 @@ public class RubyLoggingOptionsPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_standardLoggingItemStateChanged
 
     private void debuggerLoggingItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_debuggerLoggingItemStateChanged
-        Logger debuggerLogger = Logger.getLogger("Dorg.rubyforge.debugcommons.level"); //NOI18N
+        Logger debuggerLogger = Logger.getLogger("org.rubyforge.debugcommons"); //NOI18N
         setLevel(debuggerLogger, Level.FINEST, debuggerLogging.isSelected());
     }//GEN-LAST:event_debuggerLoggingItemStateChanged
 
