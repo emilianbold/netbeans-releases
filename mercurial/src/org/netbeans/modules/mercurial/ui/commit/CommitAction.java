@@ -74,6 +74,7 @@ import java.text.MessageFormat;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.HashSet;
+import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
@@ -400,6 +401,7 @@ public class CommitAction extends ContextAction {
             }
             HgCommand.doCommit(repository, commitCandidates, message, logger);
             HgRepositoryContextCache.setHasHistory(ctx);
+            HgLogMessage tip = HgCommand.doTip(repository, logger);
 
             if (commitCandidates.size() == 1) {
                 logger.output(
@@ -413,6 +415,7 @@ public class CommitAction extends ContextAction {
             for (File f : commitCandidates) {
                 logger.output("\t" + f.getAbsolutePath()); // NOI18N
             }
+            logTip(tip, logger);
         } catch (HgException ex) {
             NotifyDescriptor.Exception e = new NotifyDescriptor.Exception(ex);
             DialogDisplayer.getDefault().notifyLater(e);
@@ -422,5 +425,34 @@ public class CommitAction extends ContextAction {
             logger.output(""); // NOI18N
         }
     }
+
+    private static void logTip(HgLogMessage tip, OutputLogger logger) {
+        String lbChangeset = NbBundle.getMessage(CommitAction.class, "LB_CHANGESET");   // NOI18N
+        String lbUser =      NbBundle.getMessage(CommitAction.class, "LB_AUTHOR");      // NOI18N
+        String lbDate =      NbBundle.getMessage(CommitAction.class, "LB_DATE");        // NOI18N
+        String lbSummary =   NbBundle.getMessage(CommitAction.class, "LB_SUMMARY");     // NOI18N
+        int l = 0;
+        for (String s : new String[] {lbChangeset, lbUser, lbDate, lbSummary}) {
+            if(l < s.length()) l = s.length();
+}
+        logger.output(formatlabel(lbChangeset, l) + tip.getRevision() + ":" + tip.getCSetShortID()); // NOI18N
+        logger.output(formatlabel(lbUser,      l) + tip.getAuthor());
+        logger.output(formatlabel(lbDate,      l) + tip.getDate());
+        logger.output(formatlabel(lbSummary,   l) + tip.getMessage());
+    }
+
+    private static String formatlabel(String label, int l) {
+        label = label + spaces(l - label.length()) + ": ";
+        return label;
+    }
+
+    private static String spaces(int l) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < l + 3; i++) {
+            sb.append(" ");
+        }
+        return sb.toString();
+    }
+
 }
 
