@@ -61,11 +61,13 @@ import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import hidden.org.codehaus.plexus.util.DirectoryScanner;
 import hidden.org.codehaus.plexus.util.IOUtil;
 import hidden.org.codehaus.plexus.util.xml.Xpp3DomBuilder;
+import java.util.Collections;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.maven.api.ModelUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
@@ -268,12 +270,9 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         
         public void run() {
             FileObject fo = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-            ModelSource source = Utilities.createModelSource(fo, true);
-            POMModel model = POMModelFactory.getDefault().getModel(source);
-            if (model != null) {
-                model.startTransaction();
-                try {
-                    synchronized (this) {
+            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    synchronized (MavenNbModuleImpl.DependencyAdder.this) {
                         for (Dependency dep : toAdd) {
                             org.netbeans.modules.maven.model.pom.Dependency mdlDep =
                                     ModelUtils.checkModelDependency(model, dep.getGroupId(), dep.getArtifactId(), true);
@@ -281,24 +280,13 @@ public class MavenNbModuleImpl implements NbModuleProvider {
                         }
                         toAdd.clear();
                     }
-                    try {
-                        Utilities.saveChanges(model);
-                        NbMavenProject.fireMavenProjectReload(project);
-                        project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                } finally {
-                    if (model.isIntransaction()) {
-                        model.rollbackTransaction();
-                    }
                 }
-            } else { //NOPMD
-            //TODO warn somehow?
-            //the pom file is probably being edited..
-            } 
+            };
+            Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+            //TODO is the manual reload necessary if pom.xml file is being saved?
+            NbMavenProject.fireMavenProjectReload(project);
+            project.getLookup().lookup(NbMavenProject.class).triggerDependencyDownload();
         }
-        
     }
             
 

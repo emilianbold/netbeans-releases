@@ -68,7 +68,8 @@ import org.openide.filesystems.FileUtil;
 public final class ModelHandleUtils {
     
     private ModelHandleUtils() {}
-    
+
+    //TODO deprecate in favour of o.n.m.maven.model.Utilities + ModelOperation?
     public static ModelHandle createModelHandle(Project prj) throws IOException, XmlPullParserException {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         FileObject pom = FileUtil.toFileObject(project.getPOMFile());
@@ -81,6 +82,7 @@ public final class ModelHandleUtils {
                 Collections.<String, ActionToGoalMapping>singletonMap(M2Configuration.DEFAULT,mapping), null, null);
     }
     
+    //TODO deprecate in favour of o.n.m.maven.model.Utilities + ModelOperation?
     public static void writeModelHandle(ModelHandle handle, Project prj) throws IOException {
         NbMavenProjectImpl project = prj.getLookup().lookup(NbMavenProjectImpl.class);
         CustomizerProviderImpl.writeAll(handle, project);

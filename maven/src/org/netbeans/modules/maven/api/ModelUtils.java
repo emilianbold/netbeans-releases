@@ -38,10 +38,11 @@
  */
 package org.netbeans.modules.maven.api;
 
-import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Build;
 import org.netbeans.modules.maven.model.pom.Configuration;
@@ -49,17 +50,12 @@ import org.netbeans.modules.maven.model.pom.Dependency;
 import org.netbeans.modules.maven.model.pom.DependencyManagement;
 import org.netbeans.modules.maven.model.pom.POMComponentFactory;
 import org.netbeans.modules.maven.model.pom.POMModel;
-import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
-import org.netbeans.modules.xml.xam.ModelSource;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.util.Exceptions;
 
 /**
  * Various maven model related utilities.
@@ -81,71 +77,41 @@ public final class ModelUtils {
      *                   If true null values will remove corresponding tag.
      */
     public static void addDependency(FileObject pom,
-            String group,
-            String artifact,
-            String version,
-            String type,
-            String scope,
-            String classifier, boolean acceptNull) {
-        ModelSource source = Utilities.createModelSource(pom, true);
-        POMModel model = POMModelFactory.getDefault().getModel(source);
-        model.startTransaction();
-        try {
-            Dependency dep = checkModelDependency(model, group, artifact, true);
-            dep.setVersion(version);
-            if (acceptNull || scope != null) {
-                dep.setScope(scope);
+            final String group,
+            final String artifact,
+            final String version,
+            final String type,
+            final String scope,
+            final String classifier, final boolean acceptNull)
+    {
+        ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+            public void performOperation(POMModel model) {
+                Dependency dep = checkModelDependency(model, group, artifact, true);
+                dep.setVersion(version);
+                if (acceptNull || scope != null) {
+                    dep.setScope(scope);
+                }
+                if (acceptNull || type != null) {
+                    dep.setType(type);
+                }
+                if (acceptNull || classifier != null) {
+                    dep.setClassifier(classifier);
+                }
+                model.endTransaction();
             }
-            if (acceptNull || type != null) {
-                dep.setType(type);
-            }
-            if (acceptNull || classifier != null) {
-                dep.setClassifier(classifier);
-            }
-            model.endTransaction();
-        } finally {
-            if (model.isIntransaction()) {
-                model.rollbackTransaction();
-            }
-        }
-        DataObject dobj = model.getModelSource().getLookup().lookup(DataObject.class);
-        SaveCookie sc = dobj.getLookup().lookup(SaveCookie.class);
-        if (sc != null) {
-            try {
-                sc.save();
-            } catch (IOException ex) {
-                //TODO report properly
-                Exceptions.printStackTrace(ex);
-            }
-        }
+        };
+        Utilities.performPOMModelOperations(pom, Collections.singletonList(operation));
     }
 
     public static Dependency checkModelDependency(POMModel pom, String groupId, String artifactId, boolean add) {
         Project mdl = pom.getProject();
-        List<Dependency> deps = mdl.getDependencies();
-        Dependency ret = null;
+        Dependency ret = mdl.findDependencyById(groupId, artifactId, null);
         Dependency managed = null;
-        if (deps != null) {
-            for (Dependency d : deps) {
-                if (groupId.equalsIgnoreCase(d.getGroupId()) && artifactId.equalsIgnoreCase(d.getArtifactId())) {
-                    ret = d;
-                    break;
-                }
-            }
-        }
         if (ret == null || ret.getVersion() == null) {
             //check dependency management section as well..
             DependencyManagement mng = mdl.getDependencyManagement();
             if (mng != null) {
-                deps = mng.getDependencies();
-                if (deps != null) {
-                    for (Dependency d : deps) {
-                        if (groupId.equalsIgnoreCase(d.getGroupId()) && artifactId.equalsIgnoreCase(d.getArtifactId())) {
-                            managed = d;
-                            break;
-                        }
-                    }
-                }
+                managed = mng.findDependencyById(groupId, artifactId, null);
             }
         }
         if (add && ret == null) {
@@ -204,8 +170,6 @@ public final class ModelUtils {
         }
         return ret;
     }
-
-    private static final String CONFIGURATION_EL = "configuration";//NOI18N
 
     /**
      * update the source level of project to given value.

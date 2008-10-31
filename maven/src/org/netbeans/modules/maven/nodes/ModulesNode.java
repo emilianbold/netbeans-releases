@@ -63,6 +63,7 @@ import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
@@ -215,32 +216,27 @@ public class ModulesNode extends AbstractNode {
             NotifyDescriptor nd = new NotifyDescriptor.Confirmation(org.openide.util.NbBundle.getMessage(ModulesNode.class, "MSG_Remove_Module"), NotifyDescriptor.YES_NO_OPTION);
             Object ret = DialogDisplayer.getDefault().notify(nd);
             if (ret == NotifyDescriptor.YES_OPTION) {
-                ModelSource source = org.netbeans.modules.maven.model.Utilities.createModelSource(
-                        FileUtil.toFileObject(parent.getPOMFile()), true);
-                POMModel model = POMModelFactory.getDefault().getModel(source);
-                List<String> modules = model.getProject().getModules();
-                if (modules != null) {
-                    try {
-                        for (String path : modules) {
-                            File rel = new File(parent.getPOMFile().getParent(), path);
-                            File norm = FileUtil.normalizeFile(rel);
-                            FileObject folder = FileUtil.toFileObject(norm);
-                            if (folder != null && folder.equals(project.getProjectDirectory())) {
-                                model.startTransaction();
-                                model.getProject().removeModule(path);
-                                org.netbeans.modules.maven.model.Utilities.saveChanges(model);
-                                NbMavenProject.fireMavenProjectReload(parent);
-                                break;
+                FileObject fo = FileUtil.toFileObject(parent.getPOMFile());
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        List<String> modules = model.getProject().getModules();
+                        if (modules != null) {
+                            for (String path : modules) {
+                                File rel = new File(parent.getPOMFile().getParent(), path);
+                                File norm = FileUtil.normalizeFile(rel);
+                                FileObject folder = FileUtil.toFileObject(norm);
+                                if (folder != null && folder.equals(project.getProjectDirectory())) {
+                                    model.startTransaction();
+                                    model.getProject().removeModule(path);
+                                    break;
+                                }
                             }
                         }
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    } finally {
-                        if (model.isIntransaction()) {
-                            model.rollbackTransaction();
-                        }
                     }
-                }
+                };
+                org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+                //TODO is the manual reload necessary if pom.xml file is being saved?
+                NbMavenProject.fireMavenProjectReload(project);
             }
         }
     }

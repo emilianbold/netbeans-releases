@@ -154,7 +154,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         POMModel model = POMModelFactory.getDefault().getModel(source);
 
         ProfilesRoot prof = MavenSettingsSingleton.createProfilesModel(project.getProjectDirectory());
-        UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
+        UserActionGoalProvider usr = project.getLookup().lookup(UserActionGoalProvider.class);
         Map<String, ActionToGoalMapping> mapps = new HashMap<String, ActionToGoalMapping>();
         NetbeansBuildActionXpp3Reader reader = new NetbeansBuildActionXpp3Reader();
         ActionToGoalMapping mapping = reader.read(new StringReader(usr.getRawMappingsAsString()));
@@ -272,6 +272,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         public void windowClosed( WindowEvent e) {
             //TODO where to put elsewhere?
             project.getLookup().lookup(MavenProjectPropsImpl.class).cancelTransaction();
+            if (handle.getPOMModel().isIntransaction()) {
+                handle.getPOMModel().rollbackTransaction();
+            }
         }
         
         @Override
@@ -289,16 +292,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     }
 
    public static void writeAll(ModelHandle handle, NbMavenProjectImpl project) throws IOException {
-        if (handle.isModified(handle.getPOMModel())) {
-            handle.getPOMModel().endTransaction();
-            DataObject dobj = handle.getPOMModel().getModelSource().getLookup().lookup(DataObject.class);
-            SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
-            if (save != null) {
-                save.save();
-            } else {
-                //not changed?
-            }
-        }
+        Utilities.saveChanges(handle.getPOMModel());
         if (handle.isModified(handle.getProfileModel())) {
             WriterUtils.writeProfilesModel(project.getProjectDirectory(), handle.getProfileModel());
         }
