@@ -48,10 +48,21 @@ import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
  *
  * @author Sergey Grinev
  */
-public class ScpTestCase extends RemoteTestBase {
+public class TransportTestCase extends RemoteTestBase {
 
-    public ScpTestCase(String testName) {
+    public TransportTestCase(String testName) {
         super(testName);
+    }
+
+    public void testRun() throws Exception {
+        if (!canTest()) {
+            return;
+        }
+        final String randomString = "i am just a random string, doesn't matter that I mean";
+        RemoteCommandSupport rcs = new RemoteCommandSupport(getKey(), "echo " + randomString);
+        rcs.disconnect();
+        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getKey() + "' returned " + rcs.getExitStatus();
+        assert randomString.equals( rcs.getOutput() ) : "echo command on remote server '" + getKey() + "' produced unexpected output: " + rcs.getOutput();
     }
 
 //    public void testNewJsch() throws Exception {
@@ -66,26 +77,6 @@ public class ScpTestCase extends RemoteTestBase {
 //        System.err.println("output=" + support.toString());
 //        assert support.toString().indexOf("envTestKey=envTestValue") > -1;
 //    }
-
-    private static final String cshLine = "setenv envTestKey \"envTestValue\";setenv envTestKey2 \"envTestValue2\";";
-    private static final String cshLine2 = "setenv envTestKey2 \"envTestValue2\";setenv envTestKey \"envTestValue\";";
-    private static final String bashLine = "export envTestKey=\"envTestValue\";export envTestKey2=\"envTestValue2\";";
-    private static final String bashLine2 = "export envTestKey2=\"envTestValue2\";export envTestKey=\"envTestValue\";";
-
-    public void testShellUtils() throws Exception {
-        Map<String, String> env = new HashMap<String, String>();
-        env.put("envTestKey", "envTestValue");
-        env.put("envTestKey2", "envTestValue2");
-        String line = ShellUtils.prepareExportString(true, env);
-        assert cshLine.equals(line) || cshLine2.equals(line);
-        String line2 = ShellUtils.prepareExportString(false, env);
-        assert bashLine.equals(line2) || bashLine2.equals(line2);
-        String[] env2 = {"envTestKey=envTestValue","envTestKey2=envTestValue2"};
-        String line3= ShellUtils.prepareExportString(true, env2);
-        assert cshLine.equals(line3) || cshLine2.equals(line3);
-        String line4 = ShellUtils.prepareExportString(false, env2);
-        assert bashLine.equals(line4) || bashLine2.equals(line4);
-    }
 
 //    public void testFileExistst() throws Exception {
 //        HostInfoProvider hip = HostInfoProvider.getDefault();
