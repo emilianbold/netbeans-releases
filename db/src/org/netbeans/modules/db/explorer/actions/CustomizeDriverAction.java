@@ -48,6 +48,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
 
 import org.openide.DialogDescriptor;
@@ -63,9 +65,11 @@ import org.netbeans.modules.db.explorer.infos.DriverNodeInfo;
 
 public class CustomizeDriverAction extends DatabaseAction {
     static final long serialVersionUID =-109193000951395612L;
+    private static final Logger LOGGER = Logger.getLogger(CustomizeDriverAction.class.getName());
     
     private Dialog dialog;
-    
+
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length != 1)
             return false;
@@ -76,11 +80,11 @@ public class CustomizeDriverAction extends DatabaseAction {
         
         return true;
     }
-    
+
+    @Override
     public void performAction(Node[] activatedNodes) {
         final Node[] n = activatedNodes;
         
-        int drvIndex = 0;
 		final DriverNodeInfo info = (DriverNodeInfo) n[0].getCookie(DriverNodeInfo.class);
         if (info == null)
             return; //should not happen
@@ -125,9 +129,9 @@ public class CustomizeDriverAction extends DatabaseAction {
                         info.delete();
                         JDBCDriverManager.getDefault().addDriver(JDBCDriver.create(oldName, displayName, drvClass, (URL[]) drvLoc.toArray(new URL[drvLoc.size()])));
                     } catch (IOException exc) {
-                        //PENDING
+                        LOGGER.log(Level.INFO, exc.getMessage(), exc);
                     } catch (DatabaseException exc) {
-                        //PENDING
+                        LOGGER.log(Level.INFO, exc.getMessage(), exc);
                     }
                     
                     javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -137,7 +141,8 @@ public class CustomizeDriverAction extends DatabaseAction {
                                 if (info != null)
                                     info.refreshChildren();
                             } catch (Exception exc) {
-//                                exc.printStackTrace();
+                                LOGGER.log(Level.INFO, exc.getMessage(), exc);
+                                DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Exception(exc));
                             }
                         }
                     });
