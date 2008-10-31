@@ -496,4 +496,17 @@ public class ProjectImpl extends VersionablePOMComponentImpl implements Project 
         return null;
     }
 
+    public Profile findProfileById(String id) {
+        assert id != null;
+        java.util.List<Profile> profiles = getProfiles();
+        if (profiles != null) {
+            for (Profile p : profiles) {
+                if (id.equals(p.getId())) {
+                    return p;
+                }
+            }
+        }
+        return null;
+    }
+
 }
