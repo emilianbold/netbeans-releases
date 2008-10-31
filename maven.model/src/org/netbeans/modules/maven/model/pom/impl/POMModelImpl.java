@@ -55,8 +55,8 @@ public class POMModelImpl extends POMModel {
     private POMComponent rootComponent;
     private POMComponentFactory componentFactory;
     private POMQNames pomqnames;
-    private QName PROJECT_NS = POMQName.createQName("project", true);
-    private QName PROJECT = POMQName.createQName("project", false);
+    private QName PROJECT_NS = POMQName.createQName("project", true); ///NOI18N
+    private QName PROJECT = POMQName.createQName("project", false); ///NOI18N
     
     public POMModelImpl(ModelSource source) {
         super(source);
