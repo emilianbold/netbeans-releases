@@ -108,7 +108,12 @@ public class WriterUtils {
             
         }
     }
-    
+
+    /**
+     * @deprecated use the XAM-based model for editing the pom file,
+     * see org.netbeans.modules.maven.model package
+     *
+     */
     public static Model loadModel(FileObject fo) {
         MavenXpp3Reader reader = new MavenXpp3Reader();
         Model model = null;
