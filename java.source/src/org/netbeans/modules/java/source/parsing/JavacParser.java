@@ -287,7 +287,7 @@ public class JavacParser extends Parser {
         assert privateParser || Utilities.holdsParserLock();
         canceled.set(false);
         try {            
-            LOGGER.fine("parse: task: " + task.toString() +"\n" + snapshot.getText());      //NOI18N
+            LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
             if (isSingleSource) {
                 init (snapshot, task, true);
                 boolean needsFullReparse = true;
@@ -307,10 +307,22 @@ public class JavacParser extends Parser {
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
             } 
-            else {
+            else if (snapshot != null) {
                 init (snapshot, task, false);
                 ciImpl = createCurrentInfo(this, file, root, snapshot,
                         ciImpl == null ? null : ciImpl.getJavacTask());
+            }
+            else {
+                ClasspathInfo _tmpInfo = null;
+                if (task instanceof ClasspathInfoProvider &&
+                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                    cpInfo = _tmpInfo;
+                    explicitCpInfo = true;
+                    ciImpl = new CompilationInfoImpl(cpInfo);
+                }
+                else {
+                    throw new IllegalArgumentException("Task has to provide classpath.");
+                }
             }
             cachedSnapShot = snapshot;
         } catch (IOException ioe) {

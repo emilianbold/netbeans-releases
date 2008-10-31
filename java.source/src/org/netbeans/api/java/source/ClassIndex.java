@@ -68,9 +68,9 @@ import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.modules.java.source.usages.ResultConvertor;
-import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.WeakListeners;
 
 /**
@@ -685,10 +685,9 @@ public final class ClassIndex {
                         //trying to access javac lock in this thread may cause deadlock with Java Worker Thread
                         //because the classpath events are fired under the project mutex and it's legal to
                         //aquire project mutex in the CancellableTask.run()
-                        JavaSourceAccessor.getINSTANCE().runSpecialTask(new GenericUserTask() {
+                        JavaSourceAccessor.getINSTANCE().runSpecialTask(new Mutex.ExceptionAction<Void>() {
                             
-                            @Override
-                            public void run() {
+                            public Void run() {
                                 if (ae != null) {
                                     for (ClassIndexListener l : listeners) {
                                         l.rootsAdded(ae);
@@ -699,6 +698,7 @@ public final class ClassIndex {
                                         l.rootsRemoved(re);
                                     }
                                 }
+                                return null;
                             }                            
                         }, JavaSource.Priority.MAX);                        
                     }                    

@@ -37,19 +37,30 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.parsing.api;
+package org.netbeans.modules.java.source.parsing;
+
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 
 /**
- * Generic user task.
- *
+ * Represents a {@link MultiLanguageUserTask} which provides 
+ * {@link ClasspathInfo} explicitely.
  * @author Tomas Zezula
  */
-public abstract class GenericUserTask {
+public abstract class ClasspathInfoMultiLanguageTask extends MultiLanguageUserTask implements ClasspathInfoProvider {
+    
+    private final ClasspathInfo cpInfo;
     
     /**
-     * Called under source infrastrucure lock.
-     * 
-     * @throws Exception rethrown by the infrastructure as a {@link Exception}.
+     * Creates a new {@link ClasspathInfoTask} for given {@link ClasspathInfo}
+     * @param theInfo may be null
      */
-    public abstract void run () throws Exception;
+    protected ClasspathInfoMultiLanguageTask (final ClasspathInfo theInfo) {
+        this.cpInfo = theInfo;
+    }
+    
+    public final ClasspathInfo getClasspathInfo () {
+        return this.cpInfo;
+    }
+
 }

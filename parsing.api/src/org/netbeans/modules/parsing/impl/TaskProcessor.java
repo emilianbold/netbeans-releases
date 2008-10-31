@@ -65,7 +65,6 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
-import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -80,6 +79,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.Parameters;
 
 /**
@@ -155,7 +155,7 @@ public class TaskProcessor {
         includedTasks = _includedTasks;
     }
         
-    public static void runUserTask (final GenericUserTask task, final Collection<Source> sources) throws ParseException {
+    public static void runUserTask (final Mutex.ExceptionAction<Void> task, final Collection<Source> sources) throws ParseException {
         Parameters.notNull("task", task);
         boolean a = false;
         assert a = true;

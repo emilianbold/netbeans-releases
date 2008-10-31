@@ -40,27 +40,21 @@
 package org.netbeans.modules.java.source.parsing;
 
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 
 /**
- * Represents a {@link MultiLanguageUserTask} which provides 
- * {@link ClasspathInfo} explicitely.
+ *
  * @author Tomas Zezula
  */
-public abstract class ClasspathInfoTask extends MultiLanguageUserTask implements ClasspathInfoProvider {
+public abstract class ClasspathInfoTask extends UserTask implements ClasspathInfoProvider {
     
     private final ClasspathInfo cpInfo;
     
-    /**
-     * Creates a new {@link ClasspathInfoTask} for given {@link ClasspathInfo}
-     * @param theInfo may be null
-     */
-    protected ClasspathInfoTask (final ClasspathInfo theInfo) {
-        this.cpInfo = theInfo;
-    }
-    
-    public final ClasspathInfo getClasspathInfo () {
-        return this.cpInfo;
+    protected ClasspathInfoTask (final ClasspathInfo cpInfo) {
+        this.cpInfo = cpInfo;
     }
 
+    public ClasspathInfo getClasspathInfo() {
+        return this.cpInfo;
+    }        
 }
