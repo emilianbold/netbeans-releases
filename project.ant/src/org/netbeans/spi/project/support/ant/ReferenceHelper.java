@@ -1384,7 +1384,11 @@ public final class ReferenceHelper {
             if (!cont)
                 continue;
             
-            String    value = e.getValue();
+            // #151648: do not try to fix references defined via property
+            String value = e.getValue();
+            if (value.startsWith("${")) { // NOI18N
+                continue;
+            }
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
@@ -1413,7 +1417,11 @@ public final class ReferenceHelper {
             if (!cont)
                 continue;
             
-            String    value = e.getValue();
+            // #151648: do not try to fix references defined via property
+            String value = e.getValue();
+            if (value.startsWith("${")) { // NOI18N
+                continue;
+            }
             
             File absolutePath = FileUtil.normalizeFile(PropertyUtils.resolveFile(originalPath, value));
             
