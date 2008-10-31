@@ -164,6 +164,7 @@ public class ChildrenKeysTest extends NbTestCase {
      * getNodes() by another thread callig getNodes.
      * Other thread
      */
+    @RandomlyFails // NB-Core-Build #1643, in ChildrenLazyKeysTest
     public void testGetNodesFromWriteAccess() throws Exception {
         final String[] keys = { "Nenik", "Tulach" };
         Keys o = new Keys (lazy(), keys);
