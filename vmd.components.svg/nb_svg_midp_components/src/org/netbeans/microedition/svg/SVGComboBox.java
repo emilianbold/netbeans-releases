@@ -139,6 +139,10 @@ import org.w3c.dom.svg.SVGRect;
  *           &lt;text display="none">type=selection&lt;/text>
  *           &lt;rect id="country_combobox_list_selection" x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
  *       &lt;/g>
+ *       &lt;g id="country_combobox_list_current_selection" >
+ *          &lt;!-- Metadata information. Please don't edit. -->
+ *          &lt;text display="none">type=current_selection&lt;/text> 
+ *       &lt;/g>
  *       &lt;g  id="country_combobox_list_content" visibility="inherit">
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=content&lt;/text>
