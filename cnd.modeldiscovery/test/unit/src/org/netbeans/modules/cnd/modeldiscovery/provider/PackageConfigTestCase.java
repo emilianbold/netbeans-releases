@@ -70,32 +70,41 @@ public class PackageConfigTestCase {
     public void tearDown() {
     }
 
+
     @Test
-    public void testMethod() {
+    public void testGtkPackage() {
+        // Test requires cygwin on Windows platform
+        // Test requires package gtk+-2.0
+        // I do not know how the test will work on Mac. Help me to make test working on Mac.
+        // If you computer do not have a needed software, install it. It help us to find bugs.
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
+        String packageName = "gtk+-2.0";
         PkgConfigImpl pc = (PkgConfigImpl)new PkgConfigManagerImpl().getPkgConfig(null);
-        pc.traceConfig("gtk+-2.0",true);
-        pc.traceRecursiveConfig("gtk+-2.0");
+        pc.traceConfig(packageName,true);
+        pc.traceRecursiveConfig(packageName);
         //pc.trace();
+        assert pc.getPkgConfig(packageName) != null;
         String include = "gtk/gtk.h";
         ResolvedPath rp = pc.getResolvedPath(include);
-        if (rp != null){
-            System.out.println("Resolved include paths");
-            String path = rp.getIncludePath();
-            System.out.println("Include: "+include);
-            System.out.println("Path:    "+path);
-            for(PackageConfiguration pkg : rp.getPackages()){
-                System.out.print("Package: "+pkg.getName());
-                StringBuilder buf = new StringBuilder();
-                for(String p : pkg.getIncludePaths()){
-                    if (buf.length() > 0) {
-                        buf.append(", ");
-                    }
-                    buf.append(p);
+        assert rp != null;
+        System.out.println("Resolved include paths");
+        String path = rp.getIncludePath();
+        System.out.println("Include: "+include);
+        System.out.println("Path:    "+path);
+        StringBuilder packages = new StringBuilder();
+        for(PackageConfiguration pkg : rp.getPackages()){
+            System.out.print("Package: "+pkg.getName());
+            packages.append(pkg.getName()+" ");
+            StringBuilder buf = new StringBuilder();
+            for(String p : pkg.getIncludePaths()){
+                if (buf.length() > 0) {
+                    buf.append(", ");
                 }
-                System.out.println("\t["+buf.toString()+"]");
+                buf.append(p);
             }
+            System.out.println("\t["+buf.toString()+"]");
         }
+        assert packages.toString().indexOf(packageName+" ") >= 0;
     }
 }

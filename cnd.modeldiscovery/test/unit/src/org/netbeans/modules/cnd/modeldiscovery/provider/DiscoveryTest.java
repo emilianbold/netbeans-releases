@@ -50,7 +50,7 @@ import org.junit.runners.Suite;
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({org.netbeans.modules.cnd.modeldiscovery.provider.PackageConfigTestCase.class})
-public class DiscoveryTestSuite {
+public class DiscoveryTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
