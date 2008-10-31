@@ -50,7 +50,9 @@ import org.netbeans.modules.mobility.svgcore.util.SVGComponentsSupport;
  * SVGComponentDrop implementation for Button.
  * loads snippet text from button_snippet.xml_template
  * <p>
- * patterns used in snippet:  %%COORDINATE_X%%, %%COORDINATE_Y%%, 
+ * Note: Patterns used in this snipped differ from other snippets.
+ * <p>
+ * patterns used in snippet:  %%FRAME_COMPONENT_ID%%, %%COORDINATE_X%%, %%COORDINATE_Y%%, 
  * %%COMPONENT_ID_1%%, %%COMPONENT_ID_2%%
  * 
  * @author akorostelev
