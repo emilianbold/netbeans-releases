@@ -46,7 +46,6 @@ import java.awt.event.ActionEvent;
 import java.text.MessageFormat;
 import java.util.*;
 import javax.swing.*;
-import javax.swing.KeyStroke;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.viewmodel.Models;
 import org.netbeans.spi.viewmodel.TreeModel;

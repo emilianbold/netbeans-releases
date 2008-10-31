@@ -113,7 +113,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
     
     private static FileObject fo = null;
     
-    private static Logger LOG = Logger.getLogger("gdb.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public Disassembly(GdbDebugger debugger) {
         this.debugger = debugger;
@@ -265,7 +265,7 @@ public class Disassembly implements PropertyChangeListener, DocumentListener {
         for (Integer idx : regValues.keySet()) {
             String name = regNames.get(idx);
             if (name == null) {
-                LOG.severe("Unknown register: " + idx); // NOI18N
+                log.severe("Unknown register: " + idx); // NOI18N
                 name = String.valueOf(idx);
             }
             res.add(new RegisterValue(name, regValues.get(idx), regModified.contains(idx)));

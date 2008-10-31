@@ -82,7 +82,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     protected String derefValue;
     protected Field[] fields;
     protected TypeInfo tinfo;
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 
     private Set<PropertyChangeListener> listeners = new HashSet<PropertyChangeListener>();
 
@@ -184,7 +184,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @return string representation of type of this variable.
      */
     public String getValue() {
-        if (value.startsWith(">") && value.endsWith(".\"<")) { // NOI18N
+        if (value.charAt(0) == '>' && value.endsWith(".\"<")) { // NOI18N
             return '>' + value.substring(2, value.length() - 3).replace("\\\"", "\"") + '<'; // NOI18N
         } else {
             return value.replace("\\\"", "\""); // NOI18N
@@ -460,8 +460,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * (even though the var has more fields).
      */
     private int estimateFieldCount() {
-        int count = 100;
-        return count;
+        return 100;
     }
 
     private boolean isValidPointerAddress() {
@@ -778,7 +777,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 if (truncated) {
                     String high;
                     try {
-                        high = type.substring(type.indexOf("[") + 1, type.indexOf("]")); // NOI18N
+                        high = type.substring(type.indexOf('[') + 1, type.indexOf(']')); // NOI18N
                         Integer.parseInt(high);
                     } catch (Exception ex) {
                         high = "..."; // NOI18N
@@ -947,7 +946,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
 
     private static int log10(int n) {
         int l = 1;
-        while ((n = n / 10) > 0) l++;
+        while ((n = n / 10) > 0) {
+            l++;
+        }
         return l;
     }
 
@@ -959,7 +960,9 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             return ZEROS.substring(0, n);
         } else {
             String z = ZEROS;
-            while (z.length() < n) z += " "; // NOI18N
+            while (z.length() < n) {
+                z += " ";  // NOI18N
+            }
             return z;
         }
     }
@@ -1105,7 +1108,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 pname = ((AbstractField) parent).getFullName(showBaseClass);
             } else {
                 pname = parent.getName();
-                if (pname.startsWith("*")) { // NOI18N
+                if (pname.charAt(0) == '*') { // NOI18N
                     pname = '(' + pname + ')';
                 }
             }
@@ -1122,7 +1125,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 } else {
                     fullname = name;
                 }
-            } else if (GdbUtils.isSimplePointer(parent.getType()) && name.startsWith("*")) { // NOI18N
+            } else if (GdbUtils.isSimplePointer(parent.getType()) && name.charAt(0) == '*') { // NOI18N
                 fullname = '*' + pname;
             } else if (GdbUtils.isPointer(parent.getType())) {
                 fullname = pname + "->" + name; // NOI18N
@@ -1133,10 +1136,6 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             }
             return fullname;
         }
-    }
-
-    private boolean isError(String msg) {
-        return msg.startsWith(">") && msg.endsWith("<"); // NOI18N
     }
 
     public static class ErrorField implements Field {

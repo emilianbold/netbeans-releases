@@ -143,10 +143,6 @@ public class FunctionBreakpoint extends GdbBreakpoint {
     }
     
     private static class FunctionBreakpointComparable extends FunctionBreakpoint implements Comparable {
-        
-        public FunctionBreakpointComparable() {
-        }
-        
         public int compareTo(Object o) {
             if (o instanceof FunctionBreakpointComparable) {
                 FunctionBreakpoint fbthis = this;

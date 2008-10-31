@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.i18n.form;
 
+import java.util.Map;
 import org.netbeans.modules.form.I18nValue;
 import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.form.FormEditor;
@@ -84,7 +85,8 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
              source.getValue(),
              source.getComment(), 
              source.getArguments(), 
-             source.getReplaceFormat());
+             source.getReplaceFormat(),
+             (source instanceof FormI18nString) ? ((FormI18nString)source).bundleName : null);
         ((JavaResourceHolder)support.getResourceHolder()).setLocalization(
                 ((JavaResourceHolder)source.getSupport().getResourceHolder()).getLocalization());
     }
@@ -98,7 +100,7 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
         }
     }
 
-    private FormI18nString(I18nSupport i18nSupport, String key, String value, String comment, String[] arguments, String replaceFormat) {
+    private FormI18nString(I18nSupport i18nSupport, String key, String value, String comment, String[] arguments, String replaceFormat, String bundleName) {
         super(i18nSupport);
 
         this.key = key;
@@ -107,6 +109,7 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
         
         this.arguments = arguments;
         this.replaceFormat = replaceFormat;
+        this.bundleName = bundleName;
     }
 
     public Object copy(FormProperty formProperty) {
@@ -123,7 +126,7 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
             // need new key (auto-generated; form module must provide)
             newI18nString = new FormI18nString(createNewSupport(sourceDO, null, ((FormI18nSupport)support).getIdentifier()),
                                 COMPUTE_AUTO_KEY, getValue(), getComment(),
-                                getArguments(), getReplaceFormat());
+                                getArguments(), getReplaceFormat(), bundleName);
             JavaResourceHolder jrh = (JavaResourceHolder) support.getResourceHolder();
             newI18nString.allData = jrh.getAllData(getKey());
         }
@@ -132,7 +135,7 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
                     ((FormI18nSupport)support).getIdentifier());
             newI18nString = new FormI18nString(newSupport,
                                 getKey(), getValue(), getComment(),
-                                getArguments(), getReplaceFormat());
+                                getArguments(), getReplaceFormat(), bundleName);
             if (sourceDO != support.getSourceDataObject()) { // different form target
                 // make sure the value is actual according to the target locale
                 ResourceHolder rh = newSupport.getResourceHolder();
@@ -182,4 +185,18 @@ public class FormI18nString extends JavaI18nString implements I18nValue {
     public String getDescription() {
         return "<" + getKey() + ">"; // NOI18N
     }
+
+    @Override
+    protected void fillFormatMap(Map<String, String> map) {
+        super.fillFormatMap(map);
+        if ((getSupport().getResourceHolder().getResource() == null) && (bundleName != null)) { // Issue 150287
+            String base = bundleName;
+            if (base.endsWith(".properties")) { // NOI18N
+                base = base.substring(0, base.length() - 11);
+            }
+            map.put("bundleNameSlashes", base); // NOI18N
+            map.put("bundleNameDots", base.replace('/', '.')); // NOI18N
+        }
+    }
+
 }

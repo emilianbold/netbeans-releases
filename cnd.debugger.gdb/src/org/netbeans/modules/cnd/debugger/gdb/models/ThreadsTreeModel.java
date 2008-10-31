@@ -75,8 +75,7 @@ public class ThreadsTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            String[] threads = debugger.getThreadsList();
-	    return threads;
+	    return debugger.getThreadsList();
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -137,7 +136,7 @@ public class ThreadsTreeModel implements TreeModel {
     public void removeModelListener(ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 listener.destroy();
                 listener = null;
             }

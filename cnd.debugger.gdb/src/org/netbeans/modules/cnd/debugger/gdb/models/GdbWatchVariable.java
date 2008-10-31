@@ -73,7 +73,7 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
     private Watch watch;
     private WatchesTreeModel model;
     private long creationTime;
-    private static Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.logger.watches"); // NOI18N
     
     /** Creates a new instance of GdbWatchVariable */
     public GdbWatchVariable(WatchesTreeModel model, Watch watch) {

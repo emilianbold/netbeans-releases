@@ -54,10 +54,12 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
     private HibernateConfigurationWizardPanel panel;
     private WizardDescriptor wizardDescriptor;
     private Project project;    
+    private String title;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    public HibernateConfigurationWizardDescriptor(Project project) {
+    public HibernateConfigurationWizardDescriptor(Project project, String title) {
         this.project = project;
+        this.title= title;
     }
 
     public java.awt.Component getComponent() {
@@ -93,11 +95,12 @@ public class HibernateConfigurationWizardDescriptor implements WizardDescriptor.
         panel = (HibernateConfigurationWizardPanel) getComponent();
         if (WizardDescriptor.PREVIOUS_OPTION.equals(wizardDescriptor.getValue())) {
             return;
-        }
-        wizardDescriptor.putProperty("NewFileWizard_Title", null); // NOI18N
+        }       
     }
 
     public void readSettings(Object settings) {
+        wizardDescriptor = (WizardDescriptor) settings;
+        wizardDescriptor.putProperty("NewFileWizard_Title", title); 
     }
 
     public HelpCtx getHelp() {

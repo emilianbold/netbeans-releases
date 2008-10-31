@@ -55,8 +55,8 @@ public class CommandBuffer {
         NONE, WAITING, TIMEOUT, OK, ERROR;
     }
     
-    private final int WAIT_TIME = 30000;
-    private boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
+    private static final int WAIT_TIME = 30000;
+    private static final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     // Instance parts
     private final StringBuilder buf = new StringBuilder();

@@ -68,12 +68,10 @@ import org.netbeans.modules.cnd.debugger.gdb.Variable;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 public class VariablesTableModel implements TableModel, Constants {
     
-    private GdbDebugger      debugger;
-    private ContextProvider  lookupProvider;
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private final GdbDebugger      debugger;
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public VariablesTableModel(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
