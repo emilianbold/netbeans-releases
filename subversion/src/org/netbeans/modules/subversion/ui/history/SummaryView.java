@@ -68,6 +68,7 @@ import java.util.List;
 import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import org.netbeans.modules.subversion.FileStatusCache;
 import org.netbeans.modules.subversion.client.SvnClient;
@@ -232,6 +233,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         return null;
     }
 
+    private boolean isMixedSelection(List dispResults, int[] selection) {
+        if(selection.length < 1) return false;
+        Class c = dispResults.get(selection[0]).getClass();
+        for(int i = 0; i < selection.length; i++) {
+            if(!c.equals(dispResults.get(selection[i]).getClass())) return true;
+        }
+        return false;
+    }
+
     private void onPopup(MouseEvent e) {
         onPopup(e.getPoint());
     }
@@ -244,14 +254,15 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
             resultsList.setSelectedIndex(idx);
             sel = new int [] { idx };
         }
+
         final int [] selection = sel;
+//        if(isMixedSelection(dispResults, selection)) return;
 
         JPopupMenu menu = new JPopupMenu();
         
         String previousRevision = null;
         RepositoryRevision container = null;
-        final RepositoryRevision.Event[] drev;
-
+        List<RepositoryRevision.Event> drevList;
         Object revCon = dispResults.get(selection[0]);
         
         
@@ -264,34 +275,40 @@ class SummaryView implements MouseListener, ComponentListener, MouseMotionListen
         if (revCon instanceof RepositoryRevision) {
             revisionSelected = true;
             container = (RepositoryRevision) dispResults.get(selection[0]);
-            drev = new RepositoryRevision.Event[0];
+            drevList = new ArrayList<RepositoryRevision.Event>(0);
             oneRevisionMultiselected = true;
             noExDeletedExistingFiles = true;
         } else {
             revisionSelected = false;
-            drev = new RepositoryRevision.Event[selection.length];
-
+            drevList = new ArrayList<RepositoryRevision.Event>(selection.length);
             for(int i = 0; i < selection.length; i++) {
-                drev[i] = (RepositoryRevision.Event) dispResults.get(selection[i]);
-                File file = drev[i].getFile();
+                if (!(dispResults.get(selection[i]) instanceof RepositoryRevision.Event)) {
+                    revisionSelected = true;
+                    continue;
+                }
+
+                RepositoryRevision.Event event = (RepositoryRevision.Event) dispResults.get(selection[i]);
+                drevList.add(event);
+                File file = event.getFile();
                 
-                if(!deleted && file != null && !file.exists() && drev[i].getChangedPath().getAction() == 'D') {
+                if(!deleted && file != null && !file.exists() && event.getChangedPath().getAction() == 'D') {
                     deleted = true;
                 }
-                if(!missingFile && drev[i].getFile() == null) {
+                if(!missingFile && event.getFile() == null) {
                     missingFile = true;
                 }
                 if(oneRevisionMultiselected && i > 0 && 
-                   drev[0].getLogInfoHeader().getLog().getRevision().getNumber() != drev[i].getLogInfoHeader().getLog().getRevision().getNumber()) 
+                   drevList.get(0).getLogInfoHeader().getLog().getRevision().getNumber() != drevList.get(0).getLogInfoHeader().getLog().getRevision().getNumber())
                 {
                     oneRevisionMultiselected = false;
                 }                
-                if(file != null && file.exists() && drev[i].getChangedPath().getAction() == 'D') {
+                if(file != null && file.exists() && event.getChangedPath().getAction() == 'D') {
                     noExDeletedExistingFiles = false;
                 }                        
             }                
-            container = drev[0].getLogInfoHeader();
+            container = drevList.get(0).getLogInfoHeader();
         }
+        final RepositoryRevision.Event[] drev = drevList.toArray(new RepositoryRevision.Event[drevList.size()]);
         long revision = container.getLog().getRevision().getNumber();
 
         final boolean rollbackToEnabled = !deleted && !missingFile && !revisionSelected && oneRevisionMultiselected;
