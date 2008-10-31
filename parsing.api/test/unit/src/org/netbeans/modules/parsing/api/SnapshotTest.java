@@ -64,6 +64,7 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Mutex;
 
 
 /**
@@ -234,9 +235,9 @@ public class SnapshotTest extends NbTestCase {
         synchronized (lock) {
             Utilities.revalidate(src);
             Thread.sleep(2000);
-             TaskProcessor.runUserTask(new GenericUserTask() {
-                    public void run () throws ParseException {
-
+             TaskProcessor.runUserTask(new Mutex.ExceptionAction<Void>() {
+                    public Void run () throws ParseException {
+                        return null;
                     }
                 }, Collections.singletonList(src));
         }
