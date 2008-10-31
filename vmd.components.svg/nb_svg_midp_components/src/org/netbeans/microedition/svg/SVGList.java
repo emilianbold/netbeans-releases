@@ -67,6 +67,10 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *          HIDDEN TEXT&lt;/text>
  *         &lt;text display="none">type=hidden_text&lt;/text>
  *       &lt;/g>
+ *   &lt;g id="list_current_selection" >
+ *       &lt;!-- Metadata information. Please don't edit. -->
+ *       &lt;text display="none">type=current_selection&lt;/text> 
+ *   &lt;/g>
  *   &lt;g id="list_content" > 
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=content&lt;/text> 
@@ -94,11 +98,13 @@ public class SVGList extends SVGComponent implements DataListener {
     
     private static final String CONTENT             = "content";          // NOI18N
     private static final String SELECTION           = "selection";        // NOI18N
+    private static final String CUR_SELECTION       = "current_selection";// NOI18N
     private static final String HIDDEN_TEXT         = "hidden_text";      // NOI18N
     private static final String BOUNDS              = "bound";            // NOI18N
     
     private static final String CONTENT_SUFFIX      = DASH + CONTENT;
     private static final String SELECTION_SUFFIX    = DASH + SELECTION;
+    private static final String CUR_SELECTION_SUFFIX= DASH + CUR_SELECTION;
     private static final String BOUNDS_SUFIX        = DASH + BOUNDS;
     private static final String HIDDEN_TEXT_SUFFIX  = DASH +HIDDEN_TEXT;
 
@@ -197,6 +203,10 @@ public class SVGList extends SVGComponent implements DataListener {
         return mySelection;
     }
     
+    SVGLocatableElement getCurrentSelection(){
+        return myCurrentSelection;
+    }
+    
     boolean isSlave(){
         return isSlave;
     }
@@ -211,6 +221,8 @@ public class SVGList extends SVGComponent implements DataListener {
                     getElement().getId() +CONTENT_SUFFIX );
             mySelection = (SVGLocatableElement)getElementById( getElement(), 
                     getElement().getId() +SELECTION_SUFFIX );
+            myCurrentSelection = (SVGLocatableElement)getElementById( getElement(), 
+                    getElement().getId() +CUR_SELECTION_SUFFIX );
         }
         if (myHiddenText == null) {
             myHiddenText = (SVGLocatableElement) getNestedElementByMeta(getElement(),
@@ -228,10 +240,14 @@ public class SVGList extends SVGComponent implements DataListener {
         }
         
         if ( mySelection == null ){
-            mySelection = (SVGLocatableElement)getNestedElementByMeta(getElement(), 
+            mySelection = (SVGLocatableElement)getElementByMeta(getElement(), 
                     SVGList.TYPE,SELECTION);
         }
         
+        if ( myCurrentSelection == null ){
+            myCurrentSelection = (SVGLocatableElement)getElementByMeta(getElement(), 
+                    SVGList.TYPE,CUR_SELECTION);
+        }
     }
     
     private void verify(  ) {
@@ -283,13 +299,6 @@ public class SVGList extends SVGComponent implements DataListener {
         doRenderList();
     }
 
-
-    private void hideSelection() {
-        if ( !isSlave ){
-            getSelection().setTrait( TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
-        }
-    }
-
     private void doRenderList(){
         final int top = myTopIndex;
         final int currentIndex = myCurrentIndex;
@@ -298,7 +307,6 @@ public class SVGList extends SVGComponent implements DataListener {
 
             public void run() {
                 removeContent();
-                hideSelection();
                 
                 ListModel model = getModel();
                 int size = model.getSize();
@@ -327,22 +335,25 @@ public class SVGList extends SVGComponent implements DataListener {
     }
 
     private void removeContent() {
-        /*SVGLocatableElement content = (SVGLocatableElement) getElementByMeta(
-                getElement(), TYPE, SVGList.CONTENT , true );*/
-        Node node = myContent.getFirstElementChild();
+        removeChildren( myCurrentSelection );
+        removeChildren( myContent );
+    }
+    
+    private void removeChildren( SVGLocatableElement element) {
+        Node node = element.getFirstElementChild();
         while (node != null) {
             Element next = null;
             if (node instanceof SVGElement) {
                 next = ((SVGElement) node).getNextElementSibling();
             }
             if (!MetaData.METADATA.equals(node.getLocalName())) {
-                myContent.removeChild(node);
+                element.removeChild(node);
             }
             else if (node instanceof SVGElement) {
                 String display = ((SVGElement) node).getTrait(MetaData.DISPLAY);
                 if (!MetaData.NONE.equals(display)) {
                     final Node forRemove = node;
-                    myContent.removeChild(forRemove);
+                    element.removeChild(forRemove);
                 }
             }
             node = next;
@@ -363,6 +374,7 @@ public class SVGList extends SVGComponent implements DataListener {
         void clearSelection();
         boolean isSelectedIndex( int index );
         void addSelectionInterval( int from , int to);
+        void removeSelectionInterval( int from , int to );
         void addDataListener( DataListener listener );
         void removeDataListener( DataListener listener );
         int getSelectionMode();
@@ -421,24 +433,32 @@ public class SVGList extends SVGComponent implements DataListener {
         
         DefaultSelectionModel() {
             myListeners = new Vector(1);
+            setSelectionMode( SINGLE_SELECTION );
         }
 
         public boolean isSelectedIndex( int index ) {
-            return index == mySelectedIndex;
+            return mySelectedIndeces.contains( new Integer(index));
         }
         
         public void addSelectionInterval( int from, int to ) {
-            if ( to != from ){
-                throw new IllegalArgumentException( 
-                        DefaultSelectionModel.class.getName() +" is not designed" +
-                        		" for multiple selection");
+            if ( getSelectionMode() == SINGLE_SELECTION ){
+                doClearSelection();
             }
-            mySelectedIndex = from;
+            if ( from <=to ){
+                for( int i=from ; i<=to ; i++ ){
+                    mySelectedIndeces.addElement( new Integer(i));
+                }
+            }
+            else {
+                for( int i=to ; i<=from ; i++ ){
+                    mySelectedIndeces.addElement( new Integer(i));
+                }
+            }
             fireDataChanged();
         }
         
         public void clearSelection() {
-            mySelectedIndex = -1;
+            doClearSelection();
             fireDataChanged();
         }
         
@@ -472,13 +492,45 @@ public class SVGList extends SVGComponent implements DataListener {
          */
         public void setSelectionMode( int mode ) {
             myMode = mode;
+            if ( mode == SINGLE_SELECTION ){
+                mySelectedIndeces = new Vector(1);
+            }
+            else {
+                mySelectedIndeces = new Vector();
+            }
         }
         
         /* (non-Javadoc)
          * @see org.netbeans.microedition.svg.SVGList.SelectionModel#getSelectedIndex()
          */
         public int getSelectedIndex() {
-            return mySelectedIndex;
+            if ( mySelectedIndeces.isEmpty() ){
+                return -1;
+            }
+            else {
+                Integer index = (Integer)mySelectedIndeces.elementAt( 0 );
+                return index.intValue();
+            }
+        }
+        
+        public void removeSelectionInterval( int from, int to ) {
+            if ( mySelectedIndeces.isEmpty() ){
+                return;
+            }
+            else {
+                int begin = ( from <=to )? from: to;
+                int end = ( from <=to )? to: from;
+                int i = 0;
+                while( i< mySelectedIndeces.size() ){
+                    Integer index = (Integer)mySelectedIndeces.elementAt( i );
+                    if ( begin<=index.intValue() && index.intValue()<=end ){
+                        mySelectedIndeces.removeElementAt( i );
+                    }
+                    else {
+                        i++;
+                    }
+                }
+            }
         }
         
         protected void fireDataChanged(){
@@ -491,9 +543,14 @@ public class SVGList extends SVGComponent implements DataListener {
             }
         }
         
-        private int mySelectedIndex;
+        private void doClearSelection(){
+            mySelectedIndeces.removeAllElements();
+        }
+        
+        private Vector mySelectedIndeces;
         private Vector myListeners;
         private int myMode;
+
     }
     
     private class ListHandler extends InputHandler {
@@ -575,9 +632,7 @@ public class SVGList extends SVGComponent implements DataListener {
                         myCurrentIndex = index;
                         synchronized (myUILock) {
                             isUIAction = true;
-                            getSelectionModel().clearSelection();
-                            getSelectionModel().addSelectionInterval(
-                                    myCurrentIndex, myCurrentIndex);
+                            doSelection();
                             isUIAction = false;
                         }
                         renderList();
@@ -591,6 +646,30 @@ public class SVGList extends SVGComponent implements DataListener {
             super.handlePointerRelease( event );
             myPressedIndex = 0;
             myPressedComponent = null;
+        }
+
+        private void doSelection() {
+            if (getSelectionModel().getSelectionMode() 
+                    == SelectionModel.SINGLE_SELECTION)
+            {
+                //getSelectionModel().clearSelection();
+                getSelectionModel().addSelectionInterval(
+                        myCurrentIndex, myCurrentIndex);
+            }
+            else if (getSelectionModel().getSelectionMode() 
+                    == SelectionModel.MULTIPLE_SELECTION)
+            {
+                boolean isSelected = getSelectionModel().isSelectedIndex(
+                        myCurrentIndex);
+                if ( isSelected ){
+                    getSelectionModel().removeSelectionInterval(myCurrentIndex, 
+                            myCurrentIndex);
+                }
+                else {
+                    getSelectionModel().addSelectionInterval(
+                            myCurrentIndex, myCurrentIndex);
+                }
+            }
         }
         
         private int myPressedIndex = 0;
@@ -607,6 +686,7 @@ public class SVGList extends SVGComponent implements DataListener {
     private SVGLocatableElement myHiddenText;
     private SVGLocatableElement myContent;
     private SVGLocatableElement mySelection;
+    private SVGLocatableElement myCurrentSelection;
     private SVGLocatableElement myBounds; 
     
     private int myTopIndex ;
