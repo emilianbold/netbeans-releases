@@ -50,6 +50,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -76,6 +77,8 @@ import org.rubyforge.debugcommons.RubyDebuggerProxy;
 
 public abstract class TestBase extends RubyTestBase {
 
+    private static final Logger LOGGER = Logger.getLogger(TestBase.class.getName());
+
     static {
         RubySession.TEST = true;
         EditorUtil.showLines = false;
@@ -99,10 +102,12 @@ public abstract class TestBase extends RubyTestBase {
     protected void setUp() throws Exception {
         if (verbose) {
             testHandler = new TestHandler(getName());
-            Util.LOGGER.setLevel(Level.ALL);
-            Util.LOGGER.addHandler(testHandler);
-            // org.rubyforge.debugcommons.Util.LOGGER.setLevel(Level.ALL);
-            // org.rubyforge.debugcommons.Util.LOGGER.addHandler(testHandler);
+            Logger nbLogger = Logger.getLogger("org.netbeans.modules.ruby.debugger");
+            nbLogger.setLevel(Level.ALL);
+            nbLogger.addHandler(testHandler);
+            Logger commonsLogger = Logger.getLogger("org.rubyforge.debugcommons");
+            commonsLogger.setLevel(Level.ALL);
+            commonsLogger.addHandler(testHandler);
         }
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         touch(getWorkDir(), "config/Services/org-netbeans-modules-debugger-Settings.properties");
@@ -134,8 +139,10 @@ public abstract class TestBase extends RubyTestBase {
 
         super.tearDown();
         if (verbose) {
-            Util.LOGGER.removeHandler(testHandler);
-            // org.rubyforge.debugcommons.Util.LOGGER.removeHandler(testHandler);
+            Logger nbLogger = Logger.getLogger("org.netbeans.modules.ruby.debugger");
+            nbLogger.removeHandler(testHandler);
+            Logger logger = Logger.getLogger("org.rubyforge.debugcommons");
+            logger.removeHandler(testHandler);
         }
     }
 
@@ -278,7 +285,7 @@ public abstract class TestBase extends RubyTestBase {
         final CountDownLatch events = new CountDownLatch(n);
         RubyDebugEventListener listener = new RubyDebugEventListener() {
             public void onDebugEvent(RubyDebugEvent e) {
-                Util.LOGGER.finer("Received event: " + e);
+                LOGGER.finer("Received event: " + e);
                 events.countDown();
             }
         };
