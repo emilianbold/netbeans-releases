@@ -60,6 +60,7 @@ import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
+import org.openide.explorer.view.OutlineView;
 import org.openide.explorer.view.TreeTableView;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
@@ -71,7 +72,7 @@ import org.openide.util.NbBundle;
  */
 public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
 
-    private final BrowserTreeTableView treeView;    
+    private final BrowserOutlineView outlineView;
     private final ExplorerManager manager;
 
     private ControlPanel controlPanel;
@@ -84,26 +85,24 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         
         setLayout(new GridBagLayout());
         
-        treeView = new BrowserTreeTableView();
-        treeView.setDragSource(true);
-        treeView.setDropTarget(true);
+        outlineView = new BrowserOutlineView();
+        outlineView.setDragSource(true);
+        outlineView.setDropTarget(true);
               
-        treeView.setDefaultActionAllowed (false);
-        treeView.setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
-        treeView.getAccessibleContext().setAccessibleDescription(browserAcsd);
-        treeView.getAccessibleContext().setAccessibleName(browserAcsn);   
+        outlineView.setBorder(UIManager.getBorder("Nb.ScrollPane.border")); // NOI18N
+        outlineView.getAccessibleContext().setAccessibleDescription(browserAcsd);
+        outlineView.getAccessibleContext().setAccessibleName(browserAcsn);
         if(singleSelection) {
-            treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+            outlineView.getOutline().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         }
-        treeView.setPopupAllowed(true);        
-        treeView.getTree().setShowsRootHandles(true);                        
+        outlineView.setPopupAllowed(true);
         
         GridBagConstraints c = new GridBagConstraints();
         int gridY = 0;
                 
         // title label        
         JLabel label = new JLabel();        
-        label.setLabelFor(treeView.getTable());
+        label.setLabelFor(outlineView);
         label.setToolTipText(browserAcsd);
         if(labelText != null && !labelText.trim().equals("")) {
             org.openide.awt.Mnemonics.setLocalizedText(label, labelText);
@@ -127,7 +126,7 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
         c.weightx = 1;
         c.anchor = GridBagConstraints.WEST;
         c.gridwidth = 1;
-        add(treeView, c);
+        add(outlineView, c);
                 
         // buttons
         controlPanel = new ControlPanel();        
@@ -173,28 +172,20 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
     }
     
     void addTreeExpansionListener(TreeExpansionListener l) {
-        treeView.getTree().addTreeExpansionListener(l);
+        outlineView.addTreeExpansionListener(l);
     }
     
     void removeTreeExpansionListener(TreeExpansionListener l) {
-        treeView.getTree().removeTreeExpansionListener(l);
+        outlineView.removeTreeExpansionListener(l);
     }
     
-    private class BrowserTreeTableView extends TreeTableView {        
-        BrowserTreeTableView() {
+    private class BrowserOutlineView extends OutlineView {
+        BrowserOutlineView() {
             setupColumns();
         }
         
-        public JTree getTree() {            
-            return tree;
-        } 
-        
-        JTable getTable() {
-            return treeTable;
-        }
-        
         public void startEditingAtPath(TreePath path) {            
-            tree.startEditingAtPath(path);
+            startEditingAtPath(path);
         }         
         
         public void addNotify() {
@@ -217,11 +208,11 @@ public class BrowserPanel extends JPanel implements ExplorerManager.Provider {
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
                     int width = getWidth();                    
-                    treeTable.getColumnModel().getColumn(0).setPreferredWidth(width * 50 / 100);
-                    treeTable.getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);
-                    treeTable.getColumnModel().getColumn(2).setPreferredWidth(width * 20 / 100);                                    
-                    treeTable.getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);                                    
-                    treeTable.getColumnModel().getColumn(4).setPreferredWidth(width * 10 / 100);                    
+                    getOutline().getColumnModel().getColumn(0).setPreferredWidth(width * 50 / 100);
+                    getOutline().getColumnModel().getColumn(1).setPreferredWidth(width * 10 / 100);
+                    getOutline().getColumnModel().getColumn(2).setPreferredWidth(width * 20 / 100);
+                    getOutline().getColumnModel().getColumn(3).setPreferredWidth(width * 10 / 100);
+                    getOutline().getColumnModel().getColumn(4).setPreferredWidth(width * 10 / 100);
                 }
             });
         }            

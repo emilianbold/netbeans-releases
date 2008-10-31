@@ -139,6 +139,7 @@ made subject to such option by the copyright holder.
         <subant target="test" buildpath="../cnd.navigation" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.highlight" inheritrefs="false" inheritall="false" failonerror="false"/>
         <subant target="test" buildpath="../cnd.dwarfdiscovery" inheritrefs="false" inheritall="false" failonerror="false"/>
+        <subant target="test" buildpath="../cnd.modeldiscovery" inheritrefs="false" inheritall="false" failonerror="false"/>
     </target>
 
     <target name="xref-test" description="Run XRef tests">

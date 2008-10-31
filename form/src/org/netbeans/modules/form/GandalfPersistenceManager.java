@@ -219,7 +219,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private Boolean newLayout; // whether a new layout support was loaded
     
     public String getExceptionAnnotation(Throwable t) {
-        if (errorMessages.containsKey(t)) {
+        if ((errorMessages != null) && errorMessages.containsKey(t)) {
             return errorMessages.get(t);
         } else {
           return t.getMessage();
