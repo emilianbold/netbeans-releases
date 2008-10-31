@@ -41,11 +41,10 @@
 
 package org.netbeans.modules.web.core.syntax;
 
-import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -60,26 +59,22 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.jsp.lexer.JspTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.web.core.syntax.spi.JSPColoringData;
 import org.netbeans.modules.web.jsps.parserapi.JspParserAPI;
 import org.netbeans.modules.web.jsps.parserapi.Node.IncludeDirective;
 import org.netbeans.modules.web.jsps.parserapi.Node.Visitor;
 import org.netbeans.modules.web.jsps.parserapi.PageInfo;
-import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -117,32 +112,29 @@ public class SimplifiedJSPServlet {
     private final Document doc;
     private CharSequence charSequence;
     private final FileObject fobj;
-    private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
+    private final Snapshot snapshot;
+    private final ArrayList<Embedding> codeBlocks = new ArrayList<Embedding>();
 
-    private String header = null;
-    private StringBuilder scriptlets = new StringBuilder();
-    private StringBuilder declarations = new StringBuilder();
+    private Embedding header;
+    private List<Embedding> scriptlets = new LinkedList<Embedding>();
+    private List<Embedding> declarations = new LinkedList<Embedding>();
     // keep bean declarations separate to avoid duplicating the declaration, see #130745
-    private String beanDeclarations = null; 
+    private Embedding beanDeclarations;
     private boolean processCalled = false;
-    private String importStatements = null;
+    private Embedding importStatements;
     private int expressionIndex = 1;
     private static final Logger logger = Logger.getLogger(SimplifiedJSPServlet.class.getName());
     private boolean processingSuccessful = true;
 
-    public SimplifiedJSPServlet(Document doc){
-        this(doc, null);
+    public SimplifiedJSPServlet(Snapshot snapshot, Document doc){
+        this(snapshot, doc, null);
     }
     
-    public SimplifiedJSPServlet(Document doc, CharSequence charSequence) {
+    public SimplifiedJSPServlet(Snapshot snapshot, Document doc, CharSequence charSequence) {
         this.doc = doc;
         
         if (charSequence == null) {
-            try {
-                this.charSequence = doc.getText(0, doc.getLength());
-            } catch (BadLocationException e) {
-                assert false; // this can never happen!
-            }
+            this.charSequence = snapshot.getText();
         } else {
             this.charSequence = charSequence;
         }
@@ -154,6 +146,8 @@ public class SimplifiedJSPServlet {
             logger.log(Level.SEVERE, "Unable to find FileObject for document");
             fobj = null;
         }
+        
+        this.snapshot = snapshot;
     }
     
     public void process() throws BadLocationException{
@@ -202,29 +196,25 @@ public class SimplifiedJSPServlet {
 
             if (token.id() == JspTokenId.SCRIPTLET) {
                 int blockStart = token.offset(tokenHierarchy);
-                int blockEnd = blockStart + token.length();
 
                 JavaCodeType blockType = (JavaCodeType) token.getProperty(JspTokenId.SCRIPTLET_TOKEN_TYPE_PROPERTY);
 
-                String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
-                StringBuilder buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
-                int newBlockStart = buff.length();
+//                String blockBody = charSequence.subSequence(blockStart, blockEnd).toString(); //doc.getText(blockStart, blockEnd - blockStart);
+                List<Embedding> buff = blockType == JavaCodeType.DECLARATION ? declarations : scriptlets;
 
                 if (blockType == JavaCodeType.EXPRESSION) {
                     // ignore JSP expressions in included files
                     if (!processAsIncluded){
                         // the "" + (...) construction is used to preserve compatibility with pre-autoboxing java
                         // see issue #116598
-                        String exprPrefix = String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++); //NOI18N
-                        newBlockStart += exprPrefix.length();
-                        buff.append(exprPrefix + blockBody + ");\n");
+                        buff.add(snapshot.create(String.format("\t\tObject expr%1$d = \"\" + (", expressionIndex++), "text/x-java")); //NOI18N
+                        buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                        buff.add(snapshot.create(");\n", "text/x-java")); //NOI18N
                     }
                 } else {
-                    buff.append(blockBody + "\n");
+                        buff.add(snapshot.create(blockStart, token.length(), "text/x-java"));
+                        buff.add(snapshot.create("\n", "text/x-java")); //NOI18N
                 }
-
-                CodeBlockData blockData = new CodeBlockData(blockStart, newBlockStart, blockEnd, blockType);
-                codeBlocks.add(blockData);
             }
         } while (tokenSequence.moveNext());
             
@@ -233,9 +223,9 @@ public class SimplifiedJSPServlet {
             throw ex[0];
         }
 
-        header = getClassHeader();
-        importStatements = createImportStatements();
-        beanDeclarations = "\n" + createBeanVarDeclarations();
+        header = snapshot.create(getClassHeader(), "text/x-java");
+        importStatements = snapshot.create(createImportStatements(), "text/x-java");
+        beanDeclarations = snapshot.create("\n" + createBeanVarDeclarations(), "text/x-java");
     }
     
     private void processIncludes()  {
@@ -274,33 +264,33 @@ public class SimplifiedJSPServlet {
     }
     
     private void processIncludedFile(String filePath, Collection<String> processedFiles) {
-        FileObject includedFile = JspUtils.getFileObject(doc, filePath);
-        
-        if (includedFile != null && includedFile.canRead() 
-                // prevent endless loop in case of a circular reference
-                && !processedFiles.contains(includedFile.getPath())) {
-            
-            processedFiles.add(includedFile.getPath());
-
-            try {
-                DataObject includedFileDO = DataObject.find(includedFile);
-                String mimeType = includedFile.getMIMEType();
-                
-                if ("text/x-jsp".equals(mimeType) || "text/x-tag".equals(mimeType)) { //NOI18N
-                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
-
-                    if (editor != null) {
-                        SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
-                        simplifiedServlet.process(true);
-
-                        declarations.append(simplifiedServlet.declarations);
-                        scriptlets.append(simplifiedServlet.scriptlets);
-                    }
-                }
-            } catch (Exception e) {
-                logger.log(Level.WARNING, e.getMessage(), e);
-            }
-        }
+//        FileObject includedFile = JspUtils.getFileObject(doc, filePath);
+//        
+//        if (includedFile != null && includedFile.canRead() 
+//                // prevent endless loop in case of a circular reference
+//                && !processedFiles.contains(includedFile.getPath())) {
+//            
+//            processedFiles.add(includedFile.getPath());
+//
+//            try {
+//                DataObject includedFileDO = DataObject.find(includedFile);
+//                String mimeType = includedFile.getMIMEType();
+//                
+//                if ("text/x-jsp".equals(mimeType) || "text/x-tag".equals(mimeType)) { //NOI18N
+//                    EditorCookie editor = includedFileDO.getCookie(EditorCookie.class);
+//
+//                    if (editor != null) {
+//                        SimplifiedJSPServlet simplifiedServlet = new SimplifiedJSPServlet(editor.openDocument());
+//                        simplifiedServlet.process(true);
+//
+//                        declarations.append(simplifiedServlet.declarations);
+//                        scriptlets.append(simplifiedServlet.scriptlets);
+//                    }
+//                }
+//            } catch (Exception e) {
+//                logger.log(Level.WARNING, e.getMessage(), e);
+//            }
+//        }
     }
 
     private boolean isServletAPIOnClasspath() {
@@ -468,120 +458,53 @@ public class SimplifiedJSPServlet {
         }
     }
 
-    public int getShiftedOffset(int originalOffset) {
-        assureProcessCalled();
-
-        CodeBlockData codeBlock = getCodeBlockAtOffset(originalOffset);
-
-        if (codeBlock == null) {
-            return -1; // no embedded java code at the offset
-        }
-
-        int offsetWithinBlock = originalOffset - codeBlock.getStartOffset();
-        int shiftedOffset = codeBlock.getNewBlockStart() + offsetWithinBlock;
-
-        return shiftedOffset;
-    }
-
-    public int getRealOffset(int offset) {
-        assureProcessCalled();
-
-        if (processingSuccessful) {
-            for (CodeBlockData codeBlock : codeBlocks) {
-                int len = codeBlock.getEndOffset() - codeBlock.getStartOffset();
-
-                if (codeBlock.getNewBlockStart() <= offset && codeBlock.getNewBlockStart() + len >= offset) {
-                    return codeBlock.getStartOffset() + offset - codeBlock.getNewBlockStart();
-                }
-            }
-        }
-
-        return -1;
-    }
-
-    public String getVirtualClassBody() {
+    public Embedding getVirtualClassBody() {
         assureProcessCalled();
         
         if (!processingSuccessful){
-            return ""; //NOI18N
-        }
-        
-        String classBody = importStatements + header + declarations + beanDeclarations 
-                + METHOD_HEADER + scriptlets + CLASS_FOOTER;
-        
-        return classBody;
-    }
-
-    private CodeBlockData getCodeBlockAtOffset(int offset) {
-
-        for (CodeBlockData codeBlock : codeBlocks) {
-            if (codeBlock.getStartOffset() <= offset && codeBlock.getEndOffset() >= offset) {
-                return codeBlock;
-            }
+            return null;
         }
 
-        return null;
+        if (declarations.isEmpty() && scriptlets.isEmpty()) {
+            return null;
+        }
+        
+        List<Embedding> content = new LinkedList<Embedding>();
+        
+        content.add(importStatements);
+        content.add(header);
+        content.addAll(declarations);
+        content.add(beanDeclarations);
+        content.add(snapshot.create(METHOD_HEADER, "text/x-java"));
+        content.addAll(scriptlets);
+        content.add(snapshot.create(CLASS_FOOTER, "text/x-java"));
+        
+        return Embedding.create(content);
     }
 
     public static abstract class VirtualJavaClass {
 
         public final void create(Document doc, String virtualClassBody) {
-            FileObject fileDummyJava = null;
-            List<? extends CompletionItem> javaCompletionItems = null;
-
-            try {
-                FileSystem memFS = FileUtil.createMemoryFileSystem();
-                fileDummyJava = memFS.getRoot().createData("SimplifiedJSPServlet", "java"); //NOI18N
-                PrintWriter writer = new PrintWriter(fileDummyJava.getOutputStream());
-                writer.print(virtualClassBody);
-                writer.close();
-
-                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
-                ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
-                JavaSource source = JavaSource.create(cpInfo, fileDummyJava);
-                process(fileDummyJava, source);
-            } catch (IOException ex) {
-                logger.log(Level.SEVERE, ex.getMessage(), ex);
-            } 
+//            FileObject fileDummyJava = null;
+//            List<? extends CompletionItem> javaCompletionItems = null;
+//
+//            try {
+//                FileSystem memFS = FileUtil.createMemoryFileSystem();
+//                fileDummyJava = memFS.getRoot().createData("SimplifiedJSPServlet", "java"); //NOI18N
+//                PrintWriter writer = new PrintWriter(fileDummyJava.getOutputStream());
+//                writer.print(virtualClassBody);
+//                writer.close();
+//
+//                FileObject jspFile = NbEditorUtilities.getFileObject(doc);
+//                ClasspathInfo cpInfo = ClasspathInfo.create(jspFile);
+//                JavaEmbedding Embedding = JavaEmbedding.create(cpInfo, fileDummyJava);
+//                process(fileDummyJava, Embedding);
+//            } catch (IOException ex) {
+//                logger.log(Level.SEVERE, ex.getMessage(), ex);
+//            } 
         }
 
-        protected abstract void process(FileObject fileObject, JavaSource javaSource);
+        protected abstract void process(FileObject fileObject, JavaSource javaEmbedding);
     }
 
-    private class CodeBlockData {
-
-        private int startOffset;
-        private int endOffset;
-        private int newRelativeBlockStart; // offset in created java class
-        private JavaCodeType type;
-
-        public CodeBlockData(int startOffset, int newRelativeBlockStart, int endOffset, JavaCodeType type) {
-            this.startOffset = startOffset;
-            this.newRelativeBlockStart = newRelativeBlockStart;
-            this.endOffset = endOffset;
-            this.type = type;
-        }
-
-        public int getStartOffset() {
-            return startOffset;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
-        }
-
-        public JavaCodeType getType() {
-            return type;
-        }
-
-        public int getNewBlockStart() {
-            int newBlockStart = newRelativeBlockStart + header.length() + importStatements.length();
-
-            if (getType() != JavaCodeType.DECLARATION) {
-                newBlockStart += declarations.length() + beanDeclarations.length() + METHOD_HEADER.length();
-            }
-
-            return newBlockStart;
-        }
-    }
 }

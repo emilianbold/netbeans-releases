@@ -210,8 +210,8 @@ public class LanguageImpl extends Language {
         try {
             Language language = LanguagesManager.getDefault ().getLanguage (mimeType);
 
-            String state = (String) feature.getValue ("state"); 
-            String tokenName = feature.getSelector ().getAsString ();
+//            String state = (String) feature.getValue ("state"); 
+//            String tokenName = feature.getSelector ().getAsString ();
 
             // import tokenTypes
     //!!            Iterator<TokenType> it = language.getTokenTypes ().iterator ();

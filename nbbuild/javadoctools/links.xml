@@ -164,6 +164,7 @@ made subject to such option by the copyright holder.
 <link href="${javadoc.docs.org-netbeans-modules-server}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-server"/>
 <link href="${javadoc.docs.org-netbeans-modules-java-api-common}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-api-common"/>
 <link href="${javadoc.docs.org-netbeans-modules-java-sourceui}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-java-sourceui"/>
+<link href="${javadoc.docs.org-netbeans-modules-parsing-api}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-parsing-api"/>
 <link href="${javadoc.docs.org-netbeans-api-java-classpath}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-api-java-classpath"/>
 <link href="${javadoc.docs.org-netbeans-modules-extexecution}" offline="true" packagelistloc="${netbeans.javadoc.dir}/org-netbeans-modules-extexecution"/>
 <link href="${javadoc.docs.org-netbeans-modules-print}" offline="true" packagelistloc="${netbeans.javadoc.dir}\org-netbeans-modules-print"/>

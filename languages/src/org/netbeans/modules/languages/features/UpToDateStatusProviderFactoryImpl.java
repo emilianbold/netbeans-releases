@@ -42,12 +42,7 @@
 package org.netbeans.modules.languages.features;
 
 import javax.swing.text.Document;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ParserManagerListener;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.api.languages.ASTNode;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatus;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProvider;
 import org.netbeans.spi.editor.errorstripe.UpToDateStatusProviderFactory;
@@ -69,27 +64,27 @@ public class UpToDateStatusProviderFactoryImpl implements UpToDateStatusProvider
     
     private static class UpToDateStatusProviderImpl extends UpToDateStatusProvider {
         
-        private ParserManager editorParser;
+//!        private ParserManager editorParser;
         
         
         private UpToDateStatusProviderImpl (NbEditorDocument doc) {
-            editorParser = ParserManager.get (doc);
-            editorParser.addListener (new ParserManagerListener () {
-                public void parsed (State state, ASTNode ast) {
-                    firePropertyChange (PROP_UP_TO_DATE, null, null);
-                }
-            });
+//!            editorParser = ParserManager.get (doc);
+//            editorParser.addListener (new ParserManagerListener () {
+//                public void parsed (State state, ASTNode ast) {
+//                    firePropertyChange (PROP_UP_TO_DATE, null, null);
+//                }
+//            });
         }
         
         public UpToDateStatus getUpToDate () {
-            switch (editorParser.getState ()) {
-                case ERROR:
-                    return UpToDateStatus.UP_TO_DATE_DIRTY;
-                case OK:
-                    return UpToDateStatus.UP_TO_DATE_OK;
-                case PARSING:
-                    return UpToDateStatus.UP_TO_DATE_PROCESSING;
-            }
+//!            switch (editorParser.getState ()) {
+//                case ERROR:
+//                    return UpToDateStatus.UP_TO_DATE_DIRTY;
+//                case OK:
+//                    return UpToDateStatus.UP_TO_DATE_OK;
+//                case PARSING:
+//                    return UpToDateStatus.UP_TO_DATE_PROCESSING;
+//            }
             return UpToDateStatus.UP_TO_DATE_PROCESSING;
         }
     }
