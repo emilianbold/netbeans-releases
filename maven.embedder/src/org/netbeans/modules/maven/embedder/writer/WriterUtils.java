@@ -77,7 +77,7 @@ public class WriterUtils {
      * see org.netbeans.modules.maven.model package
      *
      */
-    public static void writePomModel(FileObject pom, Model newModel) throws IOException {
+    public @Deprecated static void writePomModel(FileObject pom, Model newModel) throws IOException {
         InputStream inStr = null;
         FileLock lock = null;
         OutputStreamWriter outStr = null;
@@ -114,7 +114,7 @@ public class WriterUtils {
      * see org.netbeans.modules.maven.model package
      *
      */
-    public static Model loadModel(FileObject fo) {
+    public @Deprecated static Model loadModel(FileObject fo) {
         MavenXpp3Reader reader = new MavenXpp3Reader();
         Model model = null;
         InputStreamReader read = null;
