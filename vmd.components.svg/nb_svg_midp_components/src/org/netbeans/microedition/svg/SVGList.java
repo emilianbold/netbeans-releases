@@ -182,6 +182,9 @@ public class SVGList extends SVGComponent implements DataListener {
         if ( source == getSelectionModel() ){
             synchronized (myUILock) {
                 if ( !isUIAction ){
+                    if ( getSelectionModel().getSelectedIndex() != -1 ){
+                        myCurrentIndex = getSelectionModel().getSelectedIndex();
+                    }
                     renderList();
                 }
             }
@@ -268,10 +271,10 @@ public class SVGList extends SVGComponent implements DataListener {
     private void renderList() {
         synchronized (this) {
             if (myCount!=-1 && myCurrentIndex >= myTopIndex + myCount) {
-                myTopIndex ++;
+                myTopIndex = myCurrentIndex - myCount +1;
             }
             else if (myCurrentIndex < myTopIndex) {
-                myTopIndex --;
+                myTopIndex = myCurrentIndex ;
             }
         }
         
