@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm.deep;
 
 import java.util.*;
@@ -60,7 +59,7 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 public class DeclarationStatementImpl extends StatementBase implements CsmDeclarationStatement {
 
     private List<CsmDeclaration> declarators;
-    
+
     public DeclarationStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
@@ -70,61 +69,60 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
     }
 
     public List<CsmDeclaration> getDeclarators() {
-        if( declarators == null ) {
+        if (declarators == null) {
             declarators = new ArrayList<CsmDeclaration>();
             render();
         }
         return declarators;
     }
-    
+
     @Override
     public String toString() {
         return "" + getKind() + ' ' + getOffsetString() + '[' + declarators + ']'; // NOI18N
     }
-    
+
     private void render() {
         AstRenderer renderer = new DSRenderer();
         renderer.render(getAst(), null, null);
     }
-    
-       
+
     private class DSRenderer extends AstRenderer {
-	
-	public DSRenderer() {
-	    super((FileImpl) getContainingFile());
-	}
-	
+
+        public DSRenderer() {
+            super((FileImpl) getContainingFile());
+        }
+
         @Override
-	protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2,CsmScope scope) {
-	    VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2, getScope());
-	    declarators.add(var);
-	    return var;
-	}
+        protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static, MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
+            VariableImpl var = super.createVariable(offsetAst, file, type, name, _static, container1, container2, getScope());
+            declarators.add(var);
+            return var;
+        }
 
         protected FunctionImpl createFunction(AST ast, CsmFile file, CsmScope scope) {
-	    FunctionImpl fun = null;
+            FunctionImpl fun = null;
             try {
                 fun = new FunctionImpl(ast, file, getScope());
-        	declarators.add(fun);
+                declarators.add(fun);
             } catch (AstRendererException ex) {
                 DiagnosticExceptoins.register(ex);
             }
-	    return fun;
-	}
-        
+            return fun;
+        }
+
         @Override
         protected boolean isRenderingLocalContext() {
             return true;
         }
-    
+
         @Override
-	public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
-	    if( tree != null ) {
-		AST token = tree;
-                switch( token.getType() ) {
-		    case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
-		    case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
-			if (!renderVariable(token, currentNamespace, container, false)){                            
+        public void render(AST tree, NamespaceImpl currentNamespace, MutableDeclarationsContainer container) {
+            if (tree != null) {
+                AST token = tree;
+                switch (token.getType()) {
+                    case CPPTokenTypes.CSM_FOR_INIT_STATEMENT:
+                    case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
+                        if (!renderVariable(token, currentNamespace, container, false)) {
                             AST ast = token;
                             token = token.getFirstChild();
                             if (token != null) {
@@ -173,51 +171,51 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
                                     }
                                 }
                             }
-                            
-			    render(ast.getFirstChild(), currentNamespace, container);
-			}
-			break;
-		    case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
-			declarators.add(new NamespaceAliasImpl(token, getContainingFile()));
-			break;
-		    case CPPTokenTypes.CSM_USING_DIRECTIVE:
-			declarators.add(new UsingDirectiveImpl(token, getContainingFile()));
-			break;
-		    case CPPTokenTypes.CSM_USING_DECLARATION:
-			declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null));
-			break;
 
-		    case CPPTokenTypes.CSM_CLASS_DECLARATION:
-		    {
-			ClassImpl cls = ClassImpl.create(token, null, getContainingFile());
-			declarators.add(cls);
+                            render(ast.getFirstChild(), currentNamespace, container);
+                        }
+                        break;
+                    case CPPTokenTypes.CSM_NAMESPACE_ALIAS:
+                        declarators.add(new NamespaceAliasImpl(token, getContainingFile()));
+                        break;
+                    case CPPTokenTypes.CSM_USING_DIRECTIVE:
+                        declarators.add(new UsingDirectiveImpl(token, getContainingFile()));
+                        break;
+                    case CPPTokenTypes.CSM_USING_DECLARATION:
+                        declarators.add(new UsingDeclarationImpl(token, getContainingFile(), null));
+                        break;
+
+                    case CPPTokenTypes.CSM_CLASS_DECLARATION:
+                    {
+                        ClassImpl cls = ClassImpl.create(token, null, getContainingFile());
+                        declarators.add(cls);
                         CsmTypedef[] typedefs = renderTypedef(token, cls, currentNamespace);
-			addTypedefs(typedefs, currentNamespace, container);
-			if( typedefs != null && typedefs.length > 0 ) {
-			    for (int i = 0; i < typedefs.length; i++) {
-				declarators.add(typedefs[i]);
+                        addTypedefs(typedefs, currentNamespace, container);
+                        if (typedefs != null && typedefs.length > 0) {
+                            for (int i = 0; i < typedefs.length; i++) {
+                                declarators.add(typedefs[i]);
                             }
                         }
-			renderVariableInClassifier(token, cls, currentNamespace, container);
-			break;
-		    }
-		    case CPPTokenTypes.CSM_ENUM_DECLARATION:
-		    {
-			CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), !isRenderingLocalContext());
-			declarators.add(csmEnum);
-			renderVariableInClassifier(token, csmEnum, currentNamespace, container);
-			break;
-		    }
+                        renderVariableInClassifier(token, cls, currentNamespace, container);
+                        break;
+                    }
+                    case CPPTokenTypes.CSM_ENUM_DECLARATION:
+                    {
+                        CsmEnum csmEnum = EnumImpl.create(token, currentNamespace, getContainingFile(), !isRenderingLocalContext());
+                        declarators.add(csmEnum);
+                        renderVariableInClassifier(token, csmEnum, currentNamespace, container);
+                        break;
+                    }
                     case CPPTokenTypes.CSM_GENERIC_DECLARATION:
                         CsmTypedef[] typedefs = renderTypedef(token, (FileImpl) getContainingFile(), getScope(), null);
-			if( typedefs != null && typedefs.length > 0 ) {
-			    for (int i = 0; i < typedefs.length; i++) {
-				declarators.add(typedefs[i]);
+                        if (typedefs != null && typedefs.length > 0) {
+                            for (int i = 0; i < typedefs.length; i++) {
+                                declarators.add(typedefs[i]);
                             }
                         }
                 }
-	    }
-	}
+            }
+        }
 
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
@@ -259,5 +257,4 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 //	    return null;
 //	}
     }
-	    
 }
