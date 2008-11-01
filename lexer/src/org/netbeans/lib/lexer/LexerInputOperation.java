@@ -71,6 +71,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
 
     // -J-Dorg.netbeans.lib.lexer.LexerInputOperation.level=FINE
     static final Logger LOG = Logger.getLogger(LexerInputOperation.class.getName());
+    static final Logger LexerInputLOG = Logger.getLogger(LexerInput.class.getName());
     
     protected final TokenList<T> tokenList;
     
@@ -247,6 +248,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
             }
         }
 
+        logTokenContent("getFlyweightToken", id, text.length());
         assignTokenLength(text.length());
         AbstractToken<T> token;
         if ((token = checkSkipToken(id)) == null) {
@@ -272,6 +274,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
     
     public AbstractToken<T> createToken(T id, int length) {
+        logTokenContent("createToken", id, length);
         assignTokenLength(length);
         AbstractToken<T> token;
         if ((token = checkSkipToken(id)) == null) {
@@ -280,6 +283,20 @@ public abstract class LexerInputOperation<T extends TokenId> {
             flyTokenSequenceLength = 0;
         }
         return token;
+    }
+
+    private void logTokenContent(String opName, T id, int length) {
+        if (LexerInputLOG.isLoggable(Level.FINE)) {
+            StringBuilder sb = new StringBuilder(100);
+            sb.append("TokenFactory.").append(opName).append("(");
+            sb.append(id).append(", ").append(length);
+            sb.append("): \"");
+            for (int i = 0; i < length; i++) {
+                CharSequenceUtilities.debugChar(sb, readExistingAtIndex(i));
+            }
+            sb.append("\"\n");
+            LexerInputLOG.fine(sb.toString());
+        }
     }
 
     protected AbstractToken<T> createDefaultTokenInstance(T id) {
@@ -299,7 +316,8 @@ public abstract class LexerInputOperation<T extends TokenId> {
     TokenPropertyProvider<T> propertyProvider, PartType partType) {
         if (partType == null)
             partType = PartType.COMPLETE;
-        
+
+        logTokenContent("createPropertyToken", id, length);
         assignTokenLength(length);
         AbstractToken<T> token;
         if ((token = checkSkipToken(id)) == null) {
@@ -316,6 +334,7 @@ public abstract class LexerInputOperation<T extends TokenId> {
     }
 
     public AbstractToken<T> createCustomTextToken(T id, int length, CharSequence customText) {
+        logTokenContent("createCustomTextToken", id, length);
         assignTokenLength(length);
         AbstractToken<T> token;
         if ((token = checkSkipToken(id)) == null) {

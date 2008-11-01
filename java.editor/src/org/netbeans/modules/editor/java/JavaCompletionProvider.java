@@ -3708,6 +3708,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
+                        if (idEndPos < 0)
+                            idEndPos = (int)sourcePositions.getStartPosition(root, nc);
                         if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
@@ -4261,12 +4263,12 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
             SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
             CompilationUnitTree root = controller.getCompilationUnit();
+            TreeUtilities tu = controller.getTreeUtilities();
             if (upToOffset && tree.getKind() == Tree.Kind.CLASS) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 return new Env(offset, prefix, controller, orig, sourcePositions, null);
             } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                TreeUtilities tu = controller.getTreeUtilities();
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                 String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
                 final SourcePositions[] sp = new SourcePositions[1];
@@ -4316,8 +4318,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
                     parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
+                if (tu.isEnum((ClassTree)grandParent)) {
+                    controller.toPhase(Phase.RESOLVED);
+                    return null;
+                }
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                TreeUtilities tu = controller.getTreeUtilities();
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
                 final SourcePositions[] sp = new SourcePositions[1];
@@ -4347,7 +4352,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) >= 0 &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                TreeUtilities tu = controller.getTreeUtilities();
                 tree = ((VariableTree)tree).getInitializer();
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, offset);

@@ -621,9 +621,11 @@ public class DefaultProjectActionHandler implements ActionListener {
      * @return true if executable exists and is an executable, otherwise false
      */
     private boolean verifyRemoteExecutable(String hkey, String executable) {
+        PathMap mapper = HostInfoProvider.getDefault().getMapper(hkey);
+        String remoteExecutable = mapper.getRemotePath(executable);
         CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
         if (cmd != null) {
-            return cmd.run(hkey, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+            return cmd.run(hkey, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
         }
         return false;
     }

@@ -72,7 +72,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
-import org.netbeans.modules.websvc.core.ClientCreator;
+import org.netbeans.modules.websvc.api.support.ClientCreator;
 import org.netbeans.modules.websvc.core.WSStackUtils;
 
 /**

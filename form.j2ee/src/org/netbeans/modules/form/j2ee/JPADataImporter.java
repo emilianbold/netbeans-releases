@@ -212,7 +212,7 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
 
                     // Initializes project's classpath
                     JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
-                    J2EEUtils.updateProjectForUnit(persistenceXML, unit, driver[0]);
+                    J2EEUtils.updateProjectForUnit(formFile, unit, driver[0]);
 
                     // Obtain description of entity mappings
                     PersistenceScope scope = PersistenceScope.getPersistenceScope(formFile);

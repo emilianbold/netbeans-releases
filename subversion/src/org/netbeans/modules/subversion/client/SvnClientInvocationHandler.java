@@ -161,7 +161,7 @@ public class SvnClientInvocationHandler implements InvocationHandler {
                     }
                 }
                 Throwable c = t.getCause();
-                if(c instanceof InterruptedException) {                    
+                if(c instanceof InterruptedException || SvnClientExceptionHandler.isOperationCancelled(c.getMessage())) {
                     throw new SVNClientException(SvnClientExceptionHandler.ACTION_CANCELED_BY_USER);                     
                 }
                 if(support != null && support.isCanceled()) {

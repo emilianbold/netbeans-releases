@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,31 +31,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.websvc.jaxrpc.client.wizard;
+package org.netbeans.modules.cnd.remote.support;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.openide.WizardDescriptor;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.test.BaseTestCase;
 
 /**
+ * Unit tests which doesn't involve establishing remote connection
  *
- * @author Milan Kuchtiak
+ * @author Sergey Grinev
  */
-public class JaxRpcClientCreatorProvider implements ClientCreatorProvider {
+public class AutarkicRemoteTestCase extends BaseTestCase {
 
-    public JaxRpcClientCreatorProvider() {
-    }
-    
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (jaxVersion.equals(ClientWizardProperties.JAX_RPC)) {
-            return new JaxRpcClientCreator(project, wiz);
-        }
-        return null;
+    public AutarkicRemoteTestCase(String name) {
+        super(name);
     }
 
+    private static final String cshLine = "setenv envTestKey \"envTestValue\";setenv envTestKey2 \"envTestValue2\";";
+    private static final String cshLine2 = "setenv envTestKey2 \"envTestValue2\";setenv envTestKey \"envTestValue\";";
+    private static final String bashLine = "export envTestKey=\"envTestValue\";export envTestKey2=\"envTestValue2\";";
+    private static final String bashLine2 = "export envTestKey2=\"envTestValue2\";export envTestKey=\"envTestValue\";";
+
+    public void testShellUtils() throws Exception {
+        Map<String, String> env = new HashMap<String, String>();
+        env.put("envTestKey", "envTestValue");
+        env.put("envTestKey2", "envTestValue2");
+        String line = ShellUtils.prepareExportString(true, env);
+        assert cshLine.equals(line) || cshLine2.equals(line);
+        String line2 = ShellUtils.prepareExportString(false, env);
+        assert bashLine.equals(line2) || bashLine2.equals(line2);
+        String[] env2 = {"envTestKey=envTestValue","envTestKey2=envTestValue2"};
+        String line3= ShellUtils.prepareExportString(true, env2);
+        assert cshLine.equals(line3) || cshLine2.equals(line3);
+        String line4 = ShellUtils.prepareExportString(false, env2);
+        assert bashLine.equals(line4) || bashLine2.equals(line4);
+    }
 }
