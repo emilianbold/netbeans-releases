@@ -50,6 +50,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * @author Radek Matous
@@ -68,6 +69,7 @@ public class URLMapperTest extends NbTestCase {
         assertEquals(MyInstance2.class, obj.getClass());
     }
 
+    @ServiceProvider(service=Object.class)
     public static class MyInstance2 {
         public MyInstance2() {
             super();
