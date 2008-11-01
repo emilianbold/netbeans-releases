@@ -384,18 +384,14 @@
             file="${temp.file}" 
             prefix="glassfish-mod"/>
         
-	<!--
+
 	<set property="glassfish-mod.milestone.number"      value="28"/>
 	<set property="glassfish-mod.milestone.number.real" value="28c"/>
 	<set property="glassfish-mod.build.type"            value="prelude"/>
+	<set property="glassfish-mod.build.number"          value="20081022"/>
 
-	<if property="gf-mod.build.type" value="">
-	    <set property="glassfish-mod.build.number"          value="20081022"/>
-	</if>
-	<if property="gf-mod.build.type" value="ml">
-	    <set property="glassfish-mod.build.number"          value="20081022"/>
-	</if>
-	-->
+	<set property="glassfish-mod.build.number.en"       value="${glassfish-mod.build.number}"/>
+	<set property="glassfish-mod.build.number.ml"       value="20081030"/>
 
         <!--
         -->
@@ -652,7 +648,8 @@ jarsigner.storepass=${jarsigner.storepass}
                 <!-- glassfish -->
                 <include name="**/glassfish*"/>
                 <exclude name="**/glassfish*2.0.2.${glassfish.milestone.number}.*"/>
-                <exclude name="**/glassfish-mod*3.0.0.${glassfish-mod.milestone.number}.*"/>
+                <exclude name="**/glassfish-mod*3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number.en}*"/>
+                <exclude name="**/glassfish-mod*3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number.ml}*"/>
 
                 <!-- openesb -->
 		<include name="**/openesb*"/>
