@@ -69,7 +69,7 @@ import org.w3c.dom.NodeList;
 /**
  * Convenience class for generating fragments of an XML layer.
  * @see LayerGeneratingProcessor#layer
- * @since XXX #150447
+ * @since org.openide.filesystems 7.15
  */
 public final class LayerBuilder {
 
@@ -373,7 +373,7 @@ public final class LayerBuilder {
          *              or {@code "nbresloc:/my/module/resource.html"}; relative values permitted
          *              but not likely useful as base URL would be e.g. {@code "jar:...!/META-INF/"}
          * @return this builder
-         * @throws LayerGenerationException in case {@code value} cannot be passed as a URI or is opaque
+         * @throws LayerGenerationException in case {@code value} cannot be parsed as a URI or is opaque
          */
         public File urlvalue(String attr, String value) throws LayerGenerationException {
             try {
@@ -386,7 +386,7 @@ public final class LayerBuilder {
         /**
          * Adds an attribute loaded from a Java method.
          * @param attr the attribute name
-         * @param clazz the fully-qualified name of the factory class
+         * @param clazz the fully-qualified binary name of the factory class
          * @param method the name of a static method
          * @return this builder
          */
@@ -398,7 +398,7 @@ public final class LayerBuilder {
         /**
          * Adds an attribute loaded from a Java constructor.
          * @param attr the attribute name
-         * @param clazz the fully-qualified name of a class with a no-argument constructor
+         * @param clazz the fully-qualified binary name of a class with a no-argument constructor
          * @return this builder
          */
         public File newvalue(String attr, String clazz) {
@@ -411,7 +411,6 @@ public final class LayerBuilder {
          * Useful for {@link LayerGeneratingProcessor}s which define layer fragments which instantiate Java objects from the annotated code.
          * @param attr the attribute name
          * @param type a type to which the instance ought to be assignable, or null to skip this check
-         * @param processingEnv a processor environment used for {@link ProcessingEnvironment#getElementUtils} and {@link ProcessingEnvironment#getTypeUtils}
          * @return this builder
          * @throws IllegalArgumentException if the associated element is not a {@linkplain TypeElement class} or {@linkplain ExecutableElement method}
          * @throws LayerGenerationException if the associated element would not be loadable as an instance of the specified type

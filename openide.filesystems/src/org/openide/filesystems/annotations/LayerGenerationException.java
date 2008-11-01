@@ -46,7 +46,7 @@ import javax.lang.model.element.Element;
 
 /**
  * Exception thrown when a layer entry cannot be generated due to erroneous sources.
- * @since XXX
+ * @since org.openide.filesystems 7.15
  */
 public class LayerGenerationException extends Exception {
 

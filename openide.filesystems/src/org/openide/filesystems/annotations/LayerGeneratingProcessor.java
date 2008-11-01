@@ -77,7 +77,7 @@ import org.xml.sax.SAXParseException;
 /**
  * Convenience base class for an annotation processor which creates XML layer entries.
  * @see XMLFileSystem
- * @since XXX #150447
+ * @since org.openide.filesystems 7.15
  */
 public abstract class LayerGeneratingProcessor extends AbstractProcessor {
 
