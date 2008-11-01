@@ -42,8 +42,14 @@ package org.netbeans;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
 import junit.framework.TestCase;
+import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 
 public class ProxyClassLoaderTest extends TestCase {
 
@@ -52,6 +58,41 @@ public class ProxyClassLoaderTest extends TestCase {
     }
 
     public void testAmbiguousDelegation() throws Exception {
+        class CL extends ProxyClassLoader {
+            final Class[] owned;
+            final String name;
+            CL(ClassLoader[] parents, String name, Class... owned) {
+                super(parents, false);
+                addCoveredPackages(Collections.singleton("org.netbeans"));
+                this.name = name;
+                this.owned = owned;
+            }
+            protected @Override Class doLoadClass(String pkg, String name) {
+                for (Class c : owned) {
+                    if (name.equals(c.getName())) {
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        InputStream is = CL.class.getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
+                        byte[] buf = new byte[4096];
+                        int read;
+                        try {
+                            while ((read = is.read(buf)) != -1) {
+                                baos.write(buf, 0, read);
+                            }
+                        } catch (IOException x) {
+                            assert false : x;
+                        }
+                        return defineClass(name, baos.toByteArray(), 0, baos.size());
+                    }
+                }
+                return null;
+            }
+            protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
+                return parent != null || !pkg.equals("org/netbeans/");
+            }
+            public @Override String toString() {
+                return name;
+            }
+        }
         ClassLoader l1 = new CL(new ClassLoader[0], "l1", A.class);
         ClassLoader l2 = new CL(new ClassLoader[0], "l2", A.class);
         ClassLoader l3 = new CL(new ClassLoader[] {l1}, "l3", B.class);
@@ -76,42 +117,6 @@ public class ProxyClassLoaderTest extends TestCase {
         assertEquals(l1, l5.loadClass(C.class.getName()).getMethod("a").invoke(null).getClass().getClassLoader());
     }
 
-    static class CL extends ProxyClassLoader {
-        final Class[] owned;
-        final String name;
-        CL(ClassLoader[] parents, String name, Class... owned) {
-            super(parents, false);
-            addCoveredPackages(Collections.singleton("org.netbeans"));
-            this.name = name;
-            this.owned = owned;
-        }
-        protected @Override Class doLoadClass(String pkg, String name) {
-            for (Class c : owned) {
-                if (name.equals(c.getName())) {
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    InputStream is = CL.class.getClassLoader().getResourceAsStream(name.replace('.', '/') + ".class");
-                    byte[] buf = new byte[4096];
-                    int read;
-                    try {
-                        while ((read = is.read(buf)) != -1) {
-                            baos.write(buf, 0, read);
-                        }
-                    } catch (IOException x) {
-                        assert false : x;
-                    }
-                    return defineClass(name, baos.toByteArray(), 0, baos.size());
-                }
-            }
-            return null;
-        }
-        protected @Override boolean shouldDelegateResource(String pkg, ClassLoader parent) {
-            return parent != null || !pkg.equals("org/netbeans/");
-        }
-        public @Override String toString() {
-            return name;
-        }
-    }
-
     public static class A {}
     public static class B {
         public static A a() {
@@ -122,6 +127,62 @@ public class ProxyClassLoaderTest extends TestCase {
         public static A a() {
             return new A();
         }
+    }
+
+    public void testResourceDelegation() throws Exception { // #32576
+        class CL extends ProxyClassLoader {
+            final URL base1, base2;
+            final String[] owned;
+            CL(ClassLoader[] parents, URL base1, URL base2, String... owned) {
+                super(parents, false);
+                this.base1 = base1;
+                this.base2 = base2;
+                this.owned = owned;
+                addCoveredPackages(Collections.singleton("p"));
+            }
+            @Override public URL findResource(String name) {
+                if (Arrays.asList(owned).contains(name)) {
+                    try {
+                        return new URL(base1, name);
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                return null;
+            }
+            @Override public synchronized Enumeration<URL> findResources(String name) throws IOException {
+                if (Arrays.asList(owned).contains(name)) {
+                    return Enumerations.array(new URL(base1, name), new URL(base2, name));
+                }
+                return super.findResources(name);
+            }
+        }
+        URL b = new URL("http://nowhere.net/");
+        ProxyClassLoader cl1 = new CL(new ClassLoader[0], new URL(b, "1a/"), new URL(b, "1b/"), "p/1");
+        ProxyClassLoader cl2 = new CL(new ClassLoader[] {cl1}, new URL(b, "2a/"), new URL(b, "2b/"), "p/2");
+        ProxyClassLoader cl3 = new CL(new ClassLoader[] {cl1}, new URL(b, "3a/"), new URL(b, "3b/"), "p/1", "p/3");
+        ProxyClassLoader cl4 = new CL(new ClassLoader[] {cl1, cl2, cl3}, new URL(b, "4a/"), new URL(b, "4b/"));
+        assertEquals(new URL(b, "1a/p/1"), cl1.getResource("p/1"));
+        assertEquals(null, cl1.getResource("p/1x"));
+        assertEquals(Arrays.asList(new URL(b, "1a/p/1"), new URL(b, "1b/p/1")), Collections.list(cl1.getResources("p/1")));
+        assertEquals(new URL(b, "1a/p/1"), cl2.getResource("p/1"));
+        assertEquals(null, cl2.findResource("p/1"));
+        assertEquals(new URL(b, "2a/p/2"), cl2.getResource("p/2"));
+        assertEquals(new URL(b, "2a/p/2"), cl2.findResource("p/2"));
+        assertEquals(Arrays.asList(new URL(b, "2a/p/2"), new URL(b, "2b/p/2")), Collections.list(cl2.getResources("p/2")));
+        assertEquals(null, cl2.findResource("p/1"));
+        assertEquals(new URL(b, "1a/p/1"), cl3.getResource("p/1"));
+        assertEquals(new URL(b, "3a/p/1"), cl3.findResource("p/1"));
+        assertEquals(Arrays.asList(new URL(b, "1a/p/1"), new URL(b, "1b/p/1"), new URL(b, "3a/p/1"), new URL(b, "3b/p/1")),
+                Collections.list(cl3.getResources("p/1")));
+        assertEquals(Arrays.asList(new URL(b, "3a/p/1"), new URL(b, "3b/p/1")), Collections.list(cl3.findResources("p/1")));
+        assertEquals(new URL(b, "1a/p/1"), cl4.getResource("p/1"));
+        assertEquals(new URL(b, "2a/p/2"), cl4.getResource("p/2"));
+        assertEquals(new URL(b, "3a/p/3"), cl4.getResource("p/3"));
+        assertEquals(Arrays.asList(new URL(b, "1a/p/1"), new URL(b, "1b/p/1"), new URL(b, "3a/p/1"), new URL(b, "3b/p/1")),
+                Collections.list(cl4.getResources("p/1")));
+        assertEquals(Arrays.asList(new URL(b, "2a/p/2"), new URL(b, "2b/p/2")), Collections.list(cl4.getResources("p/2")));
+        assertEquals(Arrays.asList(new URL(b, "3a/p/3"), new URL(b, "3b/p/3")), Collections.list(cl4.getResources("p/3")));
     }
 
 }
