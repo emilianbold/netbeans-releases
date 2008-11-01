@@ -197,6 +197,27 @@ public class ImportManager extends java.awt.Panel {
         boolean res = true;
         boolean wizardFinished = false;
         try {
+            if (checkedToImport.indexOf (Boolean.TRUE) != -1) {
+                Collection<UpdateElement> reallyToImport = new HashSet<UpdateElement> ();
+                for (UpdateElement el : toImport) {
+                    if (checkedToImport.get (toImport.indexOf (el))) {
+                        reallyToImport.add (el);
+                    }
+                }
+                importer.importPlugins (reallyToImport, srcCluster, dest);
+                SwingUtilities.invokeLater (new Runnable () {
+                    public void run () {
+                        toImport.clear ();
+                        checkedToImport.clear ();
+                        tToImport.setModel (getModel (toImport, checkedToImport));
+                        refreshUI ();
+                    }
+                });
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace (ex);
+        }
+        try {
             dontRemind ();
             if (checkedToInstall.indexOf (Boolean.TRUE) != -1) {
                 OperationContainer<InstallSupport> oc = OperationContainer.createForInstall ();
@@ -219,27 +240,6 @@ public class ImportManager extends java.awt.Panel {
         } finally {
             tToInstall.setModel (getModel (toInstall, checkedToInstall));
             refreshUI ();
-        }
-        try {
-            if (res && checkedToImport.indexOf (Boolean.TRUE) != -1) {
-                Collection<UpdateElement> reallyToImport = new HashSet<UpdateElement> ();
-                for (UpdateElement el : toImport) {
-                    if (checkedToImport.get (toImport.indexOf (el))) {
-                        reallyToImport.add (el);
-                    }
-                }
-                importer.importPlugins (reallyToImport, srcCluster, dest);
-                SwingUtilities.invokeLater (new Runnable () {
-                    public void run () {
-                        toImport.clear ();
-                        checkedToImport.clear ();
-                        tToImport.setModel (getModel (toImport, checkedToImport));
-                        refreshUI ();
-                    }
-                });
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace (ex);
         }
         return res;
 
