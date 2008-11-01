@@ -235,8 +235,8 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 output.writeInt(-1);
             } else {
                 final Set<Entry<String, Integer>> entrySet = recurseIncludes.entrySet();
-                final Iterator<Entry<String, Integer>> setIterator = entrySet.iterator();
                 assert entrySet != null;
+                final Iterator<Entry<String, Integer>> setIterator = entrySet.iterator();
                 assert setIterator != null;
                 output.writeInt(entrySet.size());
                 
@@ -302,7 +302,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
                 for (int i = 0; i < size; i++) {
                     String key = input.readUTF();
                     key = (pathManager == null) ? key : pathManager.getString(key).toString();
-                    final Integer value = new Integer(input.readInt());
+                    final Integer value = Integer.valueOf(input.readInt());
                     
                     recurseIncludes.put(key, value);
                 }
@@ -396,7 +396,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
             recurseIncludes = new HashMap<String, Integer>();
         }
         Integer counter = recurseIncludes.get(path);
-        counter = (counter == null) ? new Integer(1) : new Integer(counter.intValue()+1);
+        counter = (counter == null) ? Integer.valueOf(1) : Integer.valueOf(counter.intValue()+1);
         if (counter.intValue() < MAX_INCLUDE_DEEP) {
             recurseIncludes.put(path, counter);
             inclStack.push(new IncludeInfoImpl(path, directiveLine, resolvedDirIndex));
@@ -491,7 +491,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         Integer counter = recurseIncludes.remove(path);
         assert (counter != null) : "must be added before"; // NOI18N
         // decrease include counter
-        counter = new Integer(counter.intValue()-1);
+        counter = Integer.valueOf(counter.intValue()-1);
         assert (counter.intValue() >= 0) : "can't be negative"; // NOI18N
         if (counter.intValue() != 0) {
             recurseIncludes.put(path, counter);

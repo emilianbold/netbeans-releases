@@ -147,8 +147,8 @@ public class APTDriverImpl {
                     reader = buffer.getReader();
                     if (!withTokens) {
                         TokenStream ts = APTTokenStreamBuilder.buildLightTokenStream(path, reader);
-                        // build apt from token stream
-                        apt = APTBuilder.buildAPTLight(path, ts);
+                        // build apt from light token stream
+                        apt = APTBuilder.buildAPT(path, ts);
                         fullAPT = null;
                         if (apt != null) {
                             if (APTTraceFlags.TEST_APT_SERIALIZATION) {

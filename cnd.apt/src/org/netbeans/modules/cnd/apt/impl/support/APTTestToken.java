@@ -100,17 +100,14 @@ public class APTTestToken extends TokenImpl implements APTToken {
         this.textID = textID;
     }
   
+    @Override
     public String getText() {
         // TODO: use shared string map
         String res = super.getText();
         return res;
     }
-    
-    public void setText(String text) {
-        // TODO: use shared string map
-        super.setText(text);
-    }    
      
+    @Override
     public String toString() {
         return "[\"" + getText() + "\",<" + getType() + ">,line=" + getLine() + ",col=" + getColumn() + "]"+",offset="+getOffset();//+",file="+getFilename(); // NOI18N
     }

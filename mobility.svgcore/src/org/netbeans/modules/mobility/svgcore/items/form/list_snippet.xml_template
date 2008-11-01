@@ -12,6 +12,10 @@
 	        </text>
                 <text display="none">type=hidden_text</text>
             </g>
+    <g id="%%COMPONENT_ID%%_current_selection" >
+        <!-- Metadata information. Please don't edit. -->
+        <text display="none">type=current_selection</text>
+    </g>
 	<g id="%%COMPONENT_ID%%_content"> 
 		<!-- Metadata information. Please don't edit. -->
 		<text display="none">type=content</text> 
