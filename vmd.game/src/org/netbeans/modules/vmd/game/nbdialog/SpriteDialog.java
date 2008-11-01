@@ -83,14 +83,12 @@ import org.netbeans.modules.vmd.game.model.ImageResource;
 import org.netbeans.modules.vmd.game.model.Scene;
 import org.netbeans.modules.vmd.midp.components.MidpProjectSupport;
 import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -98,26 +96,27 @@ import org.openide.util.Utilities;
  */
 public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 	
-	private GlobalRepository gameDesign;
+    private GlobalRepository gameDesign;
 	
-    private static final Icon ICON_ERROR = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
+    private static final Icon ICON_ERROR = new ImageIcon(
+            ImageUtilities.loadImage("org/netbeans/modules/vmd/midp/resources/error.gif")); // NOI18N
 	
-	private static final int DEFAULT_FRAMES = 5;
-	private static final int DEFAULT_TILE_WIDTH = 18;
-	private static final int DEFAULT_TILE_HEIGHT = 18;
+    private static final int DEFAULT_FRAMES = 5;
+    private static final int DEFAULT_TILE_WIDTH = 18;
+    private static final int DEFAULT_TILE_HEIGHT = 18;
 
-	/** Creates new form NewTiledLayerDialog */
-	public SpriteDialog(GlobalRepository gameDesign) {
-		this.gameDesign = gameDesign;
-		initComponents();
-		init();
-	}
-	
-	public SpriteDialog(Scene parent) {
-		this(parent.getGameDesign());
-		this.scene = parent;
-	}
-	
+    /** Creates new form NewTiledLayerDialog */
+    public SpriteDialog(GlobalRepository gameDesign) {
+        this.gameDesign = gameDesign;
+        initComponents();
+        init();
+    }
+
+    public SpriteDialog(Scene parent) {
+        this(parent.getGameDesign());
+        this.scene = parent;
+    }
+
 	/** This method is called from within the constructor to
 	 * initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is
@@ -355,274 +354,284 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
     // End of variables declaration//GEN-END:variables
 	
 	
-	private DialogDescriptor dd;
-	
-	public static final boolean DEBUG = false;
-	
-	private SliderListener sliderListener = new SliderListener();
-	
-	private AbstractImagePreviewComponent imagePreview;
-	private PartialImageGridPreview partialImagePreview = new PartialImageGridPreview();
-	private FullImageGridPreview fullImagePreview = new FullImageGridPreview();
-	
-	
-	private Scene scene;
-	
-	private List<Integer> tileWidths;
+    public static final boolean DEBUG = false;
+    
+    private DialogDescriptor dd;
+    private SliderListener sliderListener = new SliderListener();
+    private AbstractImagePreviewComponent imagePreview;
+    private PartialImageGridPreview partialImagePreview = new PartialImageGridPreview();
+    private FullImageGridPreview fullImagePreview = new FullImageGridPreview();
+    private Scene scene;
+    private List<Integer> tileWidths;
     private List<Integer> tileHeigths;
 	
 	
-	public void setDialogDescriptor(DialogDescriptor dd) {
-		this.dd = dd;
-	}
+    public void setDialogDescriptor(DialogDescriptor dd) {
+        this.dd = dd;
+    }
 	
-	private void init() {
-		HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.nbdialog.SpriteDialog");
-		this.getAccessibleContext().setAccessibleName(NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.accessible.name"));
-		this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.accessible.description"));
+    private void init() {
+        HelpCtx.setHelpIDString(this, "org.netbeans.modules.vmd.game.nbdialog.SpriteDialog");
+        this.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.accessible.name"));
+        this.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(TiledLayerDialog.class, "SpriteDialog.accessible.description"));
+
+        this.labelError.setIcon(ICON_ERROR);
+
+        SpinnerNumberModel snm = new SpinnerNumberModel();
+        snm.setMinimum(1);
+        snm.setMaximum(256);
+        snm.setStepSize(1);
+        snm.setValue(5);
+
+        this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
+        this.fieldLayerName.addFocusListener(new LayerFieldListener());
 		
-		this.labelError.setIcon(ICON_ERROR);
-		
-		SpinnerNumberModel snm = new SpinnerNumberModel();
-		snm.setMinimum(1);
-		snm.setMaximum(256);
-		snm.setStepSize(1);
-		snm.setValue(5);
-		
-		this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
-		this.fieldLayerName.addFocusListener(new LayerFieldListener());
-		
-		this.listImageFileName.addListSelectionListener(new ImageListListener());
-		this.listImageFileName.setCellRenderer(new DefaultListCellRenderer() {
-			public Component getListCellRendererComponent(JList src, Object value, int index, boolean isSelected, boolean hasfocus) {
-				Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) value;
+        this.listImageFileName.addListSelectionListener(new ImageListListener());
+        this.listImageFileName.setCellRenderer(new DefaultListCellRenderer() {
+
+            public Component getListCellRendererComponent(JList src, Object value, 
+                    int index, boolean isSelected, boolean hasfocus) {
+                Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) value;
                 return super.getListCellRendererComponent(src, entry.getValue(), index, isSelected, hasfocus);
             }
-		});
+        });
 		
-		this.sliderWidth.setModel(new DefaultBoundedRangeModel());
-		this.sliderHeight.setModel(new DefaultBoundedRangeModel());
-		
-		this.sliderWidth.addChangeListener(sliderListener);
-		this.sliderHeight.addChangeListener(sliderListener);
-		
-		this.sliderWidth.setValue(0);
-		this.sliderHeight.setValue(0);
+        this.sliderWidth.setModel(new DefaultBoundedRangeModel());
+        this.sliderHeight.setModel(new DefaultBoundedRangeModel());
 
-		this.sliderWidth.setPaintLabels(true);
-		this.sliderHeight.setPaintLabels(true);
+        this.sliderWidth.addChangeListener(sliderListener);
+        this.sliderHeight.addChangeListener(sliderListener);
+
+        this.sliderWidth.setValue(0);
+        this.sliderHeight.setValue(0);
+
+        this.sliderWidth.setPaintLabels(true);
+        this.sliderHeight.setPaintLabels(true);
+
+        this.sliderWidth.setSnapToTicks(true);
+        this.sliderHeight.setSnapToTicks(true);
+
+        this.sliderWidth.setEnabled(false);
+        this.sliderHeight.setEnabled(false);
+
+        this.buttonImportImages.addActionListener(this);
+
+        this.setPreviewFull();
 		
-		this.sliderWidth.setSnapToTicks(true);
-		this.sliderHeight.setSnapToTicks(true);
-		
-		this.sliderWidth.setEnabled(false);
-		this.sliderHeight.setEnabled(false);
-		
-		this.buttonImportImages.addActionListener(this);
-		
-		this.setPreviewFull();
-		
-		this.checkBoxZoom.addActionListener(new ActionListener() {
+        this.checkBoxZoom.addActionListener(new ActionListener() {
+
             public void actionPerformed(ActionEvent e) {
-				if (checkBoxZoom.isSelected()) {
-					setPreviewPartial();
-				}
-				else {
-					setPreviewFull();
-				}
+                if (checkBoxZoom.isSelected()) {
+                    setPreviewPartial();
+                } else {
+                    setPreviewFull();
+                }
             }
-		});		
-	}
+        });
+    }
 	
-	private void setPreviewPartial() {
-		if (this.imagePreview != null) {
-			try {
-				if (DEBUG) System.out.println("setPreviewPartial"); // NOI18N
-				this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
-			} catch (MalformedURLException e) {
-				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
-				e.printStackTrace();
-				return;
-			} catch (IllegalArgumentException iae) {
-				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt"));
-				iae.printStackTrace();
-				return;
-			}
-			this.partialImagePreview.setTileWidth(this.imagePreview.getTileWidth());
-			this.partialImagePreview.setTileHeight(this.imagePreview.getTileHeight());
-		}
-		this.panelImage.removeAll();
-		this.panelImage.add(this.partialImagePreview, BorderLayout.CENTER);
-		this.imagePreview = this.partialImagePreview;
-		this.repaint();
-		this.validate();
-	}
+    private void setPreviewPartial() {
+        if (this.imagePreview != null) {
+            try {
+                if (DEBUG) {
+                    System.out.println("setPreviewPartial"); // NOI18N
+
+                }
+                this.partialImagePreview.setImageURL(this.imagePreview.getImageURL());
+            } catch (MalformedURLException e) {
+                this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
+                e.printStackTrace();
+                return;
+            } catch (IllegalArgumentException iae) {
+                this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt"));
+                iae.printStackTrace();
+                return;
+            }
+            this.partialImagePreview.setTileWidth(this.imagePreview.getTileWidth());
+            this.partialImagePreview.setTileHeight(this.imagePreview.getTileHeight());
+        }
+        this.panelImage.removeAll();
+        this.panelImage.add(this.partialImagePreview, BorderLayout.CENTER);
+        this.imagePreview = this.partialImagePreview;
+        this.repaint();
+        this.validate();
+    }
 	
-	private void setPreviewFull() {
-		if (this.imagePreview != null) {
-			try {
-				if (DEBUG) System.out.println("setPreviewFull"); // NOI18N
-				this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
-			} catch (MalformedURLException e) {
-				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
-				e.printStackTrace();
-				return;
-			} catch (IllegalArgumentException iae) {
-				this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt"));
-				iae.printStackTrace();
-				return;
-			}
-			this.fullImagePreview.setTileWidth(this.imagePreview.getTileWidth());
-			this.fullImagePreview.setTileHeight(this.imagePreview.getTileHeight());
-		}
-		this.panelImage.removeAll();
-		JScrollPane scroll = new JScrollPane(this.fullImagePreview);
-		scroll.setBorder(BorderFactory.createEmptyBorder());
-		this.panelImage.add(scroll, BorderLayout.CENTER);
-		this.imagePreview = this.fullImagePreview;
-		this.repaint();
-		this.validate();
-	}
+    private void setPreviewFull() {
+        if (this.imagePreview != null) {
+            try {
+                if (DEBUG) {
+                    System.out.println("setPreviewFull"); // NOI18N
+
+                }
+                this.fullImagePreview.setImageURL(this.imagePreview.getImageURL());
+            } catch (MalformedURLException e) {
+                this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt"));
+                e.printStackTrace();
+                return;
+            } catch (IllegalArgumentException iae) {
+                this.labelError.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt"));
+                iae.printStackTrace();
+                return;
+            }
+            this.fullImagePreview.setTileWidth(this.imagePreview.getTileWidth());
+            this.fullImagePreview.setTileHeight(this.imagePreview.getTileHeight());
+        }
+        this.panelImage.removeAll();
+        JScrollPane scroll = new JScrollPane(this.fullImagePreview);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        this.panelImage.add(scroll, BorderLayout.CENTER);
+        this.imagePreview = this.fullImagePreview;
+        this.repaint();
+        this.validate();
+    }
 			
 	
-	private List<Map.Entry<FileObject, String>> getImageList() {
-		Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
-		List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
-		list.addAll(imgMap.entrySet());
-		Collections.sort(list, new Comparator() {
+    private List<Map.Entry<FileObject, String>> getImageList() {
+        // get all PNG images (Note: only PNG)
+        Map<FileObject, String> imgMap = MidpProjectSupport.
+                getImagesForProject(this.gameDesign.getDesignDocument(), true);
+        List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
+        list.addAll(imgMap.entrySet());
+        Collections.sort(list, new Comparator() {
             public int compare(Object a, Object b) {
-				Map.Entry<FileObject, String> ea = (Map.Entry<FileObject, String>) a;
-				Map.Entry<FileObject, String> eb = (Map.Entry<FileObject, String>) b;
-				return ea.getValue().compareTo(eb.getValue());
-			}
-		});
-		return list;
-	}
+                Map.Entry<FileObject, String> ea = (Map.Entry<FileObject, String>) a;
+                Map.Entry<FileObject, String> eb = (Map.Entry<FileObject, String>) b;
+                return ea.getValue().compareTo(eb.getValue());
+            }
+        });
+        return list;
+    }
 	
-	private DefaultListModel getImageListModel() {
-		DefaultListModel dlm = new DefaultListModel();
-		List<Map.Entry<FileObject, String>> images = this.getImageList();
-		for (Map.Entry<FileObject, String> imageEntry : images) {
-			dlm.addElement(imageEntry);
-		}
-		return dlm;
-	}	
+    private DefaultListModel getImageListModel() {
+        DefaultListModel dlm = new DefaultListModel();
+        List<Map.Entry<FileObject, String>> images = this.getImageList();
+        for (Map.Entry<FileObject, String> imageEntry : images) {
+            dlm.addElement(imageEntry);
+        }
+        return dlm;
+    }
 	
-	private class SliderListener implements ChangeListener {
-		
-		public void stateChanged(ChangeEvent e) {
-			//System.out.println("Slider state changed");
-			int tileWidth = SpriteDialog.this.tileWidths.get(((Integer) SpriteDialog.this.sliderWidth.getValue()).intValue());
-			int tileHeight = SpriteDialog.this.tileHeigths.get(((Integer) SpriteDialog.this.sliderHeight.getValue()).intValue());
-			
-			if (e.getSource() == SpriteDialog.this.sliderHeight) {
-				SpriteDialog.this.imagePreview.setTileHeight(tileHeight);
-				SpriteDialog.this.labelTileHeight.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTileheight.txt", tileHeight));
-			}
-			else if (e.getSource() == SpriteDialog.this.sliderWidth) {
-				SpriteDialog.this.imagePreview.setTileWidth(tileWidth);
-				SpriteDialog.this.labelTileWidth.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", tileWidth));
-			} 
-			else {
-				if (DEBUG) System.out.println("ERR: ChangeEvent came from " + e.getSource()); // NOI18N
-			}
-		}
-		
-	}
+    private class SliderListener implements ChangeListener {
+
+        public void stateChanged(ChangeEvent e) {
+            //System.out.println("Slider state changed");
+            int tileWidth = SpriteDialog.this.tileWidths.get(
+                    ((Integer) SpriteDialog.this.sliderWidth.getValue()).intValue());
+            int tileHeight = SpriteDialog.this.tileHeigths.get(
+                    ((Integer) SpriteDialog.this.sliderHeight.getValue()).intValue());
+
+            if (e.getSource() == SpriteDialog.this.sliderHeight) {
+                SpriteDialog.this.imagePreview.setTileHeight(tileHeight);
+                SpriteDialog.this.labelTileHeight.setText(NbBundle.getMessage(
+                        SpriteDialog.class, "SpriteDialog.labelTileheight.txt", tileHeight));
+            } else if (e.getSource() == SpriteDialog.this.sliderWidth) {
+                SpriteDialog.this.imagePreview.setTileWidth(tileWidth);
+                SpriteDialog.this.labelTileWidth.setText(NbBundle.getMessage(
+                        SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", tileWidth));
+            } else {
+                if (DEBUG) {
+                    System.out.println("ERR: ChangeEvent came from " + e.getSource()); // NOI18N
+                }
+            }
+        }
+    }
 	
-	private class LayerFieldListener implements DocumentListener, FocusListener {
-		public void insertUpdate(DocumentEvent e) {
-			this.handleTextContentChange(e);
-		}
-		public void removeUpdate(DocumentEvent e) {
-			this.handleTextContentChange(e);
-		}
-		public void changedUpdate(DocumentEvent e) {
-			this.handleTextContentChange(e);
-		}
-		private void handleTextContentChange(DocumentEvent e) {
-			String err = getFieldLayerNameError();
-			if (e.getDocument() == SpriteDialog.this.fieldLayerName.getDocument()) {
-				if (err == null) {
-					err = getFieldImageFileNameError();
-				}
-				SpriteDialog.this.labelError.setText(err);
-			}
-			if (err == null) {
-				SpriteDialog.this.setOKButtonEnabled(true);
-			}
-			else {
-				SpriteDialog.this.setOKButtonEnabled(false);
-			}
-		}
-		
-		public void focusGained(FocusEvent e) {
-			if (e.getComponent() == SpriteDialog.this.fieldLayerName) {
-				SpriteDialog.this.labelError.setText(getFieldLayerNameError());
-			}
-			if (getFieldLayerNameError() == null && getFieldImageFileNameError() == null)
-				SpriteDialog.this.setOKButtonEnabled(true);
-			else
-				SpriteDialog.this.setOKButtonEnabled(false);
-		}
-		public void focusLost(FocusEvent e) {
-		}
-	}
+    private class LayerFieldListener implements DocumentListener, FocusListener {
+
+        public void insertUpdate(DocumentEvent e) {
+            this.handleTextContentChange(e);
+        }
+
+        public void removeUpdate(DocumentEvent e) {
+            this.handleTextContentChange(e);
+        }
+
+        public void changedUpdate(DocumentEvent e) {
+            this.handleTextContentChange(e);
+        }
+
+        private void handleTextContentChange(DocumentEvent e) {
+            String err = getFieldLayerNameError();
+            if (e.getDocument() == SpriteDialog.this.fieldLayerName.getDocument()) {
+                if (err == null) {
+                    err = getFieldImageFileNameError();
+                }
+                SpriteDialog.this.labelError.setText(err);
+            }
+            if (err == null) {
+                SpriteDialog.this.setOKButtonEnabled(true);
+            } else {
+                SpriteDialog.this.setOKButtonEnabled(false);
+            }
+        }
+
+        public void focusGained(FocusEvent e) {
+            if (e.getComponent() == SpriteDialog.this.fieldLayerName) {
+                SpriteDialog.this.labelError.setText(getFieldLayerNameError());
+            }
+            if (getFieldLayerNameError() == null && getFieldImageFileNameError() == null) {
+                SpriteDialog.this.setOKButtonEnabled(true);
+            } else {
+                SpriteDialog.this.setOKButtonEnabled(false);
+            }
+        }
+
+        public void focusLost(FocusEvent e) {
+        }
+    }
 	
-	private String getFieldLayerNameError() {
-		String illegalIdentifierName = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidName.txt");
-		String errMsg = null;
-		String layerName = this.fieldLayerName.getText();
-		if (layerName.equals("")) {
-			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelEnterName.txt");
-		} 
-		else if (!this.gameDesign.isComponentNameAvailable(layerName)) {
-			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelNameExists.txt");
-		}		
-		else if (!isValidJavaIdentifier(layerName)) {
-			errMsg = illegalIdentifierName;
-		}
-		return errMsg;
-	}
+    private String getFieldLayerNameError() {
+        String illegalIdentifierName = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidName.txt");
+        String errMsg = null;
+        String layerName = this.fieldLayerName.getText();
+        if (layerName.equals("")) {
+            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelEnterName.txt");
+        } else if (!this.gameDesign.isComponentNameAvailable(layerName)) {
+            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelNameExists.txt");
+        } else if (!isValidJavaIdentifier(layerName)) {
+            errMsg = illegalIdentifierName;
+        }
+        return errMsg;
+    }
 	
-	private static boolean isValidJavaIdentifier(String str) {
-		if (!Character.isJavaIdentifierStart(str.charAt(0))) {
-			return false;
-		}
-		for (int i = 1; i < str.length(); i++) {
-			if (!Character.isJavaIdentifierPart(str.charAt(i))) {
-				return false;
-			}
-		}
-		return true;
-	}
+    private static boolean isValidJavaIdentifier(String str) {
+        if (!Character.isJavaIdentifierStart(str.charAt(0))) {
+            return false;
+        }
+        for (int i = 1; i < str.length(); i++) {
+            if (!Character.isJavaIdentifierPart(str.charAt(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 	
 	
-	public void setOKButtonEnabled(boolean enable) {
-		if (!enable) {
-			this.labelError.setIcon(ICON_ERROR);
-		}
-		else {
-			this.labelError.setIcon(null);
-		}
-		this.dd.setValid(enable);
-	}
+    public void setOKButtonEnabled(boolean enable) {
+        if (!enable) {
+            this.labelError.setIcon(ICON_ERROR);
+        } else {
+            this.labelError.setIcon(null);
+        }
+        this.dd.setValid(enable);
+    }
 	
-	private String getFieldImageFileNameError() {
-		String errMsg = null;
-		if (this.listImageFileName.getModel().getSize() == 0) {
-			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelNoImages.txt");
-		} 
-		else if (this.listImageFileName.getSelectedValue() == null) {
-			errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImgFile.txt");
-		}
-        else {
-            Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
+    private String getFieldImageFileNameError() {
+        String errMsg = null;
+        if (this.listImageFileName.getModel().getSize() == 0) {
+            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelNoImages.txt");
+        } else if (this.listImageFileName.getSelectedValue() == null) {
+            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelSelectImgFile.txt");
+        } else {
+            Map.Entry<FileObject, String> entry = 
+                    (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
             URL imageURL = null;
             try {
                 imageURL = entry.getKey().getURL();
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
             String relativeResourcePath = entry.getValue();
@@ -631,200 +640,207 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
             assert (relativeResourcePath != null);
 
             String imgName = CodeUtils.getIdealImageName(relativeResourcePath);
-            
+
             List<String> derivedImageNames = GlobalRepository.deriveUsedNames(imgName);
             for (String derivedName : derivedImageNames) {
                 if (derivedName.equals(this.fieldLayerName.getText())) {
                     errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.imgFileSameAsLayerName.txt");
-                }                
-            }
-
-        }
-		return errMsg;
-	}
-	
-        private class ImageListListener implements ListSelectionListener {
-
-            public void valueChanged(ListSelectionEvent e) {
-                if (e.getValueIsAdjusting()) {
-                    return;
                 }
-                SpriteDialog.this.handleImageStateChange();
             }
 
         }
+        return errMsg;
+    }
 	
-        private void handleImageStateChange() {
-            SpriteDialog.this.sliderWidth.setEnabled(true);
-            SpriteDialog.this.sliderHeight.setEnabled(true);
-            String errMsg = null;
+    private class ImageListListener implements ListSelectionListener {
 
-            errMsg = SpriteDialog.this.getFieldLayerNameError();
+        public void valueChanged(ListSelectionEvent e) {
+            if (e.getValueIsAdjusting()) {
+                return;
+            }
+            SpriteDialog.this.handleImageStateChange();
+        }
+    }
+
+    private void handleImageStateChange() {
+        SpriteDialog.this.sliderWidth.setEnabled(true);
+        SpriteDialog.this.sliderHeight.setEnabled(true);
+        String errMsg = null;
+
+        errMsg = SpriteDialog.this.getFieldLayerNameError();
+        try {
+            SpriteDialog.this.loadImagePreview();
+        } catch (MalformedURLException e) {
+            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
+            e.printStackTrace();
+        } catch (IllegalArgumentException iae) {
+            errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
+            iae.printStackTrace();
+        }
+
+        if (errMsg == null) {
+            errMsg = SpriteDialog.this.getFieldImageFileNameError();
+        }
+
+        if (errMsg != null) {
+            SpriteDialog.this.labelError.setText(errMsg);
+            SpriteDialog.this.setOKButtonEnabled(false);
+        } else {
+            SpriteDialog.this.labelError.setText("");
+            SpriteDialog.this.setOKButtonEnabled(true);
+        }
+    }
+
+    private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
+        if (DEBUG) {
+            System.out.println("load image preview"); // NOI18N
+
+        }
+        Map.Entry<FileObject, String> entry = 
+                (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
+        URL imageURL = null;
+        try {
+            imageURL = entry.getKey().getURL();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        //assert(imageURL != null);
+
+        if (imageURL == null) {
+            return;
+        }
+
+        this.sliderWidth.removeChangeListener(this.sliderListener);
+        this.sliderHeight.removeChangeListener(this.sliderListener);
+
+        this.imagePreview.setImageURL(imageURL);
+
+        this.tileWidths = this.imagePreview.getValidTileWidths();
+        this.tileHeigths = this.imagePreview.getValidTileHeights();
+
+        DefaultBoundedRangeModel modelWidth = 
+                new DefaultBoundedRangeModel(tileWidths.size() - 1, 0, 0, tileWidths.size() - 1);
+        DefaultBoundedRangeModel modelHeight = 
+                new DefaultBoundedRangeModel(tileHeigths.size() - 1, 0, 0, tileHeigths.size() - 1);
+        this.sliderWidth.setModel(modelWidth);
+        this.sliderHeight.setModel(modelHeight);
+
+        this.sliderWidth.setValue(
+                this.tileWidths.indexOf(getNearestValue(DEFAULT_TILE_WIDTH, tileWidths)));
+        this.sliderHeight.setValue(
+                this.tileHeigths.indexOf(getNearestValue(DEFAULT_TILE_HEIGHT, tileHeigths)));
+
+
+        //set labels
+        int tileWidth = this.tileWidths.get(((Integer) this.sliderWidth.getValue()).intValue());
+        int tileHeight = this.tileHeigths.get(((Integer) this.sliderHeight.getValue()).intValue());
+
+        this.labelTileHeight.setText(NbBundle.getMessage(
+                SpriteDialog.class, "SpriteDialog.labelTileheight.txt", tileHeight));
+        this.labelTileWidth.setText(NbBundle.getMessage(
+                SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", tileWidth));
+
+        this.imagePreview.setTileWidth(tileWidth);
+        this.imagePreview.setTileHeight(tileHeight);
+
+        this.repaint();
+
+        this.sliderWidth.addChangeListener(sliderListener);
+        this.sliderHeight.addChangeListener(sliderListener);
+
+    }
+	
+    private static int getNearestValue(int mark, List<Integer> values) {
+        int nearest = Integer.MAX_VALUE;
+        for (Integer value : values) {
+            int nearestDiff = Math.abs(mark - nearest);
+            int valueDiff = Math.abs(mark - value);
+            if (valueDiff < nearestDiff || (valueDiff == nearestDiff && value > nearest)) {
+                nearest = value;
+            }
+        }
+        return nearest;
+    }
+
+    public void actionPerformed(ActionEvent e) {
+        //if OK button pressed create the new layer
+        if (e.getSource() == NotifyDescriptor.OK_OPTION) {
+            this.handleOKButton();
+        } else if (e.getSource() == this.buttonImportImages) {
             try {
-                SpriteDialog.this.loadImagePreview();
-            } catch (MalformedURLException e) {
-                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgLoc.txt");
-                e.printStackTrace();
-            } catch (IllegalArgumentException iae) {
-                errMsg = NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelInvalidImgFomat.txt");
-                iae.printStackTrace();
-            }
-
-            if (errMsg == null) {
-                errMsg = SpriteDialog.this.getFieldImageFileNameError();
-            }
-
-            if (errMsg != null) {
-                SpriteDialog.this.labelError.setText(errMsg);
-                SpriteDialog.this.setOKButtonEnabled(false);
-            } else {
-                SpriteDialog.this.labelError.setText("");
-                SpriteDialog.this.setOKButtonEnabled(true);
+                this.handleImportImagesButton();
+            } catch (IOException ex) {
+                ex.printStackTrace();
             }
         }
-            
-	private void loadImagePreview() throws MalformedURLException, IllegalArgumentException {
-		if (DEBUG) System.out.println("load image preview"); // NOI18N
-		
-		Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
-		URL imageURL = null;
-		try {
-			imageURL = entry.getKey().getURL();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
+    }
 
-                //assert(imageURL != null);
-                    
-                if (imageURL == null) {
-                    return;
+    private void handleImportImagesButton() throws IOException {
+        InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png"); // NOI18N
+
+        assert inImgPlatformTiles != null;
+        InputStream inImgTopViewTiles = SpriteDialog.class.getResourceAsStream("res/topview_tiles.png"); // NOI18N
+
+        assert inImgTopViewTiles != null;
+
+        Project p = MidpProjectSupport.getProjectForDocument(this.gameDesign.getDesignDocument());
+        SourceGroup sg = MidpProjectSupport.getSourceGroup(p);
+        FileObject foSrc = sg.getRootFolder();
+
+        OutputStream topViewOut = null;
+        OutputStream platformOut = null;
+        try {
+            FileObject foPlatform = FileUtil.createData(foSrc, "platform_tiles.png"); // NOI18N
+
+            FileObject foTop = FileUtil.createData(foSrc, "topview_tiles.png"); // NOI18N
+
+            platformOut = foPlatform.getOutputStream();
+            FileUtil.copy(inImgPlatformTiles, platformOut);
+            topViewOut = foTop.getOutputStream();
+            FileUtil.copy(inImgTopViewTiles, topViewOut);
+        } finally {
+            try {
+                if (platformOut != null) {
+                    platformOut.close();
                 }
-		
-		this.sliderWidth.removeChangeListener(this.sliderListener);
-		this.sliderHeight.removeChangeListener(this.sliderListener);
-
-		this.imagePreview.setImageURL(imageURL);
-
-		this.tileWidths = this.imagePreview.getValidTileWidths();
-		this.tileHeigths = this.imagePreview.getValidTileHeights();
-
-		DefaultBoundedRangeModel modelWidth = new DefaultBoundedRangeModel(tileWidths.size() -1, 0, 0, tileWidths.size() -1);
-		DefaultBoundedRangeModel modelHeight = new DefaultBoundedRangeModel(tileHeigths.size() -1, 0, 0, tileHeigths.size() -1);
-		this.sliderWidth.setModel(modelWidth);
-		this.sliderHeight.setModel(modelHeight);
-
-		this.sliderWidth.setValue(this.tileWidths.indexOf(getNearestValue(DEFAULT_TILE_WIDTH, tileWidths)));
-		this.sliderHeight.setValue(this.tileHeigths.indexOf(getNearestValue(DEFAULT_TILE_HEIGHT, tileHeigths)));
-
-
-		//set labels
-		int tileWidth = this.tileWidths.get(((Integer) this.sliderWidth.getValue()).intValue());
-		int tileHeight = this.tileHeigths.get(((Integer) this.sliderHeight.getValue()).intValue());
-
-		this.labelTileHeight.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTileheight.txt", tileHeight));
-		this.labelTileWidth.setText(NbBundle.getMessage(SpriteDialog.class, "SpriteDialog.labelTilewidth.txt", tileWidth));
-
-		this.imagePreview.setTileWidth(tileWidth);
-		this.imagePreview.setTileHeight(tileHeight);
-
-		this.repaint();
-
-		this.sliderWidth.addChangeListener(sliderListener);
-		this.sliderHeight.addChangeListener(sliderListener);
-				
-	}
-	
-	private static int getNearestValue(int mark, List<Integer> values) {
-		int nearest = Integer.MAX_VALUE;
-		for (Integer value : values) {
-			int nearestDiff = Math.abs(mark - nearest);
-			int valueDiff = Math.abs(mark - value);
-			if (valueDiff < nearestDiff || (valueDiff == nearestDiff && value > nearest)) {
-				nearest = value;
-			}
-		}
-		return nearest;
-	}
-	
-        public void actionPerformed(ActionEvent e) {
-            //if OK button pressed create the new layer
-            if (e.getSource() == NotifyDescriptor.OK_OPTION) {
-                this.handleOKButton();
-            } else if (e.getSource() == this.buttonImportImages) {
-                try {
-                    this.handleImportImagesButton();
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                if (topViewOut != null) {
+                    topViewOut.close();
                 }
+            } catch (Exception ex) {
             }
         }
-		
-	private void handleImportImagesButton() throws IOException {
-		InputStream inImgPlatformTiles = SpriteDialog.class.getResourceAsStream("res/platform_tiles.png"); // NOI18N
-		assert inImgPlatformTiles != null;
-		InputStream inImgTopViewTiles = SpriteDialog.class.getResourceAsStream("res/topview_tiles.png"); // NOI18N
-		assert inImgTopViewTiles != null;
-		
-		Project p = MidpProjectSupport.getProjectForDocument(this.gameDesign.getDesignDocument());
-		SourceGroup sg = MidpProjectSupport.getSourceGroup(p);
-		FileObject foSrc = sg.getRootFolder();
-		
-		OutputStream topViewOut = null;
-		OutputStream platformOut = null;
-		try {
-			FileObject foPlatform = FileUtil.createData(foSrc, "platform_tiles.png"); // NOI18N
-			FileObject foTop = FileUtil.createData(foSrc, "topview_tiles.png"); // NOI18N
-
-			platformOut = foPlatform.getOutputStream();
-			FileUtil.copy(inImgPlatformTiles, platformOut);
-			topViewOut = foTop.getOutputStream();
-			FileUtil.copy(inImgTopViewTiles, topViewOut);
-		} 
-		finally {
-			try {
-				if (platformOut != null) {
-					platformOut.close();
-				}
-				if (topViewOut != null) {
-					topViewOut.close();
-				}
-			} catch (Exception ex) {
-			}
-		}
-		this.listImageFileName.setModel(this.getImageListModel());
-                handleImageStateChange();
-	}
+        this.listImageFileName.setModel(this.getImageListModel());
+        handleImageStateChange();
+    }
 	
-	private void handleOKButton() {
-		String name = this.fieldLayerName.getText();
-		
-		int tileWidth = SpriteDialog.this.tileWidths.get(((Integer) SpriteDialog.this.sliderWidth.getValue()).intValue());
-		int tileHeight = SpriteDialog.this.tileHeigths.get(((Integer) SpriteDialog.this.sliderHeight.getValue()).intValue());
-		
-		Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
-		
-		URL imageURL = null;
-		try {
-			imageURL = entry.getKey().getURL();
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-		}
-		String relativeResourcePath = entry.getValue();
-		
-		assert (imageURL != null);
-		assert (relativeResourcePath != null);
-		
-		ImageResource imgRes = this.gameDesign.getImageResource(imageURL, relativeResourcePath);
-		
-		if (this.scene != null) {
-			this.scene.createSprite(name, imgRes, DEFAULT_FRAMES, tileWidth, tileHeight);
-		}
-		else {
-			this.gameDesign.createSprite(name, imgRes, DEFAULT_FRAMES, tileWidth, tileHeight);
-		}
-	}
+    private void handleOKButton() {
+        String name = this.fieldLayerName.getText();
+
+        int tileWidth = SpriteDialog.this.tileWidths.get(((Integer) SpriteDialog.this.sliderWidth.getValue()).intValue());
+        int tileHeight = SpriteDialog.this.tileHeigths.get(((Integer) SpriteDialog.this.sliderHeight.getValue()).intValue());
+
+        Map.Entry<FileObject, String> entry = (Map.Entry<FileObject, String>) this.listImageFileName.getSelectedValue();
+
+        URL imageURL = null;
+        try {
+            imageURL = entry.getKey().getURL();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        String relativeResourcePath = entry.getValue();
+
+        assert (imageURL != null);
+        assert (relativeResourcePath != null);
+
+        ImageResource imgRes = this.gameDesign.getImageResource(imageURL, relativeResourcePath);
+
+        if (this.scene != null) {
+            this.scene.createSprite(name, imgRes, DEFAULT_FRAMES, tileWidth, tileHeight);
+        } else {
+            this.gameDesign.createSprite(name, imgRes, DEFAULT_FRAMES, tileWidth, tileHeight);
+        }
+    }
 
 }
 
