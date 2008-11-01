@@ -119,7 +119,7 @@ public:
     ${CLS}(const ${CLS}& orig);
     virtual ~${CLS}();
 private:
-   ${selection line}${cursor} 
+   ${cursor} 
 };
 ]]>
         </code>
@@ -131,7 +131,7 @@ private:
 #include "${CLS newVarName default="Class"}.h"
 
 ${CLS}::${CLS}() {
-   ${selection line}${cursor} 
+   ${cursor} 
 }
 
 ${CLS}::${CLS}(const ${CLS}& orig) {
