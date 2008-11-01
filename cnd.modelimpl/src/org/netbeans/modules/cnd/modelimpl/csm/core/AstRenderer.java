@@ -95,7 +95,9 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_CLASS_DECLARATION:
                 case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION: {
-                    ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ? ClassImplSpecialization.create(token, currentNamespace, file) : ClassImpl.create(token, currentNamespace, file);
+                    ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                                        ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext()) :
+                                        ClassImpl.create(token, currentNamespace, file, !isRenderingLocalContext());
                     container.addDeclaration(cls);
                     addTypedefs(renderTypedef(token, cls, currentNamespace), currentNamespace, container);
                     renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -118,7 +120,7 @@ public class AstRenderer {
                 case CPPTokenTypes.CSM_FUNCTION_TEMPLATE_DECLARATION:
                 case CPPTokenTypes.CSM_USER_TYPE_CAST:
                     try {
-                        FunctionImpl fi = new FunctionImpl(token, file, currentNamespace);
+                        FunctionImpl fi = new FunctionImpl(token, file, currentNamespace, !isRenderingLocalContext());
                         container.addDeclaration(fi);
                         if (NamespaceImpl.isNamespaceScope(fi)) {
                             currentNamespace.addDeclaration(fi);
@@ -164,7 +166,7 @@ public class AstRenderer {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                     if (isClassSpecialization(token)) {
-                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file);
+                        ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, !isRenderingLocalContext());
                         container.addDeclaration(spec);
                         addTypedefs(renderTypedef(token, spec, currentNamespace), currentNamespace, container);
                     } else {
@@ -173,7 +175,7 @@ public class AstRenderer {
                                 // this is a template method specialization declaration (without a definition)
                                 container.addDeclaration(new FunctionImplEx(token, file, null));
                             } else {
-                                FunctionImpl funct = new FunctionImpl(token, file, currentNamespace);
+                                FunctionImpl funct = new FunctionImpl(token, file, currentNamespace, !isRenderingLocalContext());
                                 container.addDeclaration(funct);
                                 if (NamespaceImpl.isNamespaceScope(funct)) {
                                     currentNamespace.addDeclaration(funct);
@@ -901,7 +903,7 @@ public class AstRenderer {
                     } else {
                         //method forward declaratin
                         try {
-                            FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace);
+                            FunctionImpl ftdecl = new FunctionImpl(ast, file, currentNamespace, !isRenderingLocalContext());
                             if (container != null) {
                                 container.addDeclaration(ftdecl);
                             }

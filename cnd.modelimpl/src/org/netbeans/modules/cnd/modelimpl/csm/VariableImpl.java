@@ -261,10 +261,12 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         return false;
     }
 
-    public void setScope(CsmScope scope) {
+    public void setScope(CsmScope scope, boolean register) {
         unregisterInProject();
         this._setScope(scope);
-        registerInProject();
+        if (register) {
+            registerInProject();
+        }
     }
 
     public synchronized CsmScope getScope() {

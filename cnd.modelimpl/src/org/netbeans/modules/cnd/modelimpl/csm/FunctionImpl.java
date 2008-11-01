@@ -104,7 +104,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private static final boolean CHECK_SCOPE = false;
     
-    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);

@@ -55,10 +55,10 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
 
     private final CsmVisibility visibility;
 
-    public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility) {
+    public FieldImpl(AST ast, CsmFile file, CsmType type, String name, ClassImpl cls, CsmVisibility visibility, boolean register) {
         super(ast, file, type, name, /*cls*/ null, false);
         this.visibility = visibility;
-        setScope(cls);
+        setScope(cls, register);
     }
 
     public CsmClass getContainingClass() {
@@ -71,6 +71,7 @@ public final class FieldImpl extends VariableImpl<CsmField> implements CsmField 
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
+    @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
         PersistentUtils.writeVisibility(this.visibility, output);

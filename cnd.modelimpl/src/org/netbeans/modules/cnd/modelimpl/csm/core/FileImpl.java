@@ -1159,7 +1159,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         if (decl instanceof VariableImpl) {
             VariableImpl v = (VariableImpl) decl;
             if (!NamespaceImpl.isNamespaceScope(v, true)) {
-                v.setScope(this);
+                v.setScope(this, true);
                 addStaticVariableDeclaration(uidDecl);
             }
         }

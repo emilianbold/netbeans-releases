@@ -72,18 +72,24 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
     private /*final*/ int leftBracketPos;
 
     private class ClassAstRenderer extends AstRenderer {
-
+        private final boolean renderingLocalContext;
         private CsmVisibility curentVisibility = CsmVisibility.PRIVATE;
 
-        public ClassAstRenderer() {
+        public ClassAstRenderer(boolean renderingLocalContext) {
             super((FileImpl) ClassImpl.this.getContainingFile());
+            this.renderingLocalContext = renderingLocalContext;
+        }
+
+        @Override
+        protected boolean isRenderingLocalContext() {
+            return renderingLocalContext;
         }
 
         @Override
         protected VariableImpl createVariable(AST offsetAst, CsmFile file, CsmType type, String name, boolean _static,
                 MutableDeclarationsContainer container1, MutableDeclarationsContainer container2, CsmScope scope) {
             type = TemplateUtils.checkTemplateType(type, ClassImpl.this);
-            FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility);
+            FieldImpl field = new FieldImpl(offsetAst, file, type, name, ClassImpl.this, curentVisibility, !isRenderingLocalContext());
             field.setStatic(_static);
             ClassImpl.this.addMember(field);
             return field;
@@ -129,7 +135,9 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                     // inner classes and enums
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     case CPPTokenTypes.CSM_TEMPLATE_CLASS_DECLARATION:
-                        ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile()) : ClassImpl.create(token, ClassImpl.this, getContainingFile());
+                        ClassImpl innerClass = TemplateUtils.isPartialClassSpecialization(token) 
+                                ? ClassImplSpecialization.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext())
+                                : ClassImpl.create(token, ClassImpl.this, getContainingFile(), !isRenderingLocalContext());
                         innerClass.setVisibility(curentVisibility);
                         addMember(innerClass);
                         typedefs = renderTypedef(token, innerClass, ClassImpl.this);
@@ -231,11 +239,11 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                                     CsmFriendFunction friend;
                                     CsmFunction func;
                                     if (isMemberDefinition(token)) {
-                                        FriendFunctionImplEx impl = new FriendFunctionImplEx(token, ClassImpl.this, scope);
+                                        FriendFunctionImplEx impl = new FriendFunctionImplEx(token, ClassImpl.this, scope, !isRenderingLocalContext());
                                         func = impl;
                                         friend = impl;
                                     } else {
-                                        FriendFunctionImpl impl = new FriendFunctionImpl(token, ClassImpl.this, scope);
+                                        FriendFunctionImpl impl = new FriendFunctionImpl(token, ClassImpl.this, scope, !isRenderingLocalContext());
                                         friend = impl;
                                         func = impl;
                                         if (scope instanceof NamespaceImpl) {
@@ -289,7 +297,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
                             }
                         } else {
                             try {
-                                addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility));
+                                addMember(new MethodDDImpl(token, ClassImpl.this, curentVisibility, !isRenderingLocalContext()));
                             } catch (AstRendererException e) {
                                 DiagnosticExceptoins.register(e);
                             }
@@ -324,7 +332,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             if (idAST == null || idAST.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
                 return null;
             }
-            return new ClassMemberForwardDeclaration(ClassImpl.this, token, curentVisibility);
+            return new ClassMemberForwardDeclaration(ClassImpl.this, token, curentVisibility, !isRenderingLocalContext());
         }
 
         private boolean renderBitField(AST token) {
@@ -347,7 +355,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
             }
 
             CsmType type = TypeFactory.createType(typeAST, getContainingFile(), null, 0);
-            FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility);
+            FieldImpl field = new FieldImpl(token, getContainingFile(), type, idAST.getText(), ClassImpl.this, curentVisibility, !isRenderingLocalContext());
             ClassImpl.this.addMember(field);
 
             return true;
@@ -361,7 +369,7 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
 
         @Override
         protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
-            ClassMemberForwardDeclaration fd = new ClassMemberForwardDeclaration(ClassImpl.this, ast, curentVisibility);
+            ClassMemberForwardDeclaration fd = new ClassMemberForwardDeclaration(ClassImpl.this, ast, curentVisibility, !isRenderingLocalContext());
             addMember(fd);
             fd.init(ast, ClassImpl.this, !isRenderingLocalContext());
             return fd;
@@ -412,11 +420,13 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         private CsmUID<CsmClass> classDefinition;
         private final CsmUID<CsmIdentifiable> containerUID;
 
-        public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility) {
+        public ClassMemberForwardDeclaration(CsmClass containingClass, AST ast, CsmVisibility curentVisibility, boolean register) {
             super(ast, containingClass.getContainingFile());
             visibility = curentVisibility;
             containerUID = UIDCsmConverter.identifiableToUID((CsmIdentifiable) containingClass);
-            registerInProject();
+            if (register) {
+                registerInProject();
+            }
         }
 
         protected final void registerInProject() {
@@ -535,27 +545,25 @@ public class ClassImpl extends ClassEnumBase<CsmClass> implements CsmClass, CsmM
         kind = findKind(ast);
     }
 
-    protected void init(CsmScope scope, AST ast) {
+    protected void init(CsmScope scope, AST ast, boolean register) {
         initScope(scope, ast);
         initQualifiedName(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        render(ast);
+        render(ast, !register);
         leftBracketPos = initLeftBracketPos(ast);
-        register(getScope(), false);
+        if (register) {
+            register(getScope(), false);
+        }
     }
 
-    protected void render(AST ast) {
-        new ClassAstRenderer().render(ast);
+    protected final void render(AST ast, boolean localClass) {
+        new ClassAstRenderer(localClass).render(ast);
         leftBracketPos = initLeftBracketPos(ast);
     }
 
-    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file) {
+    public static ClassImpl create(AST ast, CsmScope scope, CsmFile file, boolean register) {
         ClassImpl impl = new ClassImpl(ast, file);
-        //CsmClass fd = impl.isClassDefinition(scope, ast);
-        //if (fd instanceof ClassImpl) {
-        //    return (ClassImpl) fd;
-        //}
-        impl.init(scope, ast);
+        impl.init(scope, ast, register);
         return impl;
     }
 

@@ -62,26 +62,28 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
 
     @Override
-    protected void init(CsmScope scope, AST ast) {
+    protected void init(CsmScope scope, AST ast, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
 
         initScope(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        render(ast);
+        render(ast, !register);
 
         AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
         assert qIdToken != null;
         qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters());
         initQualifiedName(scope, ast);
 
-        register(getScope(), false);
+        if (register) {
+            register(getScope(), false);
+        }
     }
 
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file) {
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register) {
         ClassImplSpecialization impl = new ClassImplSpecialization(ast, file);
-        impl.init(scope, ast);
+        impl.init(scope, ast, register);
         return impl;
     }
 

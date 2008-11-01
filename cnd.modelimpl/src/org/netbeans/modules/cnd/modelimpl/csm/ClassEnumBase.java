@@ -158,13 +158,13 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             qualifiedName = qualifiedNamePostfix;
         }
         qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
-    // can't register here, because descendant class' constructor hasn't yet finished!
-    // so registering is a descendant class' responsibility
+        // can't register here, because descendant class' constructor hasn't yet finished!
+        // so registering is a descendant class' responsibility
     }
 
     abstract public Kind getKind();
 
-    protected void register(CsmScope scope, boolean registerUnnamedInNamespace) {
+    protected final void register(CsmScope scope, boolean registerUnnamedInNamespace) {
 
         RepositoryUtils.put(this);
         boolean registerInNamespace = registerUnnamedInNamespace;

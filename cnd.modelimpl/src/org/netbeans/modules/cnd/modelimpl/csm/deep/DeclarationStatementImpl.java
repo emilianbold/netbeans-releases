@@ -187,7 +187,7 @@ public class DeclarationStatementImpl extends StatementBase implements CsmDeclar
 
                     case CPPTokenTypes.CSM_CLASS_DECLARATION:
                     {
-                        ClassImpl cls = ClassImpl.create(token, null, getContainingFile());
+                        ClassImpl cls = ClassImpl.create(token, null, getContainingFile(), !isRenderingLocalContext());
                         declarators.add(cls);
                         CsmTypedef[] typedefs = renderTypedef(token, cls, currentNamespace);
                         addTypedefs(typedefs, currentNamespace, container);
