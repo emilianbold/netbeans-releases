@@ -120,7 +120,7 @@ public class DBConnectionDrop implements NewComponentDrop {
             PersistenceUnit unit = J2EEUtils.initPersistenceUnit(persistenceXML, connection.getDatabaseConnection());
 
             // Initializes project's classpath
-            J2EEUtils.updateProjectForUnit(persistenceXML, unit, connection.getJDBCDriver());
+            J2EEUtils.updateProjectForUnit(formFile, unit, connection.getJDBCDriver());
 
             RADComponent entityManager = model.getMetaComponent(componentId);
             entityManager.getPropertyByName("persistenceUnit").setValue(unit.getName()); // NOI18N

@@ -385,6 +385,18 @@ public final class TokenHierarchyUpdate {
                 tokenListListUpdate.collectRemovedEmbeddings(this);
                 tokenListListUpdate.collectAddedEmbeddings(this);
             }
+
+            // Add an embedded change to the parent change (if exists)
+            // tokenListChange may be null in case there are added/removed ETLs
+            // in a non-joined TLL. In that case take its parent's change
+            if (parentItem != null && tokenListChange != null) {
+                UpdateItem<?> parent = parentItem;
+                while (parent.tokenListChange == null) {
+                    parent = parent.parentItem;
+                }
+                assert (parent != null) : "No valid tokenListChange";
+                parent.tokenListChange.tokenChangeInfo().addEmbeddedChange(tokenListChange.tokenChangeInfo());
+            }
         }
 
         /**
@@ -395,10 +407,6 @@ public final class TokenHierarchyUpdate {
          * @param parentChange parent change or null for root change.
          */
         Set<Language<?>> processBoundsChange(TokenListChange<T> change) {
-            // Add an embedded change to the parent change (if exists)
-            if (parentItem != null) {
-                parentItem.tokenListChange.tokenChangeInfo().addEmbeddedChange(change.tokenChangeInfo());
-            }
             // Set of embeddings that will be attempted to be created.
             // For example for "a%" there is a PERCENTS token but there can't be embedding
             // because there must be two skip chars (assumed "%something%").
@@ -557,6 +565,9 @@ public final class TokenHierarchyUpdate {
             if (item != null) {
                 // update-status called in caller
                 item.tokenListListUpdate.markRemovedMember(etl, update.eventInfo);
+                if (item.parentItem == null) {
+                    item.setParentItem(this);
+                }
             }
         }
 
@@ -569,6 +580,9 @@ public final class TokenHierarchyUpdate {
             if (item != null) {
                 // update-status called in caller
                 item.tokenListListUpdate.markAddedMember(etl);
+                if (item.parentItem == null) {
+                    item.setParentItem(this);
+                }
             }
         }
 

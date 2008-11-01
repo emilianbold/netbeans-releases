@@ -374,6 +374,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         this.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(TiledLayerDialog.class, "TiledLayerDialog.accessible.description"));
 
         this.labelError.setIcon(ICON_ERROR);
+        this.labelError.setText(null);
 
         this.fieldLayerName.getDocument().addDocumentListener(new LayerFieldListener());
         this.fieldLayerName.addFocusListener(new LayerFieldListener());
@@ -521,25 +522,23 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     private class LayerFieldListener implements DocumentListener, FocusListener {
 
         public void insertUpdate(DocumentEvent e) {
-            this.handleTextContentChange(e);
+            this.handleContentChange();
         }
 
         public void removeUpdate(DocumentEvent e) {
-            this.handleTextContentChange(e);
+            this.handleContentChange();
         }
 
         public void changedUpdate(DocumentEvent e) {
-            this.handleTextContentChange(e);
+            this.handleContentChange();
         }
 
-        private void handleTextContentChange(DocumentEvent e) {
+        private void handleContentChange() {
             String err = getFieldLayerNameError();
-            if (e.getDocument() == TiledLayerDialog.this.fieldLayerName.getDocument()) {
-                if (err == null) {
-                    err = getFieldImageFileNameError();
-                }
-                TiledLayerDialog.this.labelError.setText(err);
+            if (err == null) {
+                err = getFieldImageFileNameError();
             }
+            TiledLayerDialog.this.labelError.setText(err);
             if (err == null) {
                 TiledLayerDialog.this.setOKButtonEnabled(true);
             } else {
@@ -548,14 +547,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getComponent() == TiledLayerDialog.this.fieldLayerName) {
-                TiledLayerDialog.this.labelError.setText(getFieldLayerNameError());
-            }
-            if (getFieldLayerNameError() == null && getFieldImageFileNameError() == null) {
-                TiledLayerDialog.this.setOKButtonEnabled(true);
-            } else {
-                TiledLayerDialog.this.setOKButtonEnabled(false);
-            }
+            this.handleContentChange();
         }
 
         public void focusLost(FocusEvent e) {

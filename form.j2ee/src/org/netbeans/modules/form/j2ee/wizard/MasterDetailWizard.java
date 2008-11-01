@@ -413,7 +413,7 @@ public class MasterDetailWizard implements WizardDescriptor.InstantiatingIterato
             // Initializes project's classpath
             // PENDING solicit for DatabaseConnection.getJDBCDriver
             JDBCDriver[] driver = JDBCDriverManager.getDefault().getDrivers(connection.getDriverClass());
-            J2EEUtils.updateProjectForUnit(persistenceXML, unit, driver[0]);
+            J2EEUtils.updateProjectForUnit(folder, unit, driver[0]);
 
             // Obtain description of entity mappings
             PersistenceScope scope = PersistenceScope.getPersistenceScope(folder);

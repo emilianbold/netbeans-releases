@@ -41,8 +41,8 @@
 
 package org.netbeans.modules.websvc.core.client.wizard;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.core.ClientCreator;
-import org.netbeans.modules.websvc.core.ClientCreatorProvider;
+import org.netbeans.modules.websvc.api.support.ClientCreator;
+import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
 import org.netbeans.modules.websvc.core.ClientWizardProperties;
 import org.netbeans.modules.websvc.core.ServerType;
 import org.netbeans.modules.websvc.core.WSStackUtils;

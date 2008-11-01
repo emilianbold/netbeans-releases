@@ -28,8 +28,6 @@ import javax.microedition.m2g.SVGImage;
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
 import org.netbeans.microedition.svg.input.PointerEvent;
-import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGRect;
 
 /**
  *
