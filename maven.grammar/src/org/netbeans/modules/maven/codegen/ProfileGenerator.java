@@ -89,6 +89,7 @@ public class ProfileGenerator implements CodeGenerator {
 
     public void invoke() {
         if (!model.getState().equals(State.VALID)) {
+            //TODO report somehow, status line?
             return;
         }
         NewProfilePanel panel = new NewProfilePanel(model);
