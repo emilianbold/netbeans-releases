@@ -476,6 +476,7 @@ public class TiledLayerDialog extends javax.swing.JPanel implements ActionListen
     }
 
     private List<Map.Entry<FileObject, String>> getImageList() {
+        // get all PNG images (Note: only PNG)
         Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
         List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
         list.addAll(imgMap.entrySet());

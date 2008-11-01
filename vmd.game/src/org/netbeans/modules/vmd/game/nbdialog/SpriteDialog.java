@@ -486,11 +486,12 @@ public class SpriteDialog extends javax.swing.JPanel implements ActionListener {
 			
 	
 	private List<Map.Entry<FileObject, String>> getImageList() {
+                // get all PNG images (Note: only PNG)
 		Map<FileObject, String> imgMap = MidpProjectSupport.getImagesForProject(this.gameDesign.getDesignDocument(), true);
 		List<Map.Entry<FileObject, String>> list = new ArrayList<Map.Entry<FileObject, String>>();
 		list.addAll(imgMap.entrySet());
 		Collections.sort(list, new Comparator() {
-            public int compare(Object a, Object b) {
+                public int compare(Object a, Object b) {
 				Map.Entry<FileObject, String> ea = (Map.Entry<FileObject, String>) a;
 				Map.Entry<FileObject, String> eb = (Map.Entry<FileObject, String>) b;
 				return ea.getValue().compareTo(eb.getValue());
