@@ -236,7 +236,7 @@ public final class RubySession {
      */
     public RubyThreadInfo[] getThreadInfos() {
         try {
-            return !proxy.isFinished() ? proxy.readThreadInfo() : EMPTY_THREAD_INFOS;
+            return proxy.isReady() ? proxy.readThreadInfo() : EMPTY_THREAD_INFOS;
         } catch (RubyDebuggerException e) {
             logIfNotFinished("Cannot read threads from a live proxy" , e);
             return EMPTY_THREAD_INFOS;
@@ -449,7 +449,7 @@ public final class RubySession {
     }
     
     private void logIfNotFinished(final String message, final RubyDebuggerException e) {
-        if (!proxy.isFinished()) {
+        if (proxy.isReady()) {
             LOGGER.log(Level.INFO, message + ": " + e.getLocalizedMessage(), e);
         }
     }

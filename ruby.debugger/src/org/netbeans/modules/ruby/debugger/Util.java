@@ -41,8 +41,6 @@
 
 package org.netbeans.modules.ruby.debugger;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -59,9 +57,6 @@ import org.openide.util.NbBundle;
 import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult.*;
 
 public final class Util {
-
-    /** package private for tests. */
-    static final Logger LOGGER = Logger.getLogger(Util.class.getName());
 
     public static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N
     public static final String ERB_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
