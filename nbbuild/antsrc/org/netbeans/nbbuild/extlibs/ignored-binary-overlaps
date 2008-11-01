@@ -9,3 +9,6 @@ ruby*/jruby-*/lib/*.jar ruby*/modules/ext/*.jar
 # libraries.
 enterprise5/modules/ext/rest/http.jar java2/modules/ext/jaxws21/http.jar 
 enterprise5/modules/ext/rest/jdom-1.0.jar mobility8/modules/ext/jdom-1.0.jar  
+
+# #147393: apisupport.harness needs this, so does java.source; could consider adding to platform, unless we require JDK 6+:
+harness/antlib/javac-api-nb-7.0-b07.jar java2/modules/ext/javac-api-nb-7.0-b07.jar
