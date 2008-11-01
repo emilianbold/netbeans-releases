@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
@@ -70,21 +69,17 @@ import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
  * @author Vladimir Kvashin
  */
 public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> implements Disposable, CsmCompoundClassifier<T>, CsmMember<T> {
-    
+
     private final CharSequence name;
-    
     private /*final*/ CharSequence qualifiedName;
-    
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY)
     private CsmScope scopeRef;// can be set in onDispose or contstructor only
     private CsmUID<CsmScope> scopeUID;
-    
     private boolean isValid = true;
-
     private boolean _static = false;
     private CsmVisibility visibility = CsmVisibility.PRIVATE;
     private final List<CsmUID<CsmTypedef>> enclosingTypdefs = Collections.synchronizedList(new ArrayList<CsmUID<CsmTypedef>>());
-    
+
     protected ClassEnumBase(String name, CsmFile file, AST ast) {
         super(file, getStartOffset(ast), getEndOffset(ast));
         this.name = (name == null) ? CharSequenceKey.empty() : NameCache.getManager().getString(name);
@@ -94,7 +89,7 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (node != null) {
             AST rcurly = AstUtil.findChildOfType(node, CPPTokenTypes.RCURLY);
             if (rcurly instanceof CsmAST) {
-                return ((CsmAST)rcurly).getEndOffset();
+                return ((CsmAST) rcurly).getEndOffset();
             } else {
                 return OffsetableBase.getEndOffset(node);
             }
@@ -106,28 +101,28 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         return name;
     }
 
-    protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition(){
+    protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition() {
         CsmScope scope = getScope();
         if (name != null && name.toString().indexOf("::") > 0) { // NOI18N
             String n = name.toString();
-            String prefix = n.substring(0,n.indexOf("::")); // NOI18N
-            String suffix = n.substring(n.indexOf("::")+2); // NOI18N
+            String prefix = n.substring(0, n.indexOf("::")); // NOI18N
+            String suffix = n.substring(n.indexOf("::") + 2); // NOI18N
             if (CsmKindUtilities.isNamespace(scope)) {
                 CsmNamespace ns = (CsmNamespace) scope;
                 String qn;
                 if (ns.isGlobal()) {
                     qn = prefix;
                 } else {
-                    qn = ns.getQualifiedName().toString()+"::"+prefix; // NOI18N
+                    qn = ns.getQualifiedName().toString() + "::" + prefix; // NOI18N
                 }
                 CsmClassifier cls = ns.getProject().findClassifier(qn);
                 if (cls != null) {
                     scope = (CsmScope) cls;
-                    if (CsmKindUtilities.isClass(cls)){
+                    if (CsmKindUtilities.isClass(cls)) {
                         CsmClass container = (CsmClass) cls;
                         Iterator<CsmMember> it = CsmSelect.getDefault().getClassMembers(container,
                                 CsmSelect.getDefault().getFilterBuilder().createNameFilter(suffix, true, true, false));
-                        if (it.hasNext()){
+                        if (it.hasNext()) {
                             CsmMember m = it.next();
                             if (m instanceof ClassImpl.ClassMemberForwardDeclaration) {
                                 return (ClassImpl.ClassMemberForwardDeclaration) m;
@@ -139,44 +134,42 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         }
         return null;
     }
-    
+
     /** Initializes scope */
     protected final void initScope(CsmScope scope, AST ast) {
-	if (CsmKindUtilities.isIdentifiable(scope)) {
+        if (CsmKindUtilities.isIdentifiable(scope)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (this.scopeUID != null || scope == null) : "null UID for class scope " + scope;
             this.scopeRef = null;
-	} else {
-	    // in the case of classes/enums inside bodies
-	    this.scopeRef = scope;
-	}
+        } else {
+            // in the case of classes/enums inside bodies
+            this.scopeRef = scope;
+        }
     }
 
     /** Initializes qualified name */
     protected final void initQualifiedName(CsmScope scope, AST ast) {
-	CharSequence qualifiedNamePostfix = getQualifiedNamePostfix();
-        if(  CsmKindUtilities.isNamespace(scope) ) {
+        CharSequence qualifiedNamePostfix = getQualifiedNamePostfix();
+        if (CsmKindUtilities.isNamespace(scope)) {
             qualifiedName = Utils.getQualifiedName(qualifiedNamePostfix.toString(), (CsmNamespace) scope);
-        }
-	else if( CsmKindUtilities.isClass(scope) ) {
+        } else if (CsmKindUtilities.isClass(scope)) {
             qualifiedName = ((CsmClass) scope).getQualifiedName() + "::" + qualifiedNamePostfix; // NOI18N
-	}
-        else  {
-	    qualifiedName = qualifiedNamePostfix;
+        } else {
+            qualifiedName = qualifiedNamePostfix;
         }
         qualifiedName = QualifiedNameCache.getManager().getString(qualifiedName);
-        // can't register here, because descendant class' constructor hasn't yet finished!
-        // so registering is a descendant class' responsibility
+    // can't register here, because descendant class' constructor hasn't yet finished!
+    // so registering is a descendant class' responsibility
     }
-    
+
     abstract public Kind getKind();
-    
+
     protected void register(CsmScope scope, boolean registerUnnamedInNamespace) {
 
         RepositoryUtils.put(this);
         boolean registerInNamespace = registerUnnamedInNamespace;
-        if( ProjectBase.canRegisterDeclaration(this) ) {
-	    registerInNamespace = registerInProject();
+        if (ProjectBase.canRegisterDeclaration(this)) {
+            registerInNamespace = registerInProject();
         }
         if (registerInNamespace) {
             if (getContainingClass() == null) {
@@ -189,11 +182,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
 
     private boolean registerInProject() {
         ClassImpl.ClassMemberForwardDeclaration fd = isClassDefinition();
-        if (fd != null && CsmKindUtilities.isClass(this))  {
-            fd.setCsmClass((CsmClass)this);
-            //return true;
+        if (fd != null && CsmKindUtilities.isClass(this)) {
+            fd.setCsmClass((CsmClass) this);
         }
-       return ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
+        return ((ProjectBase) getContainingFile().getProject()).registerDeclaration(this);
     }
 
     private void unregisterInProject() {
@@ -218,17 +210,16 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     public boolean shouldBeReplaced(CsmClassifier another) {
         return false;
     }
-    
+
     public NamespaceImpl getContainingNamespaceImpl() {
-	CsmScope scope = getScope();
-	return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
+        CsmScope scope = getScope();
+        return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
     }
-    
+
     public CharSequence getQualifiedName() {
         return qualifiedName;
     }
 
-  
     public CsmScope getScope() {
         return _getScope();
     }
@@ -249,10 +240,10 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         if (getContainingNamespaceImpl() != null) {
             getContainingNamespaceImpl().removeDeclaration(this);
         }
-	unregisterInProject();
+        unregisterInProject();
         isValid = false;
     }
-        
+
     private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID if not directly initialized
@@ -260,83 +251,78 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
     }
-    
+
+    @Override
     public boolean isValid() {
         return isValid && getContainingFile().isValid();
     }
 
     public CsmClass getContainingClass() {
-	CsmScope scope = getScope();
-	return CsmKindUtilities.isClass(scope) ? (CsmClass) scope : null;
+        CsmScope scope = getScope();
+        return CsmKindUtilities.isClass(scope) ? (CsmClass) scope : null;
     }
-    
-//    private void setContainingClass(CsmClass cls) {
-//        containingClassRef = cls;
-//        qualifiedName = cls.getQualifiedName() + "::" + getName();
-//    }
-    
+
     public CsmVisibility getVisibility() {
         return visibility;
     }
-    
+
     public void setVisibility(CsmVisibility visibility) {
         this.visibility = visibility;
     }
-    
+
     public boolean isStatic() {
         return _static;
     }
-    
+
     public void setStatic(boolean _static) {
         this._static = _static;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
     @Override
     public void write(DataOutput output) throws IOException {
-        super.write(output); 
+        super.write(output);
         output.writeBoolean(this.isValid);
-	
+
         assert this.name != null;
         output.writeUTF(this.name.toString());
-	
+
         assert this.qualifiedName != null;
         output.writeUTF(this.qualifiedName.toString());
-        
-	UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
-        
+
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+
         output.writeBoolean(this._static);
-	
+
         assert this.visibility != null;
         PersistentUtils.writeVisibility(this.visibility, output);
-        
+
         // write UID for unnamed classifier
         if (getName().length() == 0) {
             super.writeUID(output);
         }
         UIDObjectFactory.getDefaultFactory().writeUIDCollection(enclosingTypdefs, output, true);
-    }  
-    
+    }
+
     protected ClassEnumBase(DataInput input) throws IOException {
         super(input);
         this.isValid = input.readBoolean();
-	
+
         this.name = NameCache.getManager().getString(input.readUTF());
         assert this.name != null;
-	
+
         this.qualifiedName = QualifiedNameCache.getManager().getString(input.readUTF());
         assert this.qualifiedName != null;
-	
+
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         this.scopeRef = null;
-	
+
         this._static = input.readBoolean();
-	
+
         this.visibility = PersistentUtils.readVisibility(input);
         assert this.visibility != null;
-                
+
         // restore UID for unnamed classifier
         if (getName().length() == 0) {
             super.readUID(input);
