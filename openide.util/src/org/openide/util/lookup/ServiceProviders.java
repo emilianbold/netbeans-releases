@@ -46,7 +46,7 @@ import java.lang.annotation.Target;
 
 /**
  * Similar to {@link ServiceProvider} but permits multiple registrations of one class.
- * @since XXX #150447
+ * @since org.openide.util 7.20
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)

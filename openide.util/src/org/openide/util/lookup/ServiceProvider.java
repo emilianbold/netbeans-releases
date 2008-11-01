@@ -44,7 +44,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Declarative registration of a singleton service provider.
@@ -61,7 +60,7 @@ import org.openide.util.lookup.Lookups;
  * <p>would result in a resource file <code>META-INF/services/org.netbeans.spi.whatever.Thing</code>
  * containing the single line of text: <code>my.module.MyThing</code>
  * @see Lookups#metaInfServices(ClassLoader)
- * @since XXX #150447
+ * @since org.openide.util 7.20
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
