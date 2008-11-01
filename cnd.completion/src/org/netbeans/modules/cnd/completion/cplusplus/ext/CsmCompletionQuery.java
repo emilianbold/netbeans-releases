@@ -848,32 +848,18 @@ abstract public class CsmCompletionQuery {
                     switch (exp.getTokenID(i - tokShift)) {
                         case ARROW:
                             kind = ExprKind.ARROW;
+                            scopeAccessedClassifier = false;
                             break;
                         case DOT:
                             kind = ExprKind.DOT;
+                            scopeAccessedClassifier = false;
                             break;
                         case SCOPE:
                             kind = ExprKind.SCOPE;
+                            scopeAccessedClassifier = true;
                             break;
                         default:
                             System.err.println("unexpected token " + exp.getTokenID(i));
-                    }
-                } else {
-                    switch (exp.getExpID()) {
-                        case CsmCompletionExpression.ARROW:
-                        case CsmCompletionExpression.ARROW_OPEN:
-                            kind = ExprKind.ARROW;
-                            break;
-                        case CsmCompletionExpression.DOT:
-                        case CsmCompletionExpression.DOT_OPEN:
-                            kind = ExprKind.DOT;
-                            break;
-                        case CsmCompletionExpression.SCOPE:
-                        case CsmCompletionExpression.SCOPE_OPEN:
-                            kind = ExprKind.SCOPE;
-                            break;
-                        default:
-                            System.err.println("unexpected expression" + exp);
                     }
                 }
                 /*resolve arrows*/
@@ -889,12 +875,33 @@ abstract public class CsmCompletionQuery {
                                 kind);
 
             }
-            /*resolve arrows*/
-            if (ok && (kind == ExprKind.ARROW) && (lastDot || findType)
-                    && (lastType != null) && (lastType.getArrayDepth() == 0)) {
-                CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
-                if (cls != null) {
-                    lastType = CsmCompletion.getType(cls, 0);
+            if (lastDot) {
+                switch (exp.getExpID()) {
+                    case CsmCompletionExpression.ARROW:
+                    case CsmCompletionExpression.ARROW_OPEN:
+                        kind = ExprKind.ARROW;
+                        scopeAccessedClassifier = false;
+                        break;
+                    case CsmCompletionExpression.DOT:
+                    case CsmCompletionExpression.DOT_OPEN:
+                        kind = ExprKind.DOT;
+                        scopeAccessedClassifier = false;
+                        break;
+                    case CsmCompletionExpression.SCOPE:
+                    case CsmCompletionExpression.SCOPE_OPEN:
+                        kind = ExprKind.SCOPE;
+                        scopeAccessedClassifier = true;
+                        break;
+                    default:
+                        System.err.println("unexpected expression" + exp);
+                }
+                /*resolve arrows*/
+                if (ok && (kind == ExprKind.ARROW) && (lastDot || findType)
+                        && (lastType != null) && (lastType.getArrayDepth() == 0)) {
+                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
+                    if (cls != null) {
+                        lastType = CsmCompletion.getType(cls, 0);
+                    }
                 }
             }
             lastKind[0] = kind;
