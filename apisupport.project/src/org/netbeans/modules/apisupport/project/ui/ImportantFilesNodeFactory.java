@@ -54,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.layers.LayerNode;
 import org.netbeans.modules.apisupport.project.layers.LayerUtils;
-import org.netbeans.modules.apisupport.project.metainf.ServiceNodeHandler;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
@@ -74,7 +73,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -247,8 +245,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                 }
             } else if (key instanceof LayerUtils.LayerHandle) {
                 return new Node[] {/* #68240 */ new SpecialFileNode(new LayerNode((LayerUtils.LayerHandle) key), null)};
-            } else if (key instanceof ServiceNodeHandler) {
-                return new Node[]{((ServiceNodeHandler)key).createServiceRootNode()};
             } else {
                 throw new AssertionError(key);
             } 
@@ -275,7 +271,6 @@ public class ImportantFilesNodeFactory implements NodeFactory {
                     files.add(file);
                 }
             }
-            newVisibleFiles.add(project.getLookup().lookup(ServiceNodeHandler.class));
             if (!newVisibleFiles.equals(visibleFiles)) {
                 visibleFiles = newVisibleFiles;
                 getNodesSyncRP().post(new Runnable() { // #72471

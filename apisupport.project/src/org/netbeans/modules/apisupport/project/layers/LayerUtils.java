@@ -620,6 +620,7 @@ public class LayerUtils {
                     if (roLayer != null) {
                         readOnlyLayers.add(roLayer);
                     }
+                    // XXX could also look for ${sister}/build/classes/META-INF/generated-layer.xml
                 }
                 Set<File> jars = getPlatformJarsForSuiteComponentProject(p, suite);
                 readOnlyLayers.addAll(Arrays.asList(getPlatformLayers(jars)));
@@ -650,6 +651,7 @@ public class LayerUtils {
                         continue;
                     }
                     otherLayerURLs.add(layerXml.getURL());
+                    // XXX as above, could add generated-layer.xml
                 }
                 XMLFileSystem xfs = new XMLFileSystem();
                 try {
@@ -778,6 +780,24 @@ public class LayerUtils {
                     }
                 } catch (SAXException e) {
                     throw (IOException) new IOException(e.toString()).initCause(e);
+                }
+            }
+            { // #149136: load generated layers too
+                // XXX might be faster to use ManifestManager's original opening of JAR to see if it really had such a layer
+                URL generatedLayer = new URL("jar:" + jar.toURI() + "!/META-INF/generated-layer.xml");
+                boolean ok = true;
+                try {
+                    generatedLayer.openConnection().connect();
+                } catch (IOException x) {
+                    // ignore, probably just means resource does not exist
+                    ok = false;
+                }
+                if (ok) {
+                    try {
+                        layers.add(new XMLFileSystem(generatedLayer));
+                    } catch (SAXException x) {
+                        throw (IOException) new IOException(x.toString()).initCause(x);
+                    }
                 }
             }
         }
