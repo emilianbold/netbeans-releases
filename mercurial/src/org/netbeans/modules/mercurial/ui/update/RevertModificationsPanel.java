@@ -136,7 +136,7 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
         jLabel2.setForeground(new java.awt.Color(153, 153, 153));
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.infoLabel2.text")); // NOI18N
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Options"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "updatepanel.options"))); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(doBackupChxBox, org.openide.util.NbBundle.getMessage(RevertModificationsPanel.class, "RevertModificationsPanel.doBackupChxBox.text")); // NOI18N
 
@@ -168,18 +168,18 @@ public class RevertModificationsPanel extends javax.swing.JPanel {
                         .add(41, 41, 41)
                         .add(revisionsLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(revisionsComboBox, 0, 278, Short.MAX_VALUE))
+                        .add(revisionsComboBox, 0, 286, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(jLabel2)
-                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)))
+                            .add(jLabel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .addContainerGap()
                         .add(jPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .addContainerGap()
-                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)))
+                        .add(changesetPanel1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(

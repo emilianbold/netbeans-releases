@@ -97,6 +97,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
 /**
@@ -131,7 +132,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
 
         createComponents(includes);
-        setPreferredSize(new Dimension(500, 240));
+        setPreferredSize(new Dimension(NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeW", 500),
+                                       NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeH", 240)));
         setMinimumSize(new Dimension(320, 240));
         addHierarchyListener(new HierarchyListener() {
             public void hierarchyChanged(HierarchyEvent e) {
@@ -146,6 +148,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             searchBase.clear();
                         }
                         CsmListeners.getDefault().removeModelListener(ErrorIncludeDialog.this);
+                        NbPreferences.forModule(ErrorIncludeDialog.class).putInt("dialogSizeW", getSize().width);
+                        NbPreferences.forModule(ErrorIncludeDialog.class).putInt("dialogSizeH", getSize().height);
                     }
                 }
             }
@@ -327,8 +331,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         guessList.setEditable(false);
         
         JSplitPane pane = new JSplitPane();
-        pane.setDividerLocation(0.35);
-        pane.setResizeWeight(0.35);
+        pane.setResizeWeight(0.5);
         pane.setOneTouchExpandable(true);
         
         JPanel p;
@@ -361,8 +364,7 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         pane.setLeftComponent(p);
         
         JSplitPane vertical = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-        vertical.setDividerLocation(0.65);
-        vertical.setResizeWeight(0.65);
+        vertical.setResizeWeight(0.5);
         vertical.setOneTouchExpandable(true);
         
         JScrollPane rightTopScroller = new JScrollPane(rightList);
@@ -416,6 +418,44 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         vertical.setBottomComponent(p);
         
         pane.setRightComponent(vertical);
+
+        vertical.addHierarchyListener(new HierarchyListener() {
+            private boolean show;
+            public void hierarchyChanged(HierarchyEvent e) {
+                if ((HierarchyEvent.SHOWING_CHANGED & e.getChangeFlags()) == HierarchyEvent.SHOWING_CHANGED){
+                    JSplitPane p = (JSplitPane)e.getSource();
+                    if (show) {
+                        int l1 = p.getTopComponent().getHeight();
+                        int l2 = p.getBottomComponent().getHeight();
+                        if (l1 > 0 && l2 > 0) {
+                            NbPreferences.forModule(ErrorIncludeDialog.class).putDouble("verticalDivider", ((double)l1)/(l1+l2));
+                        }
+                    } else {
+                        p.setDividerLocation(NbPreferences.forModule(ErrorIncludeDialog.class).getDouble("verticalDivider", 0.65));
+                        show = true;
+                    }
+                }
+            }
+        });
+
+        pane.addHierarchyListener(new HierarchyListener() {
+            private boolean show;
+            public void hierarchyChanged(HierarchyEvent e) {
+                if ((HierarchyEvent.SHOWING_CHANGED & e.getChangeFlags()) == HierarchyEvent.SHOWING_CHANGED){
+                    JSplitPane p = (JSplitPane)e.getSource();
+                    if (show) {
+                        int l1 = p.getLeftComponent().getWidth();
+                        int l2 = p.getRightComponent().getWidth();
+                        if (l1 > 0 && l2 > 0) {
+                            NbPreferences.forModule(ErrorIncludeDialog.class).putDouble("horisontalDivider", ((double)l1)/(l1+l2));
+                        }
+                    } else {
+                        p.setDividerLocation(NbPreferences.forModule(ErrorIncludeDialog.class).getDouble("horisontalDivider", 0.35));
+                        show = true;
+                    }
+                }
+            }
+        });
         
         return pane;
     }

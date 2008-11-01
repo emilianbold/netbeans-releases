@@ -83,8 +83,12 @@ final class Item extends JMenuItem implements DragGestureListener, Transferable 
         Mapper mapper = myPalette.getMapper();
         TreePath path = mapper.getSelectedPath();
         BpelMapperModel model = (BpelMapperModel) mapper.getModel();
-        GraphSubset graphSubset = model.add(path, myHandler, 
-                GraphLayout.getNextFreeX(model.getGraph(path)), 0);
+
+        if (model == null) {
+          return;
+        }
+        GraphSubset graphSubset = model.add(path, myHandler, GraphLayout.getNextFreeX(model.getGraph(path)), 0);
+
         if (graphSubset != null && graphSubset.getVertexCount() > 0) {
             mapper.getSelectionModel().setSelected(path, graphSubset.getVertex(0));
         }

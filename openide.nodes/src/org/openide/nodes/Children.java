@@ -1256,7 +1256,12 @@ public abstract class Children extends Object {
     * create()</a>; doing so makes it easy to switch to using child
     * nodes computed on a background thread if necessary for performance
     * reasons.
-     * @param T the type of the key
+    * <p><b>Related documentation</b></p>
+    * <ul>
+    *   <li><a href="http://platform.netbeans.org/tutorials/nbm-nodesapi.html">NetBeans System Properties Module Tutorial</a></li>
+    * </ul>
+    *
+    * @param T the type of the key
     */
     public static abstract class Keys<T> extends Children.Array {
         /** the last runnable (created in method setKeys) for each children object.

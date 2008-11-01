@@ -51,6 +51,12 @@ import javax.swing.text.JTextComponent;
  * The interface representing a single item of the result list that can be displayed
  * in the completion popup.
  *
+ * <p><b>Related documentation</b></p>
+ * <ul>
+ *   <li><a href="http://platform.netbeans.org/tutorials/nbm-code-completion.html">NetBeans Code Completion Tutorial</a></li>
+ * </ul>
+ *
+ *
  * @author Miloslav Metelka, Dusan Balek
  * @version 1.01
  */
