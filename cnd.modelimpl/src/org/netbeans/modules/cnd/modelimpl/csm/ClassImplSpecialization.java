@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
@@ -55,52 +54,51 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
  * @author Vladimir Kvashin
  */
 public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
-    
+
     private String qualifiedNameSuffix = "";
-    
-    private ClassImplSpecialization(AST ast, CsmFile file) { 
-	super(ast, file);
+
+    private ClassImplSpecialization(AST ast, CsmFile file) {
+        super(ast, file);
     }
-    
+
     @Override
-    protected void init(CsmScope scope, AST ast) {
+    protected void init(CsmScope scope, AST ast, boolean register) {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
-        
-	initScope(scope, ast);
+
+        initScope(scope, ast);
         RepositoryUtils.hang(this); // "hang" now and then "put" in "register()"
-        render(ast);
-        
-	AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
-	assert qIdToken != null;
-	qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters());
+        render(ast, !register);
+
+        AST qIdToken = AstUtil.findChildOfType(ast, CPPTokenTypes.CSM_QUALIFIED_ID);
+        assert qIdToken != null;
+        qualifiedNameSuffix = TemplateUtils.getSpecializationSuffix(qIdToken, getTemplateParameters());
         initQualifiedName(scope, ast);
-        
-        register(getScope(), false);
+
+        if (register) {
+            register(getScope(), false);
+        }
     }
-    
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file) {
-	ClassImplSpecialization impl = new ClassImplSpecialization(ast, file);
-	impl.init(scope, ast);
-	return impl;
+
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, boolean register) {
+        ClassImplSpecialization impl = new ClassImplSpecialization(ast, file);
+        impl.init(scope, ast, register);
+        return impl;
     }
-    
+
     @Override
     public boolean isTemplate() {
-	return true;
+        return true;
     }
-    
-    
+
     public boolean isSpecialization() {
-	return true;
+        return true;
     }
 
 //    public String getTemplateSignature() {
 //	return qualifiedNameSuffix;
 //    }
-
-  
 // This does not work since the method is called from base class' constructor    
 //    protected String getQualifiedNamePostfix() {
 //	String qName = super.getQualifiedNamePostfix();
@@ -109,29 +107,26 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
 //	}
 //	return qName;
 //    }
-
     @Override
     protected String getQualifiedNamePostfix() {
-	return super.getQualifiedNamePostfix() + qualifiedNameSuffix;
+        return super.getQualifiedNamePostfix() + qualifiedNameSuffix;
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
     @Override
     public void write(DataOutput output) throws IOException {
         super.write(output);
-	output.writeUTF(qualifiedNameSuffix);
+        output.writeUTF(qualifiedNameSuffix);
     }
-    
+
     public ClassImplSpecialization(DataInput input) throws IOException {
-	super(input);
-	qualifiedNameSuffix = input.readUTF();
+        super(input);
+        qualifiedNameSuffix = input.readUTF();
     }
-    
+
     @Override
     public String getDisplayName() {
-	return getName() + qualifiedNameSuffix;
+        return getName() + qualifiedNameSuffix;
     }
-    
 }

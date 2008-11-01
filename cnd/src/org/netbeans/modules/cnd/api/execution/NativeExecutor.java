@@ -82,15 +82,12 @@ public class NativeExecutor implements Runnable {
     private String rcfile;
     private NativeExecution nativeExecution;
     
-    /** @deprecated This variable was added for an obsolete module... */
-    private boolean showHeader = true;
-    
-    /** @deprecated This variable was added for an obsolete module... */
-    private boolean showFooter = true;
+    private static final boolean showHeader = Boolean.getBoolean("cnd.execution.showheader");
     
     /** I/O class for writing output to a build tab */
     private InputOutput io;
     private PrintWriter out;
+    private PrintWriter err;
     
     /**
      * The real constructor. This class is used to manage native execution, but run and build.
@@ -222,12 +219,17 @@ public class NativeExecutor implements Runnable {
         }
         
         File runDirFile = new File(runDir);
-        if (parseOutputForErrors)
+        if (parseOutputForErrors) {
             out = new PrintWriter(new OutputWindowWriter(hkey, io.getOut(), FileUtil.toFileObject(runDirFile), parseOutputForErrors));
-        else
+        } else {
             out = io.getOut();
+        }
+        err = io.getErr();
+        
         executionStarted();
         int rc = 0;
+
+        long startTime = System.currentTimeMillis();
         
         try {
             // Execute the selected command
@@ -242,8 +244,7 @@ public class NativeExecutor implements Runnable {
                     unbuffer);
         } catch (ThreadDeath td) {
             StatusDisplayer.getDefault().setStatusText(getString("MSG_FailedStatus"));
-            executionFinished(-1);
-            out.close();
+            executionFinished(-1, System.currentTimeMillis() - startTime);
             throw td;
         } catch (IOException ex) {
             // command not found, normal exit
@@ -267,36 +268,41 @@ public class NativeExecutor implements Runnable {
                 }
             }
         }
+        long time = System.currentTimeMillis() - startTime;
         if (rcfile != null) {
             File file = null;
+            FileReader fr = null;
             
             try {
                 file = new File(rcfile);
                 
                 if (file.exists()) {
-                    FileReader fr = new FileReader(file);
+                    fr = new FileReader(file);
 
                     if (fr.ready()) {
                         char[] cbuf = new char[256];
                         int i = fr.read(cbuf);
                         if (i > 0) {
-                            rc = Integer.valueOf(String.valueOf(cbuf, 0, i - 1)).intValue();
+                            rc = Integer.parseInt(String.valueOf(cbuf, 0, i - 1));
                         }
-
                     }
-                    fr.close();
-                    file.delete();
                 }
-            } catch (FileNotFoundException ex) {
-            } catch (IOException ex) {
+            } catch (Exception ex) {
+                // do nothing
             } finally {
+                if (fr != null) {
+                    try {
+                        fr.close();
+                    } catch (IOException ex) {
+                        // do nothing
+                    }
+                }
                 if (file != null && file.exists()) {
                    file.delete(); 
                 }
             }     
         }
-        executionFinished(rc);
-        out.close();
+        executionFinished(rc, time);
     }
     
     public void stop() {
@@ -304,28 +310,58 @@ public class NativeExecutor implements Runnable {
     }
     
     private void executionStarted() {
-        if( showHeader ) {
+        if(showHeader) {
             String runDirToShow = CompilerSetManager.LOCALHOST.equals(hkey) ?
                 runDir : HostInfoProvider.getDefault().getMapper(hkey).getRemotePath(runDir);
             
             String preText = MessageFormat.format(getString("PRETEXT"),
-		    new Object[] {exePlusArgsQuoted(executable, arguments), runDirToShow});
-            out.println(preText);
-            out.println("");
+		    exePlusArgsQuoted(executable, arguments), runDirToShow);
+            err.println(preText);
+            err.println();
         }
         fireExecutionStarted();
     }
-    
-    private void executionFinished(int exitValue) {
-        if( showFooter ) {
-            String failedOrSucceded = MessageFormat.format(getString(exitValue == 0 ? "SUCCESSFUL" : "FAILED"), new Object[] {actionName});
-            String postText = MessageFormat.format(getString("POSTTEXT"), new Object[] {failedOrSucceded, "" + exitValue}); // NOI18N
-            out.println(""); // NOI18N
-            out.println(postText);
-            out.println(""); // NOI18N
-            StatusDisplayer.getDefault().setStatusText(failedOrSucceded);
+
+    private void executionFinished(int exitValue, long millis) {
+        StringBuilder res = new StringBuilder();
+        res.append(MessageFormat.format(getString(exitValue == 0 ? "SUCCESSFUL" : "FAILED"), actionName.toUpperCase())); // NOI18N
+        res.append(" ("); // NOI18N
+        if (exitValue != 0) {
+            res.append(MessageFormat.format(getString("EXIT_VALUE"), exitValue)); // NOI18N
+            res.append(' ');
         }
+        res.append(MessageFormat.format(getString("TOTAL_TIME"), formatTime(millis))); // NOI18N
+        res.append(')');
+
+        PrintWriter pw = (exitValue == 0) ? out : err;
+        pw.println(res.toString());
+        pw.println();
+        StatusDisplayer.getDefault().setStatusText(
+                MessageFormat.format(getString(exitValue == 0 ? "MSG_SUCCESSFUL" : "MSG_FAILED"), actionName));  // NOI18N
+
+        out.close();
+        err.close();
+
         fireExecutionFinished(exitValue);
+    }
+
+    private static String formatTime(long millis) {
+        StringBuilder res = new StringBuilder();
+        long seconds = millis/1000;
+        long minutes = seconds/60;
+        long hours = minutes/60;
+        if (hours > 0) {
+            res.append(" " + hours + getString("HOUR")); // NOI18N
+        }
+        if (minutes > 0) {
+            res.append(" " + (minutes-hours*60) + getString("MINUTE")); // NOI18N
+        }
+        if (seconds > 0) {
+            res.append(" " + (seconds-minutes*60) + getString("SECOND")); // NOI18N
+        } else {
+            res.append(" " + (millis-seconds*1000) + getString("MILLISECOND")); // NOI18N
+        }
+        return res.toString();
     }
     
     public void addExecutionListener(ExecutionListener l) {

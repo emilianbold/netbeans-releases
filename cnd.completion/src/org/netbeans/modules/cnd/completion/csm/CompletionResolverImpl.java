@@ -1287,6 +1287,12 @@ public class CompletionResolverImpl implements CompletionResolver {
             return size;
         }
 
+        @Override
+        public String toString() {
+            Collection<? extends CsmObject> coll = new ArrayList<CsmObject>();
+            addResulItemsToCol(coll);
+            return coll.toString(); 
+        }        
     }
 
     private static final Result EMPTY_RESULT = new EmptyResultImpl();
@@ -1397,6 +1403,11 @@ public class CompletionResolverImpl implements CompletionResolver {
 
         public Collection<CsmTemplateParameter> getTemplateparameters() {
             return Collections.<CsmTemplateParameter>emptyList();
+        }
+
+        @Override
+        public String toString() {
+            return "<Empty Result>"; // NOI18N
         }
     }
 
