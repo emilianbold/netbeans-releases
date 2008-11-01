@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.api.model.*;
@@ -64,15 +63,13 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  * @author Dmitriy Ivanov
  */
 public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements CsmVariable<T>, Disposable {
-    
+
     private final CharSequence name;
     private final CsmType type;
     private boolean _static = false;
-    
     // only one of scopeRef/scopeAccessor must be used (based on USE_REPOSITORY/USE_UID_TO_CONTAINER)
     private CsmScope scopeRef;
     private CsmUID<CsmScope> scopeUID;
-    
     private final boolean _extern;
     private ExpressionBase initExpr;
 
@@ -84,9 +81,9 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param registerInProject 
      */
     public VariableImpl(AST ast, CsmFile file, CsmType type, String name, boolean registerInProject) {
-	this(ast, file, type, name, null, registerInProject);
+        this(ast, file, type, name, null, registerInProject);
     }
-    
+
     /** Creates a new instance of VariableImpl 
      * @param ast 
      * @param file 
@@ -95,62 +92,61 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
      * @param scope variable scope
      * @param registerInProject 
      */
-    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope,  boolean registerInProject) {
+    public VariableImpl(AST ast, CsmFile file, CsmType type, String name, CsmScope scope, boolean registerInProject) {
         super(ast, file);
         initInitialValue(ast);
         _static = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_static);
         _extern = AstUtil.hasChildOfType(ast, CPPTokenTypes.LITERAL_extern);
         this.name = QualifiedNameCache.getManager().getString(name);
         this.type = type;
-	_setScope(scope);
+        _setScope(scope);
         if (registerInProject) {
             registerInProject();
         }
     }
-    
+
     public VariableImpl(CsmOffsetable pos, CsmFile file, CsmType type, String name, CsmScope scope, boolean _static, boolean _extern, boolean registerInProject) {
         super(file, pos);
         this._static = _static;
         this._extern = _extern;
         this.name = QualifiedNameCache.getManager().getString(name);
         this.type = type;
-	_setScope(scope);
+        _setScope(scope);
         if (registerInProject) {
             registerInProject();
         }
     }
-    
+
     protected final void registerInProject() {
         CsmProject project = getContainingFile().getProject();
-        if( project instanceof ProjectBase ) {
+        if (project instanceof ProjectBase) {
             ((ProjectBase) project).registerDeclaration(this);
         }
     }
-    
+
     private void unregisterInProject() {
         CsmProject project = getContainingFile().getProject();
-        if( project instanceof ProjectBase ) {
+        if (project instanceof ProjectBase) {
             ((ProjectBase) project).unregisterDeclaration(this);
             this.cleanUID();
         }
     }
-    
-    
+
     /** Gets this element name 
      * @return 
      */
     public CharSequence getName() {
         return name;
     }
-    
+
     public CharSequence getQualifiedName() {
         CsmScope scope = getScope();
-        if( (scope instanceof CsmNamespace) || (scope instanceof CsmClass) ) {
+        if ((scope instanceof CsmNamespace) || (scope instanceof CsmClass)) {
             return CharSequenceKey.create(((CsmQualifiedNamedElement) scope).getQualifiedName() + "::" + getQualifiedNamePostfix()); // NOI18N
         }
         return getName();
     }
-    
+
     @Override
     public CharSequence getUniqueNameWithoutPrefix() {
         if (isExtern()) {
@@ -159,7 +155,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             return getQualifiedName();
         }
     }
-    
+
     /** Gets this variable type 
      * @return 
      */
@@ -167,7 +163,7 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
     public CsmType getType() {
         return type;
     }
-    
+
     private final void initInitialValue(AST node) {
         if (node != null) {
             int start = 0;
@@ -199,51 +195,51 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             }
         }
     }
-    
+
     /** Gets this variable initial value 
      * @return 
      */
     public CsmExpression getInitialValue() {
         return initExpr;
     }
-    
+
     public CsmDeclaration.Kind getKind() {
         return CsmDeclaration.Kind.VARIABLE;
     }
-    
+
     //TODO: create an interface to place getDeclarationText() in
     public String getDeclarationText() {
         return "";
     }
-    
+
     public boolean isAuto() {
         return true;
     }
-    
+
     public boolean isRegister() {
         return false;
     }
-    
+
     public boolean isStatic() {
         return _static;
     }
-    
+
     public void setStatic(boolean _static) {
         this._static = _static;
     }
-    
+
     public boolean isExtern() {
         return _extern;
     }
-    
+
     public boolean isConst() {
         CsmType _type = getType();
-        if( _type != null ) {
+        if (_type != null) {
             return _type.isConst();
         }
         return false;
     }
-    
+
 //    // TODO: remove and replace calls with
 //    // isConst() && ! isExtern
 //    public boolean isConstAndNotExtern() {
@@ -261,60 +257,59 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
 //            }
 //        }
 //    }
-    
     public boolean isMutable() {
         return false;
     }
-    
+
     public void setScope(CsmScope scope) {
         unregisterInProject();
         this._setScope(scope);
         registerInProject();
     }
-    
+
     public synchronized CsmScope getScope() {
         return _getScope();
     }
-    
+
     @Override
     public void dispose() {
         super.dispose();
         onDispose();
         // dispose type
         if (this.type != null && this.type instanceof Disposable) {
-            ((Disposable)this.type).dispose();
+            ((Disposable) this.type).dispose();
         }
-        if( _getScope() instanceof MutableDeclarationsContainer ) {
+        if (_getScope() instanceof MutableDeclarationsContainer) {
             ((MutableDeclarationsContainer) _getScope()).removeDeclaration(this);
         }
         unregisterInProject();
     }
-    
+
     private synchronized void onDispose() {
         if (TraceFlags.RESTORE_CONTAINER_FROM_UID) {
             // restore container from it's UID
             this.scopeRef = UIDCsmConverter.UIDtoScope(this.scopeUID);
             assert (this.scopeRef != null || this.scopeUID == null) : "empty scope for UID " + this.scopeUID;
         }
-    }    
-    
+    }
+
     public CsmVariableDefinition getDefinition() {
         String uname = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.VARIABLE_DEFINITION) + UNIQUE_NAME_SEPARATOR + getQualifiedName();
         CsmDeclaration def = getContainingFile().getProject().findDeclaration(uname);
         return (def == null) ? null : (CsmVariableDefinition) def;
     }
-    
+
     private CsmScope _getScope() {
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            // scope could be null when enclosing context is invalidated
+        // scope could be null when enclosing context is invalidated
         }
         return scope;
     }
-    
+
     private void _setScope(CsmScope scope) {
-	// for variables declared in bodies scope is CsmCompoundStatement - it is not Identifiable
+        // for variables declared in bodies scope is CsmCompoundStatement - it is not Identifiable
         if ((scope instanceof CsmIdentifiable)) {
             this.scopeUID = UIDCsmConverter.scopeToUID(scope);
             assert (scopeUID != null || scope == null);
@@ -322,41 +317,39 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
             this.scopeRef = scope;
         }
     }
-    
+
     public CharSequence getDisplayText() {
-	StringBuilder sb = new StringBuilder();
-	CsmType _type = getType();
-	if( _type instanceof TypeImpl ) {
-	    return ((TypeImpl) _type).getText(false, this.getName()).toString();
-	}
-	else if( _type != null ) {
-	    sb.append(_type.getText());
-	    CharSequence _name = getName();
-	    if (_name != null && _name.length() >0) {
-		sb.append(' ');
-		sb.append(_name);
-	    }
-	}
-	return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        CsmType _type = getType();
+        if (_type instanceof TypeImpl) {
+            return ((TypeImpl) _type).getText(false, this.getName()).toString();
+        } else if (_type != null) {
+            sb.append(_type.getText());
+            CharSequence _name = getName();
+            if (_name != null && _name.length() > 0) {
+                sb.append(' ');
+                sb.append(_name);
+            }
+        }
+        return sb.toString();
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // impl of SelfPersistent
-    
     @Override
     public void write(DataOutput output) throws IOException {
-        super.write(output); 
+        super.write(output);
         assert this.name != null;
         output.writeUTF(this.name.toString());
         output.writeBoolean(this._static);
         output.writeBoolean(this._extern);
         PersistentUtils.writeExpression(initExpr, output);
         PersistentUtils.writeType(type, output);
-             
+
         // could be null UID (i.e. parameter)
-        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);        
-    }  
-    
+        UIDObjectFactory.getDefaultFactory().writeUID(this.scopeUID, output);
+    }
+
     public VariableImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());
@@ -369,10 +362,10 @@ public class VariableImpl<T> extends OffsetableDeclarationBase<T> implements Csm
         this.scopeUID = UIDObjectFactory.getDefaultFactory().readUID(input);
         // could be null UID (i.e. parameter)
         this.scopeRef = null;
-    }    
-    
+    }
+
     @Override
     public String toString() {
         return (isExtern() ? "EXTERN " : "") + super.toString(); // NOI18N
-    }     
+    }
 }
