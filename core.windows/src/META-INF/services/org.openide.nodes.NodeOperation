@@ -1,5 +1,2 @@
-# First of all remove the one provided by openide-explorer.jar
 #-org.netbeans.modules.openide.explorer.NodeOperationImpl
-
-# and add your own
 org.netbeans.core.windows.services.NodeOperationImpl
