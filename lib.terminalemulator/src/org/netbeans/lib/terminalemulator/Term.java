@@ -3340,7 +3340,7 @@ public class Term extends JComponent implements Accessible {
                 // reverse of op_dl()
                 // Rotate a line from bottom to top
                 if (!do_margins) {
-                    l = buf.moveLineFromTo(buf.nlines-1, st.cursor.row);
+                    l = buf.moveLineFromTo(buf.nlines/*OLD-1*/, st.cursor.row);
                 } else {
                     l = buf.moveLineFromTo(st.firstx + botMargin(), st.cursor.row);
                 }
@@ -3481,10 +3481,10 @@ public class Term extends JComponent implements Accessible {
                 // Rotate a line from top to bottom
                 if (!do_margins) {
                     l = buf.moveLineFromTo(st.cursor.row,
-                            (beginx()+st.rows-1)-1);
+                            (beginx()+st.rows-1)/*OLD-1*/);
                 } else {
                     l = buf.moveLineFromTo(st.cursor.row,
-                            (beginx()+botMargin())-1);
+                            (beginx()+botMargin())/*OLD-1*/);
                 }
                 l.reset();
                 
