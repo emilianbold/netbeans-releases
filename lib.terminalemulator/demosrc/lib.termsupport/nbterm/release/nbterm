@@ -1,4 +1,4 @@
-#!/bin/ksh
+#!/bin/bash
 # nterm -- A simple Java based ANSI terminal emulator
 
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -41,8 +41,14 @@
 # made subject to such option by the copyright holder.
 
 
-path_to_cmd=`/usr/bin/dirname $0`
-INSTALLDIR=`cd ${path_to_cmd}; /bin/pwd`
-echo INSTALLDIR=$INSTALLDIR
+if [ -h $0 ]
+then
+	ME=$(ls -l $0)
+	ME=${ME#*-> }
+else
+	ME=$0
+fi
+MEDIR=`/usr/bin/dirname $ME`
+INSTALLDIR=`cd ${MEDIR}; /bin/pwd`
 
 exec java -jar $INSTALLDIR/TermApp.jar $*
