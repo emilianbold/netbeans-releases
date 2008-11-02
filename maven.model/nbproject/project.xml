@@ -84,6 +84,7 @@
             <public-packages>
                 <package>org.netbeans.modules.maven.model</package>
                 <package>org.netbeans.modules.maven.model.pom</package>
+                <package>org.netbeans.modules.maven.model.profile</package>
             </public-packages>
         </data>
     </configuration>
