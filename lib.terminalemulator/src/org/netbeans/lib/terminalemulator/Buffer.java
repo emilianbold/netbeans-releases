@@ -385,19 +385,19 @@ class Buffer {
 	}
         
         Term.indent(indented);
-	System.out.println("Buffer:" +
+	System.out.println("Buffer:" +  // NOI18N
 	    "  nlines " + nlines);	// NOI18N
         
         Term.indent(indented);
-        System.out.println("       " +
-	    "  chars " + chars + 	// NOI18N
-	    "  charcapacity " + charcapacity +
+        System.out.println("       " +                          // NOI18N
+	    "  chars " + chars +                                // NOI18N
+	    "  charcapacity " + charcapacity +                  // NOI18N
             "  utilzn %" + utilization(chars, charcapacity) );	// NOI18N
         
         Term.indent(indented);
-        System.out.println("       " +
-	    "  attrs " + attrs + 	// NOI18N
-	    "  attrcapacity " + attrcapacity +
+        System.out.println("       " +                          // NOI18N
+	    "  attrs " + attrs +                                // NOI18N
+	    "  attrcapacity " + attrcapacity +                  // NOI18N
             "  utilzn %" + utilization(attrs, attrcapacity) );	// NOI18N
         
         // estimate actual byte consumption
@@ -431,7 +431,7 @@ class Buffer {
         bytes += unitIntSz * attrcapacity;
         
         Term.indent(indented);
-        System.out.println("       " +
+        System.out.println("       " +                  // NOI18N
 	    "  bytes " + bytes/1024 + "K");         	// NOI18N
                 
     }

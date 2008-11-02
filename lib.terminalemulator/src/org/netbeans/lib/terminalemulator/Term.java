@@ -1984,7 +1984,7 @@ public class Term extends JComponent implements Accessible {
     
     static void indent(boolean indented) {
         if (indented)
-            System.out.println("\t");
+            System.out.println("\t");   // NOI18N
     }
     
     private MemUse lastMemUse = new MemUse();
@@ -2001,21 +2001,21 @@ public class Term extends JComponent implements Accessible {
         buf.printStats(indented);
         
         indent(indented);
-        System.out.println("  View:" +
-                "  rows " + st.rows +	// NOI18N
-                "  v cols " + buf.visibleCols() + // NOI18N
-                "  t cols " + buf.totalCols() + // NOI18N
-                "  history " + history_size);	// NOI18N
+        System.out.println("  View:" +              // NOI18N
+                "  rows " + st.rows +               // NOI18N
+                "  v cols " + buf.visibleCols() +   // NOI18N
+                "  t cols " + buf.totalCols() +     // NOI18N
+                "  history " + history_size);       // NOI18N
         
         indent(indented);
-        System.out.println("       " +
-                "  firstx " + st.firstx +	// NOI18N
-                "  firsty " + st.firsty +	// NOI18N
-                "  firsta " + firsta);	// NOI18N
+        System.out.println("       " +              // NOI18N
+                "  firstx " + st.firstx +           // NOI18N
+                "  firsty " + st.firsty +           // NOI18N
+                "  firsta " + firsta);              // NOI18N
         
         indent(indented);
-        System.out.println("       " +
-                "  gutter " + glyph_gutter_width);	// NOI18N
+        System.out.println("       " +              // NOI18N
+                "  gutter " + glyph_gutter_width);  // NOI18N
         
         indent(indented);
         System.out.println("Cursor:" +          // NOI18N
@@ -2029,9 +2029,9 @@ public class Term extends JComponent implements Accessible {
         MemUse delta = memUse.changeFrom(lastMemUse);
         
         indent(indented);
-        memUse.print("Memory:");
+        memUse.print("Memory:");                    // NOI18N
         indent(indented);
-        delta .print(" Delta:");
+        delta .print(" Delta:");                    // NOI18N
     }
     
     public void printCounts(boolean indented) {
@@ -2088,10 +2088,10 @@ public class Term extends JComponent implements Accessible {
         
         private void print(String msg) {
             System.out.println(msg +
-                               "  max " +  max/1024 + "K" + " = " +
-                               "  total " + total/1024 + "K" + " + " +
-                               "  free " +  free/1024 + "K" + " + " +
-                               "  unused " + unused()/1024 + "K"
+                               "  max " +  max/1024 + "K" + " = " +     // NOI18N
+                               "  total " + total/1024 + "K" + " + " +  // NOI18N
+                               "  free " +  free/1024 + "K" + " + " +   // NOI18N
+                               "  unused " + unused()/1024 + "K"        // NOI18N
                                );
         }
     }
