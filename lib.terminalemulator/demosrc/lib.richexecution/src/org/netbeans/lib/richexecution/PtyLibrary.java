@@ -45,8 +45,9 @@ import com.sun.jna.Library;
 import com.sun.jna.Native;
 import com.sun.jna.Structure;
 
-interface PtyLibrary extends Library {
+public interface PtyLibrary extends Library {
 
+    // struct winsize
     public static class WinSize extends Structure {
         // JNA cannot figure sizeof structure if members aren't public
         public short ws_row;
@@ -62,15 +63,34 @@ interface PtyLibrary extends Library {
         }
     }
 
-    PtyLibrary INSTANCE = (PtyLibrary) Native.loadLibrary("c", PtyLibrary.class);
+    // struct termios
+    public static class Termios extends Structure {
+        public int c_iflag;     // input modes
+        public int c_oflag;     // output modes
+        public int c_cflag;     // control modes
+        public int c_lflag;     // local modes
+        public byte c_line;     // line discipline  (+linux -solaris)
+        public byte c_cc[];     // control characters
+        public int c_ispeed;    // input speed      (+linux -solaris)
+        public int c_ospeed;    // output speed     (+linux - solaris)
 
+        public Termios() {
+            c_cc = new byte[NCCS];
+        }
+    }
+
+    public PtyLibrary INSTANCE = (PtyLibrary) Native.loadLibrary("c", PtyLibrary.class);
+
+    // pty support stuff
     public int getpt();
-
     public int grantpt(int master_fd);
-
     public int unlockpt(int master_fd);
-
     public String ptsname(int master_fd);
+
+    // termios stuff
+    public int tcgetattr(int fd, Termios termios);
+    public int tcsetattr(int fd, int optionalActions, final Termios termios);
+    public void cfmakeraw(Termios termios);
 
     // generic unix support stuff
     public int close(int fd);
@@ -78,6 +98,13 @@ interface PtyLibrary extends Library {
     public int ioctl(int fd, int op, String str_arg);
     public int ioctl(int fd, int op, WinSize winsize);
     public String strerror(int errno);
+
+    // Linux: /bits/termios.h
+    public static final int NCCS = 32;          // 19 on solaris
+
+    public static final int TCSANOW = 0;        // for tcsetattr()
+    public static final int TCSADRAIN = 1;
+    public static final int TCSAFLUSH = 2;
 
     // Linux: /bits/fcntl.h
     public static final int O_RDWR = 2;
