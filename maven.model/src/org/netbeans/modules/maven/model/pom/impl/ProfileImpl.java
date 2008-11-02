@@ -209,7 +209,7 @@ public class ProfileImpl extends IdPOMComponentImpl implements Profile {
     }
 
     public void setProperties(Properties props) {
-        setChild(Reporting.class, getModel().getPOMQNames().PROPERTIES.getName(), props,
+        setChild(Properties.class, getModel().getPOMQNames().PROPERTIES.getName(), props,
                 getClassesBefore(ORDER, Properties.class));
     }
 
