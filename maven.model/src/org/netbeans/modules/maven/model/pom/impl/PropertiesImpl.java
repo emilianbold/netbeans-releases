@@ -64,14 +64,6 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
 
     // child elements
 
-    public String getType() {
-        return getChildElementText(getModel().getPOMQNames().TYPE.getQName());
-    }
-
-    public void setType(String type) {
-        setChildElementText(getModel().getPOMQNames().TYPE.getName(), type,
-                getModel().getPOMQNames().TYPE.getQName());
-    }
 
     public void setProperty(String key, String value) {
         QName qname = POMQName.createQName(key);
