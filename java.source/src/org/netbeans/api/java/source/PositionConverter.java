@@ -49,8 +49,8 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
-import org.netbeans.modules.java.preprocessorbridge.spi.JavaFileFilterImplementation;
 import org.netbeans.modules.java.preprocessorbridge.spi.JavaSourceProvider;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
 /**Binding between virtual Java source and the real source.
@@ -63,23 +63,23 @@ import org.openide.filesystems.FileObject;
  */
 public final class PositionConverter {
     
-    private FileObject fo;
-    private JavaFileFilterImplementation filter;
     private int offset;
     private int length;
     private JTextComponent component;
     
-    PositionConverter (final FileObject fo, final JavaFileFilterImplementation filter) {
-        this.fo = fo;
-        this.filter = filter;
+    private final Snapshot snapshot;
+    
+    PositionConverter (final Snapshot snapshot) {
+        assert snapshot != null;
+        this.snapshot = snapshot;        
     }
     
     PositionConverter (final FileObject fo, int offset, int length, final JTextComponent component) {
-        this.fo = fo;
+//        this.fo = fo;
         this.offset = offset;
         this.length = length;
         this.component = component;
-        this.filter = new Filter();
+        this.snapshot = null;
     }
     // API of the class --------------------------------------------------------
 
@@ -91,10 +91,7 @@ public final class PositionConverter {
      * @since 0.21
      */
     public int getOriginalPosition(int javaSourcePosition) {
-        if (filter instanceof JavaSourceProvider.PositionTranslatingJavaFileFilterImplementation) {
-            return ((JavaSourceProvider.PositionTranslatingJavaFileFilterImplementation)filter).getOriginalPosition(javaSourcePosition);
-        }
-        return javaSourcePosition;
+        return snapshot.getOriginalOffset(javaSourcePosition);        
     }
     
     /**Compute position in the virtual Java source for given position
@@ -105,22 +102,8 @@ public final class PositionConverter {
      * @since 0.21
      */
     public int getJavaSourcePosition(int originalPosition) {
-        if (filter instanceof JavaSourceProvider.PositionTranslatingJavaFileFilterImplementation) {
-            return ((JavaSourceProvider.PositionTranslatingJavaFileFilterImplementation)filter).getJavaSourcePosition(originalPosition);
-        }
-        return originalPosition;
-    }
-
-    // Package private methods -------------------------------------------------
-
-    JavaFileFilterImplementation getFilter() {
-        return filter;
-    }
-    
-    FileObject getFileObject() {
-        return fo;
-    }
-    
+        return snapshot.getEmbeddedOffset(originalPosition);
+    }        
     // Nested classes ----------------------------------------------------------
 
     private class Filter implements JavaSourceProvider.PositionTranslatingJavaFileFilterImplementation, DocumentListener {

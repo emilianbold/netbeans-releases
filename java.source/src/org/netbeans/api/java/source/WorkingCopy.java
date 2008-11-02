@@ -73,6 +73,7 @@ import org.netbeans.modules.java.source.save.CasualDiff.Diff;
 import org.netbeans.modules.java.source.builder.TreeFactory;
 import org.netbeans.modules.java.source.engine.SourceReader;
 import org.netbeans.modules.java.source.engine.SourceRewriter;
+import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.CasualDiff;

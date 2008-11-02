@@ -178,7 +178,7 @@ public class ErrorHintsProviderTest extends NbTestCase {
         
         doc.putProperty(Language.class, JavaTokenId.language());
         
-        for (ErrorDescription ed : new ErrorHintsProvider(testSource).computeErrors(info, doc))
+        for (ErrorDescription ed : new ErrorHintsProvider().computeErrors(info, doc))
             ref(ed.toString());
         
         compareReferenceFiles();

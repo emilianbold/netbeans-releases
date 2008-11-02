@@ -162,6 +162,7 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-server@" value="${javadoc.docs.org-netbeans-modules-server}"/>
 <replacefilter token="@org-netbeans-modules-java-api-common@" value="${javadoc.docs.org-netbeans-modules-java-api-common}"/>
 <replacefilter token="@org-netbeans-modules-java-sourceui@" value="${javadoc.docs.org-netbeans-modules-java-sourceui}"/>
+<replacefilter token="@org-netbeans-modules-parsing-api@" value="${javadoc.docs.org-netbeans-modules-parsing-api}"/>
 <replacefilter token="@org-netbeans-spi-quicksearch@" value="${javadoc.docs.org-netbeans-spi-quicksearch}"/>
 <replacefilter token="@org-netbeans-api-java-classpath@" value="${javadoc.docs.org-netbeans-api-java-classpath}"/>
 <replacefilter token="@org-netbeans-modules-extexecution@" value="${javadoc.docs.org-netbeans-modules-extexecution}"/>

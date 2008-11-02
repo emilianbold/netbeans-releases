@@ -230,6 +230,25 @@ public class FileObjects {
     }
     
     /**
+     * Creates {@link JavaFileObject} for a NetBeans {@link FileObject}
+     * Any client which needs to create {@link JavaFileObject} for java
+     * source file should use this factory method.
+     * @param {@link FileObject} for which the {@link JavaFileObject} should be created
+     * @param {@link FileObject} root owning the file
+     * @param renderNow if true the snap shot of the file is taken immediately
+     * @return {@link JavaFileObject}, never returns null
+     * @exception {@link IOException} may be thrown
+     */
+    public static SourceFileObject nbFileObject (final FileObject file, final FileObject root,
+            final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
+        assert file != null;
+        if (!file.isValid() || file.isVirtual()) {
+            throw new InvalidFileException (file);
+        }
+        return new SourceFileObject (file, root, filter, content);
+    }
+    
+    /**
      * Creates virtual {@link JavaFileObject} with given name and content.
      * This method should be used only by tests, regular client should never
      * use this method.
