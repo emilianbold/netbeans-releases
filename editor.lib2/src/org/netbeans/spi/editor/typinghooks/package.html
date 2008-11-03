@@ -183,12 +183,47 @@ made subject to such option by the copyright holder.
   
   <h4>Use case 1. - Automated indentation</h4>
 
-  
+  <p>
+  Many languages need to automatically reindent lines as user types certain
+  statements. For example in java language the 'case' statements in a 'switch' block
+  should be aligned to the same column similarily as in the code snippet below.
+  The java editor helps users to do that by automatically indenting the lines that
+  contain 'case' statements as soon as a user types the double colon at the end of the statement.
+  </p>
+
+  <pre>
+    switch(price) {
+      case 100:
+        // do something cheap
+        break;
+
+      case 1000:
+        // do something more expensive
+        break;
+    }
+  </pre>
+
+  <p>
+  This can easily be done by implementing
+  <code><a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/TypedTextInterceptor.html">TypedTextInterceptor</a></code>
+  and its <code>afterInsertion</code> method. The implementation can check the text
+  inserted in the document as a result of the key typed event processing and reindent
+  the line if its text matches required pattern.
+  </p>
+
+  <p>
+  Moreover, the <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation API</a>
+  provides an implementation of <code>TypedTextInterceptor</code>, which reindents lines that
+  match provided regular expressions. Please see <code><a href="@org-netbeans-modules-editor-indent@/org/netbeans/modules/editor/indent/spi/support/AutomatedIndenting.html">AutomatedIndenting</a></code>
+  class for more details.
+  </p>
+
+<!--
   <h4>Use case 2. - Pair characters completion</h4>
   
   
   <h4>Other usecases</h4>
-  
+-->
   
   </body>
 </html>
