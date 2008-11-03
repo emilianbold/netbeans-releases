@@ -1189,9 +1189,20 @@ public class CasualDiff {
                 localPointer = diffTree(l1.head, l2.head, new int[] { localPointer, getBounds(l1.head)[1] });
             }
         }
-        if (oldT.elems != null && oldT.elems.head != null) {
-            copyTo(localPointer, getOldPos(oldT.elems.head));
-            localPointer = diffParameterList(oldT.elems, newT.elems, null, getOldPos(oldT.elems.head), Measure.ARGUMENT);
+        if (oldT.elems != null) {
+            if (oldT.elems.head != null) {
+                copyTo(localPointer, getOldPos(oldT.elems.head));
+                localPointer = diffParameterList(oldT.elems, newT.elems, null, getOldPos(oldT.elems.head), Measure.ARGUMENT);
+            } else {
+                if (newT.elems != null && !newT.elems.isEmpty()) {
+                    //empty initializer array, adding the first element to it
+                    //find {:
+                    moveFwdToToken(tokenSequence, localPointer, JavaTokenId.LBRACE);
+                    tokenSequence.moveNext();
+                    copyTo(localPointer, localPointer = tokenSequence.offset());
+                    localPointer = diffParameterList(oldT.elems, newT.elems, null, localPointer, Measure.ARGUMENT);
+                }
+            }
         }
         copyTo(localPointer, bounds[1]);
         return bounds[1];
