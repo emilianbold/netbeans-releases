@@ -51,7 +51,6 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.api.lexer.Token;
@@ -63,6 +62,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
@@ -1536,10 +1536,9 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         }
     }
 
-    public List<OffsetRange> findLogicalRanges(CompilationInfo info, int caretOffset) {
-        Node root = AstUtilities.getRoot(info);
-
-        if (root == null) {
+    public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        if (jspr == null) {
             return Collections.emptyList();
         }
 
@@ -1548,7 +1547,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             return Collections.emptyList();
         }
 
-        AstPath path = new AstPath(root, astOffset);
+        AstPath path = new AstPath(jspr.getRootNode(), astOffset);
         List<OffsetRange> ranges = new ArrayList<OffsetRange>();
         
         /** Furthest we can go back in the buffer (in RHTML documents, this
@@ -1561,7 +1560,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
         // Check if the caret is within a comment, and if so insert a new
         // leaf "node" which contains the comment line and then comment block
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = (BaseDocument)jspr.getSnapshot().getSource().getDocument();
             if (doc == null) {
                 return ranges;
             }
@@ -1642,7 +1641,7 @@ public class JsKeystrokeHandler implements KeystrokeHandler {
             // The contains check should be unnecessary, but I end up getting
             // some weird positions for some Rhino AST nodes
             if (range.containsInclusive(astOffset) && !range.equals(previous)) {
-                range = LexUtilities.getLexerOffsets(info, range);
+                range = LexUtilities.getLexerOffsets(jspr, range);
                 if (range != OffsetRange.NONE) {
                     if (range.getStart() < min) {
                         ranges.add(new OffsetRange(min, max));

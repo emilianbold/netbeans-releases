@@ -50,8 +50,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.mozilla.nb.javascript.Node;
-import org.mozilla.nb.javascript.Node.StringNode;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -65,6 +63,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
@@ -115,14 +114,15 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
     /** Locate the method declaration for the given method call */
     @CheckForNull
-    IndexedFunction findMethodDeclaration(CompilationInfo info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
-        JsParseResult parseResult = AstUtilities.getParseResult(info);
-        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+    IndexedFunction findMethodDeclaration(ParserResult info, Node call, AstPath path, Set<IndexedFunction>[] alternativesHolder) {
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        // XXX: parsingapi
+        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         Set<IndexedElement> functions = null;
 
-        String fqn = JsTypeAnalyzer.getCallFqn(info, call, true);
+        String fqn = JsTypeAnalyzer.getCallFqn(jspr, call, true);
         if (fqn != null) {
-            functions = index.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+            functions = index.getElementsByFqn(fqn, NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, jspr);
             // Prefer methods/constructors
             if (functions.size() > 0) {
                 Set<IndexedElement> filtered = new DuplicateElementSet(functions.size());
@@ -142,13 +142,13 @@ public class JsDeclarationFinder implements DeclarationFinder {
             String prefix = AstUtilities.getCallName(call, false);
             if (prefix.length() > 0) {
                 functions = index.getAllNames(prefix,
-                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
+                        NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, jspr);
             }
         }
 
         if (functions != null && functions.size() > 0) {
             IndexedElement candidate =
-                findBestElementMatch(info, /*name,*/ functions,/* (BaseDocument)info.getDocument(),
+                findBestElementMatch(jspr, /*name,*/ functions,/* (BaseDocument)info.getDocument(),
                     astOffset, lexOffset, path,*/ call, index);
             if (candidate instanceof IndexedFunction) {
                 return (IndexedFunction)candidate;
@@ -214,9 +214,9 @@ public class JsDeclarationFinder implements DeclarationFinder {
         return OffsetRange.NONE;
     }
 
-    public DeclarationLocation findDeclaration(CompilationInfo info, int lexOffset) {
+    public DeclarationLocation findDeclaration(ParserResult info, int lexOffset) {
 
-        final Document document = info.getDocument();
+        final Document document = info.getSnapshot().getSource().getDocument();
         if (document == null) {
             return DeclarationLocation.NONE;
         }
@@ -255,7 +255,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     List<Integer> starts = new ArrayList<Integer>(posToNode.keySet());
                     Collections.sort(starts);
                     Node first = posToNode.get(starts.get(0));
-                    return getLocation(info, first);
+                    return getLocation(parseResult, first);
                 } else {
                     // Probably a global variable.
                     // TODO - perform global variable search here.
@@ -266,12 +266,13 @@ public class JsDeclarationFinder implements DeclarationFinder {
 
             String prefix = new JsCodeCompletion().getPrefix(info, lexOffset, false);
             if (prefix != null) {
-                JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+                // XXX: parsingapi
+                JsIndex index = null;//JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
                 Set<IndexedElement> elements = index.getAllNames(prefix,
                         NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
 
                 String name = null; // unused!
-                return getMethodDeclaration(info, name, elements, node, index/*, astOffset, lexOffset*/);
+                return getMethodDeclaration(parseResult, name, elements, node, index/*, astOffset, lexOffset*/);
             }
         } finally {
             doc.readUnlock();
@@ -279,15 +280,19 @@ public class JsDeclarationFinder implements DeclarationFinder {
         return DeclarationLocation.NONE;
     }
     
-    private DeclarationLocation getLocation(CompilationInfo info, Node node) {
+    private DeclarationLocation getLocation(JsParseResult info, Node node) {
         AstElement element = AstElement.getElement(info, node);
-        return new DeclarationLocation(info.getFileObject(), LexUtilities.getLexerOffset(info, node.getSourceStart()), 
-                element);
+        return new DeclarationLocation(
+            info.getSnapshot().getSource().getFileObject(),
+            LexUtilities.getLexerOffset(info, node.getSourceStart()),
+            element
+        );
     }
 
     @NonNull
-    DeclarationLocation findLinkedMethod(CompilationInfo info, String url) {
-        JsIndex index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+    DeclarationLocation findLinkedMethod(JsParseResult info, String url) {
+        // XXX: parsingapi
+        JsIndex index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
         JsParseResult parseResult = AstUtilities.getParseResult(info);
         Set<IndexedElement> elements = index.getAllNames(url,
                 NameKind.EXACT_NAME, JsIndex.ALL_SCOPE, parseResult);
@@ -299,7 +304,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
     }
 
-    private IndexedElement findBestElementMatch(CompilationInfo info, /*String name,*/ Set<IndexedElement> elements,/*
+    private IndexedElement findBestElementMatch(JsParseResult info, /*String name,*/ Set<IndexedElement> elements,/*
         BaseDocument doc, int astOffset, int lexOffset, AstPath path*/ Node callNode, JsIndex index) {
         Set<IndexedElement> candidates = new HashSet<IndexedElement>();
         
@@ -348,7 +353,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         
         // (2) Prefer matches in the same file as the reference
         candidates = new HashSet<IndexedElement>();
-        FileObject fo = info.getFileObject();
+        FileObject fo = info.getSnapshot().getSource().getFileObject();
         for (IndexedElement element : elements) {
             if (fo == element.getFileObject()) {
                 candidates.add(element);
@@ -379,7 +384,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         return null;
     }
 
-    private DeclarationLocation getMethodDeclaration(CompilationInfo info, String name, Set<IndexedElement> elements, 
+    private DeclarationLocation getMethodDeclaration(JsParseResult info, String name, Set<IndexedElement> elements,
             /*AstPath path,*/ Node closest, JsIndex index/*, int astOffset, int lexOffset*/) {
 //        try {
             IndexedElement candidate =
@@ -394,7 +399,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
                     invalid = true;
                 }
                 IndexedElement com = candidate; // TODO - let's not do foreign node computation here!! Not needed yet!
-                CompilationInfo[] infoRet = new CompilationInfo[1];
+                JsParseResult[] infoRet = new JsParseResult[1];
                 Node node = AstUtilities.getForeignNode(com, infoRet);
                 DeclarationLocation loc;
                 if (node == null) {
@@ -567,7 +572,7 @@ public class JsDeclarationFinder implements DeclarationFinder {
         }
 
         public DeclarationLocation getLocation() {
-            CompilationInfo[] infoRet = new CompilationInfo[1];
+            JsParseResult[] infoRet = new JsParseResult[1];
             Node node = AstUtilities.getForeignNode(element, infoRet);
             
             DeclarationLocation loc = DeclarationLocation.NONE;

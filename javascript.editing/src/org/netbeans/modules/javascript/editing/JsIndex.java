@@ -282,7 +282,7 @@ public class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -419,7 +419,7 @@ public class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }

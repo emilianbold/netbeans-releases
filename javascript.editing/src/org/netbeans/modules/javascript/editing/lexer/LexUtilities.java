@@ -50,7 +50,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -59,7 +58,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.JsParseResult;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileUtil;
@@ -140,42 +138,20 @@ public class LexUtilities {
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
     public static int getLexerOffset(JsParseResult info, int astOffset) {
-        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
-        if (result == null) {
-            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
-        }
-        if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                return ts.getLexicalOffset(astOffset);
-            }
-        }
-        
-        return astOffset;
+        return info.getSnapshot().getOriginalOffset(astOffset);
     }
     
     public static OffsetRange getLexerOffsets(JsParseResult info, OffsetRange astRange) {
-        ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
-        if (result == null) {
-            result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
+        int rangeStart = astRange.getStart();
+        int start = info.getSnapshot().getOriginalOffset(rangeStart);
+        if (start == rangeStart) {
+            return astRange;
+        } else if (start == -1) {
+            return OffsetRange.NONE;
+        } else {
+            // Assumes the translated range maintains size
+            return new OffsetRange(start, start + astRange.getLength());
         }
-        if (result != null) {
-            TranslatedSource ts = result.getTranslatedSource();
-            if (ts != null) {
-                int rangeStart = astRange.getStart();
-                int start = ts.getLexicalOffset(rangeStart);
-                if (start == rangeStart) {
-                    return astRange;
-                } else if (start == -1) {
-                    return OffsetRange.NONE;
-                } else {
-                    // Assumes the translated range maintains size
-                    return new OffsetRange(start, start+astRange.getLength());
-                }
-            }
-        }
-
-        return astRange;
     }
 
     /** Find the NEXT JavaScript sequence in the buffer starting from the given offset */

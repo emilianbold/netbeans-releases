@@ -40,19 +40,23 @@
  */
 package org.netbeans.modules.javascript.editing;
 
+import java.util.ArrayList;
+import java.util.List;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
+import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.Parser;
 
 
 /**
  *
  * @author Tor Norbye
  */
-public class JsParseResult extends Parser.Result {
+public class JsParseResult extends ParserResult {
 
     @Override
     protected void invalidate() {
@@ -60,10 +64,10 @@ public class JsParseResult extends Parser.Result {
     }
 
     private final JsParser parser;
-    private final Snapshot snapshot;
     private final Node rootNode;
 
     private String source;
+    private List<Error> errors = new ArrayList<Error>();
     
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
@@ -74,11 +78,23 @@ public class JsParseResult extends Parser.Result {
     private IncrementalParse incrementalParse;
 
     public JsParseResult(JsParser parser, Snapshot snapshot, Node rootNode) {
+        super(snapshot);
         this.parser = parser;
-        this.snapshot = snapshot;
         this.rootNode = rootNode;
     }
 
+    public @Override void toPhase(Phase phase) {
+        // javascript parser does not support phases
+    }
+
+    public @Override List<? extends Error> getDiagnostics() {
+        return errors;
+    }
+
+    public void setErrors(List<? extends Error> errors) {
+        this.errors = new ArrayList<Error>(errors);
+    }
+    
 // XXX: parsingapi
 //    public ParserResult.AstTreeNode getAst() {
 //        return ast;
@@ -93,10 +109,6 @@ public class JsParseResult extends Parser.Result {
      */
     public Node getRootNode() {
         return rootNode;
-    }
-
-    public Snapshot getSnapshot() {
-        return snapshot;
     }
 
     public String getSource() {

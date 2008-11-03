@@ -41,8 +41,7 @@ package org.netbeans.modules.javascript.editing;
 
 import java.util.Collection;
 import java.util.Collections;
-import org.netbeans.modules.gsf.api.DeclarationFinder;
-import org.netbeans.modules.gsf.api.ParserFile;
+import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.StructureScanner;

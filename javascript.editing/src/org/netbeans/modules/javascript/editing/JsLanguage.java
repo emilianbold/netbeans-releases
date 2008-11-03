@@ -54,7 +54,6 @@ import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
-import org.netbeans.modules.csl.api.Parser;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
@@ -66,6 +65,7 @@ import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
  *
  * @author Tor Norbye
  */
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;

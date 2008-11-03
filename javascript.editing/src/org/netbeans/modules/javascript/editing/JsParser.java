@@ -580,18 +580,16 @@ public class JsParser extends Parser {
                 allErrors.add(error);
             }
 
-            for (Error error : allErrors) {
-                r.addError(error);
-            }
-
+            r.setErrors(allErrors);
+            
             // Prevent accidental traversal of the old function
             while (oldFunction.hasChildren()) {
                 Node child = oldFunction.getFirstChild();
                 oldFunction.removeChild(child);
             }
 
-
-            r.setUpdateState(ParserResult.UpdateState.UPDATED);
+// XXX: parsingapi
+//            r.setUpdateState(ParserResult.UpdateState.UPDATED);
 
             return r;
         } catch (IllegalStateException ise) {

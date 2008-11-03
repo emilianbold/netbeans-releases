@@ -56,13 +56,12 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ParserFile;
-import org.netbeans.modules.csl.api.ParserResult;
-import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.IndexDocumentFactory;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.JsAnalyzer.AnalysisResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
@@ -261,10 +260,13 @@ public class JsIndexer implements Indexer {
     }
 
     public List<IndexDocument> index(ParserResult result, IndexDocumentFactory factory) throws IOException {
-        JsParseResult r = (JsParseResult)result;
-        Node root = r.getRootNode();
+        JsParseResult r = AstUtilities.getParseResult(result);
+        if (r == null) {
+            return null;
+        }
 
-        if (root == null && !result.getFile().getExtension().equals("sdoc")) { // NOI18N
+        Node root = r.getRootNode();
+        if (root == null && !r.getSnapshot().getSource().getFileObject().getExt().equals("sdoc")) { // NOI18N
             return null;
         }
 
@@ -275,7 +277,7 @@ public class JsIndexer implements Indexer {
     }
     
     private static class TreeAnalyzer {
-        private final ParserFile file;
+        private final FileObject file;
         private String url;
         private final JsParseResult result;
         private BaseDocument doc;
@@ -284,7 +286,7 @@ public class JsIndexer implements Indexer {
         
         private TreeAnalyzer(JsParseResult result, IndexDocumentFactory factory) {
             this.result = result;
-            this.file = result.getFile();
+            this.file = result.getSnapshot().getSource().getFileObject();
             this.factory = factory;
         }
 
@@ -293,15 +295,10 @@ public class JsIndexer implements Indexer {
         }
 
         public void analyze() throws IOException {
-            FileObject fo = file.getFileObject();
-            if (result.getInfo() != null) {
-                this.doc = LexUtilities.getDocument(result.getInfo(), true);
-            } else {
-                this.doc = GsfUtilities.getDocument(fo, true, true);
-            }
+            this.doc = LexUtilities.getDocument(result, true);
 
             try {
-                url = fo.getURL().toExternalForm();
+                url = file.getURL().toExternalForm();
 
                 // Make relative URLs for urls in the libraries
                 url = JsIndex.getPreindexUrl(url);
@@ -309,7 +306,7 @@ public class JsIndexer implements Indexer {
                 Exceptions.printStackTrace(ioe);
             }
 
-            if (file.getExtension().equals("sdoc")) { // NOI18N
+            if (file.getExt().equals("sdoc")) { // NOI18N
                 indexScriptDoc(doc, null);
                 return;
             }
@@ -384,10 +381,7 @@ public class JsIndexer implements Indexer {
             if (file.getNameExt().startsWith("stub_")) { // NOI18N
                 int astOffset = element.getNode().getSourceStart();
                 int lexOffset = astOffset;
-                TranslatedSource source = result.getTranslatedSource();
-                if (source != null) {
-                    lexOffset = source.getLexicalOffset(astOffset);
-                }
+                lexOffset = result.getSnapshot().getOriginalOffset(astOffset);
                 try {
                     String line = doc.getText(lexOffset,
                             Utilities.getRowEnd(doc, lexOffset)-lexOffset);

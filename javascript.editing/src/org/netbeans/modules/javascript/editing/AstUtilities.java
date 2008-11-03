@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.javascript.editing;
 
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import javax.swing.text.BadLocationException;
@@ -50,10 +51,18 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.ParserFile;
+import org.netbeans.modules.csl.api.SourceModel;
+import org.netbeans.modules.csl.api.SourceModelFactory;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
 /**
@@ -157,81 +166,87 @@ public final class AstUtilities {
         return (JsParseResult) info;
     }
 
-// XXX: wierd, fix later
-//    public static Node getForeignNode(final IndexedElement o, CompilationInfo[] compilationInfoRet) {
-//        ParserFile file = o.getFile();
-//
-//        if (file == null) {
-//            return null;
-//        }
-//
-//        FileObject fo = file.getFileObject();
-//        if (fo == null) {
-//            return null;
-//        }
-//
-//        SourceModel model = SourceModelFactory.getInstance().getModel (fo);
-//        if (model == null) {
-//            return null;
-//        }
-//        final CompilationInfo[] infoHolder = new CompilationInfo[1];
-//        try {
-//            model.runUserActionTask(new CancellableTask<CompilationInfo>() {
-//                public void cancel() {
-//                }
-//
-//                public void run(CompilationInfo info) throws Exception {
-//                    infoHolder[0] = info;
-//                }
-//            }, true);
-//        } catch (IOException ex) {
-//            Exceptions.printStackTrace(ex);
-//            return null;
-//        }
-//
-//        CompilationInfo info = infoHolder[0];
-//        if (compilationInfoRet != null) {
-//            compilationInfoRet[0] = info;
-//        }
-//        ParserResult result = AstUtilities.getParseResult(info);
-//
-//        if (result == null) {
-//            return null;
-//        }
-//
-//        Node root = AstUtilities.getRoot(result);
-//
-//        if (root == null) {
-//            return null;
-//        }
-//
-//        String signature = o.getSignature();
-//
-//        if (signature == null) {
-//            return null;
-//        }
-////        Node node = AstUtilities.findBySignature(root, signature);
-//        JsParseResult rpr = (JsParseResult)result;
-//        boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
-//        if (lookForFunction) {
-//            for (AstElement element : rpr.getStructure().getElements()) {
-//                if (element instanceof FunctionAstElement) {
-//                    FunctionAstElement func = (FunctionAstElement) element;
-//                    if (signature.equals(func.getSignature())) {
-//                        return func.getNode();
-//                    }
-//                }
-//            }
-//        }
-//
-//        for (AstElement element : rpr.getStructure().getElements()) {
-//            if (signature.equals(element.getSignature())) {
-//                return element.getNode();
-//            }
-//        }
-//
-//        return null;
-//    }
+    public static Node getForeignNode(final IndexedElement o, JsParseResult[] compilationInfoRet) {
+        ParserFile file = o.getFile();
+
+        if (file == null) {
+            return null;
+        }
+
+        FileObject fo = file.getFileObject();
+        if (fo == null) {
+            return null;
+        }
+
+        SourceModel model = SourceModelFactory.getInstance().getModel (fo);
+        if (model == null) {
+            return null;
+        }
+        final ParserResult[] infoHolder = new ParserResult[1];
+        try {
+            model.runUserActionTask(new ParserResultTask<ParserResult>() {
+                public @Override int getPriority() {
+                    return 0;
+                }
+
+                public @Override void run(ParserResult result) {
+                    infoHolder[0] = result;
+                }
+
+                public @Override void cancel() {
+                }
+
+
+                public @Override Class<? extends TaskScheduler> getSchedulerClass() {
+                    return null;
+                }
+
+            }, true);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
+
+        JsParseResult info = AstUtilities.getParseResult(infoHolder[0]);
+        if (info == null) {
+            return null;
+        }
+
+        if (compilationInfoRet != null) {
+            compilationInfoRet[0] = info;
+        }
+
+        Node root = info.getRootNode();
+        if (root == null) {
+            return null;
+        }
+
+        String signature = o.getSignature();
+
+        if (signature == null) {
+            return null;
+        }
+//        Node node = AstUtilities.findBySignature(root, signature);
+        boolean lookForFunction = o.getKind() == ElementKind.CONSTRUCTOR || o.getKind() == ElementKind.METHOD;
+        if (lookForFunction) {
+            for (AstElement element : info.getStructure().getElements()) {
+                if (element instanceof FunctionAstElement) {
+                    FunctionAstElement func = (FunctionAstElement) element;
+                    if (signature.equals(func.getSignature())) {
+                        return func.getNode();
+                    }
+                }
+            }
+        }
+
+        for (AstElement element : info.getStructure().getElements()) {
+            if (signature.equals(element.getSignature())) {
+                return element.getNode();
+            }
+        }
+
+        return null;
+    }
 
     /**
      * Return a range that matches the given node's source buffer range

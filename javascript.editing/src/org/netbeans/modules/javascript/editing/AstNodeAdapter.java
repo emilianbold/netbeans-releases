@@ -28,14 +28,12 @@ import javax.swing.tree.TreeNode;
 //import org.netbeans.api.languages.parsing.ParserResult;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
-import org.mozilla.nb.javascript.ScriptOrFnNode;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.openide.util.Enumerations;
 
 
 /** For debugging purposes only */
-class AstNodeAdapter implements ParserResult.AstTreeNode {
+class AstNodeAdapter implements TreeNode {
     private Node node;
     private AstNodeAdapter parent;
     private AstNodeAdapter[] children;

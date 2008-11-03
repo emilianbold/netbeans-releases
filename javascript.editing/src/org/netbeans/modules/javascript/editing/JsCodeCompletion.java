@@ -53,8 +53,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.mozilla.nb.javascript.Node;
-//import org.netbeans.editor.ext.html.parser.SyntaxElement;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
@@ -73,9 +71,8 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-//import org.netbeans.modules.html.editor.gsf.HtmlParserResult;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.JsParser.Sanitize;
 import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.javascript.editing.lexer.JsCommentLexer;
@@ -296,7 +293,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     public CodeCompletionResult complete(CodeCompletionContext context) {
-        CompilationInfo info = context.getInfo();
+        ParserResult info = context.getParserResult();
         int lexOffset = context.getCaretOffset();
         String prefix = context.getPrefix();
         NameKind kind = context.getNameKind();
@@ -312,7 +309,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             prefix = "";
         }
 
-        final Document document = info.getDocument();
+        final Document document = info.getSnapshot().getSource().getDocument();
         if (document == null) {
             return CodeCompletionResult.NONE;
         }
@@ -340,7 +337,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
                 }
             }
             final TokenHierarchy<Document> th = TokenHierarchy.get(document);
-            final FileObject fileObject = info.getFileObject();
+            final FileObject fileObject = info.getSnapshot().getSource().getFileObject();
             Call call = Call.getCallType(doc, th, lexOffset);
 
             // Carry completion context around since this logic is split across lots of methods
@@ -351,9 +348,10 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             request.result = parseResult;
             request.lexOffset = lexOffset;
             request.astOffset = astOffset;
-            request.index = JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
+            // XXX: parsingapi
+            request.index = null; //JsIndex.get(info.getIndex(JsTokenId.JAVASCRIPT_MIME_TYPE));
             request.doc = doc;
-            request.info = info;
+            request.info = AstUtilities.getParseResult(info);
             request.prefix = prefix;
             request.th = th;
             request.kind = kind;
@@ -797,88 +795,91 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     }
 
     private void addElementClasses(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
-        if (result != null) {
-//HANZ!!!
-//            HtmlParserResult htmlResult = (HtmlParserResult)result;
-//            List<SyntaxElement> elementsList = htmlResult.elementsList();
-//            Set<String> classes = new HashSet<String>();
-//            for (SyntaxElement s : elementsList) {
-//                if (s.type() == SyntaxElement.TYPE_TAG) {
-//                    String element = s.text();
-//                    int classIdx = element.indexOf("class=\""); // NOI18N
-//                    if (classIdx != -1) {
-//                        int classIdxEnd = element.indexOf('"', classIdx+7);
-//                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
-//                            String clz = element.substring(classIdx+7, classIdxEnd);
-//                            classes.add(clz);
-//                        }
-//                    }
-//                }
-//            }
-//
-//            String filename = request.fileObject.getNameExt();
-//            for (String tag : classes) {
-//                if (startsWith(tag, prefix)) {
-//                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
-//                    proposals.add(item);
-//                }
-//            }
-        }
+// XXX: parsingapi
+//        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+//        if (result != null) {
+////HANZ!!!
+////            HtmlParserResult htmlResult = (HtmlParserResult)result;
+////            List<SyntaxElement> elementsList = htmlResult.elementsList();
+////            Set<String> classes = new HashSet<String>();
+////            for (SyntaxElement s : elementsList) {
+////                if (s.type() == SyntaxElement.TYPE_TAG) {
+////                    String element = s.text();
+////                    int classIdx = element.indexOf("class=\""); // NOI18N
+////                    if (classIdx != -1) {
+////                        int classIdxEnd = element.indexOf('"', classIdx+7);
+////                        if (classIdxEnd != -1 && classIdxEnd > classIdx+1) {
+////                            String clz = element.substring(classIdx+7, classIdxEnd);
+////                            classes.add(clz);
+////                        }
+////                    }
+////                }
+////            }
+////
+////            String filename = request.fileObject.getNameExt();
+////            for (String tag : classes) {
+////                if (startsWith(tag, prefix)) {
+////                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
+////                    proposals.add(item);
+////                }
+////            }
+//        }
     }
     
     private void addTagNames(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
-        if (result != null) {
-//HANZ!!!
-//            HtmlParserResult htmlResult = (HtmlParserResult)result;
-//            List<SyntaxElement> elementsList = htmlResult.elementsList();
-//            Set<String> tagNames = new HashSet<String>();
-//            for (SyntaxElement s : elementsList) {
-//                if (s.type() == SyntaxElement.TYPE_TAG) {
-//                    String element = s.text();
-//                    int start = 1;
-//                    int end = element.indexOf(' ');
-//                    if (end == -1) {
-//                        end = element.length()-1;
-//                    }
-//                    String tag = element.substring(start, end);
-//                    tagNames.add(tag);
-//                }
-//            }
-//
-//            String filename = request.fileObject.getNameExt();
-//
-//            for (String tag : tagNames) {
-//                if (startsWith(tag, prefix)) {
-//                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
-//                    proposals.add(item);
-//                }
-//            }
-        }
+// XXX: parsingapi
+//        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+//        if (result != null) {
+////HANZ!!!
+////            HtmlParserResult htmlResult = (HtmlParserResult)result;
+////            List<SyntaxElement> elementsList = htmlResult.elementsList();
+////            Set<String> tagNames = new HashSet<String>();
+////            for (SyntaxElement s : elementsList) {
+////                if (s.type() == SyntaxElement.TYPE_TAG) {
+////                    String element = s.text();
+////                    int start = 1;
+////                    int end = element.indexOf(' ');
+////                    if (end == -1) {
+////                        end = element.length()-1;
+////                    }
+////                    String tag = element.substring(start, end);
+////                    tagNames.add(tag);
+////                }
+////            }
+////
+////            String filename = request.fileObject.getNameExt();
+////
+////            for (String tag : tagNames) {
+////                if (startsWith(tag, prefix)) {
+////                    GenericItem item = new GenericItem(tag, filename, request, ElementKind.TAG);
+////                    proposals.add(item);
+////                }
+////            }
+//        }
     }
     
     private void addElementIds(List<CompletionProposal> proposals, CompletionRequest request, String prefix) {
-        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
-        if (result != null) {
-//HANZ!!!            
-//            HtmlParserResult htmlResult = (HtmlParserResult)result;
-//            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
-//            String filename = request.fileObject.getNameExt();
-//            for (SyntaxElement.TagAttribute tag : elementIds) {
-//                String elementId = tag.getValue();
-//                // Strip "'s surrounding value, if any
-//                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
-//                        elementId.endsWith("\"")) { // NOI18N
-//                    elementId = elementId.substring(1, elementId.length()-1);
-//                }
-//
-//                if (startsWith(elementId, prefix)) {
-//                    GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
-//                    proposals.add(item);
-//                }
-//            }
-        }
+// XXX: parsingapi
+//        ParserResult result = request.info.getEmbeddedResult(JsUtils.HTML_MIME_TYPE, 0);
+//        if (result != null) {
+////HANZ!!!
+////            HtmlParserResult htmlResult = (HtmlParserResult)result;
+////            Set<SyntaxElement.TagAttribute> elementIds = htmlResult.elementsIds();
+////            String filename = request.fileObject.getNameExt();
+////            for (SyntaxElement.TagAttribute tag : elementIds) {
+////                String elementId = tag.getValue();
+////                // Strip "'s surrounding value, if any
+////                if (elementId.length() > 2 && elementId.startsWith("\"") && // NOI18N
+////                        elementId.endsWith("\"")) { // NOI18N
+////                    elementId = elementId.substring(1, elementId.length()-1);
+////                }
+////
+////                if (startsWith(elementId, prefix)) {
+////                    GenericItem item = new GenericItem(elementId, filename, request, ElementKind.TAG);
+////                    proposals.add(item);
+////                }
+////            }
+//        }
     }
 
 
@@ -890,10 +891,9 @@ public class JsCodeCompletion implements CodeCompletionHandler {
      * For non-string contexts, just return null to let the default identifier-computation
      * kick in.
      */
-    @SuppressWarnings("unchecked")
-    public String getPrefix(CompilationInfo info, int lexOffset, boolean upToOffset) {
+    public String getPrefix(ParserResult info, int lexOffset, boolean upToOffset) {
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument();
             if (doc == null) {
                 return null;
             }
@@ -1235,7 +1235,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         FileObject fileObject = request.fileObject;
         Node node = request.node;
         JsParseResult result = request.result;
-        CompilationInfo info = request.info;
+        JsParseResult info = request.info;
         
         String fqn = request.fqn;
         Call call = request.call;
@@ -1589,7 +1589,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         Set<IndexedFunction>[] alternatesHolder = new Set[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
-        CompilationInfo info = request.info;
+        JsParseResult info = request.info;
         int lexOffset = request.lexOffset;
         int astOffset = request.astOffset;
 
@@ -1923,13 +1923,17 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         return true;
     }
 
-    public String resolveTemplateVariable(String variable, CompilationInfo info, int caretOffset,
+    public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset,
             String name, Map parameters) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
-    public String document(CompilationInfo info, ElementHandle handle) {
-        Element element = ElementUtilities.getElement(info, handle);
+    public String document(ParserResult info, ElementHandle handle) {
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        if (jspr == null) {
+            return null;
+        }
+        Element element = ElementUtilities.getElement(jspr, handle);
         if (element == null) {
             return null;
         }
@@ -1973,7 +1977,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        List<String> comments = ElementUtilities.getComments(info, element);
+        List<String> comments = ElementUtilities.getComments(jspr, element);
         if (comments == null) {
             String html = ElementUtilities.getSignature(element) + "\n<hr>\n<i>" + NbBundle.getMessage(JsCodeCompletion.class, "NoCommentFound") +"</i>";
 
@@ -1991,18 +1995,20 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         return html;
     }
     
-    public Set<String> getApplicableTemplates(CompilationInfo info, int selectionBegin,
-            int selectionEnd) {
+    public Set<String> getApplicableTemplates(ParserResult info, int selectionBegin, int selectionEnd) {
         return Collections.emptySet();
     }
 
-    public ParameterInfo parameters(CompilationInfo info, int lexOffset,
-            CompletionProposal proposal) {
+    public ParameterInfo parameters(ParserResult info, int lexOffset, CompletionProposal proposal) {
+        JsParseResult jspr = AstUtilities.getParseResult(info);
+        if (jspr == null) {
+            return ParameterInfo.NONE;
+        }
         IndexedFunction[] methodHolder = new IndexedFunction[1];
         int[] paramIndexHolder = new int[1];
         int[] anchorOffsetHolder = new int[1];
         int astOffset = AstUtilities.getAstOffset(info, lexOffset);
-        if (!computeMethodCall(info, lexOffset, astOffset,
+        if (!computeMethodCall(jspr, lexOffset, astOffset,
                 methodHolder, paramIndexHolder, anchorOffsetHolder, null)) {
 
             return ParameterInfo.NONE;
@@ -2014,7 +2020,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
         }
         int index = paramIndexHolder[0];
         int astAnchorOffset = anchorOffsetHolder[0];
-        int anchorOffset = LexUtilities.getLexerOffset(info, astAnchorOffset);
+        int anchorOffset = LexUtilities.getLexerOffset(jspr, astAnchorOffset);
 
         // TODO: Make sure the caret offset is inside the arguments portion
         // (parameter hints shouldn't work on the method call name itself
@@ -2042,11 +2048,11 @@ public class JsCodeCompletion implements CodeCompletionHandler {
      * The argument index is returned in parameterIndexHolder[0] and the method being
      * called in methodHolder[0].
      */
-    static boolean computeMethodCall(CompilationInfo info, int lexOffset, int astOffset,
+    static boolean computeMethodCall(JsParseResult info, int lexOffset, int astOffset,
             IndexedFunction[] methodHolder, int[] parameterIndexHolder, int[] anchorOffsetHolder,
             Set<IndexedFunction>[] alternativesHolder) {
         try {
-            Node root = AstUtilities.getRoot(info);
+            Node root = info.getRootNode();
 
             if (root == null) {
                 return false;
@@ -2062,7 +2068,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             int originalAstOffset = astOffset;
 
             // Adjust offset to the left
-            BaseDocument doc = (BaseDocument) info.getDocument();
+            BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument();
             if (doc == null) {
                 return false;
             }
@@ -2371,7 +2377,7 @@ public class JsCodeCompletion implements CodeCompletionHandler {
     private static class CompletionRequest {
         private DefaultCompletionResult completionResult;
         private TokenHierarchy<Document> th;
-        private CompilationInfo info;
+        private JsParseResult info;
         private AstPath path;
         private Node node;
         private Node root;

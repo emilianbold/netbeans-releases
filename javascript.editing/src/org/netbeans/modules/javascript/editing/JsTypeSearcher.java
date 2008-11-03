@@ -61,7 +61,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.filesystems.FileObject;
@@ -432,7 +431,7 @@ public class JsTypeSearcher implements IndexSearcher {
 
         @Override
         public void open() {
-            CompilationInfo[] infoRet = new CompilationInfo[1];
+            JsParseResult[] infoRet = new JsParseResult[1];
             Node node = AstUtilities.getForeignNode(element, infoRet);
             
             if (node != null) {
