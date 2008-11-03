@@ -868,12 +868,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public boolean closing() {
         UIHandler.waitFlushed();
-
-        if (getLogsSize() == 0) {
-            return true;
-        }
-
-        return displaySummary("EXIT_URL", false, false,true); // NOI18N
+        return true;
     }
 
     static void logDeactivated(){

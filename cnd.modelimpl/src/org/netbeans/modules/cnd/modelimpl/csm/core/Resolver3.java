@@ -80,11 +80,13 @@ public class Resolver3 implements Resolver {
     private Map<CharSequence, CsmDeclaration> usingDeclarations = new HashMap<CharSequence, CsmDeclaration>();
     
     private CsmTypedef currTypedef;
+    private CsmClassifier currLocalClassifier;
     
     private CharSequence[] names;
     private int currNamIdx;
     private int interestedKind;
     private boolean resolveInBaseClass;
+    private boolean inLocalContext = false;
     
     private CharSequence currName() {
         return (names != null && currNamIdx < names.length) ? names[currNamIdx] : CharSequenceKey.empty();
@@ -360,13 +362,13 @@ public class Resolver3 implements Resolver {
         gatherMaps(CsmSelect.getDefault().getDeclarations(file, filter));
     }
     
-    protected void gatherMaps(Iterable declarations) {
+    protected void gatherMaps(Iterable<? extends CsmObject> declarations) {
         gatherMaps(declarations.iterator());
     }
     
-    protected void gatherMaps(Iterator it) {
+    protected void gatherMaps(Iterator<? extends CsmObject> it) {
         while(it.hasNext()) {
-            Object o = it.next();
+            CsmObject o = it.next();
             assert o instanceof CsmOffsetable;
             try {
                 int start = ((CsmOffsetable) o).getStartOffset();
@@ -376,7 +378,14 @@ public class Resolver3 implements Resolver {
                 }
                 //assert o instanceof CsmScopeElement;
                 if( o instanceof CsmScopeElement ) {
+                    
+                    // not yet in local context, but jumping into it
+                    boolean oldValue = inLocalContext;
+                    if (!inLocalContext && CsmKindUtilities.isFunctionDefinition(o)) {
+                        inLocalContext = true;
+                    }
                     gatherMaps((CsmScopeElement) o, end);
+                    inLocalContext = oldValue;
                 } else {
                     if( FileImpl.reportErrors ) {
                         System.err.println("Expected CsmScopeElement, got " + o);
@@ -483,6 +492,11 @@ public class Resolver3 implements Resolver {
                 gatherMaps( ((CsmDeclarationStatement) element).getDeclarators());
             }
         } else if (CsmKindUtilities.isScope(element)) {
+            if (inLocalContext && needClassifiers() && CsmKindUtilities.isClassifier(element)) {
+                if (CharSequenceKey.Comparator.compare(currName(), ((CsmClassifier)element).getName()) == 0) {
+                    currLocalClassifier = (CsmClassifier)element;
+                }
+            }
             if (this.offset < end || isInContext((CsmScope) element)) {
                 gatherMaps( ((CsmScope) element).getScopeElements());
             }
@@ -598,7 +612,11 @@ public class Resolver3 implements Resolver {
             }
             if( result == null ) {
                 currTypedef = null;
+                currLocalClassifier = null;
                 gatherMaps(file);
+                if( currLocalClassifier != null && needClassifiers()) {
+                    result = currLocalClassifier;
+                }
                 if( currTypedef != null && needClassifiers()) {
                     CsmType type = currTypedef.getType();
                     if( type != null ) {

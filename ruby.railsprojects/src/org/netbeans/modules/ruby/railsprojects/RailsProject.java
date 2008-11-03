@@ -108,7 +108,7 @@ public class RailsProject extends RubyBaseProject {
             helper.createCacheDirectoryProvider(),
             spp,
             new RailsActionProvider( this, this.updateHelper ),
-            new RailsLogicalViewProvider(this, this.updateHelper, evaluator(), spp, refHelper),
+            new RailsLogicalViewProvider(this, this.updateHelper, evaluator(), refHelper),
             new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots()), //Does not use APH to get/put properties/cfgdata
             new CustomizerProviderImpl(this, this.updateHelper, evaluator(), refHelper, this.genFilesHelper),        
             projectOpenedHook,

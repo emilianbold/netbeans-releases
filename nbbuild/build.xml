@@ -615,24 +615,25 @@ Link to <A HREF="overview-summary.html">Non-frame version.</A>
       <include name="bin/netbeans" />      
       <include name="${nb.cluster.platform.dir}/lib/nbexec" />      
     </fixcrlf>
-
-    <echo file="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info">NetBeans dev build
+    <mkdir dir="${netbeans.build.dir}"/>
+    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
+    <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
+      <arg value="id"/>
+      <arg value="-i"/>
+    </hgexec>
+    <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
+      <equals arg1="${hg.id.exit}" arg2="0"/>
+    </condition>
+    <property name="hg.id.line" value=""/>
+    <echo file="${netbeans.build.dir}/build_info">NetBeans dev build
 ------------------
 Number:   ${buildnumber}
 Date:     ${buildday}
 Branding:
 Branch:   trunk
 Tag:
-</echo>
-    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
-    <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
-      <arg value="id"/>
-    </hgexec>
-    <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
-      <equals arg1="${hg.id.exit}" arg2="0"/>
-    </condition>
-    <property name="hg.id.line" value=""/>
-    <echo file="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" append="true">${hg.id.line}</echo>
+${hg.id.line}</echo>
+    <copy file="${netbeans.build.dir}/build_info" tofile="${netbeans.dest.dir}/${nb.cluster.nb.dir}/build_info" failonerror="true"/>
   </target>
   
   <target name="build" depends="build-nozip"
