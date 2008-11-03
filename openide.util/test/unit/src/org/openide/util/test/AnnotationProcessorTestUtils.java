@@ -122,7 +122,7 @@ public class AnnotationProcessorTestUtils {
         scan(args, src, srcIncludes);
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
         Assert.assertNotNull("no JSR 199 compiler impl found; try e.g.: " +
-                "test.unit.run.cp.extra=${nb_all}/apisupport.harness/external/openjdk-javac-impl-6-b12.jar", compiler);
+                "test.unit.run.cp.extra=${nb_all}/apisupport.harness/external/openjdk-javac-6-b12.jar", compiler);
         //System.err.println("running javac with args: " + args);
         return compiler.run(null, null, stderr, args.toArray(new String[args.size()])) == 0;
     }
