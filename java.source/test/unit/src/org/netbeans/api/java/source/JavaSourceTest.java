@@ -127,9 +127,9 @@ import org.netbeans.modules.java.source.usages.IndexFactory;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.java.source.usages.PersistentClassIndex;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
-import org.netbeans.modules.parsing.api.GenericUserTask;
 import org.netbeans.modules.parsing.api.TestUtil;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
+import org.openide.util.Mutex.ExceptionAction;
 /**
  *
  * @author Tomas Zezula
@@ -1165,7 +1165,7 @@ public class JavaSourceTest extends NbTestCase {
 
         };
 
-        class RUT extends GenericUserTask {
+        class RUT implements ExceptionAction<Void> {
             private final CountDownLatch start;
             private final CountDownLatch latch;
 
@@ -1179,9 +1179,10 @@ public class JavaSourceTest extends NbTestCase {
             public void cancel() {
             }
 
-            public void run() throws Exception {
+            public Void run() throws Exception {
                 this.start.countDown();
                 this.latch.await();
+                return null;
             }
 
         };
