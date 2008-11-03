@@ -105,6 +105,20 @@ is the proper place.
 
     <changes>
 
+        <change id="typinghooks-spi-added">
+            <summary>Typing Hooks SPI added</summary>
+            <version major="1" minor="9"/>
+            <date day="23" month="10" year="2008"/>
+            <author login="vstejskal"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+                Typing Hooks SPI allows interception of various key typed events
+                that are processed in the editor. The SPI is a replacement for
+                subclassing editor actions such as <code>DefaultKeyTypedAction</code>,
+                <code>InsertBreakAction</code>, etc.
+            </description>
+        </change>
+
         <change id="added-codegen-spi">
             <summary>Code Generation SPI added</summary>
             <version major="1" minor="8"/>
@@ -118,7 +132,7 @@ is the proper place.
                 them into documents on the Insert Code editor action invocation.
                 The <code>CodeGeneratorContextProvider</code> implementations
                 registered for the mime types could provide the respective
-                CodeGenerators with an additional context information. 
+                CodeGenerators with an additional context information.
             </description>
             <issue number="134239"/>
         </change>

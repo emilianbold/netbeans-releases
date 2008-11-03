@@ -31,10 +31,11 @@ import java.awt.event.ActionEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
+import javax.swing.text.Position;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -70,13 +71,12 @@ public final class InsertSemicolonAction extends BaseAction {
             return;
         }
         final BaseDocument doc = (BaseDocument) target.getDocument();
+        final Indent indenter = Indent.get(doc);
         final class R implements Runnable {
             public void run() {
-                Caret caret = target.getCaret();
-                int dotpos = caret.getDot();
-                Formatter formatter = doc.getFormatter();
-                formatter.indentLock();
                 try {
+                    Caret caret = target.getCaret();
+                    int dotpos = caret.getDot();
                     int eoloffset = Utilities.getRowEnd(target, dotpos);
                     doc.insertString(eoloffset, "" + what, null); //NOI18N
                     if (withNewline) {
@@ -85,16 +85,20 @@ public final class InsertSemicolonAction extends BaseAction {
                         doc.insertString(dotpos, "-", null); //NOI18N
                         doc.remove(dotpos, 1);
                         int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        int newDotPos = formatter.indentNewLine(doc, eolDot);
+                        int newDotPos = indenter.indentNewLine(eolDot);
                         caret.setDot(newDotPos);
                     }
                 } catch (BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
-                } finally {
-                    formatter.indentUnlock();
                 }
             }
         }
-        doc.runAtomicAsUser(new R());
+
+        indenter.lock();
+        try {
+            doc.runAtomicAsUser(new R());
+        } finally {
+            indenter.lock();
+        }
     }
 }

@@ -81,6 +81,8 @@ import org.netbeans.api.editor.fold.FoldHierarchy;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.modules.editor.lib2.search.EditorFindSupport;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
@@ -122,12 +124,14 @@ public class ActionFactory {
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
-                        Formatter.pushFormattingContextDocument(doc);
                         try {
                             if (Utilities.isSelectionShowing(caret)) { // block selected
                                 try {
-                                    doc.getFormatter().changeBlockIndent(doc,
-                                            target.getSelectionStart(), target.getSelectionEnd(), -1);
+                                    BaseKit.changeBlockIndent(
+                                        doc,
+                                        target.getSelectionStart(),
+                                        target.getSelectionEnd(),
+                                        -1);
                                 } catch (GuardedException e) {
                                     target.getToolkit().beep();
                                 } catch (BadLocationException e) {
@@ -139,7 +143,7 @@ public class ActionFactory {
                                     int firstNW = Utilities.getRowFirstNonWhite(doc, caret.getDot());
                                     int endOffset = Utilities.getRowEnd(doc, caret.getDot());
                                     if (firstNW == -1 || (firstNW >= caret.getDot()))
-                                        doc.getFormatter().changeBlockIndent(doc, startOffset, endOffset, -1);
+                                        BaseKit.changeBlockIndent(doc, startOffset, endOffset, -1);
                                     else {
                                         // TODO:
                                         // after we will have action which will do opposite to "tab" action
@@ -153,7 +157,6 @@ public class ActionFactory {
                                 }
                             }
                         } finally {
-                            Formatter.popFormattingContextDocument(doc);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }
@@ -1392,21 +1395,20 @@ public class ActionFactory {
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
-                        Formatter.pushFormattingContextDocument(doc);
                         try {
                             if (Utilities.isSelectionShowing(caret)) {
-                                doc.getFormatter().changeBlockIndent(doc,
-                                target.getSelectionStart(), target.getSelectionEnd(),
-                                right ? +1 : -1);
+                                BaseKit.changeBlockIndent(
+                                    doc,
+                                    target.getSelectionStart(), target.getSelectionEnd(),
+                                    right ? +1 : -1);
                             } else {
-                                doc.getFormatter().shiftLine(doc, caret.getDot(), right);
+                                BaseKit.shiftLine(doc, caret.getDot(), right);
                             }
                         } catch (GuardedException e) {
                             target.getToolkit().beep();
                         } catch (BadLocationException e) {
                             e.printStackTrace();
                         } finally {
-                            Formatter.popFormattingContextDocument(doc);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }
@@ -1438,9 +1440,8 @@ public class ActionFactory {
                 final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                        ? (GuardedDocument)doc : null;
 
-                final Formatter formatter = doc.getFormatter();
-                formatter.reformatLock();
-                Formatter.pushFormattingContextDocument(doc);
+                final Reformat formatter = Reformat.get(doc);
+                formatter.lock();
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
@@ -1471,8 +1472,9 @@ public class ActionFactory {
                                         }
                                     }
 
-                                    int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                    pos = pos + reformattedLen;
+                                    Position stopPosition = doc.createPosition(stopPos);
+                                    formatter.reformat(pos, stopPos);
+                                    pos = pos + Math.max(stopPosition.getOffset() - pos, 0);
 
                                     if (gdoc != null) { // adjust to end of current block
                                         pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
@@ -1486,8 +1488,7 @@ public class ActionFactory {
                         }
                     });
                 } finally {
-                    Formatter.popFormattingContextDocument(doc);
-                    formatter.reformatUnlock();
+                    formatter.unlock();
                 }
             }
         }
@@ -1558,9 +1559,8 @@ public class ActionFactory {
                 final Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-                final Formatter formatter = doc.getFormatter();
-                formatter.reformatLock();
-                Formatter.pushFormattingContextDocument(doc);
+                final Reformat formatter = Reformat.get(doc);
+                formatter.lock();
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
@@ -1591,8 +1591,9 @@ public class ActionFactory {
                                     }
 
                                     if (pos < stopPos) {
-                                        int reformattedLen = formatter.reformat(doc, pos, stopPos);
-                                        pos = pos + reformattedLen;
+                                        Position stopPosition = doc.createPosition(stopPos);
+                                        formatter.reformat(pos, stopPos);
+                                        pos = pos + Math.max(stopPosition.getOffset() - pos, 0);
                                     } else {
                                         pos++; //ensure to make progress
                                     }
@@ -1612,8 +1613,7 @@ public class ActionFactory {
                         }
                     });
                 } finally {
-                    Formatter.popFormattingContextDocument(doc);
-                    formatter.reformatUnlock();
+                    formatter.unlock();
                 }
             }
         }
@@ -2239,8 +2239,8 @@ public class ActionFactory {
             
             
             final BaseDocument doc = (BaseDocument)target.getDocument();
-            final Formatter formatter = doc.getFormatter();
-            formatter.indentLock();
+            final Indent formatter = Indent.get(doc);
+            formatter.lock();
             doc.runAtomicAsUser (new Runnable () {
                 public void run () {
                     try {
@@ -2252,13 +2252,20 @@ public class ActionFactory {
                         int dotpos = caret.getDot();
                         doc.insertString(dotpos,"-",null); //NOI18N
                         doc.remove(dotpos,1);
+
+                        // insert new line, caret moves to the new line
                         int eolDot = Utilities.getRowEnd(target, caret.getDot());
-                        int newDotPos = formatter.indentNewLine(doc,eolDot);
-                        caret.setDot(newDotPos);
+                        doc.insertString(eolDot, "\n", null); //NOI18N
+
+                        // reindent the new line
+                        Position newDotPos = doc.createPosition(eolDot + 1);
+                        formatter.reindent(eolDot + 1);
+                        
+                        caret.setDot(newDotPos.getOffset());
                     } catch (BadLocationException ex) {
                         ex.printStackTrace();
                     } finally{
-                        formatter.indentUnlock();
+                        formatter.unlock();
                     }
                 }
             });

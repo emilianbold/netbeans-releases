@@ -56,10 +56,8 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoableEdit;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateInsertRequest;
@@ -75,6 +73,7 @@ import org.netbeans.lib.editor.codetemplates.textsync.TextSyncGroupEditingNotify
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.CharacterConversions;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Reformat;
 
 /**
  * Code template allows the client to paste itself into the given
@@ -122,7 +121,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
 
     private String completeInsertString;
 
-    private Formatter formatter;
+    private Reformat formatter;
     
     private TextSyncGroup textSyncGroup;
     
@@ -263,30 +262,18 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
         completeInsertString = getInsertText();
 
 
-        BaseDocument bdoc = (doc instanceof BaseDocument)
-                ? (BaseDocument)doc
-                : null;
         // Need to lock formatter first because CT's multiline text will be reformatted
-        formatter = null;
-        if (bdoc != null) {
-            formatter = bdoc.getFormatter();
-            if (formatter != null) {
-                formatter.reformatLock();
-            }
-        }
+        formatter = Reformat.get(doc);
+        formatter.lock();
         try {
-            if (bdoc != null) {
-                bdoc.runAtomicAsUser(this);
+            if (doc instanceof BaseDocument) {
+                ((BaseDocument) doc).runAtomicAsUser(this);
             } else { // Otherwise run without atomic locking
                 this.run();
             }
         } finally {
-            if (bdoc != null) {
-                if (formatter != null) {
-                    formatter.reformatUnlock();
-                }
-                formatter = null;
-            }
+            formatter.unlock();
+            formatter = null;
             completeInsertString = null;
         }
     }
@@ -339,8 +326,7 @@ public final class CodeTemplateInsertHandler implements TextSyncGroupEditingNoti
             textRegionManager().addTextSyncGroup(textSyncGroup, insertOffset);
             
             if (bdoc != null) {
-                formatter.reformat(bdoc, insertOffset,
-                        insertOffset + completeInsertString.length());
+                formatter.reformat(insertOffset, insertOffset + completeInsertString.length());
             }
             
         } catch (BadLocationException e) {

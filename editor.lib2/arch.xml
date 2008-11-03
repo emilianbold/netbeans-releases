@@ -117,9 +117,19 @@ folding, braces matching, etc.
         </question>
 -->
 <answer id="arch-usecases">
-    At the moment the Editor Library 2 module contains only the Highlighting SPI,
-    which use cases can be found in the <code>org.netbeans.spi.editor.highlighting</code> package 
-    <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecases">overview</a>.
+    At the moment the Editor Library 2 module contains three distinct SPIs. Each SPI lives
+    in its own package and the usecases can be found in the packages overview.
+    <ul>
+    <li>Highlighting SPI -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/highlighting/package-summary.html#usecases">org.netbeans.spi.editor.highlighting</a>
+    </li>
+    <li>Code Generator SPI -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/codegen/package-summary.html#usecases">org.netbeans.spi.editor.codegen</a>
+    </li>
+    <li>Typing Hooks SPI -
+        <a href="@org-netbeans-modules-editor-lib2@/org/netbeans/spi/editor/typinghooks/package-summary.html#usecases">org.netbeans.spi.editor.typinghooks</a>
+    </li>
+    </ul>
 </answer>
 
 

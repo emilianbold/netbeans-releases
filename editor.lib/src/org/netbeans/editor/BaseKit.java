@@ -64,10 +64,8 @@ import javax.swing.text.Element;
 import javax.swing.text.ViewFactory;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
-import java.io.CharArrayWriter;
 import java.lang.reflect.Method;
 import java.util.Set;
-import java.util.Vector;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -80,12 +78,19 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.KeyBindingSettings;
+import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.IndentUtils;
+import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.NavigationHistory;
 import org.netbeans.modules.editor.lib.SettingsConversions;
+import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -592,14 +597,15 @@ public class BaseKit extends DefaultEditorKit {
         return new SyntaxSupport(doc);
     }
 
-    /** 
-     * Create the formatter appropriate for this kit
-     * @deprecated Please use Editor Indentation API instead, for details see
-     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
-     */
-    public Formatter createFormatter() {
-        return new Formatter(this.getClass());
-    }
+// XXX: formatting cleanup
+//    /**
+//     * Create the formatter appropriate for this kit
+//     * @deprecated Please use Editor Indentation API instead, for details see
+//     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+//     */
+//    public Formatter createFormatter() {
+//        return new Formatter(this.getClass());
+//    }
 
     /** Create text UI */
     protected BaseTextUI createTextUI() {
@@ -1035,15 +1041,13 @@ public class BaseKit extends DefaultEditorKit {
     /** Default typed action */
     public static class DefaultKeyTypedAction extends LocalBaseAction {
 
-        static final long serialVersionUID =3069164318144463899L;
+        static final long serialVersionUID = 3069164318144463899L;
 
         public DefaultKeyTypedAction() {
             super(defaultKeyTypedAction, MAGIC_POSITION_RESET | CLEAR_STATUS_TEXT);
             putValue(BaseAction.NO_KEYBINDING, Boolean.TRUE);
             LOG.fine("DefaultKeyTypedAction with enhanced logging, see issue #145306"); //NOI18N
         }
-
-        private static final boolean isMac = System.getProperty("mrj.version") != null; //NOI18N
 
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if ((target != null) && (evt != null)) {
@@ -1053,7 +1057,7 @@ public class BaseKit extends DefaultEditorKit {
                 boolean ctrl = ((mod & ActionEvent.CTRL_MASK) != 0);
                 // On the mac, norwegian and french keyboards use Alt to do bracket characters.
                 // This replicates Apple's modification DefaultEditorKit.DefaultKeyTypedAction
-                boolean alt = isMac ? ((mod & ActionEvent.META_MASK) != 0) : 
+                boolean alt = org.openide.util.Utilities.isMac() ? ((mod & ActionEvent.META_MASK) != 0) :
                     ((mod & ActionEvent.ALT_MASK) != 0);
                 
                 
@@ -1067,67 +1071,34 @@ public class BaseKit extends DefaultEditorKit {
                     return;
                 }
 
-                final Caret caret = target.getCaret();
-                final BaseDocument doc = (BaseDocument)target.getDocument();
-                final EditorUI editorUI = Utilities.getEditorUI(target);
                 // determine if typed char is valid
                 final String cmd = evt.getActionCommand();
-                if ((cmd != null) && (cmd.length() == 1)) {
-                    //          Utilities.clearStatusText(target);
-
-                    try {
-                        NavigationHistory.getEdits().markWaypoint(target, caret.getDot(), false, true);
-                    } catch (BadLocationException e) {
-                        LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+                if (cmd != null && cmd.length() == 1 && cmd.charAt(0) >= 0x20 && cmd.charAt(0) != 0x7F) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Processing command char: " + Integer.toHexString(cmd.charAt(0))); //NOI18N
                     }
-                    
-                    doc.runAtomicAsUser (new Runnable () {
-                        public void run () {
-                            DocumentUtilities.setTypingModification(doc, true);
-                            try {
-                                char ch = cmd.charAt(0);
-                                if ((ch >= 0x20) && (ch != 0x7F)) { // valid character
-                                    LOG.fine("Processing command char: " + Integer.toHexString(ch)); //NOI18N
 
-                                    editorUI.getWordMatch().clear(); // reset word matching
-                                    Boolean overwriteMode = (Boolean)editorUI.getProperty(
-                                                                EditorUI.OVERWRITE_MODE_PROPERTY);
-                                    try {
-                                        boolean doInsert = true; // editorUI.getAbbrev().checkAndExpand(ch, evt);
-                                        if (doInsert) {
-                                            if (Utilities.isSelectionShowing(caret)) { // valid selection
-                                                boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
-                                                try {
-                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
-                                                    replaceSelection(target, caret.getDot(), caret, cmd, ovr);
-                                                } finally {
-                                                    doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
-                                                }
-                                            } else { // no selection
-                                                int dotPos = caret.getDot();
-                                                if (overwriteMode != null && overwriteMode.booleanValue()
-                                                        && dotPos < doc.getLength() && doc.getChars(dotPos, 1)[0] != '\n'
-                                                   ) { // overwrite current char
-                                                    insertString(doc, dotPos, caret, cmd, true); 
-                                                } else { // insert mode
-                                                    insertString(doc, dotPos, caret, cmd, false);
-                                                }
-                                            }
-                                        }
-                                    } catch (BadLocationException e) {
-                                        LOG.log(Level.FINE, null, e);
-                                        target.getToolkit().beep();
-                                    }
-                                } else {
-                                    LOG.fine("Invalid command char: " + Integer.toHexString(ch)); //NOI18N
-                                }
+                    int insertionOffset = computeInsertionOffset(target.getCaret());
+                    TypedTextInterceptorsManager.Transaction transaction = TypedTextInterceptorsManager.getInstance().openTransaction(
+                            target, insertionOffset, cmd);
+                    try {
+                        if (!transaction.beforeInsertion()) {
+                            Object [] result = transaction.textTyped();
+                            String insertionText = result == null ? cmd : (String) result[0];
+                            int caretPosition = result == null ? -1 : (Integer) result[1];
 
-                                checkIndent(target, cmd);
-                            } finally {
-                                DocumentUtilities.setTypingModification(doc, false);
-                            }
+                            if (performTextInsertion(target, insertionOffset, insertionText, caretPosition)) {
+                                transaction.afterInsertion();
+
+                                // XXX: this is potentially wrong and we may need to call this with
+                                // the original cmd; or maybe only if insertionText == cmd; but maybe
+                                // it does not matter, because nobody seems to be overwriting this method anyway
+                                checkIndent(target, insertionText);
+                            } // else text insertion failed
                         }
-                    });
+                    } finally {
+                        transaction.close();
+                    }
                 } else {
                     if (LOG.isLoggable(Level.FINE)) {
                         StringBuilder sb = new StringBuilder();
@@ -1144,47 +1115,128 @@ public class BaseKit extends DefaultEditorKit {
             }
         }
 
-      /** 
-       * Hook to insert the given string at the given position into
-       * the given document in insert-mode, no selection, writeable
-       * document. Designed to be overridden by subclasses that want
-       * to intercept inserted characters.
-       */
-      protected void insertString(BaseDocument doc,  
+        // --------------------------------------------------------------------
+        // SPI
+        // --------------------------------------------------------------------
+
+        /**
+         * Hook to insert the given string at the given position into
+         * the given document in insert-mode, no selection, writeable
+         * document. Designed to be overridden by subclasses that want
+         * to intercept inserted characters.
+         *
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void insertString(BaseDocument doc,
 				  int dotPos, 
 				  Caret caret,
 				  String str, 
-				  boolean overwrite) 
-	throws BadLocationException 
-      {
-	if (overwrite) doc.remove(dotPos, 1);
-	doc.insertString(dotPos, str, null);
-      }
+				  boolean overwrite) throws BadLocationException 
+        {
+            if (overwrite) {
+                doc.remove(dotPos, 1);
+            }
+            
+            doc.insertString(dotPos, str, null);
+        }
 
-      /** 
-       * Hook to insert the given string at the given position into
-       * the given document in insert-mode with selection visible
-       * Designed to be overridden by subclasses that want
-       * to intercept inserted characters.
-       */
-      protected void replaceSelection(JTextComponent target,  
-				  int dotPos, 
-				  Caret caret,
-				  String str, 
-				  boolean overwrite) 
-	throws BadLocationException 
-      {
-          target.replaceSelection(str);
-      }
+        /**
+         * Hook to insert the given string at the given position into
+         * the given document in insert-mode with selection visible
+         * Designed to be overridden by subclasses that want
+         * to intercept inserted characters.
+         *
+         * @deprecated Please use Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
+        protected void replaceSelection(
+                JTextComponent target,
+                int dotPos,
+                Caret caret,
+                String str,
+                boolean overwrite) throws BadLocationException
+        {
+            target.replaceSelection(str);
+        }
 
-
-        /** Check whether there was any important character typed
-        * so that the line should be possibly reformatted.
-        */
+        /**
+         * Check whether there was any important character typed
+         * so that the line should be possibly reformatted.
+         *
+         * @deprecated Please use <a href="@org-netbeans-modules-editor-indent@/org/netbeans/modules/editor/indent/spi/AutomatedIndenting.html">AutomatedIndentig</a>
+         *   or Typing Hooks instead, for details see
+         *   <a href="@org-netbeans-modules-editor-lib2@/overview-summary.html">Editor Library 2</a>.
+         */
         protected void checkIndent(JTextComponent target, String typedText) {
         }
 
-    }
+        // --------------------------------------------------------------------
+        // Private implementation
+        // --------------------------------------------------------------------
+
+        private boolean performTextInsertion(final JTextComponent target, final int insertionOffset, final String insertionText, final int caretPosition) {
+            final BaseDocument doc = (BaseDocument)target.getDocument();
+            
+            try {
+                NavigationHistory.getEdits().markWaypoint(target, insertionOffset, false, true);
+            } catch (BadLocationException e) {
+                LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
+            }
+
+            final boolean [] ret = new boolean [] { false };
+            doc.runAtomicAsUser (new Runnable () {
+                public void run () {
+                    DocumentUtilities.setTypingModification(doc, true);
+                    try {
+                        EditorUI editorUI = Utilities.getEditorUI(target);
+                        Caret caret = target.getCaret();
+
+                        editorUI.getWordMatch().clear(); // reset word matching
+                        Boolean overwriteMode = (Boolean)editorUI.getProperty(EditorUI.OVERWRITE_MODE_PROPERTY);
+                        boolean ovr = (overwriteMode != null && overwriteMode.booleanValue());
+                        if (Utilities.isSelectionShowing(caret)) { // valid selection
+                            try {
+                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, true);
+                                replaceSelection(target, insertionOffset, caret, insertionText, ovr);
+                            } finally {
+                                doc.putProperty(DOC_REPLACE_SELECTION_PROPERTY, null);
+                            }
+                        } else { // no selection
+                            if (ovr && insertionOffset < doc.getLength() && doc.getChars(insertionOffset, 1)[0] != '\n') { //NOI18N
+                                // overwrite current char
+                                insertString(doc, insertionOffset, caret, insertionText, true);
+                            } else { // insert mode
+                                insertString(doc, insertionOffset, caret, insertionText, false);
+                            }
+                        }
+
+                        if (caretPosition != -1) {
+                            assert caretPosition >= 0 && caretPosition < insertionText.length();
+                            caret.setDot(insertionOffset + caretPosition);
+                        }
+
+                        ret[0] = true;
+                    } catch (Exception e) {
+                        LOG.log(Level.FINE, null, e);
+                        target.getToolkit().beep();
+                    } finally {
+                        DocumentUtilities.setTypingModification(doc, false);
+                    }
+                }
+            });
+
+            return ret[0];
+        }
+
+        private int computeInsertionOffset(Caret caret) {
+            if (Utilities.isSelectionShowing(caret)) {
+                return Math.min(caret.getMark(), caret.getDot());
+            } else {
+                return caret.getDot();
+            }
+        }
+    } // End of DefaultKeyTypedAction class
 
     public static class InsertBreakAction extends LocalBaseAction {
 
@@ -1202,29 +1254,39 @@ public class BaseKit extends DefaultEditorKit {
                 }
 
                 final BaseDocument doc = (BaseDocument)target.getDocument();
-                final Formatter formatter = doc.getFormatter();
-                formatter.indentLock();
+                final Indent formatter = Indent.get(doc);
+                formatter.lock();
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try {
-                                target.replaceSelection("");
+                                target.replaceSelection(""); // NOI18N
                                 Caret caret = target.getCaret();
                                 Object cookie = beforeBreak(target, doc, caret);
 
+                                // insert new line, caret moves to the new line
                                 int dotPos = caret.getDot();
-                                int newDotPos = formatter.indentNewLine(doc, dotPos);
-                                caret.setDot(newDotPos);
+                                doc.insertString(dotPos, "\n", null); //NOI18N
+                                dotPos++;
+
+                                // reindent the new line
+                                Position newDotPos = doc.createPosition(dotPos);
+                                formatter.reindent(dotPos);
+
+                                // adjust the caret
+                                caret.setDot(newDotPos.getOffset());
 
                                 afterBreak(target, doc, caret, cookie);
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.WARNING, null, ble);
                             } finally {
                                 DocumentUtilities.setTypingModification(doc, false);
                             }
                         }
                     });
                 } finally {
-                    formatter.indentUnlock();
+                    formatter.unlock();
                 }
             }
         }
@@ -1264,24 +1326,33 @@ public class BaseKit extends DefaultEditorKit {
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 final Caret caret = target.getCaret();
 
-                final Formatter formatter = doc.getFormatter();
-                formatter.indentLock();
+                final Indent formatter = Indent.get(doc);
+                formatter.lock();
                 try {
                     doc.runAtomicAsUser (new Runnable () {
                         public void run () {
                             DocumentUtilities.setTypingModification(doc, true);
                             try{
-                                target.replaceSelection("");
-                                final int dotPos = caret.getDot();      // dot stays where it was
-                                formatter.indentNewLine(doc, dotPos);   // newline
+                                target.replaceSelection(""); //NOI18N
+
+                                // insert new line, caret stays where it is
+                                int dotPos = caret.getDot();
+                                doc.insertString(dotPos, "\n", null); //NOI18N
+
+                                // reindent the new line
+                                formatter.reindent(dotPos + 1);   // newline
+
+                                // make sure the caret stays on its original position
                                 caret.setDot(dotPos);
+                            } catch (BadLocationException ble) {
+                                LOG.log(Level.WARNING, null, ble);
                             } finally {
                                 DocumentUtilities.setTypingModification(doc, false);
                             }
                         }
                     });
                 } finally {
-                    formatter.indentUnlock();
+                    formatter.unlock();
                 }
             }
         }
@@ -1309,12 +1380,10 @@ public class BaseKit extends DefaultEditorKit {
                 doc.runAtomicAsUser (new Runnable () {
                     public void run () {
                         DocumentUtilities.setTypingModification(doc, true);
-                        Formatter.pushFormattingContextDocument(doc);
                         try {
                         if (Utilities.isSelectionShowing(caret)) { // block selected
                             try {
-                                doc.getFormatter().changeBlockIndent(doc,
-                                        target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
                             } catch (GuardedException e) {
                                 target.getToolkit().beep();
                             } catch (BadLocationException e) {
@@ -1350,7 +1419,7 @@ public class BaseKit extends DefaultEditorKit {
                                     // Fix of #32240 - #1 of 2
                                     int rowStart = Utilities.getRowStart(doc, dotPos);
 
-                                    doc.getFormatter().changeRowIndent(doc, dotPos, indent);
+                                    changeRowIndent(doc, dotPos, indent);
 
                                     // Fix of #32240 - #2 of 2
                                     int newDotPos = doc.getOffsetFromVisCol(indent, rowStart);
@@ -1359,7 +1428,7 @@ public class BaseKit extends DefaultEditorKit {
                                     }
 
                                 } else { // already chars on the line
-                                    doc.getFormatter().insertTabString(doc, dotPos);
+                                    insertTabString(doc, dotPos);
 
                                 }
                             } catch (BadLocationException e) {
@@ -1367,7 +1436,6 @@ public class BaseKit extends DefaultEditorKit {
                             }
                         }
                         } finally {
-                            Formatter.popFormattingContextDocument(doc);
                             DocumentUtilities.setTypingModification(doc, false);
                         }
                     }
@@ -1693,9 +1761,9 @@ public class BaseKit extends DefaultEditorKit {
                     LOG.log(Level.WARNING, "Can't add position to the history of edits.", e); //NOI18N
                 }
 
-                final Formatter formatter = doc.getFormatter();
+                final Reformat formatter = Reformat.get(doc);
                 if (formatted) {
-                    formatter.reformatLock();
+                    formatter.lock();
                 }
                 try {
                     doc.runAtomicAsUser (new Runnable () {
@@ -1712,7 +1780,7 @@ public class BaseKit extends DefaultEditorKit {
                             }
                             int endOffset = caret.getDot();
                             if (formatted) {
-                                formatter.reformat(doc, startOffset, endOffset);
+                                formatter.reformat(startOffset, endOffset);
                             }
                         } catch (Exception e) {
                             target.getToolkit().beep();
@@ -1723,72 +1791,72 @@ public class BaseKit extends DefaultEditorKit {
                     });
                 } finally {
                     if (formatted) {
-                        formatter.reformatUnlock();
+                        formatter.unlock();
                     }
                 }
             }
         }
 
-      public static void indentBlock(BaseDocument doc, int startOffset, int endOffset)
-	throws BadLocationException
-      {
-	char [] text = doc.getChars(startOffset, endOffset-startOffset);
-	String [] lines = toLines(new String(text));
-
-	doc.remove(startOffset, endOffset - startOffset);
-	//	System.out.println("Lines:\n"); // NOI18N
-	//	for (int j = 0 ; j < lines.length; j++) System.out.println(lines[j] + "<"); // NOI18N
-
-	int offset = startOffset;
-	// handle the full lines
-	for (int i = 0; i < lines.length - 1; i++) {
-	  String indent = getIndentString(doc, offset, lines[i]);
-	  String fragment = indent + lines[i].trim() + '\n';
-	  //	  System.out.println(fragment + "|"); // NOI18N
-	  doc.insertString(offset, fragment, null);
-	  offset += fragment.length();
-	}
-
-	// the rest just paste without indenting
-	doc.insertString(offset, lines[lines.length-1], null);
-
-      }
-
-      /** Break string to lines */
-      private static String [] toLines(String str) {
-	Vector v = new Vector();
-	int p=0 , p0=0;
-	for (; p < str.length() ; p++) {
-	  if (str.charAt(p) == '\n') {
-	    v.add(str.substring(p0, p+1));
-	    p0 = p+1;
-	  }
-	}
-	if (p0 < str.length()) v.add(str.substring(p0, str.length())); else v.add("");
-
-	return (String [])v.toArray(new String [0]);
-      }
-
-      private static String getIndentString(BaseDocument doc, int startOffset, String str) {
-	try {
-	  Formatter f = doc.getFormatter();
-	  CharArrayWriter cw = new CharArrayWriter();
-	  Writer w = f.createWriter(doc, startOffset, cw);
-	  w.write(str, 0, str.length());
-	  w.close();
-	  String out = new String(cw.toCharArray());
-	  int i = 0;
-	  for (; i < out.length(); i++) {
-	    if (out.charAt(i) != ' ' && out.charAt(i) != '\t') break;
-	  }
-	  //	  System.out.println(out+"|"); // NOI18N
-	  //	  System.out.println(out.substring(0,i)+"^"); // NOI18N
-
-	  return out.substring(0, i);
-	} catch (java.io.IOException e) {
-	  return "";
-	}
-      }
+//      public static void indentBlock(BaseDocument doc, int startOffset, int endOffset)
+//	throws BadLocationException
+//      {
+//	char [] text = doc.getChars(startOffset, endOffset-startOffset);
+//	String [] lines = toLines(new String(text));
+//
+//	doc.remove(startOffset, endOffset - startOffset);
+//	//	System.out.println("Lines:\n"); // NOI18N
+//	//	for (int j = 0 ; j < lines.length; j++) System.out.println(lines[j] + "<"); // NOI18N
+//
+//	int offset = startOffset;
+//	// handle the full lines
+//	for (int i = 0; i < lines.length - 1; i++) {
+//	  String indent = getIndentString(doc, offset, lines[i]);
+//	  String fragment = indent + lines[i].trim() + '\n';
+//	  //	  System.out.println(fragment + "|"); // NOI18N
+//	  doc.insertString(offset, fragment, null);
+//	  offset += fragment.length();
+//	}
+//
+//	// the rest just paste without indenting
+//	doc.insertString(offset, lines[lines.length-1], null);
+//
+//      }
+//
+//      /** Break string to lines */
+//      private static String [] toLines(String str) {
+//	Vector v = new Vector();
+//	int p=0 , p0=0;
+//	for (; p < str.length() ; p++) {
+//	  if (str.charAt(p) == '\n') {
+//	    v.add(str.substring(p0, p+1));
+//	    p0 = p+1;
+//	  }
+//	}
+//	if (p0 < str.length()) v.add(str.substring(p0, str.length())); else v.add("");
+//
+//	return (String [])v.toArray(new String [0]);
+//      }
+//
+//      private static String getIndentString(BaseDocument doc, int startOffset, String str) {
+//	try {
+//	  Formatter f = doc.getFormatter();
+//	  CharArrayWriter cw = new CharArrayWriter();
+//	  Writer w = f.createWriter(doc, startOffset, cw);
+//	  w.write(str, 0, str.length());
+//	  w.close();
+//	  String out = new String(cw.toCharArray());
+//	  int i = 0;
+//	  for (; i < out.length(); i++) {
+//	    if (out.charAt(i) != ' ' && out.charAt(i) != '\t') break;
+//	  }
+//	  //	  System.out.println(out+"|"); // NOI18N
+//	  //	  System.out.println(out.substring(0,i)+"^"); // NOI18N
+//
+//	  return out.substring(0, i);
+//	} catch (java.io.IOException e) {
+//	  return "";
+//	}
+//      }
     }
 
 
@@ -2745,4 +2813,154 @@ public class BaseKit extends DefaultEditorKit {
         }
         
     } // End of KeymapTracker class
+
+    /** Modify the line to move the text starting at dotPos one tab
+     * column to the right.  Whitespace preceeding dotPos may be
+     * replaced by a TAB character if tabs expanding is on.
+     * @param doc document to operate on
+     * @param dotPos insertion point
+     */
+    static void insertTabString (final BaseDocument doc, final int dotPos) throws BadLocationException {
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    // Determine first white char before dotPos
+                    int rsPos = Utilities.getRowStart(doc, dotPos);
+                    int startPos = Utilities.getFirstNonWhiteBwd(doc, dotPos, rsPos);
+                    startPos = (startPos >= 0) ? (startPos + 1) : rsPos;
+
+                    int startCol = Utilities.getVisualColumn(doc, startPos);
+                    int endCol = Utilities.getNextTabColumn(doc, dotPos);
+                    Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+                    String tabStr = Analyzer.getWhitespaceString(
+                            startCol, endCol,
+                            prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs),
+                            prefs.getInt(SimpleValueNames.TAB_SIZE, EditorPreferencesDefaults.defaultTabSize));
+
+                    // Search for the first non-common char
+                    char[] removeChars = doc.getChars(startPos, dotPos - startPos);
+                    int ind = 0;
+                    while (ind < removeChars.length && removeChars[ind] == tabStr.charAt(ind)) {
+                        ind++;
+                    }
+
+                    startPos += ind;
+                    doc.remove(startPos, dotPos - startPos);
+                    doc.insertString(startPos, tabStr.substring(ind), null);
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
+            }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
+    }
+
+    /** Change the indent of the given row. Document is atomically locked
+     * during this operation.
+     */
+    static void changeRowIndent (final BaseDocument doc, final int pos, final int newIndent) throws BadLocationException {
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    int indent = newIndent < 0 ? 0 : newIndent;
+                    int firstNW = Utilities.getRowFirstNonWhite(doc, pos);
+                    if (firstNW == -1) { // valid first non-blank
+                        firstNW = Utilities.getRowEnd(doc, pos);
+                    }
+                    int replacePos = Utilities.getRowStart(doc, pos);
+                    int removeLen = firstNW - replacePos;
+                    CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
+                    String newIndentText = IndentUtils.createIndentString(doc, indent);
+                    if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
+                        // Skip removeLen chars at start
+                        newIndentText = newIndentText.substring(removeLen);
+                        replacePos += removeLen;
+                        removeLen = 0;
+                    } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
+                        // Skip removeLen chars at the end
+                        newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
+                        removeLen = 0;
+                    }
+
+                    if (removeLen != 0) {
+                        doc.remove(replacePos, removeLen);
+                    }
+
+                    doc.insertString(replacePos, newIndentText, null);
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
+            }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
+    }
+
+    /** Increase/decrease indentation of the block of the code. Document
+    * is atomically locked during the operation.
+    * @param doc document to operate on
+    * @param startPos starting line position
+    * @param endPos ending line position
+    * @param shiftCnt positive/negative count of shiftwidths by which indentation
+    *   should be shifted right/left
+    */
+    static void changeBlockIndent (final BaseDocument doc, final int startPos, final int endPos,
+                                  final int shiftCnt) throws BadLocationException {
+        GuardedDocument gdoc = (doc instanceof GuardedDocument)
+                               ? (GuardedDocument)doc : null;
+        if (gdoc != null){
+            for (int i = startPos; i<endPos; i++){
+                if (gdoc.isPosGuarded(i)){
+                    java.awt.Toolkit.getDefaultToolkit().beep();
+                    return;
+                }
+            }
+        }
+
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    int indentDelta = shiftCnt * doc.getShiftWidth();
+                    int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
+                        endPos - 1 : endPos;
+
+                    int pos = Utilities.getRowStart(doc, startPos );
+                    for (int lineCnt = Utilities.getRowCount(doc, startPos, end);
+                            lineCnt > 0; lineCnt--
+                        ) {
+                        int indent = Utilities.getRowIndent(doc, pos);
+                        if (Utilities.isRowWhite(doc, pos)) {
+                            indent = -indentDelta; // zero indentation for white line
+                        }
+                        changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
+                        pos = Utilities.getRowStart(doc, pos, +1);
+                    }
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
+            }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
+    }
+
+    /** Shift line either left or right */
+    static void shiftLine(BaseDocument doc, int dotPos, boolean right) throws BadLocationException {
+        int ind = doc.getShiftWidth();
+        if (!right) {
+            ind = -ind;
+        }
+
+        if (Utilities.isRowWhite(doc, dotPos)) {
+            ind += Utilities.getVisualColumn(doc, dotPos);
+        } else {
+            ind += Utilities.getRowIndent(doc, dotPos);
+        }
+        ind = Math.max(ind, 0);
+        changeRowIndent(doc, dotPos, ind);
+    }
 }

@@ -110,10 +110,17 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
     private void rebuild() {
         ArrayList<Lookup> lookups = new ArrayList<Lookup>();
 
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("Rebuilding MimeLookup for '" + mimePath.getPath() + "'..."); //NOI18N
+        }
+
         // Add lookups from MimeDataProviders
         for (MimeDataProvider provider : dataProviders.allInstances()) {
             if (mimePathBanned && !isDefaultProvider(provider)) {
                 continue;
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("- Querying MimeDataProvider(" + mimePath.getPath() + "): " + provider); //NOI18N
             }
             Lookup mimePathLookup = provider.getLookup(mimePath);
             if (mimePathLookup != null) {
@@ -157,11 +164,18 @@ public final class MimePathLookup extends ProxyLookup implements LookupListener 
             }
 
             for(MimeLookupInitializer mli : initializers) {
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.fine("- Querying MimeLookupInitializer(" + path + "): " + mli); //NOI18N
+                }
                 Lookup mimePathLookup = mli.lookup();
                 if (mimePathLookup != null) {
                     lookups.add(mimePathLookup);
                 }
             }
+        }
+
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.fine("MimeLookup for '" + mimePath.getPath() + "' rebuilt."); //NOI18N
         }
 
         setLookups(lookups.toArray(new Lookup[lookups.size()]));
