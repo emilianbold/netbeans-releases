@@ -72,7 +72,12 @@ public class CustomJavac extends Javac {
     protected void compile() {
         String specifiedCompiler = getProject().getProperty("build.compiler");
         if (specifiedCompiler != null) {
-            log("Warning: build.compiler=" + specifiedCompiler + " so disabling JSR 269 annotation processing", Project.MSG_WARN);
+            if (specifiedCompiler.equals("extJavac")) {
+                log("JSR 269 not found, loading from " + javacClasspath);
+                createCompilerArg().setValue("-J-Xbootclasspath/p:" + javacClasspath);
+            } else {
+                log("Warning: build.compiler=" + specifiedCompiler + " so disabling JSR 269 annotation processing", Project.MSG_WARN);
+            }
             super.compile();
             return;
         }
@@ -137,7 +142,7 @@ public class CustomJavac extends Javac {
                 Path cp = ((CustomJavac) getJavac()).javacClasspath;
                 AntClassLoader cl = new AntClassLoader(getJavac().getProject(), cp, false);
                 cl.setIsolated(true); // otherwise RB.gB("c.s.t.j.r.compiler") -> tools.jar's compiler.class despite our compiler.properties
-                Class c = Class.forName("com.sun.tools.javac.Main", true, cl);
+                Class<?> c = Class.forName("com.sun.tools.javac.Main", true, cl);
                 getJavac().log("Running javac from " + c.getProtectionDomain().getCodeSource().getLocation(), Project.MSG_VERBOSE);
                 Method compile = c.getMethod("compile", String[].class);
                 int result = (Integer) compile.invoke(null, (Object) cmd.getArguments());
