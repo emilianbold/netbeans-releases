@@ -42,56 +42,63 @@ package org.netbeans.modules.db.mysql.impl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.openide.util.NbBundle;
 
 /**
  * This class encapsulates a database connection and serializes
  * interaction with this connection through a blocking queue.
  *
+ * This is a thread-safe class
+ *
  * @author David Van Couvering
  */
-public class ConnectionProcessor implements Runnable {
+public final class ConnectionProcessor implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());
     final BlockingQueue<Runnable> inqueue;
     
-    private Connection conn;
+    private final AtomicReference<Connection> connref = new AtomicReference<Connection>();
     private Thread taskThread;
-    
+
     void setConnection(Connection conn) {
-        this.conn = conn;
+        this.connref.set(conn);
     }
     
     Connection getConnection() {
-        return this.conn;
+        return connref.get();
     }
 
     void validateConnection() throws DatabaseException {
-        try {
-            // A connection only needs to be validated if it already exists.
-            // We're trying to see if something went wrong to an existing connection...
-            if (conn == null) {
-                return;
-            }
-            
-            if (conn.isClosed()) {
-                conn = null;
-                throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
-            }
+        synchronized(connref) {
+            try {
+                // A connection only needs to be validated if it already exists.
+                // We're trying to see if something went wrong to an existing connection...
+                Connection conn;
+                if ((conn = connref.get()) == null) {
+                    return;
+                }
 
-            // Send a command to the server, if it fails we know the connection is invalid.
-            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-        } catch (SQLException e) {
-            conn = null;
-            LOGGER.log(Level.FINE, null, e);
-            throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
+                if (conn.isClosed()) {
+                    connref.set(null);
+                    throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
+                }
+
+                // Send a command to the server, if it fails we know the connection is invalid.
+                conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+            } catch (SQLException e) {
+                connref.set(null);
+                LOGGER.log(Level.FINE, null, e);
+                throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
+            }
         }
     }
     
     boolean isConnected() {
-        return conn != null;
+        return connref.get() != null;
     }
 
     boolean isConnProcessorThread() {
@@ -110,6 +117,8 @@ public class ConnectionProcessor implements Runnable {
                 
                 command.run();                
             } catch ( InterruptedException ie ) {
+                LOGGER.log(Level.INFO, null, ie);
+                taskThread.interrupt();
                 return;
             }
         }
