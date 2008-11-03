@@ -63,7 +63,6 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.SyntaxSupport;
-import org.netbeans.editor.Formatter;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Lookup;
@@ -1030,31 +1029,32 @@ public class ExtKit extends BaseKit {
 
         /** Check the characters that should cause reindenting the line. */
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            BaseDocument doc = Utilities.getDocument(target);
-            if (doc != null) {
-                Caret caret = target.getCaret();
-                Formatter f = doc.getFormatter();
-                if (f instanceof ExtFormatter) {
-                    ExtFormatter ef = (ExtFormatter)f;
-                    int[] fmtBlk = ef.getReformatBlock(target, typedText);
-
-                    if (fmtBlk != null) {
-                        try {
-                            fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
-                            fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
-
-                            //this was the of #18922, that causes the bug #20198
-                            //ef.reformat(doc, fmtBlk[0], fmtBlk[1]);
-
-                            //bugfix of the bug #20198. Bug #18922 is fixed too as well as #6968
-                            ef.reformat(doc, fmtBlk[0], fmtBlk[1], true);
-                            
-                        } catch (BadLocationException e) {
-                        } catch (IOException e) {
-                        }
-                    }
-                }
-            }
+// XXX: formatting cleanup, we have to replace this somehow!!
+//            BaseDocument doc = Utilities.getDocument(target);
+//            if (doc != null) {
+//                Caret caret = target.getCaret();
+//                Formatter f = doc.getFormatter();
+//                if (f instanceof ExtFormatter) {
+//                    ExtFormatter ef = (ExtFormatter)f;
+//                    int[] fmtBlk = ef.getReformatBlock(target, typedText);
+//
+//                    if (fmtBlk != null) {
+//                        try {
+//                            fmtBlk[0] = Utilities.getRowStart(doc, fmtBlk[0]);
+//                            fmtBlk[1] = Utilities.getRowEnd(doc, fmtBlk[1]);
+//
+//                            //this was the of #18922, that causes the bug #20198
+//                            //ef.reformat(doc, fmtBlk[0], fmtBlk[1]);
+//
+//                            //bugfix of the bug #20198. Bug #18922 is fixed too as well as #6968
+//                            ef.reformat(doc, fmtBlk[0], fmtBlk[1], true);
+//
+//                        } catch (BadLocationException e) {
+//                        } catch (IOException e) {
+//                        }
+//                    }
+//                }
+//            }
         }
 
 

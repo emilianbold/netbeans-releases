@@ -93,10 +93,8 @@ import org.netbeans.lib.editor.util.swing.DocumentListenerPriority;
 import org.netbeans.modules.editor.lib.EditorPackageAccessor;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
-import org.netbeans.modules.editor.lib.FormatterOverride;
 import org.netbeans.modules.editor.lib.TrailingWhitespaceRemove;
 import org.netbeans.modules.editor.lib.SettingsConversions;
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
@@ -228,11 +226,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             new Integer(3)
         };
 
-    /** Size of one indentation level. If this variable is null (value
-     * is not set in Settings, then the default algorithm will be used.
-     */
-    private Integer shiftWidth;
-
     /** How many times current writer requested writing */
     private int writeDepth;
 
@@ -331,9 +324,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
 
     private Position lastPositionEditedByTyping = null;
 
-    /** Formatter being used. */
-    private Formatter formatter;
-
+    /** Size of one indentation level. If this variable is null (value
+     * is not set in Settings, then the default algorithm will be used.
+     */
+    private int shiftWidth = -1;
     private int tabSize;
 
     private Preferences prefs;
@@ -345,9 +339,12 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             }
 
             if (key == null || SimpleValueNames.INDENT_SHIFT_WIDTH.equals(key)) {
-                int shw = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
-                if (shw >= 0) {
-                    shiftWidth = shw;
+                shiftWidth = prefs.getInt(SimpleValueNames.INDENT_SHIFT_WIDTH, -1);
+            }
+
+            if (key == null || SimpleValueNames.SPACES_PER_TAB.equals(key)) {
+                if (shiftWidth == -1) {
+                    shiftWidth = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
                 }
             }
 
@@ -434,9 +431,6 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 Finder finder = (Finder) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), EditorPreferencesKeys.PREVIOUS_WORD_FINDER, null);
                 putProperty(EditorPreferencesKeys.PREVIOUS_WORD_FINDER, finder != null ? finder : new FinderFactory.PreviousWordBwdFinder(BaseDocument.this, stopOnEOL, false));
             }
-
-            // Refresh formatter
-            formatter = null;
 
             SettingsConversions.callSettingsChange(BaseDocument.this);
         }
@@ -586,31 +580,32 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
-    /**
-     * @deprecated Please use Editor Indentation API instead, for details see
-     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
-     */
-    public Formatter getLegacyFormatter() {
-        if (formatter == null) {
-            formatter = (Formatter) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), FORMATTER, null);
-            if (formatter == null) {
-                formatter = Formatter.getFormatter(mimeType);
-            }
-        }
-        return formatter;
-    }
-
-    /**
-     * Gets the formatter for this document.
-     *
-     * @deprecated Please use Editor Indentation API instead, for details see
-     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
-     */
-    public Formatter getFormatter() {
-        Formatter f = getLegacyFormatter();
-        FormatterOverride fp = Lookup.getDefault().lookup(FormatterOverride.class);
-        return (fp != null) ? fp.getFormatter(this, f) : f;
-    }
+// XXX: formatting cleanup
+//    /**
+//     * @deprecated Please use Editor Indentation API instead, for details see
+//     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+//     */
+//    public Formatter getLegacyFormatter() {
+//        if (formatter == null) {
+//            formatter = (Formatter) SettingsConversions.callFactory(prefs, MimePath.parse(mimeType), FORMATTER, null);
+//            if (formatter == null) {
+//                formatter = Formatter.getFormatter(mimeType);
+//            }
+//        }
+//        return formatter;
+//    }
+//
+//    /**
+//     * Gets the formatter for this document.
+//     *
+//     * @deprecated Please use Editor Indentation API instead, for details see
+//     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
+//     */
+//    public Formatter getFormatter() {
+//        Formatter f = getLegacyFormatter();
+//        FormatterOverride fp = Lookup.getDefault().lookup(FormatterOverride.class);
+//        return (fp != null) ? fp.getFormatter(this, f) : f;
+//    }
 
     /**
      * @deprecated Please use Lexer instead, for details see
@@ -1523,15 +1518,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * setting. If so it uses it, otherwise it uses <code>formatter.getSpacesPerTab()</code>.
      *
      * @see getTabSize()
-     * @see Formatter.getSpacesPerTab()
+     * @deprecated Please use Editor Indentation API instead, for details see
+     *   <a href="@org-netbeans-modules-editor-indent@/overview-summary.html">Editor Indentation</a>.
      */
     public int getShiftWidth() {
-        if (shiftWidth != null) {
-            return shiftWidth.intValue();
-
-        } else {
-            return getFormatter().getSpacesPerTab();
-        }
+        return shiftWidth;
     }
 
     /**

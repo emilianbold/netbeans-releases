@@ -44,11 +44,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.logging.Level;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.mobility.svgcore.SVGDataObject;
 import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.openide.filesystems.FileObject;
@@ -82,7 +83,7 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
         return new File( m_data.getFilePath());
     }
     
-    protected Node createNodeDelegate() {
+    protected @Override Node createNodeDelegate() {
         return new SVGPaletteItemDataNode(this, getLookup());
     }
     
@@ -117,33 +118,39 @@ public final class SVGPaletteItemDataObject extends MultiDataObject {
         //return getCookieSet().getLookup();
     }       
     
-    private static void insert( String text, JTextComponent target) {
-        Document doc = target.getDocument();
+    private static void insert(final String text, final JTextComponent target) {
+        final Document doc = target.getDocument();
         
-        if ( doc instanceof BaseDocument) {
-            BaseDocument bDoc = (BaseDocument) doc;
-            Formatter formatter = bDoc.getFormatter();
+        if (doc instanceof BaseDocument) {
+            final Reformat formatter = Reformat.get(doc);
+            formatter.lock();
             try {
-                bDoc.atomicLock();
-                
-                Caret caret = target.getCaret();
-                int p0 = Math.min(caret.getDot(), caret.getMark());
-                int p1 = Math.max(caret.getDot(), caret.getMark());
-                doc.remove(p0, p1 - p0);
-                
-                int start = caret.getDot();
-                doc.insertString(start, text, null);
-                
-                int end = start + text.length();
-                formatter.reformatLock();
-                formatter.reformat(bDoc, start, end);
-                formatter.reformatUnlock();
-                bDoc.atomicUnlock();
-            } catch( Exception e) {
-                formatter.reformatUnlock();
-                bDoc.atomicUndo();
+                final boolean [] ok = new boolean [] { false };
+                ((BaseDocument) doc).runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            Caret caret = target.getCaret();
+                            int p0 = Math.min(caret.getDot(), caret.getMark());
+                            int p1 = Math.max(caret.getDot(), caret.getMark());
+                            doc.remove(p0, p1 - p0);
+
+                            int start = caret.getDot();
+                            doc.insertString(start, text, null);
+
+                            int end = start + text.length();
+                            formatter.reformat(start, end);
+                            ok[0] = true;
+                        } catch (BadLocationException ble) {
+                            // ignore
+                        }
+                    }
+                });
+                if (!ok[0]) {
+                    ((BaseDocument) doc).atomicUndo();
+                }
+            } finally {
+                formatter.unlock();
             }
-            
         }
     }
 }

@@ -45,10 +45,8 @@ import java.util.Map;
 import java.io.IOException;
 import java.io.Writer;
 import java.io.CharArrayWriter;
-import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
-import java.util.Stack;
 import java.util.WeakHashMap;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -61,6 +59,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.modules.editor.deprecated.pre65formatting.LegacyFormattersProvider;
 import org.netbeans.modules.editor.lib.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.modules.editor.lib.SettingsConversions;
@@ -103,7 +102,8 @@ public class Formatter {
         } else {
             Formatter formatter = kitClass2Formatter.get(kitClass);
             if (formatter == null) {
-                formatter = BaseKit.getKit(kitClass).createFormatter();
+                BaseKit kit = BaseKit.getKit(kitClass);
+                formatter = callCreateFormatterMethod(kit);
                 kitClass2Formatter.put(kitClass, formatter);
             }
             return formatter;
@@ -127,9 +127,9 @@ public class Formatter {
         if (formatter == null) {
             EditorKit editorKit = MimeLookup.getLookup(mimePath).lookup(EditorKit.class);
             if (editorKit instanceof BaseKit) {
-                formatter = ((BaseKit) editorKit).createFormatter();
+                formatter = callCreateFormatterMethod((BaseKit) editorKit);
             } else {
-                formatter = BaseKit.getKit(BaseKit.class).createFormatter();
+                formatter = callCreateFormatterMethod(BaseKit.getKit(BaseKit.class));
             }
             mimePath2Formatter.put(mimePath, formatter);
         }
@@ -261,7 +261,7 @@ public class Formatter {
      * @see BaseDocument.getTabSize()
      */
     public int getTabSize() {
-        Document doc = getFormattingContextDocument();
+        Document doc = LegacyFormattersProvider.getFormattingContextDocument();
         if (doc != null) {
             Object ret = callIndentUtils("tabSize", doc); //NOI18N
             if (ret instanceof Integer) {
@@ -297,7 +297,7 @@ public class Formatter {
      * @see getSpacesPerTab()
      */
     public int getShiftWidth() {
-        Document doc = getFormattingContextDocument();
+        Document doc = LegacyFormattersProvider.getFormattingContextDocument();
         if (doc != null) {
             Object ret = callIndentUtils("indentLevelSize", doc); //NOI18N
             if (ret instanceof Integer) {
@@ -326,7 +326,7 @@ public class Formatter {
 
     /** Should the typed tabs be expanded to the spaces? */
     public boolean expandTabs() {
-        Document doc = getFormattingContextDocument();
+        Document doc = LegacyFormattersProvider.getFormattingContextDocument();
         if (doc != null) {
             Object ret = callIndentUtils("isExpandTabs", doc); //NOI18N
             if (ret instanceof Boolean) {
@@ -350,7 +350,7 @@ public class Formatter {
     * instead of one typed tab.
     */
     public int getSpacesPerTab() {
-        Document doc = getFormattingContextDocument();
+        Document doc = LegacyFormattersProvider.getFormattingContextDocument();
         if (doc != null) {
             Object ret = callIndentUtils("indentLevelSize", doc); //NOI18N
             if (ret instanceof Integer) {
@@ -375,11 +375,11 @@ public class Formatter {
     // ------------------------------------------------------------------------
 
     public String getIndentString(BaseDocument doc, int indent) {
-        pushFormattingContextDocument(doc);
+        LegacyFormattersProvider.pushFormattingContextDocument(doc);
         try {
             return getIndentString(indent, expandTabs(), doc.getTabSize());
         } finally {
-            popFormattingContextDocument(doc);
+            LegacyFormattersProvider.popFormattingContextDocument(doc);
         }
     }
         
@@ -400,7 +400,7 @@ public class Formatter {
      */
     public void insertTabString (final BaseDocument doc, final int dotPos)
     throws BadLocationException {
-        pushFormattingContextDocument(doc);
+        LegacyFormattersProvider.pushFormattingContextDocument(doc);
         try {
             final BadLocationException[] badLocationExceptions = new BadLocationException [1];
             doc.runAtomic (new Runnable () {
@@ -433,7 +433,7 @@ public class Formatter {
             if (badLocationExceptions[0] != null)
                 throw badLocationExceptions [0];
         } finally {
-            popFormattingContextDocument(doc);
+            LegacyFormattersProvider.popFormattingContextDocument(doc);
         }
     }
 
@@ -442,7 +442,7 @@ public class Formatter {
     */
     public void changeRowIndent (final BaseDocument doc, final int pos, final int newIndent)
     throws BadLocationException {
-        pushFormattingContextDocument(doc);
+        LegacyFormattersProvider.pushFormattingContextDocument(doc);
         try {
             final BadLocationException[] badLocationExceptions = new BadLocationException [1];
             doc.runAtomic (new Runnable () {
@@ -481,7 +481,7 @@ public class Formatter {
             if (badLocationExceptions[0] != null)
                 throw badLocationExceptions [0];
         } finally {
-            popFormattingContextDocument(doc);
+            LegacyFormattersProvider.popFormattingContextDocument(doc);
         }
     }
 
@@ -495,7 +495,7 @@ public class Formatter {
     */
     public void changeBlockIndent (final BaseDocument doc, final int startPos, final int endPos,
                                   final int shiftCnt) throws BadLocationException {
-        pushFormattingContextDocument(doc);
+        LegacyFormattersProvider.pushFormattingContextDocument(doc);
         try {
             GuardedDocument gdoc = (doc instanceof GuardedDocument)
                                    ? (GuardedDocument)doc : null;
@@ -535,14 +535,14 @@ public class Formatter {
             if (badLocationExceptions[0] != null)
                 throw badLocationExceptions [0];
         } finally {
-            popFormattingContextDocument(doc);
+            LegacyFormattersProvider.popFormattingContextDocument(doc);
         }
     }
 
     /** Shift line either left or right */
     public void shiftLine(BaseDocument doc, int dotPos, boolean right)
     throws BadLocationException {
-        pushFormattingContextDocument(doc);
+        LegacyFormattersProvider.pushFormattingContextDocument(doc);
         try {
             int ind = doc.getShiftWidth();
             if (!right) {
@@ -557,7 +557,7 @@ public class Formatter {
             ind = Math.max(ind, 0);
             changeRowIndent(doc, dotPos, ind);
         } finally {
-            popFormattingContextDocument(doc);
+            LegacyFormattersProvider.popFormattingContextDocument(doc);
         }
     }
 
@@ -569,7 +569,7 @@ public class Formatter {
     */
     public int reformat(BaseDocument doc, int startOffset, int endOffset)
     throws BadLocationException {
-        pushFormattingContextDocument(doc);
+        LegacyFormattersProvider.pushFormattingContextDocument(doc);
         try {
             try {
                 CharArrayWriter cw = new CharArrayWriter();
@@ -585,7 +585,7 @@ public class Formatter {
                 return 0;
             }
         } finally {
-            popFormattingContextDocument(doc);
+            LegacyFormattersProvider.popFormattingContextDocument(doc);
         }
     }
 
@@ -763,33 +763,6 @@ public class Formatter {
     // private implementation
     // ------------------------------------------------------------------------
 
-    private static ThreadLocal<Stack<Reference<Document>>> FORMATTING_CONTEXT_DOCUMENT = new ThreadLocal<Stack<Reference<Document>>>() {
-        @Override
-        protected Stack<Reference<Document>> initialValue() {
-            return new Stack<Reference<Document>>();
-        }
-    };
-
-    private static Document getFormattingContextDocument() {
-        Stack<Reference<Document>> stack = FORMATTING_CONTEXT_DOCUMENT.get();
-        return stack.isEmpty() ? null : stack.peek().get();
-    }
-
-    /* package */ static void pushFormattingContextDocument(Document doc) {
-        FORMATTING_CONTEXT_DOCUMENT.get().push(new WeakReference<Document>(doc));
-    }
-
-    /* package */ static void popFormattingContextDocument(Document doc) {
-        Stack<Reference<Document>> stack = FORMATTING_CONTEXT_DOCUMENT.get();
-        assert !stack.empty() : "Calling popFormattingContextDocument without pushFormattingContextDocument"; //NOI18N
-
-        Reference<Document> ref = stack.pop();
-        Document docFromStack = ref.get();
-        assert docFromStack == doc : "Popping " + doc + ", but the stack contains " + docFromStack;
-
-        ref.clear();
-    }
-
     private static boolean noIndentUtils = false;
     private static WeakReference<Class> indentUtilsClassRef = null;
     private static Object callIndentUtils(String methodName, Document doc) {
@@ -852,4 +825,12 @@ public class Formatter {
         }
     }
 
+    private static Formatter callCreateFormatterMethod(BaseKit kit) {
+        try {
+            Method m = kit.getClass().getMethod("createFormatter"); //NOI18N
+            return (Formatter) m.invoke(kit);
+        } catch (Exception e) {
+            return new Formatter(kit.getClass());
+        }
+    }
 }

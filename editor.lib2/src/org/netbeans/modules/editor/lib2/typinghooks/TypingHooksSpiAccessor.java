@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,48 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.editor.lib;
+package org.netbeans.modules.editor.lib2.typinghooks;
 
 import javax.swing.text.Document;
-import org.netbeans.editor.Formatter;
+import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
- * Class to be searched in lookup that can override a formatter for the given document.
- * <br/>
- * It is a private contract between editor/lib and editor/indent.
  *
- * @author Miloslav Metelka
+ * @author vita
  */
-public interface FormatterOverride {
+public abstract class TypingHooksSpiAccessor {
 
-    /**
-     * Possibly override the default formatter used for the given document.
-     * 
-     * @param doc non-null document for which the formatter is being searched.
-     * @param defaultFormatter default formatter found by the infrastructure
-     *   or null if there is none.
-     * @return overriden formatter or the default formatter passed as the argument.
-     */
-    Formatter getFormatter(Document doc, Formatter defaultFormatter);
+    private static TypingHooksSpiAccessor ACCESSOR = null;
 
+    public static synchronized void register(TypingHooksSpiAccessor accessor) {
+        assert ACCESSOR == null : "Can't register two package accessors!"; //NOI18N
+        ACCESSOR = accessor;
+    }
+
+    public static synchronized TypingHooksSpiAccessor get() {
+        // Trying to wake up HighlightsLayer ...
+        try {
+            Class clazz = Class.forName(TypedTextInterceptor.MutableContext.class.getName());
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
+
+        assert ACCESSOR != null : "There is no package accessor available!"; //NOI18N
+        return ACCESSOR;
+    }
+
+    /** Creates a new instance of HighlightingSpiPackageAccessor */
+    protected TypingHooksSpiAccessor() {
+    }
+
+    public abstract TypedTextInterceptor.MutableContext createContext(JTextComponent c, int offset, String typedText);
+    public abstract Object [] getContextData(TypedTextInterceptor.MutableContext context);
+    public abstract void resetContextData(TypedTextInterceptor.MutableContext context);
 }

@@ -41,8 +41,9 @@ package org.netbeans.modules.cnd.editor.fortran;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
-import org.netbeans.editor.Formatter;
 import org.netbeans.modules.cnd.test.FormatterBaseDocumentUnitTestCase;
+import org.netbeans.modules.editor.indent.api.Indent;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.openide.util.Exceptions;
 
 /**
@@ -66,47 +67,69 @@ public class FortranFormatterBaseUnitTestCase extends FormatterBaseDocumentUnitT
      * The caret position should be marked in the document text by '|'.
      */
     protected void indentNewLine() {
-        Formatter f = getDocument().getFormatter();
-	try {
-	    f.indentLock();
-	    int offset = f.indentNewLine(getDocument(), getCaretOffset());
-	    getCaret().setDot(offset);
-	} finally {
-	    f.indentUnlock();
-	}
+        Indent indenter = Indent.get(getDocument());
+        indenter.lock();
+        try {
+            getDocument().atomicLock();
+            try {
+                int offset = indenter.indentNewLine(getCaretOffset());
+                getCaret().setDot(offset);
+            } catch (BadLocationException ble) {
+                throw new IllegalStateException(ble);
+            } finally {
+                getDocument().atomicUnlock();
+            }
+        } finally {
+            indenter.unlock();
+        }
     }
 
     /**
      * Perform reformatting of the whole document's text.
      */
     protected void reformat() {
-        Formatter f = getDocument().getFormatter();
+        Reformat f = Reformat.get(getDocument());
+        f.lock();
         try {
-	    f.reformatLock();
-            f.reformat(getDocument(), 0, getDocument().getLength());
+            getDocument().atomicLock();
+            try {
+                f.reformat(0, getDocument().getLength());
+            } finally {
+                getDocument().atomicUnlock();
+            }
         } catch (BadLocationException e) {
             e.printStackTrace(getLog());
             fail(e.getMessage());
         } finally {
-	    f.reformatUnlock();
+	    f.unlock();
 	}
     }
 
     protected void typeChar(char ch, boolean isIndent) {
         int pos = getCaretOffset();
+        Indent f = null;
+
+        if (isIndent) {
+            f = Indent.get(getDocument());
+            f.lock();
+        }
+
         try {
-            getDocument().insertString(pos, String.valueOf(ch), null);
-            if (isIndent) {
-                Formatter f = getDocument().getFormatter();
-                f.indentLock();
-                try {
-                    getDocument().getFormatter().indentLine(getDocument(), pos);
-                } finally {
-                    f.indentUnlock();
+            getDocument().atomicLock();
+            try {
+                getDocument().insertString(pos, String.valueOf(ch), null);
+                if (f != null) {
+                    f.reindent(pos);
                 }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                getDocument().atomicUnlock();
             }
-        } catch (BadLocationException ex) {
-            Exceptions.printStackTrace(ex);
+        } finally {
+            if (f != null) {
+                f.unlock();
+            }
         }
     }
 }

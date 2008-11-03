@@ -46,12 +46,9 @@ import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
-import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
 
 /**
  * Indentation and code reformatting services for a swing text document.
@@ -69,7 +66,8 @@ public final class IndentImpl {
             indentImpl = new IndentImpl(doc);
             doc.putProperty(IndentImpl.class, indentImpl);
         }
-        indentImpl.refresh();
+// XXX: formatting infra cleanup
+//        indentImpl.refresh();
         return indentImpl;
     }
     
@@ -82,8 +80,9 @@ public final class IndentImpl {
     private TaskHandler indentHandler;
     
     private TaskHandler reformatHandler;
-    
-    private Formatter defaultFormatter;
+
+// XXX: formatting infra cleanup
+//    private Formatter defaultFormatter;
     
     public IndentImpl(Document doc) {
         this.doc = doc;
@@ -109,17 +108,18 @@ public final class IndentImpl {
         this.reformat = reformat;
     }
     
-    void setDefaultFormatter(Formatter defaultFormatter) {
-        this.defaultFormatter = defaultFormatter;
-    }
-    
-    void refresh() {
-        if (defaultFormatter == null) {
-            if (doc instanceof BaseDocument) {
-                defaultFormatter = ((BaseDocument)doc).getLegacyFormatter();
-            }
-        }
-    }
+// XXX: formatting infra cleanup
+//    void setDefaultFormatter(Formatter defaultFormatter) {
+//        this.defaultFormatter = defaultFormatter;
+//    }
+//
+//    void refresh() {
+//        if (defaultFormatter == null) {
+//            if (doc instanceof BaseDocument) {
+//                defaultFormatter = ((BaseDocument)doc).getLegacyFormatter();
+//            }
+//        }
+//    }
     
     public synchronized void indentLock() {
         if (LOG.isLoggable(Level.FINE)) {
@@ -194,7 +194,8 @@ public final class IndentImpl {
             // Find begining of line
             Element lineRootElem = lineRootElement(doc);
             // Correct the start offset to point to the begining of the start line
-            boolean done = false;
+// XXX: formatting infra cleanup
+//            boolean done = false;
             if (indentHandler.hasItems()) {
                 // When indenting newline first insert a plain newline
                 if (indentNewLine) {
@@ -230,37 +231,40 @@ public final class IndentImpl {
 
                 // Perform whole reindent on top and possibly embedded levels
                 indentHandler.runTasks();
-                done = true;
+// XXX: formatting infra cleanup
+//                done = true;
             }
 
-            // Fallback to Formatter
-            if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
-                if (indentNewLine) {
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Defaulting reindent() to indentNewLine() in legacy formatter " + // NOI18N
-                                defaultFormatter + '\n');
-                    }
-                    // Fallback to indentNewLine() will insert '\n'
-                    int newCaretOffset = defaultFormatter.indentNewLine(doc, caretOffset);
-                    indentHandler.setCaretOffset(newCaretOffset);
-                } else { // Indent line
-                    // Original formatter does not have reindentation of multiple lines
-                    // so reformat start line and continue for each line.
-                    Position endPos = doc.createPosition(endOffset);
-                    if (LOG.isLoggable(Level.FINE)) {
-                        LOG.fine("Defaulting reindent() to indentLine() in legacy formatter " + // NOI18N
-                                defaultFormatter + '\n');
-                    }
-                    do {
-                        startOffset = defaultFormatter.indentLine(doc, startOffset);
-                        int startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
-                        if (startLineIndex >= lineRootElem.getElementCount())
-                            break;
-                        Element lineElem = lineRootElem.getElement(startLineIndex);
-                        startOffset = lineElem.getStartOffset(); // Move to next line
-                    } while (startOffset < endPos.getOffset());
-                }
-            }
+// XXX: formatting infra cleanup
+//            // Fallback to Formatter
+//            if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
+//                if (indentNewLine) {
+//                    if (LOG.isLoggable(Level.FINE)) {
+//                        LOG.fine("Defaulting reindent() to indentNewLine() in legacy formatter " + // NOI18N
+//                                defaultFormatter + '\n');
+//                    }
+//                    // Fallback to indentNewLine() will insert '\n'
+//                    int newCaretOffset = defaultFormatter.indentNewLine(doc, caretOffset);
+//                    indentHandler.setCaretOffset(newCaretOffset);
+//                } else { // Indent line
+//                    // Original formatter does not have reindentation of multiple lines
+//                    // so reformat start line and continue for each line.
+//                    Position endPos = doc.createPosition(endOffset);
+//                    if (LOG.isLoggable(Level.FINE)) {
+//                        LOG.fine("Defaulting reindent() to indentLine() in legacy formatter " + // NOI18N
+//                                defaultFormatter + '\n');
+//                    }
+//                    do {
+//                        startOffset = defaultFormatter.indentLine(doc, startOffset);
+//                        int startLineIndex = lineRootElem.getElementIndex(startOffset) + 1;
+//                        if (startLineIndex >= lineRootElem.getElementCount())
+//                            break;
+//                        Element lineElem = lineRootElem.getElement(startLineIndex);
+//                        startOffset = lineElem.getStartOffset(); // Move to next line
+//                    } while (startOffset < endPos.getOffset());
+//                }
+//            }
+
             return indentHandler.caretOffset();
         } finally {
             if (runUnlocked)
@@ -283,7 +287,8 @@ public final class IndentImpl {
             if (runUnlocked) {
                 reformatHandler.collectTasks();
             }
-            boolean done = false;
+// XXX: formatting infra cleanup
+//            boolean done = false;
             if (reformatHandler.hasItems()) {
                 reformatHandler.setGlobalBounds(
                         doc.createPosition(startOffset),
@@ -293,18 +298,20 @@ public final class IndentImpl {
                 reformatHandler.runTasks();
 
                 // Perform reformatting of the top section and possible embedded sections
-                done = true;
+// XXX: formatting infra cleanup
+//                done = true;
             }
 
-            // Fallback to Formatter
-            if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
-                if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("Defaulting reformat() to reformat() in legacy formatter " + // NOI18N
-                            defaultFormatter + '\n');
-                }
-                BaseDocument bdoc = (BaseDocument)doc;
-                defaultFormatter.reformat(bdoc, startOffset, endOffset);
-            }
+// XXX: formatting infra cleanup
+//            // Fallback to Formatter
+//            if (!done && doc instanceof BaseDocument && defaultFormatter != null) {
+//                if (LOG.isLoggable(Level.FINE)) {
+//                    LOG.fine("Defaulting reformat() to reformat() in legacy formatter " + // NOI18N
+//                            defaultFormatter + '\n');
+//                }
+//                BaseDocument bdoc = (BaseDocument)doc;
+//                defaultFormatter.reformat(bdoc, startOffset, endOffset);
+//            }
         } finally {
             if (runUnlocked)
                 reformatHandler = null;

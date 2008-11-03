@@ -56,7 +56,6 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -83,7 +82,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Formatter;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
@@ -528,10 +527,13 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, listSb.toString(), null);
-            Formatter formatter = doc.getFormatter();
-            formatter.reformatLock();
-            formatter.reformat(doc, 0, doc.getLength());
-            formatter.reformatUnlock();
+            Reformat formatter = Reformat.get(doc);
+            formatter.lock();
+            try {
+                formatter.reformat(0, doc.getLength());
+            } finally {
+                formatter.unlock();
+            }
             listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
@@ -584,10 +586,13 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, newSb.toString(), null);
-            Formatter formatter = doc.getFormatter();
-            formatter.reformatLock();
-            formatter.reformat(doc, 0, doc.getLength());
-            formatter.reformatUnlock();
+            Reformat formatter = Reformat.get(doc);
+            formatter.lock();
+            try {
+                formatter.reformat(0, doc.getLength());
+            } finally {
+                formatter.unlock();
+            }
             newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
@@ -645,10 +650,13 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, editSb.toString(), null);
-            Formatter formatter = doc.getFormatter();
-            formatter.reformatLock();
-            formatter.reformat(doc, 0, doc.getLength());
-            formatter.reformatUnlock();
+            Reformat formatter = Reformat.get(doc);
+            formatter.lock();
+            try {
+                formatter.reformat(0, doc.getLength());
+            } finally {
+                formatter.unlock();
+            }
             editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
@@ -711,10 +719,13 @@ public class JSFClientGenerator {
         try {
             doc.remove(0, doc.getLength());
             doc.insertString(0, detailSb.toString(), null);
-            Formatter formatter = doc.getFormatter();
-            formatter.reformatLock();
-            formatter.reformat(doc, 0, doc.getLength());
-            formatter.reformatUnlock();
+            Reformat formatter = Reformat.get(doc);
+            formatter.lock();
+            try {
+                formatter.reformat(0, doc.getLength());
+            } finally {
+                formatter.unlock();
+            }
             detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
             Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
