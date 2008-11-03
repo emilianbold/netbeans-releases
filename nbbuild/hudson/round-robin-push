@@ -19,7 +19,7 @@ echo $HGINFO
 
 HGID=`echo "$HGINFO" | grep "Hg ID"`
 echo Last build_info line: "$HGID"
-HGTIP=`echo "$HGID" | cut -f 2 -d ":"`
+HGTIP=`echo "$HGID" | cut -f 2 -d ":" | while read X; do echo $X; done`
 echo Last OK revision: "$HGTIP"
 
 hg pull -r "$HGTIP" "$pop_url" || exit 5
