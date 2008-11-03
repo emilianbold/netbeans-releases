@@ -39,9 +39,12 @@
 
 package org.netbeans.modules.parsing.api;
 
+import java.lang.ref.Reference;
 import java.util.Collection;
 import java.util.Collections;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
@@ -153,16 +156,25 @@ public final class ParserManager {
         final String mimeType,
         final UserTask     userTask
     ) throws ParseException {
-        final Lookup lookup = MimeLookup.getLookup (mimeType);
-        final ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
-        if (parserFactory == null) {
-            throw new IllegalArgumentException("No parser for mime type: " + mimeType);
+        Parser p = null;
+        final Reference<Parser> ref = cachedParsers.get (mimeType);
+        if (ref != null) {
+            p = ref.get();
         }
-        final Parser p = parserFactory.createParser(Collections.<Snapshot>emptyList());
+        if (p == null) {
+            final Lookup lookup = MimeLookup.getLookup (mimeType);
+            final ParserFactory parserFactory = lookup.lookup (ParserFactory.class);
+            if (parserFactory == null) {
+                throw new IllegalArgumentException("No parser for mime type: " + mimeType);
+            }
+            p = parserFactory.createParser(Collections.<Snapshot>emptyList());
+            cachedParsers.put(mimeType, new TimedWeakReference<Parser>(p));
+        }
+        final Parser pf = p;
         TaskProcessor.runUserTask (new Mutex.ExceptionAction<Void>() {
             public Void run() throws Exception {
-                p.parse(null, userTask, null);
-                Parser.Result result = p.getResult(userTask, null);
+                pf.parse(null, userTask, null);
+                Parser.Result result = pf.getResult(userTask, null);
                 try {
                     userTask.run(result);
                 } finally {
@@ -172,6 +184,8 @@ public final class ParserManager {
             }
         }, Collections.<Source>emptyList ());
     }
+    //where
+    private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();
 }
 
 

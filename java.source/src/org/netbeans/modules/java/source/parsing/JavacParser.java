@@ -185,8 +185,8 @@ public class JavacParser extends Parser {
     private FileObject root;
     //ClassPaths used by the parser
     private ClasspathInfo cpInfo;
-    //Parser for single file
-    private final boolean isSingleSource;
+    //Count of files the parser was created for
+    private final int sourceCount;
     //Incremental parsing support
     private final boolean supportsReparse;
     //Incremental parsing support
@@ -213,8 +213,8 @@ public class JavacParser extends Parser {
     
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
-        this.isSingleSource = snapshots.size() == 1;
-        this.supportsReparse = this.isSingleSource && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
+        this.sourceCount = snapshots.size();
+        this.supportsReparse = this.sourceCount == 1 && MIME_TYPE.equals(snapshots.iterator().next().getSource().getMimeType());
         EditorCookie.Observable ec = null;
         JavaFileFilterImplementation filter = null;
         if (this.supportsReparse) {
@@ -288,7 +288,19 @@ public class JavacParser extends Parser {
         canceled.set(false);
         try {            
             LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
-            if (isSingleSource) {
+            if (this.sourceCount == 0) {
+                ClasspathInfo _tmpInfo = null;
+                if (task instanceof ClasspathInfoProvider &&
+                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
+                    cpInfo = _tmpInfo;
+                    explicitCpInfo = true;
+                    ciImpl = new CompilationInfoImpl(cpInfo);
+                }
+                else {
+                    throw new IllegalArgumentException("Task has to provide classpath.");
+                }
+            }
+            else if (this.sourceCount == 1) {
                 init (snapshot, task, true);
                 boolean needsFullReparse = true;
                 if (supportsReparse) {
@@ -307,23 +319,11 @@ public class JavacParser extends Parser {
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
             } 
-            else if (snapshot != null) {
+            else {
                 init (snapshot, task, false);
                 ciImpl = createCurrentInfo(this, file, root, snapshot,
                         ciImpl == null ? null : ciImpl.getJavacTask());
-            }
-            else {
-                ClasspathInfo _tmpInfo = null;
-                if (task instanceof ClasspathInfoProvider &&
-                    (_tmpInfo = ((ClasspathInfoProvider)task).getClasspathInfo()) != null) {
-                    cpInfo = _tmpInfo;
-                    explicitCpInfo = true;
-                    ciImpl = new CompilationInfoImpl(cpInfo);
-                }
-                else {
-                    throw new IllegalArgumentException("Task has to provide classpath.");
-                }
-            }
+            }            
             cachedSnapShot = snapshot;
         } catch (IOException ioe) {
             throw new ParseException ("JavacParser failure", ioe);            //NOI18N
@@ -353,11 +353,11 @@ public class JavacParser extends Parser {
             //maybe not needed and assertion is enough
             final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
             if (cpInfo != providedInfo) {
-                LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
-                cpInfo = ClasspathInfo.create(this.file);
-                if (cachedSnapShot != null) {
-                    parse (cachedSnapShot, task, event);
+                if (sourceCount != 0) {
+                    LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
                 }
+                assert cachedSnapShot != null;
+                parse (cachedSnapShot, task, event);
             }
         }
         JavacParserResult result = null;
