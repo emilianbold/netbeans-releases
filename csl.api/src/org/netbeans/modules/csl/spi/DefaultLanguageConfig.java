@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.IndexSearcher;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -97,9 +98,9 @@ public abstract class DefaultLanguageConfig implements GsfLanguage {
      * Get a Parser to use for this language, or null if none is available
      * @return a parser instance
      */
-//    public Parser getParser() {
-//        return null;
-//    }
+    public Parser getParser() {
+        return null;
+    }
     
     /** 
      * HACK: Some language supports may want to use their own editor kit

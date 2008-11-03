@@ -62,6 +62,7 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.editor.semantic.ColoringManager;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 
@@ -114,7 +115,7 @@ public final class Language {
     private FileObject semanticFile;
     private FileObject occurrencesFile;
     private FileObject indexSearcherFile;
-    
+    private Parser parser;
     
     /** Creates a new instance of DefaultLanguage */
     public Language(String mime) {
@@ -237,35 +238,35 @@ public final class Language {
         this.languageFile = languageFile;
     }
     
-//HANZ    /** Return a parser for use with this language. A parser is optional (in which
-//     * case getParser() may return null) but in that case a lot of functionality
-//     * will be disabled for this language.
-//     * @todo Clarify whether clients should cache instances of this or if it will
-//     *  be called only once and management done by the IDE
-//     */
-//    @CheckForNull
-//    public Parser getParser() {
-//        if (parser == null) {
-//            if (parserFile != null) {
-//                // Lazily construct Parser
-//                parser = (Parser)createInstance(parserFile);
-//                if (parser == null) {
-//                    // Don't keep trying
-//                    parserFile = null;
-//                }
-//            } else {
-//                getGsfLanguage(); // Also initializes languageConfig
-//                if (languageConfig != null) {
-//                    parser = languageConfig.getParser();
-//                }
-//            }
-//        }
-//        return parser;
-//    }
-//
-//    void setParser(Parser parser) {
-//        this.parser = parser;
-//    }
+    /** Return a parser for use with this language. A parser is optional (in which
+     * case getParser() may return null) but in that case a lot of functionality
+     * will be disabled for this language.
+     * @todo Clarify whether clients should cache instances of this or if it will
+     *  be called only once and management done by the IDE
+     */
+    @CheckForNull
+    public Parser getParser() {
+        if (parser == null) {
+            if (parserFile != null) {
+                // Lazily construct Parser
+                parser = (Parser)createInstance(parserFile);
+                if (parser == null) {
+                    // Don't keep trying
+                    parserFile = null;
+                }
+            } else {
+                getGsfLanguage(); // Also initializes languageConfig
+                if (languageConfig != null) {
+                    parser = languageConfig.getParser();
+                }
+            }
+        }
+        return parser;
+    }
+
+    void setParser(Parser parser) {
+        this.parser = parser;
+    }
     
     void setParserFile(FileObject parserFile) {
         this.parserFile = parserFile;

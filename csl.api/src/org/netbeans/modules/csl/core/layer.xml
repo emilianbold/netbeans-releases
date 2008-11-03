@@ -38,4 +38,8 @@
         
     </folder>
 
+    <folder name="Editors">
+        <file name="org-netbeans-modules-csl-core-GsfParserFactory.instance"/>
+    </folder>
+
 </filesystem>
