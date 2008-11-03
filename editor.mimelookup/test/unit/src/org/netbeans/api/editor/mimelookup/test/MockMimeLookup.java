@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -23,7 +23,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2007-2008 Sun Microsystems, Inc.
  */
 package org.netbeans.api.editor.mimelookup.test;
 
@@ -41,14 +41,12 @@ import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 
 /**
- * Mock implementation of MimeLookup. Initially the mime lookup is empty. You
- * will have to register <code>MockMimeLookup.class</code> through <code>MockServices</code>.
+ * Mock implementation of MimeLookup. Initially the mime lookup is empty. An instance
+ * is automatically installed in <code>META-INF/services</code>.
  * 
  * <p>Example:
  * 
  * <pre>
- * MockServics.setServices(MockMimeLookup.class);
- *
  * MimePath mimePath = MimePath.parse("text/x-abc");
  * MockMimeLookup.setInstances(mimePath, new TestFoldManagerFactory());
  * 

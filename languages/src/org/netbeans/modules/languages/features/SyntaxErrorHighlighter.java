@@ -49,12 +49,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import org.netbeans.api.languages.ASTEvaluator;
 import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ParserManager.State;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ParserManagerListener;
+import org.netbeans.api.languages.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import org.netbeans.modules.languages.ASTEvaluatorFactory;
+import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.openide.ErrorManager;
 import org.openide.text.Annotation;
@@ -65,23 +65,25 @@ import org.openide.text.NbDocument;
  *
  * @author Jan Jancura
  */
-public class SyntaxErrorHighlighter implements ParserManagerListener {
+public class SyntaxErrorHighlighter extends ASTEvaluator {
     
-    private NbEditorDocument            doc;
-    private ParserManagerImpl           parserManager;
+    private NbEditorDocument            document;
     private List<LanguagesAnnotation>   annotations = new ArrayList<LanguagesAnnotation> ();
 
     
     /** Creates a new instance of SyntaxErrorHighlighter */
     public SyntaxErrorHighlighter (Document doc) {
-        
-        this.doc = (NbEditorDocument) doc;
-        parserManager = ParserManagerImpl.getImpl (doc);
-        parserManager.addListener (this);
+        this.document = (NbEditorDocument) doc;
     }
 
-    public void parsed (State state, final ASTNode root) {
-        final List<SyntaxError> newErrors = new ArrayList<SyntaxError> (parserManager.getSyntaxErrors ());
+
+    @Override
+    public void beforeEvaluation (ParserResult parserResult) {
+    }
+
+    @Override
+    public void afterEvaluation (ParserResult parserResult) {
+        final List<SyntaxError> newErrors = new ArrayList<SyntaxError> (parserResult.getSyntaxErrors ());
         SwingUtilities.invokeLater (new Runnable () {
             public void run () {
                 try {
@@ -99,7 +101,7 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
                             oldAnnotation != null &&
                             oldAnnotation.getPosition ().getOffset () < item.getOffset ()
                         ) {
-                            doc.removeAnnotation (oldAnnotation);
+                            document.removeAnnotation (oldAnnotation);
                             oldAnnotation = oldIterator.hasNext () ? oldIterator.next () : null;
                         }
                         count++;
@@ -108,32 +110,32 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
                             oldAnnotation.getPosition ().getOffset () == item.getOffset () &&
                             oldAnnotation.getShortDescription ().equals (message)
                         ) {
-                            int ln = NbDocument.findLineNumber (doc, oldAnnotation.getPosition ().getOffset ());
+                            int ln = NbDocument.findLineNumber (document, oldAnnotation.getPosition ().getOffset ());
                             if (ln > lastLineNumber)
                                 newAnnotations.add (oldAnnotation);
                             else
-                                doc.removeAnnotation (oldAnnotation);
+                                document.removeAnnotation (oldAnnotation);
                             lastLineNumber = ln;
                             oldAnnotation = oldIterator.hasNext () ? oldIterator.next () : null;
                             continue;
                         }
-                        int ln = NbDocument.findLineNumber (doc, item.getOffset ());
+                        int ln = NbDocument.findLineNumber (document, item.getOffset ());
                         if (ln == lastLineNumber) continue;
                         
                         LanguagesAnnotation la = new LanguagesAnnotation (
                             "SyntaxError",
                             message
                         );
-                        Position position = doc.createPosition (item.getOffset ());
+                        Position position = document.createPosition (item.getOffset ());
                         la.setPosition (position);
-                        doc.addAnnotation (position, item.getLength (), la);
+                        document.addAnnotation (position, item.getLength (), la);
                         newAnnotations.add (la);
                         lastLineNumber = ln;
                     } // while
                     if (oldAnnotation != null)
-                        doc.removeAnnotation (oldAnnotation);
+                        document.removeAnnotation (oldAnnotation);
                     while (oldIterator.hasNext ())
-                        doc.removeAnnotation (oldIterator.next ());
+                        document.removeAnnotation (oldIterator.next ());
                     annotations = newAnnotations;
                 } catch (BadLocationException ex) {
                     ErrorManager.getDefault ().notify (ex);
@@ -141,9 +143,24 @@ public class SyntaxErrorHighlighter implements ParserManagerListener {
             }
         });
     }
+
+    @Override
+    public void evaluate (List<ASTItem> path, Feature feature) {
+    }
+
+    @Override
+    public String getFeatureName () {
+        return "asd";
+    }
     
     
     // innerclasses ............................................................
+
+    public static class AASTEvaluatorFactory implements ASTEvaluatorFactory {
+        public ASTEvaluator create (Document document) {
+            return new SyntaxErrorHighlighter (document);
+        }
+    }
     
     static class LanguagesAnnotation extends Annotation {
 

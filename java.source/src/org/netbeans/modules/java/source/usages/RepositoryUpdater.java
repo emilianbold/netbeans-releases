@@ -112,9 +112,7 @@ import javax.tools.JavaFileObject;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceLevelQuery;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.progress.ProgressHandle;
@@ -147,6 +145,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -1254,7 +1253,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
     }
     
-    private final class CompileWorker implements CancellableTask<CompilationInfo> {
+    private final class CompileWorker implements Mutex.ExceptionAction {
                 
         /**
          * Used as a identity for resetDirty, which should reset currentWork only
@@ -1291,7 +1290,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             this.canceled.set(true);
         }
         
-        public void run (final CompilationInfo nullInfo) throws IOException {
+        public Void run () throws IOException {
             ACTIVITY_LOGGER.finest("START");    //NOI18N
             final Logger PERF_LOGGER = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
             PERF_LOGGER.log(Level.FINE, "start", RepositoryUpdater.class.getName()); // NOI18N
@@ -1634,6 +1633,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
                 PERF_LOGGER.log(Level.FINE, "end", RepositoryUpdater.class.getName()); // NOI18N
             }
+            return null;
         }
         
         private void findDependencies (final URL rootURL, final Stack<URL> cycleDetector, final Map<URL,List<URL>> depGraph,
@@ -2385,7 +2385,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             active.add (new CompileTuple(FileObjects.nbFileObject(fo, rootFo, filter, false),fileFile));
                         }
                         if (!active.isEmpty()) {
-                            JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel);                            
+                            JavacTaskImpl jt =  JavacParser.createJavacTask(cpInfo, listener, sourceLevel,null);                           
                             if (LOGGER.isLoggable(Level.FINEST)) {
                                 LOGGER.finest("Created new javac for: " + FileUtil.getFileDisplayName(fo)+ " "+ cpInfo.toString());   //NOI18N
                             }                            
@@ -3071,7 +3071,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                             }
                         }
                         if (jt == null) {
-                            jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
+                            jt = JavacParser.createJavacTask(cpInfo, listener, sourceLevel, new ClassNamesForFileOraculumImpl(misplacedSource2FQNsLocal));
                             jt.setTaskListener(listener);
                             if (LOGGER.isLoggable(Level.FINER)) {
                                 LOGGER.finer("Created new JavacTask for: " + FileUtil.getFileDisplayName(rootFo) + " " + cpInfo.toString());    //NOI18N

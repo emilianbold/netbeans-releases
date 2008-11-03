@@ -52,6 +52,8 @@ import javax.swing.text.StyledDocument;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ModificationResult.CreateChange;
 import org.netbeans.api.queries.FileEncodingQuery;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.JavaSourceSupportAccessor;
 import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.openide.cookies.EditorCookie;
@@ -118,14 +120,14 @@ public final class ModificationResult {
                 RepositoryUpdater.getDefault().unlockRU();
                 Set<FileObject> alreadyRefreshed = new HashSet<FileObject>();
                 if (this.js != null) {
-                    this.js.revalidate();
+                    JavaSourceAccessor.getINSTANCE().revalidate(this.js);
                     alreadyRefreshed.addAll(js.getFileObjects());
                 }
                 for (FileObject currentlyVisibleInEditor : JavaSourceSupportAccessor.ACCESSOR.getVisibleEditorsFiles()) {
                     if (!alreadyRefreshed.contains(currentlyVisibleInEditor)) {
                         JavaSource source = JavaSource.forFileObject(currentlyVisibleInEditor);                
                         if (source != null) {
-                            source.revalidate();
+                            JavaSourceAccessor.getINSTANCE().revalidate(source);
                         }
                     }
                 }
