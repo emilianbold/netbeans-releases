@@ -52,6 +52,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.ErrorManager;
 
 public class WeakListenersTest extends NbTestCase {
@@ -373,6 +374,7 @@ public class WeakListenersTest extends NbTestCase {
         assertEquals ("No listeners", 0, bean.listeners.getPropertyChangeListeners ().length);
     }
 
+    @RandomlyFails // NB-Core-Build #1651
     public void testStaticRemoveMethod() throws Exception {
         ChangeListener l = new ChangeListener() {public void stateChanged(ChangeEvent e) {}};
         Singleton.addChangeListener(WeakListeners.change(l, Singleton.class));
