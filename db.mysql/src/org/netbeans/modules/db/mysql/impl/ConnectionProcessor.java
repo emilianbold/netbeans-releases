@@ -46,7 +46,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
-import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,7 +61,7 @@ public final class ConnectionProcessor implements Runnable {
     final BlockingQueue<Runnable> inqueue;
     
     private final AtomicReference<Connection> connref = new AtomicReference<Connection>();
-    private Thread taskThread;
+    private final AtomicReference<Thread> taskThreadRef = new AtomicReference<Thread>();;
 
     void setConnection(Connection conn) {
         this.connref.set(conn);
@@ -102,7 +101,7 @@ public final class ConnectionProcessor implements Runnable {
     }
 
     boolean isConnProcessorThread() {
-        return Thread.currentThread().equals(taskThread);
+        return Thread.currentThread().equals(taskThreadRef.get());
     }
     
     public ConnectionProcessor(BlockingQueue<Runnable> inqueue) {
@@ -110,7 +109,9 @@ public final class ConnectionProcessor implements Runnable {
     } 
     
     public void run() {
-        taskThread = Thread.currentThread();
+        if (taskThreadRef.getAndSet(Thread.currentThread()) != null) {
+            throw new IllegalStateException("Run method called more than once on connection command processor");
+        }
         for ( ; ; ) {
             try {              
                 Runnable command = inqueue.take();
@@ -118,7 +119,6 @@ public final class ConnectionProcessor implements Runnable {
                 command.run();                
             } catch ( InterruptedException ie ) {
                 LOGGER.log(Level.INFO, null, ie);
-                taskThread.interrupt();
                 return;
             }
         }
