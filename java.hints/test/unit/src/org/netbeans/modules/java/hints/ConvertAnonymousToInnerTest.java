@@ -30,15 +30,19 @@ package org.netbeans.modules.java.hints;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
-import java.io.File;
 import java.io.IOException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.usages.IndexUtil;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -55,13 +59,15 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         
-        clearWorkDir();
+        SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         
-        File cache = new File(getWorkDir(), "cache");
-        
-        cache.mkdirs();
-        
-        IndexUtil.setCacheFolder(cache);
+        prepareParser();
+    }
+
+    @SuppressWarnings("deprecation")
+    private static void prepareParser() {
+        FileUtil.setMIMEType("java", JavacParser.MIME_TYPE); //NOI18N
+        MockMimeLookup.setInstances(MimePath.get(JavacParser.MIME_TYPE), new JavacParserFactory());
     }
 
     private static final class FindNewClassTree extends TreePathScanner<TreePath, Void> {
@@ -518,11 +524,23 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
     }
     
     private void performTest(String test, String golden) throws Exception {
-        File testFile = new File(getWorkDir(), "Test.java");
+        clearWorkDir();
+
+        FileUtil.refreshFor(getWorkDir());
+        
+        FileObject wd = FileUtil.toFileObject(getWorkDir());
+        FileObject src = FileUtil.createFolder(wd, "src");
+        FileObject build = FileUtil.createFolder(wd, "build");
+        FileObject cache = FileUtil.createFolder(wd, "cache");
+        
+        SourceUtilsTestUtil.prepareTest(src, build, cache);
+
+        FileObject testFile = FileUtil.createData(src, "Test.java");
+
         TestUtilities.copyStringToFile(testFile, test);
-        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        
+        JavaSource testSource = JavaSource.forFileObject(testFile);
         Task task = new Task<WorkingCopy>() {
-            
             public void run(WorkingCopy workingCopy) throws IOException {
                 workingCopy.toPhase(Phase.RESOLVED);
                 
@@ -533,7 +551,7 @@ public class ConvertAnonymousToInnerTest extends NbTestCase {
             
         };
         testSource.runModificationTask(task).commit();
-        String res = TestUtilities.copyFileToString(testFile);
+        String res = TestUtilities.copyFileToString(FileUtil.toFile(testFile));
 //        System.err.println(res);
         assertEquals(removeWhitespaces(golden), removeWhitespaces(res));
     }
