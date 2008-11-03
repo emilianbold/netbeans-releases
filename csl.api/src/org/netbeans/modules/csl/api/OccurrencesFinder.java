@@ -43,7 +43,9 @@ package org.netbeans.modules.csl.api;
 
 import java.util.Map;
 import org.netbeans.modules.csl.api.annotations.NonNull;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 
 /**
  * A CancellableTask responsible for computing the set of highlights matching
@@ -56,7 +58,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
  * 
  * @author Tor Norbye
  */
-public abstract class OccurrencesFinder extends ParserResultTask {
+public abstract class OccurrencesFinder<T extends Parser.Result> extends ParserResultTask<T> {
     /**
      * Set the caret position for which the current program element should
      * be computed. This method will be called before {@link #run} is called
