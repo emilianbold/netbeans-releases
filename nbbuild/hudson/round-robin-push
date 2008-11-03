@@ -17,7 +17,7 @@ HGINFO=`curl $pop_build_info`
 echo $HGINFO
 [ -n "$HGINFO" ] || (echo No Build Info; exit 1)
 
-HGID=`cat "$HGINFO" | grep "Hg ID"`
+HGID=`echo "$HGINFO" | grep "Hg ID"`
 echo Last build_info line: "$HGID"
 HGTIP=`expr match "$HGID" ".* \([a-f0-9]*\)\+.*"`
 echo Last OK revision: "$HGTIP"
