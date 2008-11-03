@@ -38,8 +38,6 @@
  */
 package org.netbeans.modules.maven.model.pom;
 
-import java.util.HashSet;
-import java.util.Set;
 import javax.xml.namespace.QName;
 
 /**

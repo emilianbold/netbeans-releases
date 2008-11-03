@@ -66,13 +66,13 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
 
 
     public void setProperty(String key, String value) {
-        QName qname = POMQName.createQName(key);
+        QName qname = POMQName.createQName(key, getModel().getPOMQNames().isNSAware());
         setChildElementText(qname.getLocalPart(), value,
                 qname);
     }
 
     public String getProperty(String key) {
-        return getChildElementText(POMQName.createQName(key));
+        return getChildElementText(POMQName.createQName(key, getModel().getPOMQNames().isNSAware()));
     }
 
     public Map<String, String> getProperties() {
@@ -81,7 +81,7 @@ public class PropertiesImpl extends POMComponentImpl implements Properties {
         for (POMComponent pc : chlds) {
             Element el = pc.getPeer();
             String key = el.getLocalName();
-            String val = el.getTextContent();
+            String val = getChildElementText(POMQName.createQName(key, getModel().getPOMQNames().isNSAware()));
             toRet.put(key, val);
         }
         return toRet;

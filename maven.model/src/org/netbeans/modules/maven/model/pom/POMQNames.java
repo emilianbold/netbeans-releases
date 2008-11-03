@@ -156,8 +156,10 @@ public final class POMQNames {
 
     public final POMQName MODULES; //NOI18N
     public final POMQName MODULE; //NOI18N
-    
+    private boolean ns;
+
     public POMQNames(boolean ns) {
+        this.ns = ns;
         PROJECT = new POMQName(POMQName.createQName("project",ns), ns); // NOI18N
         PARENT = new POMQName(POMQName.createQName("parent",ns), ns); // NOI18N
         ORGANIZATION = new POMQName(POMQName.createQName("organization",ns), ns); // NOI18N
@@ -267,6 +269,10 @@ public final class POMQNames {
 
         //when adding items here, need to add them to the set below as well.
 
+    }
+
+    public boolean isNSAware() {
+        return ns;
     }
 
     public Set<QName> getElementQNames() {

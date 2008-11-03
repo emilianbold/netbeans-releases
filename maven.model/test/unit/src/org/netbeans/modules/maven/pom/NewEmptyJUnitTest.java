@@ -39,7 +39,13 @@
 
 package org.netbeans.modules.maven.pom;
 
+import hidden.org.codehaus.plexus.util.IOUtil;
+import hidden.org.codehaus.plexus.util.StringOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
@@ -78,13 +84,9 @@ public class NewEmptyJUnitTest extends TestCase {
     // The methods must be annotated with annotation @Test. For example:
     //
      public void testModel() throws Exception {
-        URL url = getClass().getClassLoader().getResource("sample.pom");
-        File sourceFile = new File(url.toURI());
-        assertTrue(sourceFile.exists());
-        FileObject fo = FileUtil.toFileObject(sourceFile);
-        assertNotNull(fo);
-        ModelSource source = Utilities.createModelSource(fo, true);
-        assertTrue(source.isEditable());
+        ModelSource source = createModelSource("sample.pom");
+        try {
+
         POMModel model = POMModelFactory.getDefault().getModel(source);
         assertNotNull(model.getRootComponent());
         Project prj = model.getProject();
@@ -147,17 +149,17 @@ public class NewEmptyJUnitTest extends TestCase {
 //            model.endTransaction();
 //        }
 
+        } finally {
+            File file = source.getLookup().lookup(File.class);
+            file.deleteOnExit();
+        }
 
      }
 
 
      public void testProfiles() throws Exception {
-        URL url = getClass().getClassLoader().getResource("profiles.xml");
-        File sourceFile = new File(url.toURI());
-        assertTrue(sourceFile.exists());
-        FileObject fo = FileUtil.toFileObject(sourceFile);
-        assertNotNull(fo);
-        ModelSource source = Utilities.createModelSource(fo, true);
+        ModelSource source = createModelSource("profiles.xml");
+        try {
         assertTrue(source.isEditable());
         ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
         assertNotNull(model.getRootComponent());
@@ -171,6 +173,49 @@ public class NewEmptyJUnitTest extends TestCase {
         List<String> actives = prj.getActiveProfiles();
         assertNotNull(actives);
         assertEquals("profile1", actives.get(0));
+        } finally {
+            File file = source.getLookup().lookup(File.class);
+            file.deleteOnExit();
+        }
      }
+
+     public void testMissingProfiles() throws Exception {
+         String dir = System.getProperty("java.io.tmpdir");
+        File sourceFile = new File(dir, "foo.bar");
+        try {
+            assertFalse(sourceFile.exists());
+        String PROFILES_SKELETON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+    "<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+    "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +
+       "</profilesXml>";
+
+            ModelSource source = Utilities.createModelSourceForMissingFile(sourceFile, true,
+                    PROFILES_SKELETON, "text/xml");
+            assertTrue(source.isEditable());
+            ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
+            assertNotNull(model.getRootComponent());
+            model.startTransaction();
+            model.getProfilesRoot().addActiveProfile("active");
+            model.endTransaction();
+            Utilities.saveChanges(model);
+        } finally {
+            sourceFile.deleteOnExit();
+        }
+     }
+
+    private ModelSource createModelSource(String templateName) throws FileNotFoundException, IOException, URISyntaxException {
+        URL url = getClass().getClassLoader().getResource(templateName);
+        File templateFile = new File(url.toURI());
+        assertTrue(templateFile.exists());
+        FileObject fo = FileUtil.toFileObject(templateFile);
+        FileInputStream str = new FileInputStream(templateFile);
+        StringOutputStream out = new StringOutputStream();
+        FileUtil.copy(str, out);
+        String dir = System.getProperty("java.io.tmpdir");
+        File sourceFile = new File(dir, templateName);
+        ModelSource source = Utilities.createModelSourceForMissingFile(sourceFile, true, out.toString(), "text/xml");
+        assertTrue(source.isEditable());
+        return source;
+    }
 
 }

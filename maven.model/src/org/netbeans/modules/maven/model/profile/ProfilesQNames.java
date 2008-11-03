@@ -78,8 +78,10 @@ public final class ProfilesQNames {
 
     public final ProfilesQName ACTIVEPROFILES; //NOI18N
     public final ProfilesQName ACTIVEPROFILE; //NOI18N
-    
+    private boolean ns;
+
     public ProfilesQNames(boolean ns) {
+        this.ns = ns;
         PROFILESROOT = new ProfilesQName(ProfilesQName.createQName("profilesXml",ns), ns); // NOI18N
         REPOSITORY = new ProfilesQName(ProfilesQName.createQName("repository",ns), ns); // NOI18N
         PLUGINREPOSITORY = new ProfilesQName(ProfilesQName.createQName("pluginRepository",ns), ns); // NOI18N
@@ -110,6 +112,10 @@ public final class ProfilesQNames {
 
         //when adding items here, need to add them to the set below as well.
 
+    }
+
+    public boolean isNSAware() {
+        return ns;
     }
 
     public Set<QName> getElementQNames() {

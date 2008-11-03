@@ -41,14 +41,15 @@
 
 package org.netbeans.modules.maven.model;
 
+import hidden.org.codehaus.plexus.util.IOUtil;
+import hidden.org.codehaus.plexus.util.StringInputStream;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
+import java.io.OutputStream;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.maven.model.pom.POMModel;
@@ -63,7 +64,9 @@ import org.netbeans.modules.xml.xam.locator.CatalogModelFactory;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -81,6 +84,34 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
+
+    public static ModelSource createModelSourceForMissingFile(File file, boolean editable, String skeleton, String mimeType) {
+        try {
+            BaseDocument doc = new BaseDocument(false, mimeType);
+            doc.insertString(0, skeleton, null);
+            InstanceContent ic = new InstanceContent();
+            Lookup lookup = new AbstractLookup(ic);
+            ic.add(file);
+            ic.add(doc);
+            ModelSource ms = new ModelSource(lookup, editable);
+//            ic.add(new DummyCatalogModel());
+//            final CatalogModel catalogModel;
+//            try {
+//                catalogModel = CatalogModelFactory.getDefault().getCatalogModel(ms);
+//                assert catalogModel != null;
+//                if (catalogModel != null) {
+//                    ic.add(catalogModel);
+//                }
+//            } catch (CatalogModelException ex) {
+//                Exceptions.printStackTrace(ex);
+//            }
+            return ms;
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        assert false : "Failed to load the model for non-existing file";
+        return null;
+    }
     
     
     public static Document getDocument(FileObject modelSourceFileObject) {
@@ -205,11 +236,43 @@ public class Utilities {
             model.endTransaction();
         }
         DataObject dobj = model.getModelSource().getLookup().lookup(DataObject.class);
-        SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
-        if (save != null) {
-            save.save();
+        if (dobj == null) {
+            final Document doc = model.getModelSource().getLookup().lookup(Document.class);
+            final File file = model.getModelSource().getLookup().lookup(File.class);
+            File parent = file.getParentFile();
+            parent.mkdirs();
+            FileUtil.refreshFor(parent);
+            final FileObject parentFo = FileUtil.toFileObject(parent);
+            if (parentFo != null) {
+                FileSystem fs = parentFo.getFileSystem();
+                fs.runAtomicAction(new FileSystem.AtomicAction() {
+                    public void run() throws IOException {
+                        FileObject fo = parentFo.createData(file.getName());
+                        OutputStream out = null;
+                        try {
+                            String text = doc.getText(0, doc.getLength());
+                            //TODO how is encoding handled??
+                            StringInputStream in = new StringInputStream(text);
+                            out = fo.getOutputStream();
+                            FileUtil.copy(in, out);
+                            out.close();
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            IOUtil.close(out);
+                        }
+                    }
+                });
+            } else {
+                //TODO report
+            }
         } else {
-            //not changed?
+            SaveCookie save = dobj.getLookup().lookup(SaveCookie.class);
+            if (save != null) {
+                save.save();
+            } else {
+                //not changed?
+            }
         }
     }
 

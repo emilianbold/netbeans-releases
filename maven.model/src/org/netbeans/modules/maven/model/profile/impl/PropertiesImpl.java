@@ -69,13 +69,13 @@ public class PropertiesImpl extends ProfilesComponentImpl implements Properties 
 
 
     public void setProperty(String key, String value) {
-        QName qname = ProfilesQName.createQName(key);
+        QName qname = ProfilesQName.createQName(key, getModel().getProfilesQNames().isNSAware());
         setChildElementText(qname.getLocalPart(), value,
                 qname);
     }
 
     public String getProperty(String key) {
-        return getChildElementText(ProfilesQName.createQName(key));
+        return getChildElementText(ProfilesQName.createQName(key, getModel().getProfilesQNames().isNSAware()));
     }
 
     public Map<String, String> getProperties() {
@@ -84,7 +84,7 @@ public class PropertiesImpl extends ProfilesComponentImpl implements Properties 
         for (ProfilesComponent pc : chlds) {
             Element el = pc.getPeer();
             String key = el.getLocalName();
-            String val = el.getTextContent();
+            String val = getChildElementText(ProfilesQName.createQName(key, getModel().getProfilesQNames().isNSAware()));
             toRet.put(key, val);
         }
         return toRet;
