@@ -2,7 +2,7 @@ Name: OpenJDK javac
 Version: 6-b12
 License: GPL-2-CP
 Source: http://download.java.net/openjdk/jdk6/promoted/b12/openjdk-6-src-b12-28_aug_2008.tar.gz
-Description: Java compiler implementation extracted from OpenJDK 6 sources.
+Description: Java compiler and JSR 199/269 APIs extracted from langtools project in OpenJDK 6 sources.
 OSR: 6273
 Origin: http://download.java.net/openjdk/jdk6/
 
