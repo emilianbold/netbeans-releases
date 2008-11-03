@@ -46,6 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.openide.util.NbBundle;
 
 /**
@@ -60,44 +62,67 @@ public final class ConnectionProcessor implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());
     final BlockingQueue<Runnable> inqueue;
     
-    private final AtomicReference<Connection> connref = new AtomicReference<Connection>();
+    // INVARIANT: if connection is null or not connected, quoter is null
+    // if connection is connected, quoter is set based on DBMD for the connection
+    // synchronized on this
+    private Connection conn;
+    // synchronized on this
+    private Quoter quoter;
+
     private final AtomicReference<Thread> taskThreadRef = new AtomicReference<Thread>();;
 
-    void setConnection(Connection conn) {
-        this.connref.set(conn);
+    synchronized void setConnection(Connection conn) throws DatabaseException {
+        this.conn = conn;
+        setQuoter();
     }
     
-    Connection getConnection() {
-        return connref.get();
+    synchronized private void setQuoter() throws DatabaseException {
+        try {
+            if (conn != null && ! conn.isClosed()) {
+                this.quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
+            } else {
+                this.quoter = null;
+            }
+        } catch (SQLException sqle) {
+            throw new DatabaseException(sqle);
+        }
+        
+    }
+    
+    synchronized Connection getConnection() {
+        return conn;
     }
 
-    void validateConnection() throws DatabaseException {
-        synchronized(connref) {
-            try {
-                // A connection only needs to be validated if it already exists.
-                // We're trying to see if something went wrong to an existing connection...
-                Connection conn;
-                if ((conn = connref.get()) == null) {
-                    return;
-                }
+    synchronized Quoter getQuoter() {
+        return quoter;
+    }
 
-                if (conn.isClosed()) {
-                    connref.set(null);
-                    throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
-                }
-
-                // Send a command to the server, if it fails we know the connection is invalid.
-                conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
-            } catch (SQLException e) {
-                connref.set(null);
-                LOGGER.log(Level.FINE, null, e);
-                throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
+    synchronized void validateConnection() throws DatabaseException {
+        try {
+            // A connection only needs to be validated if it already exists.
+            // We're trying to see if something went wrong to an existing connection...
+            if (conn == null) {
+                return;
             }
+
+            if (conn.isClosed()) {
+                conn = null;
+                throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
+            }
+
+            // Send a command to the server, if it fails we know the connection is invalid.
+            conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+            quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
+        } catch (SQLException e) {
+            conn = null;
+            quoter = null;
+            LOGGER.log(Level.FINE, null, e);
+            throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
         }
     }
     
-    boolean isConnected() {
-        return connref.get() != null;
+    synchronized boolean isConnected() {
+        return conn != null;
     }
 
     boolean isConnProcessorThread() {
