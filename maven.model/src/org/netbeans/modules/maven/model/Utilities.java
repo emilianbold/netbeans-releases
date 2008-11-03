@@ -53,6 +53,8 @@ import javax.swing.text.Document;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 import org.netbeans.modules.xml.xam.locator.CatalogModel;
@@ -212,7 +214,7 @@ public class Utilities {
     }
 
     /**
-     * performs model modifying operations on top of the model loaded. After modifications,
+     * performs model modifying operations on top of the POM model. After modifications,
      * the model is persisted to file.
      * @param pomFileObject
      * @param operations
@@ -241,4 +243,36 @@ public class Utilities {
             //TODO report error.. what is the error?
         }
     }
+
+    /**
+     * performs model modifying operations on top of the profiles.xml model. After modifications,
+     * the model is persisted to file.
+     * @param profilesFileObject
+     * @param operations
+     */
+    public static void performProfilesModelOperations(FileObject profilesFileObject, List<ModelOperation<ProfilesModel>> operations) {
+        assert profilesFileObject != null;
+        assert operations != null;
+        ModelSource source = Utilities.createModelSource(profilesFileObject, true);
+        ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
+        if (model != null) {
+            try {
+                model.startTransaction();
+                for (ModelOperation<ProfilesModel> op : operations) {
+                    op.performOperation(model);
+                }
+                model.endTransaction();
+                Utilities.saveChanges(model);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            } finally {
+                if (model.isIntransaction()) {
+                    model.rollbackTransaction();
+                }
+            }
+        } else {
+            //TODO report error.. what is the error?
+        }
+    }
+
 }
