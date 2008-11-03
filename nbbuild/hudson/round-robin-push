@@ -32,8 +32,10 @@ else
 fi
 hg out $push_url
 
-if [ `hg out --template '{node|short}\n' $push_url | wc -l` = 0 ]; then
-    echo No outgoing changes
+if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
+    echo "Let the build starts..."
+else
+    echo "No outgoing changes"
     exit 0
 fi
 
