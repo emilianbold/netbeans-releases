@@ -74,6 +74,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
@@ -882,14 +883,17 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         ClassTree newAbstractClassImpl = null;
         if (srcClass.getModifiers().contains(ABSTRACT)
                 && hasInstanceMethods(srcMethods)) {
+            String prefInstanceClassName
+                    = getAbstractClassImplName(srcClass.getSimpleName());
             instanceClassName = findAbstractClassImplName(srcClass,
                                                           tstClass,
                                                           tstClassTreePath,
                                                           clsMap,
+                                                          prefInstanceClassName,
                                                           trees,
                                                           workingCopy.getTypes());
             if (instanceClassName == null) {
-                instanceClassName = getAbstractClassImplName(srcClass.getSimpleName());
+                instanceClassName = prefInstanceClassName;
                 newAbstractClassImpl = generateAbstractClassImpl(srcClass,
                                                                  instanceClassName,
                                                                  workingCopy);
@@ -1645,26 +1649,34 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * Finds a non-abstract, direct or indirect subclass of a given source class
      * among nested classes of the given test class. Both static nested classes
      * and inner classes are taken into account. Anonymous inner classes and
-     * classes defined inside code blocks are ignored.
+     * classes defined inside code blocks are ignored. If there are multiple
+     * nested/inner classes the one having the given preferred name, if any,
+     * is chosen.
      * 
      * @param  srcClass  abstract class the subclass of which is to be found
      * @param  tstClass  test class to search
      * @param  tstClassPath  tree-path to the test class
      * @param  tstClassMap  content index of the test class
+     * @param  preferredName  preferred name of the nested/inner class
      * @return  name of the found nested class, or {@code null} if non was found
      */
     private static CharSequence findAbstractClassImplName(TypeElement srcClass,
                                                           ClassTree tstClass,
                                                           TreePath tstClassPath,
                                                           ClassMap tstClassMap,
+                                                          String preferredName,
                                                           Trees trees,
                                                           Types types) {
         if (!tstClassMap.containsNestedClasses()) {
             return null;
         }
 
+        boolean mayContainPreferred = tstClassMap.getNestedClasses()
+                                      .contains(preferredName);
+
         List<? extends Tree> tstClassMembers = tstClass.getMembers();
         TypeMirror srcClassType = null;
+        Name firstFound = null;
         for (int index : tstClassMap.getNestedClassIndexes()) {
             Tree member = tstClassMembers.get(index);
             assert member.getKind() == Tree.Kind.CLASS;
@@ -1679,11 +1691,16 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                 srcClassType = srcClass.asType();
             }
             if (types.isSubtype(nestedClassType, srcClassType)) {
-                return nestedClass.getSimpleName();
+                Name name = nestedClass.getSimpleName();
+                if (!mayContainPreferred || name.contentEquals(preferredName)) {
+                    return name;
+                } else if (firstFound == null) {
+                    firstFound = name;
+                }
             }
 
         }
-        return null;
+        return firstFound;      //may be null
     }
 
     /**
