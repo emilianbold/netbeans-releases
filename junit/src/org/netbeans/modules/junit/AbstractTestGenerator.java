@@ -1644,8 +1644,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     /**
      * Finds a non-abstract, direct or indirect subclass of a given source class
      * among nested classes of the given test class. Both static nested classes
-     * and inner classes are taken into account. Anonymous inner classes are
-     * ignored.
+     * and inner classes are taken into account. Anonymous inner classes and
+     * classes defined inside code blocks are ignored.
      * 
      * @param  srcClass  abstract class the subclass of which is to be found
      * @param  tstClass  test class to search
