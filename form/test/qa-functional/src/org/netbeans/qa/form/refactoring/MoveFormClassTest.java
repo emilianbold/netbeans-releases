@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.qa.form.refactoring;
 
 import java.io.IOException;
@@ -66,11 +65,12 @@ import org.netbeans.junit.NbModuleSuite;
  * @author Jiri Vagner
  */
 public class MoveFormClassTest extends ExtJellyTestCase {
+
     private String CLASS_NAME = "FrameWithBundleToMove"; // NOI18N
 //    private String CLASS_NAME = "ClassToMove"; // NOI18N    
     private String NEW_PACKAGE_NAME = "subdata";
     private String PACKAGE_NAME = "." + NEW_PACKAGE_NAME; // NOI18N
-    
+
     /**
      * Constructor required by JUnit
      * @param testName
@@ -78,16 +78,16 @@ public class MoveFormClassTest extends ExtJellyTestCase {
     public MoveFormClassTest(String testName) {
         super(testName);
     }
-    
+
     public void setUp() throws IOException{
         openProject(_testProjectName);
     }
-    
+
     public static Test suite() {
         return NbModuleSuite.create(NbModuleSuite.createConfiguration(MoveFormClassTest.class)
                 .addTest("testCreatePackage", "testRefactoring", "testChangesInJavaFile", "testChangesInPropertiesFile" )
                 .clusters(".*").enableModules(".*").gui(true));
-        
+
     }
 
     /** Creates subdata package  */
@@ -99,9 +99,9 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         Node formnode = new Node(prn, "Source Packages"); // NOI18N
         formnode.setComparator(new Operator.DefaultStringComparator(true, false));
         formnode.select();
-        
+
         runNoBlockPopupOverNode("New|Java Package...", formnode); // NOI18N
-        
+
         NbDialogOperator dialog = new NbDialogOperator("New Java Package");
         new JTextFieldOperator(dialog,0).typeText( getTestPackageName() + PACKAGE_NAME);
         new JButtonOperator(dialog, "Finish").push();
@@ -110,6 +110,11 @@ public class MoveFormClassTest extends ExtJellyTestCase {
     /** Runs refactoring  */
     public void testRefactoring() throws Exception {
         Node node = openFile(CLASS_NAME);
+
+        /*Task manager takes a long time for scanning and due to this case, file is not opened in time.
+        Implemented workaround - sleep for a while
+         */
+        waitNoEvent(1000);
 
         runNoBlockPopupOverNode("Refactor|Move...", node); // NOI18N
 
@@ -123,7 +128,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         // that's way there is following code with for loop
         boolean isClosed = false;
         TimeoutExpiredException lastExc = null;
-        
+
         for (int i=0; i < 3; i++) {
             try {
                 dialog.waitClosed();
@@ -134,12 +139,12 @@ public class MoveFormClassTest extends ExtJellyTestCase {
                 throw e;
             }
         }
-        
+
         if (!isClosed) {
             throw (lastExc != null) ? lastExc : new Exception("Something strange while waiting using waitClosed() method");
         }
     }
-    
+
     /** Tests content of java file */
     public void testChangesInJavaFile() {
         ProjectsTabOperator pto = new ProjectsTabOperator();
@@ -160,7 +165,7 @@ public class MoveFormClassTest extends ExtJellyTestCase {
         // new class package
         findInCode("package data.subdata;", designer);
     }
-    
+
     /** Test changes in property bundle file */
     public void testChangesInPropertiesFile() {
         String sourceFilePath = getFilePathFromDataPackage(NEW_PACKAGE_NAME
