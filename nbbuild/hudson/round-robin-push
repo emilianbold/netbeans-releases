@@ -19,7 +19,7 @@ echo $HGINFO
 
 HGID=`echo "$HGINFO" | grep "Hg ID"`
 echo Last build_info line: "$HGID"
-HGTIP=`echo "$HGID" | cut -f 2 -d ":" | while read X; do echo $X; done`
+HGTIP=`echo "$HGID" | cut -f 2 -d ":" | while read X; do echo $X; donehg`
 echo Last OK revision: "$HGTIP"
 
 hg pull -r "$HGTIP" "$pop_url" || exit 5
@@ -32,7 +32,7 @@ else
 fi
 hg out $push_url
 
-if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
+if [ `hg out --template '{node|short}\n' $push_url | wc -l` = 0 ]; then
     echo No outgoing changes
     exit 0
 fi
