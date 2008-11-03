@@ -48,72 +48,29 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.openide.ErrorManager;
 
 public class WeakListenersTest extends NbTestCase {
 
-    private static Thread activeQueueThread;
-
-    private ErrorManager log;
+    private static final Logger LOG = Logger.getLogger(WeakListenersTest.class.getName());
     
     public WeakListenersTest(String testName) {
         super(testName);
     }
 
+    @Override
     protected int timeOut() {
         return 45000;
     }
 
+    @Override
     protected Level logLevel() {
         return Level.ALL;
     }
-    
-    protected void setUp () throws Exception {
-        MockServices.setServices(ErrManager.class);
-        log = ErrorManager.getDefault().getInstance("TEST-" + getName());
-        
-        if (activeQueueThread == null) {
-            class WR extends WeakReference<Object> implements Runnable {
-                public WR (Object o) {
-                    super (o, Utilities.activeReferenceQueue ());
-                }
-                public synchronized void run () {
-                    activeQueueThread = Thread.currentThread();
-                    notifyAll ();
-                }
-            }
-            
-            Object obj = new Object ();
-            WR wr = new WR (obj);
-            synchronized (wr) {
-                obj = null;
-                assertGC ("Has to be cleared", wr);
-                // and has to execute run method
-                while (activeQueueThread == null) {
-                    wr.wait ();
-                }
-            }
-        }
-    }
-    
-    protected void runTest() throws Throwable {
-        assertNotNull ("ErrManager has to be in lookup", org.openide.util.Lookup.getDefault ().lookup (ErrManager.class));
-        ErrManager.messages.setLength(0);
-        
-        try {
-            super.runTest();
-        } catch (Throwable ex) {
-            throw new junit.framework.AssertionFailedError (
-                ex.getMessage() + "\n" + ErrManager.messages.toString()
-            ).initCause(ex);
-        }
-    }
-    
     
     public void testOneCanCallHashCodeOrOnWeakListener () {
         Listener l = new Listener ();
@@ -134,11 +91,11 @@ public class WeakListenersTest extends NbTestCase {
     }
     public void testCallingMethodsWithNoArgumentWorks() {
         XImpl l = new XImpl ();
-        log.log("XImpl created: " + l);
-        X weak = (X)WeakListeners.create (X.class, l, null);
-        log.log("weak created: " + weak);
+        LOG.fine("XImpl created: " + l);
+        X weak = WeakListeners.create(X.class, l, null);
+        LOG.fine("weak created: " + weak);
         weak.invoke ();
-        log.log("invoked");
+        LOG.fine("invoked");
         assertEquals ("One invocation", 1, l.cnt);
     }
 
@@ -157,104 +114,105 @@ public class WeakListenersTest extends NbTestCase {
             private Thread removedBy;
             private int cnt;
             
+            @Override
             public synchronized void removePropertyChangeListener (PropertyChangeListener l) {
                 // notify prior
-                log.log("removePropertyChangeListener: " + source + " cnt: " + cnt);
+                LOG.fine("removePropertyChangeListener: " + source + " cnt: " + cnt);
                 if (source && cnt == 0) {
                     notifyAll ();
                     try {
                         // wait for 1
-                        log.log("wait for 1");
+                        LOG.fine("wait for 1");
                         wait ();
-                        log.log("wait for 1 over");
+                        LOG.fine("wait for 1 over");
                     } catch (InterruptedException ex) {
                         fail ("Not happen");
                     }
                 }
-                log.log("Super removePropertyChangeListener");
+                LOG.fine("Super removePropertyChangeListener");
                 super.removePropertyChangeListener (l);
-                log.log("Super over removePropertyChangeListener");
+                LOG.fine("Super over removePropertyChangeListener");
                 removedBy = Thread.currentThread();
                 cnt++;
                 notifyAll ();
             }
             
             public synchronized void waitListener () throws Exception {
-                int cnt = 0;
+                int count = 0;
                 while (removedBy == null) {
-                    log.log("waitListener, wait 500");
+                    LOG.fine("waitListener, wait 500");
                     wait (500);
-                    log.log("waitListener 500 Over");
-                    if (cnt++ == 5) {
+                    LOG.fine("waitListener 500 Over");
+                    if (count++ == 5) {
                         fail ("Time out: removePropertyChangeListener was not called at all");
                     } else {
-                        log.log("Forced gc");
+                        LOG.fine("Forced gc");
                         System.gc ();
                         System.runFinalization();
-                        log.log("after force runFinalization");
+                        LOG.fine("after force runFinalization");
                     }
                 }
             }
         }
         
         MyButton button = new MyButton ();
-        log.log("Button is here");
+        LOG.fine("Button is here");
         java.beans.PropertyChangeListener weakL = WeakListeners.propertyChange (l, source ? button : null);
-        log.log("WeakListeners created: " + weakL);
+        LOG.fine("WeakListeners created: " + weakL);
         button.addPropertyChangeListener(weakL);
-        log.log("WeakListeners attached");
+        LOG.fine("WeakListeners attached");
         assertTrue ("Weak listener is there", Arrays.asList (button.getPropertyChangeListeners()).indexOf (weakL) >= 0);
         
         button.setText("Ahoj");
-        log.log("setText changed to ahoj");
+        LOG.fine("setText changed to ahoj");
         assertEquals ("Listener called once", 1, l.cnt);
         
         Reference<?> ref = new WeakReference<Object>(l);
-        log.log("Clearing listener");
+        LOG.fine("Clearing listener");
         l = null;
         
 
         synchronized (button) {
-            log.log("Before assertGC");
+            LOG.fine("Before assertGC");
             assertGC ("Can disappear", ref);
-            log.log("assertGC ok");
+            LOG.fine("assertGC ok");
             
             if (source) {
-                log.log("before wait");
+                LOG.fine("before wait");
                 button.wait ();
-                log.log("after wait");
+                LOG.fine("after wait");
                 // this should not remove the listener twice
                 button.setText ("Hoj");
-                log.log("after setText - > hoj");
+                LOG.fine("after setText - > hoj");
                 // go on (wait 1)
                 button.notify ();
-                log.log("before wait listener");
+                LOG.fine("before wait listener");
                 
                 button.waitListener ();
-                log.log("after waitListener");
+                LOG.fine("after waitListener");
             } else {
                 // trigger the even firing so weak listener knows from
                 // where to unregister
-                log.log("before setText -> Hoj");
+                LOG.fine("before setText -> Hoj");
                 button.setText ("Hoj");
-                log.log("after setText -> Hoj");
+                LOG.fine("after setText -> Hoj");
             }
             
-            log.log("before 2 waitListener");
+            LOG.fine("before 2 waitListener");
             button.waitListener ();
-            log.log("after 2 waitListener");
+            LOG.fine("after 2 waitListener");
             Thread.sleep (500);
-            log.log("Thread.sleep over");
+            LOG.fine("Thread.sleep over");
         }
 
         assertEquals ("Weak listener has been removed", -1, Arrays.asList (button.getPropertyChangeListeners()).indexOf (weakL));
-        assertEquals ("Button released from a thread", activeQueueThread, button.removedBy);
+        assertEquals ("Button released from a thread", "Active Reference Queue Daemon", button.removedBy.getName());
         assertEquals ("Unregister called just once", 1, button.cnt);
         
         // and because it is not here, it can be GCed
         Reference<?> weakRef = new WeakReference<Object>(weakL);
         weakL = null;
-        log.log("Doing assertGC at the end");
+        LOG.fine("Doing assertGC at the end");
         assertGC ("Weak listener can go away as well", weakRef);
     }
     
@@ -296,26 +254,28 @@ public class WeakListenersTest extends NbTestCase {
     
     public void testExceptionIllegalState () {
         Listener l = new Listener ();
+        /* Will not even compile any more:
         try {
-            WeakListeners.create ((Class)PropertyChangeListener.class, (Class)javax.naming.event.NamingListener.class, l, null);
+            WeakListeners.create(PropertyChangeListener.class, javax.naming.event.NamingListener.class, l, null);
             fail ("This shall not be allowed as NamingListener is not superclass of PropertyChangeListener");
         } catch (IllegalArgumentException ex) {
             // ok
         }
         
         try {
-            WeakListeners.create ((Class)Object.class, l, null);
+            WeakListeners.create(Object.class, l, null);
             fail ("Not interface, it should fail");
         } catch (IllegalArgumentException ex) {
             // ok
         }
         
         try {
-            WeakListeners.create ((Class)Object.class, (Class)Object.class, l, null);
+            WeakListeners.create(Object.class, Object.class, l, null);
             fail ("Not interface, it should fail");
         } catch (IllegalArgumentException ex) {
             // ok
         }
+         */
         
         try {
             WeakListeners.create (PropertyChangeListener.class, Object.class, l, null);
@@ -330,7 +290,7 @@ public class WeakListenersTest extends NbTestCase {
         javax.swing.JButton button = new javax.swing.JButton ();
         ImplEventContext c = new ImplEventContext ();
         
-        Object[] ignore = new Object[] {
+        Object[] ignore = {
             l, 
             button,
             c,
@@ -352,7 +312,7 @@ public class WeakListenersTest extends NbTestCase {
     public void testPrivateRemoveMethod() throws Exception {
         PropChBean bean = new PropChBean();
         Listener listener = new Listener();
-        PCL weakL = (PCL) WeakListeners.create(PCL.class, listener, bean);
+        PCL weakL = WeakListeners.create(PCL.class, listener, bean);
         Reference<?> ref = new WeakReference<Object>(listener);
         
         bean.addPCL(weakL);
@@ -462,82 +422,5 @@ public class WeakListenersTest extends NbTestCase {
     // just a marker, its name will be used to construct the name of add/remove methods, e.g. addPCL, removePCL
     private static interface PCL extends PropertyChangeListener {
     } // End of PrivatePropL class
-    
-    //
-    // Manager to delegate to
-    //
-    public static final class ErrManager extends org.openide.ErrorManager {
-        public static final StringBuffer messages = new StringBuffer ();
-        
-        private String prefix;
-        
-        public ErrManager () {
-            this (null);
-        }
-        public ErrManager (String prefix) {
-            this.prefix = prefix;
-        }
-        
-        public static ErrManager get () {
-            return (ErrManager)org.openide.util.Lookup.getDefault ().lookup (ErrManager.class);
-        }
-        
-        public Throwable annotate (Throwable t, int severity, String message, String localizedMessage, Throwable stackTrace, java.util.Date date) {
-            return t;
-        }
-        
-        public Throwable attachAnnotations (Throwable t, org.openide.ErrorManager.Annotation[] arr) {
-            return t;
-        }
-        
-        public org.openide.ErrorManager.Annotation[] findAnnotations (Throwable t) {
-            return null;
-        }
-        
-        public org.openide.ErrorManager getInstance (String name) {
-            if (
-                name.startsWith ("org.openide.util.RequestProcessor") ||
-                name.startsWith("TEST")
-            ) {
-                return new ErrManager ('[' + name + ']');
-            } else {
-                // either new non-logging or myself if I am non-logging
-                return new ErrManager ();
-            }
-        }
-        
-        public void log (int severity, String s) {
-            lastSeverity = severity;
-            lastText = s;
-            if (this != get()) {
-                messages.append(prefix);
-                messages.append(s);
-                messages.append('\n');
-            }
-        }
-        
-        public void notify (int severity, Throwable t) {
-            lastThrowable = t;
-            lastSeverity = severity;
-        }
-        private static int lastSeverity;
-        private static Throwable lastThrowable;
-        private static String lastText;
-
-        public static void assertNotify (int sev, Throwable t) {
-            assertEquals ("Severity is same", sev, lastSeverity);
-            assertSame ("Throwable is the same", t, lastThrowable);
-            lastThrowable = null;
-            lastSeverity = -1;
-        }
-        
-        public static void assertLog (int sev, String t) {
-            assertEquals ("Severity is same", sev, lastSeverity);
-            assertEquals ("Text is the same", t, lastText);
-            lastText = null;
-            lastSeverity = -1;
-        }
-        
-    } // end of ErrManager
     
 }
