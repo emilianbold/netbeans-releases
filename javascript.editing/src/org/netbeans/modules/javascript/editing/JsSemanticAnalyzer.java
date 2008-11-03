@@ -47,11 +47,13 @@ import java.util.Map;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.csl.api.ColoringAttributes;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.javascript.editing.embedding.JsModel;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 
 /**
  * Semantically analyze a given JavaScript buffer
@@ -63,35 +65,32 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  *
  * @author Tor Norbye
  */
-public class JsSemanticAnalyzer implements SemanticAnalyzer {
+public class JsSemanticAnalyzer extends SemanticAnalyzer {
 
-    private boolean cancelled;
-    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    // -----------------------------------------------------------------------
+    // SemanticAnalyzer implementation
+    // -----------------------------------------------------------------------
 
-    public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
+    public @Override Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
     }
 
-    protected final synchronized boolean isCancelled() {
-        return cancelled;
-    }
+    // -----------------------------------------------------------------------
+    // ParserResultTask implementation
+    // -----------------------------------------------------------------------
 
-    protected final synchronized void resume() {
-        cancelled = false;
-    }
-
-    public void cancel() {
+    public @Override void cancel() {
         cancelled = true;
     }
 
-    public void run(CompilationInfo info) throws Exception {
+    public @Override void run(Result result, Snapshot snapshot) {
         resume();
 
         if (isCancelled()) {
             return;
         }
 
-        JsParseResult rpr = AstUtilities.getParseResult(info);
+        JsParseResult rpr = AstUtilities.getParseResult(result);
         if (rpr == null) {
             return;
         }
@@ -105,12 +104,40 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
 //            // Just perform incremental analysis
 //            semanticHighlights = analyzeIncremental(info, rpr, root);
 //        } else {
-            semanticHighlights = analyzeFullTree(info, rpr, root);
+            semanticHighlights = analyzeFullTree(rpr, root);
 //        }
 //        rpr.semanticHighlights = semanticHighlights;
     }
 
-    Map<OffsetRange, Set<ColoringAttributes>> analyzeFullTree(CompilationInfo info, JsParseResult rpr, Node root) {
+    public @Override int getPriority() {
+        return 0;
+    }
+
+    public @Override Class<? extends TaskScheduler> getSchedulerClass() {
+        return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    }
+
+    // -----------------------------------------------------------------------
+    // Public implementation
+    // -----------------------------------------------------------------------
+
+    protected final synchronized boolean isCancelled() {
+        return cancelled;
+    }
+
+    protected final synchronized void resume() {
+        cancelled = false;
+    }
+
+    // -----------------------------------------------------------------------
+    // Private implementation
+    // -----------------------------------------------------------------------
+
+    private boolean cancelled;
+    private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+
+
+    Map<OffsetRange, Set<ColoringAttributes>> analyzeFullTree(JsParseResult rpr, Node root) {
         VariableVisitor visitor = rpr.getVariableVisitor();
         Map<OffsetRange, Set<ColoringAttributes>> highlights =
                 new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
@@ -179,17 +206,15 @@ public class JsSemanticAnalyzer implements SemanticAnalyzer {
         }
 
         if (highlights.size() > 0) {
-            if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange, Set<ColoringAttributes>>(2 * highlights.size());
-                for (Map.Entry<OffsetRange, Set<ColoringAttributes>> entry : highlights.entrySet()) {
-                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
-                    if (range != OffsetRange.NONE) {
-                        translated.put(range, entry.getValue());
-                    }
+            Map<OffsetRange, Set<ColoringAttributes>> translated = new HashMap<OffsetRange, Set<ColoringAttributes>>(2 * highlights.size());
+            for (Map.Entry<OffsetRange, Set<ColoringAttributes>> entry : highlights.entrySet()) {
+                OffsetRange range = LexUtilities.getLexerOffsets(rpr, entry.getKey());
+                if (range != OffsetRange.NONE) {
+                    translated.put(range, entry.getValue());
                 }
-
-                highlights = translated;
             }
+
+            highlights = translated;
 
             return highlights;
         } else {

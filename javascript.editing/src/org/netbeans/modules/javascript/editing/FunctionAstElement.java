@@ -42,7 +42,6 @@ package org.netbeans.modules.javascript.editing;
 import java.util.ArrayList;
 import java.util.List;
 import org.mozilla.nb.javascript.FunctionNode;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementKind;
 
 public class FunctionAstElement extends AstElement implements FunctionElement {
@@ -50,7 +49,7 @@ public class FunctionAstElement extends AstElement implements FunctionElement {
     private List<String> parameters;
     private String extend;
 
-    FunctionAstElement(CompilationInfo info, FunctionNode func) {
+    FunctionAstElement(JsParseResult info, FunctionNode func) {
         super(info, func);
         this.func = func;
     }

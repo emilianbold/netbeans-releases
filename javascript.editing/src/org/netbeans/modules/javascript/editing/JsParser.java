@@ -40,27 +40,23 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.ListIterator;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.IncrementalParser;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParseEvent;
-import org.netbeans.modules.csl.api.ParseListener;
-import org.netbeans.modules.csl.api.Parser;
-import org.netbeans.modules.csl.api.ParserFile;
-import org.netbeans.modules.csl.api.ParserResult;
-import org.netbeans.modules.csl.api.PositionManager;
 import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.csl.api.SourceFileReader;
 import org.netbeans.modules.csl.spi.DefaultError;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Task;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.Exceptions;
 import org.mozilla.nb.javascript.CompilerEnvirons;
 import org.mozilla.nb.javascript.ScriptOrFnNode;
@@ -70,8 +66,10 @@ import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.modules.csl.api.EditHistory;
-import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.ParserFactory;
 
 
 /**
@@ -88,11 +86,53 @@ import org.netbeans.modules.csl.spi.GsfUtilities;
  * 
  * @author Tor Norbye
  */
-public class JsParser implements IncrementalParser {
-    private final PositionManager positions = createPositionManager();
+public class JsParser extends Parser {
+
+    // ------------------------------------------------------------------------
+    // o.n.m.p.spi.Parser implementation
+    // ------------------------------------------------------------------------
+
+    public @Override void parse(Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+        Context context = new Context(snapshot);
+        lastResult = parseBuffer(context, Sanitize.NONE);
+    }
+
+    public @Override Result getResult(Task task, SchedulerEvent event) throws ParseException {
+        assert lastResult != null : "getResult() called prior parse()"; //NOI18N
+        return lastResult;
+    }
+
+    public @Override void cancel() {
+    }
+
+    public @Override void addChangeListener(ChangeListener changeListener) {
+        // no-op, we don't support state changes
+    }
+
+    public @Override void removeChangeListener(ChangeListener changeListener) {
+        // no-op, we don't support state changes
+    }
+
+
+    // ------------------------------------------------------------------------
+    // o.n.m.p.spi.ParserFactory implementation
+    // ------------------------------------------------------------------------
+
+    private static final class Factory extends ParserFactory {
+
+        @Override
+        public Parser createParser(Collection<Snapshot> snapshots) {
+            return new JsParser();
+        }
+
+    } // End of Factory class
+
+    
     /** For unit tests such that they can make sure we didn't have a parser abort */
     static RuntimeException runtimeException;
 
+    private JsParseResult lastResult;
+    
     /**
      * Creates a new instance of JsParser
      */
@@ -105,45 +145,6 @@ public class JsParser implements IncrementalParser {
         } else {
             return sequence.toString();
         }
-    }
-
-    /** Parse the given set of files, and notify the parse listener for each transition
-     * (compilation results are attached to the events )
-     */
-    public void parseFiles(Parser.Job job) {
-        ParseListener listener = job.listener;
-        SourceFileReader reader = job.reader;
-        
-        for (ParserFile file : job.files) {
-            ParseEvent beginEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, null);
-            listener.started(beginEvent);
-            
-            ParserResult result = null;
-
-            try {
-                CharSequence buffer = reader.read(file);
-                String source = asString(buffer);
-                int caretOffset = reader.getCaretOffset(file);
-                if (caretOffset != -1 && job.translatedSource != null) {
-                    caretOffset = job.translatedSource.getAstOffset(caretOffset);
-                }
-                Context context = new Context(file, listener, source, caretOffset, job.translatedSource, job);
-                
-// Audio feedback to myself that incremental compilation failed...                    
-//java.awt.Toolkit.getDefaultToolkit().beep();                    
-                result = parseBuffer(context, Sanitize.NONE);
-            } catch (IOException ioe) {
-                listener.exception(ioe);
-                result = createParseResult(file, null, null/*, null, null*/);
-            }
-
-            ParseEvent doneEvent = new ParseEvent(ParseEvent.Kind.PARSE, file, result);
-            listener.finished(doneEvent);
-        }
-    }
-
-    protected PositionManager createPositionManager() {
-        return new JsPositionManager();
     }
 
     /**
@@ -329,299 +330,278 @@ public class JsParser implements IncrementalParser {
         return false;
     }
 
-    private final int lexToAst(TranslatedSource source, int offset) {
+    private final int lexToAst(Snapshot source, int offset) {
         if (source != null) {
-            return source.getAstOffset(offset);
+            return source.getEmbeddedOffset(offset);
         }
 
         return offset;
     }
 
-    private final int astToLex(TranslatedSource source, int offset) {
+    private final int astToLex(Snapshot source, int offset) {
         if (source != null) {
-            return source.getLexicalOffset(offset);
+            return source.getOriginalOffset(offset);
         }
 
         return offset;
     }
     
-    public ParserResult parse(ParserFile file, SourceFileReader reader, TranslatedSource translatedSource, EditHistory history, ParserResult prevResult) {
+    public JsParseResult parse(Snapshot snapshot, EditHistory history, ParserResult prevResult) {
         if (history == null) {
             return null;
         }
 
-        if ("json".equals(file.getExtension())) { // NOI18N
+        if ("json".equals(snapshot.getSource().getFileObject().getExt())) { // NOI18N
             return null;
         }
 
-        int caretOffset = reader.getCaretOffset(file);
-        if (caretOffset != -1 && translatedSource != null) {
-            caretOffset = translatedSource.getAstOffset(caretOffset);
+        JsParseResult previousResult = AstUtilities.getParseResult(prevResult);
+        if (previousResult == null) {
+            return null;
         }
 
-        JsParseResult previousResult = (JsParseResult)prevResult;
+        Node previousRoot = previousResult.getRootNode();
+        if (previousRoot == null) {
+            return null;
+        }
 
         if (history.getStart() == -1) {
             // No edits - just reuse result?
             return previousResult;
         }
 
-        Node root = previousResult.getRootNode();
-        if (previousResult != null && root != null) {
-            ParserResult result = previousResult;
-            assert result != null;
-            
-            // TODO:
-            // Look at the EditHistory and determine if we're inside a function.
-            // Look up the corresponding old node. Then check to see if it fully
-            // contains the change-range.
-            // If it does, parse JUST that part of the source (do the sanitizing thing)
-            // If that succeeds, patch the node tree as appropriate.
-            // If that fails, consider whether I want to update the parse tree.
-            // In any case, I can now just reuse the old parse tree with the offsets
-            // updated, since I have them!!!
-            
-            // The various services (hints provider, semantic highlighter, etc.) can stash
-            //   their data in the parser result since the old one is passed back.
-            //  They then need to update the data conditionally based on the edit positions
-            //  and the new offsets. For example, the semantic highlighter should remove
-            //  all regions in the old function's range, and set the new ones!
+        // TODO:
+        // Look at the EditHistory and determine if we're inside a function.
+        // Look up the corresponding old node. Then check to see if it fully
+        // contains the change-range.
+        // If it does, parse JUST that part of the source (do the sanitizing thing)
+        // If that succeeds, patch the node tree as appropriate.
+        // If that fails, consider whether I want to update the parse tree.
+        // In any case, I can now just reuse the old parse tree with the offsets
+        // updated, since I have them!!!
 
-            int startAst = lexToAst(translatedSource, history.getStart());
-            if (startAst == -1) {
-                return null;
+        // The various services (hints provider, semantic highlighter, etc.) can stash
+        //   their data in the parser result since the old one is passed back.
+        //  They then need to update the data conditionally based on the edit positions
+        //  and the new offsets. For example, the semantic highlighter should remove
+        //  all regions in the old function's range, and set the new ones!
+
+        int startAst = lexToAst(previousResult.getSnapshot(), history.getStart());
+        if (startAst == -1) {
+            return null;
+        }
+        AstPath path = new AstPath(previousRoot, startAst);
+        ListIterator<Node> iterator = path.leafToRoot();
+        FunctionNode oldFunction = null;
+        while (iterator.hasNext()) {
+            Node node = iterator.next();
+            if (node.getType() == Token.FUNCTION) {
+                oldFunction = (FunctionNode) node;
+                break;
             }
-            AstPath path = new AstPath(root, startAst);
-            ListIterator<Node> iterator = path.leafToRoot();
-            FunctionNode oldFunction = null;
-            while (iterator.hasNext()) {
-                Node node = iterator.next();
-                if (node.getType() == Token.FUNCTION) {
-                    oldFunction = (FunctionNode) node;
-                    break;
-                }
-            }
-            if (oldFunction == null) {
-                return null;
-            }
+        }
+        if (oldFunction == null) {
+            return null;
+        }
 
-            final int oldFunctionStart = oldFunction.getSourceStart();
-            final int oldFunctionEnd = oldFunction.getSourceEnd();
+        final int oldFunctionStart = oldFunction.getSourceStart();
+        final int oldFunctionEnd = oldFunction.getSourceEnd();
 
-            // Make sure the edits were all inside the old function
-            int originalEndAst = lexToAst(translatedSource, history.getOriginalEnd());
-            if (startAst == -1) {
-                return null;
-            }
+        // Make sure the edits were all inside the old function
+        int originalEndAst = lexToAst(previousResult.getSnapshot(), history.getOriginalEnd());
+        if (startAst == -1) {
+            return null;
+        }
 
-            if (originalEndAst > oldFunctionEnd) {
-                return null;
-            }
+        if (originalEndAst > oldFunctionEnd) {
+            return null;
+        }
 
-            int oldFuncEndLex = astToLex(translatedSource, oldFunctionEnd);
-            if (oldFuncEndLex == -1) {
-                return null;
-            }
-            int newFunctionEndLex = history.convertOriginalToEdited(oldFuncEndLex);
-            int newFunctionEnd = lexToAst(translatedSource, newFunctionEndLex);
-            if (newFunctionEnd == -1) {
-                return null;
-            }
+        int oldFuncEndLex = astToLex(previousResult.getSnapshot(), oldFunctionEnd);
+        if (oldFuncEndLex == -1) {
+            return null;
+        }
+        int newFunctionEndLex = history.convertOriginalToEdited(oldFuncEndLex);
+        int newFunctionEnd = lexToAst(previousResult.getSnapshot(), newFunctionEndLex);
+        if (newFunctionEnd == -1) {
+            return null;
+        }
 
-            String fullSource = null;
-            try {
-                CharSequence buffer = reader.read(file);
-                fullSource = asString(buffer);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-                return null;
-            }
-            Context context = new Context(file, null, fullSource, caretOffset, translatedSource, null);
+        Context context = new Context(snapshot);
 
-            // This should not happen unless there is an error in the EditHistory...
-            int docLength = context.source.length();
-            if (newFunctionEnd > docLength || newFunctionEnd <= 0) {
-                return null;
-            }
-            if (context.source.charAt(newFunctionEnd-1) != '}') {
-                return null;
-            }
+        // This should not happen unless there is an error in the EditHistory...
+        int docLength = context.source.length();
+        if (newFunctionEnd > docLength || newFunctionEnd <= 0) {
+            return null;
+        }
+        if (context.source.charAt(newFunctionEnd-1) != '}') {
+            return null;
+        }
 
-            String source = context.source.substring(oldFunctionStart, newFunctionEnd);
-            Sanitize sanitizing = Sanitize.NEVER;
-            boolean sanitizedSource = false;
-            org.mozilla.nb.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
-            context.parser = parser;
+        String source = context.source.substring(oldFunctionStart, newFunctionEnd);
+        Sanitize sanitizing = Sanitize.NEVER;
+        boolean sanitizedSource = false;
+        org.mozilla.nb.javascript.Parser parser = createParser(context, sanitizedSource, sanitizing);
+        context.parser = parser;
 
-            if (sanitizing == Sanitize.NONE) {
-                context.errorOffset = -1;
-            }
+        if (sanitizing == Sanitize.NONE) {
+            context.errorOffset = -1;
+        }
 
-            int lineno = 0;
+        int lineno = 0;
 
-            try {
-                final List<Error> allErrors = new ArrayList<Error>();
-                // Absorb all errors, don't pass to the main listeners. We'll
-                // adjust the errors later.
-                context.listener = new ParseListener() {
-
-                    public void started(ParseEvent e) {
-                    }
-
-                    public void finished(ParseEvent e) {
-                    }
-
-                    public void error(Error e) {
-                        DefaultError error = (DefaultError)e;
-                        int start = error.getStartPosition();
-                        int end = error.getEndPosition();
-                        if (start != -1) {
-                            // Fix the source offsets: I'm compiling
-                            // just the "function { }" part so the source offsets
-                            // are all wrong; add in the location of function
-                            start += oldFunctionStart;
-                        }
-                        if (end != -1) {
-                            end += oldFunctionStart;
-                        }
-                        error.setOffsets(start, end);
-                        allErrors.add(error);
-                    }
-
-                    public void exception(Exception e) {
-                    }
-                };
-
-
-                // Perform some basic cleanup of trailing dots, commas, etc.
-                String oldSource = context.source;
-                int oldCaretOffset = context.caretOffset;
-                context.source = source;
-                if (context.caretOffset >= oldFunctionStart && context.caretOffset <= newFunctionEnd) {
-                    context.caretOffset -= oldFunctionStart;
-                    boolean ok = sanitizeSource(context, Sanitize.EDITED_DOT);
-
-                    if (ok) {
-                        assert context.sanitizedSource != null;
-                        sanitizedSource = true;
-                        source = context.sanitizedSource;
-                        context.sanitized = Sanitize.EDITED_DOT;
-                    }
-                }
-
-                context.source = oldSource;
-                context.caretOffset = oldCaretOffset;
-
-                FunctionNode newFunction = parser.parseFunction(source, context.file.getNameExt(), lineno);
-                if (newFunction == null) {
-                    return null;
-                }
-                // TODO:
-                // (0) Look up the AST node corresponding to the edit region. See if the damage
-                //    region goes beyond the function limit (uh oh, if you add inside the method body
-                //    the damage region will be new
-                // (0) Find out if the change happened inside a function, and if so, which one
-                // (1) Get the exact source code for the given function.
-                //    If the edit list is accurate, then the delta should let me access the }
-                //    -directly- !
-                // (1) Parse
-                // (2) Surgery on the AST to insert the node
-                // (3) Update all the offsets in the AST
-                // (4) Return a new parser result, or consider updating cached info in the parser result!
-                // (5) Deal with the AstNodeAdapter somehow? Ah, don't reuse that!
-                // Update offsets
-                // set current/modified function context in the result object
-                // update the error set! (notifyError) Note - update entire function body range, not just
-                //   the modified range!
-
-                // Adjust the offsets in function nodes: They should be relative to
-                // where the old function started in the document
-                adjustOffsets(newFunction, 0, oldFunctionStart);
-
-                // Adjust the offsets in the rest of the AST - the offsets up the chain as well, not just the following node.
-                int limit = lexToAst(translatedSource, history.getOriginalEnd());
-                if (limit == -1) {
-                    return null;
-                }
-                int delta = history.getSizeDelta();
-                
-                adjustOffsets(root, limit, delta);
-
-                setParentRefs(newFunction, oldFunction.getParentNode());
-                oldFunction.getParentNode().replaceChild(oldFunction, newFunction);
-
-                if (oldFunction.labelNode != null) {
-                    newFunction.labelNode = oldFunction.labelNode;
-                    oldFunction.labelNode.setLabelledNode(newFunction);
-                }
-
-                context.sanitized = sanitizing;
-                //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
-
-                AstNodeAdapter ast = new AstNodeAdapter(null, root);
-                JsParseResult r = createParseResult(context.file, root, ast /*, realRoot, result*/);
-
-                JsParseResult.IncrementalParse incrementalInfo = 
-                        new JsParseResult.IncrementalParse(oldFunction, newFunction,
-                            oldFunctionStart, limit, delta, previousResult);
-                r.setIncrementalParse(incrementalInfo);
-
-                if (sanitizedSource) {
-                    OffsetRange sanitizedRange = new OffsetRange(
-                            context.sanitizedRange.getStart()+oldFunctionStart,
-                            context.sanitizedRange.getEnd()+oldFunctionStart);
-                    r.setSanitized(context.sanitized, sanitizedRange, context.sanitizedContents);
-                }
-                r.setSource(source);
-
-                // Add in the errors from last time
-                for (Error e : result.getDiagnostics()) {
+        try {
+            final List<Error> allErrors = new ArrayList<Error>();
+            // Absorb all errors, don't pass to the main listeners. We'll
+            // adjust the errors later.
+            context.errorHandler = new ParseErrorHandler() {
+                public void error(Error e) {
                     DefaultError error = (DefaultError)e;
                     int start = error.getStartPosition();
                     int end = error.getEndPosition();
-
-                    if (start >= oldFunctionStart && start <= oldFunctionEnd) {
-                        // Replace functions from within the replaced function block!
-                        continue;
+                    if (start != -1) {
+                        // Fix the source offsets: I'm compiling
+                        // just the "function { }" part so the source offsets
+                        // are all wrong; add in the location of function
+                        start += oldFunctionStart;
                     }
-
-                    // Adjust offsets of other errors
-                    if (start >= limit || end >= limit) {
-                        if (start >= limit) {
-                            start += delta;
-                        }
-                        if (end >= limit) {
-                            end += delta;
-                        }
-                        error.setOffsets(start, end);
+                    if (end != -1) {
+                        end += oldFunctionStart;
                     }
-
+                    error.setOffsets(start, end);
                     allErrors.add(error);
                 }
+            };
 
-                for (Error error : allErrors) {
-                    r.addError(error);
+
+            // Perform some basic cleanup of trailing dots, commas, etc.
+            String oldSource = context.source;
+            int oldCaretOffset = context.caretOffset;
+            context.source = source;
+            if (context.caretOffset >= oldFunctionStart && context.caretOffset <= newFunctionEnd) {
+                context.caretOffset -= oldFunctionStart;
+                boolean ok = sanitizeSource(context, Sanitize.EDITED_DOT);
+
+                if (ok) {
+                    assert context.sanitizedSource != null;
+                    sanitizedSource = true;
+                    source = context.sanitizedSource;
+                    context.sanitized = Sanitize.EDITED_DOT;
                 }
-
-                // Prevent accidental traversal of the old function
-                while (oldFunction.hasChildren()) {
-                    Node child = oldFunction.getFirstChild();
-                    oldFunction.removeChild(child);
-                }
-                
-
-                r.setUpdateState(ParserResult.UpdateState.UPDATED);
-
-                return r;
-            } catch (IllegalStateException ise) {
-                // See issue #128983 for a way to get the compiler to assert for example
-                runtimeException = ise;
-            } catch (RuntimeException re) {
-                //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
-                // XXX TODO - record this somehow
-                re.printStackTrace();
-                runtimeException = re;
             }
+
+            context.source = oldSource;
+            context.caretOffset = oldCaretOffset;
+
+            FunctionNode newFunction = parser.parseFunction(source, context.snapshot.getSource().getFileObject().getNameExt(), lineno);
+            if (newFunction == null) {
+                return null;
+            }
+            // TODO:
+            // (0) Look up the AST node corresponding to the edit region. See if the damage
+            //    region goes beyond the function limit (uh oh, if you add inside the method body
+            //    the damage region will be new
+            // (0) Find out if the change happened inside a function, and if so, which one
+            // (1) Get the exact source code for the given function.
+            //    If the edit list is accurate, then the delta should let me access the }
+            //    -directly- !
+            // (1) Parse
+            // (2) Surgery on the AST to insert the node
+            // (3) Update all the offsets in the AST
+            // (4) Return a new parser result, or consider updating cached info in the parser result!
+            // (5) Deal with the AstNodeAdapter somehow? Ah, don't reuse that!
+            // Update offsets
+            // set current/modified function context in the result object
+            // update the error set! (notifyError) Note - update entire function body range, not just
+            //   the modified range!
+
+            // Adjust the offsets in function nodes: They should be relative to
+            // where the old function started in the document
+            adjustOffsets(newFunction, 0, oldFunctionStart);
+
+            // Adjust the offsets in the rest of the AST - the offsets up the chain as well, not just the following node.
+            int limit = lexToAst(context.snapshot, history.getOriginalEnd());
+            if (limit == -1) {
+                return null;
+            }
+            int delta = history.getSizeDelta();
+
+            adjustOffsets(previousRoot, limit, delta);
+
+            setParentRefs(newFunction, oldFunction.getParentNode());
+            oldFunction.getParentNode().replaceChild(oldFunction, newFunction);
+
+            if (oldFunction.labelNode != null) {
+                newFunction.labelNode = oldFunction.labelNode;
+                oldFunction.labelNode.setLabelledNode(newFunction);
+            }
+
+            context.sanitized = sanitizing;
+            //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
+
+            AstNodeAdapter ast = new AstNodeAdapter(null, previousRoot);
+            JsParseResult r = createParseResult(context.snapshot, previousRoot);
+
+            JsParseResult.IncrementalParse incrementalInfo =
+                    new JsParseResult.IncrementalParse(oldFunction, newFunction,
+                        oldFunctionStart, limit, delta, previousResult);
+            r.setIncrementalParse(incrementalInfo);
+
+            if (sanitizedSource) {
+                OffsetRange sanitizedRange = new OffsetRange(
+                        context.sanitizedRange.getStart()+oldFunctionStart,
+                        context.sanitizedRange.getEnd()+oldFunctionStart);
+                r.setSanitized(context.sanitized, sanitizedRange, context.sanitizedContents);
+            }
+            r.setSource(source);
+
+            // Add in the errors from last time
+            for (Error e : previousResult.getDiagnostics()) {
+                DefaultError error = (DefaultError)e;
+                int start = error.getStartPosition();
+                int end = error.getEndPosition();
+
+                if (start >= oldFunctionStart && start <= oldFunctionEnd) {
+                    // Replace functions from within the replaced function block!
+                    continue;
+                }
+
+                // Adjust offsets of other errors
+                if (start >= limit || end >= limit) {
+                    if (start >= limit) {
+                        start += delta;
+                    }
+                    if (end >= limit) {
+                        end += delta;
+                    }
+                    error.setOffsets(start, end);
+                }
+
+                allErrors.add(error);
+            }
+
+            for (Error error : allErrors) {
+                r.addError(error);
+            }
+
+            // Prevent accidental traversal of the old function
+            while (oldFunction.hasChildren()) {
+                Node child = oldFunction.getFirstChild();
+                oldFunction.removeChild(child);
+            }
+
+
+            r.setUpdateState(ParserResult.UpdateState.UPDATED);
+
+            return r;
+        } catch (IllegalStateException ise) {
+            // See issue #128983 for a way to get the compiler to assert for example
+            runtimeException = ise;
+        } catch (RuntimeException re) {
+            //notifyError(context, message, sourceName, line, lineSource, lineOffset, sanitizing, Severity.WARNING, "", null);
+            // XXX TODO - record this somehow
+            re.printStackTrace();
+            runtimeException = re;
         }
 
         return null;
@@ -669,14 +649,14 @@ public class JsParser implements IncrementalParser {
 
         switch (sanitizing) {
         case NEVER:
-            return createParseResult(context.file, null, null/*, null, null*/);
+            return createParseResult(context.snapshot, null);
 
         case NONE:
 
             // We've currently tried with no sanitization: try first level
             // of sanitization - removing dots/colons at the edited offset.
             // First try removing the dots or double colons around the failing position
-            if (context.caretOffset != -1) {
+            if (getCaretOffset(context.snapshot) != -1) {
                 return parseBuffer(context, Sanitize.EDITED_DOT);
             }
 
@@ -686,7 +666,7 @@ public class JsParser implements IncrementalParser {
             // We've tried editing the caret location - now try editing the error location
             // (Don't bother doing this if errorOffset==caretOffset since that would try the same
             // source as EDITED_DOT which has no better chance of succeeding...)
-            if (context.errorOffset != -1 && context.errorOffset != context.caretOffset) {
+            if (context.errorOffset != -1 && context.errorOffset != getCaretOffset(context.snapshot)) {
                 return parseBuffer(context, Sanitize.ERROR_DOT);
             }
 
@@ -707,7 +687,7 @@ public class JsParser implements IncrementalParser {
             // (which could be far from where the error is showing up - but if you're typing
             // say a new "def" statement in a class, this will show up as an error on a mismatched
             // "end" statement rather than here
-            if (context.caretOffset != -1) {
+            if (getCaretOffset(context.snapshot) != -1) {
                 return parseBuffer(context, Sanitize.EDITED_LINE);
             }
 
@@ -719,7 +699,7 @@ public class JsParser implements IncrementalParser {
         case MISSING_END:
         default:
             // We're out of tricks - just return the failed parse result
-            return createParseResult(context.file, null, null/*, null, null*/);
+            return createParseResult(context.snapshot, null);
         }
     }
 
@@ -743,7 +723,7 @@ public class JsParser implements IncrementalParser {
                            String lineSource, int lineOffset, Sanitize sanitizing, Severity severity, String key, Object params) {
         // Replace a common but unwieldy JRuby error message with a shorter one
         
-        if (JsIndexer.PREINDEXING && severity == Severity.ERROR && context.file.getNameExt().startsWith("stub_")) {
+        if (JsIndexer.PREINDEXING && severity == Severity.ERROR && context.snapshot.getSource().getFileObject().getNameExt().startsWith("stub_")) {
             // Ensure there are no code generator bugs in the stubs
             System.err.println("\n\n\n**********************************************************\n**********************************************************\n" + // NOI18N
                     "Parsing error for " + message + ", sourceName= " + sourceName + ", line= " + line + ", lineSource=" + lineSource + ", lineOffset=" + lineOffset + ", key=" + key + "\n" + // NOI18N
@@ -764,7 +744,7 @@ public class JsParser implements IncrementalParser {
 //        }
         
         DefaultError error =
-            new DefaultError(key, message, null, context.file.getFileObject(),
+            new DefaultError(key, message, null, context.snapshot.getSource().getFileObject(),
                 offset, offset, severity);
         if (params != null) {
             if (params instanceof Object[]) {
@@ -773,7 +753,10 @@ public class JsParser implements IncrementalParser {
                 error.setParameters(new Object[] { params });
             }
         }
-        context.listener.error(error);
+
+        if (context.errorHandler != null) {
+            context.errorHandler.error(error);
+        }
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = offset;
@@ -796,7 +779,7 @@ public class JsParser implements IncrementalParser {
             }
         }
 
-        org.mozilla.nb.javascript.Parser parser = createParser(context, source, sanitizedSource, sanitizing);
+        org.mozilla.nb.javascript.Parser parser = createParser(context, sanitizedSource, sanitizing);
 
         if (sanitizing == Sanitize.NONE) {
             context.errorOffset = -1;
@@ -813,9 +796,9 @@ public class JsParser implements IncrementalParser {
 
         try {
             if (isJson(context)) {
-                root = parser.parseJson(source, context.file.getNameExt(), lineno);
+                root = parser.parseJson(source, context.snapshot.getSource().getFileObject().getNameExt(), lineno);
             } else {
-                root = parser.parse(source, context.file.getNameExt(), lineno);
+                root = parser.parse(source, context.snapshot.getSource().getFileObject().getNameExt(), lineno);
             }
         } catch (IllegalStateException ise) {
             // See issue #128983 for a way to get the compiler to assert for example
@@ -833,7 +816,7 @@ public class JsParser implements IncrementalParser {
             //AstRootElement rootElement = new AstRootElement(context.file.getFileObject(), root, result);
 
             AstNodeAdapter ast = new AstNodeAdapter(null, root);
-            JsParseResult r = createParseResult(context.file, root, ast /*, realRoot, result*/);
+            JsParseResult r = createParseResult(context.snapshot, root);
             r.setSanitized(context.sanitized, context.sanitizedRange, context.sanitizedContents);
             r.setSource(source);
             return r;
@@ -842,7 +825,7 @@ public class JsParser implements IncrementalParser {
         }
     }
 
-    protected org.mozilla.nb.javascript.Parser createParser(final Context context, String source, boolean sanitizedSource, final Sanitize sanitizing) {
+    protected org.mozilla.nb.javascript.Parser createParser(final Context context, boolean sanitizedSource, final Sanitize sanitizing) {
         final boolean ignoreErrors = sanitizedSource;
         
         CompilerEnvirons compilerEnv = new CompilerEnvirons();
@@ -905,18 +888,13 @@ public class JsParser implements IncrementalParser {
     }
 
     private boolean isJson(Context context) {
-        return "json".equals(context.file.getExtension()); // NOI18N
+        return "json".equals(context.snapshot.getSource().getFileObject().getExt()); // NOI18N
     }
     
-    private JsParseResult createParseResult(ParserFile file, Node rootNode, AstNodeAdapter ast/*, Node root,
-        RootNode realRoot, JsParserResult jrubyResult*/) {
-        return new JsParseResult(this, file, rootNode, ast/*, realRoot, jrubyResult*/);
+    private JsParseResult createParseResult(Snapshot file, Node rootNode) {
+        return new JsParseResult(this, file, rootNode);
     }
     
-    public PositionManager getPositionManager() {
-        return positions;
-    }
-
     /**
      * The Rhino Node tree doesn't include parent references. That's generally a good
      * thing - it means they can reuse subtrees etc.
@@ -942,17 +920,17 @@ public class JsParser implements IncrementalParser {
     }
     
     @SuppressWarnings("unchecked")
-    public static Element resolveHandle(CompilationInfo info, ElementHandle handle) {
+    public static Element resolveHandle(JsParseResult info, ElementHandle handle) {
         if (handle instanceof AstElement) {
             AstElement element = (AstElement)handle;
-            CompilationInfo oldInfo = element.getInfo();
+            JsParseResult oldInfo = element.getParseResult();
             if (oldInfo == info) {
                 return element;
             }
             Node oldNode = element.getNode(); // XXX Make it work for DefaultComObjects...
-            Node oldRoot = AstUtilities.getRoot(oldInfo);
+            Node oldRoot = oldInfo.getRootNode();
             
-            Node newRoot = AstUtilities.getRoot(info);
+            Node newRoot = info.getRootNode();
             if (newRoot == null) {
                 return null;
             }
@@ -1014,6 +992,11 @@ public class JsParser implements IncrementalParser {
         return null;
     }
 
+    private static int getCaretOffset(Snapshot snapshot) {
+        // XXX: fix this somehow
+        return -1;
+    }
+
     /** Attempts to sanitize the input buffer */
     public static enum Sanitize {
         /** Only parse the current file accurately, don't try heuristics */
@@ -1035,31 +1018,27 @@ public class JsParser implements IncrementalParser {
 
     /** Parsing context */
     public static class Context {
+        private final Snapshot snapshot;
+        private /*final*/ String source;
+        private /*final*/ int caretOffset;
+        
         private org.mozilla.nb.javascript.Parser parser;
-        private final ParserFile file;
-        private ParseListener listener;
+        private ParseErrorHandler errorHandler;
         private int errorOffset;
-        private String source;
         private String sanitizedSource;
         private OffsetRange sanitizedRange = OffsetRange.NONE;
         private String sanitizedContents;
-        private int caretOffset;
         private Sanitize sanitized = Sanitize.NONE;
-        private TranslatedSource translatedSource;
-        private Parser.Job job;
         
-        public Context(ParserFile parserFile, ParseListener listener, String source, int caretOffset, TranslatedSource translatedSource, Parser.Job job) {
-            this.file = parserFile;
-            this.listener = listener;
-            this.source = source;
-            this.caretOffset = caretOffset;
-            this.translatedSource = translatedSource;
-            this.job = job;
+        public Context(Snapshot snapshot) {
+            this.snapshot = snapshot;
+            this.source = asString(snapshot.getText());
+            this.caretOffset = getCaretOffset(snapshot);
         }
         
         @Override
         public String toString() {
-            return "JsParser.Context(" + file.toString() + ")"; // NOI18N
+            return "JsParser.Context(" + snapshot.getSource().getFileObject() + ")"; // NOI18N
         }
         
         public OffsetRange getSanitizedRange() {
@@ -1077,5 +1056,9 @@ public class JsParser implements IncrementalParser {
         public int getErrorOffset() {
             return errorOffset;
         }
+    } // End of Context class
+
+    private static interface ParseErrorHandler {
+        void error(Error error);
     }
 }

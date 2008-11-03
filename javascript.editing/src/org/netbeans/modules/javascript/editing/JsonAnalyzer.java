@@ -47,12 +47,11 @@ import java.util.Map;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner.Configuration;
-import org.netbeans.modules.csl.api.TranslatedSource;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  * Analyzer for JSON
@@ -61,18 +60,18 @@ import org.netbeans.modules.csl.api.TranslatedSource;
  */
 public class JsonAnalyzer extends JsAnalyzer {
     @Override
-    public List<? extends StructureItem> scan(CompilationInfo info) {
+    public List<? extends StructureItem> scan(ParserResult info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         AnalysisResult ar = result.getStructure();
 
         List<?extends AstElement> elements = ar.getElements();
         List<StructureItem> itemList = new ArrayList<StructureItem>(elements.size());
 
-        if (JsUtils.isJsonFile(info.getFileObject()) && result.getRootNode() != null) {
+        if (JsUtils.isJsonFile(result.getSnapshot().getSource().getFileObject()) && result.getRootNode() != null) {
             Node topObjLit = result.getRootNode().getFirstChild();
             if (topObjLit != null && topObjLit.getType() == Token.OBJECTLIT) {
-                assert result.getTranslatedSource() == null; // No embedding for JSON
-                addJsonItems(false, topObjLit, itemList, info);
+                // XXX: parsingapi, assert result.getTranslatedSource() == null; // No embedding for JSON
+                addJsonItems(false, topObjLit, itemList, result);
                 return itemList;
             }
         }
@@ -81,7 +80,7 @@ public class JsonAnalyzer extends JsAnalyzer {
     }
 
     // Special handling for JSON files
-    private void addJsonItems(boolean skipObjLit, Node node, List<StructureItem> items, CompilationInfo info) {
+    private void addJsonItems(boolean skipObjLit, Node node, List<StructureItem> items, JsParseResult info) {
         if (skipObjLit && (node.getType() == Token.OBJECTLIT || node.getType() == Token.ARRAYLIT)) {
             return;
         }
@@ -134,21 +133,22 @@ public class JsonAnalyzer extends JsAnalyzer {
     }
 
     @Override
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
         JsParseResult result = AstUtilities.getParseResult(info);
-        TranslatedSource source = result.getTranslatedSource();
-        assert source == null; // No embedding for JSON files
+// XXX: parsingapi
+//        TranslatedSource source = result.getTranslatedSource();
+//        assert source == null; // No embedding for JSON files
 
         Map<String,List<OffsetRange>> folds = new HashMap<String,List<OffsetRange>>();
         List<OffsetRange> codeblocks = new ArrayList<OffsetRange>();
         folds.put("codeblocks", codeblocks); // NOI18N
 
-        BaseDocument doc = (BaseDocument)info.getDocument();
+        BaseDocument doc = (BaseDocument)result.getSnapshot().getSource().getDocument();
         if (doc == null) {
             return Collections.emptyMap();
         }
 
-        Node root = AstUtilities.getRoot(result);
+        Node root = result.getRootNode();
         if (root != null) {
             addJsonFolds(true, root, codeblocks);
         }
