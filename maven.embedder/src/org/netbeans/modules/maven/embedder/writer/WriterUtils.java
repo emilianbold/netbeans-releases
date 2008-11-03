@@ -130,8 +130,16 @@ public class WriterUtils {
         }
         return model;
     }
-    
-    public static void writeProfilesModel(final FileObject pomDir, final ProfilesRoot profilesRoot) throws IOException {
+
+    /**
+     * @deprecated use the XAM-based model for editing the pom file,
+     * see org.netbeans.modules.maven.profile package
+     *
+     * @param pomDir
+     * @param profilesRoot
+     * @throws java.io.IOException
+     */
+    public @Deprecated static void writeProfilesModel(final FileObject pomDir, final ProfilesRoot profilesRoot) throws IOException {
         pomDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 InputStream inStr = null;
