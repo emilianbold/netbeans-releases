@@ -19,7 +19,7 @@ echo $HGINFO
 
 HGID=`echo "$HGINFO" | grep "Hg ID"`
 echo Last build_info line: "$HGID"
-HGTIP=`expr match "$HGID" ".* \([a-f0-9]*\)\+.*"`
+HGTIP=`echo "$HGID" | cut -f 2 -d ":"`
 echo Last OK revision: "$HGTIP"
 
 hg pull -r "$HGTIP" "$pop_url" || exit 5
