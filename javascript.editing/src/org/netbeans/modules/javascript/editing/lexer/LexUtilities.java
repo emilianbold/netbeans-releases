@@ -48,10 +48,8 @@ import java.util.Set;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.csl.api.CompilationInfo;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.api.TranslatedSource;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -61,6 +59,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.annotations.CheckForNull;
 import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript.editing.JsParseResult;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -96,22 +97,20 @@ public class LexUtilities {
     }
 
     @CheckForNull
-    public static BaseDocument getDocument(CompilationInfo info, boolean forceOpen) {
-        try {
-            if (info == null) {
-                return null;
+    public static BaseDocument getDocument(JsParseResult info, boolean forceOpen) {
+        BaseDocument bdoc = null;
+        
+        if (info != null) {
+            Source source = info.getSnapshot().getSource();
+            Document doc = source.getDocument();
+            if (doc instanceof BaseDocument) {
+                bdoc = (BaseDocument) doc;
+            } else if (forceOpen) {
+                bdoc = GsfUtilities.getDocument(source.getFileObject(), true);
             }
-            BaseDocument doc = (BaseDocument) info.getDocument();
-            if (doc == null && forceOpen) {
-                doc = GsfUtilities.getDocument(info.getFileObject(), true);
-            }
-            
-            return doc;
-        } catch (ClassCastException ex) {
-            // TESTS! If data object for GSF isn't found it will be a FilterDocument
-            // rather than a BaseDocument
-            return GsfUtilities.getDocument(info.getFileObject(), true);
         }
+
+        return bdoc;
     }
 
     private LexUtilities() {
@@ -140,7 +139,7 @@ public class LexUtilities {
     }
 
     /** For a possibly generated offset in an AST, return the corresponding lexing/true document offset */
-    public static int getLexerOffset(CompilationInfo info, int astOffset) {
+    public static int getLexerOffset(JsParseResult info, int astOffset) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result == null) {
             result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
@@ -155,7 +154,7 @@ public class LexUtilities {
         return astOffset;
     }
     
-    public static OffsetRange getLexerOffsets(CompilationInfo info, OffsetRange astRange) {
+    public static OffsetRange getLexerOffsets(JsParseResult info, OffsetRange astRange) {
         ParserResult result = info.getEmbeddedResult(JsTokenId.JAVASCRIPT_MIME_TYPE, 0);
         if (result == null) {
             result = info.getEmbeddedResult(JsTokenId.JSON_MIME_TYPE, 0);
@@ -760,10 +759,10 @@ public class LexUtilities {
      * Get the documentation associated with the given node in the given document.
      * TODO: handle proper block comments
      */
-    public static List<String> gatherDocumentation(CompilationInfo info, BaseDocument baseDoc, int nodeOffset) {
+    public static List<String> gatherDocumentation(JsParseResult info, BaseDocument baseDoc, int nodeOffset) {
         LinkedList<String> comments = new LinkedList<String>();
         int elementBegin = nodeOffset;
-        if (info != null && info.getDocument() == baseDoc) {
+        if (info != null && info.getSnapshot().getSource().getDocument() == baseDoc) {
             elementBegin = LexUtilities.getLexerOffset(info, elementBegin);
             if (elementBegin == -1) {
                 return null;

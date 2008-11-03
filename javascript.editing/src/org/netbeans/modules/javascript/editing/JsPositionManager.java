@@ -44,10 +44,8 @@ package org.netbeans.modules.javascript.editing;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.PositionManager;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 
 
@@ -55,37 +53,39 @@ import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
  *
  * @author Tor Norbye
  */
-public class JsPositionManager implements PositionManager {
-    public JsPositionManager() {
-    }
-
-    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
-        Element object = JsParser.resolveHandle(info, objectHandle);
-        if (object instanceof AstElement) {
-            Node target = ((AstElement)object).getNode();
-            if (target != null) {
-                return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
-            }
-            return OffsetRange.NONE;
-        } else if (object != null) {
-            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " +
-                ((object != null) ? object.getClass().getName() : "null"));
-        } else {
-            if (objectHandle instanceof AstElement) {
-                AstElement el = (AstElement)objectHandle;
-                if (el.getNode() != null) {
-                    OffsetRange astRange = AstUtilities.getRange(el.getNode());
-                    if (astRange != OffsetRange.NONE) {
-                        CompilationInfo oldInfo = el.getInfo();
-                        if (oldInfo == null) {
-                            oldInfo = info;
-                        }
-                        return LexUtilities.getLexerOffsets(oldInfo, astRange);
-                    }
-                    return OffsetRange.NONE;
-                }
-            }
-        }
-        return OffsetRange.NONE;
-    }
+public class JsPositionManager {
+// XXX: parsingapi, not used anymore, remove
+//    implements PositionManager {
+//    public JsPositionManager() {
+//    }
+//
+//    public OffsetRange getOffsetRange(CompilationInfo info, ElementHandle objectHandle) {
+//        Element object = JsParser.resolveHandle(info, objectHandle);
+//        if (object instanceof AstElement) {
+//            Node target = ((AstElement)object).getNode();
+//            if (target != null) {
+//                return LexUtilities.getLexerOffsets(info, new OffsetRange(target.getSourceStart(), target.getSourceEnd()));
+//            }
+//            return OffsetRange.NONE;
+//        } else if (object != null) {
+//            Logger.global.log(Level.WARNING, "Foreign element: " + object + " of type " +
+//                ((object != null) ? object.getClass().getName() : "null"));
+//        } else {
+//            if (objectHandle instanceof AstElement) {
+//                AstElement el = (AstElement)objectHandle;
+//                if (el.getNode() != null) {
+//                    OffsetRange astRange = AstUtilities.getRange(el.getNode());
+//                    if (astRange != OffsetRange.NONE) {
+//                        CompilationInfo oldInfo = el.getInfo();
+//                        if (oldInfo == null) {
+//                            oldInfo = info;
+//                        }
+//                        return LexUtilities.getLexerOffsets(oldInfo, astRange);
+//                    }
+//                    return OffsetRange.NONE;
+//                }
+//            }
+//        }
+//        return OffsetRange.NONE;
+//    }
 }

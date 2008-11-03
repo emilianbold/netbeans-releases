@@ -52,7 +52,6 @@ import javax.swing.ImageIcon;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
@@ -62,7 +61,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
-import org.netbeans.modules.csl.api.TranslatedSource;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
 
@@ -74,7 +73,7 @@ public class JsAnalyzer implements StructureScanner {
     public static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private static final String DOT_CALL = ".call"; // NOI18N
     
-    public List<? extends StructureItem> scan(CompilationInfo info) {
+    public List<? extends StructureItem> scan(ParserResult info) {
         JsParseResult result = AstUtilities.getParseResult(info);
         AnalysisResult ar = result.getStructure();
 
@@ -124,7 +123,7 @@ public class JsAnalyzer implements StructureScanner {
                 }
                 list.add(e);
             } else {
-                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
+                JsAnalyzer.JsStructureItem item = new JsStructureItem(e, result);
                 itemList.add(item);
             }
         }
@@ -134,8 +133,7 @@ public class JsAnalyzer implements StructureScanner {
             assert list != null;
 
             AstElement first = list.get(0);
-            JsFakeStructureItem currentClass = new JsFakeStructureItem(clz, ElementKind.CLASS,
-                    first, info);
+            JsFakeStructureItem currentClass = new JsFakeStructureItem(clz, ElementKind.CLASS, first, result);
             itemList.add(currentClass);
             
             int firstAstOffset = first.getNode().getSourceStart();
@@ -143,7 +141,7 @@ public class JsAnalyzer implements StructureScanner {
             
             for (AstElement e : list) {
                 if (e.getKind() != ElementKind.CLASS) {
-                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, info);
+                    JsAnalyzer.JsStructureItem item = new JsStructureItem(e, result);
                     currentClass.addChild(item);
                 } else {
                     currentClass.element = e;
@@ -157,16 +155,15 @@ public class JsAnalyzer implements StructureScanner {
                 }
             }
             
-            currentClass.begin = LexUtilities.getLexerOffset(info, firstAstOffset);
-            currentClass.end = LexUtilities.getLexerOffset(info, lastAstOffset);
+            currentClass.begin = LexUtilities.getLexerOffset(result, firstAstOffset);
+            currentClass.end = LexUtilities.getLexerOffset(result, lastAstOffset);
         }
         
         return itemList;
     }
 
-    public Map<String, List<OffsetRange>> folds(CompilationInfo info) {
+    public Map<String, List<OffsetRange>> folds(ParserResult info) {
         JsParseResult result = AstUtilities.getParseResult(info);
-        TranslatedSource source = result.getTranslatedSource();
         AnalysisResult ar = result.getStructure();
 
         List<?extends AstElement> elements = ar.getElements();
@@ -177,7 +174,7 @@ public class JsAnalyzer implements StructureScanner {
         folds.put("codeblocks", codeblocks); // NOI18N
 
         try {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = (BaseDocument)result.getSnapshot().getSource().getDocument();
             if (doc == null) {
                 return Collections.emptyMap();
             }
@@ -192,13 +189,11 @@ public class JsAnalyzer implements StructureScanner {
                     Node node = element.getNode();
                     OffsetRange range = AstUtilities.getRange(node);
                     
-                    if (source != null) {
-                        int lexStart = source.getLexicalOffset(range.getStart());
-                        int lexEnd = source.getLexicalOffset(range.getEnd());
-                        if (lexStart < lexEnd) {
-                            //recalculate the range if we parsed the virtual source
-                            range = new OffsetRange(lexStart,lexEnd);
-                        }
+                    int lexStart = result.getSnapshot().getOriginalOffset(range.getStart());
+                    int lexEnd = result.getSnapshot().getOriginalOffset(range.getEnd());
+                    if (lexStart < lexEnd) {
+                        //recalculate the range if we parsed the virtual source
+                        range = new OffsetRange(lexStart,lexEnd);
                     }
 
                     if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR ||
@@ -226,9 +221,9 @@ public class JsAnalyzer implements StructureScanner {
         return folds;
     }
     
-    static AnalysisResult analyze(JsParseResult result, CompilationInfo info) {
-        AnalysisResult analysisResult = new AnalysisResult(info);
-        BaseDocument doc = LexUtilities.getDocument(info, true);
+    static AnalysisResult analyze(JsParseResult result) {
+        AnalysisResult analysisResult = new AnalysisResult(result);
+        BaseDocument doc = LexUtilities.getDocument(result, true);
         if (doc != null) {
             try {
                 doc.readLock(); // Read-lock due to token hierarchy use
@@ -254,7 +249,7 @@ public class JsAnalyzer implements StructureScanner {
     public static class AnalysisResult implements ParseTreeVisitor {
         private List<AstElement> elements = new ArrayList<AstElement>();
         private List<String> imports;
-        private CompilationInfo info;
+        private JsParseResult info;
         private Map<String,String> classExtends;
         private Set<String> fields;
         private Node inConstructor;
@@ -262,7 +257,7 @@ public class JsAnalyzer implements StructureScanner {
         /** Namespace map */
         private Map<String,String> classToFqn;
 
-        private AnalysisResult(CompilationInfo info) {
+        private AnalysisResult(JsParseResult info) {
             this.info = info;
         }
 
@@ -599,7 +594,7 @@ public class JsAnalyzer implements StructureScanner {
             if (node.getType() == Token.FUNCTION) {
                 if (currentFunction != null && currentFunction.nodeType == null) {
                     // Except for stubs...
-                    if (info != null && !info.getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
+                    if (info != null && !info.getSnapshot().getSource().getFileObject().getNameExt().startsWith("stub_")) { // NOI18N
                         currentFunction.nodeType = "void"; // NOI18N
                     }
                 }
@@ -729,12 +724,12 @@ public class JsAnalyzer implements StructureScanner {
         private String name;
         private AstElement element;
         private ElementKind kind;
-        private CompilationInfo info;
+        private JsParseResult info;
         List<StructureItem> children = new ArrayList<StructureItem>();
         int begin;
         int end;
 
-        JsFakeStructureItem(String name, ElementKind kind, AstElement node, CompilationInfo info) {
+        JsFakeStructureItem(String name, ElementKind kind, AstElement node, JsParseResult info) {
             this.name = name;
             this.kind = kind;
             this.element = node;
@@ -837,10 +832,10 @@ public class JsAnalyzer implements StructureScanner {
     private class JsStructureItem implements StructureItem {
         private AstElement element;
         private ElementKind kind;
-        private CompilationInfo info;
+        private JsParseResult info;
         private String name;
 
-        private JsStructureItem(AstElement node, CompilationInfo info) {
+        private JsStructureItem(AstElement node, JsParseResult info) {
             this.element = node;
             this.info = info;
 

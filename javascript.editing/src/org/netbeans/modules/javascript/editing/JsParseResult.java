@@ -40,65 +40,53 @@
  */
 package org.netbeans.modules.javascript.editing;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.text.Document;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.csl.api.CompilationInfo;
-import org.netbeans.modules.csl.api.Error;
-import org.netbeans.modules.csl.api.Index;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParserFile;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.api.annotations.NonNull;
-import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.javascript.editing.embedding.JsModel;
-import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
-import org.openide.util.Exceptions;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser;
 
 
 /**
  *
  * @author Tor Norbye
  */
-public class JsParseResult extends ParserResult {
-    JsModel model;
-    private AstTreeNode ast;
-    private Node rootNode;
+public class JsParseResult extends Parser.Result {
+
+    @Override
+    protected void invalidate() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    private final JsParser parser;
+    private final Snapshot snapshot;
+    private final Node rootNode;
+
     private String source;
+    
     private OffsetRange sanitizedRange = OffsetRange.NONE;
     private String sanitizedContents;
-    private JsAnalyzer.AnalysisResult analysisResult;
     private JsParser.Sanitize sanitized;
+
+    private JsAnalyzer.AnalysisResult analysisResult;
     private boolean commentsAdded;
     private IncrementalParse incrementalParse;
 
-    public JsParseResult(JsParser parser, ParserFile file, Node rootNode, AstTreeNode ast) {
-        super(parser, file, JsTokenId.JAVASCRIPT_MIME_TYPE);
+    public JsParseResult(JsParser parser, Snapshot snapshot, Node rootNode) {
+        this.parser = parser;
+        this.snapshot = snapshot;
         this.rootNode = rootNode;
-        this.ast = ast;
     }
-    
-//    public JsParseResult(ParserFile file, AstRootElement rootElement, AstTreeNode ast, Node root,
-//        RootNode realRoot, JsParserResult jrubyResult) {
-//        super(file);
-//        this.rootElement = rootElement;
-//        this.ast = ast;
-//        this.root = root;
-//        this.realRoot = realRoot;
-//        this.jrubyResult = jrubyResult;
+
+// XXX: parsingapi
+//    public ParserResult.AstTreeNode getAst() {
+//        return ast;
 //    }
-
-    public ParserResult.AstTreeNode getAst() {
-        return ast;
-    }
-
-    public void setAst(AstTreeNode ast) {
-        this.ast = ast;
-    }
+//
+//    public void setAst(AstTreeNode ast) {
+//        this.ast = ast;
+//    }
 
     /** The root node of the AST produced by the parser.
      * Later, rip out the getAst part etc.
@@ -107,10 +95,14 @@ public class JsParseResult extends ParserResult {
         return rootNode;
     }
 
+    public Snapshot getSnapshot() {
+        return snapshot;
+    }
+
     public String getSource() {
         return source;
     }
-
+    
     public void setSource(String source) {
         this.source = source;
     }
@@ -149,57 +141,7 @@ public class JsParseResult extends ParserResult {
     @NonNull
     public JsAnalyzer.AnalysisResult getStructure() {
         if (analysisResult == null) {
-            CompilationInfo info = getInfo();
-            if (info == null) {
-                try {
-                    info = new CompilationInfo(getFile().getFileObject()) {
-                        private Document doc;
-                        
-                        @Override
-                        public Collection<? extends ParserResult> getEmbeddedResults(String mimeType) {
-                            if (mimeType.equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
-                                return Collections.singleton(JsParseResult.this);
-                            }
-                            return null;
-                        }
-
-                        @Override
-                        public ParserResult getEmbeddedResult(String mimeType, int offset) {
-                            if (mimeType.equals(JsTokenId.JAVASCRIPT_MIME_TYPE)) {
-                                return JsParseResult.this;
-                            }
-                            return null;
-                        }
-
-                        @Override
-                        public String getText() {
-                            return getSource();
-                        }
-
-                        @Override
-                        public Index getIndex(String mimeType) {
-                            return null;
-                        }
-
-                        @Override
-                        public List<Error> getErrors() {
-                            return Collections.emptyList();
-                        }
-                        
-                        @Override
-                        public Document getDocument() {
-                            if (doc == null) {
-                                doc = GsfUtilities.getDocument(getFileObject(), true);
-                            }
-                            
-                            return doc;
-                        }
-                    };
-                } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
-                }
-            }
-            analysisResult = JsAnalyzer.analyze(this, info);
+            analysisResult = JsAnalyzer.analyze(this);
         }
         return analysisResult;
     }
@@ -232,7 +174,7 @@ public class JsParseResult extends ParserResult {
     
     @Override
     public String toString() {
-        return "JsParseResult(file=" + getFile() + ",rootnode=" + rootNode + ")";
+        return "JsParseResult(file=" + getSnapshot().getSource().getFileObject() + ",rootnode=" + rootNode + ")";
     }
 
     public void setIncrementalParse(IncrementalParse incrementalParse) {

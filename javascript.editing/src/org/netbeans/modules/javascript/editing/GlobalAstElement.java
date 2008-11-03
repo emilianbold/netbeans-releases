@@ -41,7 +41,6 @@ package org.netbeans.modules.javascript.editing;
 
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.ElementKind;
 
 /**
@@ -51,7 +50,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 public class GlobalAstElement extends AstElement {
     Node var;
     
-    GlobalAstElement(CompilationInfo info, Node var) {
+    GlobalAstElement(JsParseResult info, Node var) {
         super(info, var);
         this.var = var;
     }
