@@ -44,6 +44,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -51,6 +52,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 
 import java.util.EventObject;
@@ -67,8 +69,6 @@ import javax.swing.tree.DefaultTreeCellEditor;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreePath;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 
 
@@ -77,7 +77,7 @@ import org.openide.util.Exceptions;
 * @author Petr Hamernik
 */
 class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorListener, FocusListener,
-    MouseMotionListener {
+    MouseMotionListener, MouseListener {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -2171725285964032312L;
 
@@ -95,6 +95,8 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         separate for code clarity.
     */
     private boolean stopped = false;
+
+    private boolean wasFocusOwner = true;
 
     /** Construct a cell editor.
     * @param tree the tree
@@ -158,6 +160,7 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
 
     /** Overrides superclass method. If the source is a <code>JTextField</code>,
      * i.e. cell editor, it cancels editing, otherwise it calls superclass method. */
+    @Override
     public void actionPerformed(ActionEvent evt) {
         if (evt.getSource() instanceof JTextField) {
             cancelled = true;
@@ -186,8 +189,10 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
      * This is invoked if a TreeCellEditor is not supplied in the constructor.
      * It returns a TextField editor.
      */
+    @Override
     protected TreeCellEditor createTreeCellEditor() {
         JTextField tf = new JTextField() {
+                @Override
                 public void addNotify() {
                     stopped = cancelled = false;
                     super.addNotify();
@@ -216,11 +221,18 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
     * If the realEditor returns true to this message, prepareForEditing
     * is messaged and true is returned.
     */
+    @Override
     public boolean isCellEditable(EventObject event) {
         if ((event != null) && (event instanceof MouseEvent)) {
             if (!SwingUtilities.isLeftMouseButton((MouseEvent) event) || ((MouseEvent) event).isPopupTrigger()) {
+                abortTimer();
                 return false;
             }
+        }
+
+        if (!wasFocusOwner) {
+            wasFocusOwner = true;
+            return false;
         }
 
         if (lastPath != null) {
@@ -242,6 +254,7 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         return super.isCellEditable(event);
     }
 
+    @Override
     protected void determineOffset(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row) {
         if (renderer != null) {
             renderer.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, true);
@@ -271,9 +284,19 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         this.dndActive = dndActive;
     }
 
+    @Override
     protected void setTree(JTree newTree) {
         if ((newTree != tree) && (timer != null) && timer.isRunning()) {
             tree.removeMouseMotionListener(this);
+        }
+
+        if (newTree != tree) {
+            if (tree != null) {
+                tree.removeMouseListener(this);
+            }
+            if (newTree != null) {
+                newTree.addMouseListener(this);
+            }
         }
 
         super.setTree(newTree);
@@ -305,11 +328,13 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         }
     }
 
+    @Override
     protected void startEditingTimer() {
         tree.addMouseMotionListener(this);
         super.startEditingTimer();
     }
 
+    @Override
     protected void prepareForEditing() {
         abortTimer();
         tree.removeMouseMotionListener(this);
@@ -327,6 +352,22 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         return (r.contains(p));
     }
 
+    public void mouseClicked(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mousePressed(MouseEvent e) {
+        wasFocusOwner = tree.isFocusOwner();
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
     /** Redefined default cell editor to convert nodes to name */
     class Ed extends DefaultCellEditor {
         /** generated Serialized Version UID */
@@ -339,6 +380,7 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         /** Main method of the editor.
         * @return component of editor
         */
+        @Override
         public Component getTreeCellEditorComponent(
             JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row
         ) {
