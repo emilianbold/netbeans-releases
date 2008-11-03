@@ -77,14 +77,14 @@ public class StatusLineImportIcon implements StatusLineElementProvider {
                             ui,
                             NbBundle.getMessage (Installer.class, "Installer_DialogTitle"),
                             true,
-                            new Object[] {bImport, NotifyDescriptor.NO_OPTION, bRemindLater},
+                            new Object[] {bImport, bNo, bRemindLater},
                             NotifyDescriptor.OK_OPTION,
                             DialogDescriptor.BOTTOM_ALIGN,
                             null,
                             null);
-                    dd.setClosingOptions (new Object[] {NotifyDescriptor.NO_OPTION, bRemindLater});
+                    dd.setClosingOptions (new Object[] {bNo, bRemindLater});
                     DialogDisplayer.getDefault ().createDialog (dd).setVisible (true);
-                    if (bImport.equals (dd.getValue ()) || NotifyDescriptor.NO_OPTION.equals (dd.getValue ())) {
+                    if (bImport.equals (dd.getValue ()) || bNo.equals (dd.getValue ())) {
                         ui.dontRemind ();
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
