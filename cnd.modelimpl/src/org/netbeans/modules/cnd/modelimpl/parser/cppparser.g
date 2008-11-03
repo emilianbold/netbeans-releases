@@ -380,6 +380,7 @@ tokens {
 	protected static final StorageClass scSTATIC = new StorageClass("scSTATIC");
 	protected static final StorageClass scEXTERN = new StorageClass("scEXTERN");
 	protected static final StorageClass scMUTABLE = new StorageClass("scMUTABLE");
+	protected static final StorageClass scTHREAD = new StorageClass("scTHREAD");
 
 	public static class DeclSpecifier extends Enum { public DeclSpecifier(String id) { super(id); } }
 
@@ -1587,11 +1588,12 @@ typeof_param :
         ;
 
 storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
-	:	LITERAL_auto		{sc = scAUTO;}
-	|	LITERAL_register	{sc = scREGISTER;}
-	|	LITERAL_static	{sc = scSTATIC;}
-	|	LITERAL_extern	{sc = scEXTERN;}        
-	|	LITERAL_mutable	{sc = scMUTABLE;}                     
+    :   LITERAL_auto        {sc = scAUTO;}
+    |   LITERAL_register    {sc = scREGISTER;}
+    |   LITERAL_static      {sc = scSTATIC;}
+    |   LITERAL_extern      {sc = scEXTERN;}
+    |   LITERAL_mutable     {sc = scMUTABLE;}
+    |   LITERAL___thread    {sc = scTHREAD;}
 	;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier
