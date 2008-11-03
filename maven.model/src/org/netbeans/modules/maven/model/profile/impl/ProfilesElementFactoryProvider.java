@@ -140,6 +140,11 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
+        if (isElementQName(context.getModel().getProfilesQNames().ACTIVEPROFILES)) {
+            created = new StringListImpl(context.getModel(), element, context.getModel().getProfilesQNames().ACTIVEPROFILE);
+            return;
+        }
+
         //createExtensibilityElement(context);
     }
 

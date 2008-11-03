@@ -56,6 +56,10 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.maven.model.profile.Profile;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
+import org.netbeans.modules.maven.model.profile.ProfilesRoot;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -144,6 +148,29 @@ public class NewEmptyJUnitTest extends TestCase {
 //        }
 
 
+     }
+
+
+     public void testProfiles() throws Exception {
+        URL url = getClass().getClassLoader().getResource("profiles.xml");
+        File sourceFile = new File(url.toURI());
+        assertTrue(sourceFile.exists());
+        FileObject fo = FileUtil.toFileObject(sourceFile);
+        assertNotNull(fo);
+        ModelSource source = Utilities.createModelSource(fo, true);
+        assertTrue(source.isEditable());
+        ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
+        assertNotNull(model.getRootComponent());
+        ProfilesRoot prj = model.getProfilesRoot();
+        assertNotNull(prj);
+
+        List<Profile> profiles = prj.getProfiles();
+        assertNotNull(profiles);
+        assertNotNull(prj.findProfileById("profile1"));
+
+        List<String> actives = prj.getActiveProfiles();
+        assertNotNull(actives);
+        assertEquals("profile1", actives.get(0));
      }
 
 }
