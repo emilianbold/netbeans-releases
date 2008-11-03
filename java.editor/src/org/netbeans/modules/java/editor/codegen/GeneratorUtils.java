@@ -329,8 +329,8 @@ public class GeneratorUtils {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = field.asType();
-        StringBuilder sb = new StringBuilder();
-        sb.append(type.getKind() == TypeKind.BOOLEAN ? "is" : "get").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
         Types types = info.getTypes();
         List<ExecutableElement> candidates = methods.get(sb.toString());
         if (candidates != null) {
@@ -346,8 +346,8 @@ public class GeneratorUtils {
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = field.asType();
-        StringBuilder sb = new StringBuilder();
-        sb.append("set").append(Character.toUpperCase(name.charAt(0))).append(name.subSequence(1, name.length())); //NOI18N
+        StringBuilder sb = getCapitalizedName(name);
+        sb.insert(0, "set"); //NOI18N
         Types types = info.getTypes();
         List<ExecutableElement> candidates = methods.get(sb.toString());
         if (candidates != null) {
@@ -545,6 +545,15 @@ public class GeneratorUtils {
             return false;
     }
     
+    public static StringBuilder getCapitalizedName(CharSequence cs) {
+        StringBuilder sb = new StringBuilder(cs);
+        while(sb.length() > 1 && sb.charAt(0) == '_') //NOI18N
+            sb.deleteCharAt(0);
+        if (sb.length() > 0)
+            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
+        return sb;
+    }
+
     private static class ClassMemberComparator {
         
         public static int compare(Tree tree1, Tree tree2) {
