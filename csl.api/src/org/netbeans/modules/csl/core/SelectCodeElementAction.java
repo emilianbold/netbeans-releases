@@ -42,7 +42,6 @@
 package org.netbeans.modules.csl.core;
 
 import java.awt.event.ActionEvent;
-import java.io.IOException;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.Action;
@@ -52,7 +51,6 @@ import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.editor.BaseAction;
@@ -60,7 +58,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -196,7 +193,7 @@ public final class SelectCodeElementAction extends BaseAction {
         public void cancel() {
         }
 
-        public void run (Parser.Result result, Snapshot snapshot) {
+        public void run (Parser.Result result) {
             ParserResult parserResult = (ParserResult) result;
             parserResult.toPhase(Phase.RESOLVED);
             selectionInfos = initSelectionPath(target, parserResult);

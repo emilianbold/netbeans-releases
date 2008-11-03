@@ -375,7 +375,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
         if (provider == null) {
             // Just parser errors, no hints
-            List<Error> parserErrors = parserResult.getDiagnostics();
+            List<? extends Error> parserErrors = parserResult.getDiagnostics();
             if (parserErrors != null) {
                 errors.addAll(parserErrors);
             }

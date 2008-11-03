@@ -27,23 +27,19 @@
  */
 package org.netbeans.modules.csl.core;
 
-import java.io.IOException;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
 import org.netbeans.modules.csl.source.SourceAccessor;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.Parser.Result;
 
 
 public class GsfReformatTask implements ReformatTask {
@@ -92,8 +88,7 @@ public class GsfReformatTask implements ReformatTask {
                     ParserManager.parse (
                         source,
                         new UserTask () {
-
-                            public void run (Result result, Snapshot snapshot) throws Exception {
+                            public void run (Parser.Result result) throws Exception {
                                 ParserResult parserResult = (ParserResult) result;
                                 parserResult.toPhase (Phase.PARSED);
                                 GsfReformatTask.this.controller = parserResult;
