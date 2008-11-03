@@ -104,8 +104,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
    
     /** Create a multi-parented classloader.
      * @param parents all direct parents of this classloader, except system one.
-     * @param coveredPackages Enumeration of Strings if format "org.something" 
-+     *   containing all packages to be covered by this classloader. 
      * @param transitive whether other PCLs depending on this one will
      *                   automatically search through its parent list
      */
