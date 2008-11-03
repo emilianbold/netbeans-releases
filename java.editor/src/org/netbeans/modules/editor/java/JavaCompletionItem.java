@@ -1578,9 +1578,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.setter = setter;
             this.simpleName = elem.getSimpleName().toString();
             if (setter)
-                this.name = "set" + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+                this.name = "set" + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             else
-                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             this.typeName = Utilities.getTypeName(type, false).toString();
         }
         

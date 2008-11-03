@@ -1431,17 +1431,17 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
                             }
                             case DOT:
                                 addTokenTo(top);
-                                top.setExpID(DOT_OPEN);
+                                top.setExpID(tokenID2OpenExpID(tokenID));
                                 break;
 
                             case ARROW:
                                 addTokenTo(top);
-                                top.setExpID(ARROW_OPEN);
+                                top.setExpID(tokenID2OpenExpID(tokenID));
                                 break;
 
                             case SCOPE:
                                 addTokenTo(top);
-                                top.setExpID(SCOPE_OPEN);
+                                top.setExpID(tokenID2OpenExpID(tokenID));
                                 break;
 
                             case METHOD_OPEN:

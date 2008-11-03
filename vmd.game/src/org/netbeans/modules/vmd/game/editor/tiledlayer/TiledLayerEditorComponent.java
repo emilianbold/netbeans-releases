@@ -505,6 +505,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         }
         
         if (isSelectMode()) {
+            // select all same tiles
             if (e.getClickCount() >= 2 && !SwingUtilities.isRightMouseButton(e)) {
                 this.selectByIndex(this.tiledLayer.getTileAt(cell.getRow(), cell.getCol()).getIndex());
             }
@@ -517,7 +518,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
     }
         
     private void handleMousePressed(MouseEvent e) {
-        if (!SwingUtilities.isLeftMouseButton(e)) {
+        if (isPaintMode() && !SwingUtilities.isLeftMouseButton(e)) {
             return;
         }
         
@@ -527,18 +528,23 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         
         if (this.isSelectMode()) {
             synchronized (this.cellsSelected) {
-                if (e.isControlDown()) {
-                    //ctrl-left_press toggle a single cell without affecting other selection
-                    if (!this.cellsSelected.remove(cell)) {
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    if (e.isControlDown()) {
+                        //ctrl-left_press toggle a single cell without affecting other selection
+                        if (!this.cellsSelected.remove(cell)) {
+                            this.cellsSelected.add(cell);
+                        }
+                    } else if (e.isMetaDown() || e.isShiftDown()) {
+                        this.cellsSelected.add(cell);
+                    } else {
+                        this.clearSelection();
                         this.cellsSelected.add(cell);
                     }
-                }
-                else if (e.isMetaDown() || e.isShiftDown()) {
-                    this.cellsSelected.add(cell);
-                }
-                else {
-                    this.clearSelection();
-                    this.cellsSelected.add(cell);
+                } else {
+                    if (!this.cellsSelected.contains(cell)){
+                        this.clearSelection();
+                        this.cellsSelected.add(cell);
+                    }
                 }
             }
         }
@@ -623,7 +629,7 @@ public class TiledLayerEditorComponent extends JComponent implements MouseListen
         DuplicateTiledLayerAction dtl = new DuplicateTiledLayerAction();
         CreateFromSelectionAction cfs = new CreateFromSelectionAction();
         EraseSelectionAction es = new EraseSelectionAction();
-        if (TiledLayerEditorComponent.this.cellsSelected.size() < 2) {
+        if (TiledLayerEditorComponent.this.cellsSelected.size() < 1) {
             cfs.setEnabled(false);
             es.setEnabled(false);
         }
