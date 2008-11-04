@@ -94,23 +94,14 @@ public class FromWSDLTSuite extends WsValidation {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(addServerTests(NbModuleSuite.createConfiguration(FromWSDLTSuite.class), "testWSFromWSDL", "testRefreshService", "testRefreshServiceAndReplaceWSDL").enableModules(".*").clusters(".*"));
+        return NbModuleSuite.create(addServerTests(
+                NbModuleSuite.createConfiguration(FromWSDLTSuite.class),
+                "testWSFromWSDL",
+                "testRefreshService",
+                "testRefreshServiceAndReplaceWSDL"
+                ).enableModules(".*").clusters(".*"));
     }
     
-    /** Creates suite from particular test cases. You can define order of testcases here. */
-//    public static TestSuite suite() {
-//        TestSuite suite = new NbTestSuite(); 
-//        suite.addTest(new FromWSDLTSuite("testWSFromWSDL"));
-//        suite.addTest(new FromWSDLTSuite("testRefreshService"));
-//        suite.addTest(new FromWSDLTSuite("testRefreshServiceAndReplaceWSDL"));
-//        return suite;
-//    }
-//    
-//    /* Method allowing test execution directly from the IDE. */
-//    public static void main(java.lang.String[] args) {
-//        TestRunner.run(suite());
-//    }
-
     public void testWSFromWSDL() throws IOException {
         File wsdl = new File(getDataDir(), "resources/AddNumbers.wsdl");
         String wsdlPath = wsdl.getCanonicalPath();
