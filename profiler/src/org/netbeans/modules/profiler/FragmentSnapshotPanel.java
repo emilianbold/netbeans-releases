@@ -83,7 +83,6 @@ public class FragmentSnapshotPanel extends SnapshotPanel implements ChangeListen
 
     private CodeRegionResultsSnapshot snapshot;
     private JTabbedPane tabs = new JTabbedPane(JTabbedPane.BOTTOM);
-    private SaveSnapshotAction saveAction;
     private SnapshotInfoPanel infoPanel;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -119,7 +118,6 @@ public class FragmentSnapshotPanel extends SnapshotPanel implements ChangeListen
         toolBar.putClientProperty("JToolBar.isRollover", Boolean.TRUE); //NOI18N
         toolBar.setBorder(BorderFactory.createEmptyBorder(4, 0, 4, 0));
 
-        toolBar.add(saveAction = new SaveSnapshotAction(ls));
         toolBar.add(new ExportSnapshotAction(ls));
 
         add(toolBar, BorderLayout.NORTH);
@@ -155,7 +153,6 @@ public class FragmentSnapshotPanel extends SnapshotPanel implements ChangeListen
 
     public void updateSavedState() {
         infoPanel.updateInfo();
-        saveAction.updateState();
     }
 
     private void moveToNextSubTab() {

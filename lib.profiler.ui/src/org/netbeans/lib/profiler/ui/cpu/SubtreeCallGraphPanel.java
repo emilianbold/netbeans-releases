@@ -157,8 +157,6 @@ public class SubtreeCallGraphPanel extends SnapshotCPUResultsPanel implements Sc
     public void setDataToDisplay(CPUResultsSnapshot snapshot, PrestimeCPUCCTNode node, int view) {
         super.setDataToDisplay(snapshot, view);
         this.rootNode = node;
-        popupShowSource.setEnabled(isShowSourceAvailable());
-        popupAddToRoots.setEnabled(isAddToRootsAvailable());
     }
 
     // NOTE: this method only sets sortingColumn and sortOrder, it doesn't refresh UI!

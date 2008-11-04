@@ -243,19 +243,6 @@ public abstract class ReverseMemCallGraphPanel extends ResultsPanel {
 
     protected JPopupMenu initPopupMenu() {
         JPopupMenu popup = new JPopupMenu();
-        Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-
-        JMenuItem popupShowSource = new JMenuItem();
-        popupShowSource.setFont(boldfont);
-        popupShowSource.setText(GO_SOURCE_POPUP_ITEM);
-        popupShowSource.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    if (treePath != null) {
-                        performDefaultAction(treePath);
-                    }
-                }
-            });
-        popup.add(popupShowSource);
 
         return popup;
     }
@@ -263,13 +250,7 @@ public abstract class ReverseMemCallGraphPanel extends ResultsPanel {
     void performDefaultAction(TreePath path) {
         PresoObjAllocCCTNode node = (PresoObjAllocCCTNode) path.getLastPathComponent();
         String[] classMethodAndSig = node.getMethodClassNameAndSig();
-        if (node.getParent() == null) showSourceForClass(classMethodAndSig[0]);
-        else actionsHandler.showSourceForMethod(classMethodAndSig[0], classMethodAndSig[1], classMethodAndSig[2]);
-    }
-    
-    private void showSourceForClass(String className) {
-        className = className.replaceAll("\\[]", ""); // NOI18N
-        actionsHandler.showSourceForMethod(className, null, null);
+        actionsHandler.showSourceForMethod(classMethodAndSig[0], classMethodAndSig[1], classMethodAndSig[2]);
     }
 
     private void addMenuItemListener(JCheckBoxMenuItem menuItem) {

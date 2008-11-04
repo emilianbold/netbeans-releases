@@ -207,7 +207,7 @@ public class LiveFlatProfilePanel extends JPanel implements LiveResultsPanel {
 
     private void initComponents() {
         setLayout(new BorderLayout());
-
+        setOpaque(false);
         noResultsPanel = new JPanel();
         noResultsPanel.setLayout(new BorderLayout());
         noResultsPanel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));

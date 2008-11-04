@@ -663,13 +663,9 @@ public class CCTDisplay extends SnapshotCPUResultsPanel implements ScreenshotPro
     }
 
     private void enableDisablePopup(PrestimeCPUCCTNode node) {
-        popupShowSource.setEnabled(isShowSourceAvailable() && ((node.getThreadId() != -1) && (node.getMethodId() > 0)));
         popupShowSubtree.setEnabled((node.getThreadId() != -1) && (node.getMethodId() > 0));
         popupShowReverse.setEnabled((node.getThreadId() != -1) && (node.getMethodId() > 0));
-        popupAddToRoots.setEnabled(isAddToRootsAvailable() && ((node.getThreadId() != -1) && (node.getMethodId() > 0)));
         popupFind.setEnabled((node.getThreadId() != -1) && (node.getMethodId() > 0));
-        // Allow the selection handler to change state of popupFind
-        if (selectionHandler != null) selectionHandler.methodSelected(node.getThreadId(), node.getMethodId(), currentView);
     }
 
     private void initColumnsData() {

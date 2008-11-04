@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.ProfilerClient;
 import org.netbeans.lib.profiler.ProfilerEngineSettings;
 import org.netbeans.lib.profiler.TargetAppRunner;
@@ -48,7 +47,6 @@ import org.netbeans.lib.profiler.client.MonitoredData;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.results.monitor.VMTelemetryDataManager;
 import org.netbeans.lib.profiler.results.threads.ThreadsDataManager;
-import org.netbeans.modules.profiler.ppoints.ProfilingPointsManager;
 import javax.swing.*;
 
 
@@ -94,8 +92,6 @@ public final class ProfilingMonitor {
         }
 
         public void run() {
-            Project project = NetBeansProfiler.getDefaultNB().getProfiledProject();
-            final int ppsize = ProfilingPointsManager.getDefault().getProfilingPoints(project, false).size(); // PPs are not modifiable during runtime!
 
             while (keepRunning) { // Main loop
 
@@ -112,27 +108,7 @@ public final class ProfilingMonitor {
                                             threadsDataManager.processData(md);
                                             VMTelemetryManager.processData(md);
 
-                                            // ---------------------------------------------------------
-                                            // Temporary workaround to refresh profiling points when LiveResultsWindow is not refreshing
-                                            // TODO: move this code to a separate class performing the update if necessary
-                                            if (NetBeansProfiler.getDefaultNB().processesProfilingPoints() && (ppsize > 0)
-                                                    && (!doUpdateLiveResults || !LiveResultsWindow.hasDefault())) {
-                                                org.netbeans.modules.profiler.utils.IDEUtils.runInProfilerRequestProcessor(new Runnable() {
-                                                        public void run() {
-                                                            try {
-                                                                ProfilerClient client = Profiler.getDefault().getTargetAppRunner()
-                                                                                                .getProfilerClient();
-
-                                                                if (client.getCurrentInstrType() != ProfilerEngineSettings.INSTR_CODE_REGION) {
-                                                                    client.forceObtainedResultsDump(true);
-                                                                }
-                                                            } catch (Exception e /*ClientUtils.TargetAppOrVMTerminated targetAppOrVMTerminated*/) {
-                                                            }
-                                                        }
-                                                    });
-
-                                            }
-
+ 
                                             // ---------------------------------------------------------
 
                                             // Let results updating happen every other cycle (i.e. every ~2.5 sec) to allow the user to understand something before it disappears :-)
