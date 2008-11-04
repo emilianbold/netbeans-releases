@@ -92,6 +92,22 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-maven-grammar-CodeTemplates.xml" url="POM-abbreviations.xml"/>
                     </folder>
                 </folder>
+                <folder name="CodeGeneratorContextProviders">
+                    <file name="org-netbeans-modules-maven-codegen-ContextProvider.instance"/>
+                </folder>
+
+                <folder name="CodeGenerators">
+                    <file name="org-netbeans-modules-maven-codegen-DependencyGenerator$Factory.instance">
+                        <attr name="position" intvalue="100"/>
+                    </file>
+                    <file name="org-netbeans-modules-maven-codegen-PluginGenerator$Factory.instance">
+                        <attr name="position" intvalue="200"/>
+                    </file>
+                    <file name="org-netbeans-modules-maven-codegen-ProfileGenerator$Factory.instance">
+                        <attr name="position" intvalue="300"/>
+                    </file>
+                </folder>
+
             </folder>
             <folder name="x-maven-profile+xml">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.grammar.Bundle"/>
