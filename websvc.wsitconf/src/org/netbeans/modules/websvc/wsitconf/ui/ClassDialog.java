@@ -197,8 +197,8 @@ public class ClassDialog {
                          subType[0] = Boolean.valueOf(sourceUtils.isSubtype(extendingClass));
                      }
                  }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+            } catch (Throwable t) { // we don't care about anything else happening here - either the file is recognize, or not
+                Logger.global.log(Level.INFO, t.getMessage());
             }
             return subType[0];
         }
