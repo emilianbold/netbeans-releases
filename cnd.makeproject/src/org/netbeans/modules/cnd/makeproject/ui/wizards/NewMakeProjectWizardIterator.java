@@ -65,6 +65,7 @@ import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
@@ -83,10 +84,10 @@ import org.openide.util.NbBundle;
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
     
-    public static String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
-    public static String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
-    public static String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
-    public static String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
+    public static final String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
+    public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
+    public static final String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
+    public static final String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     
@@ -291,10 +292,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.Instantiat
             if (extension != null) {
                 final Project p = ProjectManager.getDefault().findProject(dir);
                 if (p instanceof MakeProject) {
-                    MakeProject makeProject = (MakeProject) p;
+                    final MakeProject makeProject = (MakeProject) p;
                     final Map<String,Object> map = extension.clone(wiz);
                     makeProject.addOpenedTask(new Runnable(){
                         public void run() {
+                            // Discovery require a fully completed project
+                            // Make sure that descriptor was stored and readed
+                            ConfigurationDescriptorProvider provider = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+                            provider.getConfigurationDescriptor(true);
                             if (extension.canApply(map, p)){
                                 try {
                                     extension.apply(map, p);

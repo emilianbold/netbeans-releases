@@ -82,6 +82,10 @@ public final class RemovedTokenList<T extends TokenId> implements TokenList<T> {
         return (index < tokenOrEmbeddings.length) ? tokenOrEmbeddings[index] : null;
     }
 
+    public TokenOrEmbedding<T>[] tokenOrEmbeddings() {
+        return tokenOrEmbeddings;
+    }
+
     public int lookahead(int index) {
         return -1;
     }

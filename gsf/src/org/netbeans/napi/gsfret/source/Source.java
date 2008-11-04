@@ -86,6 +86,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
+import org.netbeans.api.lexer.TokenHierarchyEventType;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.TranslatedSource;
@@ -1554,6 +1555,9 @@ if(parseTime > 0) {
         public void tokenHierarchyChanged(TokenHierarchyEvent evt) {
             assert possiblyIncremental;
             editHistory.tokenHierarchyChanged(evt);
+            if (evt.type() == TokenHierarchyEventType.REBUILD) {
+                Source.this.resetState(true, true);
+            }
         }
     }
 

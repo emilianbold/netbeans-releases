@@ -51,7 +51,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.Utils;
-import org.netbeans.modules.php.project.ui.actions.CommandUtils;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.templates.support.Templates;

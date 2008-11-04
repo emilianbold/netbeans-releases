@@ -55,6 +55,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlDataManager.class)
 public class WsdlDataManagerImpl implements WsdlDataManager {
 
     private int precedence;

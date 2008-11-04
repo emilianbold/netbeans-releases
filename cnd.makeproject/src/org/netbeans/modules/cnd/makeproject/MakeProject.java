@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import java.beans.PropertyChangeListener;
@@ -153,7 +152,7 @@ public final class MakeProject implements Project, AntProjectListener {
             String typeTxt = nl.item(0).getNodeValue();
             projectType = new Integer(typeTxt).intValue();
         }
-        
+
         readProjectExtension(data, HEADER_EXTENSIONS, headerExtensions);
         readProjectExtension(data, C_EXTENSIONS, cExtensions);
         readProjectExtension(data, CPP_EXTENSIONS, cppExtensions);
@@ -164,7 +163,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    private void readProjectExtension(Element data, String key, Set<String> set){
+    private void readProjectExtension(Element data, String key, Set<String> set) {
         NodeList nl = data.getElementsByTagName(key);
         if (nl.getLength() == 1) {
             nl = nl.item(0).getChildNodes();
@@ -176,7 +175,7 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         }
     }
-    
+
     public FileObject getProjectDirectory() {
         return helper.getProjectDirectory();
     }
@@ -210,31 +209,30 @@ public final class MakeProject implements Project, AntProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(); //refHelper.createSubprojectProvider();
         return Lookups.fixed(new Object[]{
-            new Info(),
-            aux,
-            helper.createCacheDirectoryProvider(),
-            spp,
-            new MakeActionProvider(this),
-            new MakeLogicalViewProvider(this, spp),
-            new MakeCustomizerProvider(this, projectDescriptorProvider),
-            new MakeArtifactProviderImpl(),
-            new //new CustomActionsHookImpl(),
-            ProjectXmlSavedHookImpl(),
-            new ProjectOpenedHookImpl(),
-            new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
-            new MakeSources(this, helper),
-            new AntProjectHelperProvider(),
-            projectDescriptorProvider,
-            new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
-            new NativeProjectProvider(this, projectDescriptorProvider),
-            new RecommendedTemplatesImpl(),
-            new MakeProjectOperations(this),
-            new FolderSearchInfo(projectDescriptorProvider),
-            new MakeProjectType(),
-            new MakeProjectEncodingQueryImpl(this),
-            new RemoteProjectImpl(),
-            new ToolchainProjectImpl()
-        });
+                    new Info(),
+                    aux,
+                    helper.createCacheDirectoryProvider(),
+                    spp,
+                    new MakeActionProvider(this),
+                    new MakeLogicalViewProvider(this, spp),
+                    new MakeCustomizerProvider(this, projectDescriptorProvider),
+                    new MakeArtifactProviderImpl(),
+                    new ProjectXmlSavedHookImpl(),
+                    new ProjectOpenedHookImpl(),
+                    new MakeSharabilityQuery(FileUtil.toFile(getProjectDirectory())),
+                    new MakeSources(this, helper),
+                    new AntProjectHelperProvider(),
+                    projectDescriptorProvider,
+                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider),
+                    new NativeProjectProvider(this, projectDescriptorProvider),
+                    new RecommendedTemplatesImpl(),
+                    new MakeProjectOperations(this),
+                    new FolderSearchInfo(projectDescriptorProvider),
+                    new MakeProjectType(),
+                    new MakeProjectEncodingQueryImpl(this),
+                    new RemoteProjectImpl(),
+                    new ToolchainProjectImpl()
+                });
     }
 
     public void configurationXmlChanged(AntProjectEvent ev) {
@@ -249,7 +247,7 @@ public final class MakeProject implements Project, AntProjectListener {
     public void propertiesChanged(AntProjectEvent ev) {
         // currently ignored (probably better to listen to evaluator() if you need to)
     }
-    
+
     /**
      * Check needed header extensions and store list in the NB/project properties.
      * @param needAdd list of needed extensions of header files.
@@ -258,49 +256,49 @@ public final class MakeProject implements Project, AntProjectListener {
         Set<String> headerExtension = MakeProject.getHeaderSuffixes();
         Set<String> sourceExtension = MakeProject.getSourceSuffixes();
         Set<String> usedExtension = MakeProject.createExtensionSet();
-        for(String extension : needAdd){
-            if (extension.length()>0) {
-                if (!headerExtension.contains(extension) && !sourceExtension.contains(extension)){
+        for (String extension : needAdd) {
+            if (extension.length() > 0) {
+                if (!headerExtension.contains(extension) && !sourceExtension.contains(extension)) {
                     usedExtension.add(extension);
                 }
             }
         }
-        if (usedExtension.size()>0 && addNewExtensionDialog(usedExtension, "H")) { // NOI18N
+        if (usedExtension.size() > 0 && addNewExtensionDialog(usedExtension, "H")) { // NOI18N
             // add unknown extensin to HDataLoader
             HDataLoader.getInstance().addExtensions(usedExtension);
             headerExtensions.addAll(usedExtension);
             saveAdditionalExtensions();
         }
     }
-    
-    private Set<String> getUnknownExtensions(Set<String> inLoader, Set<String> inProject){
+
+    private Set<String> getUnknownExtensions(Set<String> inLoader, Set<String> inProject) {
         Set<String> unknown = MakeProject.createExtensionSet();
-        for(String extension : inProject){
-            if (extension.length()>0) {
-                if (!inLoader.contains(extension)){
+        for (String extension : inProject) {
+            if (extension.length() > 0) {
+                if (!inLoader.contains(extension)) {
                     unknown.add(extension);
                 }
             }
         }
         return unknown;
     }
-    
-    private void checkNeededExtensions(){
+
+    private void checkNeededExtensions() {
         Set<String> unknown = getUnknownExtensions(MakeProject.getCSuffixes(), cExtensions);
-        if (unknown.size()>0 && addNewExtensionDialog(unknown,"C")){ // NOI18N
+        if (unknown.size() > 0 && addNewExtensionDialog(unknown, "C")) { // NOI18N
             CDataLoader.getInstance().addExtensions(unknown);
         }
         unknown = getUnknownExtensions(MakeProject.getCppSuffixes(), cppExtensions);
-        if (unknown.size()>0 && addNewExtensionDialog(unknown,"CPP")){ // NOI18N
+        if (unknown.size() > 0 && addNewExtensionDialog(unknown, "CPP")) { // NOI18N
             CCDataLoader.getInstance().addExtensions(unknown);
         }
         unknown = getUnknownExtensions(MakeProject.getHeaderSuffixes(), headerExtensions);
-        if (unknown.size()>0 && addNewExtensionDialog(unknown,"H")){ // NOI18N
+        if (unknown.size() > 0 && addNewExtensionDialog(unknown, "H")) { // NOI18N
             HDataLoader.getInstance().addExtensions(unknown);
         }
     }
-    
-    public void updateExtensions(Set<String> cSet,Set<String> cppSet,Set<String> hSet){
+
+    public void updateExtensions(Set<String> cSet, Set<String> cppSet, Set<String> hSet) {
         cExtensions.clear();
         cExtensions.addAll(cSet);
         cppExtensions.clear();
@@ -309,8 +307,8 @@ public final class MakeProject implements Project, AntProjectListener {
         headerExtensions.addAll(hSet);
         saveAdditionalExtensions();
     }
-    
-    private void saveAdditionalExtensions(){
+
+    private void saveAdditionalExtensions() {
         Element data = helper.getPrimaryConfigurationData(true);
         saveAdditionalHeaderExtensions(data, MakeProject.C_EXTENSIONS, cExtensions);
         saveAdditionalHeaderExtensions(data, MakeProject.CPP_EXTENSIONS, cppExtensions);
@@ -318,22 +316,22 @@ public final class MakeProject implements Project, AntProjectListener {
         helper.putPrimaryConfigurationData(data, true);
     }
 
-    private void saveAdditionalHeaderExtensions(Element data, String key, Set<String> set){
+    private void saveAdditionalHeaderExtensions(Element data, String key, Set<String> set) {
         Element element;
         NodeList nodeList = data.getElementsByTagName(key);
         if (nodeList.getLength() == 1) {
             element = (Element) nodeList.item(0);
             NodeList deadKids = element.getChildNodes();
             while (deadKids.getLength() > 0) {
-                 element.removeChild(deadKids.item(0));
+                element.removeChild(deadKids.item(0));
             }
-         } else {
-             element = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, key);
-             data.appendChild(element);
-         }
+        } else {
+            element = data.getOwnerDocument().createElementNS(MakeProjectType.PROJECT_CONFIGURATION_NAMESPACE, key);
+            data.appendChild(element);
+        }
         StringBuilder buf = new StringBuilder();
-        for(String e : set){
-            if (buf.length()>0) {
+        for (String e : set) {
+            if (buf.length() > 0) {
                 buf.append(',');
             }
             buf.append(e);
@@ -342,56 +340,56 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     private boolean addNewExtensionDialog(Set<String> usedExtension, String type) {
-        String message = getString("ADD_EXTENSION_QUESTION"+type+(usedExtension.size()==1?"":"S")); // NOI18N
+        String message = getString("ADD_EXTENSION_QUESTION" + type + (usedExtension.size() == 1 ? "" : "S")); // NOI18N
         StringBuilder extensions = new StringBuilder();
-        for(String ext : usedExtension){
-            if (extensions.length()>0){
+        for (String ext : usedExtension) {
+            if (extensions.length() > 0) {
                 extensions.append(',');
             }
             extensions.append(ext);
         }
         NotifyDescriptor d = new NotifyDescriptor.Confirmation(
                 MessageFormat.format(message, new Object[]{extensions.toString()}),
-                getString("ADD_EXTENSION_DIALOG_TITLE"+type+(usedExtension.size()==1?"":"S")), // NOI18N
-                NotifyDescriptor.YES_NO_OPTION); 
+                getString("ADD_EXTENSION_DIALOG_TITLE" + type + (usedExtension.size() == 1 ? "" : "S")), // NOI18N
+                NotifyDescriptor.YES_NO_OPTION);
         return DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.YES_OPTION;
     }
 
-    public static Set<String> createExtensionSet(){
+    public static Set<String> createExtensionSet() {
         if (IpeUtils.isSystemCaseInsensitive()) {
             return new TreeSet<String>(String.CASE_INSENSITIVE_ORDER);
         } else {
             return new TreeSet<String>();
         }
     }
-    
+
     private static Set<String> getSourceSuffixes() {
-        Set<String> suffixes = createExtensionSet(); 
+        Set<String> suffixes = createExtensionSet();
         addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
         addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
         return suffixes;
     }
 
     private static Set<String> getCSuffixes() {
-        Set<String> suffixes = createExtensionSet(); 
+        Set<String> suffixes = createExtensionSet();
         addSuffices(suffixes, CDataLoader.getInstance().getExtensions());
         return suffixes;
     }
 
     private static Set<String> getCppSuffixes() {
-        Set<String> suffixes = createExtensionSet(); 
+        Set<String> suffixes = createExtensionSet();
         addSuffices(suffixes, CCDataLoader.getInstance().getExtensions());
         return suffixes;
     }
-    
+
     private static Set<String> getHeaderSuffixes() {
-        Set<String> suffixes = createExtensionSet(); 
+        Set<String> suffixes = createExtensionSet();
         addSuffices(suffixes, HDataLoader.getInstance().getExtensions());
         return suffixes;
     }
-    
+
     private static void addSuffices(Set<String> suffixes, ExtensionList list) {
-        for (Enumeration e = list.extensions(); e != null &&  e.hasMoreElements();) {
+        for (Enumeration e = list.extensions(); e != null && e.hasMoreElements();) {
             String ex = (String) e.nextElement();
             suffixes.add(ex);
         }
@@ -402,7 +400,6 @@ public final class MakeProject implements Project, AntProjectListener {
     }
 
     // Package private methods -------------------------------------------------
-
     final class AntProjectHelperProvider {
 
         AntProjectHelper getAntProjectHelper() {
@@ -475,6 +472,7 @@ public final class MakeProject implements Project, AntProjectListener {
     /** Return configured project name. */
     public String getName() {
         return (String) ProjectManager.mutex().readAccess(new Mutex.Action() {
+
             public Object run() {
                 Element data = helper.getPrimaryConfigurationData(true);
                 // XXX replace by XMLUtil when that has findElement, findText, etc.
@@ -514,8 +512,7 @@ public final class MakeProject implements Project, AntProjectListener {
             }
         });
     }
-    
-    
+
     /*
      * Return source encoding if in project.xml (only project version >= 50)
      */
@@ -529,10 +526,10 @@ public final class MakeProject implements Project, AntProjectListener {
                 return node.getTextContent();
             }
         }
-        
+
         return null;
     }
-    
+
     public String getSourceEncoding() {
         if (sourceEncoding == null) {
             // Read configurations.xml. That's where encoding is stored for project version < 50)
@@ -543,14 +540,14 @@ public final class MakeProject implements Project, AntProjectListener {
         }
         return sourceEncoding;
     }
-    
+
     public void setSourceEncoding(String sourceEncoding) {
         this.sourceEncoding = sourceEncoding;
     }
-    
+
     // Private innerclasses ----------------------------------------------------
 
-/*
+    /*
     private class CustomActionsHookImpl implements CustomActionsHook {
     private Vector customActions = null;
     public CustomActionsHookImpl() {
@@ -613,10 +610,11 @@ public final class MakeProject implements Project, AntProjectListener {
                 try {
                     FileObject fo = FileUtil.toFileObject(new File(location).getCanonicalFile());
                     Project project = ProjectManager.getDefault().findProject(fo);
-                    if (project != null)
+                    if (project != null) {
                         subProjects.add(project);
+                    }
                 } catch (Exception e) {
-                    System.err.println("Cannot find subproject in '"+location+"' "+e); // FIXUP // NOI18N
+                    System.err.println("Cannot find subproject in '" + location + "' " + e); // FIXUP // NOI18N
                 }
             }
 
@@ -698,10 +696,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    private final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
-
-        ProjectXmlSavedHookImpl() {
-        }
+    private static final class ProjectXmlSavedHookImpl extends ProjectXmlSavedHook {
 
         protected void projectXmlSaved() throws IOException {
             /*
@@ -731,7 +726,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
 
         protected void projectOpened() {
-            
+
             checkNeededExtensions();
             if (openedTasks != null) {
                 for (Runnable runnable : openedTasks) {
@@ -813,7 +808,7 @@ public final class MakeProject implements Project, AntProjectListener {
         }
     }
 
-    class FolderSearchInfo implements SearchInfo {
+    static class FolderSearchInfo implements SearchInfo {
 
         private ConfigurationDescriptorProvider projectDescriptorProvider;
 
@@ -836,17 +831,16 @@ public final class MakeProject implements Project, AntProjectListener {
 
         public String getDevelopmentHost() {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
             return conf.getDevelopmentHost().getName();
         }
-
     }
 
     class ToolchainProjectImpl implements ToolchainProject {
 
         public CompilerSet getCompilerSet() {
             MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
-            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            MakeConfiguration conf = (MakeConfiguration) projectDescriptor.getConfs().getActive();
             if (conf != null) {
                 return conf.getCompilerSet().getCompilerSet();
             }

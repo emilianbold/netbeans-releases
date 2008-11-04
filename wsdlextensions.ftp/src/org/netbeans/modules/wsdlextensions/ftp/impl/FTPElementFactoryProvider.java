@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
 */
 public class FTPElementFactoryProvider {
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BindingFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(FTPQName.BINDING.getQName());
@@ -43,6 +44,7 @@ public class FTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(FTPQName.ADDRESS.getQName());
@@ -52,6 +54,7 @@ public class FTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OperationFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(FTPQName.OPERATION.getQName());
@@ -61,6 +64,7 @@ public class FTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TransferFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(FTPQName.TRANSFER.getQName());
@@ -70,6 +74,7 @@ public class FTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MessageFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(FTPQName.MESSAGE.getQName());

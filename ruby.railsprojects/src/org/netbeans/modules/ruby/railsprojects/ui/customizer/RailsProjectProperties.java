@@ -42,10 +42,13 @@
 package org.netbeans.modules.ruby.railsprojects.ui.customizer;
 
 import java.io.IOException;
-import org.netbeans.api.project.Project;
+import java.util.logging.Logger;
+import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatform.Info;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
+import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
+import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.Util;
@@ -56,6 +59,8 @@ import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 
 public class RailsProjectProperties extends SharedRubyProjectProperties {
     
+    private static final Logger LOGGER = Logger.getLogger(RailsProjectProperties.class.getName());
+
     public static final String RAILS_PORT = "rails.port"; // NOI18N
     public static final String RAILS_SERVERTYPE = "rails.servertype"; // NOI18N
     public static final String RAILS_ENV = "rails.env"; // NOI18N
@@ -76,7 +81,7 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     private String railsEnvironment;
     
     public RailsProjectProperties(
-            final Project project,
+            final RubyBaseProject project,
             final UpdateHelper updateHelper,
             final PropertyEvaluator evaluator,
             final ReferenceHelper refHelper,
@@ -112,19 +117,31 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
         if (getRailsEnvironment() != null) {
             privateProperties.setProperty(RAILS_ENV, getRailsEnvironment());
         }
-        Info info = getPlatform().getInfo();
-        String serverURI = server == null
-                ? evaluator.getProperty(RAILS_SERVERTYPE)
-                : server.getServerUri();
+        RubyPlatform platform = getPlatform();
+        if (platform == null) {
+            LOGGER.fine("Project has invalid platform (null).");
+            return;
+        }
+        Info info = platform.getInfo();
         Util.logUsage(RailsProjectProperties.class, "USG_PROJECT_CONFIG_RAILS", // NOI18N
                 info.getKind(),
                 info.getPlatformVersion(),
                 info.getGemVersion(),
-                serverURI,
+                getServerIdForLogging(),
                 "", // XXX database seems to not be configurable, so this attribute does not make sense here?
                 ""); // XXX rails version - the same as above 'database' attribute?
     }
     
+    // see #150975
+    private String getServerIdForLogging() {
+        if (server != null) {
+            return server.getDisplayName();
+        }
+        String serverURI = evaluator.getProperty(RAILS_SERVERTYPE);
+        RubyInstance serverInstance = ServerRegistry.getDefault().getServer(serverURI, getPlatform());
+        return serverInstance != null ? serverInstance.getDisplayName() : "";
+    }
+
     RubyInstance getServer() {
         return this.server;
     }

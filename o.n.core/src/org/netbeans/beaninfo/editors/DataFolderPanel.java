@@ -141,15 +141,6 @@ class DataFolderPanel extends TopComponent implements
         return PREF_DIM;
     }
 
-    /** Request focus.
-    */
-    public void requestFocus () {
-        // TODO: set the focus
-        // used to be :
-//        className.requestFocus();
-//        className.selectAll ();
-    }
-
     /** Creates node that displays all packages.
     */
     private Node createPackagesNode () {

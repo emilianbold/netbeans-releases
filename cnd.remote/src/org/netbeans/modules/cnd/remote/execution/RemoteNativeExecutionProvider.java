@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.execution.NativeExecutionProvider;
  *
  * @author gordonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.execution.NativeExecutionProvider.class)
 public class RemoteNativeExecutionProvider implements NativeExecutionProvider {
     
     protected String host = null;

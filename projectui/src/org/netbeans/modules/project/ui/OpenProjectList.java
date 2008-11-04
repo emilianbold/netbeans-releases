@@ -243,11 +243,13 @@ public final class OpenProjectList {
         private int entered;
         private final Lock enteredGuard = new ReentrantLock();
         private final Condition enteredZeroed = enteredGuard.newCondition();
+        private final ProgressHandle progress;
         
         public LoadOpenProjects(int a) {
             action = a;
             currentFiles = Utilities.actionsGlobalContext().lookupResult(FileObject.class);
             currentFiles.addLookupListener(WeakListeners.create(LookupListener.class, this, currentFiles));
+            progress = ProgressHandleFactory.createHandle(NbBundle.getMessage(OpenProjectList.class, "CAP_Opening_Projects"));
         }
 
         final void waitFinished() {
@@ -267,7 +269,12 @@ public final class OpenProjectList {
                     return;
                 case 1:
                     action = 2;
-                    loadOnBackground();
+                    try {
+                        progress.start();
+                        loadOnBackground();
+                    } finally {
+                        progress.finish();
+                    }
                     updateGlobalState();
                     return;
                 case 2:
@@ -335,6 +342,8 @@ public final class OpenProjectList {
                     }
                 }          
             }
+            int max = toOpenProjects.size();
+            progress.switchToDeterminate(max);
             for (;;) {
                 Project p;
                 synchronized (toOpenProjects) {
@@ -357,6 +366,7 @@ public final class OpenProjectList {
                         lazyMainProject = null;
                     }
                 }
+                progress.progress(max - toOpenProjects.size());
             }
 
             if (inital != null) {

@@ -49,9 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.text.Collator;
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -206,39 +203,17 @@ public final class PlatformComponentFactory {
     public static class RubyPlatformListModel extends AbstractListModel
             implements ComboBoxModel {
 
-        private static RubyPlatform[] getSortedPlatforms(RubyPlatform extra) {
-            Set<RubyPlatform> _platforms = RubyPlatformManager.getPlatforms();
-            if (extra != null) {
-                _platforms.add(extra);
-            }
-            RubyPlatform[] platforms = _platforms.toArray(new RubyPlatform[_platforms.size()]);
-            Arrays.sort(platforms, new Comparator<RubyPlatform>() {
-                public int compare(RubyPlatform p1, RubyPlatform p2) {
-                    int res = Collator.getInstance().compare(p1.getInfo().getLongDescription(), p2.getInfo().getLongDescription());
-                    if (res != 0) {
-                        return res;
-                    } else {
-                        return System.identityHashCode(p1) - System.identityHashCode(p2);
-                    }
-                }
-            });
-            return platforms;
+        private static RubyPlatform[] getSortedPlatforms() {
+            Set<? extends RubyPlatform> platforms = RubyPlatformManager.getSortedPlatforms();
+            return platforms.toArray(new RubyPlatform[platforms.size()]);
         }
         private RubyPlatform[] nbPlafs;
         private Object selectedPlaf;
 
         public RubyPlatformListModel() {
-            this(null);
-        }
-
-        public RubyPlatformListModel(final RubyPlatform initiallySelected) {
-            nbPlafs = getSortedPlatforms(initiallySelected);
-            if (initiallySelected == null) {
-                if (nbPlafs.length > 0) {
-                    selectedPlaf = nbPlafs[0];
-                }
-            } else {
-                selectedPlaf = initiallySelected;
+            nbPlafs = getSortedPlatforms();
+            if (nbPlafs.length > 0) {
+                selectedPlaf = nbPlafs[0];
             }
         }
 
@@ -265,7 +240,7 @@ public final class PlatformComponentFactory {
         void removePlatform(RubyPlatform plaf) {
             try {
                 RubyPlatformManager.removePlatform(plaf);
-                nbPlafs = getSortedPlatforms(null); // refresh
+                nbPlafs = getSortedPlatforms(); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -277,7 +252,7 @@ public final class PlatformComponentFactory {
             try {
                 RubyPlatform platform = RubyPlatformManager.addPlatform(interpreter);
                 if (platform != null) {
-                    nbPlafs = getSortedPlatforms(null); // refresh
+                    nbPlafs = getSortedPlatforms(); // refresh
                     fireContentsChanged(this, 0, nbPlafs.length - 1);
                 }
                 return platform;
@@ -318,7 +293,8 @@ public final class PlatformComponentFactory {
             } else {
                 RubyPlatform plaf = ((RubyPlatform) value);
                 if (plaf == null || !plaf.isValid()) {
-                    label = NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.select.valid.platform");
+                    label = plaf != null ? plaf.getLabel()
+                            : NbBundle.getMessage(PlatformComponentFactory.class, "PlatformComponentFactory.invalid.platform");
                     setForeground(INVALID_PLAF_COLOR);
                 } else {
                     label = plaf.getLabel();

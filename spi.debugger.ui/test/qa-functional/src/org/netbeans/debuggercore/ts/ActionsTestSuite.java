@@ -60,7 +60,12 @@ public class ActionsTestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+//        String os = System.getProperty("os.name");
+//        String jdk = System.getProperty("java.version");
+//        if ( jdk.contains("1.5") && os.contains("Windows") && !os.contains("Vista") ) {
+//            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+//        } else {
+            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                 .addTest(ActionsTest.class, 
                     "testCheckEnabledActions",
                     "testCheckEnabledActionsDebugging",
@@ -74,5 +79,6 @@ public class ActionsTestSuite extends JellyTestCase {
                     "testContinue",
                     "testStepOverExpression",
                     "testPause").enableModules(".*").clusters(".*"));
+//        }
     } 
 }

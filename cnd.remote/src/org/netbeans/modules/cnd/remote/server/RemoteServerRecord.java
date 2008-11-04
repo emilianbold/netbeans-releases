@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * The definition of a remote server and login. 
@@ -57,12 +56,10 @@ import org.openide.util.RequestProcessor;
  * @author gordonp
  */
 public class RemoteServerRecord implements ServerRecord {
-    
-    public static final Object STATE_UNINITIALIZED = "STATE_UNINITIALIZED"; // NOI18N
-    public static final Object STATE_INITIALIZING = "STATE_INITIALIZING"; // NOI18N
-    public static final Object STATE_ONLINE = "STATE_ONLINE"; // NOI18N
-    public static final Object STATE_OFFLINE = "STATE_OFFLINE"; // NOI18N
-    public static final Object STATE_CANCELLED = "STATE_CANCELLED"; // NOI18N
+
+    public static enum State {
+        UNINITIALIZED, INITIALIZING, ONLINE, OFFLINE, CANCELLED;
+    }
     
     public static final String PROP_STATE_CHANGED = "stateChanged"; // NOI18N
     
@@ -71,7 +68,7 @@ public class RemoteServerRecord implements ServerRecord {
     private final String name;
     private final boolean editable;
     private boolean deleted;
-    private Object state;
+    private State state;
     private final Object stateLock;
     private String reason;
     
@@ -104,10 +101,10 @@ public class RemoteServerRecord implements ServerRecord {
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
             editable = false;
-            state = STATE_ONLINE;
+            state = State.ONLINE;
         } else {
             editable = true;
-            state = connect ? STATE_UNINITIALIZED : STATE_OFFLINE;
+            state = connect ? State.UNINITIALIZED : State.OFFLINE;
         }
     }
     
@@ -138,7 +135,7 @@ public class RemoteServerRecord implements ServerRecord {
     public synchronized void init(PropertyChangeSupport pcs) {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
-        state = STATE_INITIALIZING;
+        state = State.INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(name);
         if (rss.needsSetupOrUpdate()) {
             rss.setup();
@@ -146,17 +143,13 @@ public class RemoteServerRecord implements ServerRecord {
 
         synchronized (stateLock) {
             if (rss.isCancelled()) {
-                state = STATE_CANCELLED;
+                state = State.CANCELLED;
             } else if (rss.isFailed()) {
-                state = STATE_OFFLINE;
+                state = State.OFFLINE;
                 reason = rss.getReason();
             } else {
-                state = STATE_ONLINE;
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        RemotePathMap.getMapper(name).init();
-                    }
-                });
+                RemotePathMap.getMapper(name).init();
+                state = State.ONLINE;
             }
         }
         if (pcs != null) {
@@ -166,8 +159,8 @@ public class RemoteServerRecord implements ServerRecord {
     
     public boolean resetOfflineState() {
         synchronized (stateLock) {
-            if (this.state != STATE_INITIALIZING && state != STATE_ONLINE) {
-                state = STATE_UNINITIALIZED;
+            if (this.state != State.INITIALIZING && state != State.ONLINE) {
+                state = State.UNINITIALIZED;
                 return true;
             }
         }
@@ -175,15 +168,16 @@ public class RemoteServerRecord implements ServerRecord {
     }
     
     public String getStateAsText() {
+        // TODO: not good to use object's toString as resource key
         return NbBundle.getMessage(RemoteServerRecord.class, state.toString());
     }
     
     public boolean isOnline() {
-        return state == STATE_ONLINE;
+        return state == State.ONLINE;
     }
     
     public boolean isOffline() {
-        return state == STATE_OFFLINE;
+        return state == State.OFFLINE;
     }
 
     public void setDeleted(boolean deleted) {
@@ -218,7 +212,7 @@ public class RemoteServerRecord implements ServerRecord {
         return reason == null ? "" : reason;
     }
 
-    /*package*/void setState(Object state) {
+    /*package*/void setState(State state) {
         this.state = state;
     }
 }

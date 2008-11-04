@@ -44,12 +44,12 @@ package org.netbeans.modules.j2ee.earproject.classpath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupportFactory;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
@@ -65,23 +65,15 @@ import org.openide.util.WeakListeners;
  */
 public final class ClassPathProviderImpl implements ClassPathProvider, PropertyChangeListener {
     
-    private static final int TYPE_NORMAL = 0;
-    private static final int TYPE_BUILT_UNPACKED = 2;
-    private static final int TYPE_BUILT_JAR = 3;
-    private static final int TYPE_OTHER = -1;
-    
-    private static final String BUILD_CLASSES_DIR = "build.classes.dir"; // NOI18N
-    private static final String DIST_JAR = "dist.jar"; // NOI18N
-    private static final String DOC_BASE_DIR = "web.docbase.dir"; // NOI18N
-    
     private final AntProjectHelper helper;
     private final File projectDirectory;
     private final PropertyEvaluator evaluator;
-    @SuppressWarnings("unchecked")
-    private final Reference<ClassPath>[] cache = new SoftReference[8];
+    
+    private ClassPath runtimeClassPath = null;
+    private ClassPath bootClassPath = null;
     
     private final Map<String,FileObject> dirCache = new HashMap<String,FileObject>();
-    
+
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator) {
         this.helper = helper;
         this.projectDirectory = FileUtil.toFile(helper.getProjectDirectory());
@@ -107,116 +99,62 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             }});
     }
     
-    private FileObject getBuildClassesDir() {
-        return getDir(BUILD_CLASSES_DIR);
-    }
-    
     private FileObject getDistJar() {
-        return getDir(DIST_JAR);
+        return getDir(EarProjectProperties.DIST_JAR);
     }
     
-    private FileObject getDocumentBaseDir() {
-        return getDir(DOC_BASE_DIR);
+    private FileObject getBuildDir() {
+        return getDir(EarProjectProperties.BUILD_DIR);
     }
     
     /**
      * Find what a given file represents.
      * @param file a file in the project
      * @return one of: <dl>
-     *         <dt>0</dt> <dd>normal source</dd>
-     *         <dt>2</dt> <dd>built class (unpacked)</dd>
-     *         <dt>3</dt> <dd>built class (in dist JAR)</dd>
+     *         <dt>0</dt> <dd>EAR build artifact</dd>
      *         <dt>-1</dt> <dd>something else</dd>
      *         </dl>
      */
     private int getType(FileObject file) {
-        FileObject dir = getDocumentBaseDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir,file))) {
-            return TYPE_BUILT_UNPACKED;
-        }
-        dir = getBuildClassesDir();
-        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
-            return TYPE_BUILT_JAR;
-        }
-        dir = getDistJar(); // not really a dir at all, of course
+        FileObject dir = getDistJar();
         if (dir != null && dir.equals(FileUtil.getArchiveFile(file))) {
-            // XXX check whether this is really the root
-            return TYPE_BUILT_JAR;
+            return 0;
         }
-        return TYPE_OTHER;
-    }
-    
-    private ClassPath getCompileTimeClasspath(FileObject file) {
-        int type = getType(file);
-        return this.getCompileTimeClasspath(type);
-    }
-    
-    private synchronized ClassPath getCompileTimeClasspath(int type) {
-        if (type < TYPE_NORMAL || type > TYPE_BUILT_UNPACKED) {
-            // Not a source file.
-            return null;
+        dir = getBuildDir();
+        if (dir != null && (dir.equals(file) || FileUtil.isParentOf(dir, file))) {
+            return 0;
         }
-        if (type == TYPE_BUILT_UNPACKED) {
-            type = TYPE_NORMAL;
-        }
-        ClassPath cp = null;
-        if (cache[TYPE_BUILT_JAR + type] == null || (cp = cache[TYPE_BUILT_JAR + type].get()) == null) {
-            if (type == TYPE_NORMAL) {
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"javac.classpath", "debug.classpath"})); // NOI18N
-            }
-            cache[TYPE_BUILT_JAR + type] = new SoftReference<ClassPath>(cp);
-        }
-        return cp;
+        return -1;
     }
     
     private synchronized ClassPath getRunTimeClasspath(FileObject file) {
-        int type = getType(file);
-        if (type < TYPE_NORMAL || type > 4) {
-            // Unregistered file, or in a JAR.
-            // For jar:file:$projdir/dist/*.jar!/**/*.class, it is misleading to use
-            // run.classpath since that does not actually contain the file!
-            // (It contains file:$projdir/build/classes/ instead.)
+        if (getType(file) == -1) {
             return null;
         }
-        switch (type){
-            case TYPE_BUILT_UNPACKED: type = TYPE_NORMAL; break;
-            case TYPE_BUILT_JAR:
-            case 4: type -=3; break;
-        }
         
-        ClassPath cp = null;
-        if (cache[6+type] == null || (cp = cache[6+type].get())== null) {
-            if (type == TYPE_NORMAL) {
-                //XXX : It should return a classpath for run.classpath property, but
-                // the run.classpath property was removed from the webproject in the past
-                // and I'm a little lazy to return it back in the code:)). In this moment
-                // the run classpath equals to the debug classpath. If the debug classpath
-                // will be different from the run classpath, then the run classpath should
-                // be returned back.
-                cp = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
-                    projectDirectory, evaluator, new String[] {"debug.classpath"})); // NOI18N
-            }
-            cache[6+type] = new SoftReference<ClassPath>(cp);
+        if (runtimeClassPath == null) {
+            //XXX : It should return a classpath for run.classpath property, but
+            // the run.classpath property was removed from the webproject in the past
+            // and I'm a little lazy to return it back in the code:)). In this moment
+            // the run classpath equals to the debug classpath. If the debug classpath
+            // will be different from the run classpath, then the run classpath should
+            // be returned back.
+            runtimeClassPath = ClassPathFactory.createClassPath(
+                ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                projectDirectory, evaluator, new String[] {"debug.classpath", EarProjectProperties.J2EE_PLATFORM_CLASSPATH})); // NOI18N
         }
-        return cp;
+        return runtimeClassPath;
     }
     
     private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = null;
-        if (cache[7] == null || (cp = cache[7].get()) == null) {
-            cp = ClassPathFactory.createClassPath(new BootClassPathImplementation(evaluator));
-            cache[7] = new SoftReference<ClassPath>(cp);
+        if (bootClassPath == null) {
+            bootClassPath = ClassPathFactory.createClassPath(ClassPathSupportFactory.createBootClassPathImplementation(evaluator));
         }
-        return cp;
+        return bootClassPath;
     }
     
     public ClassPath findClassPath(FileObject file, String type) {
-        if (type.equals(ClassPath.COMPILE)) {
-            return getCompileTimeClasspath(file);
-        } else if (type.equals(ClassPath.EXECUTE)) {
+        if (type.equals(ClassPath.EXECUTE)) {
             return getRunTimeClasspath(file);
         } else if (type.equals(ClassPath.BOOT)) {
             return getBootClassPath();
@@ -233,16 +171,11 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
         if (ClassPath.BOOT.equals(type)) {
             return new ClassPath[]{getBootClassPath()};
         }
-        if (ClassPath.COMPILE.equals(type)) {
-            ClassPath[] l = new ClassPath[1];
-            l[0] = getCompileTimeClasspath(TYPE_NORMAL);
-            return l;
-        }
         assert false;
         return null;
     }
     
-    public void propertyChange(PropertyChangeEvent evt) {
+    public synchronized void propertyChange(PropertyChangeEvent evt) {
         dirCache.remove(evt.getPropertyName());
     }
     

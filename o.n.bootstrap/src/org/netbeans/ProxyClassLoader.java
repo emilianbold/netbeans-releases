@@ -104,8 +104,6 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
    
     /** Create a multi-parented classloader.
      * @param parents all direct parents of this classloader, except system one.
-     * @param coveredPackages Enumeration of Strings if format "org.something" 
-+     *   containing all packages to be covered by this classloader. 
      * @param transitive whether other PCLs depending on this one will
      *                   automatically search through its parent list
      */
@@ -238,7 +236,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
                             cls = _cls;
                         } else if (cls != _cls) {
                             String message = "Will not load class " + name + " arbitrarily from one of " +
-                                    cls.getClassLoader() + " and " + pcl +
+                                    cls.getClassLoader() + " and " + pcl + " starting from " + this +
                                     "; see http://wiki.netbeans.org/DevFaqModuleCCE";
                             LOGGER.warning(message);
                             throw new ClassNotFoundException(message);
@@ -248,12 +246,25 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             }
             if (cls == null && del.contains(this)) cls = selfLoadClass(pkg, name); 
             if (cls != null) sclPackages.put(pkg, false); 
-        } 
-        if (cls == null && shouldDelegateResource(path, null)) cls = systemCL.loadClass(name); // may throw CNFE
-        if (cls == null) throw new ClassNotFoundException(name); 
+        }
+        if (cls == null && shouldDelegateResource(path, null)) {
+            try {
+                cls = systemCL.loadClass(name);
+            } catch (ClassNotFoundException e) {
+                throw new ClassNotFoundException(diagnosticCNFEMessage(e.getMessage(), del), e);
+            }
+        }
+        if (cls == null) {
+            throw new ClassNotFoundException(diagnosticCNFEMessage(name, del));
+        }
         if (resolve) resolveClass(cls); 
         return cls; 
-    }       
+    }
+    private String diagnosticCNFEMessage(String base, Set<ProxyClassLoader> del) {
+        return base + " starting from " + this +
+                " with possible defining loaders " + del +
+                " and declared parents " + parentSet;
+    }
 
     /** May return null */ 
     private synchronized Class selfLoadClass(String pkg, String name) { 
@@ -362,8 +373,8 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      *      if the resource could not be found.
      */
     @Override
-    protected URL findResource(String name) {
-	return null;
+    public URL findResource(String name) {
+        return super.findResource(name);
     }
     
     /**
@@ -377,7 +388,7 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
      * @throws IOException if I/O errors occur
      */    
     @Override
-    protected final synchronized Enumeration<URL> findResources(String name) throws IOException {
+    public final synchronized Enumeration<URL> getResources(String name) throws IOException {
         name = stripInitialSlash(name);
         final int slashIdx = name.lastIndexOf('/');
         if (slashIdx == -1) {
@@ -398,16 +409,20 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
             if (del != null) { // unclaimed resource, go directly to SCL
                 for (ProxyClassLoader pcl : parents) { // all our accessible parents
                     if (del.contains(pcl) && shouldDelegateResource(path, pcl)) { // that cover given package
-                        sub.add(pcl.simpleFindResources(name));
+                        sub.add(pcl.findResources(name));
                     }
                 }
-                if (del.contains(this)) sub.add(simpleFindResources(name)); 
+                if (del.contains(this)) {
+                    sub.add(findResources(name));
+                }
             }
         } else { // Don't bother optimizing this call by domains.
             for (ProxyClassLoader pcl : parents) { 
-                if (shouldDelegateResource(path, pcl)) sub.add(pcl.simpleFindResources(name)); 
+                if (shouldDelegateResource(path, pcl)) {
+                    sub.add(pcl.findResources(name));
+                }
             }
-            sub.add(simpleFindResources(name));
+            sub.add(findResources(name));
         }
         // Should not be duplicates, assuming the parent loaders are properly distinct
         // from one another and do not overlap in JAR usage, which they ought not.
@@ -416,7 +431,8 @@ public class ProxyClassLoader extends ClassLoader implements Util.PackageAccessi
         return Enumerations.concat(Collections.enumeration(sub));
     }
 
-    protected Enumeration<URL> simpleFindResources(String name) throws IOException {
+    @Override
+    public Enumeration<URL> findResources(String name) throws IOException {
         return super.findResources(name);
     }
 

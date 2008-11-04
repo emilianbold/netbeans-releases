@@ -48,6 +48,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class HTTPValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String httpXsdUrl = "/org/netbeans/modules/xml/wsdlextui/resources/http/http.xsd";
     

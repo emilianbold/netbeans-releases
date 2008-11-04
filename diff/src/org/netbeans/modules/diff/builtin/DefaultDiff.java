@@ -66,6 +66,7 @@ import org.openide.DialogDisplayer;
  *
  * @author  Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.diff.Diff.class)
 public class DefaultDiff extends Diff implements Serializable {
     
     private boolean showDiffSelector = true;
@@ -111,8 +112,10 @@ public class DefaultDiff extends Diff implements Serializable {
         this.buffer2 = out2.toString();
                                      */
         //diffPanel = new DiffWrapperPanel(showDiffSelector, showDiffSelector);
+        // #147003 Always hide Visualizers combo => there is no Services/DiffVisualizers system folder
+        // We should rewrite this code to use DiffController instead of DiffPresenter in the future
         DiffInfo diffInfo = new DiffInfo(name1, name2, title1, title2,
-            MIMEType, showDiffSelector, showDiffSelector, r1, r2);
+            MIMEType, showDiffSelector, false, r1, r2);
         // I need to know the initial differences to know whether the files actually
         // differ or not.
         DiffProvider provider = (DiffProvider) Lookup.getDefault().lookup(DiffProvider.class);

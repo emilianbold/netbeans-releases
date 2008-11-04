@@ -67,6 +67,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 public class ChildrenKeysTest extends NbTestCase {
@@ -90,7 +91,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
     @Override
     protected Level logLevel() {
-        return Level.WARNING;
+        return Level.FINEST;
     }
 
     @Override
@@ -163,6 +164,7 @@ public class ChildrenKeysTest extends NbTestCase {
      * getNodes() by another thread callig getNodes.
      * Other thread
      */
+    @RandomlyFails // NB-Core-Build #1643, in ChildrenLazyKeysTest
     public void testGetNodesFromWriteAccess() throws Exception {
         final String[] keys = { "Nenik", "Tulach" };
         Keys o = new Keys (lazy(), keys);
@@ -255,6 +257,32 @@ public class ChildrenKeysTest extends NbTestCase {
         assertSame("Last node the same", now[2].getName(), after[1].getName());
     }
 
+    public void testGetNodesOptimal() throws Exception {
+        class KOpt extends Keys {
+
+            KOpt() {
+                super(lazy());
+            }
+            int cnt;
+
+            @Override
+            public Node[] getNodes(boolean optimal) {
+                assertTrue("Only calling with true", optimal);
+                cnt++;
+                return super.getNodes(optimal);
+            }
+        }
+
+        KOpt k = new KOpt();
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("3 nodes", 3, arr.length);
+        assertEquals("Calling cnt once", 1, k.cnt);
+
+    }
+
     public void testRefreshOnFavoritesAdding() throws Exception {
         Keys k = new Keys(lazy());
         k.keys("1", "2", "3");
@@ -335,6 +363,102 @@ public class ChildrenKeysTest extends NbTestCase {
         }
         assertEquals ("index 2 and 4 is not visible", 5, k.getNodesCount(true));
 
+    }
+
+    public void testGCWhenGetNodesTrue() throws Exception {
+
+
+        class K extends Keys implements Runnable {
+            volatile Reference<Node> toClear;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                LOG.info("createNodes for " + key);
+                Node[] arr = super.createNodes(key);
+                toClear = new WeakReference<Node>(arr[0]);
+                LOG.info("reference created: " + toClear.get());
+                synchronized (this) {
+                    notifyAll();
+                }
+                LOG.info("reference notified");
+                return arr;
+            }
+
+            public void run() {
+                LOG.info("before cleanup");
+                while (toClear == null) {
+                    LOG.info("waiting for reference: " + toClear);
+                    synchronized (this) {
+                        try {
+                            wait();
+                        } catch (InterruptedException ex) {
+                            LOG.log(Level.WARNING, "while waiting for ref", ex);
+                        }
+                    }
+                }
+                LOG.info("reference is here: " + toClear);
+                LOG.info("its value is " + toClear.get());
+                try {
+                    assertGC("GCing the reference", toClear);
+                } catch (Throwable t) {
+                    LOG.log(Level.WARNING, "exception", t);
+                } finally {
+                    LOG.info("cleanup done: " + toClear.get());
+                }
+            }
+
+            @Override
+            protected void addNotify() {
+                LOG.info("before addNotify");
+                keys("1");
+                LOG.info("after addNotify");
+            }
+
+            @Override
+            protected void removeNotify() {
+                LOG.info("before removeNotify");
+                keys();
+                LOG.info("after removeNotify");
+            }
+
+
+
+        }
+
+        K k = new K(lazy());
+        Node root = new AbstractNode(k);
+
+        String name = Thread.currentThread().getName();
+        Log.controlFlow(
+            Children.LOG,
+            LOG,
+            "THREAD: " + name + " MSG: after findChild.*true" +
+            "THREAD: cleanup MSG: cleanup done.*" +
+            "THREAD: Finalizer MSG: after removeNotify" +
+            "THREAD: " + name + " MSG: done",
+            300
+        );
+
+        LOG.info("ready");
+
+        RequestProcessor RP = new RequestProcessor("cleanup");
+        RequestProcessor.Task t = RP.post(k);
+
+        LOG.info("post");
+        LOG.info("go");
+
+        Node[] arr = root.getChildren().getNodes(true);
+
+        t.waitFinished();
+
+        LOG.info("done: " + arr);
+        
+        assertEquals("One node", 1, arr.length);
+        assertEquals("value is 1", "1", arr[0].getName());
     }
 
     
@@ -1251,8 +1375,12 @@ public class ChildrenKeysTest extends NbTestCase {
         Listener l = new Listener ();
         n.addNodeListener (l);
         
+        // get snapshot to prevent GC
+        List<Node> snapshot = n.getChildren().snapshot();
+
         assertEquals ("No nodes", 0, n.getChildren ().getNodesCount ());
         k.setKeys (new Object[] { "Ahoj", NULL });
+
         l.assertAddEvent("Two nodes added", 2);
         l.assertNoEvents("No more events after add");
         assertEquals ("Two nodes", 2, n.getChildren ().getNodesCount ());
@@ -1307,6 +1435,9 @@ public class ChildrenKeysTest extends NbTestCase {
 
         assertEquals("Child check", "a", ta.getChildren().getNodeAt(0).getName());
         lch.assertLazyCount("Counter shouldbe all", 3);
+
+        // to prevent GC/removeNotify()
+        Node hold = ta.getChildren().getNodeAt(0);
 
         lch.keys("a", "b", "c", "x", "-x");
         
@@ -1450,14 +1581,16 @@ public class ChildrenKeysTest extends NbTestCase {
         Listener l = new Listener();
         l.disableConsistencyCheck = true;
 
+        List<Node> snapshot = null;
         root.addNodeListener(l);
         if (initViaGetNodes) {
             Node[] nodes = root.getChildren().getNodes();
+            snapshot = root.getChildren().snapshot();
             assertEquals("Two nodes created", 2, nodes.length);
             assertEquals("1st is a", "a", nodes[0].getName());
             assertEquals("2nd is c", "c", nodes[1].getName());
         } else {
-            root.getChildren().getNodesCount();
+            snapshot = root.getChildren().snapshot();
             Node node = ch.getNodeAt(1);
             assertEquals("1st is a", "a", ch.getNodeAt(0).getName());
             assertEquals("2nd is c", "c", ch.getNodeAt(1).getName());
@@ -1562,6 +1695,132 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("a1", snapshot.get(0).getName());
         assertEquals("a2", snapshot.get(1).getName());
         assertEquals("a3", snapshot.get(2).getName());
+    }
+
+    public void testSnapshotSize() {
+        class K extends Keys {
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("a", "b", "c");
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+        K ch = new K(lazy());
+        Node root = createNode(ch);
+        List<Node> snapshot = root.getChildren().snapshot();
+        assertEquals(snapshot.size(), root.getChildren().getNodesCount());
+    }
+
+    public void testSnapshotWithEmptyEntries() {
+        class K extends Keys {
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+        Keys ch = new K(lazy(), "a1", "a2", "-a3");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+        List<Node> snapshot = root.getChildren().snapshot();
+
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a2", snapshot.get(1).getName());
+        if (lazy()) {
+            assertEquals("", snapshot.get(2).getName());
+        }
+    }
+
+    public void testSnapshotAfterRefresh() {
+        class K extends Keys {
+
+            String addToName = "";
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                AbstractNode an = new AbstractNode(Children.LEAF);
+                an.setName(key.toString() + addToName);
+                return new Node[]{an};
+            }
+        }
+
+        K ch = new K(lazy(), "a1", "a2", "a3");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+
+        List<Node> snapshot = root.getChildren().snapshot();
+        Node hold = snapshot.get(0);
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a2", snapshot.get(1).getName());
+        assertEquals("a3", snapshot.get(2).getName());
+
+        ch.addToName = "_2";
+        ch.refreshKey("a1");
+        assertEquals("a1", snapshot.get(0).getName());
+        assertEquals("a1_2", root.getChildren().getNodeAt(0).getName());
+    }
+
+    public void testUninitedSnapshotAfterRefresh() {
+        class K extends Keys {
+
+            String app = "";
+
+            public K(boolean lazy, String... args) {
+                super(lazy, args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key + app);
+            }
+        }
+
+        K ch = new K(lazy(), "a", "b", "c");
+        Node root = createNode(ch);
+        List<Node> snapshot = root.getChildren().snapshot();
+        assertEquals(3, snapshot.size());
+        Listener listener = new Listener();
+
+        root.addNodeListener(listener);
+        ch.app = "_2";
+        ch.refreshKey("b");
+        NodeMemberEvent ev = listener.assertEvents(2);
+        assertEquals("Remove event type", NodeMemberEvent.class, ev.getClass());
+        assertFalse("Remove event type", ev.isAddEvent());
+
+        ev = listener.assertEvents(1);
+        assertEquals("Add event type", NodeMemberEvent.class, ev.getClass());
+        assertTrue("Add event type", ev.isAddEvent());
+        assertEquals(3, root.getChildren().snapshot().size());
     }
 
     // test for issue #145892
@@ -1736,7 +1995,68 @@ public class ChildrenKeysTest extends NbTestCase {
             fail("Original snapshot should be held by FilterNode to prevent removeNotify");
         }
     }
-    
+
+    public void testSnapshotConsistency() {
+        class K extends Keys {
+
+            public K(boolean lazy, String... args) {
+                super(lazy(), args);
+            }
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                if (key.toString().startsWith("-")) {
+                    return null;
+                }
+                return super.createNodes(key);
+            }
+        }
+
+        class Listener extends NodeAdapter {
+
+            List<Node> snapshot;
+
+            public Listener(List<Node> snapshot) {
+                this.snapshot = snapshot;
+            }
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                snapshot = ev.getSnapshot();
+            }
+
+            @Override
+            public void childrenRemoved(NodeMemberEvent ev) {
+                List<Node> prevSnapshot = ev.getPrevSnapshot();
+                if (lazy()) {
+                    EntrySupport.Lazy.LazySnapshot ls = (EntrySupport.Lazy.LazySnapshot) snapshot;
+                    EntrySupport.Lazy.LazySnapshot pls = (EntrySupport.Lazy.LazySnapshot) prevSnapshot;
+                    assertEquals(ls.entries, pls.entries);
+                } else {
+                    assertEquals(snapshot, prevSnapshot);
+                }
+                snapshot = ev.getSnapshot();
+            }
+        }
+
+        class Listener2 extends NodeAdapter {
+
+            @Override
+            public void childrenAdded(NodeMemberEvent ev) {
+                ev.getDelta();
+            }
+        }
+        K ch = new K(lazy(), "a1", "a2");
+        Node root = createNode(ch);
+        root.getChildren().getNodesCount();
+
+        Listener l1 = new Listener(root.getChildren().snapshot());
+        Listener2 l2 = new Listener2();
+        root.addNodeListener(l1);
+        root.addNodeListener(l2);
+        ch.keys("a1", "a2", "-a3");
+    }
+
     public void testEventSnapshotConsistencyAfterSetChildrenToSameLaziness() {
         doTestEventSnapshotConsistencyAfterSetChildren(lazy(), lazy());
     }

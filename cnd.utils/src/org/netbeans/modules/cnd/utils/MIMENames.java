@@ -63,6 +63,9 @@ public class MIMENames {
     /** Shell */
     public static final String SHELL_MIME_TYPE = "text/sh"; //NOI18N
 
+    /** Windows batch file */
+    public static final String BAT_MIME_TYPE = "text/bat"; //NOI18N
+
 
     /** Visu x designer */
     public static final String VISU_MIME_TYPE = "text/x-visu"; //NOI18N

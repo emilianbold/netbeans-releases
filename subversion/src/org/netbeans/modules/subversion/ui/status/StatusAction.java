@@ -42,6 +42,7 @@
 package org.netbeans.modules.subversion.ui.status;
 
 import java.io.File;
+import java.util.logging.Level;
 import org.netbeans.modules.subversion.util.*;
 import org.netbeans.modules.subversion.util.Context;
 import org.netbeans.modules.subversion.FileInformation;
@@ -138,7 +139,11 @@ public class StatusAction  extends ContextAction {
                 }
             }
         } catch (SVNClientException ex) {
-            support.annotate(ex);
+            if(!support.isCanceled()) {
+                support.annotate(ex);
+            } else {
+                Subversion.LOG.log(Level.INFO, "Action canceled", ex);
+            }
         }
     }
 }

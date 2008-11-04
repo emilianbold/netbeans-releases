@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.DestructorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.EnumeratorImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FieldImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.ForwardClass;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendClassImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDDImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FriendFunctionDefinitionImpl;
@@ -89,6 +90,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * objects factory
  * @author Vladimir Voskresensky
  */
+/* XXX typo in interface name?
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.spi.PersistentObjectFactory.class)
+*/
 public final class CsmObjectFactory extends AbstractObjectFactory implements PersistentFactory {
     
     private static final CsmObjectFactory instance = new CsmObjectFactory();
@@ -130,6 +134,8 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
         } else if (object instanceof ClassImpl) {
             if (object instanceof ClassImplSpecialization) {
                 aHandler = CLASS_IMPL_SPECIALIZATION;
+            } else if (object instanceof ForwardClass) {
+                aHandler = FORWARD_CLASS;
             } else {
                 aHandler = CLASS_IMPL;
             }
@@ -278,6 +284,10 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
 
             case CLASS_IMPL_SPECIALIZATION:
                 obj = new ClassImplSpecialization(stream);
+                break;
+
+            case FORWARD_CLASS:
+                obj = new ForwardClass(stream);
                 break;
                 
             case TYPEDEF_IMPL:
@@ -446,8 +456,9 @@ public final class CsmObjectFactory extends AbstractObjectFactory implements Per
     private static final int DECLARATION_CONTAINER	    = GRAPH_CONTAINER + 1;
     private static final int FILE_IMPL                      = DECLARATION_CONTAINER + 1;
     private static final int ENUM_IMPL                      = FILE_IMPL + 1;
-    private static final int CLASS_IMPL_SPECIALIZATION = ENUM_IMPL + 1;
-    private static final int CLASS_IMPL                     = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final int CLASS_IMPL_SPECIALIZATION      = ENUM_IMPL + 1;
+    private static final int FORWARD_CLASS                  = CLASS_IMPL_SPECIALIZATION + 1;
+    private static final int CLASS_IMPL                     = FORWARD_CLASS + 1;
 //    private static final int UNRESOLVED_FILE                = CLASS_IMPL + 1;
 //    private static final int UNRESOLVED_CLASS               = UNRESOLVED_FILE + 1;
 //    private static final int TYPEDEF_IMPL                   = UNRESOLVED_CLASS + 1;

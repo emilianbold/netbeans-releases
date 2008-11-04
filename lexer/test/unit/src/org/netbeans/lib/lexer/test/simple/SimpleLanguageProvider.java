@@ -61,6 +61,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
 public class SimpleLanguageProvider extends LanguageProvider {
     
     private static SimpleLanguageProvider instance = null;

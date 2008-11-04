@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory;
  *
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.InteractiveCommandProviderFactory.class)
 public class RemoteInteractiveCommandProviderFactory extends InteractiveCommandProviderFactory {
     @Override
     public InteractiveCommandProvider createInstance(String hkey) {

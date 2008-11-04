@@ -50,6 +50,7 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.spi.nodes.NodeUtils;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.spi.NodeFactoryUtils;
 import org.netbeans.spi.project.ui.support.NodeFactory;
@@ -71,7 +72,6 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  *
@@ -245,6 +245,15 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         }
         
         private void refreshKeys() {
+            //#149566 prevent setting keys under project mutex.
+            if (ProjectManager.mutex().isReadAccess() || ProjectManager.mutex().isWriteAccess()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        refreshKeys();
+                    }
+                });
+                return;
+            }
             Set<FileObject> files = new HashSet<FileObject>();
             List<String> newVisibleFiles = new ArrayList<String>();
             if (!nolayer) {

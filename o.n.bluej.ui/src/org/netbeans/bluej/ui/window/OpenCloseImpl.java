@@ -49,6 +49,7 @@ import org.openide.windows.WindowManager;
  *
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.bluej.api.BluejOpenCloseCallback.class)
 public class OpenCloseImpl implements BluejOpenCloseCallback {
 
     /** Creates a new instance of OpenCloseImpl */

@@ -57,6 +57,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public final class ToolbarActionsProvider extends ActionsList implements Class2LayerFolder<ToolbarActionsProvider>, InstanceProvider<ToolbarActionsProvider> {
 
     private static final Logger LOG = Logger.getLogger(ToolbarActionsProvider.class.getName());
@@ -102,6 +103,7 @@ public final class ToolbarActionsProvider extends ActionsList implements Class2L
     // XXX: This is here to help NbEditorToolbar to deal with legacy code
     // that registered toolbar actions in text/base. The artificial text/base
     // mime type is deprecated and should not be used anymore.
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
     public static final class LegacyToolbarActionsProvider extends ActionsList implements Class2LayerFolder<LegacyToolbarActionsProvider>, InstanceProvider<LegacyToolbarActionsProvider> {
 
         public LegacyToolbarActionsProvider() {

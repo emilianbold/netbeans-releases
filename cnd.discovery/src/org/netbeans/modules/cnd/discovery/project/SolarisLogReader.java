@@ -76,6 +76,7 @@ public class SolarisLogReader {
     private static final String ENV_SRC = "SRC="; // NOI18N
     
     private String workingDir;
+    private String prevWorkingDir;
     private final String root;
     private final String fileName;
     private List<SourceFileProperties> result;
@@ -94,7 +95,7 @@ public class SolarisLogReader {
     }
     
     private void run() {
-        if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
+        if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // NOI18N
         result = new ArrayList<SourceFileProperties>();
         copyHeader = new ArrayList<InstallLine>();
@@ -113,16 +114,12 @@ public class SolarisLogReader {
                     if (buidMashinePrototype == null || buidMashineSources == null){
                         if (line.startsWith(ENV_ROOT)){
                             buidMashinePrototype = line.substring(ENV_ROOT.length());
-                            if (TRACE) {
-                                System.out.println("Environment variable path to prototype: " + buidMashinePrototype); //NOI18N
-                            }
+                            if (TRACE) {System.out.println("Environment variable path to prototype: " + buidMashinePrototype);} //NOI18N
                             continue;
                         }
                         if (line.startsWith(ENV_SRC)){
                             buidMashineSources = line.substring(ENV_SRC.length());
-                            if (TRACE) {
-                                System.out.println("Environment variable path to sources: " + buidMashineSources); //NOI18N
-                            }
+                            if (TRACE) {System.out.println("Environment variable path to sources: " + buidMashineSources);}
                             continue;
                         }
                     }
@@ -185,18 +182,18 @@ public class SolarisLogReader {
 
         if (line.startsWith(CURRENT_DIRECTORY)) {
             workDir = line.substring(CURRENT_DIRECTORY.length() + 1).trim();
-            if (TRACE) message = "**>> by [" + CURRENT_DIRECTORY + "] "; //NOI18N
+            if (TRACE) {message = "**>> by [" + CURRENT_DIRECTORY + "] ";} //NOI18N
         } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
             workDir = dirMessage.replaceAll("`|'|\"", ""); //NOI18N
-            if (TRACE) message = "**>> by [" + ENTERING_DIRECTORY + "] "; //NOI18N
+            if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim();
-            if (TRACE) message = "**>> by [ " + LABEL_CD + "] "; //NOI18N
+            if (TRACE) {message = "**>> by [ " + LABEL_CD + "] ";} //NOI18N
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
             workDir = line.trim();
-            if (TRACE) message = "**>> by [just path string] "; //NOI18N
+            if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
         }
 
         if (workDir == null) {
@@ -205,13 +202,14 @@ public class SolarisLogReader {
         workDir = relocate(workDir);
         
         if (new File(workDir).exists()) {
-            if (TRACE) System.err.print(message);
+            if (TRACE) {System.err.print(message);}
             setWorkingDir(workDir);
             return true;
         } else {
             workDir = getWorkingDir() + File.separator + workDir;
+            workDir = cutLocalRelative(workDir);
             if (new File(workDir).exists()) {
-                if (TRACE) System.err.print(message);
+                if (TRACE) {System.err.print(message);}
                 setWorkingDir(workDir);
                 return true;
             }
@@ -300,7 +298,7 @@ public class SolarisLogReader {
                         name = name.substring(1,name.length()-1);
                     }
                 } else {
-                    if (TRACE) System.err.println("What is "+option+" in line "+line); // NOI18N
+                    if (TRACE) {System.err.println("What is "+option+" in line "+line);} // NOI18N
                 }
             }
         }
@@ -430,9 +428,7 @@ public class SolarisLogReader {
                         // no, it's not a compile line
                         li.compilerType = CompilerType.UNKNOWN;
                         // I hope
-                        if (TRACE) {
-                            System.err.println("Suspicious line: " + line);
-                        }
+                        if (TRACE) {System.err.println("Suspicious line: " + line);} //NOI18N
                     }
                 }
             }
@@ -441,10 +437,11 @@ public class SolarisLogReader {
     }
     
     private void setWorkingDir(String workingDir) {
-        if (TRACE) {
-            System.err.println("**>> new working dir: " + workingDir);
+        if (TRACE) {System.err.println("**>> new working dir: " + workingDir);} //NOI18N
+        if (!workingDir.equals(this.workingDir)) {
+            prevWorkingDir = this.workingDir;
+            this.workingDir = workingDir;
         }
-        this.workingDir = workingDir;
     }
     
     private boolean parseLine(String line){
@@ -495,6 +492,9 @@ public class SolarisLogReader {
         // -D_ELF64 -DTEXT_DOMAIN="SUNW_OST_OSCMD" -D_TS_ERRNO -I/export/opensolaris/testws77/proto/root_i386/usr/include
         // -I/export/opensolaris/testws77/usr/src/uts/common/inet/ipf -I/export/opensolaris/testws77/usr/src/uts/common/inet/pfil
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
+        //if (line.indexOf("../port/gen/errlst.c") > 0) {
+        //    System.out.println(line);
+        //}
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
         Set<String> libs = new HashSet<String>();
@@ -516,6 +516,19 @@ public class SolarisLogReader {
             what = file;
         } else {
             file = getWorkingDir()+"/"+what;  //NOI18N
+            File f = new File(file);
+            if (!f.exists() || !f.isFile()) {
+                if (this.prevWorkingDir != null) {
+                    String file2 = null;
+                    file2 = this.prevWorkingDir+"/"+what;  //NOI18N
+                    f = new File(file2);
+                    if (f.exists() && f.isFile()) {
+                        if (TRACE) {System.out.println("restore path "+getWorkingDir()+"->"+this.prevWorkingDir);}  //NOI18N
+                        this.setWorkingDir(this.prevWorkingDir);
+                        file = file2;
+                    }
+                }
+            }
         }
         List<String> userIncludesCached = new ArrayList<String>(userIncludes.size());
         for(String s : userIncludes){
@@ -532,9 +545,7 @@ public class SolarisLogReader {
         }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
-            if (TRACE)  {
-                System.err.println("**** Not found "+file); //NOI18N
-            }
+            if (TRACE)  {System.err.println("**** Not found "+file);}  //NOI18N
             String relative = "";
             if (!what.startsWith("/")){  //NOI18N
                 int i = what.lastIndexOf('/'); //NOI18N
@@ -552,16 +563,14 @@ public class SolarisLogReader {
                 if (search != null) {
                     setWorkingDir(search);
                     addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
-                    if (TRACE) System.err.println("** Gotcha: " + search + File.separator + what);
+                    if (TRACE) {System.err.println("** Gotcha: " + search + File.separator + what);} //NOI18N
                     // kinda adventure but it works
                     return true;
                 }
             } 
-            if (TRACE) System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]"); //NOI18N
+            if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
             return false;
-        } else if (TRACE) {
-            if (TRACE) System.err.println("**** Gotcha: " + file);
-        }
+        } else if (TRACE) {System.err.println("**** Gotcha: " + file);} //NOI18N
         addToResult(new CommandLineSource(isCPP, compiler==CompilerFamily.SUN, getWorkingDir(), what, userIncludesCached, userMacrosCached));
         return true;
     }
@@ -593,7 +602,7 @@ public class SolarisLogReader {
         if (res != null && res.size()==1) {
             return res.get(0);
         } else if (res != null) {
-            if (TRACE) System.out.println("More then one "+name); //NOI18N
+            if (TRACE) {System.out.println("More then one "+name);} //NOI18N
             for (String r: res){
                 if (r.startsWith(wd)) {
                     return r;
@@ -601,7 +610,7 @@ public class SolarisLogReader {
                 return null;
             }
         } else {
-            if (TRACE) System.out.println("Not found "+name); //NOI18N
+            if (TRACE) {System.out.println("Not found "+name);} //NOI18N
         }
         return null;
     }
@@ -733,7 +742,58 @@ public class SolarisLogReader {
         }
         return null;
     }
-    
+
+    private static final String PATTERN_1 = File.separator+"."+File.separator; // NOI18N
+    private static final String PATTERN_2 = File.separator+"."; // NOI18N
+    private static final String PATTERN_3 = File.separator+".."+File.separator; // NOI18N
+    private static final String PATTERN_4 = File.separator+".."; // NOI18N
+    private static String cutLocalRelative(String path){
+        String pattern = PATTERN_1;
+        while(true) {
+            int i = path.indexOf(pattern);
+            if (i < 0){
+                break;
+            }
+            path = path.substring(0,i+1)+path.substring(i+pattern.length());
+        }
+        pattern = PATTERN_2;
+        if (path.endsWith(pattern)){
+            path = path.substring(0,path.length()-pattern.length());
+        }
+        pattern = PATTERN_3;
+        while(true) {
+            int i = path.indexOf(pattern);
+            if (i < 0){
+                break;
+            }
+            int k = -1;
+            for (int j = i-1; j >= 0; j-- ){
+                if ( path.charAt(j)==File.separatorChar){
+                    k = j;
+                    break;
+                }
+            }
+            if (k<0) {
+                break;
+            }
+            path = path.substring(0,k+1)+path.substring(i+pattern.length());
+        }
+        pattern = PATTERN_4;
+        if (path.endsWith(pattern)){
+            int k = -1;
+            for (int j = path.length()-pattern.length()-1; j >= 0; j-- ){
+                if ( path.charAt(j)==File.separatorChar){
+                    k = j;
+                    break;
+                }
+            }
+            if (k>0) {
+                path = path.substring(0,k);
+            }
+        }
+        return path;
+    }
+
     private static class CommandLineSource implements SourceFileProperties {
 
         private String compilePath;
@@ -829,7 +889,7 @@ public class SolarisLogReader {
                     out = new FileOutputStream(to);
                     in = new FileInputStream(from);
                     FileUtil.copy(in, out);
-                    if (TRACE) System.err.println("Installed "+source+"->"+destination); // NOI18N
+                    if (TRACE) {System.err.println("Installed "+source+"->"+destination);} // NOI18N
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {

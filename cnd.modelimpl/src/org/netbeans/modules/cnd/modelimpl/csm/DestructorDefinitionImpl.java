@@ -48,9 +48,10 @@ import java.io.IOException;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
 
 /**
- * @author Vladimir Kvasihn
+ * @author Vladimir Kvashin
  */
 public final class DestructorDefinitionImpl extends FunctionDefinitionImpl {
+
     public DestructorDefinitionImpl(AST ast, CsmFile file) throws AstRendererException {
         super(ast, file, null, true);
     }
@@ -59,12 +60,12 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl {
     public CsmType getReturnType() {
         return NoType.instance();
     }
-    
+
     @Override
     protected String initName(AST node) {
         AST token = node.getFirstChild();
-        while( token != null && 
-		(token.getType() == CPPTokenTypes.LITERAL_inline || 
+        while( token != null &&
+		(token.getType() == CPPTokenTypes.LITERAL_inline ||
 		token.getType() == CPPTokenTypes.LITERAL_template) ) {
             token = token.getNextSibling();
         }
@@ -79,10 +80,12 @@ public final class DestructorDefinitionImpl extends FunctionDefinitionImpl {
         }
         return "~"; // NOI18N
     }
+
     ////////////////////////////////////////////////////////////////////////////
-    // iml of SelfPersistent
-    
+    // impl of SelfPersistent
+
     public DestructorDefinitionImpl(DataInput input) throws IOException {
         super(input);
-    }     
+    }
+
 }

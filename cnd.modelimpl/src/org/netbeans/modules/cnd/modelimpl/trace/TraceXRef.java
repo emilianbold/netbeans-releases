@@ -1003,15 +1003,15 @@ public class TraceXRef extends TraceModel {
         return toRelString(num, entries.size());
     }
     
-    private static String getDeclarationKindInfo(Collection<XRefResultSet.ContextEntry> entries, XRefResultSet.DeclarationKind declKind) {
-        int num = 0;
-        for (XRefResultSet.ContextEntry contextEntry : entries) {
-            if (contextEntry.declaration == declKind) {
-                num++;
-            }
-        }
-        return toRelString(num, entries.size());
-    }
+//    private static String getDeclarationKindInfo(Collection<XRefResultSet.ContextEntry> entries, XRefResultSet.DeclarationKind declKind) {
+//        int num = 0;
+//        for (XRefResultSet.ContextEntry contextEntry : entries) {
+//            if (contextEntry.declaration == declKind) {
+//                num++;
+//            }
+//        }
+//        return toRelString(num, entries.size());
+//    }
     
     private static String toRelString(int num, int size) {
         assert (size != 0) || (num == 0);

@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.FunctionBreakpoint;
@@ -71,7 +70,7 @@ public class EditorContextBridge {
     public static final String LINE = "line"; // NOI18N
     
     private static EditorContext context;
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    //private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public static EditorContext getContext() {
         if (context == null) {
@@ -131,6 +130,8 @@ public class EditorContextBridge {
                     // do nothing
                 }
             }
+        } else {
+            Disassembly.open();
         }
         return false;
     }
@@ -454,8 +455,7 @@ public class EditorContextBridge {
     }
 
     public static String getRelativePath(String className) {
-        String sourceName = className.replace('.', '/') + ".java"; // NOI18N
-        return sourceName;
+        return className.replace('.', '/') + ".java"; // NOI18N
     }
     
     private static String convertSlash(String original) {
@@ -619,10 +619,7 @@ public class EditorContextBridge {
     }
     
     private static class CompoundAnnotation {
-        public CompoundAnnotation() {}
-        
         Object annotation1;
         Object annotation2;
     }
-
 }

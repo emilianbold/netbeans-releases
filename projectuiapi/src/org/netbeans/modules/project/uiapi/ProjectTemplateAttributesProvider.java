@@ -60,6 +60,7 @@ import org.openide.util.NbCollections;
  *
  * @author Jan Pokorsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateAttributesProvider.class)
 public final class ProjectTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
     
     private static final String ATTR_PROJECT = "project"; // NOI18N

@@ -53,6 +53,7 @@ import org.xml.sax.SAXException;
  * Register filesystem XML layer DTDs.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.xml.EntityCatalog.class)
 public final class FsDtdEntityCatalog extends EntityCatalog {
 
     private final Map<String,String> DTD_MAP = new HashMap<String,String>();

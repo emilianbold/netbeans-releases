@@ -85,11 +85,12 @@ public final class DBForeignKey extends DBObject<DBTable> {
 
         Map<String, DBForeignKey> fkColumns = new HashMap<String, DBForeignKey>();
         while (rs.next()) {
-            DBForeignKey fk = (DBForeignKey) fkColumns.get(rs.getString(RS_FK_NAME));
+            String fk_name = rs.getString(RS_FK_NAME);
+            DBForeignKey fk = (DBForeignKey) fkColumns.get(fk_name);
             if (fk != null) {
                 fk.addColumnNames(rs);
             } else {
-                fk = new DBForeignKey(rs);
+                fk = new DBForeignKey(rs, fk_name);
                 fk.setParentObject(table);
                 fkColumns.put(fk.getName(), fk);
             }
@@ -97,10 +98,10 @@ public final class DBForeignKey extends DBObject<DBTable> {
         return fkColumns;
     }
 
-    private DBForeignKey(ResultSet rs) throws SQLException {
+    private DBForeignKey(ResultSet rs, String fkName) throws SQLException {
         assert rs != null;
 
-        fkName = rs.getString(RS_FK_NAME);
+        this.fkName = fkName;
         pkName = rs.getString(RS_PK_NAME);
 
         pkTable = rs.getString(RS_PKTABLE_NAME);

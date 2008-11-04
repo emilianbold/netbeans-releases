@@ -51,7 +51,6 @@ public class IntNodeProp extends Node.Property {
     private final String unused;
     private final String name;
     private final String description;
-
     private boolean canWrite;
     IntEditor intEditor = null;
 
@@ -78,14 +77,13 @@ public class IntNodeProp extends Node.Property {
     public String getHtmlDisplayName() {
         if (intConfiguration.getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        }
-        else {
+        } else {
             return null;
         }
     }
 
     public Object getValue() {
-        return new Integer(intConfiguration.getValue());
+        return Integer.valueOf(intConfiguration.getValue());
     }
 
     public void setValue(Object v) {
@@ -141,7 +139,7 @@ public class IntNodeProp extends Node.Property {
 
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            setValue(text);
+            super.setValue(text);
         }
 
         @Override

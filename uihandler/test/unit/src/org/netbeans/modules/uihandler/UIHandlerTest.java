@@ -91,8 +91,8 @@ public class UIHandlerTest extends NbTestCase {
         UILOG.log(rec);        
         
         List<LogRecord> logs = Installer.getLogs();
-        assertEquals("One log: " + logs, 1, logs.size());
-        LogRecord first = logs.get(0);
+        assertEquals("One log: " + logs, 2, logs.size());
+        LogRecord first = logs.get(1);
         
         assertEquals("This is the logged record", rec.getMessage(), first.getMessage());
         

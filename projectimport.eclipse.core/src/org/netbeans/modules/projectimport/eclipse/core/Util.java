@@ -191,4 +191,10 @@ public class Util {
         USG_LOGGER.log(logRecord);
     }
     
+    public static boolean isAbsolutePath(String path) {
+        return (path.startsWith("/") || // NOI18N
+                (path.length() >= 3 && path.substring(1, 3).replace('\\', '/').equals(":/")) || // NOI18N
+                path.startsWith("\\\\")); // NOI18N
+    }
+    
 }

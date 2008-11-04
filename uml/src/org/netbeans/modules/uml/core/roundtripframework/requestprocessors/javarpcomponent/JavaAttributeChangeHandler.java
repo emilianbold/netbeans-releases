@@ -825,12 +825,17 @@ public class JavaAttributeChangeHandler extends JavaChangeHandler
         
         
         m_Utilities.breakReadAccessorsOfAttribute(pAttribute);
-        m_Utilities.breakWriteAccessorsOfAttribute(pAttribute);
+        m_Utilities.breakWriteAccessorsOfAttribute(pAttribute); 
         
         if ( ( readAccessors != null && readAccessors.size() > 0 )||
                 ( writeAccessors != null && writeAccessors.size() > 0 ) )
         {
-            boolean deleteAccessors = queryUserBeforeDelete(pAttribute);
+            boolean deleteAccessors = true;
+            if (pClass != null && !pClass.isDeleted())
+            {
+                deleteAccessors = queryUserBeforeDelete(pAttribute);
+            }
+            
             if ( deleteAccessors )
             {
                 final IJavaMethodChangeHandler handler = new JavaMethodChangeHandler(this);

@@ -47,6 +47,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -58,12 +59,15 @@ import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
+import org.netbeans.spi.queries.VisibilityQueryImplementation;
 import org.openide.filesystems.*;
 
 import org.openide.loaders.DefaultDataObjectTest.JspLoader;
 import org.openide.loaders.MultiDataObject.Entry;
+import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
 import org.openide.nodes.Children;
+import org.openide.nodes.FilterNode;
 import org.openide.nodes.NodeEvent;
 import org.openide.nodes.NodeListener;
 import org.openide.nodes.NodeMemberEvent;
@@ -85,7 +89,7 @@ public class FolderChildrenTest extends NbTestCase {
 
     @Override
     protected int timeOut() {
-        return 15000;
+        return 65000;
     }
 
     @Override
@@ -95,7 +99,7 @@ public class FolderChildrenTest extends NbTestCase {
 
     public static Test suite() {
         Test t = null;
-//        t = new FolderChildrenTest("testDeadlockWithChildrenMutex");
+//        t = new FolderChildrenTest("testALotOfHiddenEntries");
         if (t == null) {
             t = new NbTestSuite(FolderChildrenTest.class);
         }
@@ -218,13 +222,14 @@ public class FolderChildrenTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #1058 (in FolderChildrenLazyTest)
     public void testChangeableDataFilter() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileUtil.createData (fs.getRoot (), "BB/A.txt");
-        FileUtil.createData (fs.getRoot (), "BB/B.txt");
-        FileUtil.createData (fs.getRoot (), "BB/AA.txt");
-        FileUtil.createData (fs.getRoot (), "BB/BA.txt");
+        String pref = getName() + "/";
+        FileUtil.createData (fs.getRoot (), pref + "BB/A.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/B.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/AA.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/BA.txt");
 
 
-        FileObject bb = fs.findResource("/BB");
+        FileObject bb = fs.findResource(pref + "/BB");
 
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
@@ -241,13 +246,14 @@ public class FolderChildrenTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #1049 (in FolderChildrenLazyTest), #1051 (in this)
     public void testChangeableDataFilterOnNodeDelegate() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileUtil.createData (fs.getRoot (), "BB/A.txt");
-        FileUtil.createData (fs.getRoot (), "BB/B.txt");
-        FileUtil.createData (fs.getRoot (), "BB/AA.txt");
-        FileUtil.createData (fs.getRoot (), "BB/BA.txt");
+        String pref = getName() + "/";
+        FileUtil.createData (fs.getRoot (), pref + "BB/A.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/B.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/AA.txt");
+        FileUtil.createData (fs.getRoot (), pref + "BB/BA.txt");
 
 
-        FileObject bb = fs.findResource("/BB");
+        FileObject bb = fs.findResource(pref + "BB");
 
         Filter filter = new Filter();
         DataFolder folder = DataFolder.findFolder (bb);
@@ -297,15 +303,19 @@ public class FolderChildrenTest extends NbTestCase {
         Filter filter = new Filter();
         holder = filter;
 
+        String pref = getName() + '/';
         FileSystem fs = Repository.getDefault().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
         bb.createData("Ahoj.txt");
         bb.createData("Hi.txt");
         DataFolder folder = DataFolder.findFolder(bb);
 
         Children ch = folder.createNodeChildren(filter);
+        LOG.info("children created: " + ch);
         Node[] arr = ch.getNodes(true);
+        LOG.info("nodes obtained" + arr);
         assertEquals("Accepts only Ahoj", 1, arr.length);
+        LOG.info("The one node" + arr[0]);
 
         WeakReference ref = new WeakReference(ch);
         ch = null;
@@ -317,7 +327,8 @@ public class FolderChildrenTest extends NbTestCase {
     @RandomlyFails // NB-Core-Build #1043 (in FolderChildrenEagerTest)
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        String pref = getName() + '/';
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
 	bb.createData("Ahoj.txt");
 	bb.createData("Hi.txt");
 
@@ -340,7 +351,8 @@ public class FolderChildrenTest extends NbTestCase {
 
     public void testReorderAfterRename() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
-        FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");
+        String pref = getName() + '/';
+        FileObject bb = FileUtil.createFolder(fs.getRoot(), pref + "/BB");
         FileObject ahoj = bb.createData("Ahoj.txt");
         bb.createData("Hi.txt");
 
@@ -723,6 +735,84 @@ public class FolderChildrenTest extends NbTestCase {
 
         assertNodes( arr, new String[] { "A" } );
     }
+
+    public void testALotOfHiddenEntries() throws Exception {
+        FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
+        FileObject folder = FileUtil.createFolder(fs.getRoot(), "aLotOf");
+        List<FileObject> arr = new ArrayList<FileObject>();
+        final int FILES = 1000;
+        for (int i = 0; i < FILES; i++) {
+            arr.add(FileUtil.createData(folder, "" + i + ".dat"));
+        }
+
+        DataFolder df = DataFolder.findFolder(folder);
+
+        VisQ visq = new VisQ();
+
+        FilterNode fn = new FilterNode(new FilterNode(new AbstractNode(df.createNodeChildren(visq))));
+        class L implements NodeListener {
+            int cnt;
+
+            public void childrenAdded(NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            public void childrenRemoved(NodeMemberEvent ev) {
+                cnt++;
+            }
+
+            public void childrenReordered(NodeReorderEvent ev) {
+                cnt++;
+            }
+
+            public void nodeDestroyed(NodeEvent ev) {
+                cnt++;
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                cnt++;
+            }
+        }
+        L listener = new L();
+        fn.addNodeListener(listener);
+
+        List<Node> nodes = new ArrayList<Node>();
+        int cnt = fn.getChildren().getNodesCount(true);
+        List<Node> snapshot = fn.getChildren().snapshot();
+        assertEquals("Count as expected", cnt, snapshot.size());
+        for (int i = 0; i < cnt; i++) {
+            nodes.add(snapshot.get(i));
+        }
+        assertEquals("No events delivered", 0, listener.cnt);
+        assertEquals("Size is half cut", FILES / 2, fn.getChildren().getNodesCount(true));
+    }
+
+    public static final class VisQ implements VisibilityQueryImplementation, DataFilter.FileBased {
+        public boolean isVisible(FileObject file) {
+            try {
+                int number = Integer.parseInt(file.getName());
+                return number % 2 == 0;
+            } catch (NumberFormatException numberFormatException) {
+                return true;
+            }
+        }
+
+        public void addChangeListener(ChangeListener l) {
+        }
+
+        public void removeChangeListener(ChangeListener l) {
+        }
+
+        public boolean acceptDataObject(DataObject obj) {
+            return isVisible(obj.getPrimaryFile());
+        }
+
+        public boolean acceptFileObject(FileObject obj) {
+            return isVisible(obj);
+        }
+
+    }
+
 
     public static final class Pool extends DataLoaderPool {
         private static Class<? extends DataLoader> loader;

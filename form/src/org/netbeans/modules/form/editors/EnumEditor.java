@@ -42,6 +42,11 @@
 package org.netbeans.modules.form.editors;
 
 import java.beans.*;
+import java.io.IOException;
+import org.netbeans.modules.form.NamedPropertyEditor;
+import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 /**
  * A property editor class handling enumeration values provided for some
@@ -51,7 +56,7 @@ import java.beans.*;
  */
 
 public class EnumEditor extends PropertyEditorSupport
-                        implements org.netbeans.modules.form.NamedPropertyEditor
+                        implements NamedPropertyEditor, XMLPropertyEditor
 {
     /** array of object triplets describing the enumeration
      * 0 - displayed label
@@ -216,4 +221,37 @@ public class EnumEditor extends PropertyEditorSupport
         "JList.", // NOI18N
         "JFormattedTextField." // NOI18N
     };
+
+    private static final String XML_VALUE = "Value"; // NOI18N
+    private static final String ATTR_ID = "id"; // NOI18N
+
+    public void readFromXML(Node element) throws IOException {
+        org.w3c.dom.NamedNodeMap attributes = element.getAttributes();
+        Node node = attributes.getNamedItem(ATTR_ID);
+        String id = node.getNodeValue();
+        int n = enumerationValues.length / 3;
+        for (int i=0; i < n; i++) {
+            if (enumerationValues[i*3].toString().equals(id)
+                || ((enumerationValues[i*3+1] instanceof Enum) && (((Enum)enumerationValues[i*3+1]).name().equals(id)))) {
+                setValue(enumerationValues[i*3 + 1]);
+                break;
+            }
+        }
+    }
+
+    public Node storeToXML(Document doc) {
+        Object value = getValue();
+        if (value instanceof Integer || value instanceof Short
+                || value instanceof Byte || value instanceof Long
+                || value instanceof Float || value instanceof Double
+                || value instanceof Boolean || value instanceof Character
+                || value instanceof String || value instanceof Class) {
+            // These types are stored using GandalfPersistenceManager.encodePrimitiveValue()
+            return null;
+        }
+        String id = (value instanceof Enum) ? ((Enum)value).name() : getAsText();
+        org.w3c.dom.Element el = doc.createElement(XML_VALUE);
+        el.setAttribute(ATTR_ID, id);
+        return el;
+    }
 }

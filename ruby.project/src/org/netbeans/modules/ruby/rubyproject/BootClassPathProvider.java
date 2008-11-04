@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider.class, position=10005)
 public class BootClassPathProvider implements ClassPathProvider {
     
     private Map<FileObject, WeakReference<ClassPath>> sourceClassPathsCache =

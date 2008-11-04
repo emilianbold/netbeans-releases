@@ -52,6 +52,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.Precon
 
 public class ProprietaryTrustClientFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PreconfiguredSTSFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

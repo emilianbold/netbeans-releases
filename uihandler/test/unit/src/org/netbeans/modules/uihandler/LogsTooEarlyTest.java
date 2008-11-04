@@ -105,7 +105,7 @@ public class LogsTooEarlyTest extends NbTestCase {
 
         installer.restored();
         
-        assertEquals("one logger received", 1, Installer.getLogsSize());
+        assertEquals("one logger received", 1, InstallerTest.getLogsSize());
     }
  
     /** This simulates the standard core's handler

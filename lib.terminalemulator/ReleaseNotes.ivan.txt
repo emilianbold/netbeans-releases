@@ -1,3 +1,129 @@
+================================================================================
+nobugid (bugs in line insertion/deletion w and w/o margins)
+	Symptom:
+		vi a file in a 24x80 terminal.
+		^D
+		line 23 isn't refreshed properly.
+	Fix in Term.OpsImpl.op_al(), op_dl().
+
+	Seems to have fixed another symptom where fast ^D'ing when
+	running 'vim' resulted in the "middle" line having lots of []'s.
+
+nobugid (towards distributing demo NBM)
+	- Adjust Suite/build.xml to special-case the creation of
+	  lib.terminalemulators nbm's because it can't be added to the suite.
+	- Add extra.module.files to RichExecution's project.properties to
+	  ensure that process_start* ends up in the NBM.
+	- Enhance richexecution.PtyExecutor to "chmod u+x" process_start*
+	  because when they are extracted from an NBM zip cannot maintain
+	  their execution permission.
+	- Module collateral information (Description home page etc.) filled in.
+
+	Suite/build.xml
+
+	richexcution/project.properties
+
+	richexcution/PtyExecutor.java
+
+	richexcution/Bundle.properties
+
+	termsupport/project.properties
+	termsupport/Bundle.properties
+
+	terminal/example/project.properties
+	terminal/example/Bundle.properties
+
+	terminal/project.properties
+	terminal/Bundle.properties
+
+	terminalemulator/project.properties
+	terminalemulator/Bundle.properties
+
+nobugid (i18n-check: misc. warnings in terminalemulator)
+	terminalemulator/Term.java
+	terminalemulator/Buffer.java
+
+Started a debug/test infrastructure although it's not in the mainline
+NB src code yet. The following were done to support it ...
+
+nobugid (Suppport for raw pty's on linux)
+	On Solaris one makes a pty raw by just not pushing the stream
+	modules ptem ldterm and ttcompat.
+
+	On linux pty's are be default non-raw. One can make them
+	act like a raw terminal by using cfmakeraw(). It only 
+	sets up a termios structure; one still needs to do a
+	read/modify/write using tcgetattr() and tcsetattr().
+	So added all of these to richexecution.PtyLibrary:
+		class Termios		Linux only
+		tcgetattr()
+		tcsetattr()	plus relevant constants
+		cfmakeraw()
+
+	JNAPty.assigFd() and getFd() moved to new Util class.
+
+	JNAPty now uses the above functions to do a read/modiy/write for
+	raw pty's.
+
+	richexecution.PtyLibrary.java
+	richexecution.JNAPty.java
+	richexecution.Util.java
+
+nobugid (nbterm: couldn't find itself if executed through a soft link)
+	Had to enhance the "find yourself" stuff at the beginning.
+
+nobugid (nbterm: xterm-like -e and -geometry flags)
+	The terminal debugging/testing infrastructure fires up nbterm
+	and a reference existing implementation like xterm or konsole
+	and broadcasts sequences to all for visual comparison.
+
+	Needed to add -e and -geometry to nbterm for this to work.
+
+	-e used to mean "try error detection mode". That is now
+	renamed to -E.
+
+nobugid (TermExecutor debugmode to emit more debugging stuff)
+	termsupport/TermExecutor.java
+
+================================================================================
+151644 (Return of the terminalemulator)
+	Second large chunk of work.
+	Additional functionality and a more conventional module and pkg 
+	organization.
+
+	See
+	http://wiki.netbeans.org/TerminalEmulator
+	http://wiki.netbeans.org/TerminalEmulatorDemoModuleOrg
+
+================================================================================
+nobugid (Term and ActiveTerm support for hyperlinks)
+	Term will now recognize the sequence 
+		<ESC>]10;<clientData>;<text><BEL>;
+	as analogous to 
+		<a href="clientData">text</a>
+	and create hyperlinks.
+
+	See http://wiki.netbeans.org/TerminalEmulatorHyperlinking for
+	usage details.
+
+	In addition to interpretation of the sequence in InterpDtTerm
+	and it's implementation in Term.op_hyperlink ...
+
+	This required a bit of support internally to help save and
+	restore text attributes of regions enclosing hyperlinks:
+		ActiveRegion.getParentAttrs()
+		ActiveRegion.setParentAttrs()
+		Term.attrSave()
+		Term.attrRestore()
+
+nobugid (de-publicize RegionManager)
+
+24760 (Eye candy for hyperlink navigation.)
+	Partial fix.
+	When the mouse hovers over a hyperlink the cursor shape changes to
+	a pointing finger.
+
+================================================================================
 nobugid (TermSupport works on solaris now)
 	- OS.UNIX -> OS.LINUX + OS.SOLARIS
 	- JNAPty needs to do some ioctl(I_PUSH's) only on solaris.

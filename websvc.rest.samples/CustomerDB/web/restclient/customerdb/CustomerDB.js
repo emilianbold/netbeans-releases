@@ -51,7 +51,7 @@ function CustomerDB(uri_) {
 
 CustomerDB.prototype = {
 
-   uri : '__BASE_URL__',
+   uri : 'http://localhost:8080/CustomerDB/resources',
 
    resources : new Array(),
    

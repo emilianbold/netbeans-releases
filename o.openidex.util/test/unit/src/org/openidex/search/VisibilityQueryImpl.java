@@ -37,6 +37,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author  Marian Petras
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
 public class VisibilityQueryImpl implements VisibilityQueryImplementation {
 
     private static final String INVISIBLE_SUFFIX = "_invisible";

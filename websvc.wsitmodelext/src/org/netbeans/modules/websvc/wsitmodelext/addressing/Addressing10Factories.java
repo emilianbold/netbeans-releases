@@ -57,6 +57,7 @@ import org.netbeans.modules.websvc.wsitmodelext.addressing.impl.Addressing10Anon
 
 public class Addressing10Factories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EndpointReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -68,6 +69,7 @@ public class Addressing10Factories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AnonymousFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -79,6 +81,7 @@ public class Addressing10Factories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)})
     public static class Address10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -90,6 +93,7 @@ public class Addressing10Factories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Addressing10MetadataFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -101,6 +105,7 @@ public class Addressing10Factories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Addressing10ReferencePropertiesFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

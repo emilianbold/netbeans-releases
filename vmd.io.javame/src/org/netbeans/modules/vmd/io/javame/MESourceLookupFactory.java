@@ -55,6 +55,7 @@ import java.util.Collections;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory.class)
 public final class MESourceLookupFactory implements DataEditorViewLookupFactory {
     
     public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {

@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.wsitmodelext.rm.impl.ResendIntervalImpl;
 
 public class RMSunClientFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AckRequestIntervalFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -65,6 +66,7 @@ public class RMSunClientFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ResendIntervalFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -76,6 +78,7 @@ public class RMSunClientFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class CloseTimeoutFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

@@ -91,6 +91,7 @@ import org.w3c.dom.Element;
  * Supplier of libraries declared in open projects.
  * @see "issue #44035"
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.libraries.ArealLibraryProvider.class)
 public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibraryProvider.ProjectLibraryArea,ProjectLibraryProvider.ProjectLibraryImplementation>, PropertyChangeListener, AntProjectListener {
 
     private static final String NAMESPACE = "http://www.netbeans.org/ns/ant-project-libraries/1"; // NOI18N
@@ -978,6 +979,7 @@ public class ProjectLibraryProvider implements ArealLibraryProvider<ProjectLibra
         return paths;
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class, position=50)
     public static final class SharabilityQueryImpl implements SharabilityQueryImplementation {
 
         /** Default constructor for lookup. */

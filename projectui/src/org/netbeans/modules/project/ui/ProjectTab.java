@@ -52,7 +52,6 @@ import java.io.IOException;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -138,7 +137,7 @@ public class ProjectTab extends TopComponent
         btv = new ProjectTreeView();    // Add the BeanTreeView
         
         btv.setDragSource (true);
-        
+        btv.setUseSubstringInQuickSearch(true);
         btv.setRootVisible(false);
         
         add( btv, BorderLayout.CENTER ); 
@@ -252,10 +251,12 @@ public class ProjectTab extends TopComponent
         return getDefault( ID_PHYSICAL );
     }
     
+    @Override
     protected String preferredID () {
         return id;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return ExplorerUtils.getHelpCtx( 
             manager.getSelectedNodes(),
@@ -263,6 +264,7 @@ public class ProjectTab extends TopComponent
     }
 
      
+    @Override
     public int getPersistenceType() {
         return TopComponent.PERSISTENCE_ALWAYS;
     }
@@ -285,6 +287,7 @@ public class ProjectTab extends TopComponent
     // End of variables declaration//GEN-END:variables
         
     @SuppressWarnings("deprecation") 
+    @Override
     public boolean requestFocusInWindow() {
         super.requestFocusInWindow();
         return btv.requestFocusInWindow();
@@ -292,6 +295,7 @@ public class ProjectTab extends TopComponent
 
     //#41258: In the SDI, requestFocus is called rather than requestFocusInWindow:
     @SuppressWarnings("deprecation") 
+    @Override
     public void requestFocus() {
         super.requestFocus();
         btv.requestFocus();
@@ -301,6 +305,7 @@ public class ProjectTab extends TopComponent
     
     private static final long serialVersionUID = 9374872358L;
     
+    @Override
     public void writeExternal (ObjectOutput out) throws IOException {
         super.writeExternal( out );
         
@@ -311,6 +316,7 @@ public class ProjectTab extends TopComponent
     }
 
     @SuppressWarnings("unchecked") 
+    @Override
     public void readExternal (ObjectInput in) throws IOException, ClassNotFoundException {        
         super.readExternal( in );
         id = (String)in.readObject();
@@ -338,10 +344,12 @@ public class ProjectTab extends TopComponent
     
     // MANAGING ACTIONS
     
+    @Override
     protected void componentActivated() {
         ExplorerUtils.activateActions(manager, true);
     }
     
+    @Override
     protected void componentDeactivated() {
         ExplorerUtils.activateActions(manager, false);
     }

@@ -64,6 +64,7 @@ import org.openide.util.NbPreferences;
  *
  * @author  quynguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javascript.editing.spi.JSPreferencesPanelProvider.class)
 public class NbJSPreferencesPanelProvider extends JSPreferencesPanel implements JSPreferencesPanelProvider, ActionListener {
     
     private List<ChangeListener> listeners;

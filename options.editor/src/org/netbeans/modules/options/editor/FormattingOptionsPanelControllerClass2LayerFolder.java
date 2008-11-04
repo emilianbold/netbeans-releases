@@ -49,6 +49,7 @@ import org.netbeans.spi.options.OptionsPanelController;
  *
  * @author Dusan Balek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class FormattingOptionsPanelControllerClass2LayerFolder implements Class2LayerFolder {
 
     public Class getClazz() {

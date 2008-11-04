@@ -54,6 +54,7 @@ import org.netbeans.modules.php.editor.PHPLanguage;
  *
  * @author Marek Fukala
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class CssPhpEmbeddingModel implements EmbeddingModel {
 
     final Set<String> sourceMimeTypes = new HashSet<String>();

@@ -131,7 +131,7 @@ public class Package extends Task {
             output = new JarOutputStream(new FileOutputStream(file));
             output.setLevel(9);
             
-            log("browsing, packing, archiving directory"); // NOI18N
+            log("browsing, packing, archiving directory " + directory.getCanonicalPath()); // NOI18N
             browse(directory.getCanonicalFile(),
                     output,
                     directory.getCanonicalPath().length());
@@ -198,7 +198,9 @@ public class Package extends Task {
             throw new BuildException(e);
         }
     }
-    
+    private String getShortPath(File file, final int offset) throws IOException {
+        return file.getAbsolutePath().substring(offset + 1);
+    }
     // private //////////////////////////////////////////////////////////////////////
     private void browse(
             final File parent,
@@ -209,11 +211,11 @@ public class Package extends Task {
         
         for (File child: parent.listFiles()) {
             if (toSkip.contains(child)) {
-                log("    skipping " + child); // NOI18N
+                log("    skipping " + getShortPath(child,offset)); // NOI18N
                 continue;
             }
             
-            log("    visiting " + child); // NOI18N
+            log("    visiting " + getShortPath(child,offset)); // NOI18N
             
             final String path = child.getAbsolutePath();
             String name = path.substring(offset + 1).replace('\\', '/');    // NOMAGI
@@ -239,9 +241,23 @@ public class Package extends Task {
                 final String pack200Enabled = getProject().getProperty("pack200.enabled"); //NOI18N
                 boolean usePacking = ! "false".equals(pack200Enabled); //NOI18N
                 
+                boolean mirrorFileExist = false;
+                File mirrorFile = null;
+                if (child.getName().endsWith(".jar.pack.gz")) {
+                    mirrorFile = new File(child.getParentFile(), child.getName().substring(0, child.getName().length() - (".pack.gz".length())));
+                } else if (child.getName().endsWith(".jar")) {
+                    mirrorFile = new File(child + ".pack.gz");
+                }
+
+                if (mirrorFile != null && mirrorFile.exists()) {
+                    log("        mirror packing files exists, skipping repacking : " + mirrorFile);
+                    mirrorFileExist = true;
+                    usePacking = false;
+                }									
+
                 // if the source file comes in already packed, we need to unpack it
                 // first and then process normally                
-                if (child.getName().endsWith(".jar.pack.gz")) { // NOI18N
+                if (!mirrorFileExist && child.getName().endsWith(".jar.pack.gz")) { // NOI18N
                     if(usePacking) {
                         log("        it is a packed jar - unpacking"); // NOI18N
                         File unpacked = new File(child.getPath().substring(
@@ -266,7 +282,7 @@ public class Package extends Task {
                             child = unpacked.getAbsoluteFile();
                             
                             log("        successfully unpacked - processing " + // NOI18N
-                                    "file: " + child); // NOI18N
+                                    "file: " + getShortPath(child,offset)); // NOI18N
                         } else {
                             unpacked.delete();
                             if (temp != null) {

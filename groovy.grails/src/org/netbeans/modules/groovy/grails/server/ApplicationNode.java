@@ -116,5 +116,10 @@ public class ApplicationNode extends AbstractNode {
             return NbBundle.getMessage(ApplicationNode.class, "ApplicationNode.stopActionName");
         }
 
+        @Override
+        protected boolean asynchronous() {
+            return false;
+        }
+
     }
 }

@@ -29,6 +29,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for EJB Module projects
  * @author Chris Webster
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public class IcanproProjectType implements AntBasedProjectType, IcanproConstants {
     public static final String TYPE = "org.netbeans.modules.compapp.projects.base";
     private static final String PROJECT_CONFIGURATION_NAME = "data";

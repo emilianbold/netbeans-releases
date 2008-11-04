@@ -93,14 +93,19 @@ public class JDBCDriverDeployHelper {
             boolean exists = false;
             for (int j = 0; j < driverLocs.length; j++) {
                 File driverLoc = driverLocs[j];
-                Collection driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));                           
-                try {
-                    exists = Util.containsClass(driversLocation, className);
-                } catch (IOException e) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                }
-                if (exists) {
-                    break;
+                Parameters.notNull("driverLoc", driverLoc);
+                if (driverLoc.exists()) {
+                    Collection driversLocation = Arrays.asList(driverLoc.listFiles(new Utils.JarFileFilter()));
+                    try {
+                        exists = Util.containsClass(driversLocation, className);
+                    } catch (IOException e) {
+                        ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
+                    }
+                    if (exists) {
+                        break;
+                    }
+                } else {
+                    Logger.getLogger("glassfish.eecommon").finer("Invalid directory for driver deployment");
                 }
             }
             if (!exists) {

@@ -44,6 +44,7 @@ import java.beans.PropertyVetoException;
 import java.beans.VetoableChangeListener;
 import java.io.IOException;
 import java.util.Enumeration;
+import java.util.logging.Level;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.StyledDocument;
@@ -71,7 +72,17 @@ public class DefaultDataObjectTest extends NbTestCase {
     
     public DefaultDataObjectTest(String testName) {
         super(testName);
-    }            
+    }
+
+    @Override
+    protected Level logLevel() {
+        return Level.FINE;
+    }
+
+    @Override
+    protected int timeOut() {
+        return 15000;
+    }
     
     @Override
     protected void setUp() throws Exception {
@@ -236,8 +247,10 @@ public class DefaultDataObjectTest extends NbTestCase {
             MultiDataObject obj = new MultiDataObject(primaryFile, this);
             cnt++;
             obj.getCookieSet().assign(EditorCookie.class, DataEditorSupport.create(obj, obj.getPrimaryEntry(), obj.getCookieSet()));
-            
-            nodeListener.nodeDestroyed(null);
+
+            if (nodeListener != null) {
+                nodeListener.nodeDestroyed(null);
+            }
             
             return obj;
         }

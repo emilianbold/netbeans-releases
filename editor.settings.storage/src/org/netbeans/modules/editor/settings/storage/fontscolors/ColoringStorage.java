@@ -76,6 +76,7 @@ import org.xml.sax.SAXException;
  *
  * @author Jan Jancura, Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageDescription.class)
 public final class ColoringStorage implements StorageDescription<String, AttributeSet>, StorageImpl.Operations<String, AttributeSet> {
 
     // -J-Dorg.netbeans.modules.editor.settings.storage.ColoringStorage.level=FINE

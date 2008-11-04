@@ -43,6 +43,7 @@ import org.openide.util.NbBundle;
  * Implementation of provider for "Jump to Type" for C/C++
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class CppTypeProvider implements TypeProvider {
 
     private boolean isCancelled = false;

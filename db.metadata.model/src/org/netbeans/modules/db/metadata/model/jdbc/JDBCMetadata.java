@@ -53,6 +53,7 @@ import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.spi.MetadataImplementation;
 
 /**
@@ -104,6 +105,14 @@ public class JDBCMetadata extends MetadataImplementation {
 
     public final Catalog getCatalog(String name) {
         return MetadataUtilities.find(name, initCatalogs());
+    }
+
+    public Schema getDefaultSchema() {
+        Catalog catalog = getDefaultCatalog();
+        if (catalog != null) {
+            return ((JDBCCatalog) MetadataAccessor.getDefault().getCatalogImpl(catalog)).getDefaultSchema();
+        }
+        return null;
     }
 
     public final void refresh() {

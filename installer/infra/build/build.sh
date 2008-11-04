@@ -182,6 +182,7 @@ run() {
             \"-Dnb.locales=${LOCALES}\" \
             \"-Dnb.build.type=${NB_BUILD_TYPE}\" \
             \"-Dgf.build.type=${GF_BUILD_TYPE}\" \
+            \"-Dgf-mod.build.type=${GFMOD_BUILD_TYPE}\"\
             \"-Dcommunity.mlbuild=${COMMUNITY_ML_BUILD}\" \
             \"-Dglassfish.builds.host=${GLASSFISH_BUILDS_HOST}\" \
             \"-Dopenesb.builds.host=${OPENESB_BUILDS_HOST}\" \
@@ -265,6 +266,7 @@ if [ 1 == "$ML_BUILD" ] ; then
 	setNetBeansBuildsHost $ML_BUILD
 	NB_BUILD_TYPE=ml
         GF_BUILD_TYPE=ml
+        GFMOD_BUILD_TYPE=ml
 	OUTPUT_DIR=${OUTPUT_DIR}/${NB_BUILD_TYPE}
 	run $*
 fi

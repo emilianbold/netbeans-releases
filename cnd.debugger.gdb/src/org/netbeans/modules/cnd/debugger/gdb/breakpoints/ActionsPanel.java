@@ -44,7 +44,6 @@ package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import javax.swing.JPanel;
-import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.openide.util.NbBundle;
 
 /**

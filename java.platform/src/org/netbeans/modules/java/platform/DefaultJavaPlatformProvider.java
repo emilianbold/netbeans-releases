@@ -53,6 +53,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;
 import org.openide.util.Lookup;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
 public class DefaultJavaPlatformProvider implements JavaPlatformProvider, FileChangeListener {
 
     private static final String PLATFORM_STORAGE = "Services/Platforms/org-netbeans-api-java-Platform";  //NOI18N

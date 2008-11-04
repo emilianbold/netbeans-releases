@@ -53,6 +53,7 @@ import java.util.Set;
 
 public class RMMSFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class FlowControlFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -64,6 +65,7 @@ public class RMMSFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MaxReceiveBufferSizeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

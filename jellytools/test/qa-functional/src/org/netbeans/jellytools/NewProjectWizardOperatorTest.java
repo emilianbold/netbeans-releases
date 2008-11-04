@@ -41,11 +41,9 @@
 package org.netbeans.jellytools;
 
 import junit.framework.Test;
-import junit.framework.TestSuite;
 import junit.textui.TestRunner;
+import org.netbeans.jellytools.actions.CloseAction;
 import org.netbeans.jellytools.nodes.ProjectRootNode;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.modules.project.ui.ProjectsRootNode;
 
 /**
  * Test of org.netbeans.jellytools.NewProjectWizardOperator.
@@ -65,6 +63,7 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
     }
     
     public static final String[] tests = new String[] {
+                "testCreateTwo",
                 "testCreate", "testVerifyCreated",
                 "testInvokeTitle", "testInvoke",
                 "testSelectCategoryAndProject",
@@ -133,15 +132,28 @@ public class NewProjectWizardOperatorTest extends JellyTestCase {
         op.cancel();
     }
 
+    public void testCreateTwo() {
+        createJavaProject("MyJavaProjectOne");
+        createJavaProject("MyJavaProjectTwo");
+        ProjectsTabOperator projects = new ProjectsTabOperator();
+        ProjectRootNode one = new ProjectRootNode(projects.tree(), "MyJavaProjectOne");
+        ProjectRootNode two = new ProjectRootNode(projects.tree(), "MyJavaProjectTwo");
+        new CloseAction().perform(one);
+        new CloseAction().perform(two);
+    }
     public void testCreate() {
+        createJavaProject("MyJavaProject");
+    }
+
+    public void createJavaProject(String projectName) {
         //workaround for 142928
-        NewProjectWizardOperator.invoke().cancel();
+        //NewProjectWizardOperator.invoke().cancel();
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         npwo.selectCategory("Java");
         npwo.selectProject("Java Application");
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
-        npnlso.txtProjectName().setText("MyJavaProject");
+        npnlso.txtProjectName().setText(projectName);
         npnlso.txtProjectLocation().setText(getDataDir().getAbsolutePath()); // NOI18N
         npnlso.finish();
     /*

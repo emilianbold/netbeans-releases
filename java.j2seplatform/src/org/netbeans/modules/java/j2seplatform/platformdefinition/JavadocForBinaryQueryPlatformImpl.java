@@ -68,6 +68,7 @@ import org.openide.util.WeakListeners;
 /**
  * Implementation of Javadoc query for the platform.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=150)
 public class JavadocForBinaryQueryPlatformImpl implements JavadocForBinaryQueryImplementation {
 
     private static final int STATE_ERROR = -1;

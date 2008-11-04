@@ -49,15 +49,15 @@ public class TimerRecord {
 
     enum RecordType {Title, Start, Mark, Stop, Restart};
     
-    private RecordType type;
-    private String tname;
-    private long time;
-    private String message;
+    private final RecordType type;
+    //private final String tname;
+    private final long time;
+    private final String message;
     
     /** Creates a new instance of TimerRecord */
     public TimerRecord(RecordType type, String message) {
         this.type = type;
-        tname = Thread.currentThread().getName();
+        //tname = Thread.currentThread().getName();
         time = System.currentTimeMillis();
         if (message != null && message.length() > 0) {
             this.message = message + ": "; // NOI18N

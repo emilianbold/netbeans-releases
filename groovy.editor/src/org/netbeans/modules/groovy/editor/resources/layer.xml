@@ -54,7 +54,7 @@
                 </folder>
 
                 <file name="language.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.lexer.GroovyTokenId.language"/>
+                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId.language"/>
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 
@@ -103,10 +103,10 @@
         <folder name="text">
             <folder name="x-groovy">
                 <file name="language.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.parser.GroovyLanguage"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.api.parser.GroovyLanguage"/>
                 </file>
                 <file name="structure.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.StructureAnalyzer"/>
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.groovy.editor.api.StructureAnalyzer"/>
                 </file>
             </folder>
         </folder>

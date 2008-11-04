@@ -76,6 +76,7 @@ import org.openide.util.HelpCtx;
  *
  * @author Ian Formanek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
 public final class FreeFormProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
     private static final class AntTaskSelectPanel extends JPanel implements HelpCtx.Provider {

@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplemen
  *
  * @author jungi
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
 public class AppClientInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public AppClientInjectionTargetQueryImplementation() {
