@@ -78,6 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.TestRunner.class)})
 public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N

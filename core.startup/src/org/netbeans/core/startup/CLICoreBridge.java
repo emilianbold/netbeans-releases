@@ -59,6 +59,7 @@ import org.openide.util.Lookup;
  * Handler for core.jar options.
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
 public class CLICoreBridge extends CLIHandler {
     /**
      * Create a default handler.

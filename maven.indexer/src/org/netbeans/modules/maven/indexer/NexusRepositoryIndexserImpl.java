@@ -123,6 +123,7 @@ import org.sonatype.nexus.index.updater.IndexUpdater;
  *
  * @author Anuradha G
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation.class)
 public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, GenericFindQuery {

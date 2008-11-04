@@ -55,6 +55,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Alexey Vladykin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class)
 public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
 
     public Project getOwner(URI uri) {

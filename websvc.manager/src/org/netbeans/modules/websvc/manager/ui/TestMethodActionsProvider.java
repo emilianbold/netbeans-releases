@@ -51,6 +51,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.MethodNodeActionsProvider.class)
 public class TestMethodActionsProvider implements MethodNodeActionsProvider {
 
     public static final String STRIKE_IRON_GROUP = "StrikeIron";

@@ -50,6 +50,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
  *
  * @author Dusan Balek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class ContextProviderClass2LayerFolder implements Class2LayerFolder<CodeGeneratorContextProvider> {
 
     public Class<CodeGeneratorContextProvider> getClazz() {

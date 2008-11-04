@@ -65,6 +65,7 @@ import org.openide.util.Lookup;
  *
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     implements PropertyChangeListener, AnnotationProvider
 {

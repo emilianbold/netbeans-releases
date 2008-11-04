@@ -51,6 +51,7 @@ import org.w3c.dom.Element;
 
 public class HTTPElementFactoryProvider {
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BindingFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(HTTPQName.BINDING.getQName());
@@ -60,6 +61,7 @@ public class HTTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(HTTPQName.ADDRESS.getQName());
@@ -69,6 +71,7 @@ public class HTTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OperationFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(HTTPQName.OPERATION.getQName());
@@ -78,6 +81,7 @@ public class HTTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class UrlEncodedFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(HTTPQName.URLENCODED.getQName());
@@ -87,6 +91,7 @@ public class HTTPElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class UrlReplacementFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(HTTPQName.URLREPLACEMENT.getQName());

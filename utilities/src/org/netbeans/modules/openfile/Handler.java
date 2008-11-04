@@ -58,6 +58,7 @@ import org.openide.util.NbBundle;
  * Processor for command line options.
  * @author Jesse Glick, Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.sendopts.OptionProcessor.class)
 public class Handler extends OptionProcessor {
     private Option open;
     private Option defaultOpen;

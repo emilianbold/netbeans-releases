@@ -81,6 +81,7 @@ import org.xml.sax.SAXException;
  *
  * @author Martin Krauskopf
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
 public final class GlobalSourceForBinaryImpl implements SourceForBinaryQueryImplementation {
     
     /** for use from unit tests */

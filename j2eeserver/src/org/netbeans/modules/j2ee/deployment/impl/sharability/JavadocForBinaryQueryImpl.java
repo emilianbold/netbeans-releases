@@ -65,6 +65,7 @@ import org.openide.util.ChangeSupport;
 /**
  * Implementation of Javadoc query for the library.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
 
     private static final String[] CLASSPATH_VOLUMES = new String[] {

@@ -68,6 +68,7 @@ import org.openide.util.Lookup;
  *
  * @author Jiri Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
 public class InstallManager extends InstalledFileLocator{
     
     // special directories in NB files layout

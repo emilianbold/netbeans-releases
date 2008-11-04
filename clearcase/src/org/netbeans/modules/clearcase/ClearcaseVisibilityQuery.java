@@ -54,6 +54,7 @@ import java.io.File;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
 public class ClearcaseVisibilityQuery implements VisibilityQueryImplementation {
 
     private static final Pattern unloadedPattern = Pattern.compile(".*\\.unloaded(\\.\\d+)?");    

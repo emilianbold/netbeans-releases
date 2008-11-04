@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
 
 /** Default repository.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.Repository.class)
 public final class NbRepository extends Repository {
     /** name of system folder to be located in the USER_DIR and HOME_DIR */
     static final String CONFIG_FOLDER = "config"; // NOI18N

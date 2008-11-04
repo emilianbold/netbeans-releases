@@ -38,6 +38,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=105)
 public class DefaultXmlFileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
     public Charset getEncoding(FileObject f) {

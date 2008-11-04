@@ -50,6 +50,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
  *
  * @author Martin Roskanin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class CompletionProviderClass2LayerFolder implements Class2LayerFolder {
 
     public CompletionProviderClass2LayerFolder() {

@@ -60,6 +60,7 @@ import org.openide.modules.SpecificationVersion;
  * Testing Java platform provider, just enough to check ClassPath.BOOT usage.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
 public final class DummyJavaPlatformProvider implements JavaPlatformProvider {
     
     private final JavaPlatform jdk14 = new DummyJavaPlatform("1.4");

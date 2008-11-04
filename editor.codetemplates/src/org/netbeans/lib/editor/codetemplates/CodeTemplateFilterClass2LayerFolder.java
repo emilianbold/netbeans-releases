@@ -51,6 +51,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
  *
  * @author Dusan Balek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class CodeTemplateFilterClass2LayerFolder implements Class2LayerFolder {
 
     public CodeTemplateFilterClass2LayerFolder() {

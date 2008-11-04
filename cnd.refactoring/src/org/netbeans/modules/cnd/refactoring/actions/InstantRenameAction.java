@@ -70,6 +70,7 @@ public class InstantRenameAction extends BaseAction {
         return InstantRenameAction.class;
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider.class)
     public static class EditorActionProvider extends CndEditorActionsProvider {
 
         public EditorActionProvider() {

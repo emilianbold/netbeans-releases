@@ -54,6 +54,7 @@ import org.openide.text.AnnotationProvider;
 import org.openide.text.Line.Set;
 import org.openide.util.Lookup;
 
+@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public final class BreakpointAnnotationListener extends DebuggerManagerAdapter
         implements PropertyChangeListener, AnnotationProvider {
     

@@ -55,6 +55,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.spi.KeymapManager.class)
 public final class MacrosKeymapManager extends KeymapManager {
 
     private MacrosModel model = null;

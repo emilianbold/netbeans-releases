@@ -77,6 +77,7 @@ import org.openide.util.Utilities;
  * @author Jan Jancura
  * @author Max Sauer
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.api.ShortcutsFinder.class)
 public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinder {
     
     private String              currentProfile;

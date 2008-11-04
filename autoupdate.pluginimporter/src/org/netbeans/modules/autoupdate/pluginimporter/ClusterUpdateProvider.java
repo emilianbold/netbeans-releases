@@ -76,6 +76,7 @@ import org.xml.sax.SAXException;
  *
  * @author Jiri Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.autoupdate.UpdateProvider.class)
 public class ClusterUpdateProvider implements UpdateProvider {
     private static File cluster = null;
 

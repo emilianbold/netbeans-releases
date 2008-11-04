@@ -52,6 +52,7 @@ import org.openide.util.Lookup;
 /**
  * @author David Kaspar, Anton Chechel
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory.class)
 public class PaletteLookupFactory implements DataEditorViewLookupFactory {
 
     public Collection<? extends Object> getLookupObjects(DataObjectContext context, DataEditorView view) {

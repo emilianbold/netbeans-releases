@@ -71,6 +71,7 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.TestRunner.class)})
 public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final Logger LOGGER = Logger.getLogger(TestUnitRunner.class.getName());

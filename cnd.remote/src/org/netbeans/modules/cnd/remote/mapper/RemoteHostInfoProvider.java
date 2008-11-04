@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
  * @author gordonp
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.HostInfoProvider.class)
 public class RemoteHostInfoProvider extends HostInfoProvider {
 
     public static class RemoteHostInfo {

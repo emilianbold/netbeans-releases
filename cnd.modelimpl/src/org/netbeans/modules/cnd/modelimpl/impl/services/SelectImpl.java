@@ -72,6 +72,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmSelect.class)
 public class SelectImpl extends CsmSelect {
     private static final FilterBuilder builder = new FilterBuilder();
 

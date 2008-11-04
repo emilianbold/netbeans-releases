@@ -1,8 +1,0 @@
-org.netbeans.modules.php.editor.completion.ExpressionContext
-org.netbeans.modules.php.editor.completion.VariableProvider
-org.netbeans.modules.php.editor.completion.NewInstructionContext
-org.netbeans.modules.php.editor.completion.ScopeResolutionOperatorContext
-org.netbeans.modules.php.editor.completion.ObjectMemberAccessExpressionScope
-org.netbeans.modules.php.editor.completion.StringScope
-org.netbeans.modules.php.editor.completion.ForeignScope
-

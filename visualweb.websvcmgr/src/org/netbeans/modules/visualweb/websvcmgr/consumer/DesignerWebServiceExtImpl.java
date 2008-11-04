@@ -82,6 +82,7 @@ import org.openide.util.NbBundle;
  * 
  * @author quynguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt.class)
 public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
 
     protected static final String VW_DESIGNTIME_JAR = "vw-dt";

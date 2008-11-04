@@ -47,6 +47,7 @@ import org.openide.util.Lookup;
  *
  * @author Radek Matous
  */
+@org.openide.util.lookup.ServiceProvider(service=java.lang.SecurityManager.class)
 public class FileChangedManager extends SecurityManager {
     private static  FileChangedManager INSTANCE;
     private static final int CREATE_HINT = 2;

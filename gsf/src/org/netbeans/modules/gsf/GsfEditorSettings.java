@@ -64,6 +64,7 @@ import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
  *   but each language cna override them by registering its own values throught
  *   the XML file described above
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
 public class GsfEditorSettings extends StorageFilter<String, TypedValue> {
 
     public GsfEditorSettings() {

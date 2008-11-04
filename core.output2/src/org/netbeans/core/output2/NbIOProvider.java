@@ -53,6 +53,7 @@ import org.openide.windows.OutputWriter;
  * Supplies Output Window implementation through Lookup.
  * @author Jesse Glick, Tim Boudreau
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.IOProvider.class, position=100)
 public final class NbIOProvider extends IOProvider {
     private static final PairMap namesToIos = new PairMap();
 

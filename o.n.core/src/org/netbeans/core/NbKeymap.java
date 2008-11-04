@@ -64,6 +64,7 @@ import org.openide.util.Mutex;
 *
 * @author Dafe Simonek
 */
+@org.openide.util.lookup.ServiceProvider(service=javax.swing.text.Keymap.class)
 public final class NbKeymap extends Observable implements Keymap, Comparator<KeyStroke> {
     /** Name of this keymap */
     String name;

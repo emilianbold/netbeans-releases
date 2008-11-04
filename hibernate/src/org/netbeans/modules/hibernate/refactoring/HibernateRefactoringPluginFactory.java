@@ -55,6 +55,7 @@ import org.openide.util.Lookup;
  * 
  * @author Dongmei Cao
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class HibernateRefactoringPluginFactory implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

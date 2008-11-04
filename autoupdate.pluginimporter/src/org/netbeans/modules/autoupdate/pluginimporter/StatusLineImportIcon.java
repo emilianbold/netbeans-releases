@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jirka Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=590)
 public class StatusLineImportIcon implements StatusLineElementProvider {
     public static JComponent icon = null;
 

@@ -82,6 +82,7 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.symbol.SymbolProvider.class)
 public class GsfSymbolProvider implements SymbolProvider, IndexSearcher.Helper {
     private static final Logger LOGGER = Logger.getLogger(GsfSymbolProvider.class.getName());
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );

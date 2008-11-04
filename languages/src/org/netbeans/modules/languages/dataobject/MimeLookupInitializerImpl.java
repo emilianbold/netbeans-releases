@@ -58,6 +58,7 @@ import org.netbeans.modules.languages.features.IndentFactory;
  *
  *  @author Jan Jancura
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeLookupInitializer.class)
 public class MimeLookupInitializerImpl implements MimeLookupInitializer {
 
     private String[]                    mimeTypes;

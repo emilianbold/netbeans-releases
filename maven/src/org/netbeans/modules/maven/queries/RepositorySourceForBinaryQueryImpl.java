@@ -58,6 +58,7 @@ import org.openide.filesystems.URLMapper;
  * 
  * @author  Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=999)
 public class RepositorySourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
     
     /** Creates a new instance of RepositorySourceForBinaryQueryImpl */
