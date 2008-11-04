@@ -1132,7 +1132,7 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
         }
     }
     
-    final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter {
+    final class NoFoldersDataFilter implements ChangeListener, ChangeableDataFilter, DataFilter.FileBased {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         
@@ -1155,6 +1155,10 @@ final class PackageViewChildren extends Children.Keys<String> implements FileCha
                         
         public void removeChangeListener( ChangeListener listener ) {
             cs.removeChangeListener(listener);
+        }
+
+        public boolean acceptFileObject(FileObject fo) {
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
         
     }
