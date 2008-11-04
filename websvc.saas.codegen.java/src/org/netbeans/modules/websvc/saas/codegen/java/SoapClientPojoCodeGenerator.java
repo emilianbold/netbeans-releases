@@ -262,7 +262,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
-            List<WSParameter> parameters = info.getOperation().getParameters();
+            List<? extends WSParameter> parameters = info.getOperation().getParameters();
             updateVariableNamesForWS(parameters);
             for (int i = 0; i < parameters.size(); i++) {
                 String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());
@@ -319,7 +319,7 @@ public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
                         " = " + resolveInitValue(argumentTypeName) + "\n"); //NOI18N
             }
 
-            List<WSParameter> parameters = info.getOperation().getParameters();
+            List<? extends WSParameter> parameters = info.getOperation().getParameters();
             updateVariableNamesForWS(parameters);
             for (int i = 0; i < parameters.size(); i++) {
                 String argument = findNewName(getVariableDecl(parameters.get(i)), parameters.get(i).getName());

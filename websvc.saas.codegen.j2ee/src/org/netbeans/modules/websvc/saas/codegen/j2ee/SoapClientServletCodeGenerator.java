@@ -139,7 +139,7 @@ public class SoapClientServletCodeGenerator extends SoapClientPojoCodeGenerator 
             wsdlLocation = wsdlLocation.substring(wsdlLocation.lastIndexOf(File.separator) + 1);
             wsdlLocation = "WEB-INF/wsdl/" + wsdlLocation;  //NOI18N
             String mappingFile = "WEB-INF/wsdl/mapping.xml";   //NOI18N
-            List<WSPort> ports = service.getPorts();
+            List<? extends WSPort> ports = service.getPorts();
             String[] portClasses = new String[ports.size()];
             for (int i = 0; i < ports.size(); i++) {
                 portClasses[i] = ports.get(i).getJavaName();
