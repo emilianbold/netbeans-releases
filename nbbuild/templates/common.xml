@@ -447,7 +447,7 @@ made subject to such option by the copyright holder.
                 <classpath refid="test.@{test.type}.cp"/>
             </depend>
             <property name="test.excludes" value=""/> <!-- # 113770 -->
-            <property name="processor.path.for.tests" value="${build.classes.dir}"/>
+            <property name="processor.path.for.tests" value="${build.classes.dir}:${test.@{test.type}.runtime.cp}:${test.@{test.type}.cp.extra}"/>
             <nb-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}"
                    debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                    source="${javac.source}" target="${javac.target}" optimize="${build.compiler.optimize}" includeantruntime="false">
@@ -512,7 +512,7 @@ made subject to such option by the copyright holder.
                 <depend srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}" cache="${build.test.@{test.type}.dir}/depcache">
                     <classpath refid="test.@{test.type}.cp"/>
                 </depend>
-                <property name="processor.path.for.tests" value="${build.classes.dir}"/>
+                <property name="processor.path.for.tests" value="${build.classes.dir}:${test.@{test.type}.runtime.cp}:${test.@{test.type}.cp.extra}"/>
                 <nb-javac srcdir="${test.@{test.type}.src.dir}" destdir="${build.test.@{test.type}.classes.dir}"
                        debug="true" deprecation="${build.compiler.deprecation}" encoding="UTF-8"
                        source="${javac.source}" target="${javac.target}" includeantruntime="false" optimize="${build.compiler.optimize}" includes="${javac.includes}">
