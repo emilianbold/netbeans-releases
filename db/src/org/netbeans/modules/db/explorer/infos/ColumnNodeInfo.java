@@ -43,9 +43,13 @@ package org.netbeans.modules.db.explorer.infos;
 
 import java.io.IOException;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.text.MessageFormat;
+import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.db.explorer.DbUtilities;
 
 import org.netbeans.lib.ddl.impl.AbstractCommand;
@@ -57,15 +61,37 @@ import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.impl.TableColumn;
 
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.modules.db.explorer.nodes.ColumnNode;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
 
 public class ColumnNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-1470704512178901918L;
-    private static final int VERSION_LENGTH = 4;  // represents Java DB version like 10.2
-    private static final double COL_DELETION_SUPPORTED = 10.3;  // Java DB version that supports column deletion
+    private static final Logger LOGGER = Logger.getLogger(ColumnNode.class.getName());
+    private static final double JAVADB_MINOR_VERSION_SUPPORTED = 3;  // Java DB minor version that supports column deletion
+    private static final String DELETE_ACTION_CLASS = "DeleteAction";  // NOI18N
+
+
+    @Override
+    public Vector getActions() {
+        // #149904 [65cat] Cannot remove database table column from action
+        Vector actions = super.getActions();
+        Vector revisedActions = new Vector();
+        Specification spec = (Specification) getSpecification();
+        // If Java DB doesn't support column deletion, exclude the Delete action
+        for (int i = 0; i < actions.size(); i++) {
+            if (spec.getProperties().get("DatabaseProductName").equals("Apache Derby") && !isSupported(spec)) { // NOI18N
+                if (actions.get(i) != null) {
+                    String simpleClassName = actions.get(i).getClass().getSimpleName();
+                    if (!simpleClassName.equals(DELETE_ACTION_CLASS)) {
+                        revisedActions.add(actions.get(i));
+                    }
+                }
+            } else {
+                revisedActions.add(actions.get(i));
+            }
+        }
+        return revisedActions;
+    }
     
     public boolean canAdd(Map propmap, String propname) {
         if (propname.equals("decdigits")) { //NOI18N
@@ -95,19 +121,6 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
             String code = getCode();
             String table = (String) get(DatabaseNode.TABLE);
             Specification spec = (Specification) getSpecification();
-            // #149904 [65cat] Cannot remove database table column from action
-            if (spec.getProperties().get("DatabaseProductName").equals("Apache Derby")) {  // NOI18N
-                String productVersion = spec.getMetaData().getDatabaseProductVersion();
-                int versionLength = productVersion.length() < VERSION_LENGTH ? productVersion.length() : VERSION_LENGTH;
-                String productVersionOnly = productVersion.substring(0, versionLength);
-                double dProductVersion = Double.parseDouble(productVersionOnly);
-                if (dProductVersion < COL_DELETION_SUPPORTED) {
-                    String message = NbBundle.getMessage(ColumnNodeInfo.class, "LBL_JavaDB_DeleteNotSupported", productVersionOnly);
-                    NotifyDescriptor desc = new NotifyDescriptor.Message(message, NotifyDescriptor.INFORMATION_MESSAGE);
-                    DialogDisplayer.getDefault().notify(desc);
-                    return;
-                }
-            }
             RemoveColumn cmd = (RemoveColumn) spec.createCommandRemoveColumn(table);
             cmd.removeColumn((String) get(code));
             cmd.setObjectOwner((String) get(DatabaseNodeInfo.SCHEMA));
@@ -305,5 +318,26 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         return this.getColumnPosition() - 
                 ((ColumnNodeInfo)o2).getColumnPosition();
     }
-    
+
+    private boolean isSupported(Specification spec) {
+        try {
+            int majorVersion = spec.getMetaData().getDatabaseMajorVersion();
+            if (majorVersion < 10) {
+                return false;
+            }
+            String productVersion = spec.getMetaData().getDatabaseProductVersion();
+            int dotLoc = productVersion.indexOf("."); // NOI18N
+            if (dotLoc != -1) {  // check if no "dot" in the release - if future Java DB versions do not support dot releases
+                int minorVersion = Integer.parseInt(productVersion.substring(dotLoc + 1, dotLoc + 2));
+                if (minorVersion < JAVADB_MINOR_VERSION_SUPPORTED) {
+                    return false;
+                }
+            }
+        } catch (SQLException ex) {
+            LOGGER.log(Level.INFO, "ColumnNodeInfo.isSupported() threw SQLException", ex);
+        } catch (NumberFormatException nfe) {
+            LOGGER.log(Level.INFO, "ColumnNodeInfo.isSupported() threw NumberFormatException retrieving the version", nfe);
+        }
+        return true;
+    }
 }
