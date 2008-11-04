@@ -38,7 +38,7 @@
  */
 package org.netbeans.modules.cnd.modeldiscovery.provider;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 
 /**
@@ -48,7 +48,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
 public class PkgConfigManagerImpl extends PkgConfigManager {
 
     @Override
-    public PkgConfig getPkgConfig(CompilerSet set) {
-        return new PkgConfigImpl(set);
+    public PkgConfig getPkgConfig(Project project) {
+        return new PkgConfigImpl(project);
     }
 }
