@@ -45,14 +45,14 @@ import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
 import org.apache.maven.model.Plugin;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.maven.api.FileUtilities;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
-import org.netbeans.modules.maven.api.customizer.ModelHandle;
-import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.filesystems.FileObject;
@@ -134,13 +134,8 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     private MetadataModel<WebservicesMetadata> webservicesMetadataModel;
     
     private String getWsdlDir() {
-        Plugin jaxWsPlugin = null;
-        try {
-            ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(prj);
-            jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
+        MavenProject mavproj = prj.getLookup().lookup(NbMavenProject.class).getMavenProject();
+        Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavproj);
         if (jaxWsPlugin != null) {
             String dirPath = PluginPropertyUtils.getPluginProperty(prj, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlDirectory", 
                     "wsimport");
@@ -150,6 +145,7 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
                 return "src/wsdl"; //NOI18N
             }
         } else {
+            //TODO  is null or src/wsdl correct?
             return "src/wsdl"; //NOI18N
         }        
     }

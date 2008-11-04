@@ -53,8 +53,12 @@ import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.support.ClientCreator;
 import java.io.IOException;
 
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.DialogDisplayer;
@@ -115,31 +119,16 @@ public class JaxWsClientCreator implements ClientCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
             if (wsdlFo != null) {
-                String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
+                final String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 JaxWsService service = new JaxWsService(relativePath, false);
-                
-                String[] filepaths = PluginPropertyUtils.getPluginPropertyList(project, "org.codehaus.mojo", "jaxws-maven-plugin", "wsdlFiles", "wsdlFile",
-                    "wsimport");
-                              
-                try {
-                    ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
-                    if (mavenHandle != null) {
-                        Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
-                        if (jaxWsPlugin == null) {
-                            // adding plugin
-                            jaxWsPlugin = MavenModelUtils.addJaxWSPlugin(mavenHandle);
-                        }
-                        if (jaxWsPlugin != null) {
-                            // writing wsdlFile to plugin
-                            MavenModelUtils.addWsdlFile(mavenHandle, relativePath);
-                        }
-                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
-                        
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        org.netbeans.modules.maven.model.pom.Plugin plugin = MavenModelUtils.addJaxWSPlugin(model);
+                        MavenModelUtils.addWsdlFile(plugin, relativePath);
                     }
-                    
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                };
+                Utilities.performPOMModelOperations(project.getProjectDirectory().getFileObject("pom.xml"),
+                        Collections.singletonList(operation));
                 jaxWsSupport.addService(service);
             }
         }
