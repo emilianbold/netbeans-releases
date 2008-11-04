@@ -180,18 +180,13 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
 
         addSpecOptsWarningIfNeeded(session, opts);
 
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                RspecHandlerFactory.getHandlers(),
-                session,
-                false);
-        TestExecutionManager.getInstance().start(desc, recognizer);
+        TestExecutionManager.getInstance().start(desc, new RspecHandlerFactory(), session);
     }
 
     /**
@@ -328,7 +323,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         addSpecOptsWarningIfNeeded(session, specOpts);
         
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                RspecHandlerFactory.getHandlers(),
+                new RspecHandlerFactory(),
                 session,
                 false);
         taskDescriptor.addOutputRecognizer(recognizer);

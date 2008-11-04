@@ -38,12 +38,12 @@
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 
 /**
  * Base class for test recognizer handlers. 
@@ -88,8 +88,8 @@ public abstract class TestRecognizerHandler {
      * @return the RecognizedOutput for output that should be passed on 
      * for printing to Output. 
      */
-    RecognizedOutput getRecognizedOutput() {
-        return new FilteredOutput(new String[0]);
+    List<String> getRecognizedOutput() {
+        return Collections.<String>emptyList();
     }
 
     protected static int toMillis(String timeInSeconds) {

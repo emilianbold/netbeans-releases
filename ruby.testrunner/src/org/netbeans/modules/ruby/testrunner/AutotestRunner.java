@@ -123,11 +123,7 @@ public class AutotestRunner implements TestRunner {
         TestSession session = new TestSession(displayName,
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                AutotestHandlerFactory.getHandlers(),
-                session,
-                true);
-        TestExecutionManager.getInstance().start(desc, recognizer);
+        TestExecutionManager.getInstance().start(desc, new AutotestHandlerFactory(), session);
     }
     
     private static void addRspecMediatorOptionsToEnv(Map<String, String> env) {

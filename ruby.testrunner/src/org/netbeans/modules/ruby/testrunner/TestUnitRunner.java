@@ -167,15 +167,10 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         desc.allowInput();
         desc.fileLocator(locator);
         desc.addStandardRecognizers();
-        desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name, 
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                TestUnitHandlerFactory.getHandlers(),
-                session,
-                true);
-        TestExecutionManager.getInstance().start(desc, recognizer);
+        TestExecutionManager.getInstance().start(desc, new TestUnitHandlerFactory(), session);
     }
 
     public boolean supports(TestType type) {
@@ -203,7 +198,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                TestUnitHandlerFactory.getHandlers(),
+                new TestUnitHandlerFactory(),
                 session,
                 true);
 

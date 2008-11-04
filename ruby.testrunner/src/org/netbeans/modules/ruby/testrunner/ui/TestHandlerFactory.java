@@ -39,41 +39,16 @@
 
 package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
 
 /**
- * Factory for getting the recognizers needed for an autotest run.
  *
  * @author Erno Mononen
  */
-public final class AutotestHandlerFactory implements TestHandlerFactory {
+public interface TestHandlerFactory {
 
-    public List<TestRecognizerHandler> createHandlers() {
-        List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
-        result.add(new AutotestResetHandler());
-        result.addAll(new RspecHandlerFactory().createHandlers());
-        result.addAll(new TestUnitHandlerFactory().createHandlers());
-        return result;
-    }
+    List<TestRecognizerHandler> createHandlers();
 
-    public boolean printSummary() {
-        return true;
-    }
+    boolean printSummary();
 
-    static class AutotestResetHandler extends TestRecognizerHandler {
-
-        public AutotestResetHandler() {
-            super("%AUTOTEST% reset"); //NOI18N
-        }
-
-        @Override
-        void updateUI(Manager manager, TestSession session) {
-            manager.sessionFinished(session);
-            TestExecutionManager.getInstance().refresh();
-        }
-
-    }
-    
 }
