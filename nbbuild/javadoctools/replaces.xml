@@ -173,3 +173,4 @@ made subject to such option by the copyright holder.
 <replacefilter token="@org-netbeans-modules-maven@" value="${javadoc.docs.org-netbeans-modules-maven}"/>
 <replacefilter token="@org-netbeans-modules-maven-indexer@" value="${javadoc.docs.org-netbeans-modules-maven-indexer}"/>
 <replacefilter token="@org-netbeans-modules-maven-embedder@" value="${javadoc.docs.org-netbeans-modules-maven-embedder}"/>
+<replacefilter token="@org-netbeans-modules-gsf-api@" value="${javadoc.docs.org-netbeans-modules-gsf-api}"/>

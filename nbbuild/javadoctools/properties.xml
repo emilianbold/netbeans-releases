@@ -173,3 +173,4 @@ made subject to such option by the copyright holder.
 <property name="javadoc.docs.org-netbeans-modules-maven" value="${javadoc.web.root}/org-netbeans-modules-maven"/>
 <property name="javadoc.docs.org-netbeans-modules-maven-indexer" value="${javadoc.web.root}/org-netbeans-modules-maven-indexer"/>
 <property name="javadoc.docs.org-netbeans-modules-maven-embedder" value="${javadoc.web.root}/org-netbeans-modules-maven-embedder"/>
+<property name="javadoc.docs.org-netbeans-modules-gsf-api" value="${javadoc.web.root}/org-netbeans-modules-gsf-api"/>

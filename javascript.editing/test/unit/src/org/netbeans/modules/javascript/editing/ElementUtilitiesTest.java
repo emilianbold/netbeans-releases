@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.mozilla.nb.javascript.FunctionNode;
 import org.mozilla.nb.javascript.Node;
-import org.netbeans.modules.gsf.api.CompilationInfo;
+import org.netbeans.modules.csl.api.CompilationInfo;
 
 /**
  *
