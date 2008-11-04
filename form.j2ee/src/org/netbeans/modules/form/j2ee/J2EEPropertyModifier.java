@@ -66,6 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Stola
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.PropertyModifier.class)
 public class J2EEPropertyModifier implements PropertyModifier {
     
     /**

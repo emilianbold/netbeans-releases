@@ -10,6 +10,7 @@
 package org.netbeans.test.cvsmodule;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
@@ -117,7 +118,7 @@ public class DeleteTest extends JellyTestCase {
               
         //second step of checkoutwizard
         //2nd step of CheckOutWizard
-        
+
         File tmp = new File("/tmp"); // NOI18N
         File work = new File(tmp, "" + File.separator + System.currentTimeMillis());
         File _cacheFolder = new File(work, projectName + File.separator + "src" + File.separator + "forimport" + File.separator + "CVS" + File.separator + "RevisionCache");
@@ -126,7 +127,12 @@ public class DeleteTest extends JellyTestCase {
         tmp.deleteOnExit();
         ModuleToCheckoutStepOperator moduleCheck = new ModuleToCheckoutStepOperator();
         cvss.stop();
-        in.close();
+        try {
+            Thread.sleep(1000);
+            in.close();
+        } catch (IOException e) {
+            //
+        }
         moduleCheck.setModule("ForImport");        
         moduleCheck.setLocalFolder(work.getAbsolutePath()); // NOI18N
         
@@ -145,11 +151,16 @@ public class DeleteTest extends JellyTestCase {
         
         //OutputOperator oo = OutputOperator.invoke();
         //System.out.println(CVSroot);
-        
+
         OutputTabOperator oto = new OutputTabOperator(sessionCVSroot);
         oto.waitText("Checking out finished");
         cvss.stop();
-        in.close();
+        try {
+            Thread.sleep(1000);
+            in.close();
+        } catch (IOException e) {
+            //
+        }
         NbDialogOperator nbdialog = new NbDialogOperator("Checkout Completed");
         JButtonOperator open = new JButtonOperator(nbdialog, "Open Project");
         open.push();

@@ -99,7 +99,7 @@ public abstract class APTBaseLanguageFilter implements APTLanguageFilter {
 //        Integer val = (ttype < BUFFERED_COUNT) ? int2Int[ttype] : new Integer(ttype);
 //        assert(val != null);
 //        filter.put(textKey, val);
-        filter.put(textKey, new Integer(ttype));
+        filter.put(textKey, Integer.valueOf(ttype));
     }
 
     private Token onID(Token token) {

@@ -38,6 +38,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
  * @author ads
  * This service checks for unique name definition in the same scope.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class UniqueNameCheck extends InnerEventDispatcherAdapter {
 
     /* (non-Javadoc)

@@ -65,11 +65,10 @@ public class ThreadsNodeModel implements NodeModel {
     public static final String RUNNING_THREAD =
         "org/netbeans/modules/debugger/resources/threadsView/RunningThread"; // NOI18N
 
-    private GdbDebugger debugger;
-    private Vector listeners = new Vector();
+    private final Vector listeners = new Vector();
     
     public ThreadsNodeModel(ContextProvider lookupProvider) {
-        debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
+        GdbDebugger debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         new Listener(this, debugger);
     }
     

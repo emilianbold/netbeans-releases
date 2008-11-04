@@ -53,6 +53,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public final class Factory implements RefactoringPluginFactory {
    
   public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for EJB Module projects
  * @author Chris Webster
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class EjbJarProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.j2ee.ejbjarproject"; // NOI18N

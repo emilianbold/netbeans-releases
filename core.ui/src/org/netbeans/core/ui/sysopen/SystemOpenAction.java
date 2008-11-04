@@ -156,6 +156,13 @@ public final class SystemOpenAction extends AbstractAction implements ContextAwa
                 }
                 public JComponent[] getMenuPresenters() {
                     if (performer != null && !files.isEmpty()) {
+                        if (Utilities.isWindows()) { // #144575
+                            for (File f : files) {
+                                if (!f.getName().contains(".")) {
+                                    return new JComponent[0];
+                                }
+                            }
+                        }
                         return new JComponent[] {this};
                     } else {
                         return new JComponent[0];

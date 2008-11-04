@@ -29,6 +29,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public class XsltproProjectType implements AntBasedProjectType {
     public static final String TYPE = "org.netbeans.modules.xslt.project";
     public static final String PROJECT_CONFIGURATION_NAME = "data";

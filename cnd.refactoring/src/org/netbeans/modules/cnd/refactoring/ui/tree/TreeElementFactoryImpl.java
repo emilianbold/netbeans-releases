@@ -63,6 +63,7 @@ import org.openide.util.Lookup;
  * 
  * @author Vladimir Voskresensky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=150)
 public class TreeElementFactoryImpl implements TreeElementFactoryImplementation {
 
     public Map<Object, TreeElement> map = new WeakHashMap<Object, TreeElement>();
@@ -102,7 +103,10 @@ public class TreeElementFactoryImpl implements TreeElementFactoryImplementation 
         } else if (o instanceof FileObject) {
             FileObject fo = (FileObject)o;
             CsmFile csmFile = CsmUtilities.getCsmFile(fo, false);
-            result = new FileTreeElement(fo, csmFile);
+            // our factory is asked about any FileObject, so check for CND ones only
+            if (csmFile != null) {
+                result = new FileTreeElement(fo, csmFile);
+            }
         }
         if (result != null) {
             map.put(o, result);

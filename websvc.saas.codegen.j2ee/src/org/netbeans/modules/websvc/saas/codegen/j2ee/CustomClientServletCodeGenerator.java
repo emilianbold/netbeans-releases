@@ -60,6 +60,7 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenerator {
     private SaasClientJ2eeAuthenticationGenerator j2eeAuthGen;
 

@@ -39,94 +39,84 @@
 
 package org.netbeans.modules.maven.debug;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
-import org.apache.maven.plugin.logging.Log;
-import org.apache.maven.project.MavenProject;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.maven.bridges.debugger.MavenDebugger;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 
 /**
  *
  * @author mkleint
  */
 public class MavenDebuggerImpl implements MavenDebugger {
+    private Project nbproject;
     
     /** Creates a new instance of MavenDebuggerImpl */
-    public MavenDebuggerImpl() {
+    public MavenDebuggerImpl(Project prj) {
+        nbproject = prj;
     }
 
-    public void attachDebugger(MavenProject project, Log logger, String name, 
+    public void attachDebugger(InputOutput logger, String name,
             final String transport,
             final String host, 
-            final String address) throws MojoFailureException, MojoExecutionException {
+            final String address) throws Exception {
 //        JPDAStart.verifyPaths(getProject(), classpath);
 //        JPDAStart.verifyPaths(getProject(), sourcepath);
 
         final Object[] lock = new Object [1];
-        try {
-            
-            Project nbproject = ProjectManager.getDefault().findProject(FileUtil.toFileObject(project.getBasedir()));
-            ClassPath sourcePath = Utils.createSourcePath(nbproject);
-            ClassPath jdkSourcePath = Utils.createJDKSourcePath(nbproject);
-            
-            final Map properties = new HashMap();
-            properties.put("sourcepath", sourcePath); //NOI18N
-            properties.put("name", name); //NOI18N
-            properties.put("jdksources", jdkSourcePath); //NOI18N
-            
-            
-            synchronized(lock) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        synchronized(lock) {
-                            try {
-                                // VirtualMachineManagerImpl can be initialized
-                                // here, so needs to be inside RP thread.
-                                if (transport.equals("dt_socket")) //NOI18N
-                                    try {
-                                        JPDADebugger.attach(
-                                                host,                                             
-                                                Integer.parseInt(address),
-                                                new Object[] {properties}
-                                        );
-                                    } catch (NumberFormatException e) {
-                                        throw new MojoFailureException(
-                                                "address attribute must specify port " + //NOI18N
-                                                "number for dt_socket connection"); //NOI18N
-                                    } else
-                                        JPDADebugger.attach(
-                                                address,               
-                                                new Object[] {properties}
-                                        );
-                            } catch (Throwable e) {
-                                lock[0] = e;
-                            } finally {
-                                lock.notify();
-                            }
+        ClassPath sourcePath = Utils.createSourcePath(nbproject);
+        ClassPath jdkSourcePath = Utils.createJDKSourcePath(nbproject);
+
+        final Map properties = new HashMap();
+        properties.put("sourcepath", sourcePath); //NOI18N
+        properties.put("name", name); //NOI18N
+        properties.put("jdksources", jdkSourcePath); //NOI18N
+
+
+        synchronized(lock) {
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    synchronized(lock) {
+                        try {
+                            // VirtualMachineManagerImpl can be initialized
+                            // here, so needs to be inside RP thread.
+                            if (transport.equals("dt_socket")) //NOI18N
+                                try {
+                                    JPDADebugger.attach(
+                                            host,
+                                            Integer.parseInt(address),
+                                            new Object[] {properties}
+                                    );
+                                } catch (NumberFormatException e) {
+                                    throw new Exception(
+                                            "address attribute must specify port " + //NOI18N
+                                            "number for dt_socket connection"); //NOI18N
+                                } else
+                                    JPDADebugger.attach(
+                                            address,
+                                            new Object[] {properties}
+                                    );
+                        } catch (Throwable e) {
+                            lock[0] = e;
+                        } finally {
+                            lock.notify();
                         }
                     }
-                });
-                try {
-                    lock.wait();
-                } catch (InterruptedException e) {
-                    throw new MojoExecutionException("", e);
                 }
-                if (lock[0] != null)  {
-                    throw new MojoExecutionException("", (Throwable) lock[0]);
-                }
-                
+            });
+            try {
+                lock.wait();
+            } catch (InterruptedException e) {
+                throw e;
             }
-        } catch (IOException ex) {
-            throw new MojoExecutionException("", ex);
+            if (lock[0] != null)  {
+                throw new Exception("", (Throwable) lock[0]);
+            }
+
         }
     }
     

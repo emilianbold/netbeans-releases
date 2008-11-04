@@ -143,6 +143,14 @@ public class GsfEditorKitFactory {
         //return ((Boolean)Settings.getValue(GsfEditorKit.class, JavaSettingsNames.PAIR_CHARACTERS_COMPLETION)).booleanValue();
         return true;
     }
+
+    /**
+     * Interface that DeleteChar actions should implement to provide their
+     * next deletion character.
+     */
+    public interface NextCharProvider {
+        public boolean getNextChar();
+    }
     
     public class GsfEditorKit extends NbEditorKit {
 
@@ -364,7 +372,7 @@ public class GsfEditorKitFactory {
             }
         }
 
-        public class GsfDeleteCharAction extends ExtDeleteCharAction {
+        public class GsfDeleteCharAction extends ExtDeleteCharAction implements NextCharProvider {
             private JTextComponent currentTarget;
             
             public GsfDeleteCharAction(String nm, boolean nextChar) {
@@ -373,9 +381,14 @@ public class GsfEditorKitFactory {
 
             @Override
             public void actionPerformed(ActionEvent evt, JTextComponent target) {
-                currentTarget = target;
-                super.actionPerformed(evt, target);
-                currentTarget = null;
+                target.putClientProperty(NextCharProvider.class, this);
+                try {
+                    currentTarget = target;
+                    super.actionPerformed(evt, target);
+                } finally {
+                    currentTarget = null;
+                    target.putClientProperty(NextCharProvider.class, null);
+                }
             }
 
             @Override
@@ -390,6 +403,10 @@ public class GsfEditorKitFactory {
                     }
                 }
                 super.charBackspaced(doc, dotPos, caret, ch);
+            }
+
+            public boolean getNextChar() {
+                return nextChar;
             }
         }
 

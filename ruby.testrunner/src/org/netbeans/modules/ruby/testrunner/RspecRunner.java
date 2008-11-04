@@ -50,7 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
@@ -78,6 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.TestRunner.class)})
 public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
     private static final String PLUGIN_SPEC_PATH = "vendor/plugins/rspec/bin/spec"; // NOI18N
@@ -152,7 +153,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         if (additionalArgs.isEmpty()) {
             // just display 'no tests run' immediately if there are no files to run
-            TestSession empty = new TestSession(name, locator, debug ? SessionType.DEBUG : SessionType.TEST);
+            TestSession empty = new TestSession(name, project, debug ? SessionType.DEBUG : SessionType.TEST);
             Manager.getInstance().emptyTestRun(empty);
             return;
         }
@@ -167,9 +168,9 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         arguments.addAll(additionalArgs);
 
-        ExecutionDescriptor desc = null;
+        RubyExecutionDescriptor desc = null;
         String charsetName = null;
-        desc = new ExecutionDescriptor(platform,
+        desc = new RubyExecutionDescriptor(platform,
                 name,
                 FileUtil.toFile(project.getProjectDirectory()),
                 getSpec(project).getAbsolutePath());
@@ -182,7 +183,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         desc.addStandardRecognizers();
         desc.setRerun(false); //disabled for now, see #147482
         TestSession session = new TestSession(name,
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
 
         addSpecOptsWarningIfNeeded(session, opts);
@@ -293,7 +294,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         }
     }
 
-    public void customize(Project project, RakeTask task, ExecutionDescriptor taskDescriptor, boolean debug) {
+    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -323,7 +324,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
 
         FileLocator locator = project.getLookup().lookup(FileLocator.class);
         TestSession session = new TestSession(task.getDisplayName(),
-                locator,
+                project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
         addSpecOptsWarningIfNeeded(session, specOpts);
         

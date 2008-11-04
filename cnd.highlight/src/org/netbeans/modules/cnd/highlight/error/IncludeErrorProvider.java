@@ -39,10 +39,6 @@
 
 package org.netbeans.modules.cnd.highlight.error;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
@@ -53,6 +49,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=20)
 public class IncludeErrorProvider extends CsmErrorProvider {
 
     public String getName() {

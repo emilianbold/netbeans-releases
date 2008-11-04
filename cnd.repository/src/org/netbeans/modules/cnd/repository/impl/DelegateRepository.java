@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
  *
  * @author Vladimir Voskresensky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.api.Repository.class)
 public final class DelegateRepository implements Repository {
     
     private final Repository delegate;

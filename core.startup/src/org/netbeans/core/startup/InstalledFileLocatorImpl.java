@@ -60,6 +60,7 @@ import org.openide.modules.InstalledFileLocator;
  * and finally ${netbeans.home}.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
 public final class InstalledFileLocatorImpl extends InstalledFileLocator {
     
     /** Default constructor for lookup. */

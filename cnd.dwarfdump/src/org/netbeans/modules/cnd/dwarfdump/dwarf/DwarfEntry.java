@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.dwarf;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.CompilationUnit;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ACCESS;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
@@ -303,7 +304,7 @@ public class DwarfEntry {
     
     public DwarfDeclaration getDeclaration() {
         TAG kind = getKind();
-        String name = getQualifiedName();
+        String aName = getQualifiedName();
         String type = getType();
         String paramStr = ""; // NOI18N
         
@@ -311,7 +312,7 @@ public class DwarfEntry {
             paramStr += getParametersString();
         }
         
-        String declarationString = type + " " + (name == null ? getName() : name) + paramStr; // NOI18N
+        String declarationString = type + " " + (aName == null ? getName() : aName) + paramStr; // NOI18N
         
         int declarationLine = getLine();
         int declarationColumn = getColumn();
@@ -358,11 +359,6 @@ public class DwarfEntry {
         return result;
     }
     
-    
-    public String toString() {
-        return getDeclaration().toString();
-    }
-    
     public TAG getTag() {
         return abbriviationTableEntry.getKind();
     }
@@ -375,7 +371,15 @@ public class DwarfEntry {
             children.get(i).dump(out);
         }
     }
-    
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
+    }
+
     public boolean isArtifitial() {
         Object isArt = getAttributeValue(ATTR.DW_AT_artificial);
         return ((isArt != null) && ((Boolean)isArt).booleanValue());

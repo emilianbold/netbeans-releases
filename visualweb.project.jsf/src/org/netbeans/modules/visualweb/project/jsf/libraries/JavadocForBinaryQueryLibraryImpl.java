@@ -77,6 +77,7 @@ import org.netbeans.modules.visualweb.project.jsf.libraries.provider.ComponentLi
  * Implementation of Javadoc query for the library.
  * @author Po-Ting Wu
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
 
     private static int MAX_DEPTH = 3;

@@ -67,6 +67,7 @@ import org.openide.modules.SpecificationVersion;
  * @author Jan Pokorsky
  * @author Petr Slechta
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateAttributesProvider.class)
 public final class JavaTemplateAttributesProvider implements CreateFromTemplateAttributesProvider {
     
     private static final Logger LOG = Logger.getLogger(JavaTemplateAttributesProvider.class.getName());

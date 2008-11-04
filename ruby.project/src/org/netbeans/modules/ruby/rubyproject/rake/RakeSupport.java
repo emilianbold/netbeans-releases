@@ -56,6 +56,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
@@ -197,12 +198,18 @@ public final class RakeSupport {
      * @param project project for which tasks are read
      */
     public static void refreshTasks(final Project project) {
+        final FileObject projectDir = project.getProjectDirectory();
+
         try {
-            FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
-            // clean old content
-            if (rakeD != null && rakeD.isData()) {
-                rakeD.delete();
-            }
+            projectDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+                public void run() throws IOException {
+                    FileObject rakeD = project.getProjectDirectory().getFileObject(RAKE_D_OUTPUT);
+                    // clean old content
+                    if (rakeD != null && rakeD.isData()) {
+                        rakeD.delete();
+                    }
+                }
+            });
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
         }
@@ -328,9 +335,9 @@ public final class RakeSupport {
             ExecutionService.logProcess(pb);
             Process process = pb.start();
 
-            stdout = readInputStream(process.getInputStream());
-            String stderr = readInputStream(process.getErrorStream());
-
+            stdout = readInputStream(process.getInputStream(), false);
+            String stderr = readInputStream(process.getErrorStream(), true);
+            
             exitCode = process.waitFor();
 
             if (exitCode != 0) {
@@ -352,7 +359,7 @@ public final class RakeSupport {
         return stdout;
     }
 
-    private static String readInputStream(InputStream is) {
+    private static String readInputStream(final InputStream is, final boolean readingErrors) {
         StringBuilder sb = new StringBuilder();
         InputStreamReader isr = new InputStreamReader(is);
         BufferedReader br = new BufferedReader(isr);
@@ -364,7 +371,7 @@ public final class RakeSupport {
                 if (line == null) {
                     break;
                 }
-                if (!line.contains("=")) { // not 'key=value' property
+                if (!readingErrors && !line.contains("=")) { // not 'key=value' property
                     continue;
                 }
                 sb.append(line);
@@ -372,6 +379,12 @@ public final class RakeSupport {
             }
         } catch (IOException ioe) {
             Exceptions.printStackTrace(ioe);
+        } finally {
+            try {
+                is.close();
+            } catch (IOException e) {
+                LOGGER.log(Level.WARNING, e.getLocalizedMessage(), e);
+            }
         }
         return sb.toString();
     }
@@ -393,8 +406,11 @@ public final class RakeSupport {
 
                     OutputStream os = rakeTasksFile.getOutputStream();
                     Writer writer = new BufferedWriter(new OutputStreamWriter(os));
-                    writer.write(rakeDOutput);
-                    writer.close();
+                    try {
+                        writer.write(rakeDOutput);
+                    } finally {
+                        writer.close();
+                    }
                 }
             });
         } catch (IOException ioe) {

@@ -254,6 +254,34 @@ public class BuildArtifactMapperImpl {
         return true;
     }
     
+    @SuppressWarnings("deprecation")
+    public static Boolean clean(URL sourceRoot) throws IOException {
+        File targetFolder = getTarget(sourceRoot);
+
+        if (targetFolder == null) {
+            return null;
+        }
+
+        try {
+            SourceUtils.waitScanFinished();
+        } catch (InterruptedException e) {
+            //Not Important
+            LOG.log(Level.FINE, null, e);
+            return false;
+        }
+
+        File tagFile = new File(targetFolder, TAG_FILE_NAME);
+
+        if (!tagFile.exists()) {
+            return null;
+        }
+
+        delete(targetFolder, false);
+        delete(tagFile, true);
+
+        return null;
+    }
+
     public static void classCacheUpdated(URL sourceRoot, File cacheRoot, Iterable<File> deleted, Iterable<File> updated) {
         File targetFolder = getTarget(sourceRoot);
         
@@ -479,6 +507,7 @@ public class BuildArtifactMapperImpl {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileBuiltQueryImplementation.class, position=1000)
     public static final class FileBuildQueryImpl implements FileBuiltQueryImplementation {
 
         private final ThreadLocal<Boolean> recursive = new ThreadLocal<Boolean>();

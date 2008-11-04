@@ -59,6 +59,7 @@ import org.netbeans.installer.wizard.components.actions.UninstallAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbMetricsAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbRegistrationAction;
 import org.netbeans.installer.wizard.components.actions.netbeans.NbServiceTagCreateAction;
+import org.netbeans.installer.wizard.components.actions.netbeans.NbShowUninstallationSurveyAction;
 import org.netbeans.installer.wizard.components.panels.PostCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.PreCreateBundleSummaryPanel;
 import org.netbeans.installer.wizard.components.panels.LicensesPanel;
@@ -85,6 +86,7 @@ public class MainSequence extends WizardSequence {
     private NbMetricsAction metricsAction;
     private NbServiceTagCreateAction serviceTagAction;
     private NbRegistrationAction nbRegistrationAction;
+    private NbShowUninstallationSurveyAction showUninstallationSurveyAction;
     private Map<Product, ProductWizardSequence> productSequences;
     
     public MainSequence() {
@@ -104,6 +106,7 @@ public class MainSequence extends WizardSequence {
         metricsAction = new NbMetricsAction();
         serviceTagAction = new NbServiceTagCreateAction();
         nbRegistrationAction = new NbRegistrationAction ();
+        showUninstallationSurveyAction = new NbShowUninstallationSurveyAction();
         productSequences = new HashMap<Product, ProductWizardSequence>();
         
         installAction.setProperty(InstallAction.TITLE_PROPERTY,
@@ -158,6 +161,9 @@ public class MainSequence extends WizardSequence {
                 if (toInstall.size() > 0) {
                     addChild(metricsAction);
                     addChild(nbRegistrationAction);
+                }
+                if (toUninstall.size() > 0) {
+                    addChild(showUninstallationSurveyAction);
                 }
                 
                 StringBuilder list = new StringBuilder();

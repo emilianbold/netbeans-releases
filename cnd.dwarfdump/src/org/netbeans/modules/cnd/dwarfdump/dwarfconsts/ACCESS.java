@@ -45,25 +45,27 @@ import java.util.HashMap;
 
 public enum ACCESS {
 
-    DW_ACCESS_public(0x1),
-    DW_ACCESS_private(0x2),
-    DW_ACCESS_protected(0x3);
+    DW_ACCESS_public(0x1, "public"), // NOI18N
+    DW_ACCESS_private(0x2, "private"), // NOI18N
+    DW_ACCESS_protected(0x3, "protected"); // NOI18N
     
     private static final HashMap<Integer, ACCESS> hashmap = new HashMap<Integer, ACCESS>();
     private final int value;
+    private final String name;
     
     static {
-        for (ACCESS elem : ACCESS.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (ACCESS elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
-    ACCESS(int value) {
+    ACCESS(int value, String name) {
         this.value = value;
+        this.name = name;
     }
     
     public static ACCESS get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     public int value() {
@@ -72,15 +74,6 @@ public enum ACCESS {
     
     @Override
     public String toString() {
-        switch (get(value)) {
-            case DW_ACCESS_public:
-                return "public"; // NOI18N
-            case DW_ACCESS_protected:
-                return "protected"; // NOI18N
-            case DW_ACCESS_private:
-                return "private"; // NOI18N
-        }
-        
-        return ""; // NOI18N
+        return name;
     }
 }

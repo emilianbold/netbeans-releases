@@ -48,6 +48,7 @@ import org.openide.awt.HtmlBrowser.Factory;
  *
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactory.class, position=10)
 public class FFJSDebuggerFactory implements JSDebuggerFactory {
 
     public boolean supports(Factory factory) {

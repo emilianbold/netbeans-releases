@@ -78,8 +78,7 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            CallStackFrame[] sfs = debugger.getCallStackFrames(from, to);
-	    return sfs;
+	    return debugger.getCallStackFrames(from, to);
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -140,7 +139,7 @@ public class CallStackTreeModel implements TreeModel {
     public void removeModelListener(ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 listener.destroy();
                 listener = null;
             }
@@ -197,7 +196,7 @@ public class CallStackTreeModel implements TreeModel {
         // check also whether the current thread was resumed/suspended
         // the call stack needs to be refreshed after invokeMethod() which resumes the thread
         public synchronized void propertyChange(PropertyChangeEvent e) {
-            if (e.getPropertyName().equals(GdbDebugger.PROP_STATE) && debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+            if (e.getPropertyName().equals(GdbDebugger.PROP_STATE) && debugger.getState() == GdbDebugger.State.STOPPED) {
                 synchronized (this) {
                     if (task == null) {
                         task = RequestProcessor.getDefault().create(new Refresher());
@@ -209,7 +208,7 @@ public class CallStackTreeModel implements TreeModel {
         
         private class Refresher extends Object implements Runnable {
             public void run() {
-                if (debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                if (debugger.getState() == GdbDebugger.State.STOPPED) {
                     CallStackTreeModel tm = getModel();
                     if (tm != null) {
                         tm.fireTreeChanged();

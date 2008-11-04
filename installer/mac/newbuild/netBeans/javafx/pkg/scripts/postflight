@@ -29,3 +29,5 @@ if [ -d "/Library/Receipts/javafx.pkg" ] ; then
 fi
 
 "$script_dir"/add_cluster.sh "javafx2"
+
+touch ~/.javafx_eula_accepted

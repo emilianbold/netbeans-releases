@@ -76,6 +76,7 @@ import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.ext.java.JavaTokenContext;
+import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
 import org.openide.util.WeakListeners;
 
 /**
@@ -90,6 +91,11 @@ public class Utilities {
 
     private static boolean caseSensitive = true;
     private static boolean showDeprecatedMembers = true;
+    private static boolean guessMethodArguments = true;
+    private static boolean autoPopupOnJavaIdentifierPart = true;
+    private static String javaCompletionAutoPopupTriggers = null;
+    private static String javaCompletionSelectors = null;
+    private static String javadocCompletionAutoPopupTriggers = null;
     
     private static boolean inited;
     private static Preferences preferences;
@@ -97,10 +103,25 @@ public class Utilities {
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
             if (settingName == null || SimpleValueNames.COMPLETION_CASE_SENSITIVE.equals(settingName)) {
-                setCaseSensitive(preferences.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false));
+                caseSensitive = preferences.getBoolean(SimpleValueNames.COMPLETION_CASE_SENSITIVE, false);
             }
             if (settingName == null || SimpleValueNames.SHOW_DEPRECATED_MEMBERS.equals(settingName)) {
-                setShowDeprecatedMembers(preferences.getBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true));
+                showDeprecatedMembers = preferences.getBoolean(SimpleValueNames.SHOW_DEPRECATED_MEMBERS, true);
+            }
+            if (settingName == null || CodeCompletionPanel.GUESS_METHOD_ARGUMENTS.equals(settingName)) {
+                guessMethodArguments = preferences.getBoolean(CodeCompletionPanel.GUESS_METHOD_ARGUMENTS, true);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART.equals(settingName)) {
+                autoPopupOnJavaIdentifierPart = preferences.getBoolean(CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, false);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS.equals(settingName)) {
+                javaCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS, "."); //NOI18N
+            }
+            if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_SELECTORS.equals(settingName)) {
+                javaCompletionSelectors = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_SELECTORS, ".,;:([+-="); //NOI18N
+            }
+            if (settingName == null || CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS.equals(settingName)) {
+                javadocCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS, ".#@"); //NOI18N
             }
         }
     };
@@ -166,8 +187,28 @@ public class Utilities {
     }
 
     public static boolean guessMethodArguments() {
-      Preferences prefs = MimeLookup.getLookup(JavaKit.JAVA_MIME_TYPE).lookup(Preferences.class);
-      return prefs.getBoolean("guessMethodArguments", false); //NOI18N
+        lazyInit();
+        return guessMethodArguments;
+    }
+
+    public static boolean autoPopupOnJavaIdentifierPart() {
+        lazyInit();
+        return autoPopupOnJavaIdentifierPart;
+    }
+
+    public static String getJavaCompletionAutoPopupTriggers() {
+        lazyInit();
+        return javaCompletionAutoPopupTriggers;
+    }
+
+    public static String getJavaCompletionSelectors() {
+        lazyInit();
+        return javaCompletionSelectors;
+    }
+
+    public static String getJavadocCompletionAutoPopupTriggers() {
+        lazyInit();
+        return javadocCompletionAutoPopupTriggers;
     }
 
     private static void lazyInit() {

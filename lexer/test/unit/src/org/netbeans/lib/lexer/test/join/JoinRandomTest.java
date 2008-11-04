@@ -45,6 +45,7 @@ import java.io.PrintStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.lang.TestJoinTopTokenId;
 import org.netbeans.lib.lexer.test.FixedTextDescriptor;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -52,6 +53,7 @@ import org.netbeans.lib.lexer.test.RandomCharDescriptor;
 import org.netbeans.lib.lexer.test.RandomModifyDescriptor;
 import org.netbeans.lib.lexer.test.RandomTextProvider;
 import org.netbeans.lib.lexer.test.TestRandomModify;
+import org.netbeans.spi.lexer.LexerInput;
 
 /**
  * Test join updating algorithm TokenListUpdater.updateJoined() by random document modifications.
@@ -92,9 +94,28 @@ public class JoinRandomTest extends NbTestCase {
 //        randomModify.setDebugOperation(true);
 //        randomModify.setDebugDocumentText(true);
 //        randomModify.setDebugHierarchy(true);
+//
 //        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
+//        Logger.getLogger(TokenHierarchyOperation.class.getName()).setLevel(Level.FINEST);
+//        Logger.getLogger(LexerInput.class.getName()).setLevel(Level.FINEST);
 
         // Certain explicit cases that caused errors to be found follow:
+        //                          000000000011111111112222222222333333333344444444445555555555
+        //                          012345678901234567890123456789012345678901234567890123456789
+        randomModify.insertText(0, "<><Bj><[><]>}}(J)>QO]v><[[{x}>]vU()jbO<`aV]cM}])jw`D<[['E");
+        randomModify.removeText(20, 6);
+        randomModify.clearDocument();
+
+        //                          000000000011111111112222222222333333333344444444445555555555
+        //                          012345678901234567890123456789012345678901234567890123456789
+        randomModify.insertText(0, "<><Bj><[><]>}}J)]>QO]v><[[>]vU()jHbO<`<BraV]cM}])j`D<>[['E");
+        randomModify.removeText(53, 1);
+        randomModify.clearDocument();
+
+        randomModify.insertText(0, "{g}WvWq)T}df(W(d>}H}[Q<[>O[]{CR[WB'>t}H[}rOx](da[]U)(>`{F[{}R[c]<]>[]j<({<>" +
+                "[`wl<uDD['']C'[bN'{`>)}ZMxx}[<[y]`[r]x}[y]Bi<`<>vs<[>r[)<F>}}`(y>['DC`{x}{Dz[zJjLx{mY]<w>m'[si()" +
+                "[]<>z}}RAaLWkg>(`<[]`Hb[)([K<>((bBBn([>P<>m`<>]u'o[>](()><>[X`o(>Yk]d]>'n<D(>}UbI<k>[nX[`S'L]{>");
+        randomModify.clearDocument();
 
         //             0000000000111111111122222222223333333333
         //             0123456789012345678901234567890123456789
@@ -107,7 +128,6 @@ public class JoinRandomTest extends NbTestCase {
 //        Logger.getLogger(org.netbeans.lib.lexer.inc.TokenListUpdater.class.getName()).setLevel(Level.FINE); // Extra logging
         randomModify.insertText(216, "[]");
         randomModify.clearDocument();
-
 
         //             0000000000111111111122222222223333333333
         //             0123456789012345678901234567890123456789

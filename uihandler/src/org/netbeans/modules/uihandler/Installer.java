@@ -42,6 +42,7 @@ package org.netbeans.modules.uihandler;
 
 import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,8 +62,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.PushbackInputStream;
 import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
@@ -73,7 +74,6 @@ import java.security.GeneralSecurityException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -104,8 +104,6 @@ import javax.swing.JScrollPane;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
@@ -134,8 +132,6 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.io.NullOutputStream;
 import org.openide.windows.WindowManager;
-import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 /**
@@ -151,6 +147,7 @@ public class Installer extends ModuleInstall implements Runnable {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
+    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data"); // NOI18N
     public static RequestProcessor RP_OPT = null;
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
@@ -628,7 +625,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return prefs.getInt("count", 0); // NOI18N
     }
 
-    public static List<LogRecord> getLogs() {
+    static List<LogRecord> getLogs() {
         UIHandler.waitFlushed();
 
         File f = logFile(0);
@@ -872,14 +869,16 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public boolean closing() {
         UIHandler.waitFlushed();
-
-        if (getLogsSize() == 0) {
-            return true;
-        }
-
-        return displaySummary("EXIT_URL", false, false,true); // NOI18N
+        return true;
     }
 
+    static void logDeactivated(){
+        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
+            a.deactivated(log);
+        }
+    }
+    
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
 
     private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType) {
@@ -908,8 +907,12 @@ public class Installer extends ModuleInstall implements Runnable {
         return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE);
     }
 
-    protected static Throwable getThrown(){
-        LogRecord log = getThrownLog();
+    static Throwable getThrown() {
+        return getThrown(getLogs());
+    }
+
+    private static Throwable getThrown(List<LogRecord> recs) {
+        LogRecord log = getThrownLog(recs);
         if (log == null){
             return null;
         }else{
@@ -917,7 +920,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    protected static LogRecord getThrownLog(){
+    private static LogRecord getThrownLog(List<LogRecord> list) {
         String firstLine = null;
         String message = null;
         if (selectedExcParams != null){
@@ -928,7 +931,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 firstLine = (String)selectedExcParams[1];
             }
         }
-        List<LogRecord> list = getLogs();
         ListIterator<LogRecord> it = list.listIterator(list.size());
         Throwable thr = null;
         LogRecord result = null;
@@ -971,122 +973,33 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
 
-    private static boolean isChild(org.w3c.dom.Node child, org.w3c.dom.Node parent) {
-        while (child != null) {
-            if (child == parent) {
-                return true;
-            }
-            child = child.getParentNode();
-        }
-        return false;
-    }
-
-    private static String attrValue(org.w3c.dom.Node in, String attrName) {
-        org.w3c.dom.Node n = in.getAttributes().getNamedItem(attrName);
-        return n == null ? null : n.getNodeValue();
-    }
-
     /** Tries to parse a list of buttons provided by given page.
      * @param u the url to read the page from
      * @param defaultButton the button to add always to the list
      */
-    static void parseButtons(InputStream is, Object defaultButton, DialogDescriptor dd)
-            throws IOException, ParserConfigurationException, SAXException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        factory.setValidating(false);
-        factory.setIgnoringComments(true);
-        DocumentBuilder builder = factory.newDocumentBuilder();
-
-        PushbackInputStream isWithProlog = new PushbackInputStream(is, 255);
-        byte[] xmlHeader = new byte[5];
-        int len = isWithProlog.read(xmlHeader);
-        isWithProlog.unread(xmlHeader, 0, len);
-
-        if (len < 5 || xmlHeader[0] != '<' ||
-            xmlHeader[1] != '?' ||
-            xmlHeader[2] != 'x' ||
-            xmlHeader[3] != 'm' ||
-            xmlHeader[4] != 'l'
-        ) {
-            String header = "<?xml version='1.0' encoding='utf-8'?>";
-            isWithProlog.unread(header.getBytes("utf-8"));
-        }
-
-        Document doc = builder.parse(isWithProlog);
-
-        List<Object> buttons = new ArrayList<Object>();
-        List<Object> left = new ArrayList<Object>();
-
-        NodeList forms = doc.getElementsByTagName("form");
-        for (int i = 0; i < forms.getLength(); i++) {
-            String action = forms.item(i).getAttributes().getNamedItem("action").getNodeValue();
-            if ((action == null) || ("".equals(action))){// logging for issue #145167
-                Logger logger = Logger.getLogger("org.netbeans.ui.logger.Installer");
-                LogRecord rec = new LogRecord(Level.WARNING, "invalid action from doc:");
-                String[] params = new String[]{forms.item(i).toString(), doc.getTextContent(), doc.getDocumentURI()};
-                rec.setParameters(params);
-                logger.log(rec);
-            }
-            Form f = new Form(action);
-            NodeList inputs = doc.getElementsByTagName("input");
-            for (int j = 0; j < inputs.getLength(); j++) {
-                if (isChild(inputs.item(j), forms.item(i))) {
-                    org.w3c.dom.Node in = inputs.item(j);
-                    String type = attrValue(in, "type");
-                    String name = attrValue(in, "name");
-                    String value = attrValue(in, "value");
-                    String align = attrValue(in, "align");
-                    String alt = attrValue(in, "alt");
-                    boolean enabled = !"true".equals(attrValue(in, "disabled")); // NOI18N
-
-                    List<Object> addTo = "left".equals(align) ? left : buttons;
-
-                    if ("hidden".equals(type) && Button.isSubmitTrigger(name)) { // NOI18N
-                        f.submitValue = value;
-                        JButton b = new JButton();
-                        Mnemonics.setLocalizedText(b, f.submitValue);
-                        b.setActionCommand(name); // NOI18N
-                        b.putClientProperty("url", f.url); // NOI18N
-                        b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
-                        b.putClientProperty("alt", alt); // NOI18N
-                        b.putClientProperty("now", f.submitValue); // NOI18N
-                        b.setEnabled(enabled);
-                        addTo.add(b);
-                        continue;
-                    }
-
-
-                    if ("hidden".equals(type)) { // NOI18N
-                        JButton b = new JButton();
-                        Mnemonics.setLocalizedText(b, value);
-                        b.setActionCommand(name);
-                        b.setDefaultCapable(addTo.isEmpty() && addTo == buttons);
-                        b.putClientProperty("alt", alt); // NOI18N
-                        b.putClientProperty("now", value); // NOI18N
-                        b.setEnabled(enabled && Button.isKnown(name));
-                        addTo.add(b);
-                        if (Button.EXIT.isCommand(name)) { // NOI18N
-                            defaultButton = null;
-                        }else if (Button.REDIRECT.isCommand(name)){
-                            b.putClientProperty("url", f.url); // NOI18N
-                        }
-                    }
+    static void parseButtons(InputStream is, final Object defaultButton, final DialogDescriptor dd)
+            throws IOException, ParserConfigurationException, SAXException, InterruptedException, InvocationTargetException {
+        final ButtonsParser bp = new ButtonsParser(is);
+        bp.parse();
+        Runnable buttonsCreation = new Runnable() {
+            public void run() {
+                bp.createButtons();
+                List<Object> options = bp.getOptions();
+                if (!bp.containsExitButton() && (defaultButton != null)){
+                    options.add(defaultButton);
+                }
+                dd.setOptions(options.toArray());
+                dd.setAdditionalOptions(bp.getAditionalOptions().toArray());
+                if (bp.getTitle() != null){
+                    dd.setTitle(bp.getTitle());
                 }
             }
-        }
-        if (defaultButton != null) {
-            buttons.add(defaultButton);
-        }
-        dd.setOptions(buttons.toArray());
-        dd.setAdditionalOptions(left.toArray());
-
-        NodeList title = doc.getElementsByTagName("title");
-        for (int i = 0; i < title.getLength(); i++) {
-            String t = title.item(i).getTextContent();
-            if (t != null) {
-                dd.setTitle(t);
-                break;
-            }
+        };
+        
+        if (EventQueue.isDispatchThread()){
+            buttonsCreation.run();
+        }else{
+            EventQueue.invokeAndWait(buttonsCreation);
         }
     }
     
@@ -1326,10 +1239,11 @@ public class Installer extends ModuleInstall implements Runnable {
         protected boolean okToExit;
         protected ReportPanel reportPanel;
         private URL url;
-        private boolean dialogCreated;
+        private boolean dialogCreated = false;
         private boolean checkingResult, refresh = false;
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
+        final protected List<LogRecord> recs;
 
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
@@ -1339,6 +1253,11 @@ public class Installer extends ModuleInstall implements Runnable {
             this.msg = msg;
             this.dataType = dataType;
             isSubmiting = new AtomicBoolean(false);
+            if (dataType == DataType.DATA_METRICS) {
+                recs = getLogsMetrics();
+            }else{
+                recs = new ArrayList<LogRecord>(getLogs());
+            }
             if ("ERROR_URL".equals(msg)) { // NOI18N
                 report = true;
             } else {
@@ -1359,10 +1278,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         public void doShow(DataType dataType) {
             if (dataType == DataType.DATA_UIGESTURE) {
-                Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
-                for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
-                    a.deactivated(log);
-                }
+                logDeactivated();
             }
             if (report) {
                 dd = new DialogDescriptor(null, NbBundle.getMessage(Installer.class, "ErrorDialogTitle"));
@@ -1420,6 +1336,10 @@ public class Installer extends ModuleInstall implements Runnable {
                     alterMessage(dd);
                     is.close();
                     url = tmp.toURI().toURL();
+                } catch (InterruptedException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                } catch (InvocationTargetException ex) {
+                    LOG.log(Level.WARNING, null, ex);
                 } catch (ParserConfigurationException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (SAXException ex) {
@@ -1531,55 +1451,60 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             if (submit) { // NOI18N
+                JButton button = null;
+                if (e.getSource() instanceof JButton){
+                    button = (JButton) e.getSource();
+                    button.setEnabled(false);
+                }
+                final JButton submitButton = button;
                 if (isSubmiting.getAndSet(true)) {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                try {
-                    List<LogRecord> recs = null;
-                    if (dataType == DataType.DATA_UIGESTURE) {
-                        recs = getLogs();
-                        saveUserName();
-                        LogRecord userData = getUserData(true);
-                        LogRecord thrownLog = getThrownLog();
-                        if (thrownLog != null) {
-                            recs.add(thrownLog);//exception selected by user
-                        }
-                        recs.add(TimeToFailure.logFailure());
-                        recs.add(BuildInfo.logBuildInfoRec());
-                        recs.add(userData);
-                        if ((report) && !(reportPanel.asAGuest())) {
-                            if (!checkUserName()) {
-                                reportPanel.showWrongPassword();
-                                return;
+                RP_SUBMIT.post(new Runnable() {
+
+                    public void run() {
+                        if (dataType == DataType.DATA_UIGESTURE) {
+                            saveUserName();
+                            LogRecord userData = getUserData(true);
+                            LogRecord thrownLog = getThrownLog(recs);
+                            if (thrownLog != null) {
+                                recs.add(thrownLog);//exception selected by user
                             }
-                        }
-                        LOG.fine("posting upload UIGESTRUE");// NOI18N
-                    } else if (dataType == DataType.DATA_METRICS) {
-                        recs = getLogsMetrics();
-                        saveUserName();
-                        if ((report) && !(reportPanel.asAGuest())) {
-                            if (!checkUserName()) {
-                                reportPanel.showWrongPassword();
-                                return;
+                            recs.add(TimeToFailure.logFailure());
+                            recs.add(BuildInfo.logBuildInfoRec());
+                            recs.add(userData);
+                            if ((report) && !(reportPanel.asAGuest())) {
+                                if (!checkUserName()) {
+                                    EventQueue.invokeLater(new Runnable(){
+                                        public void run() {
+                                            submitButton.setEnabled(true);
+                                            reportPanel.showWrongPassword();
+                                        }
+                                    });
+                                    isSubmiting.set(false);
+                                    return;
+                                }
                             }
+                            LOG.fine("posting upload UIGESTURES");// NOI18N
+                        } else if (dataType == DataType.DATA_METRICS) {
+                            LOG.fine("posting upload METRICS");// NOI18N
                         }
-                        LOG.fine("posting upload METRICS");// NOI18N
+                        final List<LogRecord> recsFinal = recs;
+                        RP_SUBMIT.post(new Runnable() {
+                            public void run() {
+                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
+                            }
+                        });
+                        okToExit = false;
+                        // this should close the descriptor
+                        EventQueue.invokeLater(new Runnable(){
+                            public void run() {
+                                doCloseDialog();
+                            }
+                        });
                     }
-                    final List<LogRecord> recsFinal = recs;
-                    RP.post(new Runnable() {
-                        public void run() {
-                            uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
-                        }
-                    });
-                    okToExit = false;
-                    // this should close the descriptor
-                    doCloseDialog();
-                } catch (InterruptedException exc) {
-                    LOG.log(Level.INFO, "submitting data failed", exc);// NOI18N
-                } finally {
-                    isSubmiting.set(false);
-                }
+                });
                 return;
             }
 
@@ -1642,28 +1567,23 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-        private boolean checkUserName() throws InterruptedException{
-            checkingResult=true;
-            RequestProcessor.Task checking;
-            checking = RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                ExceptionsSettings settings = new ExceptionsSettings();
-                String login = settings.getUserName();
-                String passwd = settings.getPasswd();
-                try {
-                    char[] array = new char[100];
-                    URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
-                    URLConnection connection = url.openConnection();
-                    connection.setRequestProperty("User-Agent", "NetBeans");
-                    Reader reader = new InputStreamReader(connection.getInputStream());
-                    int length = reader.read(array);
-                    checkingResult = new Boolean(new String(array, 0, length));
-                } catch (Exception exception) {
-                    Logger.getLogger(Installer.class.getName()).log(Level.INFO, "CHECKING PASSWORD FAILED", exception); // NOI18N
-                }
+        private boolean checkUserName() {
+            checkingResult = true;
+            ExceptionsSettings settings = new ExceptionsSettings();
+            String login = settings.getUserName();
+            String passwd = settings.getPasswd();
+            try {
+                char[] array = new char[100];
+                URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
+                URLConnection connection = checkingServerURL.openConnection();
+                connection.setRequestProperty("User-Agent", "NetBeans");
+                connection.setReadTimeout(10000);
+                Reader reader = new InputStreamReader(connection.getInputStream());
+                int length = reader.read(array);
+                checkingResult = new Boolean(new String(array, 0, length));
+            } catch (Exception exception) {
+                Logger.getLogger(Installer.class.getName()).log(Level.WARNING, "CHECKING PASSWORD FAILED", exception); // NOI18N
             }
-            });
-            checking.waitFinished(10000);
             return checkingResult;
         }
 
@@ -1775,7 +1695,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private SubmitPanel panel;
         private JEditorPane browser;
         private boolean urlAssigned;
-
+        
         public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
             super(msg,dataType);
             this.connectDialog = connectDialog;
@@ -1791,7 +1711,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (reportPanel==null) {
                 reportPanel = new ReportPanel();
             }
-            Throwable t = getThrown();
+            Throwable t = getThrown(recs);
             if (t != null && reportPanel !=null){
                 reportPanel.setSummary(createMessage(t));
                 if ("ERROR_URL".equals(msg)) {
@@ -1860,12 +1780,12 @@ public class Installer extends ModuleInstall implements Runnable {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
                 root.setName("root"); // NOI18N
-                List<LogRecord> recs = getLogs();
-                recs.add(getUserData(false));
-                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+                List<LogRecord> shownRecs = new ArrayList<LogRecord>(recs);
+                shownRecs.add(getUserData(false));
+                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", shownRecs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
                 LinkedList<Node> nodes = new LinkedList<Node>();
-                for (LogRecord r : recs) {
+                for (LogRecord r : shownRecs) {
                     Node n = UINode.create(r);
                     nodes.add(n);
                     panel.addRecord(r, n);
@@ -1936,9 +1856,20 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
+            d.setModal(false);
             d.setVisible(true);
+            synchronized (this){
+                while (d != null && !dontWaitForUserInputInTests){
+                    try{
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             return dd.getValue();
         }
+        
         protected void alterMessage(DialogDescriptor dd) {
             if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
                 Object obj = dd.getOptions()[0];
@@ -2039,7 +1970,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    private static enum Button {
+    static enum Button {
         EXIT("exit"),
         NEVER_AGAIN("never-again"),
         VIEW_DATA("view-data"),
@@ -2074,4 +2005,10 @@ public class Installer extends ModuleInstall implements Runnable {
             return SUBMIT.isCommand(n) || AUTO_SUBMIT.isCommand(n);
         }
     } // end of Buttons
+
+    //  JUST FOR TESTS //
+    private static boolean dontWaitForUserInputInTests = false;
+    static void dontWaitForUserInputInTests(){
+        dontWaitForUserInputInTests = true;
+    }
 }

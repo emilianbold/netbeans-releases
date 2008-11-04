@@ -61,6 +61,7 @@ import org.openide.util.lookup.InstanceContent;
  * @author Jan Becicka
  */
 
+@org.openide.util.lookup.ServiceProvider(service=org.openide.util.datatransfer.ExClipboard.Convertor.class)
 public class ClipboardConvertor implements Convertor {
     
     public Transferable convert(Transferable t) {

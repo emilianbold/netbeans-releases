@@ -55,6 +55,7 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author Jiri Rechtacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.autoupdate.KeyStoreProvider.class)
 public final class NetBeansKeyStoreProvider implements KeyStoreProvider {
     
     public static final String KS_FILE_PATH = "core" + System.getProperty ("file.separator") + "ide.ks";

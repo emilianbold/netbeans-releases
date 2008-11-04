@@ -128,8 +128,7 @@ public class ConditionsPanel extends JPanel {
         }
         String hcfStr = tfSkipCount.getText().trim();
         try {
-            int hitCount = Integer.parseInt(hcfStr);
-            return hitCount;
+            return Integer.parseInt(hcfStr);
         } catch (NumberFormatException nfex) {
             return 0;
         }

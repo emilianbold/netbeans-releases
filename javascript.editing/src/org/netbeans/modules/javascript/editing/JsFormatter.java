@@ -367,7 +367,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
     }
     
     @SuppressWarnings("unchecked")
-    private int getTokenBalance(TokenSequence<? extends JsTokenId> ts, BaseDocument doc, int begin, int end, boolean includeKeywords, boolean indentOnly) {
+    private int getTokenBalance(TokenSequence<? extends JsTokenId> ts, BaseDocument doc, final int begin, int end, boolean includeKeywords, boolean indentOnly) {
         int balance = 0;
 
         if (ts == null) {
@@ -406,7 +406,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         if (embeddedJavaScript && last < end) {
             // We're not done yet... find the next section...
             TokenSequence<? extends JsTokenId> ets = LexUtilities.getNextJsTokenSequence(doc, last+1, end);
-            if (ets != null) {
+            if (ets != null && ets.offset() > begin) {
                 return balance + getTokenBalance(ets, doc, ets.offset(), end, includeKeywords, indentOnly);
             }
         }

@@ -117,7 +117,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                 
                 if (infoholder.isClass) {
                     checkManifest(project, infoholder.fullName, refactoringElements);
-                    checkMetaInfServices(project, infoholder.fullName, refactoringElements);
                     checkLayer(project, infoholder.fullName, refactoringElements);
                 }
                 if (infoholder.isMethod) {
@@ -137,7 +136,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
                     if (FileUtil.isParentOf(gr.getRootFolder(), nrf.getFolder())) {
                         String relPath = FileUtil.getRelativePath(gr.getRootFolder(), nrf.getFolder());
                         relPath.replace('/', '.');
-                        checkPackageMetaInfServices(project, relPath, refactoringElements);
                         //TODO probably aslo manifest or layers.
                         //TODO how to distinguish single package from recursive folder?
                     }
@@ -162,31 +160,6 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
             String section) {
         return new ManifestRenameRefactoringElement(fqname, manifestFile, attributeValue,
                 attributeKey, section);
-    }
-    
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String clazz, FileObject serviceFile, int line) {
-        return new ServicesRenameRefactoringElement(clazz, serviceFile);
-    }
-
-    protected final void checkPackageMetaInfServices(Project project, String pack, RefactoringElementsBag refactoringElements) {
-        FileObject services = Utility.findMetaInfServices(project);
-        if (services == null) {
-            return;
-        }
-        
-        String name = pack;
-        // Easiest to check them all; otherwise would need to find all interfaces and superclasses:
-        FileObject[] files = services.getChildren();
-        for (int i = 0; i < files.length; i++) {
-            int line = checkContentOfFile(files[i], name);
-            if (line != -1) {
-                RefactoringElementImplementation elem =
-                        new ServicesPackageRenameRefactoringElement(pack, files[i]);
-                if (elem != null) {
-                    refactoringElements.add(refactoring, elem);
-                }
-            }
-        }
     }
     
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
@@ -466,86 +439,4 @@ public class NbRenameRefactoringPlugin extends AbstractRefactoringPlugin {
         }
     }
     
-    public final class ServicesRenameRefactoringElement extends AbstractRefactoringElement {
-        
-        private String oldName;
-        private String oldContent;
-        private String newName;
-        /**
-         * Creates a new instance of ServicesRenameRefactoringElement
-         */
-        public ServicesRenameRefactoringElement(String fqname , FileObject file) {
-            this.name = fqname.substring(fqname.lastIndexOf('.') + 1);
-            parentFile = file;
-            oldName = fqname;
-        }
-        
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
-        public String getDisplayText() {
-            return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ServicesRename", this.name);
-        }
-        
-        public void performChange() {
-            String content = Utility.readFileIntoString(parentFile);
-            oldContent = content;
-            if (content != null) {
-                if (newName == null) {
-//                    System.out.println("new name=" + rename.getNewName());
-                    newName = rename.getNewName();
-                }
-                content = content.replaceAll(name + "[ \\\r\\\n]*", newName + System.getProperty("line.separator")); // NOI18N
-                Utility.writeFileFromString(parentFile, content);
-            }
-        }
-        
-        @Override
-        public void undoChange() {
-            if (oldContent != null) {
-                Utility.writeFileFromString(parentFile, oldContent);
-            }
-        }
-    }
-    
-    
-    public final class ServicesPackageRenameRefactoringElement extends AbstractRefactoringElement {
-        
-        private String pack;
-        private String oldName;
-        /**
-         * Creates a new instance of ServicesRenameRefactoringElement
-         */
-        public ServicesPackageRenameRefactoringElement(String pack, FileObject file) {
-            this.name = pack;
-            parentFile = file;
-            this.pack = pack;
-            oldName = pack;
-        }
-        
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
-        public String getDisplayText() {
-            return NbBundle.getMessage(NbRenameRefactoringPlugin.class, "TXT_ServicesPackageRename", this.name);
-        }
-        
-        @Override
-        public void performChange() {
-            String content = Utility.readFileIntoString(parentFile);
-            if (content != null) {
-                String longName = oldName;
-                String newName = rename.getNewName();
-                longName = longName.replaceAll("[.]", "\\."); // NOI18N
-                content = content.replaceAll("^" + longName, newName); // NOI18N
-                Utility.writeFileFromString(parentFile, content);
-            }
-        }
-        
-        public void undoChange() {
-            //TODO
-        }
-        
-    }
-
 }

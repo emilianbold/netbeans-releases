@@ -288,26 +288,11 @@ public class StateMachine extends Behavior implements IStateMachine
 	 */
 	protected ETList<INamedElement> getRegionContents(IRegion region)
 	{
-		ETList<INamedElement> elements = null;
+		ETList<INamedElement> elements = new ETArrayList<INamedElement>();
 		if (region != null)
 		{
-			ETList<INamedElement> pOwnedElements = region.getOwnedElements();
-			if (pOwnedElements != null)
-			{
-				for (int i=0;i<pOwnedElements.size();i++)
-				{
-					INamedElement pElement = pOwnedElements.get(i);
-					if (pElement instanceof INamedElement)
-					{
-						INamedElement e = (INamedElement)pElement;
-						if (elements == null)
-						{
-							elements = new ETArrayList<INamedElement>();
-						}
-						elements.add(e);
-					}					
-				}
-			}
+			ETList<IStateVertex> pOwnedElements = region.getSubVertexes();
+                        elements.addAll(pOwnedElements);
 		}
 		return elements;
 	}

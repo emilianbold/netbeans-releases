@@ -51,6 +51,7 @@ import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
  *
  * @author skini
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class SOAPValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String soapXSDUrl = "/org/netbeans/modules/xml/wsdlextui/resources/soap/soap.xsd";
     

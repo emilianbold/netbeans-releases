@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -48,10 +48,10 @@ import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 
@@ -76,6 +76,8 @@ final class ClassMap {
     private static final int AFTER_CLASS_POS_INDEX = 8;
     
     private static final String JUNIT4_PKG_PREFIX = "org.junit.";       //NOI18N
+
+    private static final int[] EMPTY_INT_ARRAY = new int[0];
     
     /**
      */
@@ -135,7 +137,8 @@ final class ClassMap {
                     signature = "- ";                                   //NOI18N
                     break;
                 case CLASS:
-                    signature = "[ ";                                   //NOI18N
+                    ClassTree clazz = (ClassTree) member;
+                    signature = "[ " + clazz.getSimpleName();           //NOI18N
                     if (map.getFirstNestedClassIndex() == -1) {
                         map.setFirstNestedClassIndex(index);
                     }
@@ -428,7 +431,7 @@ final class ClassMap {
             throw new IndexOutOfBoundsException("index: " + index       //NOI18N
                                                + ", size: " + currSize);//NOI18N
         }
-        
+
         String signature = "! " + name;                                 //NOI18N
         if (index != currSize) {
             signatures.add(index, signature);
@@ -446,7 +449,7 @@ final class ClassMap {
             setFirstMethodIndex(index);
         }
     }
-    
+
     /**
      */
     void addNoArgMethod(String name, String annotationName) {
@@ -533,6 +536,109 @@ final class ClassMap {
         }
         return result.isEmpty() ? Collections.<String>emptyList()
                                 : result;
+    }
+
+    /**
+     */
+    void addNestedClass(String name) {
+        int currSize = size();
+        signatures.add("[ " + name);                                    //NOI18N
+
+        if (getFirstNestedClassIndex() == -1) {
+            setFirstNestedClassIndex(currSize);
+        }
+    }
+
+    /**
+     * Returns names of classes contained in the class corresponding to this
+     * {@code ClassMap}. Both nested classes (static) and inner classes are
+     * taken into account. Anonymous inner classes are ignored.
+     *
+     * @return  list of names of nested and inner classes in the order
+     *          of the classes in the source code,
+     */
+    List<String> getNestedClasses() {
+        int firstIndex = getFirstNestedClassIndex();
+        if (firstIndex == -1) {
+            return Collections.<String>emptyList();
+        }
+
+        assert signatures.get(firstIndex).charAt(0) == '[';
+
+        String firstNestedClass = signatures.get(firstIndex).substring(2);
+
+        final int size = size();
+        if (firstIndex == (size - 1)) {
+            return Collections.singletonList(firstNestedClass);
+        }
+
+        List<String> result = null;
+        int startIndex = firstIndex + 1;
+        Iterator<String> it = signatures.subList(startIndex, size).iterator();
+        for (int index = startIndex; it.hasNext(); index++) {
+            String signature = it.next();
+            if (signature.charAt(0) == '[') {
+                if (result == null) {
+                    int initialCapacity = Math.min(4, size - index + 1);
+                    result = new ArrayList<String>(initialCapacity);
+                    result.add(firstNestedClass);
+                }
+                result.add(signature.substring(2));
+            }
+        }
+
+        if (result == null) {
+            result = Collections.singletonList(firstNestedClass);
+        }
+        return result;
+    }
+
+    /**
+     * Returns indexes (positions) of classes contained in the class
+     * corresponding to this {@code ClassMap}. Both nested classes (static)
+     * and inner classes are taken into account. Anonymous inner classes are
+     * ignored.
+     *
+     * @return  an array of indexes ({@code 0}-based) of all nested classes
+     *          in the corresponding class, or an empty array if there are
+     *          no nested classes
+     */
+    int[] getNestedClassIndexes() {
+        int firstIndex = getFirstNestedClassIndex();
+        if (firstIndex == -1) {
+            return EMPTY_INT_ARRAY;
+        }
+
+        assert signatures.get(firstIndex).charAt(0) == '[';
+
+        final int size = size();
+        if (firstIndex == (size - 1)) {
+            return new int[] {firstIndex};
+        }
+
+        int[] result = null;
+        int count = 1;
+        int startIndex = firstIndex + 1;
+        Iterator<String> it = signatures.subList(startIndex, size).iterator();
+        for (int index = startIndex; it.hasNext(); index++) {
+            if (it.next().charAt(0) == '[') {
+                if (result == null) {
+                    result = new int[size - index + 1];
+                }
+                result[count++] = index;
+            }
+        }
+        assert (count == 1) == (result == null);
+
+        if (result == null) {
+            result = new int[1];
+        } else if (count < result.length) {
+            int[] oldResult = result;
+            result = new int[count];
+            System.arraycopy(oldResult, 1, result, 1, count - 1);
+        }
+        result[0] = firstIndex;
+        return result;
     }
 
     /**

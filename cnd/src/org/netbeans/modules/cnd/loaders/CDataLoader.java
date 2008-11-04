@@ -56,6 +56,9 @@ import org.openide.loaders.ExtensionList;
  *
  * @author Alexander Simon
  */
+/* XXX would need a public no-arg constructor
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
+*/
 public class CDataLoader extends CndAbstractDataLoaderExt {
     
     private static CDataLoader instance;

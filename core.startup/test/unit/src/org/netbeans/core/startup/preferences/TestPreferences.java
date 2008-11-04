@@ -53,6 +53,7 @@ import java.util.prefs.NodeChangeListener;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
@@ -63,6 +64,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         super(testName);
     }
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         clearWorkDir();
@@ -220,7 +222,8 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         pref.put("key1", "value1");
         assertEquals("value1",pref.get("key1", null));
     }
-    
+
+    @RandomlyFails // timeout in NB-Core-Build #1651; three of the waits actually time out; test is probably broken
     public void testPut2()  throws Exception {
         final Object sync = getEventQueueSync();
         Preferences pref = getPreferencesNode();
@@ -452,6 +455,7 @@ public class TestPreferences extends NbPreferencesTest.TestBasicSetup {
         assertEquals("value", pref.get("key", null));
     }    
     
+    @Override
     protected int timeOut() {
         return 20000;
     }

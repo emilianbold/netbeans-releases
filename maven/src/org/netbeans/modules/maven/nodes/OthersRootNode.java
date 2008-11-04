@@ -53,7 +53,6 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataFolder;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**

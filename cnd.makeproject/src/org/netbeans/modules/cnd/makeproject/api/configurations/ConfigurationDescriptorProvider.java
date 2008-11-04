@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.openide.filesystems.FileAttributeEvent;
@@ -82,6 +83,9 @@ public class ConfigurationDescriptorProvider {
     
     private final Object readLock = new Object();
     public ConfigurationDescriptor getConfigurationDescriptor() {
+        return getConfigurationDescriptor(true);
+    }
+    public ConfigurationDescriptor getConfigurationDescriptor(boolean waitReading) {
         if (projectDescriptor == null || needReload) {
             // attempt to read configuration descriptor
             if (!hasTried) {
@@ -110,16 +114,15 @@ public class ConfigurationDescriptorProvider {
                             }
                         }
                         ConfigurationXMLReader reader = new ConfigurationXMLReader(projectDirectory);
-                        ConfigurationDescriptor newDescriptor = null;
 
-                        //if (SwingUtilities.isEventDispatchThread()) {
-                        //    new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
-                        //    // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-                        //    // CHANGE YOUR LOGIC INSTEAD
-                        //
-                        //    // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                        //    // return null;
-                        //}
+                        if (SwingUtilities.isEventDispatchThread()) {
+                            new Exception("Not allowed to use EDT for reading XML descriptor of project!").printStackTrace(System.err); // NOI18N
+                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
+                            // CHANGE YOUR LOGIC INSTEAD
+                        
+                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
+                            // return null;
+                        }
                         try {
                             projectDescriptor = reader.read(relativeOffset);
                         } catch (java.io.IOException x) {
@@ -127,16 +130,18 @@ public class ConfigurationDescriptorProvider {
                         }
                         
                         hasTried = true;
-                        recordMetrics(USG_PROJECT_OPEN_CND, projectDescriptor);
                     }
                 }
             }
+        }
+        if (waitReading && (projectDescriptor instanceof MakeConfigurationDescriptor)) {
+            ((MakeConfigurationDescriptor)projectDescriptor).waitInitTask();
         }
         return projectDescriptor;
     }
 
     public boolean gotDescriptor() {
-        return projectDescriptor != null;   
+        return projectDescriptor != null && projectDescriptor.getState() != State.READING;   
     }
     
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
@@ -163,6 +168,9 @@ public class ConfigurationDescriptorProvider {
         Logger logger = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
         if (logger.isLoggable(Level.INFO)) {
             LogRecord rec = new LogRecord(Level.INFO, msg);
+                if (descr.getConfs() == null || descr.getConfs().getActive() == null){
+                    return;
+                }
                 MakeConfiguration makeConfiguration = (MakeConfiguration) descr.getConfs().getActive();
                 String type;
                 switch (makeConfiguration.getConfigurationType().getValue()) {

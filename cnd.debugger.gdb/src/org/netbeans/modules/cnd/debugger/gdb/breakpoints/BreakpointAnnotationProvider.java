@@ -80,6 +80,7 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Jancura, Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationProvider implements AnnotationProvider, DebuggerManagerListener {
 
     private Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations;
@@ -302,12 +303,12 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             } catch (IllegalArgumentException e) {
             }
         }
-        if (annotations.size() == 0) {
+        if (annotations.isEmpty()) {
             return ;
         }
         Object[] oldAnnotations = breakpointToAnnotations.get(b);
         if (oldAnnotations == null || oldAnnotations.length == 0) {
-            breakpointToAnnotations.put(b, annotations.toArray(new Annotation[0]));
+            breakpointToAnnotations.put(b, annotations.toArray(new Annotation[annotations.size()]));
         } else {
             Annotation[] newAnnotations = new Annotation[oldAnnotations.length + annotations.size()];
             System.arraycopy(oldAnnotations, 0, newAnnotations, 0, oldAnnotations.length);

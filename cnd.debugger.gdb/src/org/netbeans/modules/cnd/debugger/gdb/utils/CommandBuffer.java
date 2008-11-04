@@ -45,36 +45,32 @@ import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
 
 /**
  * This class is intended for gathering multiline responses to a single gdb command.
- * 
+ *
  * @author gordonp
  */
 public class CommandBuffer {
     
     // Static parts
-    public static final int STATE_NONE = 0;
-    public static final int STATE_WAITING = 1;
-    public static final int STATE_COMMAND_TIMEDOUT = 2;
-    public static final int STATE_OK = 3;
-    public static final int STATE_ERROR = 4;
-    private final int WAIT_TIME = 30000;
-    private boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
+    private static enum State {
+        NONE, WAITING, TIMEOUT, OK, ERROR;
+    }
+    
+    private static final int WAIT_TIME = 30000;
+    private static final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
     // Instance parts
-    private final StringBuilder buf;
-    private Integer token;
-    private String err;
-    private int state;
+    private final StringBuilder buf = new StringBuilder();
+    private final int token;
+    private String err = null;
+    private State state = State.NONE;
     private final Object lock = new Object();
-    protected static Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
+    protected static final Logger log = Logger.getLogger("gdb.logger.cb"); // NOI18N
     private final GdbProxy gdb;
     
-    public CommandBuffer(GdbProxy gdb) {
-        buf = new StringBuilder();
-        token = null;
-        state = STATE_NONE;
-        err = null;
+    public CommandBuffer(GdbProxy gdb, int token) {
         assert gdb != null;
         this.gdb = gdb;
+        this.token = token;
     }
     
     /**
@@ -86,57 +82,46 @@ public class CommandBuffer {
     public String waitForCompletion() {
         assert !Thread.currentThread().getName().equals("GdbReaderRP");
         synchronized (lock) {
-            if (state == STATE_NONE) {
-                state = STATE_WAITING; // this will change unless we timeout
+            if (state == State.NONE) {
+                state = State.WAITING; // this will change unless we timeout
             }
             try {
                 long tstart = System.currentTimeMillis();
                 long tend = tstart;
-                while (state == STATE_WAITING) {
+                while (state == State.WAITING) {
                     lock.wait(WAIT_TIME);
                     tend = System.currentTimeMillis();
                     if ((tend - tstart) > WAIT_TIME) {
-                        if (state == STATE_OK) {
-                            log.finest("CB.postAndWait[" + token + "]: Timed out after Done [" + toString() + "]");
+                        if (state == State.OK) {
+                            log.finest("CB.postAndWait[" + token + "]: Timed out after Done [" + getResponse() + "]");
                         } else {
-                            state = STATE_COMMAND_TIMEDOUT;
+                            state = State.TIMEOUT;
                         }
                     }
                 }
-                if (state == STATE_COMMAND_TIMEDOUT) {
+                if (state == State.TIMEOUT) {
                     log.warning("CB.postAndWait[" + token + "]: Timeout at " + tend + " on " + GdbUtils.threadId());
                 } else if (log.isLoggable(Level.FINE)) {
-                    if (state == STATE_ERROR && 
+                    if (state == State.ERROR &&
                             !Thread.currentThread().getName().equals("ToolTip-Evaluator")) { // NOI18N
                         log.fine("CB.postAndWait[" + token + "]: Error wait of " + (tend - tstart) + " ms on " +
                                 GdbUtils.threadId());
-                    } else if (state == STATE_OK) {
+                    } else if (state == State.OK) {
                         log.fine("CB.postAndWait[" + token + "]: OK wait of " + (tend - tstart) + " ms on " +
                                 GdbUtils.threadId());
                     }
                 }
-                gdb.removeCB(token);
-                return toString();
+                return getResponse();
             } catch (InterruptedException ex) {
-                gdb.removeCB(token);
                 return "";
+            } finally {
+                gdb.removeCB(token);
             }
         }
     }
-    
-    public Integer getID() {
+
+    public int getID() {
         return token;
-    }
-    
-    public void setID(int token) {
-        synchronized (lock) {
-            this.token = token;
-            gdb.putCB(this.token, this);
-        }
-    }
-    
-    public int getState() {
-        return state;
     }
     
     public void append(String line) {
@@ -144,47 +129,63 @@ public class CommandBuffer {
     }
     
     public void done() {
-        String time;
-        if (timerOn && log.isLoggable(Level.FINEST)) {
-            time = Long.toString(System.currentTimeMillis()) + ':';
-        } else {
-            time = "";
-        }
+        String time = getTimePrefix(timerOn && log.isLoggable(Level.FINEST));
         synchronized (lock) {
-            state = STATE_OK;
-            lock.notifyAll();
+            state = State.OK;
             log.finest("CB.done[" + time + token + "]: Released lock on " + GdbUtils.threadId());
+            gdb.removeCB(token);
+            lock.notifyAll();
         }
     }
     
     public void error(String msg) {
-        String time;
-        if (timerOn && log.isLoggable(Level.FINEST)) {
-            time = Long.toString(System.currentTimeMillis()) + ':';
-        } else {
-            time = "";
-        }
+        String time = getTimePrefix(timerOn && log.isLoggable(Level.FINEST));
         synchronized (lock) {
             err = msg;
-            state = STATE_ERROR;
+            state = State.ERROR;
             log.finest("CB.error[" + time + token + "]: Releasing lock on " + GdbUtils.threadId());
+            gdb.removeCB(token);
             lock.notifyAll();
         }
     }
     
     public String getError() {
-        if (state == STATE_ERROR && err != null) {
+        if (state == State.ERROR && err != null) {
             return err;
         }
         return null;
     }
     
-    public boolean timedOut() {
-        return state == STATE_COMMAND_TIMEDOUT;
+    public boolean isTimedOut() {
+        return state == State.TIMEOUT;
+    }
+
+    public boolean isError() {
+        return state == State.ERROR;
+    }
+
+    public boolean isOK() {
+        return state == State.OK;
+    }
+
+    public String getResponse() {
+        return buf.toString();
     }
 
     @Override
     public String toString() {
-        return buf.toString();
+        return "CommandBuffer(id=" + token + ", text=" + getResponse() + ", state=" + state + ", error=" + err + ")"; // NOI18N
+    }
+
+    /**
+     * @param show - if true - return empty string
+     * @return
+     */
+    public static String getTimePrefix(boolean show) {
+        if (show) {
+            return Long.toString(System.currentTimeMillis()) + ':';
+        } else {
+            return "";
+        }
     }
 }

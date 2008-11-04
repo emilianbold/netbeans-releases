@@ -29,6 +29,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
 import org.openide.util.NbBundle;
 
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class HTTPComponentValidator
         implements Validator, HTTPComponent.Visitor {
     

@@ -420,6 +420,7 @@ public class EjbJarProxy implements EjbJar {
         }
     }
 
+    @Override
     public Object clone() {
         EjbJarProxy proxy;
         if (ejbJar==null)

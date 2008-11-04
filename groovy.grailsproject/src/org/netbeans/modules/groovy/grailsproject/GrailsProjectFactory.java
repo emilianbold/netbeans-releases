@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=661)
 public final class GrailsProjectFactory implements ProjectFactory {
 
     public static final String GRAILS_APP_DIR = "grails-app"; // NOI18N

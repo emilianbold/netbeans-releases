@@ -316,7 +316,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (ve != null) {
                     param2hints.put(param, INSTANCE_OF);
                     return ve.getSimpleName().toString();
-                } else if (name == null) {
+                } else if (name != null) {
                     ve = staticInstanceOf((String)entry.getValue(), name);
                     if (ve != null) {
                         param2hints.put(param, INSTANCE_OF);
@@ -660,14 +660,14 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                     Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
                     TypeMirror type = cInfo.getTrees().getTypeMirror(decl);
                     boolean isConst = ((VariableTree)decl.getLeaf()).getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
-                    final Name varName = ((VariableTree)decl.getLeaf()).getName();
+                    final Element element = cInfo.getTrees().getElement(decl);
                     ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                         public boolean accept(Element e, TypeMirror t) {
                             switch(e.getKind()) {
                                 case EXCEPTION_PARAMETER:
                                 case LOCAL_VARIABLE:
                                 case PARAMETER:
-                                    return varName != e.getSimpleName();
+                                    return element != e;
                                 default:
                                     return false;
                             }

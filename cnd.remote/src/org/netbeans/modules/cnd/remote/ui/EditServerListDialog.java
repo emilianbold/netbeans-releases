@@ -153,7 +153,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             pbarStatusPanel.setVisible(true);
 //            revalidate();
             phandle.start();
-            tfStatus.setText(NbBundle.getMessage(RemoteServerRecord.class, "STATE_INITIALIZING"));
+            // TODO: not good to use object's toString as resource key
+            tfStatus.setText(NbBundle.getMessage(RemoteServerRecord.class, RemoteServerRecord.State.INITIALIZING.toString()));
             // move expensive operation out of EDT
             RequestProcessor.getDefault().post(new Runnable() {
 

@@ -64,7 +64,6 @@ static char options[4098] = "";
 static char dirs[4098] = "", extradirs[4098];
 static char jdkswitch[MAX_PATH] = "";
 static char appname[MAX_PATH] = "";
-static char branding[128] = "";
 
 static char* defaultDirs[512];
 
@@ -117,8 +116,6 @@ int WINAPI
     if (pc != NULL && ((0 == stricmp("\\bin", pc)) || (0 == stricmp("\\launchers", pc))))
         *pc = '\0';
     strcpy(topdir, buf);
-
-    strcpy(branding, appname);
 
     sprintf(buf, "%s\\etc\\%s.conf", topdir, appname);
     parseConfigFile(buf);
@@ -199,10 +196,9 @@ int WINAPI
         bNext = FindNextFile(hFind, &ffd);
     } while (1);   
 
-    sprintf(cmdline2, "\"%s\" %s --branding %s --clusters \"%s\" --userdir \"%s\" %s %s",
+    sprintf(cmdline2, "\"%s\" %s --clusters \"%s\" --userdir \"%s\" %s %s",
             nbexec,
             jdkswitch,
-	    branding,
             dirs,
             userdir,
             options,

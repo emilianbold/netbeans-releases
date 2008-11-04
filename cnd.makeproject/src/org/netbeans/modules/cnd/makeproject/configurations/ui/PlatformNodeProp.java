@@ -150,7 +150,7 @@ public class PlatformNodeProp extends Node.Property {
 //                    System.err.println("");
                 }
             }
-            setValue(text);
+            super.setValue(text);
         }
         
         @Override

@@ -157,8 +157,10 @@ public class ServerChooserVisual extends javax.swing.JPanel {
         Iterator iter = ServerRegistry.getInstance().getInstances().iterator();
         while (iter.hasNext()) {
             ServerInstance instance = (ServerInstance)iter.next();
-            if (instance.getDisplayName().compareToIgnoreCase(displayName) == 0)
+            if (instance.getDisplayName() != null
+                    && instance.getDisplayName().equalsIgnoreCase(displayName)) {
                 return instance;
+            }
         }
         return null;
     }
@@ -281,9 +283,14 @@ public class ServerChooserVisual extends javax.swing.JPanel {
 
 private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_serverListBoxValueChanged
        if (!evt.getValueIsAdjusting()) {
-           Server server = ((ServerAdapter)serverListBox.getSelectedValue()).getServer();
-           if (server != null) {
-               fillDisplayName(server);
+           ServerAdapter adapter = (ServerAdapter) serverListBox.getSelectedValue();
+           if (adapter != null) {
+               Server server = adapter.getServer();
+               if (server != null) {
+                   fillDisplayName(server);
+               }
+           } else {
+               fireChange();
            }
        }
 }//GEN-LAST:event_serverListBoxValueChanged

@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
  * in which case registering them via Lookup would be deprecated.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=java.net.URLStreamHandlerFactory.class)
 public final class NbURLStreamHandlerFactory implements URLStreamHandlerFactory {
     
     /** public for lookup */

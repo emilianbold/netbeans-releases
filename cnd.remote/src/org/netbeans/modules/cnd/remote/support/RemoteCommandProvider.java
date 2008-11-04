@@ -47,6 +47,7 @@ import org.netbeans.modules.cnd.api.remote.CommandProvider;
  * 
  * @author gordonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.CommandProvider.class)
 public class RemoteCommandProvider implements CommandProvider {
     
     private RemoteCommandSupport support;

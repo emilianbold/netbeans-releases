@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  * @author thp
  */
 public class DummyPackager implements PackagerDescriptor {
-    private String name;
+    private final String name;
     
     public DummyPackager(String name) {
         this.name = name;

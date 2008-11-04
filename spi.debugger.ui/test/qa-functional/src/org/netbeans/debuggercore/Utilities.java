@@ -57,7 +57,6 @@ import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.ContainerOperator;
@@ -147,6 +146,7 @@ public class Utilities {
     public static KeyStroke stepIntoShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F7, 0);
     public static KeyStroke stepOutShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F7, KeyEvent.CTRL_MASK);
     public static KeyStroke stepOverShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F8, 0);
+    public static KeyStroke stepOverExpressionShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F8, KeyEvent.SHIFT_MASK);
     public static KeyStroke continueShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.CTRL_MASK);
     public static KeyStroke killSessionShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F5, KeyEvent.SHIFT_MASK);
     public static KeyStroke buildProjectShortcut = KeyStroke.getKeyStroke(KeyEvent.VK_F11, 0);
@@ -231,7 +231,7 @@ public class Utilities {
     public static void showDebuggerView(String viewName) {
         new Action(windowMenu + "|" + debugMenu + "|" + viewName, null).perform();
         new TopComponentOperator(viewName);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(100);
     }
 
     public static String removeTags(String in) {
@@ -265,7 +265,11 @@ public class Utilities {
         String setAsMainProjectItem = Bundle.getStringTrimmed("org.netbeans.modules.project.ui.actions.Bundle", "LBL_SetAsMainProjectAction_Name");
         new Action(null, setAsMainProjectItem).perform(new ProjectsTabOperator().getProjectRootNode(testProjectName));
         new DebugProjectAction().performShortcut();
-//        getDebugToolbar().waitComponentVisible(true);
+        getDebugToolbar().waitComponentVisible(true);
+    }
+
+    public static Action getStepOverExpressionAction() {
+        return(new Action(runMenu+"|"+stepOverExpresItem, null, stepOverExpressionShortcut));
     }
 
     public static ContainerOperator getDebugToolbar() {
@@ -275,7 +279,7 @@ public class Utilities {
     public static void setCaret(EditorOperator eo, final int line) {
         eo.makeComponentVisible();
         eo.setCaretPositionToLine(line);
-        new EventTool().waitNoEvent(500);
+        new EventTool().waitNoEvent(100);
 
         try {
             new Waiter(new Waitable() {
@@ -357,7 +361,7 @@ public class Utilities {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
         try {
             // increase time to wait to 240 second (it fails on slower machines)
-            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 30000);
             MainWindowOperator.getDefault().waitStatusText("Finished building " + projectName + " (" + target + ")");
         } finally {
             // start status text tracer again because we use it further
@@ -373,7 +377,7 @@ public class Utilities {
         long oldTimeout = MainWindowOperator.getDefault().getTimeouts().getTimeout("Waiter.WaitingTime");
         try {
             // increase time to wait to 240 second (it fails on slower machines)
-            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 240000);
+            MainWindowOperator.getDefault().getTimeouts().setTimeout("Waiter.WaitingTime", 30000);
             MainWindowOperator.getDefault().waitStatusText(text);
         } finally {
             // start status text tracer again because we use it further
@@ -430,6 +434,15 @@ public class Utilities {
             if (op.getLine(i).startsWith(text)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    public static boolean checkConsoleLastLineForText(String text) {
+        OutputTabOperator op = new OutputTabOperator(debuggerConsoleTitle);
+        int n =op.getLineCount();
+        if ( (n>0) && (op.getLine(n-1).startsWith(text)) ) {
+            return true;
         }
         return false;
     }

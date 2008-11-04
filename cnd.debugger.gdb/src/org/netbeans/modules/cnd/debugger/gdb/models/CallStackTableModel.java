@@ -59,7 +59,7 @@ public class CallStackTableModel implements TableModel, Constants {
                 String loc = ((CallStackFrame) row).getFullname();
                 loc += ":"; // NOI18N
                 loc += ((CallStackFrame) row).getLineNumber();
-		return (loc);
+		return loc;
             }
         }
         throw new UnknownTypeException(row);

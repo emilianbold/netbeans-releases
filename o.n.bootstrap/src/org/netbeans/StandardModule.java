@@ -187,7 +187,11 @@ final class StandardModule extends Module {
                             // Fine, ignore.
                         }
                     } catch (MissingResourceException mre) {
-                        Util.err.log(Level.WARNING, null, mre);
+                        String resource = basename.replace('.', '/') + ".properties";
+                        Exceptions.attachMessage(mre, "#149833: failed to find " + basename +
+                                " in locale " + Locale.getDefault() + " in " + classloader + " for " + jar +
+                                "; resource lookup of " + resource + " -> " + classloader.getResource(resource));
+                        Exceptions.printStackTrace(mre);
                     }
                 } else {
                     Util.err.warning("cannot efficiently load non-*.properties OpenIDE-Module-Localizing-Bundle: " + locb);

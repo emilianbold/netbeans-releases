@@ -41,26 +41,8 @@
 
 package org.netbeans.modules.uihandler;
 
-import java.awt.Dialog;
-import java.awt.Frame;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.io.ByteArrayInputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.util.logging.Level;
-import junit.framework.*;
-import java.util.Locale;
-import java.util.logging.Handler;
-import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import javax.swing.SwingUtilities;
-import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -98,11 +80,11 @@ public class LogsTooLateTest extends NbTestCase {
  
     public void testLogsReceivedOnExit() throws Exception {
         installer.restored();
-        assertEquals("no logs", 0, Installer.getLogsSize());
+        assertEquals("no logs", 0, InstallerTest.getLogsSize());
         installer.closing();
         installer.close();
         Logger.getLogger("org.netbeans.ui.anything").warning("Ahoj");
         
-        assertEquals("one logger received", 1, Installer.getLogsSize());
+        assertEquals("one logger received", 1, InstallerTest.getLogsSize());
     }
 }

@@ -66,6 +66,7 @@ import org.openide.filesystems.Repository;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
 public class ArchiveURLMapper extends URLMapper {
     private static boolean warningAlreadyReported = false;
     private static final String JAR_PROTOCOL = "jar";   //NOI18N

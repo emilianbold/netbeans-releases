@@ -57,6 +57,7 @@ import org.netbeans.spi.editor.DialogFactory;
  * 
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.DialogFactory.class)
 public class NbDialogFactory implements DialogFactory {
 
     /**

@@ -52,6 +52,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
  *
  * @author suchys
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=90)
 public class NSIcomPropertiesDescriptor implements ProjectPropertiesDescriptor {
 
     public static String PROP_MONITOR_HOST = "nsicom.application.monitorhost"; //NOI18N

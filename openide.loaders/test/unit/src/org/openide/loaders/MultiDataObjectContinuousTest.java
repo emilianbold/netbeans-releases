@@ -46,13 +46,13 @@ import java.beans.PropertyChangeListener;
 import org.openide.filesystems.*;
 import org.netbeans.junit.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Enumerations;
+import org.openide.util.Exceptions;
 
 /**
  * @author Jaroslav Tulach
@@ -111,11 +111,11 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
         DataObject[] to1 = to.getChildren();
         err.info(" getting children of from");
         DataObject[] from1 = from.getChildren();
-        
+
         class Queri extends Thread 
         implements FileChangeListener, DataLoader.RecognizedFiles, PropertyChangeListener {
             public volatile boolean stop;
-            private List deleted = Collections.synchronizedList(new ArrayList());
+            private List<FileObject> deleted = new CopyOnWriteArrayList<FileObject>();
             public Exception problem;
             
             public Queri() {
@@ -144,8 +144,9 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
             
             @Override
             public void run () {
+                int cnt = 0;
                 while(!stop) {
-                    FileObject[] arr = (FileObject[]) deleted.toArray(new FileObject[0]);
+                    FileObject[] arr = deleted.toArray(new FileObject[0]);
                     DataLoader loader = SimpleLoader.getLoader(SimpleLoader.class);
                     err.info("Next round, for " + arr.length);
                     for (int i = 0; i < arr.length; i++) {
@@ -158,6 +159,18 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
                                 problem = ex;
                             }
                         }
+                    }
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                        problem = ex;
+                    }
+                    if (cnt++ == 50) {
+                        problem = new Exception(
+                            "No deleted: " + deleted +
+                            "\nwhile waiting cnt: " + cnt +
+                            "\nTo: " + java.util.Arrays.asList(to.getPrimaryFile().getChildren()
+                        ));
                     }
                 }
             }
@@ -172,44 +185,68 @@ public class MultiDataObjectContinuousTest extends NbTestCase {
             }
         }
         
-        Queri que = new Queri();
+        final Queri que = new Queri();
         
         to.getPrimaryFile().addFileChangeListener(que);
         from.getPrimaryFile().addFileChangeListener(que);
         
-        que.start();
-        try {
-            for (int i = 0; i < 10; i++) {
-                err.info(i + " moving the object");
-                one.move(to);
-                err.info(i + " moving back");
-                one.move(from);
-                err.info(i + " end of cycle");
+
+        class Snd extends Thread {
+            private IOException io;
+
+            public Snd() {
+                super("moving thread");
             }
-        } finally {
-            que.stop = true;
-            err.info("stopping the que");
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < 10; i++) {
+                        err.info(i + " moving the object");
+                        one.move(to);
+                        err.info(i + " moving back");
+                        one.move(from);
+                        err.info(i + " end of cycle");
+                    }
+                } catch (IOException ex) {
+                    io = ex;
+                } finally {
+                    que.stop = true;
+                    err.info("stopping the que");
+                }
+            }
         }
+        Snd snd = new Snd();
+
+        que.start();
+        snd.start();
         
-        err.info("waiting for join");
-        que.join(10000);
-        err.info("joined");
+        err.info("waiting for 10s");
+        int cnt = 0;
+        while (cnt++ < 10 && (snd.isAlive() || que.isAlive())) {
+            Thread.sleep(1000);
+            err.info("waiting, cnt: " + cnt);
+        }
+        err.info("10s is over");
         if (que.problem != null) {
             throw que.problem;
         }
+        if (snd.io != null) {
+            throw snd.io;
+        }
         
         assertEquals("Fourty deleted files:" + que.deleted, 40, que.deleted.size());
+        assertEquals("Original to content was empty", 0, to1.length);
     }
 
     public static final class Pool extends DataLoaderPool {
-        protected Enumeration loaders() {
-            return Enumerations.singleton(SimpleLoader.getLoader(SimpleLoader.class));
+        protected Enumeration<DataLoader> loaders() {
+            return Enumerations.<DataLoader>singleton(SimpleLoader.getLoader(SimpleLoader.class));
         }
     }
     
     public static final class SimpleLoader extends MultiFileLoader {
         public SimpleLoader() {
-            super(SimpleObject.class);
+            super(SimpleObject.class.getName());
         }
         protected String displayName() {
             return "SimpleLoader";

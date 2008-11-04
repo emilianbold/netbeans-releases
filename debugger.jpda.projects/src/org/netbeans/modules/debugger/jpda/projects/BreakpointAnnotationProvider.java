@@ -86,6 +86,7 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Jancura, Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationProvider implements AnnotationProvider,
                                                      DebuggerManagerListener {
 

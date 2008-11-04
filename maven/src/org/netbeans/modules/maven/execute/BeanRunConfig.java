@@ -38,14 +38,23 @@
  */
 package org.netbeans.modules.maven.execute;
 
-import org.netbeans.modules.maven.api.execute.RunConfig;
 import java.io.File;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.apache.maven.project.MavenProject;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.NbMavenProjectImpl;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.options.MavenExecutionSettings;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+
+
 
 /**
  *
@@ -54,7 +63,8 @@ import org.netbeans.api.project.Project;
 public class BeanRunConfig implements RunConfig {
     
     private File executionDirectory;
-    private Project project;
+    private WeakReference<Project> project;
+    private FileObject projectDirectory;
     private List<String> goals;
     private String executionName;
     private Properties properties;
@@ -68,6 +78,8 @@ public class BeanRunConfig implements RunConfig {
     private boolean interactive = true;
     private RunConfig parent;
     private String actionName;
+    private FileObject selectedFO;
+    private MavenProject mp;
     
     /** Creates a new instance of BeanRunConfig */
     public BeanRunConfig() {
@@ -89,51 +101,92 @@ public class BeanRunConfig implements RunConfig {
         setUpdateSnapshots(parent.isUpdateSnapshots());
     }
 
-    public File getExecutionDirectory() {
+    public final File getExecutionDirectory() {
         if (parent != null && executionDirectory == null) {
             return parent.getExecutionDirectory();
         }
         return executionDirectory;
     }
 
-    public void setExecutionDirectory(File executionDirectory) {
+    public final void setExecutionDirectory(File executionDirectory) {
         this.executionDirectory = executionDirectory;
     }
 
-    public Project getProject() {
+    public final Project getProject() {
         if (parent != null && project == null) {
             return parent.getProject();
         }
-        return project;
+        if (project != null) {
+            Project prj = project.get();
+            if (prj == null && projectDirectory.isValid()) {
+                try {
+                    prj = ProjectManager.getDefault().findProject(projectDirectory);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return prj;
+        }
+        return null;
     }
 
-    public void setProject(Project project) {
-        this.project = project;
+    public final synchronized MavenProject getMavenProject() {
+        if (mp != null) {
+            return mp;
+        }
+        Project prj = getProject();
+        if (prj != null) {
+            NbMavenProjectImpl impl = prj.getLookup().lookup(NbMavenProjectImpl.class);
+            List<String> profiles = new ArrayList<String>();
+            profiles.addAll(impl.getCurrentActiveProfiles());
+            if (getActivatedProfiles() != null) {
+                profiles.addAll(getActivatedProfiles());
+            }
+            Properties props = new Properties();
+            if (getProperties() != null) {
+                props.putAll(getProperties());
+            }
+            mp = impl.loadMavenProject(profiles, properties);
+        }
+        return mp;
+     }
+
+    public final synchronized void setProject(Project project) {
+        if (project != null) {
+            this.project = new WeakReference<Project>(project);
+            projectDirectory  = project.getProjectDirectory();
+        } else {
+            this.project = null;
+            projectDirectory = null;
+        }
+        mp = null;
     }
 
-    public List<String> getGoals() {
+    public final List<String> getGoals() {
         if (parent != null && goals == null) {
             return parent.getGoals();
         }
         return goals;
     }
 
-    public void setGoals(List<String> goals) {
+    public final void setGoals(List<String> goals) {
         this.goals = goals;
     }
 
-    public String getExecutionName() {
+    public final String getExecutionName() {
         if (parent != null && executionName == null) {
             return parent.getExecutionName();
         }
         return executionName;
     }
 
-    public void setExecutionName(String executionName) {
+    public final void setExecutionName(String executionName) {
         this.executionName = executionName;
     }
 
-    public Properties getProperties() {
+    public final Properties getProperties() {
         if (parent != null && properties == null) {
             return parent.getProperties();
         }
@@ -144,59 +197,70 @@ public class BeanRunConfig implements RunConfig {
         return newProperties;
     }
 
-    public  String removeProperty(String key) {
+    public final String removeProperty(String key) {
         if (properties == null) {
             properties = new Properties();
             if (parent != null) {
                 properties.putAll(parent.getProperties());
             }
         }
-        return (String) properties.remove(key);
+        String toRet = (String) properties.remove(key);
+        synchronized (this) {
+            mp = null;
+        }
+        return toRet;
     }
 
-    public  String setProperty(String key, String value) {
+    public final String setProperty(String key, String value) {
         if (properties == null) {
             properties = new Properties();
             if (parent != null) {
                 properties.putAll(parent.getProperties());
             }
         }
-        return (String) properties.setProperty(key, value);
+        String toRet = (String) properties.setProperty(key, value);
+        synchronized (this) {
+            mp = null;
+        }
+        return toRet;
     }
 
-    public void setProperties(Properties props) {
+    public final void setProperties(Properties props) {
         if (properties == null) {
             properties = new Properties();
         }
         properties.clear();
         properties.putAll(props);
+        synchronized (this) {
+            mp = null;
+        }
     }
 
-    public boolean isShowDebug() {
+    public final boolean isShowDebug() {
         return showDebug;
     }
 
-    public void setShowDebug(boolean showDebug) {
+    public final void setShowDebug(boolean showDebug) {
         this.showDebug = showDebug;
     }
 
-    public boolean isShowError() {
+    public final boolean isShowError() {
         return showError;
     }
 
-    public void setShowError(boolean showError) {
+    public final void setShowError(boolean showError) {
         this.showError = showError;
     }
 
-    public Boolean isOffline() {
+    public final Boolean isOffline() {
         return offline;
     }
 
-    public void setOffline(Boolean offline) {
+    public final void setOffline(Boolean offline) {
         this.offline = offline;
     }
 
-    public List<String> getActivatedProfiles() {
+    public final List<String> getActivatedProfiles() {
         if (parent != null && activate == null) {
             return parent.getActivatedProfiles();
         }
@@ -206,43 +270,46 @@ public class BeanRunConfig implements RunConfig {
         return Collections.<String>emptyList();
     }
 
-    public void setActivatedProfiles(List<String> activeteProfiles) {
+    public final void setActivatedProfiles(List<String> activeteProfiles) {
         activate = new ArrayList<String>();
         activate.addAll(activeteProfiles);
+        synchronized (this) {
+            mp = null;
+        }
     }
 
-    public boolean isRecursive() {
+    public final boolean isRecursive() {
         return recursive;
     }
     
-    public void setRecursive(boolean rec) {
+    public final void setRecursive(boolean rec) {
         recursive = rec;
     }
 
-    public boolean isUpdateSnapshots() {
+    public final boolean isUpdateSnapshots() {
         return updateSnapshots;
     }
     
-    public void setUpdateSnapshots(boolean set) {
+    public final void setUpdateSnapshots(boolean set) {
         updateSnapshots = set;
     }
 
-    public String getTaskDisplayName() {
+    public final String getTaskDisplayName() {
         if (parent != null && taskName == null) {
             return parent.getTaskDisplayName();
         }
         return taskName;
     }
     
-    public void setTaskDisplayName(String name) {
+    public final void setTaskDisplayName(String name) {
         taskName = name;
     }
 
-    public boolean isInteractive() {
+    public final boolean isInteractive() {
         return interactive;
     }
     
-    public void setInteractive(boolean ia) {
+    public final void setInteractive(boolean ia) {
         interactive = ia;
     }
 
@@ -258,6 +325,16 @@ public class BeanRunConfig implements RunConfig {
         }
         return actionName;
     }
-    
-    
+
+    public FileObject getSelectedFileObject() {
+        if (parent != null && selectedFO == null) {
+            return parent.getSelectedFileObject();
+        }
+        return selectedFO;
+    }
+
+    public void setFileObject(FileObject selectedFile) {
+        this.selectedFO = selectedFile;
+    }
 }
+

@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
@@ -49,9 +48,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.openide.nodes.Node;
 
 public class CompilerSetNodeProp extends Node.Property {
+
     private CompilerSet2Configuration configuration;
     private boolean canWrite;
-    private String txt1;
+    //private String txt1;
     private String txt2;
     private String txt3;
     private String oldname;
@@ -60,13 +60,13 @@ public class CompilerSetNodeProp extends Node.Property {
         super(Integer.class);
         this.configuration = configuration;
         this.canWrite = canWrite;
-        this.txt1 = txt1;
+        //this.txt1 = txt1;
         this.txt2 = txt2;
         this.txt3 = txt3;
         oldname = configuration.getOption();
         configuration.setCompilerSetNodeProp(this);
     }
-    
+
     public String getOldname() {
         return oldname;
     }
@@ -80,33 +80,34 @@ public class CompilerSetNodeProp extends Node.Property {
     public String getShortDescription() {
         return txt3;
     }
-    
+
     @Override
     public String getHtmlDisplayName() {
-        if (configuration.getCompilerSetName().getModified())
+        if (configuration.getCompilerSetName().getModified()) {
             return configuration.isDevHostOnline() ? "<b>" + getDisplayName() : getDisplayName(); // NOI18N
-        else
+        } else {
             return null;
+        }
     }
-    
+
     public Object getValue() {
         return configuration.getCompilerSetName().getValue();
     }
-    
+
     public void setValue(Object v) {
-        configuration.setValue((String)v);
+        configuration.setValue((String) v);
     }
-    
+
     @Override
     public void restoreDefaultValue() {
         configuration.getCompilerSetName().reset();
     }
-    
+
     @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
     @Override
     public boolean isDefaultValue() {
         return !configuration.getCompilerSetName().getModified();
@@ -115,7 +116,7 @@ public class CompilerSetNodeProp extends Node.Property {
     public boolean canWrite() {
         return canWrite;
     }
-    
+
     public boolean canRead() {
         return true;
     }
@@ -130,22 +131,23 @@ public class CompilerSetNodeProp extends Node.Property {
     }
 
     private class CompilerSetEditor extends PropertyEditorSupport {
+
         @Override
         public String getJavaInitializationString() {
             return getAsText();
         }
-        
+
         @Override
         public String getAsText() {
             String displayName = configuration.getDisplayName(true);
             return displayName;
         }
-        
+
         @Override
         public void setAsText(String text) throws java.lang.IllegalArgumentException {
-            setValue(text);
+            super.setValue(text);
         }
-        
+
         @Override
         public String[] getTags() {
             List<String> list = new ArrayList<String>();
@@ -159,7 +161,7 @@ public class CompilerSetNodeProp extends Node.Property {
             }
             return (String[]) list.toArray(new String[list.size()]);
         }
-        
+
         public void repaint() {
             firePropertyChange();
         }

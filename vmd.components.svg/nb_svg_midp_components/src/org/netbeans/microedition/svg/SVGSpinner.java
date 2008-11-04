@@ -45,10 +45,11 @@ import java.util.Enumeration;
 import java.util.Vector;
 
 import org.netbeans.microedition.svg.input.InputHandler;
-import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.svg.SVGAnimationElement;
 import org.w3c.dom.svg.SVGElement;
 import org.w3c.dom.svg.SVGLocatableElement;
+import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -163,7 +164,7 @@ public class SVGSpinner extends SVGComponent implements DataListener {
     }
     
     public void setEditor( SVGComponent editor ){
-        myEditor = editor;;
+        myEditor = editor;
     }
     
     public SVGComponent getEditor(){
@@ -306,11 +307,7 @@ public class SVGSpinner extends SVGComponent implements DataListener {
         void removeDataListener( DataListener listener );
     }
     
-    private class SpinnerInputHandler extends NumPadInputHandler {
-
-        public SpinnerInputHandler( ) {
-            super( form.getDisplay() );
-        }
+    private class SpinnerInputHandler extends InputHandler {
 
         public boolean handleKeyPress( SVGComponent comp, int keyCode ) {
             boolean ret = false;
@@ -362,6 +359,65 @@ public class SVGSpinner extends SVGComponent implements DataListener {
                 }
             }
             return ret;
+        }
+        
+        public void handlePointerPress( PointerEvent event ) {
+            requestFocus();
+            boolean isHandled = false;
+            SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
+            if( rect != null ) {
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    pressUpButton();
+                    isHandled = true;
+                }
+            }
+            rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
+            if( rect != null ){
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    pressDownButton();
+                    isHandled = true;
+                }
+            }
+            if ( !isHandled && myEditor != null ){
+                SVGRectangle rectangle = myEditor.getBounds();
+                if ( rectangle.contains( event.getX(), event.getY())){
+                    myEditor.getInputHandler().handlePointerPress( 
+                            new PointerEvent( myEditor , event.getX(),
+                                    event.getY(), event.getClickCount()));
+                }
+            }
+            super.handlePointerPress(event);
+        }
+        
+        public void handlePointerRelease( PointerEvent event ) {
+            boolean isHandled = false;
+            SVGRect rect = ((SVGLocatableElement)myUpButton).getScreenBBox();
+            if( rect != null ) {
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    releaseUpButton();
+                    isHandled = true;
+                }
+            }
+            rect = ((SVGLocatableElement)myDownButton).getScreenBBox();
+            if( rect != null ){
+                SVGRectangle rectangle = new SVGRectangle( rect );
+                if ( rectangle.contains(event.getX(), event.getY())){
+                    releaseDownButton();
+                    isHandled = true;
+                }
+            }
+            if ( !isHandled && myEditor != null ){
+                SVGRectangle rectangle = myEditor.getBounds();
+                if ( rectangle.contains( event.getX(), event.getY())){
+                    PointerEvent ev = new PointerEvent( myEditor , event.getX(),
+                            event.getY(), event.getClickCount());
+                    myEditor.getInputHandler().handlePointerRelease( ev);
+                }
+            }
+            super.handlePointerRelease(event);
         }
         
     }

@@ -29,6 +29,7 @@ import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
  *
  * @author sweng
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class FileValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String fileXSDUrl = "/org/netbeans/modules/wsdlextensions/file/resources/file-ext.xsd";
     

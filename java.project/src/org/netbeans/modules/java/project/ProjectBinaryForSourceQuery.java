@@ -53,6 +53,7 @@ import org.openide.util.Exceptions;
  * Assumes an instance of BinaryForSourceQueryImplementation is in project's lookup.
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.BinaryForSourceQueryImplementation.class, position=100)
 public class ProjectBinaryForSourceQuery implements BinaryForSourceQueryImplementation {
     
     /** Creates a new instance of ProjectBinaryForSourceQuery */

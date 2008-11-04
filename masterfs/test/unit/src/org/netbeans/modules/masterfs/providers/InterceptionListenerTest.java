@@ -138,6 +138,7 @@ public class InterceptionListenerTest extends NbTestCase  {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.masterfs.providers.AnnotationProvider.class)
     public static class AnnotationProviderImpl extends AnnotationProvider  {
         private InterceptionListenerImpl impl = new InterceptionListenerImpl();
         public String annotateName(String name, java.util.Set files) {

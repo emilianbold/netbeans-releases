@@ -321,7 +321,7 @@ public abstract class APTWalker {
     }    
     
     private Token nextTokenImpl() throws TokenStreamException {
-        Token theRetToken=null;
+        Token theRetToken;
         tokenLoop:
         for (;;) {           
             while (!tokens.isEmpty()) {

@@ -49,7 +49,7 @@ CREATE TABLE customer (
    phone CHARACTER(12),
    fax CHARACTER(12),
    email VARCHAR(40),
-   credit_limit INTEGER ) ;
+   credit_limit INTEGER ) Engine="InnoDB";
 
 
 
@@ -117,7 +117,7 @@ values(
 
 CREATE TABLE discount_code (
    discount_code CHARACTER(1) PRIMARY KEY  NOT NULL,
-   rate DECIMAL(4,2) ) ;
+   rate DECIMAL(4,2) ) Engine = "InnoDB";
 
 
 
@@ -149,7 +149,7 @@ CREATE TABLE manufacturer (
    fax VARCHAR(12),
    email VARCHAR(40),
    rep VARCHAR(30)
-    ) ;
+    ) Engine = "InnoDB";
 
 
 
@@ -201,7 +201,7 @@ CREATE TABLE micro_market (
    zip_code VARCHAR(10) PRIMARY KEY  NOT NULL,
    radius FLOAT(26),
    area_length DOUBLE PRECISION,
-   area_width DOUBLE PRECISION ) ;
+   area_width DOUBLE PRECISION ) Engine = "InnoDB";
 
 
 
@@ -238,7 +238,7 @@ CREATE TABLE purchase_order (
    shipping_cost DECIMAL(12,2),
    sales_date DATE,
    shipping_date DATE,
-   freight_company VARCHAR(30) ) ;
+   freight_company VARCHAR(30) ) Engine = "InnoDB" ;
 
 
 
@@ -271,7 +271,7 @@ VALUES
 CREATE TABLE product_code (
    prod_code CHARACTER(2) PRIMARY KEY  NOT NULL,
    discount_code CHARACTER(1) NOT NULL,
-   description VARCHAR(10) ) ;
+   description VARCHAR(10) ) Engine = "InnoDB";
 
 
 
@@ -299,7 +299,7 @@ CREATE TABLE product (
    quantity_on_hand INTEGER,
    markup DECIMAL(4,2),
    available VARCHAR(5) ,
-   description VARCHAR(50) ) ;
+   description VARCHAR(50) ) Engine = "InnoDB";
 
 
 

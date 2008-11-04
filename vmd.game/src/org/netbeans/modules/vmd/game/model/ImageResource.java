@@ -377,8 +377,8 @@ public class ImageResource implements Identifiable{
 	}
 	
 	private int getColumnCount(int tileWidth, int tileHeight) {
-		StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight, true);
-		return grid[0].length;
+                StaticTile[][] grid = this.getStaticTileGrid(tileWidth, tileHeight, true);
+                return grid.length > 0 ? grid[0].length : 0;
 	}
 	
 	private StaticTile[][] initStaticTileGrid(int tileWidth, int tileHeight, boolean zeroBasedIndex) {

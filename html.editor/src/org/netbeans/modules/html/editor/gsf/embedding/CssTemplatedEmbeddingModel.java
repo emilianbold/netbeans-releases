@@ -53,6 +53,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Marek Fukala
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class CssTemplatedEmbeddingModel implements EmbeddingModel {
 
     static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N

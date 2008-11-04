@@ -124,7 +124,7 @@ public class ComponentGroup implements ActionListener, ChangeListener {
             ((JSlider)m_delegate).setValue( Math.round(value * 100));
         }
     }
-
+    
     private final ComponentWrapper [] m_wrappers;
     private       boolean             m_isUpdateInProgress = false;
 
@@ -202,6 +202,6 @@ public class ComponentGroup implements ActionListener, ChangeListener {
         }
     }
     
-    protected void refresh(JComponent comp) {        
+    protected void refresh(JComponent comp) {    
     }
 }    

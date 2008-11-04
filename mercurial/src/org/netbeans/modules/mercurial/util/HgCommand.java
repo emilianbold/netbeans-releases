@@ -134,6 +134,7 @@ public class HgCommand {
     private static final String HG_REMOVE_FLAG_FORCE_CMD = "--force"; // NOI18N
 
     private static final String HG_LOG_CMD = "log"; // NOI18N
+    private static final String HG_TIP_CMD = "tip"; // NOI18N
     private static final String HG_OUT_CMD = "out"; // NOI18N
     private static final String HG_LOG_LIMIT_ONE_CMD = "-l 1"; // NOI18N
     private static final String HG_LOG_LIMIT_CMD = "-l"; // NOI18N
@@ -1286,6 +1287,39 @@ public class HgCommand {
         }
         return list;
     }
+
+    /**
+     * Retrives the tip information for the specified repository, as defined by the LOG_TEMPLATE.
+     *
+     * @param File repository of the mercurial repository's root directory
+     * @return List<String> list of the log entries for the tip
+     * @throws org.netbeans.modules.mercurial.HgException
+     */
+    public static HgLogMessage doTip(File repository, OutputLogger logger) throws HgException {
+        if (repository == null ) return null;
+
+        List<String> command = new ArrayList<String>();
+
+        command.add(getHgCommand());
+        command.add(HG_TIP_CMD);
+        command.add(HG_LOG_TEMPLATE_HISTORY_NO_FILEINFO_CMD);
+        command.add(HG_OPT_REPOSITORY);
+        command.add(repository.getAbsolutePath());
+
+        List<String> list = exec(command);
+        if (!list.isEmpty()) {
+            if (isErrorNoRepository(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
+             } else if (isErrorAbort(list.get(0))) {
+                handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_COMMAND_ABORTED"), logger);
+             }
+        }
+        List<HgLogMessage> messages = new ArrayList<HgLogMessage>(1);
+        messages = processLogMessages(repository.getAbsolutePath(), null, list, messages);
+
+        return messages.get(0);
+    }
+
 
     /**
      * Retrives the Out information for the specified repository

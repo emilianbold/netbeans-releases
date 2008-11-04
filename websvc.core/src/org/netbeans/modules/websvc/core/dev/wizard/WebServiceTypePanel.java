@@ -103,7 +103,7 @@ public class WebServiceTypePanel extends javax.swing.JPanel implements HelpCtx.P
         jsr109Supported = stackUtils.isJsr109Supported();
         jsr109oldSupported = stackUtils.isJsr109OldSupported();
         jaxWsInJ2ee14Supported = (ServerType.JBOSS == stackUtils.getServerType());
-        noMetroInstalledOnGlassFishV3 = !jsr109Supported && ServerType.GLASSFISH_V3 == stackUtils.getServerType();
+        noMetroInstalledOnGlassFishV3 = !stackUtils.isWsitSupported() && ServerType.GLASSFISH_V3 == stackUtils.getServerType();
         
         //convert Java class not implemented for 5.5 release, disable components
         jRadioButtonConvert.setEnabled(false);

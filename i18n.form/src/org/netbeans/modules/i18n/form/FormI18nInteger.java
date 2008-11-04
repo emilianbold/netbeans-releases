@@ -43,6 +43,7 @@
 package org.netbeans.modules.i18n.form;
 
 
+import org.netbeans.modules.form.FormDesignValue;
 import org.netbeans.modules.i18n.I18nSupport;
 import org.netbeans.modules.i18n.java.JavaI18nString;
 
@@ -73,7 +74,12 @@ public class FormI18nInteger extends FormI18nString {
      */
     @Override
     public Object getDesignValue() {
-        return Integer.decode( (String)super.getDesignValue() );
+        Object designValue = super.getDesignValue();
+        if (designValue == FormDesignValue.IGNORED_VALUE) {
+            return FormDesignValue.IGNORED_VALUE;
+        } else {
+            return Integer.decode((String)designValue);
+        }
     }
     
     /** The string to replace a property in source code. 

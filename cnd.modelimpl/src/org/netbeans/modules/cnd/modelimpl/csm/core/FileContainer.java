@@ -531,6 +531,18 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         int getModCount();
         
         public Object getLock();
+
+        /**
+         * Used to sync between ProjectBase.onFileIncluded concerning the same file 
+         * that run simultaneously on different threads.
+         * Set to true in ProjectBase.onFileIncluded in the case it removes some of 
+         * the previous state => decides that the file should be REparsed
+         * Should be used ONLY WHEN LOCKED (see getLock() method) !!!
+         */
+        public boolean isPendingReparse();
+
+        /** See comments to isPendingReparse */
+        public void setPendingReparse(boolean pendingReparse);
     }
 
     private static final class MyFile implements Persistent, SelfPersistent, Entry {
@@ -539,6 +551,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private final CharSequence canonical;
         private Object data; // either StatePair or List<StatePair>
         private volatile int modCount;
+        private volatile boolean pendingReparse = false; // "transient"
         
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
@@ -555,6 +568,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     }
                 }
             }
+        }
+
+        public boolean isPendingReparse() {
+            return pendingReparse;
+        }
+
+        public void setPendingReparse(boolean pendingReparse) {
+            this.pendingReparse = pendingReparse;
         }
         
         private MyFile(CsmUID<CsmFile> fileNew, APTPreprocHandler.State state, CharSequence fileKey) {
@@ -702,15 +723,15 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             data = new StatePair(state, pcState);
         }
         
-        private static int countValidStates(Collection<StatePair> states) {
-            int cnt = 0;
-            for (StatePair pair : states) {
-                if (pair.state != null && pair.state.isValid()) {
-                    cnt++;
-                }
-            }
-            return cnt;
-        }
+//        private static int countValidStates(Collection<StatePair> states) {
+//            int cnt = 0;
+//            for (StatePair pair : states) {
+//                if (pair.state != null && pair.state.isValid()) {
+//                    cnt++;
+//                }
+//            }
+//            return cnt;
+//        }
         
         /**
          * Sets (replaces) new conditions state for the existent pair

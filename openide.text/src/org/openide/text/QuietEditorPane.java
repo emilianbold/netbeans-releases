@@ -120,6 +120,7 @@ final class QuietEditorPane extends JEditorPane {
         setFontHeightWidth(getFont());
     }
     
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         setFontHeightWidth(getFont());
@@ -137,6 +138,7 @@ final class QuietEditorPane extends JEditorPane {
      * returns height of a line for vertical scroll unit
      * or width of a widest char for a horizontal scroll unit
      */
+    @Override
     public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
         switch (orientation) {
             case SwingConstants.VERTICAL:
@@ -148,6 +150,7 @@ final class QuietEditorPane extends JEditorPane {
         }
     }
     
+    @Override
     public void setDocument(Document doc) {
         super.setDocument(doc);
         
@@ -183,11 +186,11 @@ final class QuietEditorPane extends JEditorPane {
     // on any measurements. Use -Dtryme.args="-J-Dorg.netbeans.QuietEditorPane.level=FINE" to
     // see in the log file what property chenges are swallowed.
     // If making changes to the list make sure to check on #132669.
-    private static final Set<String> EXPENSIVE_PROPERTIES = new HashSet(Arrays.asList(new String [] {
+    private static final Set<String> EXPENSIVE_PROPERTIES = new HashSet<String>(Arrays.asList(
             "document", //NOI18N
             "editorKit", //NOI18N
-            "keymap", //NOI18N
-    }));
+            "keymap" //NOI18N
+    ));
 
     public @Override void firePropertyChange(String s, Object val1, Object val2) {
         if ((working & FIRE) != 0 || s == null || !EXPENSIVE_PROPERTIES.contains(s)) {
@@ -209,6 +212,7 @@ final class QuietEditorPane extends JEditorPane {
      * While is reinstallation of UI in progress, there
      * is a gap between the uninstallUI
      * and intstallUI when caret set to <code>null</code>. */
+    @Override
     public void setCaret(Caret caret) {
         if (caret == null) {
             Caret oldCaret = getCaret();
@@ -239,12 +243,14 @@ final class QuietEditorPane extends JEditorPane {
         super.setUI(ui);
       }
     }*/
+    @Override
     public void revalidate() {
         if ((working & PAINT) != 0) {
             super.revalidate();
         }
     }
 
+    @Override
     public void repaint() {
         if ((working & PAINT) != 0) {
             super.repaint();
@@ -264,14 +270,17 @@ final class QuietEditorPane extends JEditorPane {
             this.delegator = delegator;
         }
         
+        @Override
         public void exportAsDrag(JComponent comp, InputEvent e, int action) {
             delegator.exportAsDrag(comp, e, action);
         }
 
+        @Override
         public void exportToClipboard(JComponent comp, Clipboard clip, int action) {
             delegator.exportToClipboard(comp, clip, action);
         }
 
+        @Override
         public boolean importData(JComponent comp, Transferable t) {
             try {
                 if (t.isDataFlavorSupported(ActiveEditorDrop.FLAVOR)){
@@ -313,6 +322,7 @@ final class QuietEditorPane extends JEditorPane {
             }
         }
         
+        @Override
         public boolean canImport(JComponent comp, DataFlavor[] transferFlavors) {
             for (int i=0; i<transferFlavors.length; i++){
                 if (transferFlavors[i] == ActiveEditorDrop.FLAVOR){
@@ -322,14 +332,17 @@ final class QuietEditorPane extends JEditorPane {
             return delegator.canImport(comp, transferFlavors);
         }
 
+        @Override
         public int getSourceActions(JComponent c) {
             return delegator.getSourceActions(c);
         }
 
+        @Override
         public Icon getVisualRepresentation(Transferable t) {
             return delegator.getVisualRepresentation(t);
         }
 
+        @Override
         protected void exportDone(JComponent source, Transferable data, int action) {
             try {
                 java.lang.reflect.Method method = delegator.getClass().getDeclaredMethod(
@@ -346,6 +359,7 @@ final class QuietEditorPane extends JEditorPane {
             }
         }
         
+        @Override
         protected Transferable createTransferable(JComponent comp) {
             try {
                 java.lang.reflect.Method method = delegator.getClass().getDeclaredMethod(
@@ -371,16 +385,21 @@ final class QuietEditorPane extends JEditorPane {
         public DelegatingDropTarget( DropTarget orig ) {
             this.orig = orig;
         }
+        @Override
         public void addDropTargetListener(DropTargetListener dtl) throws TooManyListenersException {
+            //#131830: It is to avoid NPE on JDK 1.5
+            orig.removeDropTargetListener(dtl);
             orig.addDropTargetListener( dtl );
         }
 
+        @Override
         public void removeDropTargetListener(DropTargetListener dtl) {
             orig.removeDropTargetListener( dtl );
         }
 
+        @Override
         public void dragEnter(DropTargetDragEvent dtde) {
-            ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+            ExternalDropHandler handler = Lookup.getDefault().lookup(ExternalDropHandler.class);
             if( null != handler && handler.canDrop( dtde ) ) {
                 dtde.acceptDrag( DnDConstants.ACTION_COPY );
                 isDragging = false;
@@ -390,6 +409,7 @@ final class QuietEditorPane extends JEditorPane {
             }
         }
 
+        @Override
         public void dragExit(DropTargetEvent dte) {
             if( isDragging ) {
                 orig.dragExit( dte );
@@ -397,8 +417,9 @@ final class QuietEditorPane extends JEditorPane {
             isDragging = false;
         }
 
+        @Override
         public void dragOver(DropTargetDragEvent dtde) {
-            ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+            ExternalDropHandler handler = Lookup.getDefault().lookup(ExternalDropHandler.class);
             if( null != handler && handler.canDrop( dtde ) ) {
                 dtde.acceptDrag( DnDConstants.ACTION_COPY );
                 isDragging = false;
@@ -408,8 +429,9 @@ final class QuietEditorPane extends JEditorPane {
             }
         }
 
+        @Override
         public void drop(DropTargetDropEvent e) {
-            ExternalDropHandler handler = (ExternalDropHandler)Lookup.getDefault().lookup( ExternalDropHandler.class );
+            ExternalDropHandler handler = Lookup.getDefault().lookup(ExternalDropHandler.class);
             if( null != handler && handler.canDrop( e ) ) {
                 e.acceptDrop( DnDConstants.ACTION_COPY );
 
@@ -420,6 +442,7 @@ final class QuietEditorPane extends JEditorPane {
             isDragging = false;
         }
 
+        @Override
         public void dropActionChanged(DropTargetDragEvent dtde) {
             if( isDragging )
                 orig.dropActionChanged( dtde );

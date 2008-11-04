@@ -48,6 +48,7 @@ import junit.framework.TestCase;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.modules.InstalledFileLocator.class)
 public class InstalledFileLocatorImpl extends org.openide.modules.InstalledFileLocator {
     private static File installDir;
 

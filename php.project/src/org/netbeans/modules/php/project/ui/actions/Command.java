@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -212,11 +214,22 @@ public abstract class Command {
     }
 
     protected final URL urlForDebugProjectFile(boolean useWebRoot) throws MalformedURLException {
-        return appendQuery(urlForProjectFile(useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        return appendQuery(urlForProjectFile(useWebRoot), getDebugArguments());
     }
 
     protected final URL urlForDebugContext(Lookup context, boolean useWebRoot) throws MalformedURLException {
-        return appendQuery(urlForContext(context, useWebRoot), "XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); //NOI18N
+        return appendQuery(urlForContext(context, useWebRoot), getDebugArguments());
+    }
+
+    private String getDebugArguments() {
+        String args = ProjectPropertiesSupport.getArguments(project);
+        StringBuilder arguments = new StringBuilder();
+        if (args != null && args.length() > 0) {
+            arguments.append(args);
+            arguments.append("&"); // NOI18N
+        }
+        arguments.append("XDEBUG_SESSION_START=" + PhpSourcePath.DEBUG_SESSION); // NOI18N
+        return arguments.toString();
     }
 
     protected final URL urlForProjectFile(boolean useWebRoot) throws MalformedURLException {
@@ -260,16 +273,17 @@ public abstract class Command {
 
     //or null
     protected final FileObject fileForProject(boolean useWebRoot) {
-        String nameOfIndexFile = ProjectPropertiesSupport.getIndexFile(project);
-        if (useWebRoot) {
-            return ProjectPropertiesSupport.getWebRootDirectory(project).getFileObject(nameOfIndexFile);
+        FileObject dir = useWebRoot ? ProjectPropertiesSupport.getWebRootDirectory(project) : ProjectPropertiesSupport.getSourcesDirectory(project);
+        String indexFile = ProjectPropertiesSupport.getIndexFile(project);
+        if (dir != null && indexFile != null) {
+            return dir.getFileObject(indexFile);
         }
-        return ProjectPropertiesSupport.getSourcesDirectory(project).getFileObject(nameOfIndexFile);
+        return dir;
     }
 
     /** eventually show the customizer */
-    protected boolean isRunConfigurationValid() {
-        return ProjectPropertiesSupport.isActiveConfigValid(project, true);
+    protected boolean isRunConfigurationValid(boolean indexFileNeeded) {
+        return ProjectPropertiesSupport.isActiveConfigValid(project, indexFileNeeded, true);
     }
 
     protected boolean isScriptSelected() {

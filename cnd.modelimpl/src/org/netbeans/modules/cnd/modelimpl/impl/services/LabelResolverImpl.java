@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver.class)
 public class LabelResolverImpl extends CsmLabelResolver {
 
     public LabelResolverImpl() {
@@ -127,11 +128,11 @@ public class LabelResolverImpl extends CsmLabelResolver {
         private Collection<CsmReference> collection = new ArrayList<CsmReference>();
         private CharSequence label;
         private LabelKind kind;
-        private CsmFunctionDefinition owner;
+//        private CsmFunctionDefinition owner;
         private Context(CsmFunctionDefinition owner, CharSequence label, LabelKind kind){
             this.label = label;
             this.kind = kind;
-            this.owner = owner;
+//            this.owner = owner;
         }
         private void addLabelDefinition(CsmLabel stmt){
             if (kind == LabelKind.Both || kind == LabelKind.Definiton) {

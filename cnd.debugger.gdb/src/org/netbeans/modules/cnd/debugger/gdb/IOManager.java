@@ -107,7 +107,7 @@ public class IOManager {
         synchronized (buffer) {
             buffer.addLast(new Text(text, line));
         }
-        if (task == null)
+        if (task == null) {
             task = RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     synchronized (buffer) {
@@ -136,8 +136,9 @@ public class IOManager {
                     }
                 }
             }, 500, Thread.MIN_PRIORITY);
-        else 
+        } else {
             task.schedule(500);
+        }
     }
 
     void closeStream() {

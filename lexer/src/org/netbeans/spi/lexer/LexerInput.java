@@ -41,7 +41,10 @@
 
 package org.netbeans.spi.lexer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.lib.editor.util.AbstractCharSequence;
+import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
 
@@ -97,6 +100,9 @@ public final class LexerInput {
      */
     private int eof;
     
+    static final Logger LOG = Logger.getLogger(LexerInput.class.getName());
+    private static boolean loggable;
+
     /**
      * Construct instance of the lexer input.
      *
@@ -104,6 +110,8 @@ public final class LexerInput {
      */
     LexerInput(LexerInputOperation operation) {
         this.operation = operation;
+        // Refresh cached loggable value
+        loggable = LOG.isLoggable(Level.FINE);
     }
     
     /**
@@ -119,9 +127,22 @@ public final class LexerInput {
         if (c == EOF) {
             eof = 1;
         }
+        if (loggable) {
+            StringBuilder sb = new StringBuilder(100);
+            sb.append("+LexerInput.read(");
+            if (c == EOF) {
+                sb.append("EOF");
+            } else {
+                sb.append('\'');
+                CharSequenceUtilities.debugChar(sb, (char)c);
+                sb.append('\'');
+            }
+            sb.append(")\n");
+            LOG.fine(sb.toString());
+        }
         return c;
     }
-    
+
     /**
      * Undo last <code>count</code> of {@link #read()} operations.
      * <br>
@@ -156,6 +177,15 @@ public final class LexerInput {
         if (eof != 0) {
             eof = 0; // backup EOF
             count--;
+            if (loggable) {
+                LOG.fine("-LexerInput.backup(EOF)\n");
+            }
+        }
+        if (loggable && count > 0) {
+            StringBuilder sb = new StringBuilder(100);
+            sb.append("-LexerInput.backup(").append(count);
+            sb.append(")\n");
+            LOG.fine(sb.toString());
         }
         operation.backup(count);
     }

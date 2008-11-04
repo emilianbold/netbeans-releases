@@ -48,7 +48,7 @@ import javax.swing.JPanel;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.clientproject.wsclient.CustomizerWSClientHost;
 import org.netbeans.modules.j2ee.clientproject.wsclient.NoWebServiceClientsPanel;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
@@ -125,7 +125,7 @@ public class AppClientCompositePanelProvider implements ProjectCustomizer.Compos
             if (clientSupport != null) {
                 serviceClientsSettings = clientSupport.getServiceClients();
             }
-            if(ProjectProperties.J2EE_1_4.equals(
+            if(J2EEProjectProperties.J2EE_1_4.equals(
                     project.getCarModule().getJ2eePlatformVersion()) && 
                     serviceClientsSettings != null && serviceClientsSettings.size() > 0) {
                 ProjectCustomizer.Category clients = ProjectCustomizer.Category.create(WEBSERVICECLIENTS,

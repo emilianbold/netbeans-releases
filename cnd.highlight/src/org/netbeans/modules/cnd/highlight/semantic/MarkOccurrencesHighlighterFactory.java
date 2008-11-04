@@ -53,6 +53,7 @@ import org.openide.util.Exceptions;
  *
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.model.tasks.CsmFileTaskFactory.class, position=10)
 public class MarkOccurrencesHighlighterFactory extends CaretAwareCsmFileTaskFactory {
 
     @Override

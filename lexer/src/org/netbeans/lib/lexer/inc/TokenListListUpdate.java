@@ -93,6 +93,10 @@ final class TokenListListUpdate<T extends TokenId> {
         return addedTokenLists.size();
     }
 
+    public EmbeddedTokenList<T>[] removedTokenLists() {
+        return removedTokenLists;
+    }
+
     public EmbeddedTokenList<T> afterUpdateTokenList(JoinTokenList<T> jtl, int tokenListIndex) {
         EmbeddedTokenList<T> etl;
         if (tokenListIndex < modTokenListIndex) {
@@ -209,7 +213,8 @@ final class TokenListListUpdate<T extends TokenId> {
         if (tokenListList.hasChildren()) {
             if (removedTokenLists != null) {
                 for (int i = 0; i < removedTokenLists.length; i++) {
-                    updateItem.collectRemovedEmbeddings(removedTokenLists[i]);
+                    EmbeddedTokenList<T> etl = removedTokenLists[i];
+                    updateItem.collectRemovedEmbeddings(etl);
                 }
             }
         }
@@ -264,7 +269,7 @@ final class TokenListListUpdate<T extends TokenId> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(80);
-        sb.append(" modTokenListIndex=").append(modTokenListIndex).append("; "); // NOI18N
+        sb.append("modTLInd=").append(modTokenListIndex).append("; "); // NOI18N
         if (isTokenListsMod()) {
             sb.append("Rem:").append(removedTokenListCount); // NOI18N
             sb.append(" Add:").append(addedTokenLists.size()); // NOI18N

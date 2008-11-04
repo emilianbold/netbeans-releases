@@ -28,6 +28,7 @@ import org.xml.sax.SAXException;
  * factory of bluej projects, only applied when netbeans related files are not created..
  * @author  Milos Kleint (mkleint@netbeans.org)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class)
 public class BluejProjectFactory implements ProjectFactory {
     /** Creates a new instance of BluejProjectFactory */
     public BluejProjectFactory() {
