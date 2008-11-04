@@ -1842,7 +1842,7 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
-            d.setModalityType(Dialog.ModalityType.MODELESS);
+            d.setModal(false);
             d.setVisible(true);
             synchronized (this){
                 while (d != null && !dontWaitForUserInputInTests){
