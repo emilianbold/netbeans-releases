@@ -44,7 +44,6 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -321,7 +320,7 @@ class TreeViewCellEditor extends DefaultTreeCellEditor implements CellEditorList
         }
     }
 
-    private void abortTimer() {
+    void abortTimer() {
         if ((timer != null) && timer.isRunning()) {
             timer.stop();
             tree.removeMouseMotionListener(this);
