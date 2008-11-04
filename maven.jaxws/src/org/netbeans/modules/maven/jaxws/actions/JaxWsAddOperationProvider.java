@@ -46,6 +46,7 @@ import org.netbeans.modules.websvc.api.support.AddOperationCookie;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.openide.filesystems.FileObject;
 
+@org.openide.util.lookup.ServiceProvider(service=AddOperationActionProvider.class)
 public class JaxWsAddOperationProvider implements AddOperationActionProvider {
     
     public AddOperationCookie getAddOperationCookie(FileObject fileObject) {
