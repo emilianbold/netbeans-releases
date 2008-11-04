@@ -47,6 +47,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -57,6 +58,8 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.annotation.processing.SupportedAnnotationTypes;
 import javax.annotation.processing.SupportedSourceVersion;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -123,7 +126,9 @@ public class ServiceProviderProcessor extends AbstractProcessor {
         String impl = processingEnv.getElementUtils().getBinaryName(clazz).toString();
         String xface = processingEnv.getElementUtils().getBinaryName((TypeElement) processingEnv.getTypeUtils().asElement(type)).toString();
         if (!processingEnv.getTypeUtils().isAssignable(clazz.asType(), type)) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, impl + " is not assignable to " + xface, clazz/*, XXX annotation mirror & value*/);
+            AnnotationMirror ann = findAnnotationMirror(clazz, ServiceProvider.class);
+            processingEnv.getMessager().printMessage(Kind.ERROR, impl + " is not assignable to " + xface,
+                    clazz, ann, findAnnotationValue(ann, "service"));
             return;
         }
         processingEnv.getMessager().printMessage(Kind.NOTE, impl + " to be registered as a " + xface);
@@ -187,12 +192,13 @@ public class ServiceProviderProcessor extends AbstractProcessor {
     }
 
     private boolean verifyServiceProviderSignature(TypeElement clazz) {
+        AnnotationMirror ann = findAnnotationMirror(clazz, ServiceProvider.class);
         if (!clazz.getModifiers().contains(Modifier.PUBLIC)) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public", clazz);
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must be public", clazz, ann);
             return false;
         }
         if (clazz.getModifiers().contains(Modifier.ABSTRACT)) {
-            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract", clazz);
+            processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must not be abstract", clazz, ann);
             return false;
         }
         {
@@ -204,7 +210,7 @@ public class ServiceProviderProcessor extends AbstractProcessor {
                 }
             }
             if (!hasDefaultCtor) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must have a public no-argument constructor", clazz);
+                processingEnv.getMessager().printMessage(Kind.ERROR, clazz + " must have a public no-argument constructor", clazz, ann);
                 return false;
             }
         }
@@ -231,6 +237,37 @@ public class ServiceProviderProcessor extends AbstractProcessor {
                 processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to write to " + entry.getKey() + ": " + x.toString());
             }
         }
+    }
+
+    /**
+     * @param element a source element
+     * @param annotation a type of annotation
+     * @return the instance of that annotation on the element, or null if not found
+     */
+    private AnnotationMirror findAnnotationMirror(Element element, Class<? extends Annotation> annotation) {
+        for (AnnotationMirror ann : element.getAnnotationMirrors()) {
+            if (processingEnv.getElementUtils().getBinaryName((TypeElement) ann.getAnnotationType().asElement()).
+                    contentEquals(annotation.getName())) {
+                return ann;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param annotation an annotation instance (null permitted)
+     * @param name the name of an attribute of that annotation
+     * @return the corresponding value if found
+     */
+    private AnnotationValue findAnnotationValue(AnnotationMirror annotation, String name) {
+        if (annotation != null) {
+            for (Map.Entry<? extends ExecutableElement,? extends AnnotationValue> entry : annotation.getElementValues().entrySet()) {
+                if (entry.getKey().getSimpleName().contentEquals(name)) {
+                    return entry.getValue();
+                }
+            }
+        }
+        return null;
     }
 
 }
