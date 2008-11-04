@@ -756,6 +756,8 @@ public class ChildrenKeysTest extends NbTestCase {
         assertNull ("Garbage collected nodes are not notified", k.arr);
         l.assertNoEvents("GC does not generate events");
 
+        List<Node> snapshot = node.getChildren().snapshot();
+        assertEquals("Count remains one", 1, snapshot.size());
         assertEquals("Count remains one", 1, node.getChildren().getNodesCount());
         // emptied
         k.keys();
