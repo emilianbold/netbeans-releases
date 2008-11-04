@@ -53,6 +53,7 @@ import org.openide.util.Lookup;
  * A CLI handler to delegate to CommandLine.getDefault().
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class, position=65534)
 public class Handler extends CLIHandler {
     /**
      * Create a handler. Called by core.

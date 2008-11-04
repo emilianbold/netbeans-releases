@@ -59,6 +59,7 @@ import org.netbeans.modules.websvc.saas.codegen.util.Util;
  *
  * @author ayubskhan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class RestClientJspCodeGenerator extends RestClientServletCodeGenerator {
 
     public RestClientJspCodeGenerator() {

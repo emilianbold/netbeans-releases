@@ -66,6 +66,7 @@ import org.openide.DialogDisplayer;
  *
  * @author  Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.diff.Diff.class)
 public class DefaultDiff extends Diff implements Serializable {
     
     private boolean showDiffSelector = true;

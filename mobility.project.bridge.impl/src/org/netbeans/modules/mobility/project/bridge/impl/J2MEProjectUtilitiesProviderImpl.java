@@ -66,6 +66,7 @@ import org.netbeans.modules.mobility.project.preprocessor.PPDocumentSource;
  *
  * @author suchys
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.project.bridge.J2MEProjectUtilitiesProvider.class)
 public class J2MEProjectUtilitiesProviderImpl implements J2MEProjectUtilitiesProvider {
 
 

@@ -1146,6 +1146,7 @@ public class FormI18nSupport extends JavaI18nSupport {
     } // End of FormInfoPanel inner class.
 
     /** Factory for <code>FormI18nSupport</code>. */
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.i18n.I18nSupport.Factory.class)
     public static class Factory extends I18nSupport.Factory {
 
         /** Instantiated from META-INF/services */

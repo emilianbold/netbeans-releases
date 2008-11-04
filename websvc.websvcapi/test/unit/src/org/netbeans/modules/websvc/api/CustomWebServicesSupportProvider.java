@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Lukas Jungmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.webservices.WebServicesSupportProvider.class)
 public class CustomWebServicesSupportProvider implements WebServicesSupportProvider {
     
     private Map<FileObject, WebServicesSupport> cache = new HashMap<FileObject, WebServicesSupport>();

@@ -21,6 +21,7 @@ import org.openide.nodes.Node;
  *
  * @author ksorokin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.core.debugger.DebuggerHelper.class)
 public class DebuggerHelperImpl implements DebuggerHelper {
     private BpelBreakpointListener myBreakpointAnnotationListener;
     

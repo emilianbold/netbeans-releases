@@ -53,6 +53,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  * @author Tor Norbye
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class GroovyEmbeddingModel implements EmbeddingModel {
     final Set<String> sourceMimeTypes = Collections.singleton(GspTokenId.MIME_TYPE);
 

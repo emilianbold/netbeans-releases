@@ -44,6 +44,7 @@ import org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionPropertyC
  *
  * @author jqian
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.compapp.casaeditor.properties.spi.ExtensionPropertyClassProvider.class)
 public class RedirectTargetExtenionPropertyClassProvider
         extends ExtensionPropertyClassProvider {
 }

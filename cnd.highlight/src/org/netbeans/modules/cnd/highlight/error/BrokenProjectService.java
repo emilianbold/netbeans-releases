@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.ui.BrokenIncludes.class)
 public class BrokenProjectService implements BrokenIncludes, ChangeListener {
     private static WeakHashMap<ChangeListener,Boolean> listeners = new WeakHashMap<ChangeListener,Boolean>();
     private final Object lock = new String("BrokenProjectService lock"); // NOI18N

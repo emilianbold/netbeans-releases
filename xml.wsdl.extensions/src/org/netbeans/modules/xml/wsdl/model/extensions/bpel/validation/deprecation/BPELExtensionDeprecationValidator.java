@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
  *
  * @author radval
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class BPELExtensionDeprecationValidator implements Validator {
     
     public static final String VAL_DEPRECATED_PLINK_NAMESPACE_IN_DEFINITION = "VAL_DEPRECATED_PLINK_NAMESPACE_IN_DEFINITION";

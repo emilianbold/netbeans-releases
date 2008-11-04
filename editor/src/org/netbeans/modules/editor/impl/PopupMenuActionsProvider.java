@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public final class PopupMenuActionsProvider extends ActionsList implements Class2LayerFolder<PopupMenuActionsProvider>, InstanceProvider<PopupMenuActionsProvider> {
 
     private static final String POPUP_MENU_ACTIONS_FOLDER_NAME = "Popup"; //NOI18N

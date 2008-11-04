@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.utils.cache.CharSequenceKey;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver.class)
 public class LabelResolverImpl extends CsmLabelResolver {
 
     public LabelResolverImpl() {

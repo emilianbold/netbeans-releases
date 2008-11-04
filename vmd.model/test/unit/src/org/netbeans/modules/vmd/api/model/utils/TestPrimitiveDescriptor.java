@@ -46,6 +46,7 @@ import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
 import static org.netbeans.modules.vmd.api.model.utils.TestTypes.*;
 
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory.class)
 public final class TestPrimitiveDescriptor implements PrimitiveDescriptorFactory {
 
     private static final IntPD intPD = new IntPD();

@@ -65,6 +65,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  * @author Tor Norbye (the original code)
  * @author Peter Zavadsky (the new changes after the move)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.project.jsf.services.RefreshService.class)
 public class RefreshServiceImpl extends RefreshService {
     /** Creates a new instance of RefreshServiceProvider */
     public RefreshServiceImpl() {

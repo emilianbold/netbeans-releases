@@ -80,6 +80,7 @@ import org.xml.sax.SAXException;
 /**
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory.class, position=800)
 public class WebProjectFactory implements ProjectTypeUpdater {
 
     private static final Logger LOG =

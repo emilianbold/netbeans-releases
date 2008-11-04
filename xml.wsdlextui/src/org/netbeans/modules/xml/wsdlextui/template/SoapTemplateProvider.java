@@ -50,6 +50,7 @@ import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class SoapTemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String soapTemplateUrl = "/org/netbeans/modules/xml/wsdlextui/template/template.xml";

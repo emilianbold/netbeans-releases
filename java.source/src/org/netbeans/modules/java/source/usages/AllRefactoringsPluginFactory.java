@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=90)
 public class AllRefactoringsPluginFactory implements RefactoringPluginFactory {
 
     private static final Logger LOGGER = Logger.getLogger(RepositoryUpdater.class.getName());

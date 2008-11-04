@@ -65,6 +65,7 @@ import org.openide.modules.SpecificationVersion;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.platform.JavaPlatformProvider.class)
 public class TestJavaPlatformProviderImpl implements JavaPlatformProvider {
     
     /** Creates a new instance of TestJavaPlatformProviderImpl */

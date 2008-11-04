@@ -50,6 +50,7 @@ import org.netbeans.spi.queries.CollocationQueryImplementation;
  *
  * @author David Konecny
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=100)
 public class ParentChildCollocationQuery implements CollocationQueryImplementation {
 
     /** Default constructor for lookup. */

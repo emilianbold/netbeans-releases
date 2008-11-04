@@ -59,6 +59,7 @@ import org.netbeans.modules.profiler.selector.spi.nodes.SelectorNode;
  *
  * @author Jaroslav Bachorik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.selector.spi.SelectionTreeBuilder.class)
 public class EJBSelectionTreeBuilder implements SelectionTreeBuilder {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 

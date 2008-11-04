@@ -55,6 +55,7 @@ import org.openide.util.actions.SystemAction;
 /** Factory for all kinds of actions used in projectui and
  *projectuiapi.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.ActionsFactory.class)
 public class Actions implements ActionsFactory {
     
     //private static final Actions INSTANCE = new Actions();  

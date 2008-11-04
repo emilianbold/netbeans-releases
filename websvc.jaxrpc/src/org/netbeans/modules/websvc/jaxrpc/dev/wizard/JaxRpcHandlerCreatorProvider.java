@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Milan Kuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.HandlerCreatorProvider.class)
 public class JaxRpcHandlerCreatorProvider implements HandlerCreatorProvider {
 
     public JaxRpcHandlerCreatorProvider() {

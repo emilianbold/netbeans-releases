@@ -37,6 +37,7 @@ import org.netbeans.modules.xml.xam.Component;
  * @version 1.0
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.editors.api.nodes.RefactoringNodeFactory.class)
 public class RefactoringNodeFactoryImpl implements RefactoringNodeFactory {
     private static AtomicReference<RefactoringNodeFactory> FACTORY_INSTANCE =
             new AtomicReference<RefactoringNodeFactory>();

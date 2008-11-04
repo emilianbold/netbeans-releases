@@ -51,6 +51,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
 public class WebInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public WebInjectionTargetQueryImplementation() {

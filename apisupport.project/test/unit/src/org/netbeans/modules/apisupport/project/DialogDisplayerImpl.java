@@ -51,6 +51,7 @@ import org.openide.NotifyDescriptor;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.DialogDisplayer.class)
 public class DialogDisplayerImpl extends DialogDisplayer {
     
     private static Object toReturn;

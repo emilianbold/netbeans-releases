@@ -66,6 +66,7 @@ import org.openide.windows.OutputListener;
  * Standard logger for producing Ant output messages.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=100)
 public final class StandardLogger extends AntLogger {
     
     private static final Logger ERR = Logger.getLogger(StandardLogger.class.getName());

@@ -32,6 +32,7 @@ import org.netbeans.modules.bpel.model.api.support.Utils;
  * @author ads This visitor checks for correctness of name attribute. At least -
  *         we check for absence of spaces in names.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class CheckQNameService extends InnerEventDispatcherAdapter {
 
     /*

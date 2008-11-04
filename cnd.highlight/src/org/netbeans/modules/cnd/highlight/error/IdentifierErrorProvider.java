@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexey Vladykin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=30)
 public class IdentifierErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLED =

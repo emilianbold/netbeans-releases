@@ -54,6 +54,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomas Stupka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class LocalHistoryVCS extends VersioningSystem {
         
     public LocalHistoryVCS() {

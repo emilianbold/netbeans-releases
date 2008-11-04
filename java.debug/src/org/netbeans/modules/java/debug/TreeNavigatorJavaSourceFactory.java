@@ -55,6 +55,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public final class TreeNavigatorJavaSourceFactory extends LookupBasedJavaSourceTaskFactory {
     
     private CancellableTask<CompilationInfo> task;

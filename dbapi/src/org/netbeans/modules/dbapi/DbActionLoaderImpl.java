@@ -56,6 +56,7 @@ import org.openide.util.lookup.Lookups;
  *  
  * @author David Van Couvering
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.explorer.DbActionLoader.class)
 public class DbActionLoaderImpl implements DbActionLoader {
     
             /** 

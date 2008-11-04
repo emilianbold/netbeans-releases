@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.napi.gsfret.source.SourceTaskFactory.class)
 public class MarkOccurrencesHighlighterFactory extends CaretAwareSourceTaskFactory {
 
     /** Creates a new instance of SemanticHighlighterFactory */

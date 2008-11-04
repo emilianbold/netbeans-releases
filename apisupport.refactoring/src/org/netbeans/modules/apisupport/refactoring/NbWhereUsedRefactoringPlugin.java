@@ -127,7 +127,6 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
             
             if (infoholder.isClass) {
                 checkManifest(project, infoholder.fullName, refactoringElements);
-                checkMetaInfServices(project, infoholder.fullName, refactoringElements);
                 checkLayer(project, infoholder.fullName, refactoringElements);
             }
             if (infoholder.isMethod) {
@@ -157,11 +156,6 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
                 attributeKey, section);
     }
 
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String fqname, FileObject serviceFile, int line) {
-        return new ServicesWhereUsedRefactoringElement(fqname, serviceFile, line);
-    }
-    
-    
     protected RefactoringElementImplementation createLayerRefactoring(String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
@@ -367,51 +361,4 @@ public class NbWhereUsedRefactoringPlugin extends AbstractRefactoringPlugin {
         
     }
     
-    public final class ServicesWhereUsedRefactoringElement extends AbstractRefactoringElement {
-        
-        private final int line;
-        
-        public ServicesWhereUsedRefactoringElement(String name, FileObject file, int line) {
-            this.name = name;
-            parentFile = file;
-            this.line = line;
-        }
-        
-        public String getDisplayText() {
-            return NbBundle.getMessage(NbWhereUsedRefactoringPlugin.class, "TXT_ServicesWhereUsed", this.name);
-        }
-
-        protected int[] location() {
-            try {
-                DataObject d = DataObject.find(parentFile);
-                EditorCookie ec = (EditorCookie) d.getCookie(EditorCookie.class);
-                Document doc = ec.openDocument();
-                String text = doc.getText(0, doc.getLength());
-                assert text.indexOf('\r') == -1; // should be in newline format only when a Document
-                int[] startAndEnd = new int[2];
-                int line = 0;
-                int col = 0;
-                for (int i = 0; i < text.length(); i++) {
-                    if (line == this.line && col == 0) {
-                        startAndEnd[0] = i;
-                    } else if (line == this.line + 1 && col == 0) {
-                        startAndEnd[1] = i - 1;
-                    }
-                    char c = text.charAt(i);
-                    if (c == '\n') {
-                        line++;
-                        col = 0;
-                    } else {
-                        col++;
-                    }
-                }
-                return startAndEnd;
-            } catch (Exception e) {
-                ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
-                return new int[] {0, 0};
-            }
-        }
-        
-        
-    }
 }

@@ -56,6 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.retriever.Retriever.class)
 public class TestRetriever extends Retriever {
 
     @Override

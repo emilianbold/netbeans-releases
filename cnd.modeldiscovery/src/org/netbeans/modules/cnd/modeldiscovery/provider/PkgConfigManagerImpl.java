@@ -45,6 +45,7 @@ import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.PkgConfigManager.class)
 public class PkgConfigManagerImpl extends PkgConfigManager {
 
     @Override

@@ -51,6 +51,7 @@ import org.netbeans.api.project.Project;
  *
  * @author Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
 public class JUnitOutputProcessorFactory implements ContextOutputProcessorFactory {
     
     /** Creates a new instance of DefaultOutputProcessor */

@@ -59,6 +59,7 @@ import org.openide.util.Lookup;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib.URLMapper.class)
 public final class NbURLMapper extends URLMapper {
 
     private static final Logger LOG = Logger.getLogger(NbURLMapper.class.getName());

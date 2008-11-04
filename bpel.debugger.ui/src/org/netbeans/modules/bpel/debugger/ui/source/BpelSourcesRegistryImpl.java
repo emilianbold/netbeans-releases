@@ -27,6 +27,7 @@ import org.netbeans.modules.bpel.debugger.api.BpelSourcesRegistry;
  *
  * @author Alexander Zgursky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.debugger.api.BpelSourcesRegistry.class)
 public class BpelSourcesRegistryImpl implements BpelSourcesRegistry {
     private Set<String> mySourceRoots = new HashSet<String>();
     

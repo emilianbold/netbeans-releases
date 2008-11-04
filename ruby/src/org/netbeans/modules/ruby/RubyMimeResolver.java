@@ -52,6 +52,7 @@ import org.openide.filesystems.MIMEResolver;
  * 
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class)
 public class RubyMimeResolver extends MIMEResolver {
     /**
      * MIME type for Ruby. Don't change this without also consulting the various XML files

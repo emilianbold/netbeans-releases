@@ -88,6 +88,7 @@ import org.openide.util.NbBundle;
  *
  * @author ayubkhan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class SoapClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
     public static final String QNAME = "javax.xml.namespace.QName";

@@ -88,6 +88,7 @@ import static org.openide.cookies.EditorCookie.Observable.PROP_OPENED_PANES;
  *
  * @author Jaroslav Tulach, Jesse Glick, Marian Petras, David Konecny
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openfile.OpenFileImpl.class, position=100)
 public class DefaultOpenFileImpl implements OpenFileImpl, Runnable {
     
     /** extenstion for .java files (including the dot) */

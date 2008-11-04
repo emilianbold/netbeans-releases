@@ -62,6 +62,7 @@ import org.openide.nodes.Node;
  *
  * @author jfbrown
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.project.jsf.services.DataSourceService.class)
 public class ProjectDataSourceServiceImpl implements DataSourceService {
 
     /**

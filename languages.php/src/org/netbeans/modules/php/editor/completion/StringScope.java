@@ -57,6 +57,7 @@ import org.netbeans.modules.php.editor.TokenUtils;
  * @see http://www.php.net/manual/en/language.types.string.php#language.types.string.parsing
  * @author Victor G. Vasilyev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.editor.completion.CompletionResultProvider.class)
 public class StringScope extends ASTBasedProvider 
         implements CompletionResultProvider {
     

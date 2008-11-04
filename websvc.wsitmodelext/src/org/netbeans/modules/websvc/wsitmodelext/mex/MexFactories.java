@@ -57,6 +57,7 @@ import org.netbeans.modules.websvc.wsitmodelext.mex.impl.MetadataSectionImpl;
 
 public class MexFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Metadata extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -68,6 +69,7 @@ public class MexFactories {
         }
     }   
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MetadataReference extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -79,6 +81,7 @@ public class MexFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MetadataSection extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -90,6 +93,7 @@ public class MexFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Dialect extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -101,6 +105,7 @@ public class MexFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Identifier extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -112,6 +117,7 @@ public class MexFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class Location extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

@@ -52,6 +52,7 @@ import org.netbeans.modules.gsf.api.CompletionProposal;
  * 
  * @author Victor G. Vasilyev 
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.editor.completion.CompletionResultProvider.class)
 public class ForeignScope extends ASTBasedProvider 
         implements CompletionResultProvider {
 

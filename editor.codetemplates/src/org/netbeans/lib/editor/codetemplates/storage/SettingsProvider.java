@@ -66,6 +66,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  *  @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeDataProvider.class)
 public final class SettingsProvider implements MimeDataProvider {
 
     private static final Logger LOG = Logger.getLogger(SettingsProvider.class.getName());

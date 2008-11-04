@@ -58,6 +58,7 @@ import org.openide.util.lookup.ProxyLookup;
 /** 
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
 public class SafeDeleteAction extends RefactoringGlobalAction implements ExtendedDelete {
     
     private static final Logger LOGGER = Logger.getLogger(SafeDeleteAction.class.getName());

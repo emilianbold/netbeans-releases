@@ -51,6 +51,7 @@ import org.netbeans.modules.vmd.midpnb.components.svg.SVGMenuCD;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.general.AcceptContextResolver.class)
 public class MidpNbAcceptContextResolver extends AcceptContextResolver {
 
     protected boolean isAcceptDenied (DesignComponent targetComponent, TypeID acceptingTypeID) {

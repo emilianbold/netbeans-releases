@@ -76,6 +76,7 @@ import org.openide.xml.XMLUtil;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.libraries.LibraryProvider.class)
 public class LibrariesStorage extends FileChangeAdapter implements WritableLibraryProvider<LibraryImplementation> {
 
     private static final String NB_HOME_PROPERTY = "netbeans.home";  //NOI18N

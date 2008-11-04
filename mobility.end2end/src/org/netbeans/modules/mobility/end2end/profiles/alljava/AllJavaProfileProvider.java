@@ -60,6 +60,7 @@ import org.netbeans.modules.mobility.e2e.mapping.GenericTypeSerializer;
  * @author bohemius
  */
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.mobility.javon.JavonProfileProvider.class)
 public class AllJavaProfileProvider implements JavonProfileProvider {
 
     public String getName() {

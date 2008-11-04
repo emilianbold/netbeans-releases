@@ -50,6 +50,7 @@ import org.netbeans.modules.vmd.midp.components.displayables.ListCD;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.general.AcceptContextResolver.class)
 public class MidpAcceptContextResolver extends AcceptContextResolver {
 
     protected boolean isAcceptDenied (DesignComponent targetComponent, TypeID acceptingTypeID) {
