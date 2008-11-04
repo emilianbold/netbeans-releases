@@ -250,7 +250,7 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
-    String getDisplayName() {
+    public String getDisplayName() {
         return debug ? displayName + " (debug)" : displayName; // NOI18N
     }
 

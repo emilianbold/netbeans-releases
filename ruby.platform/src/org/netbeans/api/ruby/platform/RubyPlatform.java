@@ -970,7 +970,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
         if (result != 0) {
             result = getInterpreter().compareTo(other.getInterpreter());
         }
-        assert result != 0 : "same platform cannot be added twice: " + this + " vs. " + other;
+//        assert result != 0 : "same platform cannot be added twice: " + this + " vs. " + other;
         return result;
     }
 

@@ -51,7 +51,6 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
@@ -70,26 +69,6 @@ import org.openide.util.Utilities;
  */
 public class RubyProcessCreator implements Callable<Process> {
 
-    private static final String WINDOWS_DRIVE = "(?:\\S{1}:[\\\\/])"; // NOI18N
-    private static final String FILE_CHAR = "[^\\s\\[\\]\\:\\\"]"; // NOI18N
-    private static final String FILE = "((?:" + FILE_CHAR + "*))"; // NOI18N
-    private static final String FILE_WIN = "(" + WINDOWS_DRIVE + "(?:" + FILE_CHAR + ".*))"; // NOI18N
-    private static final String LINE = "([1-9][0-9]*)"; // NOI18N
-    private static final String ROL = ".*\\s?"; // NOI18N
-    private static final String SEP = "\\:"; // NOI18N
-    private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
-
-    private static final Pattern RUBY_COMPILER = Pattern.compile(".*?" + STD_SUFFIX); // NOI18N
-
-    private static final Pattern RUBY_COMPILER_WIN_MY = Pattern.compile(".*?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-
-    /* Keeping old one. Get rid of this with more specific recongizers? */
-    private static final Pattern RUBY_COMPILER_WIN =
-        Pattern.compile("^(?:(?:\\[|\\]|\\-|\\:|[0-9]|\\s|\\,)*)(?:\\s*from )?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-    private static final Pattern RAILS_RECOGNIZER =
-        Pattern.compile(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
-
-    private static final Pattern RUBY_TEST_OUTPUT = Pattern.compile("\\s*test.*\\[" + STD_SUFFIX); // NOI18N
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
     /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
@@ -99,30 +78,35 @@ public class RubyProcessCreator implements Callable<Process> {
     private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
     private final RubyExecutionDescriptor descriptor;
     private final String charsetName;
-    /** Regexp. for extensions. */
-    public static final Pattern EXT_RE = Pattern.compile(".*\\.(rb|rake|mab|rjs|rxml|builder)"); // NOI18N
-    private final LineConvertorFactory lineConvertorFactory;
+    private final LineConvertorFactory outFactory;
+    private final LineConvertorFactory errFactory;
+
 
     public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
-        this(descriptor, (String) null, (LineConvertor) null);
+        this(descriptor, null, null, null);
     }
 
     public RubyProcessCreator(RubyExecutionDescriptor descriptor, String charsetName) {
-        this(descriptor, charsetName, (LineConvertor) null);
+        this(descriptor,
+                charsetName,
+                new RubyLineConvertorFactory(descriptor.getFileLocator()),
+                new RubyLineConvertorFactory(descriptor.getFileLocator()));
     }
 
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor, LineConvertor... lineConvertors) {
-        this(descriptor, null, lineConvertors);
-    }
+    public RubyProcessCreator(RubyExecutionDescriptor descriptor,
+            String charsetName,
+            LineConvertorFactory outFactory,
+            LineConvertorFactory errFactory) {
 
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor, String charsetName, LineConvertor... lineConvertors) {
         if (descriptor.getCmd() == null) {
             descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
         }
+
         descriptor.addBinPath(true);
         this.descriptor = descriptor;
         this.charsetName = charsetName;
-        this.lineConvertorFactory = createLineConvertorFactory(lineConvertors);
+        this.outFactory = outFactory;
+        this.errFactory = errFactory;
     }
 
     /**
@@ -137,32 +121,6 @@ public class RubyProcessCreator implements Callable<Process> {
             }
         };
         return wrapper;
-    }
-
-    private LineConvertorFactory createLineConvertorFactory(LineConvertor... convertors) {
-        final List<LineConvertor> convertorList = new ArrayList<LineConvertor>();
-        convertorList.addAll(getStandardConvertors());
-
-        for (LineConvertor each : convertors) {
-            convertorList.add(each);
-        }
-
-        return new LineConvertorFactory() {
-
-            public LineConvertor newLineConvertor() {
-                return LineConvertors.proxy(convertorList.toArray(new LineConvertor[convertorList.size()]));
-            }
-        };
-    }
-
-    private List<LineConvertor> getStandardConvertors() {
-        LineConvertors.FileLocator wrapper = wrap(descriptor.getFileLocator());
-        List<LineConvertor> result = new ArrayList<LineConvertor>(4);
-        result.add(LineConvertors.filePattern(wrapper, RAILS_RECOGNIZER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN_MY, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER, EXT_RE, 1, 2));
-        result.add(LineConvertors.filePattern(wrapper, RUBY_COMPILER_WIN, EXT_RE, 1, 2));
-        return result;
     }
 
     public Process call() throws Exception {
@@ -204,8 +162,8 @@ public class RubyProcessCreator implements Callable<Process> {
             .frontWindow(descriptor.frontWindow)
             .showSuspended(descriptor.showSuspended)
             .postExecution(descriptor.postBuildAction)
-            .errConvertorFactory(lineConvertorFactory)
-            .outConvertorFactory(lineConvertorFactory);
+            .errConvertorFactory(errFactory)
+            .outConvertorFactory(outFactory);
         
         return result;
     }

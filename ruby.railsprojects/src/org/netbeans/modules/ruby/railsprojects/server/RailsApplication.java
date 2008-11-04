@@ -40,7 +40,6 @@
 package org.netbeans.modules.ruby.railsprojects.server;
 
 import java.util.concurrent.Future;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 
 /**
  * This class represent a running Rails application.

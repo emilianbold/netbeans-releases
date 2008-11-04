@@ -66,9 +66,9 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.print.ConvertedLine;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
 import org.netbeans.modules.ruby.railsprojects.server.spi.RubyInstance;
@@ -290,7 +290,10 @@ public final class RailsServerManager {
     private void runServer(RubyExecutionDescriptor desc, String displayName, LineConvertor... convertors) {
         IN_USE_PORTS.add(port);
         String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
-        RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName, convertors);
+        RubyProcessCreator rpc = new RubyProcessCreator(desc,
+                charsetName, 
+                new RubyLineConvertorFactory(desc.getFileLocator(), convertors),
+                new RubyLineConvertorFactory(desc.getFileLocator(), convertors));
         ExecutionService executionService = ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
         this.execution = executionService.run();
     }
@@ -593,7 +596,7 @@ public final class RailsServerManager {
             this.server = server;
         }
 
-        public List<ConvertedLine> convert(String line) {
+        public synchronized List<ConvertedLine> convert(String line) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Processing output line: " + line);
             }
@@ -625,7 +628,7 @@ public final class RailsServerManager {
             this.server = server;
         }
 
-        public List<ConvertedLine> convert(String line) {
+        public synchronized List<ConvertedLine> convert(String line) {
             if (LOGGER.isLoggable(Level.FINER)) {
                 LOGGER.log(Level.FINER, "Processing output line: " + line);
             }

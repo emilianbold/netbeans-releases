@@ -55,11 +55,13 @@ import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.ruby.railsprojects.ui.customizer.RailsProjectProperties;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.DirectoryFileLocator;
 import org.netbeans.modules.ruby.platform.execution.RegexpOutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.railsprojects.database.RailsDatabaseConfiguration;
 import org.netbeans.modules.ruby.railsprojects.server.ServerRegistry;
@@ -142,8 +144,12 @@ public class RailsProjectGenerator {
             desc.fileLocator(new DirectoryFileLocator(dirFO));
 
             LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
+            LineConvertor convertor = LineConvertors.filePattern(locator, RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
 
-            RubyProcessCreator rpc = new RubyProcessCreator(desc, LineConvertors.filePattern(locator, RAILS_GENERATOR_PATTERN, RubyProcessCreator.EXT_RE, 2, -1));
+            RubyProcessCreator rpc = new RubyProcessCreator(desc, null,
+                    new RubyLineConvertorFactory(desc.getFileLocator(), convertor),
+                    new RubyLineConvertorFactory(desc.getFileLocator(), convertor));
+
             org.netbeans.modules.extexecution.api.ExecutionService es =
                     org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
             try {
@@ -215,7 +221,12 @@ public class RailsProjectGenerator {
                 FileUtil.toFile(project.getProjectDirectory()),
                 new File(warble).getAbsolutePath());
         desc.additionalArgs("pluginize"); //NOI18N
-        new RubyExecution(desc).run();
+
+        RubyProcessCreator processCreator = new RubyProcessCreator(desc);
+
+        ExecutionService.newService(processCreator,
+                processCreator.buildExecutionDescriptor(),
+                NbBundle.getMessage(RailsProjectGenerator.class, "WarblePluginize")).run();
     }
 
     private static RakeProjectHelper createProject(FileObject dirFO, final RubyPlatform platform, RailsProjectCreateData createData) throws IOException {
