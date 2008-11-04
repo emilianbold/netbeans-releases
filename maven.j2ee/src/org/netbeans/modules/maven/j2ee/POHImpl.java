@@ -196,16 +196,22 @@ public class POHImpl extends ProjectOpenedHook {
                         model.getProject().setProperties(props);
                     }
                     props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, serverType);
-                    handle.getNetbeansPrivateProfile().getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, newOne);
+                    org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile();
+                    org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
+                    if (privs == null) {
+                        privs = handle.getProfileModel().getFactory().createProperties();
+                        privateProf.setProperties(privs);
+                    }
+                    privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, newOne);
                     handle.markAsModified(handle.getProfileModel());
                 } else {
                     Properties props = model.getProject().getProperties();
                     if (props != null) {
                         props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
                     }
-                    org.apache.maven.profiles.Profile privprof = handle.getNetbeansPrivateProfile(false);
-                    if (privprof != null) {
-                        privprof.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
+                    org.netbeans.modules.maven.model.profile.Profile privprof = handle.getNetbeansPrivateProfile(false);
+                    if (privprof != null && privprof.getProperties() != null) {
+                        privprof.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null);
                         handle.markAsModified(handle.getProfileModel());
                     }
                 }

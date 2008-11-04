@@ -38,9 +38,12 @@
  */
 package org.netbeans.modules.maven.spi.customizer;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.Collections;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.StyledDocument;
 import org.apache.maven.model.Model;
 import org.apache.maven.profiles.ProfilesRoot;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -56,9 +59,12 @@ import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3R
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.maven.model.profile.ProfilesModel;
+import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.text.EditorSupport;
 
 /**
  * Some random utility methods to allow post creation modifications of the project model.
@@ -75,10 +81,19 @@ public final class ModelHandleUtils {
         FileObject pom = FileUtil.toFileObject(project.getPOMFile());
         ModelSource source = Utilities.createModelSource(pom, true);
         POMModel model = POMModelFactory.getDefault().getModel(source);
-        ProfilesRoot prof = MavenSettingsSingleton.createProfilesModel(project.getProjectDirectory());
+        FileObject profilesFO = prj.getProjectDirectory().getFileObject("profiles.xml");
+        if (profilesFO != null) {
+            source = Utilities.createModelSource(profilesFO, true);
+        } else {
+            //the file doesn't exist. what now?
+            File file = FileUtil.toFile(prj.getProjectDirectory());
+            file = new File(file, "profiles.xml"); //NOI18N
+            source = Utilities.createModelSourceForMissingFile(file, true, CustomizerProviderImpl.PROFILES_SKELETON, "text/x-maven-profile+xml"); //NOI18N
+        }
+        ProfilesModel profilesModel = ProfilesModelFactory.getDefault().getModel(source);
         UserActionGoalProvider usr = project.getLookup().lookup(org.netbeans.modules.maven.execute.UserActionGoalProvider.class);
         ActionToGoalMapping mapping = new NetbeansBuildActionXpp3Reader().read(new StringReader(usr.getRawMappingsAsString()));
-        return CustomizerProviderImpl.ACCESSOR.createHandle(model, prof, project.getOriginalMavenProject(), 
+        return CustomizerProviderImpl.ACCESSOR.createHandle(model, profilesModel, project.getOriginalMavenProject(),
                 Collections.<String, ActionToGoalMapping>singletonMap(M2Configuration.DEFAULT,mapping), null, null);
     }
     
@@ -88,3 +103,4 @@ public final class ModelHandleUtils {
         CustomizerProviderImpl.writeAll(handle, project);
     }
 }
+

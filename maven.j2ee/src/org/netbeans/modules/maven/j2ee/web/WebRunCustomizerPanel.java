@@ -40,16 +40,15 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import java.io.IOException;
-import javax.swing.event.DocumentEvent;
-import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.ArrayList;
 import java.util.Collection;
+import org.netbeans.modules.maven.j2ee.POHImpl;
 import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.maven.profiles.Profile;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
@@ -133,9 +132,15 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
             
             public Wrapper getValue() {
                 Wrapper wr = null;
-                String id = handle.getNetbeansPrivateProfile(false).getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
-                if (id != null) {
-                    wr = findWrapperByInstance(id);
+                org.netbeans.modules.maven.model.profile.Profile privprof = handle.getNetbeansPrivateProfile(false);
+                if (privprof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties privprops = privprof.getProperties();
+                    if (privprops != null) {
+                        String id = privprops.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
+                        if (id != null) {
+                            wr = findWrapperByInstance(id);
+                        }
+                    }
                 }
                 if (wr == null) {
                     POMModel model = handle.getPOMModel();
@@ -166,7 +171,7 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                 }
                 String sID = wr.getServerID();
                 String iID = wr.getServerInstanceID();
-                Profile privateProf = handle.getNetbeansPrivateProfile(false);
+                org.netbeans.modules.maven.model.profile.Profile privateProf = handle.getNetbeansPrivateProfile(false);
                 //remove old deprecated data.
                 org.netbeans.modules.maven.model.pom.Profile pub = handle.getNetbeansPublicProfile(false);
                 if (pub != null) {
@@ -180,15 +185,18 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                     //check if someone moved the property to netbeans-private profile, remove from there then.
                     Properties props = model.getProject().getProperties();
                     if (privateProf != null) {
-                        if (privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
-                            privateProf.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER);
+                        org.netbeans.modules.maven.model.profile.Properties privprops = privateProf.getProperties();
+                        if (privprops != null && privprops.getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
+                            privprops.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
                         } else {
                             if (props != null) {
                                 props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, null);
                                 handle.markAsModified(handle.getPOMModel());
                             }
                         }
-                        privateProf.getProperties().remove(Constants.HINT_DEPLOY_J2EE_SERVER_ID);
+                        if (privprops != null) {
+                            privprops.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, null);
+                        }
                         handle.markAsModified(handle.getProfileModel());
                     } else {
                         if (props != null) {
@@ -204,13 +212,20 @@ public class WebRunCustomizerPanel extends javax.swing.JPanel {
                     }
 
                     //check if someone moved the property to netbeans-private profile, remove from there then.
-                    if (privateProf != null && privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
+                    if (privateProf != null && privateProf.getProperties() != null &&
+                            privateProf.getProperties().getProperty(Constants.HINT_DEPLOY_J2EE_SERVER) != null) {
                         privateProf.getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                     } else {
                         props.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER, sID);
                         handle.markAsModified(handle.getPOMModel());
                     }
-                    handle.getNetbeansPrivateProfile().getProperties().setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
+                    privateProf = handle.getNetbeansPrivateProfile();
+                    org.netbeans.modules.maven.model.profile.Properties privs = privateProf.getProperties();
+                    if (privs == null) {
+                        privs = handle.getProfileModel().getFactory().createProperties();
+                        privateProf.setProperties(privs);
+                    }
+                    privs.setProperty(Constants.HINT_DEPLOY_J2EE_SERVER_ID, iID);
                     handle.markAsModified(handle.getProfileModel());
                 }
             }

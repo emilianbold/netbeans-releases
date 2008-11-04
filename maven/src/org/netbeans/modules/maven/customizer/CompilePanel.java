@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.customizer;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
-import org.apache.maven.profiles.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -121,10 +120,13 @@ public class CompilePanel extends javax.swing.JPanel {
             }
 
             public String getValue() {
-                Profile prof = handle.getNetbeansPrivateProfile(false);
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
                 String val = null;
-                if (prof != null && prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
-                    val = prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties props = prof.getProperties();
+                    if (props != null && props.getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
+                        val = prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE);
+                    }
                 }
                 if (val == null) {
                     Properties props = handle.getPOMModel().getProject().getProperties();
@@ -152,12 +154,15 @@ public class CompilePanel extends javax.swing.JPanel {
                 boolean hasConfig = props.get(Constants.HINT_COMPILE_ON_SAVE, true, false) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
-                Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null && prof.getProperties().getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
-                    prof.getProperties().setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value);
-                    if (hasConfig) {
-                        // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_COMPILE_ON_SAVE, null, true);
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_COMPILE_ON_SAVE) != null) {
+                        profprops.setProperty(Constants.HINT_COMPILE_ON_SAVE, value == null ? null : value);
+                        if (hasConfig) {
+                            // in this case clean up the auxiliary config
+                            props.put(Constants.HINT_COMPILE_ON_SAVE, null, true);
+                        }
                     }
                     handle.markAsModified(handle.getProfileModel());
                     return;
