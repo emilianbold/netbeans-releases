@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -49,6 +49,7 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
+import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -370,22 +371,22 @@ public class WsValidation extends WebServicesTestBase {
      * Test for Refresh Service action of Web Services node (from WSDL) 
      */
     public void testRefreshService() {
-        refreshWSDL("service","",false);
+        refreshWSDL("service", "", false);
     }
 
     /**
      * Test for Refresh Client action of Web Services References node 
      */
     public void testRefreshClient() {
-        refreshWSDL("client","",false);
+        refreshWSDL("client", "", false);
     }
-    
+
     /**
      * Test for Refresh Service action of Web Services node (from WSDL)
      * including WSDL regeneration 
      */
     public void testRefreshServiceAndReplaceWSDL() {
-        refreshWSDL("service","",true);
+        refreshWSDL("service", "", true);
     }
 
     /**
@@ -393,7 +394,7 @@ public class WsValidation extends WebServicesTestBase {
      * including WSDL regeneration
      */
     public void testRefreshClientAndReplaceWSDL() {
-        refreshWSDL("client","",true);
+        refreshWSDL("client", "", true);
     }
 
     public static Test suite() {
@@ -411,8 +412,7 @@ public class WsValidation extends WebServicesTestBase {
                 "testWsClientHandlers",
                 "testDeployWsClientProject",
                 "testUndeployProjects",
-                "testStopServer"
-                ).enableModules(".*").clusters(".*"));
+                "testStopServer").enableModules(".*").clusters(".*"));
     }
 
     protected void addWsOperation(EditorOperator eo, String opName, String opRetVal) {
@@ -630,6 +630,8 @@ public class WsValidation extends WebServicesTestBase {
     }
 
     protected void waitForWsImport(String targetName) throws IOException {
+        //make sure output window is visible
+        OutputOperator.invoke();
         OutputTabOperator oto = new OutputTabOperator(targetName); //NOI18N
         try {
             Thread.sleep(1500);
@@ -720,7 +722,7 @@ public class WsValidation extends WebServicesTestBase {
      * Projects tab
      * @param type
      */
-    public void refreshWSDL(String type,java.lang.String wsname,boolean includeSources) {
+    public void refreshWSDL(String type, java.lang.String wsname, boolean includeSources) {
         ProjectsTabOperator prj = new ProjectsTabOperator();
         JTreeOperator prjtree = new JTreeOperator(prj);
         ProjectRootNode prjnd;
@@ -728,42 +730,46 @@ public class WsValidation extends WebServicesTestBase {
         NbDialogOperator ccr;
         if (type.equalsIgnoreCase("service")) {
             prjnd = new ProjectRootNode(prjtree, getWsProjectName());
-            if(!wsname.equalsIgnoreCase("")){
+            if (!wsname.equalsIgnoreCase("")) {
                 actual = new Node(prjnd, "Web Services|" + wsname); //NOI18N
-            }
-            else {
+            } else {
                 actual = new Node(prjnd, "Web Services|" + getWsName()); //NOI18N  
             }
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshServiceAction")); //NOI18N
             ccr = new NbDialogOperator("Confirm Service Refresh"); //NOI18N
-            new EventTool().waitNoEvent(2000);
-            if(includeSources) {
-                new JCheckBoxOperator(ccr,0).push();
-                new EventTool().waitNoEvent(10000);
+            new EventTool().waitNoEvent(1000);
+            if (includeSources) {
+                new JCheckBoxOperator(ccr, 0).push();
+                new EventTool().waitNoEvent(1000);
             }
             ccr.yes();
+            try {
+                waitForWsImport("wsimport-service"); //NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
+            }
         } else {
             prjnd = new ProjectRootNode(prjtree, getWsClientProjectName());
-            if(!getWsName().contains("Web")){
-               actual = new Node(prjnd, "Web Service References|" + getWsName()); //NOI18N 
-            }
-            else {
-               actual = new Node(prjnd, "Web Service References|" + getWsName() + "Service"); //NOI18N  
+            if (!getWsName().contains("Web")) {
+                actual = new Node(prjnd, "Web Service References|" + getWsName()); //NOI18N
+            } else {
+                actual = new Node(prjnd, "Web Service References|" + getWsName() + "Service"); //NOI18N
             }
             actual.performPopupActionNoBlock(org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.actions.Bundle", "LBL_RefreshClientAction")); //NOI18N
             ccr = new NbDialogOperator("Confirm Client Refresh"); //NOI18N
-            new EventTool().waitNoEvent(2000);
-            if(includeSources) {
-                new JCheckBoxOperator(ccr,0).push();
-                new EventTool().waitNoEvent(10000);
+            new EventTool().waitNoEvent(1000);
+            if (includeSources) {
+                new JCheckBoxOperator(ccr, 0).push();
+                new EventTool().waitNoEvent(1000);
             }
             ccr.yes();
-        }
-        try {
-            waitForWsImport("wsimport-client"); //NOI18N
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
+            try {
+                waitForWsImport("wsimport-client"); //NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
+            }
         }
     }
 
