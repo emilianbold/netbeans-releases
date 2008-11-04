@@ -118,7 +118,7 @@ public class WsdlMethodNode extends AbstractNode {
         else{
             WSOperation wsOperation = method.getWsdlOperation();
             signature = wsOperation.getName() + "(";
-            ListIterator<WSParameter> iterator = wsOperation.getParameters().listIterator();
+            ListIterator<? extends WSParameter> iterator = wsOperation.getParameters().listIterator();
             while(iterator.hasNext()){
                 WSParameter parameter =iterator.next();
                 signature +=  parameter.getName();
