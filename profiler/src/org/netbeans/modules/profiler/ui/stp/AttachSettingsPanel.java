@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler.ui.stp;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.AttachSettings;
 import org.netbeans.modules.profiler.NetBeansProfiler;
 import org.netbeans.modules.profiler.ui.HyperlinkLabel;
@@ -95,7 +94,6 @@ public class AttachSettingsPanel extends JPanel {
     private JLabel attachModeLabel;
 
     // --- Instance variables declaration ----------------------------------------
-    private Project project;
     private boolean settingsValid; // set for null settings when <Select project to attach to> is selected
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
@@ -113,10 +111,9 @@ public class AttachSettingsPanel extends JPanel {
         attachModeHintLabel.setEnabled(enabled);
     }
 
-    public void setSettings(Project project, boolean settingsValid) {
-        this.project = project;
+    public void setSettings(boolean settingsValid) {
         this.settingsValid = settingsValid;
-        settings = Utils.getAttachSettings(project);
+        settings = Utils.getAttachSettings();
         updateSettingsHint();
     }
 
@@ -125,7 +122,7 @@ public class AttachSettingsPanel extends JPanel {
     }
 
     public void resetSettings() {
-        setSettings(null, false);
+        setSettings(false);
     }
 
     // --- UI definition ---------------------------------------------------------
@@ -150,14 +147,14 @@ public class AttachSettingsPanel extends JPanel {
         attachModeHintLabel = new HyperlinkLabel("ABC<a href='#'>ABC</a>", "ABC<a href='#'>ABC</a>",
                                                  new Runnable() { // NOI18N
                 public void run() {
-                    final AttachSettings attachSettings = Utils.selectAttachSettings(project);
+                    final AttachSettings attachSettings = Utils.selectAttachSettings();
 
                     if (attachSettings != null) {
                         settings = attachSettings;
                         updateSettingsHint();
                         IDEUtils.runInProfilerRequestProcessor(new Runnable() {
                                 public void run() {
-                                    NetBeansProfiler.saveAttachSettings(project, attachSettings);
+                                    NetBeansProfiler.saveAttachSettings( attachSettings);
                                 }
                             });
                     }
