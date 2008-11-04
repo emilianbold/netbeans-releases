@@ -137,7 +137,8 @@ final class ClassMap {
                     signature = "- ";                                   //NOI18N
                     break;
                 case CLASS:
-                    signature = "[ ";                                   //NOI18N
+                    ClassTree clazz = (ClassTree) member;
+                    signature = "[ " + clazz.getSimpleName();           //NOI18N
                     if (map.getFirstNestedClassIndex() == -1) {
                         map.setFirstNestedClassIndex(index);
                     }

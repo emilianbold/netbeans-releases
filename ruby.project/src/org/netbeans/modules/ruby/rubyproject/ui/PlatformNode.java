@@ -50,6 +50,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.modules.ruby.platform.gems.GemAction;
 import org.netbeans.modules.ruby.rubyproject.PlatformChangeListener;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.openide.nodes.AbstractNode;
@@ -66,10 +67,16 @@ final class PlatformNode extends AbstractNode {
     
     private static final String PLATFORM_ICON = "org/netbeans/modules/ruby/rubyproject/resources/platform.gif"; // NOI18N
     private final RubyBaseProject project;
+    private final Action[] actions;
 
     PlatformNode(final RubyBaseProject project) {
         super(Children.LEAF);
         this.project = project;
+        this.actions = new Action[] {
+            new ChangePlatformAction(),
+            new ManageRubyGemsAction()
+        };
+
         setIconBaseWithExtension(PLATFORM_ICON);
         project.addPlatformChangeListener(new PlatformChangeListener() {
             public void platformChanged() {
@@ -90,9 +97,11 @@ final class PlatformNode extends AbstractNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            new ChangePlatformAction()
-        };
+        return actions;
+    }
+
+    private static String getMessage(final String key) {
+        return NbBundle.getMessage(PlatformNode.class, key);
     }
 
     private final class ChangePlatformAction extends AbstractAction implements Presenter.Popup {
@@ -106,7 +115,7 @@ final class PlatformNode extends AbstractNode {
         }
 
         private JMenuItem createMenu() {
-            JMenu menu = new JMenu(NbBundle.getMessage(PlatformNode.class, "PlatformNode.Change"));
+            JMenu menu = new JMenu(getMessage("PlatformNode.Change"));
             for (final RubyPlatform platform : RubyPlatformManager.getSortedPlatforms()) {
                 JMenuItem item = new JMenuItem(platform.getLabel());
                 item.addActionListener(new ActionListener() {
@@ -122,5 +131,17 @@ final class PlatformNode extends AbstractNode {
             }
             return menu;
         }
+    }
+
+    private final class ManageRubyGemsAction extends AbstractAction {
+
+        ManageRubyGemsAction() {
+            super(getMessage("PlatformNode.ManageRubyGems"));
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            GemAction.showGemManager(project.getPlatform());
+        }
+
     }
 }

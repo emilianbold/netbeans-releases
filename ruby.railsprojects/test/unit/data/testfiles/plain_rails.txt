@@ -4,6 +4,7 @@ app/helpers/
 app/models/
 app/views/
 app/views/layouts/
+app/views/users/list.rhtml
 components/
 config/
 config/environments/

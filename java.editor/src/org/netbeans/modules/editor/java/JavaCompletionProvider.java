@@ -3299,7 +3299,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (VariableElement variableElement : ElementFilter.fieldsIn(members)) {
                     Name name = variableElement.getSimpleName();
                     if (!name.contentEquals(ERROR)) {
-                        String nameBase = Character.toUpperCase(name.charAt(0)) + name.subSequence(1, name.length()).toString();
+                        String nameBase = GeneratorUtils.getCapitalizedName(name).toString();
                         String setterName = "set" + nameBase; //NOI18N
                         String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
                         if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {

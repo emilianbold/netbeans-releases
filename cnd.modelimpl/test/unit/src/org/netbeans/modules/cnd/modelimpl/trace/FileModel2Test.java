@@ -72,7 +72,7 @@ public class FileModel2Test extends TraceModelTestBase {
         // IZ#149505: special handling of __VA_ARGS__ with preceding comma
         performTest("iz149505.cc");
     }
-    
+
     public void testIZ145280() throws Exception {
         // IZ#145280: IDE highlights code with '__attribute__((unused))' as wrong
         performTest("iz145280.cc");
@@ -143,6 +143,11 @@ public class FileModel2Test extends TraceModelTestBase {
     public void testIZ149225() throws Exception {
         // IZ#149225 incorrect concatenation with token that starts with digit
         performTest("iz149225.c");
+    }
+
+    public void testIZ151621() throws Exception {
+        // IZ#151621 no support for __thread keyword
+        performTest("iz151621.c");
     }
 
 }

@@ -63,38 +63,6 @@ class JNAPty extends Pty {
         return PtyLibrary.INSTANCE.strerror(errno);
     }
 
-    private void assignFd(int fd, FileDescriptor FD) {
-	Class cls = FileDescriptor.class;
-	try {
-	    Field fieldFd = cls.getDeclaredField("fd");
-	    // Allow setting of private fields:
-	    fieldFd.setAccessible(true);
-	    fieldFd.setInt(FD, fd);
-	} catch (IllegalArgumentException ex) {
-	    Logger.getLogger(JNAPty.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (IllegalAccessException ex) {
-	    Logger.getLogger(JNAPty.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (NoSuchFieldException ex) {
-	    Logger.getLogger(JNAPty.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (SecurityException ex) {
-	    Logger.getLogger(JNAPty.class.getName()).log(Level.SEVERE, null, ex);
-	}
-    }
-
-    private int getFd(FileDescriptor FD) {
-	Class cls = FileDescriptor.class;
-        try {
-            Field fieldFd = cls.getDeclaredField("fd");
-            // Allow getting of private fields:
-            fieldFd.setAccessible(true);
-            return fieldFd.getInt(FD);
-	} catch (IllegalAccessException ex) {
-	    Logger.getLogger(JNAPty.class.getName()).log(Level.SEVERE, null, ex);
-	} catch (NoSuchFieldException ex) {
-	    Logger.getLogger(JNAPty.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return -1;
-    }
 
     /**
      * {@inheritDoc}
@@ -103,7 +71,7 @@ class JNAPty extends Pty {
         if (master_fd == null)
             return;
         PtyLibrary.WinSize winsize = new PtyLibrary.WinSize(rows, cols, height, width);
-        PtyLibrary.INSTANCE.ioctl(getFd(master_fd), PtyLibrary.TIOCSWINSZ, winsize);
+        PtyLibrary.INSTANCE.ioctl(Util.getFd(master_fd), PtyLibrary.TIOCSWINSZ, winsize);
     }
 
     /**
@@ -113,7 +81,7 @@ class JNAPty extends Pty {
         if (slave_fd == null)
             return;
         PtyLibrary.WinSize winsize = new PtyLibrary.WinSize(rows, cols, height, width);
-        PtyLibrary.INSTANCE.ioctl(getFd(slave_fd), PtyLibrary.TIOCSWINSZ, winsize);
+        PtyLibrary.INSTANCE.ioctl(Util.getFd(slave_fd), PtyLibrary.TIOCSWINSZ, winsize);
     }
 
     /**
@@ -159,28 +127,51 @@ class JNAPty extends Pty {
 		throw new PtyException("open(\"" + slave_name + "\") failed -- " + strerror(Native.getLastError()));
 	    }
 
-            // LATER if (mode() != Mode.RAW) {
-	    if (OS.get() == OS.SOLARIS) {
-                
-                // pseudo-terminal hardware emulation module
-                if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ptem") == -1) {
-                    throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ptem\") failed -- " + strerror(Native.getLastError()));
+            if (mode() != Mode.RAW) {
+                if (OS.get() == OS.SOLARIS) {
+
+                    // pseudo-terminal hardware emulation module
+                    if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ptem") == -1) {
+                        throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ptem\") failed -- " + strerror(Native.getLastError()));
+                    }
+
+                    // standard terminal line discipline
+                    if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ldterm") == -1) {
+                        throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ldterm\") failed -- " + strerror(Native.getLastError()));
+                    }
+
+                    // not sure but both xterm and DtTerm do it
+                    if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ttcompat") == -1) {
+                        throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ttcompact\") failed -- " + strerror(Native.getLastError()));
+                    }
                 }
-                
-                // standard terminal line discipline
-                if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ldterm") == -1) {
-                    throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ldterm\") failed -- " + strerror(Native.getLastError()));
-                }
-                
-                // not sure but both xterm and DtTerm do it
-                if (PtyLibrary.INSTANCE.ioctl(sfd, PtyLibrary.I_PUSH, "ttcompat") == -1) {
-                    throw new PtyException("ioctl(\"" + slave_name + "\", I_PUSH, \"ttcompact\") failed -- " + strerror(Native.getLastError()));
+            } else {
+                if (OS.get() == OS.LINUX) {
+                    PtyLibrary.Termios termios = new PtyLibrary.Termios();
+
+                    // check existing settings
+                    // If we don't do this tcssetattr() will return EINVAL.
+                    if (PtyLibrary.INSTANCE.tcgetattr(sfd, termios) == -1) {
+                        throw new PtyException("tcgetattr(\"" + slave_name + "\", <termios>) failed -- " + strerror(Native.getLastError()));
+                    }
+
+                    // System.out.printf("tcgetattr() gives %s\n", termios);
+
+                    // initialize values relevant for raw mode
+                    PtyLibrary.INSTANCE.cfmakeraw(termios);
+
+                    // System.out.printf("cfmakeraw() gives %s\n", termios);
+
+                    // apply them
+                    if (PtyLibrary.INSTANCE.tcsetattr(sfd, PtyLibrary.TCSANOW, termios) == -1) {
+                        throw new PtyException("tcsetattr(\"" + slave_name + "\", TCSANOW, <termios>) failed -- " + strerror(Native.getLastError()));
+                    }
                 }
             }
 
 	    // Success ... assign fd's to FileObjects
-	    assignFd(mfd, master_fd);
-	    assignFd(sfd, slave_fd);
+	    Util.assignFd(mfd, master_fd);
+	    Util.assignFd(sfd, slave_fd);
 
 	} catch (PtyException x) {
 	    PtyLibrary.INSTANCE.close(mfd);

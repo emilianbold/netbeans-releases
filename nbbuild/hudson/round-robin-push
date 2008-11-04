@@ -1,0 +1,60 @@
+#!/bin/sh
+
+[ -n "$pop_url" ] || exit 101
+[ -n "$pop_build_info" ] || exit 102
+
+[ -n "$push_url" ] || exit 113
+[ -n "$push_username" ] || exit 114
+
+
+ANT_OPTS="-Xmx512m"
+export ANT_OPTS
+HGMERGE=merge
+export HGMERGE
+
+echo Getting Build Info
+HGINFO=`curl $pop_build_info`
+echo $HGINFO
+[ -n "$HGINFO" ] || (echo No Build Info; exit 1)
+
+HGID=`echo "$HGINFO" | grep "Hg ID"`
+echo Last build_info line: "$HGID"
+HGTIP=`echo "$HGID" | cut -f 2 -d ":" | while read X; do echo $X; done`
+echo Last OK revision: "$HGTIP"
+
+hg pull -r "$HGTIP" "$pop_url" || exit 5
+if [ `hg heads --template '{node|short}\n' | wc -l` = 1 ]
+then
+   hg up || exit 6
+else
+   hg merge || exit 7
+   hg ci -u "$push_username"@netbeans.org -m 'Automated merge' || exit 8
+fi
+hg out $push_url
+
+if [ `hg out --template '{node|short}\n' $push_url | wc -l` > 0 ]; then
+    echo "Let the build starts..."
+else
+    echo "No outgoing changes"
+    exit 0
+fi
+
+RESULT=`pwd`/nbbuild/build/test-results.txt
+export RESULT
+rm $RESULT
+
+testmodule() {
+    if ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
+        echo Test OK: $1
+    else
+        echo $1 >>$RESULT
+    fi
+}
+
+ant clean || exit 2
+ant build || exit 2
+ant commit-validation || echo commit-validation >$RESULT
+
+testmodule openide.util
+
+hg push "$push_url"
