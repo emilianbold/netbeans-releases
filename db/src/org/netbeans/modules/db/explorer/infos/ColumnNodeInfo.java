@@ -63,13 +63,12 @@ import org.netbeans.lib.ddl.impl.TableColumn;
 import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.modules.db.explorer.nodes.ColumnNode;
 import org.netbeans.modules.db.explorer.nodes.DatabaseNode;
+import org.openide.actions.DeleteAction;
 
 public class ColumnNodeInfo extends DatabaseNodeInfo {
     static final long serialVersionUID =-1470704512178901918L;
     private static final Logger LOGGER = Logger.getLogger(ColumnNode.class.getName());
     private static final double JAVADB_MINOR_VERSION_SUPPORTED = 3;  // Java DB minor version that supports column deletion
-    private static final String DELETE_ACTION_CLASS = "DeleteAction";  // NOI18N
-
 
     @Override
     public Vector getActions() {
@@ -77,14 +76,19 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
         Vector actions = super.getActions();
         Specification spec = (Specification) getSpecification();
         // If Java DB doesn't support column deletion, exclude the Delete action
-        for (int i = 0; i < actions.size(); i++) {
-            if (spec.getProperties().get("DatabaseProductName").equals("Apache Derby") && !isSupported(spec)) { // NOI18N
-                if (actions.get(i) != null) {
-                    String simpleClassName = actions.get(i).getClass().getSimpleName();
-                    if (simpleClassName.equals(DELETE_ACTION_CLASS)) {
-                        actions.remove(i);
+        if (spec.getProperties().get("DatabaseProductName").equals("Apache Derby"))  { // NOI18N
+            DeleteAction deleteAction = null;
+            for (Object action : actions) {
+                if (!isSupported(spec)) { 
+                    if (action != null) {
+                        if (action instanceof DeleteAction) {
+                            deleteAction = (DeleteAction)action;
+                        }
                     }
                 }
+            }
+            if (deleteAction != null) {
+                actions.remove(deleteAction);
             }
         }
         return actions;
