@@ -349,12 +349,16 @@ public class WsValidation extends WebServicesTestBase {
         createHandler(getHandlersPackage(), "WsMsgHandler2", HandlerType.MESSAGE); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler1", HandlerType.LOGICAL); //NOI18N
         createHandler(getHandlersPackage(), "WsLogHandler2", HandlerType.LOGICAL); //NOI18N
-        String path = "xml-resources/web-service-references/" + getWsName() + "Service/bindings/"; //NOI18N
         FileObject fo = getProject().getProjectDirectory().getFileObject("src/conf/"); //NOI18N
         if (fo == null) {
             fo = getProject().getProjectDirectory();
         }
-        File handlerCfg = new File(FileUtil.toFile(fo), path + getWsName() + "Service_handler.xml"); //NOI18N
+        String wsName = getWsName();
+        if (wsName.contains("Web")) { //NOI18N
+            wsName += "Service"; //NOI18N
+        }
+        String path = "xml-resources/web-service-references/" + wsName + "/bindings/"; //NOI18N
+        File handlerCfg = new File(FileUtil.toFile(fo), path + wsName + "_handler.xml"); //NOI18N
         Node clientNode = new Node(getProjectRootNode(), WEB_SERVICE_CLIENTS_NODE_NAME + "|" + getWsName()); //NOI18N
         configureHandlers(clientNode, handlerCfg, false);
     }
@@ -457,7 +461,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         waitForTextInEditor(eo, "port." + opName); //NOI18N
         try {
-            Thread.sleep(500);
+            Thread.sleep(1500);
         } catch (InterruptedException ex) {
             //ignore
         }
@@ -502,6 +506,11 @@ public class WsValidation extends WebServicesTestBase {
                     eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         } else {
             waitForWsImport("wsimport-client"); //NOI18N
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                //ignore
+            }
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);
@@ -516,7 +525,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         } else {
             waitForWsImport("wsimport-client"); //NOI18N
         }
@@ -530,7 +539,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         } else {
             waitForWsImport("wsimport-client"); //NOI18N
         }
@@ -547,7 +556,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         } else {
             waitForWsImport("wsimport-client"); //NOI18N
         }
@@ -564,7 +573,7 @@ public class WsValidation extends WebServicesTestBase {
         ndo.ok();
         if (isService) {
             assertTrue("missing @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
         } else {
             waitForWsImport("wsimport-client"); //NOI18N
         }
@@ -585,7 +594,7 @@ public class WsValidation extends WebServicesTestBase {
 
         if (isService) {
             assertFalse("offending @HandlerChain", //NOI18N
-                    eo.contains("@HandlerChain(file = \"MyWebWs_handler.xml\")")); //NOI18N
+                    eo.contains("@HandlerChain(file = \"" + getWsName() + "_handler.xml\")")); //NOI18N
             assertFalse(handlerCfg.exists());
         }
     }
