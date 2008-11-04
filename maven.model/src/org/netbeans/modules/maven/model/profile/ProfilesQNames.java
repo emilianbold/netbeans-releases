@@ -89,10 +89,10 @@ public final class ProfilesQNames {
         SNAPSHOTS = new ProfilesQName(ProfilesQName.createQName("snapshots",ns), ns); // NOI18N
         PROFILE = new ProfilesQName(ProfilesQName.createQName("profile",ns), ns); // NOI18N
         ACTIVATION = new ProfilesQName(ProfilesQName.createQName("activation",ns), ns); // NOI18N
-        ACTIVATIONPROPERTY = new ProfilesQName(ProfilesQName.createQName("activationProperty",ns), ns); // NOI18N
-        ACTIVATIONOS = new ProfilesQName(ProfilesQName.createQName("activationOS",ns), ns); // NOI18N
-        ACTIVATIONFILE = new ProfilesQName(ProfilesQName.createQName("activationFile",ns), ns); // NOI18N
-        ACTIVATIONCUSTOM = new ProfilesQName(ProfilesQName.createQName("activationCustom",ns), ns); // NOI18N
+        ACTIVATIONPROPERTY = new ProfilesQName(ProfilesQName.createQName("property",ns), ns); // NOI18N
+        ACTIVATIONOS = new ProfilesQName(ProfilesQName.createQName("os",ns), ns); // NOI18N
+        ACTIVATIONFILE = new ProfilesQName(ProfilesQName.createQName("file",ns), ns); // NOI18N
+        ACTIVATIONCUSTOM = new ProfilesQName(ProfilesQName.createQName("custom",ns), ns); // NOI18N
         PROFILES = new ProfilesQName(ProfilesQName.createQName("profiles",ns), ns); // NOI18N
         REPOSITORIES = new ProfilesQName(ProfilesQName.createQName("repositories",ns), ns); // NOI18N
         PLUGINREPOSITORIES = new ProfilesQName(ProfilesQName.createQName("pluginRepositories",ns), ns); // NOI18N

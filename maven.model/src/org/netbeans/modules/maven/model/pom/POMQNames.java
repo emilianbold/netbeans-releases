@@ -189,10 +189,10 @@ public final class POMQNames {
         REPORTPLUGIN = new POMQName(POMQName.createQName("reportPlugin",ns), ns); // NOI18N
         REPORTSET = new POMQName(POMQName.createQName("reportSet",ns), ns); // NOI18N
         ACTIVATION = new POMQName(POMQName.createQName("activation",ns), ns); // NOI18N
-        ACTIVATIONPROPERTY = new POMQName(POMQName.createQName("activationProperty",ns), ns); // NOI18N
-        ACTIVATIONOS = new POMQName(POMQName.createQName("activationOS",ns), ns); // NOI18N
-        ACTIVATIONFILE = new POMQName(POMQName.createQName("activationFile",ns), ns); // NOI18N
-        ACTIVATIONCUSTOM = new POMQName(POMQName.createQName("activationCustom",ns), ns); // NOI18N
+        ACTIVATIONPROPERTY = new POMQName(POMQName.createQName("property",ns), ns); // NOI18N
+        ACTIVATIONOS = new POMQName(POMQName.createQName("os",ns), ns); // NOI18N
+        ACTIVATIONFILE = new POMQName(POMQName.createQName("file",ns), ns); // NOI18N
+        ACTIVATIONCUSTOM = new POMQName(POMQName.createQName("custom",ns), ns); // NOI18N
         DEPENDENCYMANAGEMENT = new POMQName(POMQName.createQName("dependencyManagement",ns), ns); // NOI18N
         BUILD = new POMQName(POMQName.createQName("build",ns), ns); // NOI18N
         EXTENSION = new POMQName(POMQName.createQName("extension",ns), ns); // NOI18N
