@@ -39,41 +39,25 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+package org.netbeans.modules.websvc.jaxws.light.spi;
+
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.JAXWSLightSupportAccessor;
 
 /**
+ * Most general way to create {@link WebServicesSupport} instances.
+ * You are not permitted to create them directly; instead you implement
+ * {@link WebServicesSupportImpl} and use this factory.
  *
- * @author Milan Kuchtiak
+ * @author Milan Kuchtiak, Peter Wiliams
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+public final class JAXWSLightSupportFactory {
 
-    public JaxWsClientCreatorProvider() {
-    }
-    
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
-
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
+    private JAXWSLightSupportFactory() {
     }
 
+    public static JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport) {
+        return JAXWSLightSupportAccessor.DEFAULT.createJAXWSSupport(spiJAXWSSupport);
+    }
+	
 }

@@ -39,41 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+package org.netbeans.modules.maven.jaxws.wizards;
 
-/**
- *
- * @author Milan Kuchtiak
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
-
-    public JaxWsClientCreatorProvider() {
-    }
+public class WizardProperties {
+    public static final String WEB_SERVICE_TYPE = "webServiceType"; // NOI18N
+    public static final String DELEGATE_TO_SESSION_BEAN = "delegateToSessionBean"; // NOI18N
+    public static final String WSDL_FILE_PATH = "wsdlFilePath"; //NOI18N
+    public static final String WSDL_URL = "wsdl_url"; //NOI18N
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
+    public static final int FROM_SCRATCH = 0;
+    public static final int ENCAPSULATE_SESSION_BEAN = 1;
 
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
-    }
-
+    public static final String WSDL_MODEL = "wsdlModel"; //NOI18N
+    public static final String WSDL_MODELER = "wsdlModeler"; //NOI18N
+    public static final String WSDL_SERVICE = "wsdlService"; //NOI18N
+    public static final String WSDL_PORT = "wsdlPort"; //NOI18N
+    public static final String WSDL_SERVICE_HANDLER = "wsdlServiceHandler"; //NOI18N
+    public static final String USE_PROVIDER = "useProvider"; //NOI18N
+     
+    public static final String WSDL_DOWNLOAD_URL = "wsdlDownloadUrl"; // NOI18N
 }

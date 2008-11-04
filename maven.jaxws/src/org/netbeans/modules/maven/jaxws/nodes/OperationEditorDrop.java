@@ -39,41 +39,49 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
+package org.netbeans.modules.maven.jaxws.nodes;
+
+import javax.swing.text.JTextComponent;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.editor.NbEditorUtilities;
+//import org.netbeans.modules.websvc.core.JaxWsUtils;
+//import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
+import org.openide.ErrorManager;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.Node;
+import org.openide.text.ActiveEditorDrop;
 
-/**
+/** Implementation of ActiveEditorDrop
  *
- * @author Milan Kuchtiak
+ * @author mkuchtiak
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
-
-    public JaxWsClientCreatorProvider() {
-    }
+public class OperationEditorDrop implements ActiveEditorDrop {
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
+    OperationNode operationNode;
+    
+    public OperationEditorDrop(OperationNode operationNode) {
+        this.operationNode=operationNode;
+    }
 
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
+    public boolean handleTransfer(JTextComponent targetComponent) {
+        Object mimeType = targetComponent.getDocument().getProperty("mimeType"); //NOI18N
+        if (mimeType!=null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType) )) { //NOI18N
+            
+            try {
+                Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
+                FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
+                Project clientProject = FileOwnerQuery.getOwner(srcRoot);
+                FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
+//                if (JaxWsUtils.addProjectReference(clientProject, targetFo)) {
+//                    JaxWsCodeGenerator.insertMethod(targetComponent.getDocument(), targetComponent.getCaret().getDot(), operationNode);
+//                    return true;
+//                }
+            } catch (Exception ex) {
+                ErrorManager.getDefault().log(ex.getLocalizedMessage());
             }
         }
-        return null;
+        return false;
     }
-
+    
 }

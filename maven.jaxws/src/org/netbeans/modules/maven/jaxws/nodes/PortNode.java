@@ -38,42 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.maven.jaxws.nodes;
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+import java.awt.Image;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-/**
+/** Node representing WS Port
  *
- * @author Milan Kuchtiak
+ * @author mkuchtiak
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
-
-    public JaxWsClientCreatorProvider() {
+public class PortNode extends AbstractNode {
+    WsdlPort port;
+    FileObject srcRoot;
+    
+    public PortNode(WsdlPort port) {
+        this(port, new InstanceContent());
     }
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
-
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
+    private PortNode(WsdlPort port, InstanceContent content) {
+        super(new PortChildren(port),new AbstractLookup(content));
+        this.port=port;
+        setName(port.getName());
+        setDisplayName(port.getName());
+        content.add(port);
     }
-
+    
+    @Override
+    public Image getIcon(int type){
+        return ImageUtilities.loadImage("org/netbeans/modules/maven/jaxws/resources/wsport.png"); //NOI18N
+    }
+    
+    @Override
+    public Image getOpenedIcon(int type){
+        return getIcon( type);
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    // Handle deleting:
+    @Override
+    public boolean canDestroy() {
+        return false;
+    }
+    
 }

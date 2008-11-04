@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Serviceions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,42 +38,57 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.maven.jaxws.nodes;
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+import java.awt.Image;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
+import org.openide.util.Utilities;
+import org.openide.util.lookup.AbstractLookup;
+import org.openide.util.lookup.InstanceContent;
 
-/**
+/** Node representing WS Service
  *
- * @author Milan Kuchtiak
+ * @author mkuchtiak
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
-
-    public JaxWsClientCreatorProvider() {
+public class ServiceNode extends AbstractNode {
+    WsdlService service;
+    FileObject srcRoot;
+    
+    public ServiceNode(WsdlService service) {
+        this(service, new InstanceContent());
     }
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
-
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
+    private ServiceNode(WsdlService service, InstanceContent content) {
+        super(new ServiceChildren(service),new AbstractLookup(content));
+        this.service=service;
+        setName(service.getName());
+        setDisplayName(service.getName());
+        content.add(service);
     }
-
+    
+    @Override
+    public Image getIcon(int type){
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/webservices/ui/resources/webservice.png"); //NOI18N
+    }
+    
+    @Override
+    public Image getOpenedIcon(int type){
+        return getIcon( type);
+    }
+    
+    @Override
+    public HelpCtx getHelpCtx() {
+        return HelpCtx.DEFAULT_HELP;
+    }
+    
+    // Handle deleting:
+    @Override
+    public boolean canDestroy() {
+        return false;
+    }
+    
 }

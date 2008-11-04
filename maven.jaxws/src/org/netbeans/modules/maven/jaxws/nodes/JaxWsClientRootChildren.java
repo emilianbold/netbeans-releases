@@ -38,42 +38,58 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.maven.jaxws.nodes;
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+import java.beans.PropertyChangeEvent;
+import java.util.Collections;
+import org.netbeans.modules.websvc.project.api.WebService;
+import org.netbeans.modules.websvc.project.api.WebServiceData;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
+import java.beans.PropertyChangeListener;
+import org.openide.util.RequestProcessor;
 
-/**
- *
- * @author Milan Kuchtiak
- */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+public class JaxWsClientRootChildren extends Children.Keys<WebService> {
+    JaxWsListener listener;
+    //MavenWebServicesProvider wsDataProvider;
+    WebServiceData wsData;
 
-    public JaxWsClientCreatorProvider() {
+    private RequestProcessor.Task updateNodeTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            updateKeys();
+        }
+    });
+    
+    public JaxWsClientRootChildren(WebServiceData wsData) {
+        this.wsData = wsData;
     }
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
-
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
+    @Override
+    protected void addNotify() {
+        listener = new JaxWsListener();
+        wsData.addPropertyChangeListener(listener);
+        updateKeys();
+    }
+    
+    @Override
+    protected void removeNotify() {
+        setKeys(Collections.<WebService>emptySet());
+        wsData.removePropertyChangeListener(listener);
+    }
+       
+    private void updateKeys() {
+        setKeys(wsData.getServiceConsumers());
     }
 
+    protected Node[] createNodes(final WebService key) {
+        Node wsNode = key.getNode();
+        return wsNode == null ? new Node[0] : new Node[] {wsNode};
+    }
+    
+    class JaxWsListener implements PropertyChangeListener {
+        public void propertyChange(PropertyChangeEvent evt) {
+            updateNodeTask.schedule(1000);
+        }        
+    }
+        
 }

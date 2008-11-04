@@ -38,42 +38,45 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.maven.jaxws.nodes;
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
-
-/**
+/** Service children (Port elements)
  *
- * @author Milan Kuchtiak
+ * @author mkuchtiak
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
+import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
-    public JaxWsClientCreatorProvider() {
-    }
-    
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
+public class ServiceChildren extends Children.Keys<WsdlPort> {
 
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
+    WsdlService wsdlService;
+
+    public ServiceChildren(WsdlService wsdlService) {
+        this.wsdlService = wsdlService;
     }
 
+    @Override
+    protected void addNotify() {
+        updateKeys();
+    }
+
+    @Override
+    protected void removeNotify() {
+        setKeys(Collections.<WsdlPort>emptySet());
+    }
+
+    private void updateKeys() {
+        @SuppressWarnings("unchecked")
+        List<WsdlPort> keys = wsdlService.getPorts();
+        setKeys(keys == null ? new ArrayList<WsdlPort>() : keys);
+    }
+
+    protected Node[] createNodes(WsdlPort key) {
+        return new Node[]{new PortNode(key)};
+    }
 }

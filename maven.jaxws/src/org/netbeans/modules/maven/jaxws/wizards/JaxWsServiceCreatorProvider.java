@@ -39,41 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.core.client.wizard;
+package org.netbeans.modules.maven.jaxws.wizards;
+
+import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
+import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;
 import org.openide.WizardDescriptor;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 
 /**
  *
  * @author Milan Kuchtiak
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
 
-    public JaxWsClientCreatorProvider() {
+    public JaxWsServiceCreatorProvider() {
     }
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
-
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
+    public ServiceCreator getServiceCreator(Project project, WizardDescriptor wiz) {
+        if (JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory()) != null) {
+            return new JaxWsServiceCreator(project, wiz, true);
         }
         return null;
     }
-
 }

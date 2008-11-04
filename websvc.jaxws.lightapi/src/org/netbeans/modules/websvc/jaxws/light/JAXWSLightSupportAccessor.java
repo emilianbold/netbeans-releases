@@ -38,42 +38,31 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.websvc.jaxws.light;
 
-package org.netbeans.modules.websvc.core.client.wizard;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
-import org.netbeans.modules.websvc.api.support.ClientCreator;
-import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
-import org.netbeans.modules.websvc.core.ClientWizardProperties;
-import org.netbeans.modules.websvc.core.ServerType;
-import org.netbeans.modules.websvc.core.WSStackUtils;
-import org.openide.WizardDescriptor;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
+import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportImpl;
 
-/**
- *
- * @author Milan Kuchtiak
+/* This class provides access to the {@link WebServicesSupport}'s private constructor 
+ * from outside in the way that this class is implemented by an inner class of 
+ * {@link JAXWSSupport} and the instance is set into the {@link DEFAULT}.
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
-public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
+public abstract class JAXWSLightSupportAccessor {
 
-    public JaxWsClientCreatorProvider() {
+    public static JAXWSLightSupportAccessor DEFAULT;
+    
+    // force loading JAXWSSupport class. That will set DEFAULT variable.
+    static {
+        Class c = JAXWSLightSupport.class;
+        try {
+            Class.forName(c.getName(), true, c.getClassLoader());
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
-    public ClientCreator getClientCreator(Project project, WizardDescriptor wiz) {
-        String jaxVersion = (String) wiz.getProperty(ClientWizardProperties.JAX_VERSION);
-        if (JAXWSClientSupport.getJaxWsClientSupport(project.getProjectDirectory()) != null) {
-            if (jaxVersion.equals(ClientWizardProperties.JAX_WS)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-    //        if (JaxWsUtils.isEjbJavaEE5orHigher(project)) {
-    //            return new JaxWsClientCreator(project, wiz);
-    //        }
+    public abstract JAXWSLightSupport createJAXWSSupport(JAXWSLightSupportImpl spiJAXWSSupport);
 
-            if (ServerType.JBOSS == WSStackUtils.getServerType(project)) {
-                return new JaxWsClientCreator(project, wiz);
-            }
-        }
-        return null;
-    }
+    public abstract JAXWSLightSupportImpl getJAXWSSupportImpl(JAXWSLightSupport wss);
 
 }
