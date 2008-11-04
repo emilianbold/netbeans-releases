@@ -38,10 +38,6 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
-
 /**
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
@@ -55,14 +51,14 @@ public class TransportTestCase extends RemoteTestBase {
     }
 
     public void testRun() throws Exception {
-        if (!canTest()) {
-            return;
+        if (canTestRemote()) {
+            final String randomString = "i am just a random string, it does not matter that I mean";
+            RemoteCommandSupport rcs = new RemoteCommandSupport(getHKey(), "echo " + randomString);
+            rcs.run();
+            rcs.disconnect();
+            assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getHKey() + "' returned " + rcs.getExitStatus();
+            assert randomString.equals( rcs.getOutput().trim()) : "echo command on remote server '" + getHKey() + "' produced unexpected output: " + rcs.getOutput();
         }
-        final String randomString = "i am just a random string, doesn't matter that I mean";
-        RemoteCommandSupport rcs = new RemoteCommandSupport(getKey(), "echo " + randomString);
-        rcs.disconnect();
-        assert rcs.getExitStatus() == 0 : "echo command on remote server '" + getKey() + "' returned " + rcs.getExitStatus();
-        assert randomString.equals( rcs.getOutput() ) : "echo command on remote server '" + getKey() + "' produced unexpected output: " + rcs.getOutput();
     }
 
 //    public void testNewJsch() throws Exception {

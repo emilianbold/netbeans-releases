@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.discovery.api;
 
 import java.util.Collection;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.api.project.Project;
 import org.openide.util.Lookup;
 
 /**
@@ -50,7 +50,7 @@ import org.openide.util.Lookup;
 public abstract class PkgConfigManager {
     private static PkgConfigManager DEFAULT = new Default();
 
-    public abstract PkgConfig getPkgConfig(CompilerSet set);
+    public abstract PkgConfig getPkgConfig(Project project);
 
     protected PkgConfigManager() {
     }
@@ -105,10 +105,10 @@ public abstract class PkgConfigManager {
         }
 
         @Override
-        public PkgConfig getPkgConfig(CompilerSet set) {
+        public PkgConfig getPkgConfig(Project project) {
             PkgConfigManager service = getService();
             if (service != null) {
-                return service.getPkgConfig(set);
+                return service.getPkgConfig(project);
             }
             return null;
         }

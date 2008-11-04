@@ -177,7 +177,7 @@ public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
         
         finishProgressReporting();
 
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+        return new HashSet<FileObject>(Collections.<FileObject>emptyList());
     }
     
     @Override

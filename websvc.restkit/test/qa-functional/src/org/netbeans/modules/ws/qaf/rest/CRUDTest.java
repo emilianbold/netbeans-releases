@@ -48,10 +48,13 @@ import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.WizardOperator;
+import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JListOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -181,7 +184,20 @@ public class CRUDTest extends RestTestBase {
     }
 
     public void testCreateRestClient() throws IOException {
-        prepareRestClient();
+        // not display browser on run
+        // open project properties
+        getProjectRootNode().properties();
+        // "Project Properties"
+        String projectPropertiesTitle = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_Customizer_Title");
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator(projectPropertiesTitle);
+        // select "Run" category
+        new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
+        String displayBrowserLabel = Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.customizer.Bundle", "LBL_CustomizeRun_DisplayBrowser_JCheckBox");
+        new JCheckBoxOperator(propertiesDialogOper, displayBrowserLabel).setSelected(false);
+        // confirm properties dialog
+        propertiesDialogOper.ok();
+        String testRestActionName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.projects.Bundle", "LBL_TestRestBeansAction_Name");
+        getProjectRootNode().performPopupAction(testRestActionName);
     }
 
     private void prepareEntityClasses() {
