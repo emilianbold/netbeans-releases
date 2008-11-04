@@ -36,20 +36,24 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.modeldiscovery.provider;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+package org.netbeans.modules.cnd.api.remote;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
+import java.io.StringReader;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Alexander Simon
+ * @author Sergey Grinev
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.PkgConfigManager.class)
-public class PkgConfigManagerImpl extends PkgConfigManager {
+public class RemoteBufferedReader {
 
-    @Override
-    public PkgConfig getPkgConfig(Project project) {
-        return new PkgConfigImpl(project);
+    protected RemoteBufferedReader(File file) {
+
     }
+
 }

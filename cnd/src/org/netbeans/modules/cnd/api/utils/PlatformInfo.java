@@ -40,14 +40,21 @@
  */
 package org.netbeans.modules.cnd.api.utils;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
+import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  * This class evolutioned from cnd.api.utils.Path
@@ -251,6 +258,66 @@ public final class PlatformInfo {
     public boolean fileExists(String path) {
         return HostInfoProvider.getDefault().fileExists(hkey, path);
     }
+
+    public File[] listFiles(File file) {
+        //TODO: till API review
+        if (RemoteUtils.isLocalhost(hkey)) {
+            return file.listFiles();
+        } else {
+            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            if (provider.run(hkey, "ls -A1", null) == 0) {
+                String files = provider.getOutput();
+                if (files != null) {
+                    BufferedReader bufferedReader = new BufferedReader(new StringReader(files));
+                    String line;
+                    ArrayList<File> lines = new ArrayList<File>();
+                    try {
+                        while ((line = bufferedReader.readLine()) != null) {
+                            lines.add(new File(line));
+                        }
+                        bufferedReader.close();
+                    } catch (IOException ex) {
+                        //hardly can happen during reading string
+                        Exceptions.printStackTrace(ex);
+                        return null;
+                    }
+                    return lines.toArray(new File[lines.size()]);
+                }
+            }
+        }
+        return null;
+    }
+
+    public boolean fileIsDirectory(File file) {
+        //TODO: till API review
+        if (RemoteUtils.isLocalhost(hkey)) {
+            return file.isDirectory();
+        } else {
+            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            return provider.run(hkey, "test -d \"" + file.getPath() + "\"", null) == 0;
+        }
+    }
+
+    public boolean fileIsFile(File file) {
+        //TODO: till API review
+        if (RemoteUtils.isLocalhost(hkey)) {
+            return file.isFile();
+        } else {
+            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            return provider.run(hkey, "test -f \"" + file.getPath() + "\"", null) == 0;
+        }
+    }
+
+    public boolean fileCanRead(File file) {
+        //TODO: till API review
+        if (RemoteUtils.isLocalhost(hkey)) {
+            return file.canRead();
+        } else {
+            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            return provider.run(hkey, "test -r \"" + file.getPath() + "\"", null) == 0;
+        }
+
+    }
     private static Map<String, PlatformInfo> map = new HashMap<String, PlatformInfo>();
 
     public static synchronized PlatformInfo getDefault(String hkey) {
@@ -266,5 +333,4 @@ public final class PlatformInfo {
     public static PlatformInfo localhost() {
         return getDefault(CompilerSetManager.LOCALHOST);
     }
-
 }
