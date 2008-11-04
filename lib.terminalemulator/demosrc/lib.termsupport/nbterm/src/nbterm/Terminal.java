@@ -99,7 +99,7 @@ class Terminal extends JFrame implements Runnable {
         term.setAttribute(0);   // default
     }
 
-    Terminal(TermExecutor executor, Program program, boolean processErrors) {
+    Terminal(TermExecutor executor, Program program, boolean processErrors, int rows, int cols) {
         super();
 
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -109,7 +109,7 @@ class Terminal extends JFrame implements Runnable {
 
         term = new ActiveTerm();
         term.setCursorVisible(true);
-        term.setRowsColumns(24, 80);
+        term.setRowsColumns(rows, cols);
 
         term.setHorizontallyScrollable(false);
         term.setEmulation("dtterm");
