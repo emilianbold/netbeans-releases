@@ -72,11 +72,9 @@ import org.openide.util.RequestProcessor;
  * relative path changes.
  * @author mkleint
  */
-//TODO rename to something else doesn't describe correctly what it does..
 public final class NbMavenProject {
 
     /**
-     * TODO comment
      * the only property change fired by the class, means that the pom file
      * has changed.
      */

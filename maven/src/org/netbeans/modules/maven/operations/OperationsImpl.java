@@ -53,6 +53,11 @@ import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMModelFactory;
+import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.spi.project.CopyOperationImplementation;
 import org.netbeans.spi.project.DeleteOperationImplementation;
 import org.netbeans.spi.project.MoveOperationImplementation;
@@ -60,6 +65,7 @@ import org.netbeans.spi.project.ProjectState;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -129,7 +135,7 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         notifyDeleting();
     }
     
-    public void notifyMoved(Project original, File originalLoc, String newName) throws IOException {
+    public void notifyMoved(Project original, File originalLoc, final String newName) throws IOException {
         if (original == null) {
             //old project call..
             state.notifyDeleted();
@@ -138,9 +144,13 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
             if (original.getProjectDirectory().equals(project.getProjectDirectory())) {
                 // oh well, just change the name in the pom when rename is invoked.
                 FileObject pomFO = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                Model mdl = WriterUtils.loadModel(pomFO);
-                mdl.setName(newName);
-                WriterUtils.writePomModel(pomFO, mdl);
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        model.getProject().setName(newName);
+                        model.endTransaction();
+                    }
+                };
+                Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));
                 NbMavenProject.fireMavenProjectReload(project);
             }
             checkParentProject(project.getProjectDirectory(), false, newName, originalLoc.getName());
@@ -159,31 +169,34 @@ public class OperationsImpl implements DeleteOperationImplementation, MoveOperat
         }
     }
     
-    private void checkParentProject(FileObject projectDir, boolean delete, String newName, String oldName) throws IOException {
-        String prjLoc = projectDir.getNameExt();
+    private void checkParentProject(FileObject projectDir, final boolean delete, final String newName, final String oldName) throws IOException {
+        final String prjLoc = projectDir.getNameExt();
         FileObject fo = projectDir.getParent();
         Project possibleParent = ProjectManager.getDefault().findProject(fo);
         if (possibleParent != null) {
-            NbMavenProjectImpl par = possibleParent.getLookup().lookup(NbMavenProjectImpl.class);
+            final NbMavenProjectImpl par = possibleParent.getLookup().lookup(NbMavenProjectImpl.class);
             if (par != null) {
                 FileObject pomFO = par.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
-                Model mdl = WriterUtils.loadModel(pomFO);
-                MavenProject prj = par.getOriginalMavenProject();
-                if ((prj.getModules() != null && prj.getModules().contains(prjLoc)) == delete) {
-                    //delete/add module from/to parent..
-                    if (delete) {
-                        mdl.removeModule(prjLoc);
-                    } else {
-                        mdl.addModule(prjLoc);
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        MavenProject prj = par.getOriginalMavenProject();
+                        if ((prj.getModules() != null && prj.getModules().contains(prjLoc)) == delete) {
+                            //delete/add module from/to parent..
+                            if (delete) {
+                                model.getProject().removeModule(prjLoc);
+                            } else {
+                                model.getProject().addModule(prjLoc);
+                            }
+                        }
+                        if (newName != null && oldName != null) {
+                            if (oldName.equals(model.getProject().getArtifactId())) {
+                                // is this condition necessary.. why not just overwrite the artifactID always..
+                                model.getProject().setArtifactId(newName);
+                            }
+                        }
                     }
-                }
-                if (newName != null && oldName != null) {
-                    if (oldName.equals(mdl.getArtifactId())) {
-                        // is this condition necessary.. why not just overwrite the artifactID always..
-                        mdl.setArtifactId(newName);
-                    }
-                }
-                WriterUtils.writePomModel(pomFO, mdl);
+                };
+                Utilities.performPOMModelOperations(pomFO, Collections.singletonList(operation));
             }
         }
         
