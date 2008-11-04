@@ -69,10 +69,6 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentListener;
-import org.apache.maven.model.BuildBase;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.model.Profile;
 import org.netbeans.modules.maven.MavenSourcesImpl;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -85,6 +81,14 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.model.pom.BuildBase;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMComponent;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.POMModel;
+import org.netbeans.modules.maven.model.pom.POMQName;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginExecution;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -106,14 +110,13 @@ public class RunJarPanel extends javax.swing.JPanel {
      */
     private static final String ARTFACTID_JAR = "maven-jar-plugin";//NOI18N
     private static final String ARITFACTID_ASSEMBLY = "maven-assembly-plugin";//NOI18N
-    private static final String CONFIGURATION_EL = "configuration";//NOI18N
     private static final String DEPRECATED_RUN_PARAMS = "netbeans.jar.run.params"; //NOI18N
     private static final String DEPRECATED_RUN_WORKDIR = "netbeans.jar.run.workdir"; //NOI18N
     private static final String DEPRECATED_RUN_JVM_PARAMS = "netbeans.jar.run.jvmparams"; //NOI18N
     private boolean isDeprecatedRun = false;
     private boolean isDeprecatedDebug = false;
-    private Plugin jarPlugin;
-    private Plugin assemblyPlugin;
+    private org.netbeans.modules.maven.model.pom.Plugin jarPlugin;
+    private org.netbeans.modules.maven.model.pom.Plugin assemblyPlugin;
     
     private boolean isCurrentRun = true;
     private boolean isCurrentDebug = true;
@@ -287,14 +290,13 @@ public class RunJarPanel extends javax.swing.JPanel {
             isDeprecatedRun = checkDeprecatedMapping(run);
             isDeprecatedDebug = checkDeprecatedMapping(debug);
             if (isDeprecatedDebug || isDeprecatedRun) {
-                Profile publicProfile = handle.getNetbeansPublicProfile(false);
+                org.netbeans.modules.maven.model.pom.Profile publicProfile = handle.getNetbeansPublicProfile(false);
                 jarPlugin = null;
                 assemblyPlugin = null;
-                if (publicProfile != null && publicProfile.getBuild() != null) {
-                    BuildBase bld = publicProfile.getBuild();
-                    Iterator it = bld.getPlugins().iterator();
-                    while (it.hasNext()) {
-                        Plugin elem = (Plugin)it.next();
+                if (publicProfile != null && publicProfile.getBuildBase() != null) {
+                    org.netbeans.modules.maven.model.pom.BuildBase bld = publicProfile.getBuildBase();
+                    List<org.netbeans.modules.maven.model.pom.Plugin> plugins = bld.getPlugins();
+                    for (org.netbeans.modules.maven.model.pom.Plugin elem : plugins) {
                         if (ARTFACTID_JAR.equals(elem.getArtifactId())) { //NOI18N
                             jarPlugin = elem;
                         }
@@ -609,20 +611,26 @@ public class RunJarPanel extends javax.swing.JPanel {
      */
     private @Deprecated Plugin checkJarPlugin(Plugin jarPlugin, String val) {
         if (jarPlugin == null) {
-            jarPlugin = new Plugin();
+            jarPlugin = handle.getPOMModel().getFactory().createPlugin();
             jarPlugin.setArtifactId(ARTFACTID_JAR); 
             jarPlugin.setGroupId(Constants.GROUP_APACHE_PLUGINS); 
             jarPlugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_JAR));
-            handle.getNetbeansPublicProfile().getBuild().addPlugin(jarPlugin);
+            BuildBase base = handle.getNetbeansPublicProfile().getBuildBase();
+            if (base == null) {
+                base = handle.getPOMModel().getFactory().createBuildBase();
+                handle.getNetbeansPublicProfile().setBuildBase(base);
+            }
+            base.addPlugin(jarPlugin);
         }
-        if (jarPlugin.getConfiguration() == null) {
-            jarPlugin.setConfiguration(new Xpp3Dom(CONFIGURATION_EL)); 
+        Configuration config = jarPlugin.getConfiguration();
+        if (config == null) {
+            config = handle.getPOMModel().getFactory().createConfiguration();
+            jarPlugin.setConfiguration(config);
         }
-        Xpp3Dom configuration = (Xpp3Dom) jarPlugin.getConfiguration();
-        Xpp3Dom manifest = getOrCreateXppDomChild(getOrCreateXppDomChild(configuration, "archive"), "manifest"); //NOI18N
-        getOrCreateXppDomChild(manifest, "addClasspath").setValue("true"); //NOI18N
-        getOrCreateXppDomChild(manifest, "classpathPrefix").setValue("lib"); //NOI18N
-        getOrCreateXppDomChild(manifest, "mainClass").setValue(val); //NOI18N
+        POMExtensibilityElement manifest = getOrCreateChild(getOrCreateChild(config, "achive"), "manifest");
+        getOrCreateChild(manifest, "addClasspath").setElementText("true");
+        getOrCreateChild(manifest, "classpathPrefix").setElementText("lib"); //NOI18N
+        getOrCreateChild(manifest, "mainClass").setElementText(val); //NOI18N
         return jarPlugin;
     }
 
@@ -630,41 +638,55 @@ public class RunJarPanel extends javax.swing.JPanel {
      * @deprecated 
      */
     private @Deprecated Plugin checkAssemblyPlugin(Plugin assPlugin) {
+        POMModel model = handle.getPOMModel();
         if (assPlugin == null) {
-            assPlugin = new org.apache.maven.model.Plugin();
+            assPlugin = model.getFactory().createPlugin();
             assPlugin.setArtifactId(ARITFACTID_ASSEMBLY); 
             assPlugin.setGroupId(Constants.GROUP_APACHE_PLUGINS); 
             assPlugin.setVersion(MavenVersionSettings.getDefault().getVersion(MavenVersionSettings.VERSION_ASSEMBLY));
-            handle.getNetbeansPublicProfile().getBuild().addPlugin(assPlugin);
+            BuildBase base = handle.getNetbeansPublicProfile().getBuildBase();
+            if (base == null) {
+                base = handle.getPOMModel().getFactory().createBuildBase();
+                handle.getNetbeansPublicProfile().setBuildBase(base);
+            }
+            base.addPlugin(assPlugin);
         }
-        //#96834
-        assPlugin.flushExecutionMap();
-        
-        PluginExecution exec = (PluginExecution)assPlugin.getExecutionsAsMap().get("nb"); //NOI18N
+        PluginExecution exec = assPlugin.findExecutionById("nb"); //NOI18N
         if (exec == null) {
-            exec = new PluginExecution();
+            exec = model.getFactory().createExecution();
             exec.setId("nb"); //NOI18N
             assPlugin.addExecution(exec);
         }
         exec.setPhase("package"); //NOI18N
-        exec.setGoals(Collections.singletonList("directory-single")); //NOI18N
-        if (exec.getConfiguration() == null) {
-            exec.setConfiguration(new Xpp3Dom(CONFIGURATION_EL)); 
+        List<String> goals = exec.getGoals();
+        if (goals == null || !goals.contains("directory-single")) {
+            exec.addGoal("directory-single"); //NOI18N
         }
-        Xpp3Dom configuration = (Xpp3Dom) exec.getConfiguration();
-        getOrCreateXppDomChild(configuration, "descriptor").setValue("${basedir}/src/main/assemblies/netbeans-run.xml"); //NOI18N
-        getOrCreateXppDomChild(configuration, "finalName").setValue("executable"); //NOI18N
+
+        Configuration config = assPlugin.getConfiguration();
+        if (config == null) {
+            config = handle.getPOMModel().getFactory().createConfiguration();
+            assPlugin.setConfiguration(config);
+        }
+
+        getOrCreateChild(config, "descriptor").setElementText("${basedir}/src/main/assemblies/netbeans-run.xml"); //NOI18N
+        getOrCreateChild(config, "finalName").setElementText("executable"); //NOI18N
         
         return assPlugin;
     }
     
-    private Xpp3Dom getOrCreateXppDomChild(Xpp3Dom parent, String name) {
-        Xpp3Dom child = parent.getChild(name);
-        if (child == null) {
-            child = new Xpp3Dom(name);
-            parent.addChild(child);
+    private POMExtensibilityElement getOrCreateChild(POMComponent parent, String name) {
+        List<POMExtensibilityElement> childs = parent.getChildren(POMExtensibilityElement.class);
+        if (childs == null) {
+            for (POMExtensibilityElement el : childs) {
+                if (name.equals(el.getQName().getLocalPart())) {
+                    return el;
+                }
+            }
         }
-        return child;
+        POMExtensibilityElement el = handle.getPOMModel().getFactory().createPOMExtensibilityElement(POMQName.createQName(name));
+        parent.addExtensibilityElement(el);
+        return el;
     }
 
     /**
