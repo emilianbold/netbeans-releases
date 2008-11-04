@@ -75,22 +75,19 @@ public class ColumnNodeInfo extends DatabaseNodeInfo {
     public Vector getActions() {
         // #149904 [65cat] Cannot remove database table column from action
         Vector actions = super.getActions();
-        Vector revisedActions = new Vector();
         Specification spec = (Specification) getSpecification();
         // If Java DB doesn't support column deletion, exclude the Delete action
         for (int i = 0; i < actions.size(); i++) {
             if (spec.getProperties().get("DatabaseProductName").equals("Apache Derby") && !isSupported(spec)) { // NOI18N
                 if (actions.get(i) != null) {
                     String simpleClassName = actions.get(i).getClass().getSimpleName();
-                    if (!simpleClassName.equals(DELETE_ACTION_CLASS)) {
-                        revisedActions.add(actions.get(i));
+                    if (simpleClassName.equals(DELETE_ACTION_CLASS)) {
+                        actions.remove(i);
                     }
                 }
-            } else {
-                revisedActions.add(actions.get(i));
             }
         }
-        return revisedActions;
+        return actions;
     }
     
     public boolean canAdd(Map propmap, String propname) {
