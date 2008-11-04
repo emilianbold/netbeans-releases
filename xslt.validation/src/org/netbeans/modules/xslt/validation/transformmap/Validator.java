@@ -51,6 +51,7 @@ import org.netbeans.modules.xslt.validation.core.TMapValidator;
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.07
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public final class Validator extends TMapValidator {
 
   public TMapVisitor getVisitor() { return new TMapVisitorAdapter() {

@@ -54,6 +54,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for simple bluej based projects.
  * @author Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class BluejProjectType implements AntBasedProjectType {
     
     public static final String TYPE = "org.netbeans.bluej.bluejproject"; // NOI18N

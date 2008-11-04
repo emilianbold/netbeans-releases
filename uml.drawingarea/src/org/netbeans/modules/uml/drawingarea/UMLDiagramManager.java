@@ -99,6 +99,7 @@ import org.openide.util.Utilities;
  * the platform that contains the environment.
  *  * @author Trey Spiva
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager.class)
 public class UMLDiagramManager 
       implements IProductDiagramManager, INewUMLFileTemplates
 {

@@ -71,6 +71,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector.class)
 public class BdjPlatformDetector extends CDCPlatformDetector {
 
     private static String PLATFORM_TYPE = "bdj"; //NOI18N

@@ -47,6 +47,7 @@ import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemp
 import org.netbeans.modules.xml.wsdl.model.Port;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class TemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String templateUrl = "/org/netbeans/modules/xml/wsdlextui/template/http/template.xml";

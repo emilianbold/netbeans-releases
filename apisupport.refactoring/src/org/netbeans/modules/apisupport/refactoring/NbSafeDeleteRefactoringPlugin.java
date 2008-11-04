@@ -117,7 +117,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             
             if (infoholder.isClass) {
                 checkManifest(project, infoholder.fullName, refactoringElements);
-                checkMetaInfServices(project, infoholder.fullName, refactoringElements);
                 checkLayer(project, infoholder.fullName, refactoringElements);
             }
             if (infoholder.isMethod) {
@@ -147,10 +146,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
                 attributeKey, section);
     }
     
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String clazz, FileObject serviceFile, int line) {
-        return new ServicesSafeDeleteRefactoringElement(clazz, serviceFile);
-    }
-
     protected RefactoringElementImplementation createConstructorLayerRefactoring(String constructor, String fqname,
             LayerUtils.LayerHandle handle,
             FileObject layerFileObject,
@@ -255,76 +250,6 @@ public class NbSafeDeleteRefactoringPlugin extends AbstractRefactoringPlugin {
             }
         }
         
-    }
-    
-    public final class ServicesSafeDeleteRefactoringElement extends AbstractRefactoringElement  {
-        
-        private String oldName;
-        private String oldContent;
-        private File parent;
-        /**
-         * Creates a new instance of ServicesRenameRefactoringElement
-         */
-        public ServicesSafeDeleteRefactoringElement(String fqname, FileObject file) {
-            this.name = fqname.substring(fqname.lastIndexOf('.'));
-            parentFile = file;
-            oldName = fqname;
-            // read old content here. in the unprobable case when 2 classes are to be removed
-            // and both are placed in same services file, we need the true original content
-            oldContent = Utility.readFileIntoString(parentFile);
-            parent = FileUtil.toFile(parentFile);
-        }
-        
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
-        public String getDisplayText() {
-            return NbBundle.getMessage(NbSafeDeleteRefactoringPlugin.class, "TXT_ServicesDelete", this.name);
-        }
-        
-        public void performChange() {
-            String content = Utility.readFileIntoString(parentFile);
-            if (content != null) {
-                String longName = oldName;
-                longName = longName.replaceAll("[.]", "\\."); //NOI18N
-                content = content.replaceAll("^" + longName + "[ \\\n]?", ""); //NOI18N
-                // now check if there's more entries in the file..
-                boolean hasMoreThanComments = false;
-                StringTokenizer tok = new StringTokenizer(content, "\n"); //NOI18N
-                while (tok.hasMoreTokens()) {
-                    String token = tok.nextToken().trim();
-                    if (token.length() > 0 && (! Pattern.matches("^[#].*", token))) { //NOI18N
-                        hasMoreThanComments = true;
-                        break;
-                    }
-                }
-                if (hasMoreThanComments) {
-                    Utility.writeFileFromString(parentFile, content);
-                } else {
-                    try {
-                        parentFile.delete();
-                    } catch (IOException exc) {
-                        err.notify(exc);
-                    }
-                }
-            }
-        }
-        
-        public void undoChange() {
-            try {
-                if (oldContent != null) {
-                    if (!parent.exists()) {
-                        FileObject fo = FileUtil.toFileObject(parent.getParentFile());
-                        if (fo != null) {
-                            parentFile = fo.createData(parent.getName());
-                        }
-                    }
-                    Utility.writeFileFromString(parentFile, oldContent);
-                }
-            } catch (IOException exc) {
-                err.notify(exc);
-            }
-        }
     }
     
     public final class LayerSafeDeleteRefactoringElement extends AbstractRefactoringElement  {

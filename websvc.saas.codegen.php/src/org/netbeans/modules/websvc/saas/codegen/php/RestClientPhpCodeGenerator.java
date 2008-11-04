@@ -75,6 +75,7 @@ import org.openide.loaders.DataObject;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     public static final String INDENT = "             ";

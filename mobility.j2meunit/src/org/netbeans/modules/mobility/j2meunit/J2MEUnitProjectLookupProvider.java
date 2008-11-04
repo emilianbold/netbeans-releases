@@ -60,6 +60,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  *
  * @author Lukas Waldmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectLookupProvider.class, position=26)
 public class J2MEUnitProjectLookupProvider implements ProjectLookupProvider
 {
     public List createLookupElements(J2MEProject project, AntProjectHelper helper, ReferenceHelper refHelper, ProjectConfigurationsHelper profHelper)

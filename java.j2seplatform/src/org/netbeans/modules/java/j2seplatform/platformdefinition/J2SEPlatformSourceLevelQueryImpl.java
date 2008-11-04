@@ -48,6 +48,7 @@ import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
  *
  * @author  tom
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=150)
 public class J2SEPlatformSourceLevelQueryImpl implements SourceLevelQueryImplementation {
 
     /** Creates a new instance of J2SEPlatformSourceLevelQueryImpl */

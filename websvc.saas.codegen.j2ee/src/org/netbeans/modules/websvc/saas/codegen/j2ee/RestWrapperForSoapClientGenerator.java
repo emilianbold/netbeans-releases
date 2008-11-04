@@ -67,6 +67,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author rico
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class RestWrapperForSoapClientGenerator extends SoapClientRestResourceCodeGenerator {
 
     public static final String COMMENT_END_OF_GET = "TODO return proper representation object";

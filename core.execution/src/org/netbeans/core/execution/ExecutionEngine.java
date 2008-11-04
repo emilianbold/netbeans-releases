@@ -75,6 +75,7 @@ import org.netbeans.core.NbTopManager;
 * that is redirected to OutputWriter that is redirected to a window.
 */
 @SuppressWarnings("deprecation") // createLibraryPath
+@org.openide.util.lookup.ServiceProvider(service=org.openide.execution.ExecutionEngine.class)
 public final class
     ExecutionEngine extends org.openide.execution.ExecutionEngine {
 

@@ -58,6 +58,7 @@ import java.util.List;
  *
  * @author Anton Chechel
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.palette.PaletteProvider.class)
 public class MidpPaletteProvider implements PaletteProvider {
 
     public static final String CATEGORY_COMMANDS = "commands"; // NOI18N

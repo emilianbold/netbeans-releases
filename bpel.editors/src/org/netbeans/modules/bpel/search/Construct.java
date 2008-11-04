@@ -54,6 +54,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.05
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.search.spi.SearchEngine.class)
 public final class Construct extends Engine {
 
   @Override

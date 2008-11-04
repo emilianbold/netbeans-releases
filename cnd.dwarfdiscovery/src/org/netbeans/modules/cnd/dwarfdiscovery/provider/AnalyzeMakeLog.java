@@ -59,6 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeMakeLog extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String MAKE_LOG_KEY = "make-log-file"; // NOI18N

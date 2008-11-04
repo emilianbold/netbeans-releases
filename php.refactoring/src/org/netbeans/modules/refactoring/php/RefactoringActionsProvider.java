@@ -48,6 +48,7 @@ import org.openide.util.Lookup;
  *
  * @author Radek Matous
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=400)
 public class RefactoringActionsProvider extends ActionsImplementationProvider {
     public RefactoringActionsProvider() {
     }

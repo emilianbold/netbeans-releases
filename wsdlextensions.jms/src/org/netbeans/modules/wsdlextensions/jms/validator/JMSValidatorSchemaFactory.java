@@ -29,6 +29,7 @@ import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
  *
  * @author Sun Microsystems
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class JMSValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String jmsXSDUrl = "/org/netbeans/modules/wsdlextensions/jms/resources/jms-ext.xsd";
     

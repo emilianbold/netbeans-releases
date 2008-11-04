@@ -52,6 +52,7 @@ import java.util.Set;
 
 public class MtomFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OptimizedMimeSerializationFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

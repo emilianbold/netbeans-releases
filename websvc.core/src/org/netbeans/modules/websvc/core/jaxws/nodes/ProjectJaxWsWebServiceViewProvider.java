@@ -47,6 +47,7 @@ import org.netbeans.modules.websvc.core.ProjectWebServiceViewProvider;
  *
  * @author Ajit
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.ProjectWebServiceViewProvider.class)
 public class ProjectJaxWsWebServiceViewProvider implements ProjectWebServiceViewProvider {
 
     public ProjectWebServiceViewImpl createProjectWebServiceView(Project p) {

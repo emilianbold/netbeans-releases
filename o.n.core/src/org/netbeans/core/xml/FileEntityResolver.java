@@ -87,6 +87,7 @@ import org.openide.util.Exceptions;
  *
  * @author  Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.Environment.Provider.class), @org.openide.util.lookup.ServiceProvider(service=org.openide.xml.EntityCatalog.class)})
 public final class FileEntityResolver extends EntityCatalog implements Environment.Provider {
     private static final String ENTITY_PREFIX = "/xml/entities"; // NOI18N
     private static final String LOOKUP_PREFIX = "/xml/lookups"; // NOI18N

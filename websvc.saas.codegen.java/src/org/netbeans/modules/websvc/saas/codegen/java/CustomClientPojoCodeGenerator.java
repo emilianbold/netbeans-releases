@@ -74,6 +74,7 @@ import org.netbeans.modules.websvc.saas.codegen.java.support.*;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class CustomClientPojoCodeGenerator extends SaasClientCodeGenerator {
     public static final String VAR_NAMES_RESULT_DECL = RestClientPojoCodeGenerator.VAR_NAMES_RESULT_DECL;
     

@@ -47,6 +47,7 @@ import org.netbeans.spi.editor.mimelookup.Class2LayerFolder;
  *
  * @author Martin Roskanin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class TestClass2LayerFolderInitializer implements Class2LayerFolder{
 
     /** Creates a new instance of TestClass2LayerFolderInitializer */

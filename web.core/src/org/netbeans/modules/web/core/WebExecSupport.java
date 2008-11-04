@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 *
 * @author Petr Jiricka
 */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.spi.webmodule.RequestParametersQueryImplementation.class)
 public class WebExecSupport implements RequestParametersQueryImplementation {
 
     private static final Logger LOG = Logger.getLogger(WebExecSupport.class.getName());

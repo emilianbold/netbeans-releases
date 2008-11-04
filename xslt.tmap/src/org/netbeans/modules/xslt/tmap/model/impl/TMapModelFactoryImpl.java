@@ -30,6 +30,7 @@ import org.openide.util.Lookup;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xslt.tmap.model.spi.TMapModelFactory.class)
 public class TMapModelFactoryImpl  extends AbstractModelFactory<TMapModel> 
         implements TMapModelFactory {
 

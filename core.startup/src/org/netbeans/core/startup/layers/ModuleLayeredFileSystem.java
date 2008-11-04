@@ -193,6 +193,9 @@ implements LookupListener {
                         is.close();
                     }
                 }
+                for (URL generatedLayer : NbCollections.iterable(loader.getResources("META-INF/generated-layer.xml"))) { // NOI18N
+                    layerUrls.add(generatedLayer);
+                }
                 XMLFileSystem xmlfs = new XMLFileSystem();
                 xmlfs.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
                 l.add(xmlfs);

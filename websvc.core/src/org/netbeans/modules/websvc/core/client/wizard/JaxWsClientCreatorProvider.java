@@ -52,6 +52,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Milan Kuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ClientCreatorProvider.class)
 public class JaxWsClientCreatorProvider implements ClientCreatorProvider {
 
     public JaxWsClientCreatorProvider() {

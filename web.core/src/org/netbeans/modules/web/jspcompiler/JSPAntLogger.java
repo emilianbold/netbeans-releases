@@ -62,6 +62,7 @@ import org.openide.filesystems.FileUtil;
  * @author Petr Jiricka, Jesse Glick
  * @see "#42525"
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=20)
 public final class JSPAntLogger extends AntLogger {
     
     /**

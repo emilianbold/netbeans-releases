@@ -51,6 +51,7 @@ import org.openide.util.actions.SystemAction;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider.class)
 public class StrikeIronActionsProvider implements SaasNodeActionsProvider {
 
     public static final String STRIKE_IRON_GROUP = "StrikeIron";

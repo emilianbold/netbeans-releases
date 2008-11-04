@@ -71,6 +71,7 @@ import org.w3c.dom.Node;
  * into tree. Only elements with this flag needs to be handled by this
  * service. Because otherwise there will be double work for "copied" element. 
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class NamespaceOptimizer extends InnerEventDispatcherAdapter {
     
     static final String XMLNS = "xmlns";        // NOI18N

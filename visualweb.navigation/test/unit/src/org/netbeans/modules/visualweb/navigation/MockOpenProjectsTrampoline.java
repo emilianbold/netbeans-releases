@@ -43,6 +43,7 @@ import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
  *
  * @author joelle
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.OpenProjectsTrampoline.class)
 public class MockOpenProjectsTrampoline implements OpenProjectsTrampoline {
 
     private Collection<Project> openProjects = new ArrayList<Project>();

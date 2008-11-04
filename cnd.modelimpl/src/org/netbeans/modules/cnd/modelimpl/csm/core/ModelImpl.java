@@ -79,6 +79,7 @@ import org.openide.util.RequestProcessor;
  * CsmModel implementation
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmModel.class)
 public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public ModelImpl() {

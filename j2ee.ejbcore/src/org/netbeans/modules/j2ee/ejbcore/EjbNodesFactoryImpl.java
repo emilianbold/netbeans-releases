@@ -53,6 +53,7 @@ import org.openide.nodes.Node;
  *
  * @author Pavel Buzek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.spi.ejbjar.EjbNodesFactory.class)
 public final class EjbNodesFactoryImpl implements EjbNodesFactory {
     
     public EjbNodesFactoryImpl() {

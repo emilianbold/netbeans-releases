@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.api.remote.SetupProvider;
  *
  * @author gordonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.remote.SetupProvider.class)
 public class CndRemoteSetupProvider implements SetupProvider {
 
     private Map<String, String> binarySetupMap;

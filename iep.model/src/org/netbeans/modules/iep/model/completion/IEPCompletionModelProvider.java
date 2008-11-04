@@ -35,6 +35,7 @@ import org.openide.util.lookup.Lookups;
  *
  * 
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class IEPCompletionModelProvider extends CompletionModelProvider {
     
     public IEPCompletionModelProvider() {

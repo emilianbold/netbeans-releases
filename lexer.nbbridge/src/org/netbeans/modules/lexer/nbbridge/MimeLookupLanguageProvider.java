@@ -55,6 +55,7 @@ import org.openide.util.Lookup;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.lexer.LanguageProvider.class)
 public final class MimeLookupLanguageProvider extends LanguageProvider {
     
     public MimeLookupLanguageProvider() {

@@ -255,6 +255,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
     /**
      * Dynamically inserts or removes the action from the toolbar.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.FileSystem.class)
     public static final class DynLayer extends MultiFileSystem {
 
         static DynLayer INSTANCE;

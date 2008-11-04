@@ -70,6 +70,7 @@ import org.w3c.dom.NodeList;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
 public final class NbModuleProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 

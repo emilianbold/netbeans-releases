@@ -75,6 +75,7 @@ import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResul
  * Implementation of {@link RubyDebuggerImplementation} SPI, providing an entry
  * to point to the Ruby debugging.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation.class)
 public final class RubyDebugger implements RubyDebuggerImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(RubyDebugger.class.getName());

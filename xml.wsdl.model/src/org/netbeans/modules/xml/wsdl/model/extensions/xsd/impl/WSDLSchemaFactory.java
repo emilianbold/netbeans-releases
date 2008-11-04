@@ -53,6 +53,7 @@ import org.w3c.dom.Element;
  *
  * @author rodcruz
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
 public class WSDLSchemaFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(new QName(

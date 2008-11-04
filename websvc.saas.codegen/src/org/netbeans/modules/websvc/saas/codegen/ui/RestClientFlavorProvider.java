@@ -51,6 +51,7 @@ import org.openide.util.datatransfer.ExTransferable;
  *
  * @author Ayub Khan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider.class)
 public class RestClientFlavorProvider implements ConsumerFlavorProvider {
 
     public RestClientFlavorProvider() {

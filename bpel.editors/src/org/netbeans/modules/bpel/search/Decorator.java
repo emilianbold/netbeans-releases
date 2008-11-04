@@ -33,6 +33,7 @@ import org.netbeans.modules.bpel.design.decoration.GlowDescriptor;
  * @author Vladimir Yaroslavskiy
  * @version 2006.12.06
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory.class)
 public final class Decorator extends DecorationProvider implements DecorationProviderFactory {
 
   public Decorator() {}

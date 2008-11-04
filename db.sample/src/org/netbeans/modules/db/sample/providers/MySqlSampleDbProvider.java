@@ -46,6 +46,7 @@ import org.netbeans.spi.db.sample.SampleDbProvider;
  *
  * @author David
  */
+// XXX possibly intended: @ServiceProvider(service=SampleDbProvider.class) but original M-I/s reg asked for "MySQLSampleDbProvider" (note case)
 public class MySqlSampleDbProvider implements SampleDbProvider {
     private static MySqlSampleDbProvider DEFAULT;
     

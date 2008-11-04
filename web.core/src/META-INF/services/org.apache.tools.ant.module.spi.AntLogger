@@ -1,7 +1,0 @@
-org.netbeans.modules.web.jspcompiler.JSPAntLogger
-#position=20
-org.netbeans.modules.web.jspcompiler.TldAntLogger
-#position=21
-org.netbeans.modules.web.jspcompiler.JSPJavacAntLogger
-#position=35
-

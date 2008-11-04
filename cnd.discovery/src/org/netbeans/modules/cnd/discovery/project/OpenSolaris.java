@@ -82,6 +82,7 @@ import org.openide.util.NbBundle;
  *
  * @author AlexanderSimon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.KnownProject.class)
 public class OpenSolaris extends KnownProject {
     private static final boolean TRACE = true;
     /*package-local*/ static final boolean READ_MAP_FILE_VERS = false;
