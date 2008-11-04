@@ -624,7 +624,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return prefs.getInt("count", 0); // NOI18N
     }
 
-    public static List<LogRecord> getLogs() {
+    static List<LogRecord> getLogs() {
         UIHandler.waitFlushed();
 
         File f = logFile(0);
@@ -906,8 +906,12 @@ public class Installer extends ModuleInstall implements Runnable {
         return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE);
     }
 
-    protected static Throwable getThrown(){
-        LogRecord log = getThrownLog();
+    static Throwable getThrown() {
+        return getThrown(getLogs());
+    }
+
+    private static Throwable getThrown(List<LogRecord> recs) {
+        LogRecord log = getThrownLog(recs);
         if (log == null){
             return null;
         }else{
@@ -915,7 +919,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    protected static LogRecord getThrownLog(){
+    private static LogRecord getThrownLog(List<LogRecord> list) {
         String firstLine = null;
         String message = null;
         if (selectedExcParams != null){
@@ -926,7 +930,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 firstLine = (String)selectedExcParams[1];
             }
         }
-        List<LogRecord> list = getLogs();
         ListIterator<LogRecord> it = list.listIterator(list.size());
         Throwable thr = null;
         LogRecord result = null;
@@ -1235,10 +1238,11 @@ public class Installer extends ModuleInstall implements Runnable {
         protected boolean okToExit;
         protected ReportPanel reportPanel;
         private URL url;
-        private boolean dialogCreated;
+        private boolean dialogCreated = false;
         private boolean checkingResult, refresh = false;
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
+        protected List<LogRecord> recs = null;
 
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
@@ -1248,6 +1252,7 @@ public class Installer extends ModuleInstall implements Runnable {
             this.msg = msg;
             this.dataType = dataType;
             isSubmiting = new AtomicBoolean(false);
+            recs = new ArrayList<LogRecord>(getLogs());
             if ("ERROR_URL".equals(msg)) { // NOI18N
                 report = true;
             } else {
@@ -1446,12 +1451,10 @@ public class Installer extends ModuleInstall implements Runnable {
                     return;
                 }
                 try {
-                    List<LogRecord> recs = null;
                     if (dataType == DataType.DATA_UIGESTURE) {
-                        recs = getLogs();
                         saveUserName();
                         LogRecord userData = getUserData(true);
-                        LogRecord thrownLog = getThrownLog();
+                        LogRecord thrownLog = getThrownLog(recs);
                         if (thrownLog != null) {
                             recs.add(thrownLog);//exception selected by user
                         }
@@ -1678,7 +1681,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private SubmitPanel panel;
         private JEditorPane browser;
         private boolean urlAssigned;
-
+        
         public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
             super(msg,dataType);
             this.connectDialog = connectDialog;
@@ -1694,7 +1697,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (reportPanel==null) {
                 reportPanel = new ReportPanel();
             }
-            Throwable t = getThrown();
+            Throwable t = getThrown(recs);
             if (t != null && reportPanel !=null){
                 reportPanel.setSummary(createMessage(t));
                 if ("ERROR_URL".equals(msg)) {
@@ -1763,12 +1766,12 @@ public class Installer extends ModuleInstall implements Runnable {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
                 root.setName("root"); // NOI18N
-                List<LogRecord> recs = getLogs();
-                recs.add(getUserData(false));
-                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+                List<LogRecord> shownRecs = new ArrayList<LogRecord>(recs);
+                shownRecs.add(getUserData(false));
+                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", shownRecs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
                 LinkedList<Node> nodes = new LinkedList<Node>();
-                for (LogRecord r : recs) {
+                for (LogRecord r : shownRecs) {
                     Node n = UINode.create(r);
                     nodes.add(n);
                     panel.addRecord(r, n);
@@ -1839,9 +1842,20 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
+            d.setModalityType(Dialog.ModalityType.MODELESS);
             d.setVisible(true);
+            synchronized (this){
+                while (d != null && !dontWaitForUserInputInTests){
+                    try{
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             return dd.getValue();
         }
+        
         protected void alterMessage(DialogDescriptor dd) {
             if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
                 Object obj = dd.getOptions()[0];
@@ -1977,4 +1991,10 @@ public class Installer extends ModuleInstall implements Runnable {
             return SUBMIT.isCommand(n) || AUTO_SUBMIT.isCommand(n);
         }
     } // end of Buttons
+
+    //  JUST FOR TESTS //
+    private static boolean dontWaitForUserInputInTests = false;
+    static void dontWaitForUserInputInTests(){
+        dontWaitForUserInputInTests = true;
+    }
 }
