@@ -73,7 +73,7 @@ import org.netbeans.modules.form.layoutdesign.LayoutModel;
 import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
-import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.form.editors.EnumEditor;
 import org.openide.nodes.Node.Property;
 import org.openide.util.TopologicalSortException;
 import org.w3c.dom.NamedNodeMap;
@@ -4411,6 +4411,12 @@ public class GandalfPersistenceManager extends PersistenceManager {
             ed = new RADConnectionPropertyEditor(propertyType);
         } else if (editorClass.equals(ComponentChooserEditor.class)) {
             ed = new ComponentChooserEditor(new Class[] {propertyType});
+        } else if (editorClass.equals(EnumEditor.class) && (property instanceof RADProperty)) {
+            RADProperty prop = (RADProperty)property;
+            ed = prop.createEnumEditor(prop.getPropertyDescriptor());
+            if (ed == null) {
+                ed = RADProperty.createDefaultEnumEditor(propertyType);
+            }
         } else {
             ed = (PropertyEditor) editorClass.newInstance();
         }

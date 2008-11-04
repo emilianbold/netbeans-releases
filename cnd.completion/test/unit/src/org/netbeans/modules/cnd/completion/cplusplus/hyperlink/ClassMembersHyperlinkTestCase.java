@@ -55,6 +55,8 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz149783.c", 9, 10, "iz149783.c", 2, 5);
         performTest("iz149783.c", 10, 15, "iz149783.c", 2, 5);
         performTest("iz149783.c", 11, 15, "iz149783.c", 2, 5);
+        // IZ#151609: Unresolved struct array member
+        performTest("iz149783.c", 13, 22, "iz149783.c", 2, 5);
     }
 
     public void testOperatorsInBaseClasses() throws Exception {

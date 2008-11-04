@@ -199,30 +199,73 @@ public class PtyExecutor {
         return setpgrpCmd;
     }
 
-    private static List<String> wrapperCmd(List<String> cmd, Pty pty) {
+    /**
+     * Ensure executable is executable.
+     * @param executable
+     */
+    private static void fixExecution(String executable) {
+        // The wrapper executables get nunzipped often, like when an NBM
+        // is installed, and zip doesn't preserve execution permission bits.
+        // So we force it each time.
+        String[] chmodProgram = new String[3];
+        switch (OS.get()) {
+            case LINUX:
+            case MACOS:
+            case SOLARIS:
+                chmodProgram[0] = "chmod";
+                chmodProgram[1] = "u+x";
+                chmodProgram[2] = executable;
+                try {
+                    Process p = Runtime.getRuntime().exec(chmodProgram);
+                    p.waitFor();
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(PtyExecutor.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (IOException ex) {
+                    Logger.getLogger(PtyExecutor.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                break;
+            case WINDOWS:
+            case OTHER:
+                break;
+        }
+    }
 
+    private static String wrapper;
+    private static String pgrp;     // set as side-effect of getWrapper()
+
+    /**
+     * Locate the process_start helper, either as process_start-<platform> or,
+     * if not found, the fallback process_start.sh".
+     */
+    private static String getWrapper() {
+        if (wrapper == null) {
+            if ((wrapper = findBin("process_start" + "-" + OS.platform())) != null) {
+                pgrp = null;
+            } else if ((wrapper = findBin("process_start.sh")) != null) {
+                pgrp = setpgrpCmd();
+            } else {
+                throw new MissingResourceException("Can\'t find a wrapper", null, null);
+            }
+            fixExecution(wrapper);
+        }
+        return wrapper;
+    }
+
+    private static List<String> wrappedCmd(List<String> cmd, Pty pty) {
         if (pty == null) {
             return cmd;
         }
         List<String> wrapperCmd = new ArrayList<String>();
-        String wrapper;
-        if ((wrapper = findBin("process_start" + "-" + OS.platform())) != null) {
-            wrapperCmd.add(wrapper);
-            wrapperCmd.add("-pty");
-            wrapperCmd.add(pty.slaveName());
-            wrapperCmd.addAll(cmd);
-        } else if ((wrapper = findBin("process_start.sh")) != null) {
-            String pgrp = setpgrpCmd();
-            if (pgrp != null) {
-                wrapperCmd.add(setpgrpCmd());
-            }
-            wrapperCmd.add(wrapper);
-            wrapperCmd.add("-pty");
-            wrapperCmd.add(pty.slaveName());
-            wrapperCmd.addAll(cmd);
-        } else {
-            throw new MissingResourceException("Can\'t find a wrapper", null, null);
+        String wrapper = getWrapper();
+        if (pgrp != null) {
+            wrapperCmd.add(setpgrpCmd());
         }
+        wrapperCmd.add(wrapper);
+        wrapperCmd.add("-pty");
+        wrapperCmd.add(pty.slaveName());
+        wrapperCmd.addAll(cmd);
+
+
         return wrapperCmd;
     }
 
@@ -230,7 +273,7 @@ public class PtyExecutor {
         Process process;
         int pid = 0;
         try {
-            List<String> wrappedCmd = wrapperCmd(program.command(), pty);
+            List<String> wrappedCmd = wrappedCmd(program.command(), pty);
             program.processBuilder().command(wrappedCmd);
             process = program.processBuilder().start();
         } catch (IOException ex) {

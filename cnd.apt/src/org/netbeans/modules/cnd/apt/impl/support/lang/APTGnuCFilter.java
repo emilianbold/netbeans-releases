@@ -71,6 +71,7 @@ public class APTGnuCFilter extends APTStdCFilter {
         filter("__restrict", APTTokenTypes.LITERAL___restrict); // NOI18N
         filter("__signed", APTTokenTypes.LITERAL___signed); // NOI18N
         filter("__signed__", APTTokenTypes.LITERAL___signed__); // NOI18N
+        filter("__thread", APTTokenTypes.LITERAL___thread); // NOI18N
         filter("__typeof", APTTokenTypes.LITERAL___typeof); // NOI18N
         filter("__typeof__", APTTokenTypes.LITERAL___typeof__); // NOI18N
         filter("__volatile", APTTokenTypes.LITERAL___volatile); // NOI18N
