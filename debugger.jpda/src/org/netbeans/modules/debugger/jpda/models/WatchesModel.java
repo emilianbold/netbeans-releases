@@ -530,8 +530,8 @@ public class WatchesModel implements TreeModel {
         public void propertyChange (PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
-            // We care only about the debugger state change here...
-            if (!JPDADebugger.PROP_STATE.equals(propName)) return ;
+            // We care only about the debugger state change and watch expression change here...
+            if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName))) return ;
             final WatchesModel m = getModel ();
             if (m == null) return;
             if (m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {
