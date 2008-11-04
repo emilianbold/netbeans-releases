@@ -52,6 +52,7 @@ import org.openide.WizardDescriptor;
  *
  * @author Peter Liu
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider.class)
 public class JaxRpcServiceCreatorProvider implements ServiceCreatorProvider {
     
     /** Creates a new instance of JaxRpcServiceCreatorProvider */

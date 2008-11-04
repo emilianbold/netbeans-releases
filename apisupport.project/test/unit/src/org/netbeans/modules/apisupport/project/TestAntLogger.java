@@ -52,6 +52,7 @@ import org.openide.util.Lookup;
  *
  * @author pzajac
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class)
 public class TestAntLogger extends AntLogger {
     boolean bEnabled;
 

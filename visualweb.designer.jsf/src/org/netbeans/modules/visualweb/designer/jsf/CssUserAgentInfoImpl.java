@@ -58,6 +58,7 @@ import org.w3c.dom.Element;
  *
  * @author Peter Zavadsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.spi.designer.cssengine.CssUserAgentInfo.class)
 public class CssUserAgentInfoImpl implements CssUserAgentInfo {
 
     /** Creates a new instance of CssUserAgentInfoImpl */

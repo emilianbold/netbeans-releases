@@ -49,6 +49,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
  *
  * @author Marek Fukala
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class DocumentModelProviderClass2Layer implements Class2LayerFolder {
 
     public DocumentModelProviderClass2Layer() {

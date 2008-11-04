@@ -51,6 +51,8 @@ import org.openide.filesystems.FileObject;
 /* Base class providing search for JDK1.2/1.3 documentation
  * @author Petr Hrebejk, Petr Suchomel
  */
+// no position since it must be the last service
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javadoc.search.JavadocSearchType.class)
 public class Jdk12SearchType extends JavadocSearchType implements Serializable{
 
     private boolean caseSensitive = true;

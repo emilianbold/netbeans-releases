@@ -50,6 +50,7 @@ import org.netbeans.modules.profiler.attach.spi.IntegrationProvider;
  *
  * @author Jaroslav Bachorik
  */
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.attach.spi.IntegrationProvider.class)
 public class WebLogic8IntegrationProvider extends WebLogicIntegrationProvider {
     //~ Instance fields ----------------------------------------------------------------------------------------------------------
 

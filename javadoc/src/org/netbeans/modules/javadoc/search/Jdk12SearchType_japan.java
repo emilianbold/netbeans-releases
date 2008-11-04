@@ -54,6 +54,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Hrebejk, Petr Suchomel
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.javadoc.search.JavadocSearchType.class, position=100)
 public final class Jdk12SearchType_japan extends Jdk12SearchType {
 
     private String  japanEncoding;

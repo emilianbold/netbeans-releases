@@ -52,6 +52,7 @@ import java.util.StringTokenizer;
  * @author David Kaspar, Karel Herink
  */
 // HINT - after making change, update GameCodeSupport too
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory.class)
 public final class GamePrimitiveDescriptor implements PrimitiveDescriptorFactory {
 	
 	static final String TYPEID_STRING_TILES = "#TiledLayerTiles"; // NOI18N

@@ -60,6 +60,7 @@ import org.openide.modules.InstalledFileLocator;
  *
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.grammar.GoalsProvider.class)
 public class GoalsProviderImpl implements GoalsProvider {
     
     /** Creates a new instance of GoalsProviderImpl */

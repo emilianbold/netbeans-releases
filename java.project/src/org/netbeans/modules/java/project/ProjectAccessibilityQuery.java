@@ -50,6 +50,7 @@ import org.openide.filesystems.FileObject;
  * owns the affected source folder.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.AccessibilityQueryImplementation.class)
 public class ProjectAccessibilityQuery implements AccessibilityQueryImplementation {
 
     /** Default constructor for lookup. */

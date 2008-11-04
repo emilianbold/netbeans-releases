@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
  * factory of maven projects
  * @author  Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ProjectFactory.class, position=666)
 public class NbMavenProjectFactory implements ProjectFactory {
     
     /** Creates a new instance of NbMavenProjectFactory */

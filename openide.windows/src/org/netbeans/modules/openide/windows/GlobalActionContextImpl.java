@@ -54,6 +54,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Jaroslav Tulach
 */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.util.ContextGlobalProvider.class)
 public final class GlobalActionContextImpl extends Object
 implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeListener {
     /** registry to work with */

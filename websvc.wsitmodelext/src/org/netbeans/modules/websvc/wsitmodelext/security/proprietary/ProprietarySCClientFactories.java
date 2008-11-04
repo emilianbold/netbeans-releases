@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.SCClie
 
 public class ProprietarySCClientFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SCClientConfigurationFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -64,6 +65,7 @@ public class ProprietarySCClientFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class LifeTimeClientFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

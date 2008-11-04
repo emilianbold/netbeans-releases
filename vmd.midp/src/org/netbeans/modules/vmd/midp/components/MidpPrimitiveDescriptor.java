@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory;
  * @author David Kaspar
  */
 // HINT - after making change, update MidpCodeSupport too
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PrimitiveDescriptorFactory.class)
 public final class MidpPrimitiveDescriptor implements PrimitiveDescriptorFactory {
 
     static final CharPD charPD = new CharPD ();

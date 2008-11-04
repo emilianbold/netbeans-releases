@@ -54,6 +54,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
  *
  * @author Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=1)
 public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
     public static final String CONFIG_ACTIVE = "config.active"; //NOI18N

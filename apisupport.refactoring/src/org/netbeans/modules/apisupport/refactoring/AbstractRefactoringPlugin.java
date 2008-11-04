@@ -274,26 +274,6 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         }
     }
     
-    protected final void checkMetaInfServices(Project project, String fqname, RefactoringElementsBag refactoringElements) {
-        FileObject services = Utility.findMetaInfServices(project);
-        if (services == null) {
-            return;
-        }
-        String name = fqname;
-        // Easiest to check them all; otherwise would need to find all interfaces and superclasses:
-        FileObject[] files = services.getChildren();
-        for (int i = 0; i < files.length; i++) {
-            int line = checkContentOfFile(files[i], name);
-            if (line != -1) {
-                RefactoringElementImplementation elem =
-                        createMetaInfServicesRefactoring(fqname, files[i], line);
-                if (elem != null) {
-                    refactoringElements.add(refactoring, elem);
-                }
-            }
-        }
-    }
-    
     protected final void checkLayer(Project project, String fqname, RefactoringElementsBag refactoringElements) {
         LayerUtils.LayerHandle handle = LayerUtils.layerForProject(project);
         FileSystem fs = handle.layer(false);
@@ -472,10 +452,6 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
         }
         
     }
-    
-    protected abstract RefactoringElementImplementation createMetaInfServicesRefactoring(
-            String fqclazz,
-            FileObject serviceFile, int line);
     
     /**
      * 

@@ -59,6 +59,7 @@ import org.openide.filesystems.FileUtil;
  * Associated built module files with their owning project.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=50)
 public final class UpdateTrackingFileOwnerQuery implements FileOwnerQueryImplementation {
     
     /** Default constructor for lookup. */

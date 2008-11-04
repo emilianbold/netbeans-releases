@@ -1,6 +1,0 @@
-org.netbeans.modules.java.j2seplatform.platformdefinition.J2SEPlatformSourceLevelQueryImpl
-#position=150
-org.netbeans.modules.java.j2seplatform.libraries.J2SELibrarySourceLevelQueryImpl
-#position=160
-org.netbeans.modules.java.j2seplatform.platformdefinition.DefaultSourceLevelQueryImpl
-#position=10000

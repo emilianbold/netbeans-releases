@@ -71,6 +71,7 @@ import org.netbeans.modules.wsdlextensions.ftp.FTPAddress;
  *
  * @author jfu
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class FTPComponentValidator
         implements Validator, FTPComponent.Visitor {
     

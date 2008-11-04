@@ -90,6 +90,9 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
  * objects factory
  * @author Vladimir Voskresensky
  */
+/* XXX typo in interface name?
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.spi.PersistentObjectFactory.class)
+*/
 public final class CsmObjectFactory extends AbstractObjectFactory implements PersistentFactory {
     
     private static final CsmObjectFactory instance = new CsmObjectFactory();

@@ -37,6 +37,7 @@ import org.netbeans.modules.gsf.api.EditorOptionsFactory;
  *
  * @author tor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EditorOptionsFactory.class)
 public class GsfEditorOptionsFactory implements EditorOptionsFactory {
     
     public EditorOptions get(String mimeType) {

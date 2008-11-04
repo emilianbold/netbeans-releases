@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author gordonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.compilers.CompilerProvider.class)
 public class MakeProjectCompilerProvider extends CompilerProvider {
     
     /**

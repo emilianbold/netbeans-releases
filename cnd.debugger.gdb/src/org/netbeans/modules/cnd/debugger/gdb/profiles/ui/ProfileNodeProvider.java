@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.openide.util.HelpCtx;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class ProfileNodeProvider implements CustomizerNodeProvider {
 
     private ResourceBundle bundle;

@@ -53,6 +53,7 @@ import org.openide.filesystems.FileUtil;
  * Delegates {@link SharabilityQuery} to implementations in project lookup.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class)
 public class ProjectSharabilityQuery implements SharabilityQueryImplementation {
 
     /** Default constructor for lookup. */

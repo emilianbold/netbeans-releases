@@ -65,6 +65,7 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.rubyproject.spi.TestRunner.class)
 public class AutotestRunner implements TestRunner {
 
     private static final Logger LOGGER = Logger.getLogger(AutotestRunner.class.getName());

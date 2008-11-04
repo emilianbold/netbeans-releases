@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
 
     </target>
 
-    <target name="init" depends="basic-init,files-init,build-init"/>
+    <target name="init" depends="basic-init,files-init,build-init,-javac-init"/>
 
     <target name="nbm-license-init" unless="license.file">
         <mkdir dir="build"/>
@@ -134,13 +134,12 @@ made subject to such option by the copyright holder.
         <!-- Override if you want to use these: -->
         <property name="nbm.distribution" value=""/>
         <property name="nbm.homepage" value=""/>
-        <path id="cp">
-            <pathelement path="${module.classpath}"/>
-            <pathelement path="${cp.extra}"/>
-        </path>
         <property name="build.javahelp.dir" location="build/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
+        <path id="javacimpl">
+            <fileset dir="${harness.dir}/antlib" includes="*javac*.jar"/>
+        </path>
     </target>
 
     <target name="test-lib-init" depends="init,-delete-suite-masks">
@@ -167,7 +166,7 @@ made subject to such option by the copyright holder.
 
     <target name="javahelp" depends="init" if="has.javahelp">
         <!-- Similar to projectized.xml but does not fiddle with usersguide/.../ide.css, and finds jhall.jar differently: -->
-        <property name="jhall.jar" location="${harness.dir}/jsearch-2.0_05.jar"/>
+        <property name="jhall.jar" location="${harness.dir}/antlib/jsearch-2.0_05.jar"/>
         <available property="jhall.jar.exists" file="${jhall.jar}"/>
         <fail unless="jhall.jar.exists">You must set 'jhall.jar' (e.g. in private.properties) to the location of jsearch.jar from a JavaHelp distribution</fail>
         <mkdir dir="${build.javahelp.dir}/${javahelp.base}/${javahelp.search}"/>

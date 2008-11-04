@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  *rm -rf testus 
  * @author karel herink
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewLookupFactory.class)
 public class GameBuilderLookupFactory implements DataEditorViewLookupFactory {
     
     public Collection<?> getLookupObjects(DataObjectContext context, DataEditorView view) {

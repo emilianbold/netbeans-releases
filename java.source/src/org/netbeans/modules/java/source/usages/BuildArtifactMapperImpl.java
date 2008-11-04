@@ -507,6 +507,7 @@ public class BuildArtifactMapperImpl {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileBuiltQueryImplementation.class, position=1000)
     public static final class FileBuildQueryImpl implements FileBuiltQueryImplementation {
 
         private final ThreadLocal<Boolean> recursive = new ThreadLocal<Boolean>();

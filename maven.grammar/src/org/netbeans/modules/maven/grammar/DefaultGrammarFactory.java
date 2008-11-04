@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.grammar.GrammarFactory.class)
 public class DefaultGrammarFactory extends GrammarFactory {
 
     public GrammarQuery isSupported(GrammarEnvironment env) {

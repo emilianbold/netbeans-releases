@@ -89,7 +89,8 @@ public class AutoupdateSettings {
     public static final int EVERY_MONTH = 4;
     public static final int NEVER = 5;
     public static final int CUSTOM_CHECK_INTERVAL = 6;
-    private static final String EXPIRATION_RECORD = "expiration";
+    private static final String EXPIRATION_RECORD = "expiration"; // NOI18N
+    private static final String IMPORTED = "imported"; // NOI18N
     private static final String [] VERSIONS_FOR_IMPORT = new String[0];
     
     private static final String [][] KNOWN = {
@@ -258,13 +259,16 @@ public class AutoupdateSettings {
         Collection<String> forImport = new HashSet<String> (Arrays.asList (VERSIONS_FOR_IMPORT));
         String currentVersion = new File (System.getProperty ("netbeans.user")).getName ();
         forImport.add (currentVersion);
-        if (exp == null || ! forImport.contains (exp)) {
+        if (exp != null && ! forImport.contains (exp)) {
             try {
                 p.removeNode ();
+                getPreferences ().put (IMPORTED, Boolean.toString (true));
                 err.log (Level.FINE, "Don't read preferences from userdir " + exp);
             } catch (BackingStoreException ex) {
                 err.log (Level.INFO, ex.getLocalizedMessage (), ex);
             }
+        } else if (exp == null) {
+            err.log (Level.FINEST, "No preferences imported from previous versoin.");
         } else {
             err.log (Level.FINEST, "Read preferences from userdir " + exp);
         }

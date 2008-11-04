@@ -56,6 +56,7 @@ import org.openide.util.NbBundle;
  *
  * @author Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.deployment.DeploymentPlugin.class, position=20)
 public class FtpDeploymentPlugin implements DeploymentPlugin {
     
     static final String PROP_SERVER = "deployment.ftp.server"; //NOI18N

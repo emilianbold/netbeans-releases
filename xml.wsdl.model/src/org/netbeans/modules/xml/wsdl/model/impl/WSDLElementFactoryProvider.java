@@ -62,6 +62,7 @@ import org.w3c.dom.NodeList;
  */
 public class WSDLElementFactoryProvider {
    
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class DefinitionsFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.DEFINITIONS.getQName());
@@ -71,6 +72,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BindingFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.BINDING.getQName());
@@ -81,6 +83,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class DocumentationFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.DOCUMENTATION.getQName());
@@ -91,6 +94,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class FaultFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.FAULT.getQName());
@@ -107,6 +111,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OperationFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.OPERATION.getQName());
@@ -151,6 +156,7 @@ public class WSDLElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class InputFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.INPUT.getQName());
@@ -167,6 +173,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ImportFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.IMPORT.getQName());
@@ -177,6 +184,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class MessageFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.MESSAGE.getQName());
@@ -187,6 +195,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OutputFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.OUTPUT.getQName());
@@ -203,6 +212,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PartFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.PART.getQName());
@@ -213,6 +223,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PortFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.PORT.getQName());
@@ -223,6 +234,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PortTypeFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.PORTTYPE.getQName());
@@ -233,6 +245,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ServiceFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.SERVICE.getQName());
@@ -243,6 +256,7 @@ public class WSDLElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TypesFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(WSDLQNames.TYPES.getQName());

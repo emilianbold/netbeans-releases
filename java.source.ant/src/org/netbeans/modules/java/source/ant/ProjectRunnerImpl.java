@@ -89,6 +89,7 @@ import static org.netbeans.api.java.project.runner.JavaRunner.*;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.project.runner.JavaRunnerImplementation.class)
 public class ProjectRunnerImpl implements JavaRunnerImplementation{
 
     private static final Logger LOG = Logger.getLogger(ProjectRunnerImpl.class.getName());

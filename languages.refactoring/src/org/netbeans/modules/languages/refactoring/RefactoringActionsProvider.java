@@ -69,6 +69,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Daniel Prusa
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
 public class RefactoringActionsProvider extends ActionsImplementationProvider {
     
     private static final String JS_MIME_TYPE = "text/javascript"; // NOI18N

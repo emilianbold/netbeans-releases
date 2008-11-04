@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class TokenFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -69,6 +70,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SignedSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -84,6 +86,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EndorsingSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -99,6 +102,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EncryptedSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -114,6 +118,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EndorsingEncryptedSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -129,6 +134,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SignedEncryptedSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -144,6 +150,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SignedEndorsingEncryptedSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -159,6 +166,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SignedEndorsingSupportingTokensFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -174,6 +182,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class HttpsTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -189,6 +198,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class InitiatorTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -204,6 +214,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SignatureTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -219,6 +230,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EncryptionTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -234,6 +246,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class IssuedTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -249,6 +262,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class KerberosTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -264,6 +278,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ProtectionTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -279,6 +294,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TransportTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -294,6 +310,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RecipientTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -309,6 +326,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RelTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -324,6 +342,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SamlTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -339,6 +358,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SecureConversationTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -354,6 +374,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SecurityContextTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -369,6 +390,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SpnegoContextTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -384,6 +406,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class UsernameTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -399,6 +422,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class X509TokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -414,6 +438,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssUsernameToken10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -429,6 +454,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssUsernameToken11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -444,6 +470,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class IssuerFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -459,6 +486,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireDerivedKeysFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -474,6 +502,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireExternalReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -489,6 +518,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireInternalReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -504,6 +534,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireKeyIdentifierReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -519,6 +550,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireIssuerSerialReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -534,6 +566,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireThumbprintReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -549,6 +582,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireEmbeddedTokenReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -564,6 +598,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RequireExternalUriReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -579,6 +614,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SC10SecurityContextTokenFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -594,6 +630,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509V1Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -609,6 +646,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509V3Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -624,6 +662,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509Pkcs7Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -639,6 +678,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509PkiPathV1Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -654,6 +694,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509V1Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -669,6 +710,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509V3Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -684,6 +726,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509Pkcs7Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -699,6 +742,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssX509PkiPathV1Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -714,6 +758,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssSamlV10Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -729,6 +774,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssSamlV11Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -744,6 +790,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssSamlV10Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -759,6 +806,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssSamlV11Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -774,6 +822,7 @@ public class TokenFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssSamlV20Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -789,6 +838,7 @@ public class TokenFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssRelV10Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -804,6 +854,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssRelV20Token10Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -819,6 +870,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssRelV10Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -834,6 +886,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssRelV20Token11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -849,6 +902,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssKerberosV5ApReqToken11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -864,6 +918,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class WssGssKerberosV5ApReqToken11Factory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -879,6 +934,7 @@ public class TokenFactories {
         }
     }    
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class HashPasswordFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

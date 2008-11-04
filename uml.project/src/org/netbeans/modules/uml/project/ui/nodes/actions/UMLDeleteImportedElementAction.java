@@ -57,6 +57,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
+@org.openide.util.lookup.ServiceProvider(service=org.openide.explorer.ExtendedDelete.class)
 public final class UMLDeleteImportedElementAction extends CookieAction implements ExtendedDelete
 {
 

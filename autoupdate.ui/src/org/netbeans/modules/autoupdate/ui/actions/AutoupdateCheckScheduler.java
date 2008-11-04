@@ -553,7 +553,7 @@ public class AutoupdateCheckScheduler {
                         "AutoupdateCheckScheduler_UpdatesFound_ToolTip", updateCount)); // NOI18N
         top.setIcon( new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/autoupdate/ui/resources/info_icon.png")) ); //NOI18N
         top.setIconTextGap(10);
-        panel.add( top, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(0,0,0,0),0,0) );
+        panel.add( top, new GridBagConstraints(0,0,1,1,0.0,0.0,GridBagConstraints.NORTHWEST,GridBagConstraints.NONE,new Insets(6,0,0,0),0,0) );
         
         panel.add( new JLabel(NbBundle.getMessage(AutoupdateCheckScheduler.class,
                         "AutoupdateCheckScheduler_UpdateFound_Hint") ),  //NOI18N
