@@ -45,7 +45,9 @@ made subject to such option by the copyright holder.
     <property name="nb.modules.dir" value="modules"/>
     
     
-    <target name="compile" depends="projectized-common.compile,-bincomp"/>
+    <target name="compile" depends="-compile-default-platform,-compile-explicit-platform,-bincomp">	
+        
+    </target>
 
     <target name="-bincomp">
         <taskdef name="enhanceclass" classname="org.netbeans.nbbuild.NbEnhanceClass" classpath="${nb_all}/nbbuild/nbantext.jar"/>
@@ -61,6 +63,97 @@ made subject to such option by the copyright holder.
                 <member name="runModificationTask"/>
             </patch>
         </enhanceclass>
+    </target>
+
+    <target name="-compile-default-platform" unless="nbjdk.bootclasspath">
+	<mkdir dir="${build.classes.dir}"/>
+        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
+            <classpath refid="cp"/>
+        </depend>
+        <property name="processor.path.for.tests" value=""/>
+        <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8"
+                deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" includejavaruntime="true" bootclasspath="../libs.javacapi/external/javac-api-nb-7.0-b07.jar:../libs.javacimpl/external/javac-impl-nb-7.0-b07.jar">
+            <classpath refid="cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
+        </nb-javac>
+
+
+        <!-- Sanity check: -->
+        <pathconvert pathsep=":" property="class.files.in.src">
+            <path>
+                <fileset dir="${src.dir}">
+                    <include name="**/*.class"/>
+                </fileset>
+            </path>
+        </pathconvert>
+        <fail>
+            <condition>
+                <not>
+                    <equals arg1="${class.files.in.src}" arg2=""/>
+                </not>
+            </condition>
+            You have stray *.class files in ${src.dir} which you must remove.
+            Probably you failed to clean your sources before updating them from CVS.
+        </fail>
+        <!-- OK, continue: -->
+        <copy todir="${build.classes.dir}">
+            <!-- #58298: strip comments to save some space -->
+            <fileset dir="${src.dir}" includes="**/*.properties"/>
+            <filterchain>
+                <tokenfilter>
+                    <!-- #61965: preserve #NOI18N and similar comments -->
+                    <filetokenizer/>
+                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
+                </tokenfilter>
+            </filterchain>
+        </copy>
+        <copy todir="${build.classes.dir}">
+            <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
+        </copy>
+    </target>
+
+    <target name="-compile-explicit-platform" if="nbjdk.bootclasspath">
+        <mkdir dir="${build.classes.dir}"/>
+        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
+            <classpath refid="cp"/>
+        </depend>
+        <property name="processor.path.for.tests" value=""/>
+        <nb-javac srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" encoding="UTF-8" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false" bootclasspath="../libs.javacapi/external/javac-api-nb-7.0-b07.jar:../libs.javacimpl/external/javac-impl-nb-7.0-b07.jar:${nbjdk.bootclasspath}">
+            <classpath refid="cp"/>
+            <compilerarg line="${javac.compilerargs}"/>
+        </nb-javac>
+        <!-- Sanity check: -->
+        <pathconvert pathsep=":" property="class.files.in.src">
+            <path>
+               <fileset dir="${src.dir}">
+                   <include name="**/*.class"/>
+               </fileset>
+            </path>
+        </pathconvert>
+        <fail>
+            <condition>
+               <not>
+                   <equals arg1="${class.files.in.src}" arg2=""/>
+               </not>
+           </condition>
+           You have stray *.class files in ${src.dir} which you must remove.
+           Probably you failed to clean your sources before updating them from CVS.
+       </fail>
+       <!-- OK, continue: -->
+       <copy todir="${build.classes.dir}">
+           <!-- #58298: strip comments to save some space -->
+           <fileset dir="${src.dir}" includes="**/*.properties"/>
+           <filterchain>
+               <tokenfilter>
+                   <!-- #61965: preserve #NOI18N and similar comments -->
+                   <filetokenizer/>
+                   <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
+               </tokenfilter>
+           </filterchain>
+        </copy>
+        <copy todir="${build.classes.dir}">
+           <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
+        </copy>
     </target>
 
     <target name="test" depends="pre-test,projectized-common.test">

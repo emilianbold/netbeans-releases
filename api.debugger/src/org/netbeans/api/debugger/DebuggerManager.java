@@ -182,7 +182,7 @@ public final class DebuggerManager implements ContextProvider {
     private boolean                           watchesInitialized = false;
     private SessionListener                   sessionListener = new SessionListener ();
     private Vector                            listeners = new Vector ();
-    private HashMap                           listenersMap = new HashMap ();
+    private final HashMap                     listenersMap = new HashMap ();
     private ActionsManager                    actionsManager = null;
     
     private Lookup                            lookup = new Lookup.MetaInf (null);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,47 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-package org.netbeans.modules.websvc.core.jaxws.nodes;
-
-/** Port children (Operation elements)
  *
- * @author mkuchtiak
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlOperation;
-import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
 
-public class PortChildren extends Children.Keys<WsdlOperation> {
-    WsdlPort wsdlPort;
-    
-    public PortChildren(WsdlPort wsdlPort) {
-        this.wsdlPort=wsdlPort;
-    }
-    
-    @Override
-    protected void addNotify() {
-        super.addNotify();
-        updateKeys();
-    }
-    
-    @Override
-    protected void removeNotify() {
-        setKeys(Collections.<WsdlOperation>emptyList());
-        super.removeNotify();
-    }
-       
-    private void updateKeys() {
-        List<WsdlOperation> keys =  wsdlPort.getOperations();
-        setKeys(keys == null ? new ArrayList<WsdlOperation>() : keys);
-    }
+package org.netbeans.modules.cnd.api.remote;
 
-    protected Node[] createNodes(WsdlOperation key) {
-        return new Node[] {new OperationNode((WsdlOperation) key)};
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.Reader;
+import java.io.StringReader;
+import org.openide.util.Lookup;
+
+/**
+ *
+ * @author Sergey Grinev
+ */
+public class RemoteBufferedReader {
+
+    protected RemoteBufferedReader(File file) {
+
     }
 
 }
