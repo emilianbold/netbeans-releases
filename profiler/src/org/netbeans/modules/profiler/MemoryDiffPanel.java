@@ -40,7 +40,6 @@
 
 package org.netbeans.modules.profiler;
 
-import org.netbeans.api.project.Project;
 import org.netbeans.lib.profiler.common.Profiler;
 import org.netbeans.lib.profiler.results.memory.AllocMemoryResultsDiff;
 import org.netbeans.lib.profiler.results.memory.LivenessMemoryResultsDiff;
@@ -93,7 +92,7 @@ public class MemoryDiffPanel extends JPanel implements SnapshotResultsWindow.Fin
             else if (PresoObjAllocCCTNode.VM_ALLOC_CLASS.equals(className) && PresoObjAllocCCTNode.VM_ALLOC_METHOD.equals(methodName))
                      Profiler.getDefault().displayWarning(CANNOT_SHOW_REFLECTION_SRC_MSG);
             // Display source
-            else NetBeansProfiler.getDefaultNB().openJavaSource(project, className, methodName, methodSig);
+            else NetBeansProfiler.getDefaultNB().openJavaSource(className, methodName, methodSig);
         }
 
         public void showStacksForClass(int selectedClassId, int sortingColumn, boolean sortingOrder) {
@@ -127,13 +126,11 @@ public class MemoryDiffPanel extends JPanel implements SnapshotResultsWindow.Fin
     private JButton findNextPresenter;
     private JButton findPreviousPresenter;
     private MemoryResultsPanel memoryPanel;
-    private Project project;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
     public MemoryDiffPanel(MemoryResultsSnapshot snapshot, LoadedSnapshot snapshot1, LoadedSnapshot snapshot2, int sortingColumn,
-                           boolean sortingOrder, Project project) {
-        this.project = project;
+                           boolean sortingOrder) {
 
         setLayout(new BorderLayout());
 

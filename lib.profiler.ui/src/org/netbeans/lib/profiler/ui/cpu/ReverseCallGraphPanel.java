@@ -86,7 +86,6 @@ public class ReverseCallGraphPanel extends SnapshotCPUResultsPanel implements Sc
     private static final ResourceBundle messages = ResourceBundle.getBundle("org.netbeans.lib.profiler.ui.cpu.Bundle"); // NOI18N
     private static final String PANEL_TITLE = messages.getString("ReverseCallGraphPanel_PanelTitle"); // NOI18N
     private static final String PANEL_TITLE_SHORT = messages.getString("ReverseCallGraphPanel_PanelTitleShort"); // NOI18N
-    private static final String GO_TO_SOURCE_POPUP_ITEM = messages.getString("ReverseCallGraphPanel_GoToSourcePopupItem"); // NOI18N
     private static final String ADD_ROOT_METHOD_POPUP_ITEM = messages.getString("ReverseCallGraphPanel_AddRootMethodPopupItem"); // NOI18N
     private static final String METHOD_COLUMN_NAME = messages.getString("ReverseCallGraphPanel_MethodColumnName"); // NOI18N
     private static final String METHOD_COLUMN_TOOLTIP = messages.getString("ReverseCallGraphPanel_MethodColumnToolTip"); // NOI18N
@@ -159,8 +158,6 @@ public class ReverseCallGraphPanel extends SnapshotCPUResultsPanel implements Sc
     public void setDataToDisplay(CPUResultsSnapshot snapshot, int threadId, int view) {
         super.setDataToDisplay(snapshot, view);
         this.threadId = threadId;
-        popupShowSource.setEnabled(isShowSourceAvailable());
-        popupAddToRoots.setEnabled(isAddToRootsAvailable());
     }
 
     // NOTE: this method only sets sortingColumn and sortOrder, it doesn't refresh UI!
@@ -529,19 +526,6 @@ public class ReverseCallGraphPanel extends SnapshotCPUResultsPanel implements Sc
 
     protected JPopupMenu createPopupMenu() {
         JPopupMenu popup = new JPopupMenu();
-        popupShowSource = new JMenuItem();
-        popupAddToRoots = new JMenuItem();
-
-        Font boldfont = popup.getFont().deriveFont(Font.BOLD);
-
-        popupShowSource.setFont(boldfont);
-        popupShowSource.setText(GO_TO_SOURCE_POPUP_ITEM);
-        popup.add(popupShowSource);
-
-        popup.addSeparator();
-
-        popupAddToRoots.setText(ADD_ROOT_METHOD_POPUP_ITEM);
-        popup.add(popupAddToRoots);
 
         ActionListener menuListener = new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -549,8 +533,6 @@ public class ReverseCallGraphPanel extends SnapshotCPUResultsPanel implements Sc
             }
         };
 
-        popupShowSource.addActionListener(menuListener);
-        popupAddToRoots.addActionListener(menuListener);
 
         return popup;
     }
