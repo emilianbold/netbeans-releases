@@ -54,9 +54,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OffsetRange;
-import org.netbeans.modules.gsf.spi.GsfUtilities;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.GsfUtilities;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript.editing.JsPretty.Diff;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
@@ -76,7 +76,7 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
+public class JsFormatter implements org.netbeans.modules.csl.api.Formatter {
     private boolean embeddedJavaScript;
     private int embeddededIndent = 0;
     private int indentSize;
@@ -107,7 +107,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return true;
     }
 
-    public void reformat(Context context, CompilationInfo info) {
+    public void reformat(Context context, ParserResult info) {
         indentSize = IndentUtils.indentLevelSize(context.document());
         continuationIndentSize = indentSize; // No separate setting for this yet!
         
@@ -118,7 +118,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         
         Document document = context.document();
         if (jsParseResult == null || jsParseResult.getRootNode() == null || !(JsUtils.isJsOrJsonDocument(document))) {
-            reindent(context, null, false);
+            reindent(context, false);
             return;
         }
         final BaseDocument doc = (BaseDocument) document;
@@ -126,7 +126,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
         
-        final JsPretty jsPretty = new JsPretty(info, doc, startOffset, endOffset, indentSize, continuationIndentSize);
+        final JsPretty jsPretty = new JsPretty(jsParseResult, doc, startOffset, endOffset, indentSize, continuationIndentSize);
         jsPretty.format();
         
         doc.runAtomic(new Runnable() {
@@ -161,7 +161,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         indentSize = IndentUtils.indentLevelSize(context.document());
         continuationIndentSize = indentSize; // No separate setting for this yet!
 
-        reindent(context, null, true);
+        reindent(context, true);
     }
     
     public int indentSize() {
@@ -587,7 +587,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         return false;
     }
 
-    private void reindent(final Context context, CompilationInfo info, final boolean indentOnly) {
+    private void reindent(final Context context, final boolean indentOnly) {
         Document document = context.document();
         int startOffset = context.startOffset();
         int endOffset = context.endOffset();
@@ -637,7 +637,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
             boolean includeEnd = endOffset == doc.getLength() || indentOnly;
             
             // TODO - remove initialbalance etc.
-            computeIndents(doc, initialIndent, initialOffset, endOffset, info, 
+            computeIndents(doc, initialIndent, initialOffset, endOffset, 
                     offsets, indents, indentEmptyLines, includeEnd, indentOnly);
             
             doc.runAtomic(new Runnable() {
@@ -698,7 +698,7 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
         }
     }
 
-    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, CompilationInfo info,
+    public void computeIndents(BaseDocument doc, int initialIndent, int startOffset, int endOffset, 
             List<Integer> offsets,
             List<Integer> indents,
             boolean indentEmptyLines, boolean includeEnd, boolean indentOnly

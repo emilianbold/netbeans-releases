@@ -138,9 +138,6 @@
                 <friend>org.netbeans.modules.gsf.tools</friend>
                 <friend>org.netbeans.modules.html.editor</friend>
                 <friend>org.netbeans.modules.javafx.dataloader</friend>
-                <friend>org.netbeans.modules.javascript.editing</friend>
-                <friend>org.netbeans.modules.javascript.hints</friend>
-                <friend>org.netbeans.modules.javascript.refactoring</friend>
                 <friend>org.netbeans.modules.languages.ejs</friend>
                 <friend>org.netbeans.modules.languages.yaml</friend>
                 <friend>org.netbeans.modules.php.devtools</friend>

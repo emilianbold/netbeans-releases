@@ -50,11 +50,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.Index;
-import org.netbeans.modules.gsf.api.Index.SearchResult;
-import org.netbeans.modules.gsf.api.Index.SearchScope;
-import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Index;
+import org.netbeans.modules.csl.api.Index.SearchResult;
+import org.netbeans.modules.csl.api.Index.SearchScope;
+import org.netbeans.modules.csl.api.NameKind;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
@@ -282,7 +282,7 @@ public class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -419,7 +419,7 @@ public class JsIndex {
         String searchUrl = null;
         if (context != null) {
             try {
-                searchUrl = context.getFile().getFileObject().getURL().toExternalForm();
+                searchUrl = context.getSnapshot().getSource().getFileObject().getURL().toExternalForm();
             } catch (FileStateInvalidException ex) {
                 Exceptions.printStackTrace(ex);
             }
