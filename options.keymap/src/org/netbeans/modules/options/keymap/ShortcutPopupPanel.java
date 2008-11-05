@@ -94,7 +94,6 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
         ((DefaultTableModel) ((TableSorter) table.getModel()).getTableModel()).insertRow(row + 1, newRow);
         pm.setVisible(false);
         table.editCellAt(row + 1, 1);
-        ((ShortcutCell) table.getValueAt(row, 1)).getTextField().requestFocus();
     }
 
     private void clear() {

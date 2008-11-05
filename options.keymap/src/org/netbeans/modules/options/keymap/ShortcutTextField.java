@@ -169,8 +169,6 @@ public class ShortcutTextField extends JTextField {
             pane.setPreferredSize(new Dimension(list.getPreferredSize().width + pane.getVerticalScrollBar().getPreferredSize().width + 2, Math.min(350, list.getPreferredSize().height) + 5));
             popup.show();
 
-            System.out.println();
-            System.out.println(Utils.getKeyStrokeAsText(KeyStroke.getKeyStroke(keyCode, 0)));
             switch (keyCode) {
 
                 case KeyEvent.VK_DOWN: {

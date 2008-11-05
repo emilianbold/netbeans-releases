@@ -109,18 +109,8 @@ public class Source{
             return enc != null ? Encoding.valueOf(enc.toUpperCase()) : null;
         }
 
-        public byte[] getSourceCode(boolean stripBeginCharacter) {
-            String sourceValue = stripBeginCharacter ? getSourceText(getNode()) : getNodeValue(getNode());
-            return Message.getDecodedBytes(getEncoding(), sourceValue);
-        }        
-        
-        private static String getSourceText(Node node) {
-            StringBuilder builder = getNodeValueImpl(node);
-            //Remove prepended character to preserve leading new lines
-            if (builder.length() > 0) {
-                builder.delete(0, 1);
-            }
-            return replaceHtmlEntities(builder.toString());
+        public byte[] getSourceCode() {
+            return Message.getDecodedBytes(getEncoding(), getNodeValue(getNode()));
         }
     }
 }
