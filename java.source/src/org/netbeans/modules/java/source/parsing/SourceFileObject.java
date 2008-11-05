@@ -100,12 +100,7 @@ public class SourceFileObject implements DocumentProvider, FileObjects.Inferable
     
     public SourceFileObject (final FileObject file, final FileObject root, final JavaFileFilterImplementation filter, final CharSequence content) throws IOException {
         this (file, root, filter);
-        if (content != null) {
-            this.text = toString (content);
-        }
-        else {
-            update();
-        }
+        update(content);
     }
     
     //where
