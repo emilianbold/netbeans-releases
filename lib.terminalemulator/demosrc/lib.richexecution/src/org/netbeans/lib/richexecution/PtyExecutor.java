@@ -271,7 +271,7 @@ public class PtyExecutor {
 
     public final PtyProcess start(Program program, Pty pty) {
         Process process;
-        int pid = 0;
+        int pid = -1;
         try {
             List<String> wrappedCmd = wrappedCmd(program.command(), pty);
             program.processBuilder().command(wrappedCmd);
@@ -280,6 +280,11 @@ public class PtyExecutor {
             Logger.getLogger(Program.class.getName()).log(Level.SEVERE, null, ex);
             return null;
         }
+
+	// On windows ...
+	// skip this part, no PID
+	// On unixy platforms ...
+	// extract pid and other information from the wrapper, 'process_start'.
         if (pty != null) {
             BufferedReader stdout = new BufferedReader(new InputStreamReader(process.getInputStream()));
             while (true) {
