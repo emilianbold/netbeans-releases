@@ -48,12 +48,17 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.lib.editor.codetemplates.spi.*;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.util.Exceptions;
 
 
@@ -64,8 +69,9 @@ import org.openide.util.Exceptions;
  * @author Tor Norbye
  */
 public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
-    private CodeTemplateInsertRequest request;
-    private CompilationInfo cInfo = null;
+    private CodeTemplateInsertRequest   request;
+    private ParserResult                cInfo = null;
+    private Snapshot                    snapshot = null;
 
     private GsfCodeTemplateProcessor(CodeTemplateInsertRequest request) {
         this.request = request;
@@ -124,7 +130,7 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
         try {
             if (initParsing()) {
 
-                CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(cInfo, caretOffset);
+                CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(snapshot.getSource ().getDocument (), caretOffset);
 
                 if (completer == null) {
                     return null;
@@ -140,10 +146,10 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
 
     private boolean initParsing() {
         if (cInfo == null) {
-            JTextComponent c = request.getComponent();
+            final JTextComponent c = request.getComponent();
 
             //final int caretOffset = c.getCaret().getDot();
-            Source js = Source.forDocument(c.getDocument());
+            Source js = Source.create (c.getDocument());
 
             if (c.getDocument() instanceof BaseDocument) {
                 BaseDocument doc = (BaseDocument) c.getDocument();
@@ -154,17 +160,18 @@ public class GsfCodeTemplateProcessor implements CodeTemplateProcessor {
 
             if (js != null) {
                 try {
-                    js.runUserActionTask(new CancellableTask<CompilationController>() {
-                            public void cancel() {
+                    ParserManager.parse (
+                        Collections.<Source> singleton (js),
+                        new UserTask () {
+                            public void run (ResultIterator resultIterator) throws IOException, ParseException {
+                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult (c.getCaretPosition ());
+                                parserResult.toPhase (Phase.RESOLVED);
+                                cInfo = parserResult;
+                                snapshot = parserResult.getSnapshot ();
                             }
-
-                            public void run(final CompilationController controller)
-                                throws IOException {
-                                controller.toPhase(Phase.RESOLVED);
-                                cInfo = controller;
-                            }
-                        }, false);
-                } catch (IOException ioe) {
+                        }
+                    );
+                } catch (ParseException ioe) {
                     Exceptions.printStackTrace(ioe);
                 }
             }

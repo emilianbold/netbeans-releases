@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.csl.core;
 
+import java.util.Collections;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.modules.csl.api.Formatter;
@@ -38,6 +39,7 @@ import org.netbeans.modules.csl.source.SourceAccessor;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
 
@@ -86,15 +88,14 @@ public class GsfReformatTask implements ReformatTask {
             if (controller == null) {
                 try {
                     ParserManager.parse (
-                        source,
+                        Collections.<Source> singleton (source),
                         new UserTask () {
-                            public void run (Parser.Result result) throws Exception {
-                                ParserResult parserResult = (ParserResult) result;
+                            public void run (ResultIterator resultIterator) throws Exception {
+                                ParserResult parserResult = (ParserResult) resultIterator.getParserResult(context.caretOffset ());
                                 parserResult.toPhase (Phase.PARSED);
                                 GsfReformatTask.this.controller = parserResult;
                             }
-                        },
-                        context.caretOffset ()
+                        }
                     );
                 } catch (Exception ioe) {
                     //SourceAccessor.getINSTANCE().unlockJavaCompiler();

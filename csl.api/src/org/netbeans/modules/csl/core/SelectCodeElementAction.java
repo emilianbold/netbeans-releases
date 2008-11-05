@@ -42,6 +42,7 @@
 package org.netbeans.modules.csl.core;
 
 import java.awt.event.ActionEvent;
+import java.util.Collections;
 import java.util.List;
 import java.util.MissingResourceException;
 import javax.swing.Action;
@@ -58,6 +59,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -149,7 +151,7 @@ public final class SelectCodeElementAction extends BaseAction {
             if (selectionInfos == null) {
                 Source source = Source.create (target.getDocument());
                 try {
-                    ParserManager.parse (source, this, target.getCaretPosition ());
+                    ParserManager.parse (Collections.<Source> singleton (source), this);
                 } catch (ParseException ex) {
                     ErrorManager.getDefault().notify(ex);
                 }
@@ -193,8 +195,8 @@ public final class SelectCodeElementAction extends BaseAction {
         public void cancel() {
         }
 
-        public void run (Parser.Result result) {
-            ParserResult parserResult = (ParserResult) result;
+        public void run (ResultIterator resultIterator) throws ParseException {
+            ParserResult parserResult = (ParserResult) resultIterator.getParserResult (target.getCaretPosition ());
             parserResult.toPhase(Phase.RESOLVED);
             selectionInfos = initSelectionPath(target, parserResult);
         }
