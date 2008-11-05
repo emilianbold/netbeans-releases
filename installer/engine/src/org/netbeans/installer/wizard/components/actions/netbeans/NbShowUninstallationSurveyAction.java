@@ -76,7 +76,7 @@ public class NbShowUninstallationSurveyAction extends WizardAction {
                                 product.getVersion().getMinor();
 
                         LogManager.log("... version : " + version);
-                        final File superId = new File(SystemUtils.getUserHomeDirectory(), ".netbeans" + File.separator + ".superid");
+                        final File superId = new File(SystemUtils.getUserHomeDirectory(), ".netbeans" + File.separator + ".superId");
                         String id = "";
                         if (FileUtils.exists(superId)) {
                             id =  FileUtils.readStringList(superId).get(0);

@@ -82,6 +82,9 @@
         </Property>
         <Property name="rolloverEnabled" type="boolean" value="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="changeButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
