@@ -46,13 +46,16 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
  *
  * @author Jan Jancura
  */
+@ServiceProvider(service=Scheduler.class)
 public class CursorSensitiveScheduller extends CurrentEditorTaskScheduller {
     
     private JTextComponent  currentEditor;

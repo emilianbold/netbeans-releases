@@ -50,12 +50,15 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Scheduler;
+import org.openide.util.lookup.ServiceProvider;
 
 
 /**
  *
  * @author Jan Jancura
  */
+@ServiceProvider(service=Scheduler.class)
 public class SelectedNodesScheduller extends FileObjectsTaskScheduller {
     
     public SelectedNodesScheduller () {
