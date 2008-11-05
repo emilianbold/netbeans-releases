@@ -44,11 +44,42 @@
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
     
+    <folder name="Templates">
+        <folder name="SaaSServices">
+            <file name="AmazonEC2Authenticator.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/amazon/resources/j2ee/AmazonEC2Authenticator.template">
+                <attr name="position" intvalue="3610"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            <file name="AmazonEC2AuthenticatorDesktop.java" 
+                  url="/org/netbeans/modules/websvc/saas/services/amazon/resources/java/AmazonEC2Authenticator.template">
+                <attr name="position" intvalue="3640"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
+            </file>
+            
+            <!-- PHP templates -->
+            <file name="AmazonEC2AuthenticatorDesktop.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/amazon/resources/php/AmazonEC2AuthenticatorDesktop.template">
+                <attr name="position" intvalue="3650"/>
+            </file>
+            <file name="AmazonEC2Authenticator.php" 
+                  url="/org/netbeans/modules/websvc/saas/services/amazon/resources/php/AmazonEC2Authenticator.template">
+                <attr name="position" intvalue="3660"/>
+            </file>
+        </folder>
+    </folder>
+    
     <folder name="SaaSServices">
         <folder name="AmazonS3">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>
             <file name="AmazonS3Buckets.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Buckets.xml"/>
             <file name="AmazonS3Bucket.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonS3Bucket.xml"/>
+        </folder>
+        <folder name="AmazonEC2">
+            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>
+            <file name="AmazonEC2.xml" url="/org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonEC2.xml"/>
         </folder>
         <folder name="AmazonECS">
             <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.saas.services.SaaSServices.Bundle"/>

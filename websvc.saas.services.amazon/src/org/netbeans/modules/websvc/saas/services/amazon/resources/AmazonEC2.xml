@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+
+<saas-services xmlns="http://xml.netbeans.org/websvc/saas/services/1.0"
+               xmlns:tns="http://xml.netbeans.org/websvc/saas/component/1.0/amazon"
+               xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'               
+               xsi:schemaLocation='http://xml.netbeans.org/websvc/saas/services/1.0 
+               ../../../../../../../../../../websvc.saas.api/src/org/netbeans/modules/websvc/saas/model/SaasServices.xsd'
+               type="http://research.sun.com/wadl/2006/10"
+               api-doc="http://docs.amazonwebservices.com/AmazonEC2/dg/2006-10-01/"
+               url="org/netbeans/modules/websvc/saas/services/amazon/resources/AmazonEC2Wadl.xml">
+    
+    <description>AmazonEC2 Service</description>
+    
+    <display-name>EC2 Service</display-name>
+    
+    <saas-metadata>
+        <localizing-bundle>org.netbeans.modules.websvc.saas.services.amazon.Bundle</localizing-bundle>
+        <group name="Amazon"/>
+        <code-gen>
+            <artifacts targets="java,servlet,resource,jsp" profile="Templates/SaaSServices/sessionkey.properties">
+                <artifact id="AmazonEC2AuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/AmazonEC2AuthenticatorDesktop.java"/>
+                <artifact id="AmazonEC2Authenticator" type="template"
+                    url="Templates/SaaSServices/AmazonEC2Authenticator.java"/>
+            </artifacts>
+            <artifacts targets="php" profile="Templates/SaaSServices/sessionkey.php">
+                <artifact id="AmazonEC2AuthenticatorDesktop" type="template"
+                    url="Templates/SaaSServices/AmazonEC2AuthenticatorDesktop.php"/>
+                <artifact id="AmazonEC2Authenticator" type="template"
+                    url="Templates/SaaSServices/AmazonEC2Authenticator.php"/>
+            </artifacts>
+        </code-gen>
+        <authentication>
+            <session-key api-id="AWSAccessKeyId" session-id="session_key" sig-id="Signature">
+                <sign id="Signature">
+                    <params>
+                        <param id="Expires={Expires}" name="Expires" type="string" required="true"/>
+                        <param id="apiKey={AWSAccessKeyId}" name="AWSAccessKeyId" type="string" required="true"/>
+                        <param id="AWSAccessKeyId={AWSAccessKeyId}" name="AWSAccessKeyId" type="string" required="true"/>
+                    </params>
+                </sign>
+                <authenticator>
+                    <use-templates>
+                        <desktop>
+                            <template type="auth" href="AmazonEC2AuthenticatorDesktop"/>
+                        </desktop>
+                        <web>
+                            <template type="auth" href="AmazonEC2Authenticator"/>
+                        </web>
+                    </use-templates>
+                </authenticator>
+            </session-key>
+        </authentication>
+        
+    </saas-metadata>
+    
+    <!-- Process all methods in the wadl !-->
+    <methods/>
+    
+</saas-services>
