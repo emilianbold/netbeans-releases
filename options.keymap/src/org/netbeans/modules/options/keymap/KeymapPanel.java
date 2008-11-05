@@ -59,7 +59,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDisplayer;
@@ -208,7 +207,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                         for (int i = 0; i < shortcuts.length; i++) {
                             String shortcut = shortcuts[i];
                             if (shortcut.toString().equals(searchSCField.getText()))
-                                getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(shortcut, sca), category, ""});
+                                getModel().addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(shortcut), category, ""});
                         }
                     }
                 }
@@ -453,7 +452,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                 if (e.getX() > (cellRect.x + cellRect.width - button.getWidth())) { //inside changeButton
 //                    MouseEvent buttonEvent = SwingUtilities.convertMouseEvent(table, e, button);
 //                    button.dispatchEvent(buttonEvent);
-                    button.doClick();
+//                    button.doClick();
 
                     boolean isShortcutSet = scCell.getTextField().getText().length() != 0;
                     ShortcutPopupPanel panel = (ShortcutPopupPanel) popup.getComponents()[0];

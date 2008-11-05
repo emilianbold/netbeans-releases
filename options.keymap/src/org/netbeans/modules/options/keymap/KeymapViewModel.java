@@ -214,14 +214,14 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
 //                    System.out.println("### " + sca.getDisplayName() + " " + searched(displayName.toLowerCase()));
                     if (searched(displayName.toLowerCase(), searchText)) {
                         if (shortcuts.length == 0)
-                            addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(sca), category, ""});
+                            addRow(new Object[]{new ActionHolder(sca, false), new ShortcutCell(), category, ""});
                         else
                             for (int i = 0; i < shortcuts.length; i++) {
                                 String shortcut = shortcuts[i];
 //                                String shownDisplayName = i == 0 ? displayName : displayName + " (alternative shortcut)";
                                 addRow(new Object[]{
                                             i == 0 ? new ActionHolder(sca, false) : new ActionHolder(sca, true),
-                                            new ShortcutCell(shortcut, sca), category, ""
+                                            new ShortcutCell(shortcut), category, ""
                                         });
                             }
                     }
@@ -371,20 +371,49 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
             }
         }
         
-        if (!shortcutsCache.containsKey (currentProfile)) {
-            // read profile and put it to cache
-            Map<ShortcutAction, Set<String>> profileMap = convertFromEmacs (model.getKeymap (currentProfile));
-            shortcutsCache.put (
-                currentProfile, 
-                profileMap
-             );
-        }
-        Map<ShortcutAction, Set<String>> profileMap = shortcutsCache.get (currentProfile);
+        Map<ShortcutAction, Set<String>> profileMap = getProfileMap(currentProfile);
         Set<String> shortcuts = profileMap.get (action);
         if (shortcuts == null) {
             return new String [0];
         }
         return shortcuts.toArray (new String [shortcuts.size ()]);
+    }
+
+    /**
+     * Provides mapping of actions to their (non modified) shortcuts for a profile
+     * @param profile given profile
+     * @return the mapping
+     */
+    private Map<ShortcutAction, Set<String>> getProfileMap(String profile) {
+        if (!shortcutsCache.containsKey (profile)) {
+            // read profile and put it to cache
+            Map<ShortcutAction, Set<String>> profileMap = convertFromEmacs (model.getKeymap (profile));
+            shortcutsCache.put (
+                profile,
+                profileMap
+             );
+        }
+        return shortcutsCache.get (profile);
+    }
+
+    /**
+     * Set of all shortcuts used by current profile (including modifications)
+     * @return set of shortcuts
+     */
+    public Set<String> getAllCurrentlyUsedShortcuts() {
+        Set<String> set = new LinkedHashSet<String>();
+        //add modified shortcuts, if any
+        Map<ShortcutAction, Set<String>> modMap = modifiedProfiles.get(currentProfile);
+        if (modMap != null)
+            for (Entry<ShortcutAction, Set<String>> entry : modMap.entrySet()) {
+                set.addAll(entry.getValue());
+            }
+        //add default shortcuts
+        for (Entry<ShortcutAction, Set<String>> entry : getProfileMap(currentProfile).entrySet()) {
+            set.addAll(entry.getValue());
+        }
+
+        return set;
     }
 
     void addShortcut (ShortcutAction action, String shortcut) {

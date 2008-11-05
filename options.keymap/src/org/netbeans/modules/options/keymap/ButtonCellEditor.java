@@ -40,12 +40,17 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.util.Arrays;
 import java.util.EventObject;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.openide.DialogDescriptor;
@@ -58,16 +63,26 @@ import org.openide.util.NbBundle;
  */
 public class ButtonCellEditor extends DefaultCellEditor {
 
-    /** Constructor argument type (SC text, ShortcutAction) */
-    private static final Class[] argTypes = new Class[]{String.class, Object.class};
-    private java.lang.reflect.Constructor constructor;
-    private Object value;
     private Object action;
     private KeymapViewModel model;
     private String orig;
 
-    public ButtonCellEditor(KeymapViewModel model) {
+    private KeyAdapter escapeAdapter = new KeyAdapter() {
 
+        @Override
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                JTable table = (JTable) cell.getParent();
+                table.requestFocus();
+                table.getCellEditor().cancelCellEditing();
+                table.requestFocus();
+            }
+        }
+    };
+
+    private ShortcutCell cell = new ShortcutCell();
+
+    public ButtonCellEditor(KeymapViewModel model) {
         super(new ShortcutTextField());
         this.model = model;
     }
@@ -79,64 +94,67 @@ public class ButtonCellEditor extends DefaultCellEditor {
 
     @Override
     public boolean stopCellEditing() {
-        String s = (String) super.getCellEditorValue();
+        String s = cell.toString();
 
-        try {
-            value = constructor.newInstance(s, action);
-            ShortcutAction sca = (ShortcutAction) action;
-            ShortcutAction conflictingAction = model.findActionForShortcut(s);
-            if (conflictingAction != null && !conflictingAction.equals(sca)) {//there is a conflicting action, show err dialog
-                //there is a conflicting action, show err dialog
-                Object overrride = overrride(conflictingAction.getDisplayName());
-                if (overrride.equals(DialogDescriptor.YES_OPTION)) {
-//                    model.removeShortcut(sca, orig);
-//                    model.addShortcut(sca, s);
-//                    boolean stopCellEditing = super.stopCellEditing();
-//                    model.update();
-//                    return stopCellEditing;
+        ShortcutAction sca = (ShortcutAction) action;
+        ShortcutAction conflictingAction = model.findActionForShortcut(s);
+        if (conflictingAction != null && !conflictingAction.equals(sca)) {//there is a conflicting action, show err dialog
+            //there is a conflicting action, show err dialog
+            Object overrride = overrride(conflictingAction.getDisplayName());
+            if (overrride.equals(DialogDescriptor.YES_OPTION)) {
+                //proceed with override
                 } else if (overrride.equals(DialogDescriptor.NO_OPTION)) {
-                    JComponent comp = (JComponent) getComponent();
-                    comp.setBorder(new LineBorder(Color.red));
-                    comp.requestFocus();
-                    return false;
-                } else {
-                    ((ShortcutCell) value).getTextField().setText(orig);
-                    return super.stopCellEditing();
-                }
+                JComponent comp = (JComponent) getComponent();
+                comp.setBorder(new LineBorder(Color.red));
+                comp.requestFocus();
+                return false;
+            } else {
+                cell.getTextField().setText(orig);
+                fireEditingCanceled();
+                setBorderEmpty();
+                return true;
             }
-        } catch (Exception e) {
-            ((JComponent) getComponent()).setBorder(new LineBorder(Color.red));
-            return false;
         }
         model.removeShortcut((ShortcutAction) action, orig);
         if (!(s.length() == 0)) // do not add empty shortcuts
             model.addShortcut((ShortcutAction) action, s);
-        boolean stopCellEditing = super.stopCellEditing();
+        fireEditingStopped();
+        setBorderEmpty();
         model.update();
-        return stopCellEditing;
+        return true;
+    }
+
+    @Override
+    public void cancelCellEditing() {
+        cell.getTextField().setText(orig);
+        fireEditingCanceled();
+        setBorderEmpty();
     }
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected,
             int row, int column) {
-        this.orig = ((ShortcutCell) value).toString();
-        this.value = null;
-        
-        ((JComponent) getComponent()).setBorder(new LineBorder(Color.black));
-        try {
-            constructor = ShortcutCell.class.getConstructor(argTypes);
-            this.action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
-        } catch (Exception e) {
-            return null;
+        cell = (ShortcutCell) value;
+        this.orig = cell.toString();
+        this.action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
+        JTextField textField = cell.getTextField();
+        textField.addActionListener(delegate);
+        textField.setBorder(new LineBorder(Color.BLACK));
+        if(!Arrays.asList(textField.getKeyListeners()).contains(escapeAdapter)) {
+            textField.addKeyListener(escapeAdapter);
         }
-        Component comp = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        return comp;
+        return cell;
     }
 
     @Override
     public Object getCellEditorValue() {
-        return value;
+        return cell;
+    }
+
+    @Override
+    public Component getComponent() {
+        return cell.getTextField();
     }
 
     /**
@@ -157,6 +175,10 @@ public class ButtonCellEditor extends DefaultCellEditor {
         
         DialogDisplayer.getDefault().notify(descriptor);
         return descriptor.getValue();
+    }
+
+    private void setBorderEmpty() {
+        ((JComponent) getComponent()).setBorder(new EmptyBorder(0, 0, 0, 0));
     }
 
 }
