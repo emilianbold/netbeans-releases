@@ -1,4 +1,18 @@
 ================================================================================
+nobugid (get working on Windows again)
+	- richexecution
+	  - build.xml now recognizes windows (XP) as a platform
+	  - Use ${user.name} instead of ${env.USER}.
+	  - Command needs to pass /c instead of -c on Windows.
+	  - Pty constructor throws UnsupportedOperationException on Windows.
+	  - PtyExecutor.start() needs to initialize pid to -1 so that
+	    PtyProcess knows to not use unixy signals (it tests for -1).
+	  - On Windows PtyProcess should return the processes streams
+	    not the Pty's because there is no Pty. At some point we'll be
+	    able to do RAW Pty's on Windows and then this won't be neccessary.
+	- termsupport
+	  - set the pty Mode to NONE on Windows.
+================================================================================
 nobugid (bugs in line insertion/deletion w and w/o margins)
 	Symptom:
 		vi a file in a 24x80 terminal.
