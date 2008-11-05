@@ -61,13 +61,13 @@ public abstract class SchedulerTask extends Task {
     public abstract int getPriority ();
     
     /**
-     * Returns {@link TaskScheduler} class for this SchedulerTask. See 
-     * {@link TaskScheduler} documentation for a list of default schedulers, 
+     * Returns {@link Scheduler} class for this SchedulerTask. See
+     * {@link Scheduler} documentation for a list of default schedulers,
      * or your your own implementation.
      * 
-     * @return              {@link TaskScheduler} for this SchedulerTask.
+     * @return              {@link Scheduler} for this SchedulerTask.
      */
-    public abstract Class<? extends TaskScheduler> getSchedulerClass ();
+    public abstract Class<? extends Scheduler> getSchedulerClass ();
     
     /**
      * Called by infrastructure when the task was interrupted by the

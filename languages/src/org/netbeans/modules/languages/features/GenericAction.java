@@ -48,7 +48,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.languages.*;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.api.languages.ParserResult;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -96,7 +96,7 @@ public class GenericAction extends BaseAction {
     public void actionPerformed(ActionEvent e, final JTextComponent comp) {
         Source source = Source.create (comp.getDocument ());
         try {
-            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+            ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
                 @Override
                 public void run (ResultIterator resultIterator) throws ParseException {
                     getPerformer().getValue (new Object[] {((ParserResult) resultIterator.getParserResult ()).getRootNode (), comp});

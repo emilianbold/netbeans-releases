@@ -58,7 +58,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -129,14 +129,14 @@ public class VyletelaZezulickaTest extends NbTestCase {
                                     try {
                                         final String original = result.getSnapshot().getText ().toString ();
                                         ParserManager.parse (
-                                            result.getSnapshot().getSource (), 
+                                            Collections.<Source>singleton (result.getSnapshot().getSource ()), 
                                             new UserTask() {
-                                                public void run (Result result) throws Exception {
+                                                public void run (ResultIterator resultIterator) throws Exception {
+                                                    Result result = resultIterator.getParserResult (1);
                                                     counter.check (original, result.getSnapshot().getText ().toString ());
                                                     counter.check (5);
                                                 }
-                                            }, 
-                                            1
+                                            }
                                         );
                                         counter.check (6);
                                     } catch (ParseException ex) {
@@ -149,7 +149,7 @@ public class VyletelaZezulickaTest extends NbTestCase {
                                 return 100;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return MyScheduler.class;
                             }
 
@@ -192,14 +192,14 @@ public class VyletelaZezulickaTest extends NbTestCase {
         counter.check (3);
         
         ParserManager.parse (
-            source, 
+            Collections.<Source> singleton (source),
             new UserTask () {
-                public void run (Result result) throws Exception {
+                public void run (ResultIterator resultIterator) throws Exception {
+                    Result result = resultIterator.getParserResult (1);
                     counter.check ("Toto je testovaci2 file, na kterem se budou delat hnusne pokusy!!!", result.getSnapshot().getText ().toString ());
                     counter.wait (7);
                 }
-            }, 
-            1
+            }
         );
         
         counter.wait (8);

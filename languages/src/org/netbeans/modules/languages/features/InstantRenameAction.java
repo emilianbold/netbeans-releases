@@ -73,7 +73,7 @@ import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -99,7 +99,7 @@ public class InstantRenameAction extends BaseAction {
         final int offset = editor.getCaretPosition ();
         Source source = Source.create (editor.getDocument ());
         try {
-            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+            ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
                 @Override
                 public void run (ResultIterator resultIterator) throws ParseException {
                     try {

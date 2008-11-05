@@ -47,7 +47,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -115,7 +114,7 @@ class ClassParser extends Parser {
         assert ciImpl != null;
         final boolean isParserResultTask = task instanceof ParserResultTask;
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
-        final boolean isUserTask = task instanceof MultiLanguageUserTask || task instanceof UserTask;
+        final boolean isUserTask = task instanceof UserTask;
         JavacParserResult result = null;
         if (isParserResultTask) {
             final JavaSource.Phase currentPhase = ciImpl.getPhase();

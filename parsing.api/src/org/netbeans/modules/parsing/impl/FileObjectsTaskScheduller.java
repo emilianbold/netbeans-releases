@@ -42,18 +42,18 @@ package org.netbeans.modules.parsing.impl;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 
 
 /**
- * This implementation of {@link TaskScheduler} schedules tasks when some 
+ * This implementation of {@link Scheduler} schedules tasks when some
  * file or document is chenged. This is helper class only, and it should
- * be extended by some real implementation of {@link TaskScheduler}.
+ * be extended by some real implementation of {@link Scheduler}.
  * 
  * @author Jan Jancura
  */
-public class FileObjectsTaskScheduller extends TaskScheduler {
+public class FileObjectsTaskScheduller extends Scheduler {
 
     
     private Collection<FileObject> fileObjects = Collections.<FileObject>emptyList ();

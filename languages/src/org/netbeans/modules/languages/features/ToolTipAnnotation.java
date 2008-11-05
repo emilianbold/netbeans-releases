@@ -60,7 +60,7 @@ import org.netbeans.api.languages.LanguageDefinitionNotFoundException;
 import org.netbeans.api.languages.ParserResult;
 import org.netbeans.api.languages.SyntaxContext;
 import org.netbeans.modules.languages.parser.SyntaxError;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -116,7 +116,7 @@ public class ToolTipAnnotation extends Annotation {
             }
             Source source = Source.create (document);
             try {
-                ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
                     @Override
                     public void run (ResultIterator resultIterator) throws ParseException {
                         ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();

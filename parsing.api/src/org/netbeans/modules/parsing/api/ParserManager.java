@@ -51,7 +51,6 @@ import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.netbeans.modules.parsing.impl.TaskProcessor;
-import org.netbeans.modules.parsing.impl.UserTaskImpl;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -69,37 +68,6 @@ import org.openide.util.Mutex;
 public final class ParserManager {
 
     private ParserManager () {}
-    
-    /**
-     * Priority request for parsing of some source. This task in called for 
-     * the most embedded source / language on given position. Task is notified 
-     * when parsing is finished. 
-     * This method is blocking. It means that only one parsing request per time
-     * is allowed. But you can call another parsing request 
-     * from your Task. This secondary parsing request is called 
-     * immediately in the same thread (current thread).
-     * <p>
-     * This method is typically called as a response on some user request - 
-     * during code completion for example. But you have access to parse result
-     * created for one block of some embedded (or top level) language only.
-     * Use second parse method if you need access to parse results of some other
-     * language plocks too.
-     * 
-     * @param source        A source that should be parsed.
-     * @param userTask      A task that will be started when parsing is done.
-     * @param offset        A offset that identifies some block of code.
-     * @throws ParseException encapsulating the user exception
-     */
-    public static void parse (
-        Source              source, 
-        UserTask            userTask,
-        int                 offset
-    ) throws ParseException {
-        parse (
-            Collections.<Source>singletonList (source),
-            new UserTaskImpl (source, userTask, offset)
-        );
-    }
 
     /**
      * Priority request for parsing of list of {@link Source}s. Implementator 
@@ -121,7 +89,7 @@ public final class ParserManager {
     public static void parse (
         final Collection<Source>  
                             sources, 
-        final MultiLanguageUserTask 
+        final UserTask
                             userTask
     ) throws ParseException {
         //tzezula: ugly, Hanzy isn't here a nicer solution to distinguish single source from multi source?
@@ -176,7 +144,7 @@ public final class ParserManager {
                 pf.parse(null, userTask, null);
                 Parser.Result result = pf.getResult(userTask, null);
                 try {
-                    userTask.run(result);
+                    userTask.run (new ResultIterator (result));
                 } finally {
                     ParserAccessor.getINSTANCE().invalidate(result);
                 }

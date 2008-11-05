@@ -62,7 +62,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -235,7 +235,7 @@ public final class SourceCache {
     private final Set<EmbeddingProvider> upToDateEmbeddingProviders = new HashSet<EmbeddingProvider> ();
 
     
-    synchronized void refresh (EmbeddingProvider embeddingProvider, Class<? extends TaskScheduler> schedulerType) {
+    synchronized void refresh (EmbeddingProvider embeddingProvider, Class<? extends Scheduler> schedulerType) {
         List<Embedding> embeddings = embeddingProvider.getEmbeddings (getSnapshot ());
         List<Embedding> oldEmbeddings = embeddingProviderToEmbedings.get (embeddingProvider);
         updateEmbeddings (embeddings, oldEmbeddings, true, schedulerType);
@@ -248,7 +248,7 @@ public final class SourceCache {
             List<Embedding> embeddings,
             List<Embedding> oldEmbeddings,
             boolean         updateTasks,
-            Class<? extends TaskScheduler>           schedulerType
+            Class<? extends Scheduler>           schedulerType
     ) {
         if (oldEmbeddings != null && embeddings.size () == oldEmbeddings.size ()) {
             for (int i = 0; i < embeddings.size (); i++) {
@@ -313,7 +313,7 @@ public final class SourceCache {
     }
 
     //tzezula: probably has race condition
-    public void scheduleTasks (Class<? extends TaskScheduler> schedulerType) {
+    public void scheduleTasks (Class<? extends Scheduler> schedulerType) {
         final List<SchedulerTask> reschedule = new ArrayList<SchedulerTask> ();
         final List<SchedulerTask> add = new ArrayList<SchedulerTask> ();
         synchronized (this) {

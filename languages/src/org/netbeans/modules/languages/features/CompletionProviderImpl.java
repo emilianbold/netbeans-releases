@@ -78,6 +78,8 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.languages.Utils;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -348,17 +350,18 @@ public class CompletionProviderImpl implements CompletionProvider {
             }
         }
 
-        private boolean addParserTags (final Result resultSet, final Language language, int offset) {
+        private boolean addParserTags (final Result resultSet, final Language language, final int offset) {
             Source source = Source.create (doc);
             try {
-                ParserManager.parse (source, new UserTask () {
+                ParserManager.parse (Collections.<Source> singleton (source), new UserTask () {
                     @Override
-                    public void run(Parser.Result result) {
+                    public void run (ResultIterator resultIterator) throws ParseException {
                         if (resultSet.isFinished ()) return;
+                        Parser.Result result = resultIterator.getParserResult (offset);
                         addParserTags ((ParserResult) result, resultSet, language);
                         resultSet.finish ();
                     }
-                }, offset);
+                });
             } catch (ParseException ex) {
                 ex.printStackTrace ();
             }

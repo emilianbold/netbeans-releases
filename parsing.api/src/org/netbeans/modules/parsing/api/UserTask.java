@@ -39,24 +39,29 @@
 
 package org.netbeans.modules.parsing.api;
 
-import org.netbeans.modules.parsing.spi.Parser;
-
 
 /**
- * Task that process result of parsing of one block of code written 
- * in one specific language. 
+ * UserTask allows controll process of parsing of {@link Source}
+ * containing blocks of embedded languages, and do some computations based on 
+ * all (or some) parser {@link org.netbeans.modules.parsing.spi.Parser.Result}s. 
+ * It is usefull
+ * when you need to implement code completion based on results of more 
+ * embedded languages, or if you want to implement refactoring of some 
+ * blocks of code embedded in some other blocks of other code, etc...
  *
  * @author Jan Jancura
  */
 public abstract class UserTask extends Task {
 
     /**
-     * Called when parser is finished.
+     * UserTask implementation.
      * 
-     * @param result        A result of parsing.
-     * @throws Exception rethrown by the infrastructure as a {@link org.netbeans.modules.parsing.spi.ParseException}.
+     * @param resultIterator
+     *                      A {@link ResultIterator} instance.
+     * @throws Exception rethrown by the infrastructure as a 
+     *                      {@link org.netbeans.modules.parsing.spi.ParseException}.
      */
-    public abstract void run (Parser.Result result) throws Exception;
+    public abstract void run (ResultIterator resultIterator) throws Exception;
 }
 
 

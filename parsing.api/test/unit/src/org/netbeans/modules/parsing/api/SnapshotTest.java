@@ -61,7 +61,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Mutex;
@@ -220,7 +220,7 @@ public class SnapshotTest extends NbTestCase {
 
             }
 
-            public Class<? extends TaskScheduler> getSchedulerClass () {
+            public Class<? extends Scheduler> getSchedulerClass () {
                 return null;
             }
 

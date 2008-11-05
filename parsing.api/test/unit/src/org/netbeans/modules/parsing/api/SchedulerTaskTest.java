@@ -61,7 +61,7 @@ import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -135,7 +135,7 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return MyScheduler.class;
                             }
 
@@ -157,7 +157,7 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return 100;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return MyScheduler.class;
                             }
 
@@ -225,7 +225,7 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return 150;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return MyScheduler.class;
                             }
 
@@ -335,7 +335,7 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return null;
                             }
 
@@ -364,7 +364,7 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return 100;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return MyScheduler.class;
                             }
 
@@ -454,7 +454,7 @@ public class SchedulerTaskTest extends NbTestCase {
                                 return 150;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return MyScheduler.class;
                             }
 
@@ -494,7 +494,7 @@ public class SchedulerTaskTest extends NbTestCase {
         counter.check (10);
         ParserManager.parse (
             Collections.<Source>singleton (source), 
-            new MultiLanguageUserTask () {
+            new UserTask () {
                 @Override
                 public void run (ResultIterator resultIterator) throws Exception {
                     counter.check ("text/foo", resultIterator.getSnapshot ().getMimeType ());

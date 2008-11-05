@@ -115,7 +115,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -206,8 +206,8 @@ public class SemanticHighlighter extends ParserResultTask {
     }
 
     @Override
-    public Class<? extends TaskScheduler> getSchedulerClass() {
-        return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
     
     private static class FixAllImportsFixList implements LazyFixList {

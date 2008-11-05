@@ -46,7 +46,7 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 
 
@@ -54,7 +54,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Jancura
  */
-public abstract class CurrentEditorTaskScheduller extends TaskScheduler {
+public abstract class CurrentEditorTaskScheduller extends Scheduler {
     
     private JTextComponent  currentEditor;
     

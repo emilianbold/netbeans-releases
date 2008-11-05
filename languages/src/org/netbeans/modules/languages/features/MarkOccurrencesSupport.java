@@ -57,7 +57,7 @@ import org.netbeans.api.languages.Highlighting.Highlight;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.features.AnnotationManager.LanguagesAnnotation;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -93,7 +93,7 @@ public class MarkOccurrencesSupport implements CaretListener {
                 Source source = Source.create (editor.getDocument ());
                 if (source != null) {
                     try {
-                        ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                        ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
                             @Override
                             public void run (ResultIterator resultIterator) throws ParseException {
                                 ParserResult parserResult = (ParserResult) resultIterator.getParserResult ();

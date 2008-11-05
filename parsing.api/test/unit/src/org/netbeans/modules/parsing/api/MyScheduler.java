@@ -2,9 +2,9 @@ package org.netbeans.modules.parsing.api;
 
 import java.util.Collection;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 
-public class MyScheduler extends TaskScheduler {
+public class MyScheduler extends Scheduler {
 
     private static MyScheduler myScheduler;
 
@@ -14,6 +14,6 @@ public class MyScheduler extends TaskScheduler {
     }
 
     public static void schedule(Collection<Source> sources, SchedulerEvent event) {
-        myScheduler.scheduleTasks(sources, event);
+        myScheduler.schedule(sources, event);
     }
 }

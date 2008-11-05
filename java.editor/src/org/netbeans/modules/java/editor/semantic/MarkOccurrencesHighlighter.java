@@ -90,7 +90,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -612,8 +612,8 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
     }
 
     @Override
-    public Class<? extends TaskScheduler> getSchedulerClass() {
-        return TaskScheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
 }

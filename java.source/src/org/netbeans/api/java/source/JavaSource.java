@@ -74,7 +74,6 @@ import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
 import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -387,7 +386,8 @@ public final class JavaSource {
             try {
                 ParserManager.parse(JavacParser.MIME_TYPE,new ClasspathInfoTask(this.classpathInfo) {
                     @Override
-                    public void run(Result result) throws Exception {
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        Result result = resultIterator.getParserResult ();
                         final CompilationController cc = CompilationController.get(result);
                         assert cc != null;
                         cc.setJavaSource(JavaSource.this);
@@ -413,7 +413,7 @@ public final class JavaSource {
         }
         else {
             try {
-                    final MultiLanguageUserTask _task = new ClasspathInfoMultiLanguageTask (this.classpathInfo) {
+                    final UserTask _task = new ClasspathInfoMultiLanguageTask (this.classpathInfo) {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             final Snapshot snapshot = resultIterator.getSnapshot();
@@ -561,7 +561,7 @@ public final class JavaSource {
             long start = System.currentTimeMillis();
             try {
                 final JavacParser[] theParser = new JavacParser[1];
-                final MultiLanguageUserTask _task = new ClasspathInfoMultiLanguageTask(this.classpathInfo) {
+                final UserTask _task = new ClasspathInfoMultiLanguageTask(this.classpathInfo) {
                     @Override
                     public void run(ResultIterator resultIterator) throws Exception {
                         final Snapshot snapshot = resultIterator.getSnapshot();
@@ -676,7 +676,7 @@ public final class JavaSource {
             final JavacParser parser = factory.createPrivateParser(snapshot);
             final UserTask dummy = new UserTask() {
                 @Override
-                public void run(Result result) throws Exception {                    
+                public void run(ResultIterator resultIterator) throws Exception {                    
                 }
             };
             parser.parse(snapshot,dummy, null);            

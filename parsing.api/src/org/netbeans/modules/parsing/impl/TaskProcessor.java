@@ -74,7 +74,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -197,7 +197,7 @@ public class TaskProcessor {
      * @task The task to run.
      * @source The source on which the task operates
      */ 
-    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<? extends TaskScheduler> schedulerType) {
+    public static void addPhaseCompletionTasks(final Collection<SchedulerTask> tasks, final SourceCache cache, Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);   //NOI18N
         Parameters.notNull("cache", cache);   //NOI18N
         List<Request> requests = new ArrayList<Request> ();
@@ -255,7 +255,7 @@ public class TaskProcessor {
      * @param task to reschedule
      * @param source to which the task it bound
      */
-    public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends TaskScheduler> schedulerType) {
+    public static void rescheduleTasks(final Collection<SchedulerTask> tasks, final Source source, final Class<? extends Scheduler> schedulerType) {
         Parameters.notNull("task", tasks);
         Parameters.notNull("source", source);
         synchronized (INTERNAL_LOCK) {
@@ -644,7 +644,7 @@ public class TaskProcessor {
                 return 0;
             }
             @Override
-            public Class<? extends TaskScheduler> getSchedulerClass() {
+            public Class<? extends Scheduler> getSchedulerClass() {
                 return null;
             }
             @Override
@@ -658,7 +658,7 @@ public class TaskProcessor {
         private final SchedulerTask task;
         private final SourceCache cache;
         private final boolean reschedule;
-        private Class<? extends TaskScheduler> schedulerType;
+        private Class<? extends Scheduler> schedulerType;
         
         /**
          * Creates new Request
@@ -666,7 +666,7 @@ public class TaskProcessor {
          * @param source on which the task should be performed
          * @param reschedule when true the task is periodic request otherwise one time request
          */
-        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, Class<? extends TaskScheduler> schedulerType) {
+        public Request (final SchedulerTask task, final SourceCache cache, final boolean reschedule, Class<? extends Scheduler> schedulerType) {
             assert task != null;
             this.task = task;
             this.cache = cache;
