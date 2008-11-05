@@ -139,7 +139,45 @@ public final class ParserManager {
     public static void parse (
         final String mimeType,
         final UserTask     userTask
-    ) throws ParseException {
+    ) throws ParseException {        
+        final Parser pf = findParser(mimeType);
+        TaskProcessor.runUserTask (new MimeTaskAction(pf, userTask), Collections.<Source>emptyList ());
+    }
+    
+
+    public static Future<Void> parseWhenScanFinished (final String mimeType, final UserTask userTask) throws ParseException {
+        final Parser pf = findParser(mimeType);
+        return TaskProcessor.runWhenScanFinished(new MimeTaskAction(pf, userTask), Collections.<Source>emptyList ());
+
+    }
+
+    //where
+
+    private static class MimeTaskAction implements Mutex.ExceptionAction<Void> {
+
+        private final UserTask userTask;
+        private final Parser parser;
+
+        public MimeTaskAction (final Parser parser, final UserTask userTask) {
+            assert userTask != null;
+            assert parser != null;
+            this.userTask = userTask;
+            this.parser = parser;
+        }
+
+        public Void run() throws Exception {
+            parser.parse(null, userTask, null);
+            Parser.Result result = parser.getResult(userTask, null);
+            try {
+                userTask.run (new ResultIterator (result));
+            } finally {
+                ParserAccessor.getINSTANCE().invalidate(result);
+            }
+            return null;
+        }
+    }
+
+    private static Parser findParser (final String mimeType) {
         Parser p = null;
         final Reference<Parser> ref = cachedParsers.get (mimeType);
         if (ref != null) {
@@ -154,19 +192,7 @@ public final class ParserManager {
             p = parserFactory.createParser(Collections.<Snapshot>emptyList());
             cachedParsers.put(mimeType, new TimedWeakReference<Parser>(p));
         }
-        final Parser pf = p;
-        TaskProcessor.runUserTask (new Mutex.ExceptionAction<Void>() {
-            public Void run() throws Exception {
-                pf.parse(null, userTask, null);
-                Parser.Result result = pf.getResult(userTask, null);
-                try {
-                    userTask.run (new ResultIterator (result));
-                } finally {
-                    ParserAccessor.getINSTANCE().invalidate(result);
-                }
-                return null;
-            }
-        }, Collections.<Source>emptyList ());
+        return p;
     }
     //where
     private static Map<String,Reference<Parser>> cachedParsers = new HashMap<String,Reference<Parser>>();

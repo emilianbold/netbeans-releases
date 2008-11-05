@@ -146,21 +146,7 @@ public abstract class JavaSourceAccessor {
             Utilities.revalidate(sources.iterator().next());
         }
     }
-    
-    /**
-     * Expert: Locks java compiler. Private API for indentation engine only!
-     */
-    public void lockJavaCompiler () {
-        Utilities.acquireParserLock();
-    }
-    
-    /**
-     * Expert: Unlocks java compiler. Private API for indentation engine only!
-     */
-    public void unlockJavaCompiler () {
-        Utilities.releaseParserLock();
-    }
-    
+        
     public boolean isJavaCompilerLocked () {
         return Utilities.holdsParserLock();
     }
