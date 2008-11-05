@@ -1386,7 +1386,7 @@ public class Installer extends ModuleInstall implements Runnable {
             LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
         }
 
-        private synchronized final void doCloseDialog() {
+        protected synchronized final void doCloseDialog() {
             dialogCreated = false;
             closeDialog();
             notifyAll();
@@ -1801,7 +1801,7 @@ public class Installer extends ModuleInstall implements Runnable {
             view.setVisible(true);
             return false;
         }
-        protected synchronized void assignInternalURL(URL u) {
+        protected void assignInternalURL(URL u) {
             if (browser != null) {
                 try {
                     browser.setPage(u);
@@ -1809,9 +1809,14 @@ public class Installer extends ModuleInstall implements Runnable {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            markAssigned();
+        }
+
+        private synchronized void markAssigned(){
             urlAssigned = true;
             notifyAll();
         }
+
         protected void showURL(URL u) {
             LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
@@ -1856,6 +1861,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
+            d.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    doCloseDialog();
+                }
+            });
             d.setModal(false);
             d.setVisible(true);
             synchronized (this){
