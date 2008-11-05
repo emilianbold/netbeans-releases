@@ -52,6 +52,13 @@ import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
 import org.netbeans.jemmy.TimeoutExpiredException;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
+import org.netbeans.jellytools.MainWindowOperator;
+import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTextAreaOperator;
+
+import java.io.*;
+import java.net.*;
 
 /**
  *
@@ -61,19 +68,6 @@ import org.netbeans.jemmy.TimeoutExpiredException;
 public class DTDActions_0001 extends DTDActions {
     
     static final String TEST_JAVA_APP_NAME = "java4dtdactions_0001";
-
-    static final String [] m_aTestMethods = {
-        "CreateJavaApplication",
-        "CreateSampleSchema",
-        "GenerateConstrained",
-        "GenerateDTD",
-        "GenerateCSS",
-        "CheckDTD",
-        "GenerateDocumentation",
-        "GenerateDOMTS",
-        "GenerateSAXSimple",
-        "GenerateSAXDetailed"
-    };
 
     public DTDActions_0001(String arg0) {
         super(arg0);
@@ -210,61 +204,102 @@ public class DTDActions_0001 extends DTDActions {
       endTest( );
     }
 
-    public void GenerateDocumentation( )
+  private ServerSocket sBackServer = null;
+
+  public void SetCustomBrowserPath( )
+  {
+    startTest( );
+
+    // Test execution
+    new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("Tools|Options");
+
+    JDialogOperator jdOptions = new JDialogOperator( "Options" );
+    JButtonOperator jbEdit = new JButtonOperator( jdOptions, "Edit..." );
+    jbEdit.pushNoBlock( );
+    JDialogOperator jdBrowsers = new JDialogOperator( "Web Browsers" );
+    JButtonOperator jbAdd = new JButtonOperator( jdBrowsers, "Add..." );
+    jbAdd.push( );
+    JTextFieldOperator jtPath = new JTextFieldOperator( jdBrowsers, 1 );
+    jtPath.setText( "java" );
+
+    //try{ Dumper.dumpAll( "c:\\aaa.zzz" ); } catch( IOException ex ) { }
+
+    JTextAreaOperator jtArgs = new JTextAreaOperator( jdBrowsers, 0 );
+
+    //try { System.getProperties( ).store( new FileOutputStream( "c:\\prop.txt" ), "COMMENT" ); } catch( IOException ex ) { }
+
+    // Establish server and get port number
+    try
     {
-      startTest( );
+    sBackServer = new ServerSocket( 0 );
 
-      // Think for a while...
-      // Set out own browser
-      // Select Generate documentation
-      // Ensure data passed to "browser" successfully
-      // Check tree node
-        // TODO
-
-      /*
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenuNoBlock("Tools|Options");
-      JDialogOperator jdOptions = new JDialogOperator( "Options" );
-      JButtonOperator jbEdit = new JButtonOperator( jdOptions, "Edit..." );
-      jbEdit.pushNoBlock( );
-      JDialogOperator jdBrowsers = new JDialogOperator( "Web Browsers" );
-      JButtonOperator jbAdd = new JButtonOperator( jdBrowsers, "Add..." );
-      jbEdit.push( );
-      Sleep( 500 );
-      JTextComponentOperator jtName = new JTextComponentOperator( jdBrowsers, 0 );
-      jtName.setText( "fake_java_browser" );
-      JTextComponentOperator jtProcess = new JTextComponentOperator( jdBrowsers, 1 );
-      jtProcess.setText( "java" );
-      JTextComponentOperator jtArgs = new JTextComponentOperator( jdBrowsers, 2 );
-      jtArgs.setText( "org.netbeans.test.xml.schema.general.dtd {URL}" );
-      JButtonOperator jbOk = new JButtonOperator( jdBrowsers, "OK" );
-      Sleep( 500 );
-      jbOk.push( );
-      jdBrowsers.waitClosed( );
-      JComboBoxOperator jcbSelector = new JComboBoxOperator( jdOptions, 0 );
-      jcbSelector.selectItem( "fake_java_browser" );
-      jbOk = new JButtonOperator( jdOptions, "OK" );
-      Sleep( 500 );
-      jbOk.push( );
-      jdOptions.waitClosed( );
-      Sleep( 500 );
-      */
-
-      SimpleGenerateInternal(
-          TEST_JAVA_APP_NAME,
-          "newPurchaseOrder.dtd",
-          "Generate Documentation...",
-          "html"
-        );
-
-      endTest( );
+    jtArgs.setText(
+        "-cp \"" + System.getProperty( "java.class.path" ) + "\" org.netbeans.test.xml.schema.general.dtd.DTDActions_0001 {URL} " + sBackServer.getLocalPort( )
+      );
+    Sleep( 5000 );
+    JButtonOperator jbOk = new JButtonOperator( jdBrowsers, "OK" );
+    jbOk.push( );
+    jdBrowsers.waitClosed( );
+    Sleep( 5000 );
+    jbOk = new JButtonOperator( jdOptions, "OK" );
+    jbOk.push( );
+    jdOptions.waitClosed( );
+    }
+    catch( IOException ex )
+    {
+      fail( "Exception: " + ex.getMessage( ) );
     }
 
-    public static void main( String[] args )
+    endTest( );
+  }
+
+  public void GenerateDocumentation( )
+  {
+    SetCustomBrowserPath( );
+
+    startTest( );
+
+    SimpleGenerateInternal(
+        TEST_JAVA_APP_NAME,
+        "newPurchaseOrder.dtd",
+        "Generate Documentation...",
+        "html"
+      );
+
+    try
     {
-      // Ideally we'll enter here after page opening
-      // Send report to main process?
-      // TODO
+      sBackServer.setSoTimeout( 30000 ); // 30 second wait should be enough
+      Socket sBackClient = sBackServer.accept( );
+      InputStream is = sBackClient.getInputStream( );
+      String sContent = "";
+      byte[] b = new byte[ 1024 ];
+      int iReaden;
+      while( -1 != ( iReaden = is.read( b ) ) )
+      {
+        sContent = sContent + new String( b, 0, iReaden );
+      }
+      is.close( );
+      sBackClient.close( );
+      sBackServer.close( );
+
+      sContent = sContent.replaceAll( "[ \t\r\n]", "" );
+      //System.out.println( ">>>" + sContent + "<<<" );
+
+      // Check result
+      if( !sContent.equals( data.sIdealDocumentation ) )
+      {
+        fail( "Invalid documentation created." );
+        // ToDo
+      }
     }
+    catch( IOException ex )
+    {
+      fail( "Exception: " + ex.getMessage( ) );
+    }
+
+    endTest( );
+
+  }
 
     public void GenerateDOMTS( )
     {
@@ -425,4 +460,54 @@ public class DTDActions_0001 extends DTDActions {
 
       endTest( );
     }
+
+  public static void main( String[] args ) throws IOException, URISyntaxException
+  {
+    // Out own web browser
+    // First parameter  :  URL / File in this case
+    // Second parameter : callback port
+
+    //System.out.println( "===" + args[ 0 ] );
+    /*
+    FileWriter fw = new FileWriter( "c:\\aaa.zzz" );
+    fw.write( args[ 0 ] );
+    fw.flush( );
+    fw.close( );
+    */
+
+    // Connect to server
+    // Get data
+    String sContent = "";
+    boolean bRedo = true;
+    int iRecount = 0;
+    while( bRedo )
+    {
+      try
+      {
+        InputStream is = new FileInputStream( new File( new URI( args[ 0 ] ) ) );
+        byte[] b = new byte[ 1024 ];
+        int iReaden;
+        sContent = "";
+        while( -1 != ( iReaden = is.read( b ) ) )
+        {
+          sContent = sContent + new String( b, 0, iReaden );
+        }
+        is.close( );
+
+        bRedo = false;
+      }
+      catch( IOException ex )
+      {
+        System.out.println( "Error: " + ex.getMessage( ) + "\n" );
+      }
+    }
+    // Send result back to test
+    Socket sSocketBack = new Socket( "127.0.0.1", Integer.parseInt( args[ 1 ] ) );
+    OutputStream sStreamBack = sSocketBack.getOutputStream( );
+    sStreamBack.write( sContent.getBytes( ) );
+    sStreamBack.flush( );
+    sStreamBack.close( );
+
+    return;
+  }
 }

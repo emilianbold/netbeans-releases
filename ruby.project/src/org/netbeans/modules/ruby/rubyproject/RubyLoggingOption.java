@@ -58,7 +58,7 @@ public class RubyLoggingOption extends AdvancedOption {
 
     @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(RubyLoggingOption.class, "LBL_RubyLoggingOptions");
+        return NbBundle.getMessage(RubyLoggingOption.class, "RubyLoggingOption.displayName.text");
     }
 
     @Override

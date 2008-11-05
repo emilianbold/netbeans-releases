@@ -63,7 +63,7 @@ import org.openide.util.RequestProcessor.Task;
  */
 public abstract class FlashingIcon extends JComponent implements MouseListener {
     
-    protected int STOP_FLASHING_DELAY = 10 * 1000;
+    protected int STOP_FLASHING_DELAY = 0;
     protected int DISAPPEAR_DELAY_MILLIS = STOP_FLASHING_DELAY + 50 * 1000;
     protected int FLASHING_FREQUENCY = 500;
     

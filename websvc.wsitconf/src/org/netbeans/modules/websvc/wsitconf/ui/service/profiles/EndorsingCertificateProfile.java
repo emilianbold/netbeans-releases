@@ -69,6 +69,7 @@ import org.openide.DialogDisplayer;
  *
  * @author Martin Grebac
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class EndorsingCertificateProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature  {
     private static final String CERTS_DIR = "certs";

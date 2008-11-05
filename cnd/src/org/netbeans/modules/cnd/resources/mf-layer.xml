@@ -289,6 +289,10 @@ made subject to such option by the copyright holder.
                 </file>
                 -->
             </folder>
+            <folder name="bat">
+                <!-- Prevent languages.bat from creating data objects for batch files. See also Loaders/text/bat. -->
+                <attr name="createDataObject" boolvalue="false"/>
+            </folder>
         </folder>
     </folder>
     
@@ -959,6 +963,15 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
+            <folder name="bat">
+                <!-- We want our own ShellDataObjects for batch files. See also Editors/text/bat. -->
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-fortran">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">

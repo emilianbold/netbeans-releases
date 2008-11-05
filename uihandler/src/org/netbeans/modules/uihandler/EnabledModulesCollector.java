@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
  * of enabled modules.
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uihandler.api.Deactivated.class)
 public class EnabledModulesCollector implements Deactivated {
     private List<ModuleInfo> previouslyEnabled = Collections.emptyList();
     private List<ModuleInfo> previouslyDisabled = Collections.emptyList();

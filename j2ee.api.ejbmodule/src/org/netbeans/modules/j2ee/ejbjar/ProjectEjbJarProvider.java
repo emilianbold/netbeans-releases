@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.spi.ejbjar.EjbJarProvider.class)
 public class ProjectEjbJarProvider implements EjbJarProvider {
 
     public ProjectEjbJarProvider () {

@@ -48,9 +48,12 @@ import java.util.ConcurrentModificationException;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.TokenChange;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.lang.TestPlainTokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 import org.netbeans.lib.lexer.test.ModificationTextDocument;
 
@@ -89,6 +92,7 @@ public class SimpleLexerIncTest extends NbTestCase {
         Document doc = new ModificationTextDocument();
         // Assign a language to the document
         doc.putProperty(Language.class,TestTokenId.language());
+        LexerTestUtilities.initLastTokenHierarchyEventListening(doc);
         TokenHierarchy<?> hi = TokenHierarchy.get(doc);
         assertNotNull("Null token hierarchy for document", hi);
 
@@ -104,8 +108,9 @@ public class SimpleLexerIncTest extends NbTestCase {
         // Insert text into document
         String commentText = "/* test comment  */";
         //             0123456789
-        String text = "abc+uv-xy +-+" + commentText + "def";
-        int commentTextStartOffset = 13;
+        String text = "abc+uv-xy +-+";
+        int commentStartOffset = text.length();
+        text += commentText + "def";
         doc.insertString(0, text, null);
 
         // Last token sequence should throw exception - new must be obtained
@@ -138,7 +143,8 @@ public class SimpleLexerIncTest extends NbTestCase {
         assertEquals(0, LexerTestUtilities.lookahead(ts));
         assertEquals(null, LexerTestUtilities.state(ts));
         assertTrue(ts.moveNext());
-        int offset = commentTextStartOffset;
+        int offset = commentStartOffset;
+        int commentIndex = ts.index();
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.BLOCK_COMMENT, commentText, offset);
         offset += commentText.length();
         assertTrue(ts.moveNext());
@@ -167,6 +173,64 @@ public class SimpleLexerIncTest extends NbTestCase {
         assertTrue(ts.moveNext());
         LexerTestUtilities.assertTokenEquals(ts,TestTokenId.IDENTIFIER, "uv", 4);
 
+        // Check embedded sequence
+        ts.moveIndex(commentIndex);
+        ts.moveNext();
+        TokenSequence<?> embedded = ts.embedded();
+        assertNotNull("Null embedded sequence", embedded);
+        assertTrue(embedded.moveNext());
+        int commentOffset = commentStartOffset + 2; // skip "/*"
+        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, " ", commentOffset);
+        commentOffset += 1;
+        assertTrue(embedded.moveNext());
+        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WORD, "test", commentOffset);
+        commentOffset += 4;
+        assertTrue(embedded.moveNext());
+        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, " ", commentOffset);
+        commentOffset += 1;
+        assertTrue(embedded.moveNext());
+        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WORD, "comment", commentOffset);
+        commentOffset += 7;
+        assertTrue(embedded.moveNext());
+        LexerTestUtilities.assertTokenEquals(embedded,TestPlainTokenId.WHITESPACE, "  ", commentOffset);
+        assertFalse(embedded.moveNext());
+
+        // Modify comment
+        doc.insertString(commentStartOffset + 4, "r", null);
+
+        TokenHierarchyEvent evt = LexerTestUtilities.getLastTokenHierarchyEvent(doc);
+        assertNotNull(evt);
+        TokenChange<?> tc = evt.tokenChange();
+        assertNotNull(tc);
+        // Check top-level TC
+        assertEquals(7, tc.index());
+        assertEquals(13, tc.offset());
+        assertEquals(1, tc.addedTokenCount());
+        assertEquals(1, tc.removedTokenCount());
+        assertEquals(TestTokenId.language(), tc.language());
+        assertTrue(tc.isBoundsChange());
+        assertEquals(1, tc.embeddedChangeCount());
+        // Check added token
+        TokenSequence<?> tsAdded = tc.currentTokenSequence();
+        assertTrue(tsAdded.moveNext());
+        LexerTestUtilities.assertTokenEquals(tsAdded,TestTokenId.BLOCK_COMMENT, "/* trest comment  */", commentStartOffset);
+
+        // Check inner token change
+        assertEquals(1, tc.embeddedChangeCount());
+        TokenChange<?> tcInner = tc.embeddedChange(0);
+        assertNotNull(tcInner);
+        // Check top-level TC
+        assertEquals(1, tcInner.index());
+        assertEquals(16, tcInner.offset());
+        assertEquals(1, tcInner.addedTokenCount());
+        assertEquals(1, tcInner.removedTokenCount());
+        assertEquals(TestPlainTokenId.language(), tcInner.language());
+        assertTrue(tcInner.isBoundsChange());
+        assertEquals(0, tcInner.embeddedChangeCount());
+        // Check added token
+        tsAdded = tcInner.currentTokenSequence();
+        assertTrue(tsAdded.moveNext());
+        LexerTestUtilities.assertTokenEquals(tsAdded,TestPlainTokenId.WORD, "trest", commentStartOffset + 3);
 
         doc.insertString(2, "d", null); // should be "abdc"
 

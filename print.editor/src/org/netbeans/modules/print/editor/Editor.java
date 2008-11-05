@@ -57,6 +57,7 @@ import org.netbeans.editor.BaseDocument;
  * @author Vladimir Yaroslavskiy
  * @version 2008.10.17
  */
+@org.openide.util.lookup.ServiceProvider(service=java.awt.event.ActionListener.class)
 public final class Editor implements ActionListener {
 
     @SuppressWarnings("unchecked") // NOI18N

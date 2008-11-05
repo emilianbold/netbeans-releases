@@ -82,12 +82,14 @@ and let the file contain only one line of text
 
 <pre>com.foo.impl.ImplOfTheAPI</pre>
 
+<p>(This is more easily done using the <code>@ServiceProvider</code> annotation.)</p>
+
 The following code will return you a newly created instance of
 <code>com.foo.impl.ImplOfTheAPI</code>:
 
 <PRE>
    <font class="keyword">import</FONT> org.openide.util.Lookup;
-   return (com.my.APIClass)Lookup.getDefault().lookup(com.my.APIClass.class);
+   return Lookup.getDefault().lookup(com.my.APIClass.class);
 </PRE>
 
 <H3> Local lookup </H3>

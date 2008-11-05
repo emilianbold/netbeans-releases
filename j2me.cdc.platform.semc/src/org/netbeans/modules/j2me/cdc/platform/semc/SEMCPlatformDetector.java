@@ -67,6 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author suchys
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector.class)
 public class SEMCPlatformDetector extends CDCPlatformDetector {
     
     /** Creates a new instance of CDCPlatform */

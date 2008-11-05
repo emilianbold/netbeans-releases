@@ -309,8 +309,12 @@ implements Node.Cookie, Serializable, HelpCtx.Provider, Lookup.Provider {
     /** Access method for node delagate.
      * @return node delegate or null
      */
-    Node getNodeDelegateOrNull () {
+    final Node getNodeDelegateOrNull () {
         return nodeDelegate;
+    }
+
+    final void setNodeDelegate(Node n) {
+        nodeDelegate = n;
     }
 
     /** Provides node that should represent this data object.

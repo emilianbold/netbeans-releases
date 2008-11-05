@@ -50,6 +50,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Freeform project type.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class FreeformProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.ant.freeform";

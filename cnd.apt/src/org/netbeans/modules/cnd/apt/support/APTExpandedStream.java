@@ -170,7 +170,7 @@ public class APTExpandedStream implements TokenStream {
                 "macro must not be under recursive expanding"; // NOI18N
         // use body's stream depending on kind of token
         // the out will have start offset for all tokens the same as original token
-        TokenStream out = null;
+        TokenStream out;
 
         // clear info about RPAREN
         paramsRParen = null;
@@ -193,7 +193,7 @@ public class APTExpandedStream implements TokenStream {
         } else {
             // create wrapper for function-like macro:
 	    
-            Token next = null;
+            Token next;
             boolean cont;
             do {
                 cont = false;

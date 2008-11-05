@@ -70,6 +70,7 @@ made subject to such option by the copyright holder.
                 <project>../../apisupport.refactoring</project>
                 <project>../../applemenu</project>
                 <project>../../asm</project>
+                <project>../../autoupdate.pluginimporter</project>
                 <project>../../autoupdate.services</project>
                 <project>../../autoupdate.ui</project>
                 <project>../../beans</project>
@@ -270,6 +271,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.platform.nsicom</project>
                 <project>../../j2me.cdc.platform.ricoh</project>
                 <project>../../j2me.cdc.platform.semc</project>
+                <project>../../j2me.cdc.platform.sjmc</project>
                 <project>../../j2me.cdc.platform.sun</project>
                 <project>../../j2me.cdc.project</project>
                 <project>../../j2me.cdc.project.bdj</project>
@@ -280,6 +282,7 @@ made subject to such option by the copyright holder.
                 <project>../../j2me.cdc.project.ricoh</project>
                 <project>../../j2me.cdc.project.savaje</project>
                 <project>../../j2me.cdc.project.semc</project>
+                <project>../../j2me.cdc.project.sjmc</project>
                 <project>../../java.api.common</project>
                 <project>../../java.debug</project>
                 <project>../../java.editor</project>
@@ -444,6 +447,7 @@ made subject to such option by the copyright holder.
                 <project>../../php.refactoring</project>
                 <project>../../php.samples</project>
                 <project>../../print</project>
+                <project>../../print.editor</project>
                 <project>../../profiler</project>
                 <project>../../profiler.attach</project>
                 <project>../../profiler.attach.impl</project>

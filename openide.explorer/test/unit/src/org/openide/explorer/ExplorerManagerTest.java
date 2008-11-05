@@ -47,6 +47,7 @@ import java.beans.VetoableChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.LinkedList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
@@ -361,6 +362,51 @@ public class ExplorerManagerTest extends NbTestCase
         assertGC("3", ref3);
         assertGC("b", refB);
     }
+
+    public void testSetRootContext() throws InterruptedException {
+        final int count = 1000;
+        final AtomicBoolean failed = new AtomicBoolean(false);
+
+        class SetRootContext extends Thread {
+
+            final Node root;
+
+            public SetRootContext(Node root) {
+                this.root = root;
+            }
+
+            @Override
+            public void run() {
+                try {
+                    for (int i = 0; i < count; i++) {
+                        em.setRootContext(root);
+                    }
+                } catch (IllegalArgumentException e) {
+                    failed.set(true);
+                }
+            }
+        }
+
+        Thread t1 = new SetRootContext(new AbstractNode(Children.LEAF));
+        Thread t2 = new SetRootContext(new AbstractNode(Children.LEAF));
+        Thread t3 = new SetRootContext(new AbstractNode(Children.LEAF));
+        Thread t4 = new SetRootContext(new AbstractNode(Children.LEAF));
+
+        t1.start();
+        t2.start();
+        t3.start();
+        t4.start();
+
+        t1.join();
+        t2.join();
+        t3.join();
+        t4.join();
+
+        if (failed.get()) {
+            fail("IAE during setRootContext()");
+        }
+    }
+
     private static Object ref;
     
     private static final class Keys extends Children.Keys<String> {

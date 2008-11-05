@@ -64,6 +64,7 @@ import org.openide.util.datatransfer.PasteType;
 /**
  * <p>This deals with handling of refactoring actions on the VW JSP files.</p>
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=200)
 public class FacesRefactoringActionsProvider extends ActionsImplementationProvider {
 
     /**

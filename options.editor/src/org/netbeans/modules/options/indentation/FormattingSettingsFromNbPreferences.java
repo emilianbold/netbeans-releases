@@ -59,6 +59,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
 public final class FormattingSettingsFromNbPreferences extends StorageFilter<String, TypedValue> {
 
     public FormattingSettingsFromNbPreferences() {

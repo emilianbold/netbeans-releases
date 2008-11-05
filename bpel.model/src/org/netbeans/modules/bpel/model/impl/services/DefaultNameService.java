@@ -35,6 +35,7 @@ import org.netbeans.modules.bpel.model.impl.events.BuildEvent;
  * 
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class DefaultNameService extends InnerEventDispatcherAdapter {
 
     /*

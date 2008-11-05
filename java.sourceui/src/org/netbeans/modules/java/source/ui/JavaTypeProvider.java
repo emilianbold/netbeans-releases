@@ -85,6 +85,7 @@ import org.openide.util.NbBundle;
 /**
  * @author Petr Hrebejk
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class JavaTypeProvider implements TypeProvider {
     private static final Logger LOGGER = Logger.getLogger(JavaTypeProvider.class.getName());
     private static final ClassPath EMPTY_CLASSPATH = ClassPathSupport.createClassPath( new FileObject[0] );

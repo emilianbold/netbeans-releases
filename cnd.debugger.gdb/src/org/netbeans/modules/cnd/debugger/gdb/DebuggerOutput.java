@@ -70,11 +70,8 @@ public class DebuggerOutput extends LazyActionsManagerListener implements Proper
     private static Set          managers = new HashSet();
     private GdbDebugger         debugger;
     private IOManager           ioManager;
-    private ContextProvider     contextProvider;
-
 
     public DebuggerOutput(ContextProvider contextProvider) {
-        this.contextProvider = contextProvider;
         this.debugger = (GdbDebugger) contextProvider.lookupFirst(null, GdbDebugger.class);
         
         // close old tabs

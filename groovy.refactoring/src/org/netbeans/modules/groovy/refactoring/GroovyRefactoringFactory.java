@@ -63,6 +63,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

@@ -77,6 +77,7 @@ import javax.swing.border.EmptyBorder;
  *
  * @author  Ian Formanek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.nodes.NodeOperation.class, supersedes="org.netbeans.modules.openide.explorer.NodeOperationImpl")
 public final class NodeOperationImpl extends NodeOperation {
 
     /** Shows an explorer on the given root Node.

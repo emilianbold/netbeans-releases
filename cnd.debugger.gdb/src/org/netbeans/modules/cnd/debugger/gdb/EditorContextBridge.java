@@ -455,8 +455,7 @@ public class EditorContextBridge {
     }
 
     public static String getRelativePath(String className) {
-        String sourceName = className.replace('.', '/') + ".java"; // NOI18N
-        return sourceName;
+        return className.replace('.', '/') + ".java"; // NOI18N
     }
     
     private static String convertSlash(String original) {
@@ -620,10 +619,7 @@ public class EditorContextBridge {
     }
     
     private static class CompoundAnnotation {
-        public CompoundAnnotation() {}
-        
         Object annotation1;
         Object annotation2;
     }
-
 }

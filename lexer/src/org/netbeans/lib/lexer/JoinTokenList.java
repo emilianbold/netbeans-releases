@@ -199,6 +199,7 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
 
     public TokenOrEmbedding<T> tokenOrEmbedding(int index) {
         locateTokenListByIndex(index);
+        // In case the index is too high the ETL should return null for non-existent index
         TokenOrEmbedding<T> tokenOrEmbedding = (activeTokenList != null)
                 ? activeTokenList.tokenOrEmbedding(index - activeStartJoinIndex)
                 : null;
@@ -429,7 +430,9 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
             }
 
         } else if (joinIndex == activeEndJoinIndex) {
-            int lps = activeTokenList.joinInfo.joinTokenLastPartShift();
+            int lps = (activeTokenList != null)
+                    ? activeTokenList.joinInfo.joinTokenLastPartShift()
+                    : 0;
             if (lps > 0) { // join token
                 activeTokenListIndex += lps;
                 fetchActiveTokenListData();
@@ -439,7 +442,7 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
                     fetchActiveTokenListData();
                     // Use first token but check for empty ETL and join token
                     adjustJoinedOrSkipEmpty();
-                }
+                } // Leave positioning on last ETL to not lose cached info
             }
             
         } else if (joinIndex > activeEndJoinIndex) { // joinIndex > activeEndJoinIndex
@@ -753,16 +756,28 @@ public class JoinTokenList<T extends TokenId> implements TokenList<T> {
         return null;
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder(256);
+    public StringBuilder dumpInfo(StringBuilder sb) {
+        if (sb == null) {
+            sb = new StringBuilder(256);
+        }
         int tokenListCount = tokenListCount();
         int digitCount = String.valueOf(tokenListCount - 1).length();
+        int activeIndex = activeTokenListIndex;
+        // Fetch first ETL to minimize errors if there's a possible internal inconsistency
+        setActiveTokenListIndex(0);
         for (int i = 0; i < tokenListCount; i++) {
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             tokenList(i).dumpInfo(sb);
             sb.append('\n');
         }
+        setActiveTokenListIndex(activeIndex);
+        return sb;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder(512);
+        sb = dumpInfo(sb);
         return LexerUtilsConstants.appendTokenList(sb, this).toString();
     }
 

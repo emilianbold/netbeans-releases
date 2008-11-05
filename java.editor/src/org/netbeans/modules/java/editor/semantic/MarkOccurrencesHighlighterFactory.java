@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class MarkOccurrencesHighlighterFactory extends CaretAwareJavaSourceTaskFactory {
 
     /** Creates a new instance of SemanticHighlighterFactory */

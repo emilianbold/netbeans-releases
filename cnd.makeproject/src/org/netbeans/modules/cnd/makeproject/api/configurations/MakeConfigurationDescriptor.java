@@ -110,7 +110,7 @@ public class MakeConfigurationDescriptor extends ConfigurationDescriptor impleme
     private List<String> sourceRoots = null;
     private Set<ChangeListener> projectItemsChangeListeners = new HashSet<ChangeListener>();
     private NativeProject nativeProject = null;
-    public static String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
+    public static final String DEFAULT_PROJECT_MAKFILE_NAME = "Makefile"; // NOI18N
     private String projectMakefileName = DEFAULT_PROJECT_MAKFILE_NAME;
     private Task initTask = null;
 

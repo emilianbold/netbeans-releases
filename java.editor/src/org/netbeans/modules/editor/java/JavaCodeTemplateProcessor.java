@@ -316,7 +316,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (ve != null) {
                     param2hints.put(param, INSTANCE_OF);
                     return ve.getSimpleName().toString();
-                } else if (name == null) {
+                } else if (name != null) {
                     ve = staticInstanceOf((String)entry.getValue(), name);
                     if (ve != null) {
                         param2hints.put(param, INSTANCE_OF);

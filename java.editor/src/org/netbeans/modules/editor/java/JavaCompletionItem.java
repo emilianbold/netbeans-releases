@@ -248,37 +248,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
-            switch (evt.getKeyChar()) {
-                case ':':
-                case ';':
-                case ',':
-                case '(':
-                case '[':
-                case '+':
-                case '-':
-                case '=':
-                    Completion.get().hideDocumentation();
+            if (Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+                Completion.get().hideDocumentation();
+                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(evt.getKeyChar()) < 0)
                     Completion.get().hideCompletion();
-                    JTextComponent component = (JTextComponent)evt.getSource();
-                    int caretOffset = component.getSelectionEnd();
-                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    evt.consume();
-                    break;
-                case '.':
-                    Completion.get().hideDocumentation();
-                    component = (JTextComponent)evt.getSource();
-                    caretOffset = component.getSelectionEnd();
-                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    evt.consume();
-                    caretOffset = component.getSelectionEnd();
-                    try {
-                        if (caretOffset > 0 && !".".equals(component.getDocument().getText(caretOffset - 1, 1))) {
-                            Completion.get().hideCompletion();
-                            break;
-                        }
-                    } catch (BadLocationException ble) {}
-                    Completion.get().showCompletion();
-                    break;
+                JTextComponent component = (JTextComponent)evt.getSource();
+                int caretOffset = component.getSelectionEnd();
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                evt.consume();
             }
         }
     }
@@ -1601,9 +1578,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.setter = setter;
             this.simpleName = elem.getSimpleName().toString();
             if (setter)
-                this.name = "set" + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+                this.name = "set" + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             else
-                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             this.typeName = Utilities.getTypeName(type, false).toString();
         }
         

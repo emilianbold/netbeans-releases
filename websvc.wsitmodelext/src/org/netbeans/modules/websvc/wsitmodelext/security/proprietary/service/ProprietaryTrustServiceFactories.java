@@ -60,6 +60,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.imp
 
 public class ProprietaryTrustServiceFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class CertAliasFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -71,6 +72,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ContractFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -82,6 +84,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class STSIssuerFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -93,6 +96,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class STSConfigurationFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -104,6 +108,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ServiceProviderFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -115,6 +120,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ServiceProvidersFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -126,6 +132,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TokenTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -137,6 +144,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class KeyTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -148,6 +156,7 @@ public class ProprietaryTrustServiceFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class LifeTimeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.clientproject;
 
 import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=50)
 public final class AppClientAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */

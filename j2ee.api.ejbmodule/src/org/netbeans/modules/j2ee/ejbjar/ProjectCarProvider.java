@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.spi.ejbjar.CarProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.spi.ejbjar.CarProvider.class)
 public class ProjectCarProvider implements CarProvider {
     
     public ProjectCarProvider () {

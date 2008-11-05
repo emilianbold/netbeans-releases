@@ -46,6 +46,7 @@ import java.beans.PropertyChangeSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
 public class GdbProfileProvider implements ConfigurationAuxObjectProvider {
 
     /**

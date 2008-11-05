@@ -95,6 +95,7 @@ public final class HtmlCaretAwareSourceTask implements CancellableTask<Compilati
 
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.napi.gsfret.source.SourceTaskFactory.class)
     public static class HtmlCaretAwareSourceTaskFactory extends CaretAwareSourceTaskFactory {
 
         public HtmlCaretAwareSourceTaskFactory() {

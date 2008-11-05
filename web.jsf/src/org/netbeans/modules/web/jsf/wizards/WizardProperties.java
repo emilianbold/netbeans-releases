@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.wizards;
 public class WizardProperties {
     public static final String CONFIG_FILE = "ConfigFile"; // NOI18N
     public static final String DESCRIPTION = "Description"; // NOI18N
+    public static final String NAME = "Name"; // NOI18N
     public static final String SCOPE = "Scope"; // NOI18N
     public static final String ENTITY_CLASS = "EntityClass"; //NOI18N
     public static final String JSF_FOLDER = "JSFFolder"; //NOI18N

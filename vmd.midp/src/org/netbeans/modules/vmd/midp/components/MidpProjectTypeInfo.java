@@ -52,6 +52,7 @@ import java.util.Collection;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.ProjectTypeInfo.class)
 public class MidpProjectTypeInfo extends ProjectTypeInfo {
 
     public MidpProjectTypeInfo () {

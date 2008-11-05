@@ -65,6 +65,7 @@ public class ElementSelectorPanel extends JPanel implements ExplorerManager.Prov
         setLayout(new BorderLayout());
         elementView = new CheckTreeView();
         elementView.setRootVisible(false);
+        elementView.setUseSubstringInQuickSearch(true);
         add(elementView, BorderLayout.CENTER);
         setRootElement(elementDescription, singleSelection);
         //make sure that the first element is pre-selected

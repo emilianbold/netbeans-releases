@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.saas.model.SaasMethod;
  *
  * @author ayubskhan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class CustomClientJspCodeGenerator extends CustomClientServletCodeGenerator {
 
     public CustomClientJspCodeGenerator() throws IOException {

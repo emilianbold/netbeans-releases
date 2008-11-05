@@ -72,6 +72,7 @@ import org.openide.util.NbBundle;
 public final class ClassSource {
 
     private final String className;
+    private final String typeParameters;
     private final Collection<? extends Entry> entries;
 
     /**
@@ -81,12 +82,20 @@ public final class ClassSource {
         this(className, Arrays.asList(entries));
     }
     public ClassSource(String className, Collection<? extends Entry> entries) {
+        this(className, entries, null);
+    }
+    public ClassSource(String className, Collection<? extends Entry> entries, String typeParameters) {
         this.className = className;
         this.entries = entries;
+        this.typeParameters = typeParameters;
     }
 
     public String getClassName() {
         return className;
+    }
+
+    public String getTypeParameters() {
+        return typeParameters;
     }
 
     public Collection<? extends Entry> getEntries() {

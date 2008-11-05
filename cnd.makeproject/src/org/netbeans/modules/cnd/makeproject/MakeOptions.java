@@ -63,7 +63,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     public static final int PATH_REL_OR_ABS = 0;
     public static final int PATH_REL = 1;
     public static final int PATH_ABS = 2;
-    public static String[] PathModeNames = new String[] {
+    public static final String[] PathModeNames = new String[] {
         getString("TXT_Auto"),
         getString("TXT_AlwaysRelative"),
         getString("TXT_AlwaysAbsolute"),
@@ -139,7 +139,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         int oldValue = getPathMode();
         getPreferences().putInt(PATH_MODE, pathMode);
         if (oldValue != pathMode)
-            firePropertyChange(PATH_MODE, new Integer(oldValue), new Integer(pathMode));
+            firePropertyChange(PATH_MODE, Integer.valueOf(oldValue), Integer.valueOf(pathMode));
     }
     
     // Dependency Checking
@@ -150,7 +150,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         boolean oldValue = getDepencyChecking();
         getPreferences().putBoolean(DEPENDENCY_CHECKING, dependencyChecking);
         if (oldValue != dependencyChecking)
-            firePropertyChange(DEPENDENCY_CHECKING, new Boolean(oldValue), new Boolean(dependencyChecking));
+            firePropertyChange(DEPENDENCY_CHECKING, Boolean.valueOf(oldValue), Boolean.valueOf(dependencyChecking));
     }
     
     // Save
@@ -161,7 +161,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         boolean oldValue = getSave();
         getPreferences().putBoolean(SAVE, save);
         if (oldValue != save)
-            firePropertyChange(SAVE, new Boolean(oldValue), new Boolean(save));
+            firePropertyChange(SAVE, Boolean.valueOf(oldValue), Boolean.valueOf(save));
     }
     
     // Reuse
@@ -172,7 +172,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
         boolean oldValue = getReuse();
         getPreferences().putBoolean(REUSE, reuse);
         if (oldValue != reuse)
-            firePropertyChange(REUSE, new Boolean(oldValue), new Boolean(reuse));
+            firePropertyChange(REUSE, Boolean.valueOf(oldValue), Boolean.valueOf(reuse));
     }
     
     

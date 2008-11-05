@@ -61,6 +61,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class MimeLookupFolderInfo implements Class2LayerFolder, InstanceProvider {
     
     private static final Logger LOG = Logger.getLogger(MimeLookupFolderInfo.class.getName());

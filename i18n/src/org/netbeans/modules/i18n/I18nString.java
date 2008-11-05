@@ -205,9 +205,7 @@ public class I18nString {
      * @return replacing string or null if this instance is invalid 
      */
     public String getReplaceString() {
-        if (getKey() == null
-                || getSupport() == null
-                || getSupport().getResourceHolder().getResource() == null) {
+        if (getKey() == null || getSupport() == null) {
             return null;
         }
         
@@ -219,16 +217,19 @@ public class I18nString {
         
         DataObject sourceDataObject = getSupport().getSourceDataObject();
 
-        FileObject fo = getSupport().getResourceHolder().getResource().getPrimaryFile();
-        ClassPath cp = Util.getExecClassPath(sourceDataObject.getPrimaryFile(), fo);
-        if (cp == null) {
-            return null; // #148081 properties file not found on classpath, likely invalid
-        }
         Map<String,String> map = new HashMap<String,String>(4);
 
+        if (getSupport().getResourceHolder().getResource() != null) { // Issue 150287
+            FileObject fo = getSupport().getResourceHolder().getResource().getPrimaryFile();
+            ClassPath cp = Util.getExecClassPath(sourceDataObject.getPrimaryFile(), fo);
+            if (cp == null) {
+                return null; // #148081 properties file not found on classpath, likely invalid
+            }
+            map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
+            map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
+        }
+
         map.put("key", getKey()); // NOI18N
-        map.put("bundleNameSlashes", cp.getResourceName( fo, '/', false ) ); // NOI18N
-        map.put("bundleNameDots", cp.getResourceName( fo, '.', false ) ); // NOI18N
         map.put("sourceFileName", sourceDataObject == null ? "" : sourceDataObject.getPrimaryFile().getName()); // NOI18N
 
         fillFormatMap(map);

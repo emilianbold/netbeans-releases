@@ -57,6 +57,7 @@ import org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorViewFactory;
  *
  * @author Joelle Lam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.jsf.api.editor.JSFConfigEditorViewFactory.class)
 public class JSFPageFlowViewFactory implements  JSFConfigEditorViewFactory {
     
     /**

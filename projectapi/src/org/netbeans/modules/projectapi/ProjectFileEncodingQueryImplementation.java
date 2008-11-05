@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=200)
 public class ProjectFileEncodingQueryImplementation extends FileEncodingQueryImplementation {
 
     private static final Logger LOG = Logger.getLogger(ProjectFileEncodingQueryImplementation.class.getName());

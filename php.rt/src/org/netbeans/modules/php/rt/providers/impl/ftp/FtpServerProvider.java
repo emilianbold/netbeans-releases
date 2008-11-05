@@ -64,6 +64,7 @@ import org.openide.util.NbBundle;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.rt.spi.providers.WebServerProvider.class)
 public class FtpServerProvider extends AbstractProvider<FtpHostImpl> {
 
     private static final String DESCRIPTION = "TXT_FtpServerDescription"; // NOI18N

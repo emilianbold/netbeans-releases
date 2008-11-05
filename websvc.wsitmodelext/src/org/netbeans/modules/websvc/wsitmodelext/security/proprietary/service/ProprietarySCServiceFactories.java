@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.service.imp
 
 public class ProprietarySCServiceFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SCConfigurationServiceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -64,6 +65,7 @@ public class ProprietarySCServiceFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class LifeTimeServiceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

@@ -61,6 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class EjbRefactoringFactory implements RefactoringPluginFactory{
     
     public EjbRefactoringFactory() {

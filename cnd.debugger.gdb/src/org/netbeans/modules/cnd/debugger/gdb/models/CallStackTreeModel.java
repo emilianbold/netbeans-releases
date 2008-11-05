@@ -78,8 +78,7 @@ public class CallStackTreeModel implements TreeModel {
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent.equals(ROOT)) {
-            CallStackFrame[] sfs = debugger.getCallStackFrames(from, to);
-	    return sfs;
+	    return debugger.getCallStackFrames(from, to);
         } else {
 	    throw new UnknownTypeException(parent);
 	}
@@ -140,7 +139,7 @@ public class CallStackTreeModel implements TreeModel {
     public void removeModelListener(ModelListener l) {
         synchronized (listeners) {
             listeners.remove (l);
-            if (listeners.size() == 0) {
+            if (listeners.isEmpty()) {
                 listener.destroy();
                 listener = null;
             }

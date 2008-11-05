@@ -49,6 +49,10 @@ import javax.swing.text.JTextComponent;
  * a text document. You should register your implementation on the system FileSystem under the
  * <code>Editors/&lt;mime-type&gt;</code> folder. The registered implementation will then be used
  * for documents that are of the specified <code>mime-type</code>.
+ * <p><b>Related documentation</b></p>
+ * <ul>
+ *   <li><a href="http://platform.netbeans.org/tutorials/nbm-code-completion.html">NetBeans Code Completion Tutorial</a></li>
+ * </ul>
  *
  * @author Miloslav Metelka, Dusan Balek
  * @version 1.01

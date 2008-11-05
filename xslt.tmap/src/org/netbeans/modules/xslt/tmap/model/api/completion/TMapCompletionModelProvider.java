@@ -36,6 +36,7 @@ import org.openide.filesystems.Repository;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class TMapCompletionModelProvider extends CompletionModelProvider {
 
     @Override

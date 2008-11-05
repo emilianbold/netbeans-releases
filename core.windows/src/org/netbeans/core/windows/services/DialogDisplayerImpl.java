@@ -66,6 +66,7 @@ import javax.swing.JRootPane;
  *
  * @author  Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.DialogDisplayer.class)
 public class DialogDisplayerImpl extends DialogDisplayer {
     /** delayed runnables */
     private static List<Runnable> run = Collections.synchronizedList(new ArrayList<Runnable>());

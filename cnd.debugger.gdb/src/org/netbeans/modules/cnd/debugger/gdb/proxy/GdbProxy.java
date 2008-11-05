@@ -84,7 +84,7 @@ public class GdbProxy {
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
     private final GdbLogger gdbLogger;
-    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
     private final Map<Integer, CommandBuffer> map = Collections.synchronizedMap(new HashMap<Integer, CommandBuffer>());
 
@@ -214,7 +214,7 @@ public class GdbProxy {
      * @param path The directory we want to run from
      */
     public void environment_directory(List<String> dirs) {
-        assert dirs.size() > 0;
+        assert !dirs.isEmpty();
         StringBuilder cmd = new StringBuilder();
         
         cmd.append(debugger.getVersionPeculiarity().environmentDirectoryCommand());
@@ -508,6 +508,17 @@ public class GdbProxy {
      */
     public void break_delete(int number) {
         engine.sendCommand("-break-delete " + Integer.toString(number)); // NOI18N
+    }
+
+    /**
+     * Send "-break-delete number" to the debugger
+     * This command deletes the breakpoints
+     * whose number(s) are specified in the argument list.
+     *
+     * @param number - breakpoint's number
+     */
+    public void break_delete(String number) {
+        engine.sendCommand("-break-delete " + number); // NOI18N
     }
 
     /**

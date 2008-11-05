@@ -35,6 +35,7 @@ import org.netbeans.spi.editor.mimelookup.InstanceProvider;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public final class BMFClass2LayerFolder implements Class2LayerFolder {
 
     public static final String FOLDER = "BracesMatchers"; //NOI18N

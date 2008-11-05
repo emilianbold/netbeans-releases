@@ -232,6 +232,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
                 <friend>org.netbeans.modules.j2ee.ejbjarproject</friend>
                 <friend>org.netbeans.modules.j2ee.refactoring</friend>
+                <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.mobility.end2end</friend>
                 <friend>org.netbeans.modules.tcpmon.integration</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>

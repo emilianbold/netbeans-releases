@@ -62,6 +62,7 @@ import org.openide.nodes.Node;
  *
  * @author Vidhya Narayanan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
 public class SecurityWSEditorProvider implements WSEditorProvider {
 
     /** Creates a new instance of SecurityWSEditorProvider */

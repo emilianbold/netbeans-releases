@@ -163,10 +163,7 @@ public class NumPadInputHandler extends TextInputHandler {
     }
     
     public void handlePointerRelease( PointerEvent event ) {
-        if( event.getClickCount() > 1 ){
-            showTextBox( event.getComponent() );
-        }
-        else {
+        if( event.getClickCount() == 1 ){
             if ( event.getComponent() instanceof SVGTextField  ) {
                 SVGTextField field = (SVGTextField) event.getComponent();
                 field.setCaretPosition( field.getText().length() );

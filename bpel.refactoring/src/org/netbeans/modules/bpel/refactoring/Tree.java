@@ -48,6 +48,7 @@ import org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation;
  * @author Vladimir Yaroslavskiy
  * @version 2007.03.16
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.TreeElementFactoryImplementation.class, position=52)
 public final class Tree implements TreeElementFactoryImplementation {
 
   public TreeElement getTreeElement(Object object) {

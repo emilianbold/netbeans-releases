@@ -41,7 +41,6 @@ package org.netbeans.modules.cnd.modeldiscovery.provider;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -52,30 +51,52 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.remote.RemoteFile;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.ResolvedPath;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
-import org.openide.util.Utilities;
 
 /**
  *
  * @author Alexander Simon
  */
 public class PkgConfigImpl implements PkgConfig {
+
     private HashMap<String, PackageConfigurationImpl> configurations = new HashMap<String, PackageConfigurationImpl>();
     private Map<String, Pair> seachBase;
     private String drivePrefix;
+    private PlatformInfo pi;
 
-    public PkgConfigImpl(CompilerSet set) {
-        initPackages(set);
+    public PkgConfigImpl(Project project) {
+        if (project != null) {
+            MakeConfiguration mc = project.getLookup().lookup((MakeConfiguration.class));
+            if (mc != null) {
+                pi = mc.getPlatformInfo();
+                CompilerSet set = mc.getCompilerSet().getCompilerSet();
+                initPackagesFromSet(set);
+                return;
+            }
+        }
+        // otherwise
+        pi = PlatformInfo.localhost();
+        initPackagesFromSet(null);
     }
 
-    private void initPackages(CompilerSet set) {
-        if (Utilities.isWindows()){
+    // for test
+    PkgConfigImpl(PlatformInfo pi, CompilerSet set) {
+        this.pi = pi;
+        initPackagesFromSet(set);
+    }
+
+    private void initPackagesFromSet(CompilerSet set) {
+        if (pi.isWindows()){
             String baseDirectory = null;
             if (set == null) {
                 set = CompilerSetManager.getDefault().getCompilerSet(CompilerFlavor.toFlavor("Cygwin", Platform.PLATFORM_WINDOWS)); // NOI18N
@@ -98,8 +119,9 @@ public class PkgConfigImpl implements PkgConfig {
             initPackages("/usr/lib/pkgconfig/"); // NOI18N
         }
     }
+
     private void initPackages(String folder) {
-        File file = new File(folder);
+        File file = RemoteFile.create(pi.getHkey(), folder);
         if (file.exists() && file.isDirectory() && file.canRead()) {
             for (File fpc : file.listFiles()) {
                 String name = fpc.getName();
@@ -168,7 +190,7 @@ public class PkgConfigImpl implements PkgConfig {
             System.out.println(tab+"Paths:    "+pc.paths); // NOI18N
             if (recursive) {
                 for(String p : pc.requires){
-                    traceConfig(p, recursive, visited, tab+"    ");
+                    traceConfig(p, recursive, visited, tab+"    "); // NOI18N
                 }
             }
         } else {
@@ -249,7 +271,7 @@ public class PkgConfigImpl implements PkgConfig {
         Map<String, Pair> res = new HashMap<String, Pair>();
         for(String path : map.keySet()){
             Pair pair = new Pair(path,map.get(path));
-            File dir = new File(path); // NOI18N
+            File dir = RemoteFile.create(pi.getHkey(), path); // NOI18N
             addLibraryItem(res, pair, "", dir, 0); // NOI18N
         }
         return res;
@@ -307,7 +329,7 @@ public class PkgConfigImpl implements PkgConfig {
         try {
             Map<String, String> vars = new HashMap<String, String>();
             vars.put("pcfiledir", file.getParent()); // NOI18N
-            BufferedReader in = new BufferedReader(new FileReader(file));
+            BufferedReader in = new BufferedReader(RemoteFile.createReader(file));
             while (true) {
                 String line = in.readLine();
                 if (line == null) {

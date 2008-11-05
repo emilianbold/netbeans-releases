@@ -50,6 +50,7 @@ import org.openide.nodes.Node;
  * 
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.manager.spi.WebServiceManagerExt.class)
 public class CoreWebServiceManager implements WebServiceManagerExt {
 
     public CoreWebServiceManager() {

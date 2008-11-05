@@ -49,6 +49,7 @@ import org.netbeans.modules.cnd.highlight.error.*;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmModelStateListener.class)
 public class HighlightInstaller implements CsmModelStateListener {
 
     public void modelStateChanged(CsmModelState newState, CsmModelState oldState) {

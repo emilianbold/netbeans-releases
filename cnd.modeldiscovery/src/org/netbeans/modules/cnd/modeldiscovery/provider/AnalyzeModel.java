@@ -78,6 +78,7 @@ import org.openide.util.Utilities;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeModel implements DiscoveryProvider {
     private Map<String,ProviderProperty> myProperties = new HashMap<String,ProviderProperty>();
     public static final String MODEL_FOLDER_KEY = "folder"; // NOI18N

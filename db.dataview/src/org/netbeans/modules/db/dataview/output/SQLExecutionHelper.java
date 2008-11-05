@@ -360,7 +360,7 @@ class SQLExecutionHelper {
                 stmt = conn.createStatement();
 
                 DBTable dbTable = dataView.getDataViewDBTable().geTable(0);
-                String truncateSql = "TRUNCATE TABLE" + dbTable.getFullyQualifiedName(); // NOI18N
+                String truncateSql = "TRUNCATE TABLE " + dbTable.getFullyQualifiedName(); // NOI18N
 
                 try {
                     executeSQLStatement(stmt, truncateSql);

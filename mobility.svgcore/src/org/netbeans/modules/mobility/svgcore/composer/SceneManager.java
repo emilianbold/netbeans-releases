@@ -296,10 +296,14 @@ public final class SceneManager {
     public void restoreSelection() {
         if ( m_selectedId != null) {
             SVGObject selectedObj = m_perseusController.getObjectById(m_selectedId);
-            
+
             if (selectedObj != null && (m_selectedTag == null ||
-                m_selectedTag.equals( selectedObj.getSVGElement().getLocalName()))) {
+                    m_selectedTag.equals(selectedObj.getSVGElement().getLocalName()))) {
                 setSelection(m_selectedId, false);
+            } else {
+                // fix for #150939. related to #145987. Clear selection manually 
+                // if there is no more object with id remembered as selected before update
+                setSelection(null, false);
             }
             m_selectedId = null;
         }

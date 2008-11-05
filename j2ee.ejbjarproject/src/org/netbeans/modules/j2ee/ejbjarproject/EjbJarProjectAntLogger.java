@@ -43,6 +43,7 @@ package org.netbeans.modules.j2ee.ejbjarproject;
 
 import org.netbeans.modules.java.api.common.ProjectAntLogger;
 
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=60)
 public final class EjbJarProjectAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */

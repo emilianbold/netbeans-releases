@@ -76,6 +76,7 @@ import org.netbeans.modules.profiler.projectsupport.utilities.SourceUtils;
  * @author Tomas Hurka
  * @author Ian Formanek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
 public final class J2SEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

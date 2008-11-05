@@ -162,7 +162,7 @@ public abstract class APTStreamBaseNode extends APTTokenBasedNode
         private int index = -1;
         
         public Token nextToken() throws TokenStreamException {
-            Token token = null;
+            Token token;
             if (index == -1) {
                 token = getToken();
                 index++;

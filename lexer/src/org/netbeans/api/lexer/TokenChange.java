@@ -186,4 +186,11 @@ public final class TokenChange<T extends TokenId> {
         return info;
     }
 
+    @Override
+    public String toString() {
+        return "index=" + index() + ", offset=" + offset() + // NOI18N
+                "+T:" + addedTokenCount() + " -T:" + removedTokenCount() + // NOI18N
+                " ECC:" + embeddedChangeCount() + (isBoundsChange() ? ", BC" : ""); // NOI18N
+    }
+
 }

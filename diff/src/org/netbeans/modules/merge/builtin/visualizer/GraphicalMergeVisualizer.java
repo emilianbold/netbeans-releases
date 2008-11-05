@@ -62,6 +62,7 @@ import org.netbeans.spi.diff.MergeVisualizer;
  *
  * @author  Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.diff.MergeVisualizer.class)
 public class GraphicalMergeVisualizer extends MergeVisualizer implements Serializable {
     
     private Color colorUnresolvedConflict = new java.awt.Color(255, 160, 180);

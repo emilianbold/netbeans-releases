@@ -92,7 +92,7 @@ public class GdbProxyEngine {
     private RequestProcessor.Task gdbReader = null;
     private final boolean timerOn = Boolean.getBoolean("gdb.proxy.timer"); // NOI18N
     
-    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
 
     /**
      * Create a gdb process

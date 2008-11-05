@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
  * Error provider based on parser errors
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=10)
 public class ParserErrorProvider extends CsmErrorProvider {
 
     private static final boolean ENABLE = getBoolean("cnd.parser.error.provider", true);

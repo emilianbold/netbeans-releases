@@ -104,10 +104,14 @@ public class CndMIMEResolver extends MIMEResolver {
             return MIMENames.MAKEFILE_MIME_TYPE;
 	}
 
-	// Recognize shell scripts by extension
+        // Recognize shell scripts by extension
         if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.SHELL)) {
-            return MIMENames.SHELL_MIME_TYPE;
-	}
+            if ("bat".equals(ext) || "cmd".equals(ext)) { // NOI18N
+                return MIMENames.BAT_MIME_TYPE;
+            } else {
+                return MIMENames.SHELL_MIME_TYPE;
+            }
+        }
 
         // Recognize fortran files by extension
         if (ExtensionsSettings.isRegistered(ext, ExtensionsSettings.FORTRAN)) {

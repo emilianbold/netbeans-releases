@@ -53,6 +53,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
  *
  * @author Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=10)
 public class CDCPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
     public static final String APPLICATION_ARGS = "application.args"; //NOI18N

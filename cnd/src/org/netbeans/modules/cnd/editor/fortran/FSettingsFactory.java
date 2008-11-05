@@ -53,7 +53,7 @@ import org.openide.text.IndentEngine;
  */
 public class FSettingsFactory {
 
-    public static int MAXIMUM_TEXT_WIDTH = 132;
+    public static final int MAXIMUM_TEXT_WIDTH = 132;
 
     public static Acceptor getAbbrevResetAcceptor() {
         return AcceptorFactory.NON_JAVA_IDENTIFIER;

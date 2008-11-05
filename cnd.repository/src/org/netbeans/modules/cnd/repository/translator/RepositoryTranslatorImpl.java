@@ -98,6 +98,7 @@ import org.netbeans.modules.cnd.repository.util.IntToStringCache;
  * 
  * @author Nickolay Dalmatov
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.repository.api.RepositoryTranslation.class)
 public class RepositoryTranslatorImpl implements RepositoryTranslation{
     
     /**

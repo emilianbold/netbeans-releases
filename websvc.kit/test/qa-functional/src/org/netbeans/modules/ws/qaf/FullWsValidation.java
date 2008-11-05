@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.ws.qaf;
@@ -98,7 +98,6 @@ public class FullWsValidation extends J2eeTestCase {
                     ), JavaSEWsValidation.class,
                     "testCreateWsClient",
                     "testCallWsOperationInJavaMainClass",
-                    "testFixClientLibraries",
                     "testWsClientHandlers",
                     "testRefreshClientAndReplaceWSDL",
                     "testRunWsClientProject"
