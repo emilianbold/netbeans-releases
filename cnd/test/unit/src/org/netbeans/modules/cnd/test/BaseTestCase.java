@@ -199,6 +199,7 @@ public abstract class BaseTestCase extends NbTestCase {
 
     ////////////////////////////////////////////////////////////////////////////
     // Remote tests support
+    // <editor-fold defaultstate="collapsed" desc="Remote tests support">
 
     private static Boolean isRemoteSupported = null;
 
@@ -239,4 +240,6 @@ public abstract class BaseTestCase extends NbTestCase {
         }
         return hostName;
     }
+
+    //</editor-fold>
 }
