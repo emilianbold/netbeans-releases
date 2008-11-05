@@ -42,10 +42,9 @@ package org.netbeans.modules.parsing.spi;
 import java.util.Collection;
 
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.CurrentDocumentTaskScheduller;
-import org.netbeans.modules.parsing.impl.CursorSensitiveTaskScheduller;
-import org.netbeans.modules.parsing.impl.Schedulers;
-import org.netbeans.modules.parsing.impl.SelectedNodesTaskScheduller;
+import org.netbeans.modules.parsing.impl.CurrentDocumentScheduller;
+import org.netbeans.modules.parsing.impl.CursorSensitiveScheduller;
+import org.netbeans.modules.parsing.impl.SelectedNodesScheduller;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
 import org.openide.util.RequestProcessor;
@@ -53,19 +52,19 @@ import org.openide.util.RequestProcessor.Task;
 
 
 /**
- * TaskScheduler defines when tasks should be started. Some {@link SchedulerTask}s (like syntax
+ * Scheduler defines when tasks should be started. Some {@link SchedulerTask}s (like syntax
  * coloring) are current document sensitive only. It means that such {@link SchedulerTask} 
  * is automatically scheduled when currently edited document is changed.
- * Other tasks may listen on different events. Implementation of TaskScheduler 
- * just listens on various IDE events, and call one of scheduleTasks() methods
+ * Other tasks may listen on different events. Implementation of Scheduler
+ * just listens on various IDE events, and call one of schedule() methods
  * when something interesting happens. Implementation of Parsing API just finds
- * all {@link SchedulerTask}s registerred for this TaskScheduler and reschedules them.
+ * all {@link SchedulerTask}s registerred for this Scheduler and reschedules them.
  * Implementation of this class should be registerred in your manifest.xml file
  * in "Editors/your mime type" folder.
  * 
  * @author Jan Jancura
  */
-public abstract class TaskScheduler {
+public abstract class Scheduler {
     
     /**
      * Default reparse delay
@@ -81,41 +80,41 @@ public abstract class TaskScheduler {
                             sources;
     
     /**
-     * This implementations of {@link TaskScheduler} reschedules all tasks when:
+     * This implementations of {@link Scheduler} reschedules all tasks when:
      * <ol>
      * <li>current document is changed (file opened, closed, editor tab switched), </li>
      * <li>text in the current document is changed, </li>
      * <li>cusor position is changed</li>
      * </ol>
      */
-    public static final Class<? extends TaskScheduler> 
-                            CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveTaskScheduller.class;
+    public static final Class<? extends Scheduler>
+                            CURSOR_SENSITIVE_TASK_SCHEDULER = CursorSensitiveScheduller.class;
     
     /**
-     * This implementations of {@link TaskScheduler} reschedules all tasks when:
+     * This implementations of {@link Scheduler} reschedules all tasks when:
      * <ol>
      * <li>current document is changed (file opened, closed, editor tab switched), </li>
      * <li>text in the current document is changed</li>
      * </ol>
      */
-    public static final Class<? extends TaskScheduler> 
-                            EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentTaskScheduller.class;
+    public static final Class<? extends Scheduler>
+                            EDITOR_SENSITIVE_TASK_SCHEDULER = CurrentDocumentScheduller.class;
     
     /**
-     * This implementations of {@link TaskScheduler} reschedules all tasks when
+     * This implementations of {@link Scheduler} reschedules all tasks when
      * nodes selected in editor are changed.
      */
-    public static final Class<? extends TaskScheduler> 
-                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesTaskScheduller.class;
+    public static final Class<? extends Scheduler>
+                            SELECTED_NODES_SENSITIVE_TASK_SCHEDULER = SelectedNodesScheduller.class;
 
     /**
-     * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
+     * Reschedule all tasks registered for <code>this</code> Scheduler (see
      * {@link ParserResultTask#getSchedulerClass()}.
      */
     protected final void scheduleTasks (
         SchedulerEvent      event
     ) {
-        scheduleTasks (sources, event);
+        schedule (sources, event);
     }
 
     private RequestProcessor 
@@ -123,14 +122,14 @@ public abstract class TaskScheduler {
     private Task            task;
     
     /**
-     * Reschedule all tasks registered for <code>this</code> TaskScheduler (see
+     * Reschedule all tasks registered for <code>this</code> Scheduler (see
      * {@link ParserResultTask#getSchedulerClass()}, and sets new {@link Source}s for them.
      * 
      * @param sources       A collection of {@link Source}s.
      */
     //tzezula: really unclear usages of sources field (synchronization, live cycle, may it be called twice with different set of sources?).
     //tzezula: should set CHANGE_EXPECTED flag on the sources.
-    protected final synchronized void scheduleTasks (
+    protected final synchronized void schedule (
         Collection<Source>  sources,
         final SchedulerEvent
                             event
@@ -145,9 +144,9 @@ public abstract class TaskScheduler {
                 requestProcessor = new RequestProcessor ();
             task = requestProcessor.create (new Runnable () {
                 public void run () {
-                    for (Source source : TaskScheduler.this.sources) {
+                    for (Source source : Scheduler.this.sources) {
                         SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
-                        cache.scheduleTasks (TaskScheduler.this.getClass ());
+                        cache.scheduleTasks (Scheduler.this.getClass ());
                     }
                 }
             });
