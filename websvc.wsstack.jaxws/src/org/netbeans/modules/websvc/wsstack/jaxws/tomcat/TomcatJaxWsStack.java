@@ -63,10 +63,17 @@ import org.netbeans.modules.websvc.wsstack.spi.WSToolImplementation;
  */
 public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     
-    private static final String WSIT_LIBS[] = new String[] {
+    private static final String SHARED_METRO_LIBS[] = new String[] {
         "shared/lib/webservices-rt.jar",   // NOI18N
         "shared/lib/webservices-tools.jar" // NOI18N
     };
+
+    private static final String GLOBAL_METRO_LIBS[] = new String[] {
+        "lib/webservices-rt.jar",   // NOI18N
+        "lib/webservices-tools.jar" // NOI18N
+    };
+
+    private int TOOLS_JAR_INDEX = 1;
     
     private static final String KEYSTORE_LOCATION = "certs/server-keystore.jks";  //NOI18N
     private static final String TRUSTSTORE_LOCATION = "certs/server-truststore.jks";  //NOI18N
@@ -156,14 +163,24 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     private boolean isWsit() {
+        return isWsit(true/*shared*/) || isWsit(false/*global*/);
+    }
+
+    private boolean isWsit(boolean shared) {
+        String[] libList = shared ? SHARED_METRO_LIBS : GLOBAL_METRO_LIBS;
         boolean wsit = true;
-        for (int i = 0; i < WSIT_LIBS.length; i++) {
-            if (!new File(catalinaHome, WSIT_LIBS[i]).exists()) {
+        for (int i = 0; i < libList.length; i++) {
+            if (!new File(catalinaHome, libList[i]).exists()) {
                 wsit = false;
             }
         }
         return wsit;
     }
+
+    private String[] getDetectedMetroLibs() {
+        return isWsit(false) ? GLOBAL_METRO_LIBS : SHARED_METRO_LIBS;
+    }
+
     
     private boolean isKeystore() {
         if (new File(catalinaHome, KEYSTORE_LOCATION).exists()) return true;
@@ -184,7 +201,8 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
     }
     
     private String resolveImplementationVersion() throws IOException {
-        File wsToolsJar = new File(catalinaHome, "shared/lib/webservices-tools.jar"); //NOI18N
+        String [] metroLibs = getDetectedMetroLibs();
+        File wsToolsJar = new File(catalinaHome, metroLibs[TOOLS_JAR_INDEX]);
         if (wsToolsJar.exists()) {
             JarFile jarFile = new JarFile(wsToolsJar);
             JarEntry entry = jarFile.getJarEntry("com/sun/tools/ws/version.properties"); //NOI18N
@@ -235,11 +253,11 @@ public class TomcatJaxWsStack implements WSStackImplementation<JaxWs> {
         }
 
         public URL[] getLibraries() {
-            
-            URL[] retValue = new URL[WSIT_LIBS.length];
+            String[] metroLibs = getDetectedMetroLibs();
+            URL[] retValue = new URL[metroLibs.length];
             try {
-                for (int i = 0; i < WSIT_LIBS.length; i++) {
-                    retValue[i] = new File(catalinaHome, WSIT_LIBS[i]).toURI().toURL();
+                for (int i = 0; i < metroLibs.length; i++) {
+                    retValue[i] = new File(catalinaHome, metroLibs[i]).toURI().toURL();
                 }
                 return retValue;
             } catch (MalformedURLException ex) {

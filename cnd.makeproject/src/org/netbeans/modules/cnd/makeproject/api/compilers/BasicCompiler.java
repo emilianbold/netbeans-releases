@@ -125,25 +125,25 @@ public abstract class BasicCompiler extends Tool {
         return ""; // NOI18N
     }
 
-    public List getSystemPreprocessorSymbols() {
-        return new Vector();
+    public List<String> getSystemPreprocessorSymbols() {
+        return new Vector<String>();
     }
 
-    public List getSystemIncludeDirectories() {
-        return new Vector();
+    public List<String> getSystemIncludeDirectories() {
+        return new Vector<String>();
     }
 
     /**
      * @return true if settings were really replaced by new one
      */
-    public boolean setSystemPreprocessorSymbols(List values) {
+    public boolean setSystemPreprocessorSymbols(List<String> values) {
         return false;
     }
 
     /**
      * @return true if settings were really replaced by new one
      */
-    public boolean setSystemIncludeDirectories(List values) {
+    public boolean setSystemIncludeDirectories(List<String> values) {
         return false;
     }
 
@@ -153,7 +153,7 @@ public abstract class BasicCompiler extends Tool {
         }
     }
 
-    private String normalizePath(String path) {
+    protected String normalizePath(String path) {
         if (RemoteUtils.isLocalhost(getHostKey())) {
             return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
         } else {
