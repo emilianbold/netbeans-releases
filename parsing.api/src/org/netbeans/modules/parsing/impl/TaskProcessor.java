@@ -53,10 +53,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
@@ -112,7 +116,8 @@ public class TaskProcessor {
     private final static WorkerThreadFactory factory = new WorkerThreadFactory ();
     //Currently running SchedulerTask
     private final static CurrentRequestReference currentRequest = new CurrentRequestReference ();
-//    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
+    //Deferred task until scan is done
+    private final static List<DeferredTask> todo = Collections.synchronizedList(new LinkedList<DeferredTask>());
                     
     //Internal lock used to synchronize access to TaskProcessor iternal state
     private static class InternalLock {};    
@@ -157,6 +162,10 @@ public class TaskProcessor {
         
     public static void runUserTask (final Mutex.ExceptionAction<Void> task, final Collection<Source> sources) throws ParseException {
         Parameters.notNull("task", task);
+        //tzezula: ugly, Hanzy isn't here a nicer solution to distinguish single source from multi source?
+        if (sources.size() == 1) {
+            SourceAccessor.getINSTANCE().assignListeners(sources.iterator().next());
+        }
         boolean a = false;
         assert a = true;
         if (a && javax.swing.SwingUtilities.isEventDispatchThread()) {
@@ -190,6 +199,74 @@ public class TaskProcessor {
         } finally {
             currentRequest.cancelCompleted (request);
         }        
+    }
+
+    public static Future<Void> runWhenScanFinished (final Mutex.ExceptionAction<Void> task, final Collection<Source> sources) throws ParseException {
+        assert task != null;
+        final ScanSync sync = new ScanSync (task);
+        final DeferredTask r = new DeferredTask (sources,task,sync);
+        //0) Add speculatively task to be performed at the end of background scan
+        todo.add (r);
+        if (Utilities.isScanInProgress()) {
+            return sync;
+        }
+        //1) Try to aquire javac lock, if successfull no task is running
+        //   perform the given taks synchronously if it wasn't already performed
+        //   by background scan.
+        final boolean locked = parserLock.tryLock();
+        if (locked) {
+            try {
+                if (todo.remove(r)) {
+                    try {
+                        runUserTask(task, sources);
+                    } finally {
+                        sync.taskFinished();
+                    }
+                }
+            } finally {
+                parserLock.unlock();
+            }
+        }
+        else {
+            //Otherwise interrupt currently running task and try to aquire lock
+            do {
+                final Request[] request = new Request[1];
+                boolean isScanner = currentRequest.getTaskToCancel(request);
+                try {
+                    if (isScanner) {
+                        return sync;
+                    }
+                    if (request[0] != null) {
+                        request[0].task.cancel();
+                    }
+                    if (parserLock.tryLock(100, TimeUnit.MILLISECONDS)) {
+                        try {
+                            if (todo.remove(r)) {
+                                try {
+                                    runUserTask(task,sources);
+                                    return sync;
+                                } finally {
+                                    sync.taskFinished();
+                                }
+                            }
+                            else {
+                                return sync;
+                            }
+                        } finally {
+                            parserLock.unlock();
+                        }
+                    }
+                } catch (InterruptedException e) {
+                    throw new ParseException ("Interupted.",e); //NOI18N
+                }
+                finally {
+                    if (!isScanner) {
+                        currentRequest.cancelCompleted(request[0]);
+                    }
+                }
+            } while (true);
+        }
+        return sync;
     }
     
     /** Adds a task to scheduled requests. The tasks will run sequentially.
@@ -490,7 +567,26 @@ public class TaskProcessor {
                                     assert r.task instanceof ParserResultTask : "Illegal request: EmbeddingProvider has to be bound to Source";     //NOI18N
                                     parserLock.lock ();
                                     try {
-                                        ((ParserResultTask)r.task).run (null);
+                                        try {
+                                            ((ParserResultTask)r.task).run (null);
+                                        } finally {
+                                            currentRequest.clearCurrentTask();
+                                            boolean cancelled = requests.contains(r);
+                                            if (!cancelled) {
+                                            DeferredTask[] _todo;
+                                                synchronized (todo) {
+                                                    _todo = todo.toArray(new DeferredTask[todo.size()]);
+                                                    todo.clear();
+                                                }
+                                                for (DeferredTask rq : _todo) {
+                                                    try {
+                                                        runUserTask(rq.task, rq.sources);
+                                                    } finally {
+                                                        rq.sync.taskFinished();
+                                                    }
+                                                }
+                                            }
+                                        }
                                     } catch (RuntimeException re) {
                                         Exceptions.printStackTrace(re);
                                     }
@@ -774,6 +870,12 @@ public class TaskProcessor {
             return result;
         }
 
+        void clearCurrentTask () {
+            synchronized (INTERNAL_LOCK) {
+                this.reference = null;
+            }
+        }
+
         void setCurrentParser (final Parser parser) {
             synchronized (INTERNAL_LOCK) {
                 activeParser = parser;
@@ -860,6 +962,28 @@ public class TaskProcessor {
             }
             return request;
         }
+
+        boolean getTaskToCancel (Request[] request) {
+            assert request != null;
+            assert request.length == 1;
+            boolean result = false;
+            if (!factory.isDispatchThread(Thread.currentThread())) {
+                synchronized (INTERNAL_LOCK) {
+                     request[0] = this.reference;
+                    if (request[0] != null) {
+                        result = request[0].cache == null;
+                        assert this.canceledReference == null;
+                        if (!result) {
+                            this.canceledReference = request[0];
+                            this.reference = null;
+                        }
+                        this.canceled.set(result);
+                        this.cancelTime = System.currentTimeMillis();
+                    }
+                }
+            }
+            return result;
+        }
                         
         boolean isCanceled () {
             synchronized (INTERNAL_LOCK) {
@@ -884,4 +1008,77 @@ public class TaskProcessor {
         }
     }
 
+    final static class ScanSync implements Future<Void> {
+
+        private Mutex.ExceptionAction<Void> task;
+        private final CountDownLatch sync;
+        private final AtomicBoolean canceled;
+
+        public ScanSync (final Mutex.ExceptionAction<Void> task) {
+            assert task != null;
+            this.task = task;
+            this.sync = new CountDownLatch (1);
+            this.canceled = new AtomicBoolean (false);
+        }
+
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            if (this.sync.getCount() == 0) {
+                return false;
+            }
+            synchronized (todo) {
+                boolean _canceled = canceled.getAndSet(true);
+                if (!_canceled) {
+                    for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
+                        DeferredTask task = it.next();
+                        if (task.task == this.task) {
+                            it.remove();
+                            return true;
+                        }
+                    }
+                }
+            }
+            return false;
+        }
+
+        public boolean isCancelled() {
+            return this.canceled.get();
+        }
+
+        public synchronized boolean isDone() {
+            return this.sync.getCount() == 0;
+        }
+
+        public Void get() throws InterruptedException, ExecutionException {
+            this.sync.await();
+            return null;
+        }
+
+        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+            this.sync.await(timeout, unit);
+            return null;
+        }
+
+        private void taskFinished () {
+            this.sync.countDown();
+        }
+
+    }
+
+    static final class DeferredTask {
+        final Collection<Source> sources;
+        final Mutex.ExceptionAction<Void> task;
+        final ScanSync sync;
+
+        public DeferredTask (final Collection<Source> sources,
+                final Mutex.ExceptionAction<Void> task,
+                final ScanSync sync) {
+            assert sources != null;
+            assert task != null;
+            assert sync != null;
+
+            this.sources = sources;
+            this.task = task;
+            this.sync = sync;
+        }
+    }
 }
