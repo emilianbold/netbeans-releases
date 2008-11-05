@@ -422,15 +422,7 @@ public class TaskProcessor {
         currentRequest.cancelCompleted(request);
     }
     
-    //Package private methods needed by the Utilities accessor    
-    static void acquireParserLock () {
-        parserLock.lock();
-    }
-    
-    static void releaseParserLock () {
-        parserLock.unlock();
-    }
-    
+    //Package private methods needed by the Utilities accessor        
     static boolean holdsParserLock () {
         return parserLock.isHeldByCurrentThread();
     }

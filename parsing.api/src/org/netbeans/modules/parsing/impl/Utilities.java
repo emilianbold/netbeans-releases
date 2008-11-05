@@ -53,21 +53,7 @@ public class Utilities {
     
     private Utilities () {}
 
-    //Helpers for asserts in java.source
-    /**
-     * Temporary method until editor API (formating) will be fixed
-     */
-    public static void acquireParserLock () {
-        TaskProcessor.acquireParserLock();
-    }
-    
-    /**
-     * Temporary method until editor API (formating) will be fixed
-     */
-    public static void releaseParserLock () {
-        TaskProcessor.releaseParserLock();
-    }
-    
+    //Helpers for asserts in java.source    
     /**
      * Temporary method until editor API (formating) will be fixed
      */
