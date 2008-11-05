@@ -56,9 +56,7 @@ import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
  *
  * @author Alexander Simon
  */
-/* XXX would need a public no-arg constructor
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
-*/
 public class CCDataLoader extends CndAbstractDataLoaderExt {
     
     private static CCDataLoader instance;
@@ -66,7 +64,7 @@ public class CCDataLoader extends CndAbstractDataLoaderExt {
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975684L;
 
-    protected CCDataLoader() {
+    public CCDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CCDataObject"); // NOI18N
         instance = this;
         //createExtentions(cppExtensions);

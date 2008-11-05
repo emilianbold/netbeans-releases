@@ -119,7 +119,7 @@ public class SolarisLogReader {
                         }
                         if (line.startsWith(ENV_SRC)){
                             buidMashineSources = line.substring(ENV_SRC.length());
-                            if (TRACE) {System.out.println("Environment variable path to sources: " + buidMashineSources);}
+                            if (TRACE) {System.out.println("Environment variable path to sources: " + buidMashineSources);} //NOI18N
                             continue;
                         }
                     }

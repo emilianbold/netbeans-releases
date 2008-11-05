@@ -64,6 +64,13 @@ public class TermExecutor extends PtyExecutor {
     private boolean debug = false;
 
     public TermExecutor() {
+        switch (os) {
+            case WINDOWS:
+		setMode(Mode.NONE);
+                break;
+	    default:
+		break;
+        }
     }
 
     private class MyTermListener implements TermListener {
