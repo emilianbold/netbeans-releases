@@ -70,8 +70,7 @@ public class DialogDisplayerImpl extends DialogDisplayer {
         lastNotifyDescriptor = descriptor;
         Object r = toReturn;
         toReturn = null;
-        
-        Assert.assertNotNull("We are supposed to return a value", r);
+        Assert.assertNotNull("We are supposed to return a value: " + descriptor.getMessage(), r);
         return r;
     }
     
