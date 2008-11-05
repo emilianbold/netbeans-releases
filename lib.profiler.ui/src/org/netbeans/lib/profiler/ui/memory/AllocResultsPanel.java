@@ -398,7 +398,6 @@ public abstract class AllocResultsPanel extends MemoryResultsPanel {
     }
 
     protected void performDefaultAction(int classId) {
-        showSourceForClass(classId);
     }
 
     private void setColumnsData() {

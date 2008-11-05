@@ -48,6 +48,7 @@ import org.netbeans.lib.profiler.ui.UIConstants;
 import org.netbeans.lib.profiler.ui.UIUtils;
 import org.netbeans.lib.profiler.ui.components.CellTipManager;
 import org.netbeans.lib.profiler.ui.components.FlatToolBar;
+import org.netbeans.lib.profiler.ui.components.HTMLTextArea;
 import org.netbeans.lib.profiler.ui.components.JExtendedTable;
 import org.netbeans.lib.profiler.ui.components.table.LabelTableCellRenderer;
 import java.awt.*;
@@ -256,10 +257,14 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         this.supportsSleepingState = supportsSleepingState;
 
         // create components
-
+        setOpaque(true);
+ 	    setBackground(new HTMLTextArea().getBackground());
+        
         // contentPanel for threadsTable and enable threads profiling notification
         contentPanel = new JPanel(new CardLayout());
-
+        contentPanel.setOpaque(true);
+ 	    contentPanel.setBackground(new HTMLTextArea().getBackground());
+        
         // threads table components
         table = createViewTable();
         table.setGridColor(UIConstants.TABLE_VERTICAL_GRID_COLOR);
@@ -303,7 +308,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         showLabel.setDisplayedMnemonic(showLabel.getText().charAt(mnemCharIndex));
         showLabel.setDisplayedMnemonicIndex(mnemCharIndex);
 
-        buttonsToolBar = new JToolBar(JToolBar.HORIZONTAL) {
+        buttonsToolBar = new FlatToolBar() {
                 public Component add(Component comp) {
                     if (comp instanceof JButton) {
                         UIUtils.fixButtonUI((JButton) comp);
@@ -312,9 +317,12 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
                     return super.add(comp);
                 }
             };
-
+        buttonsToolBar.setOpaque(true);
+ 	    buttonsToolBar.setBackground(getBackground());
         JPanel tablePanel = new JPanel();
+ 	    tablePanel.setOpaque(false);
         JPanel scrollPanel = new JPanel();
+ 	    scrollPanel.setOpaque(false);
         popupMenu = initPopupMenu();
 
         // set properties
@@ -399,6 +407,7 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
         monitorLegend.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 0));
 
         JPanel legendPanel = new JPanel();
+        legendPanel.setOpaque(false);
         legendPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 0, 0));
         legendPanel.add(runningLegend);
         legendPanel.add(sleepingLegend);
@@ -412,15 +421,18 @@ public class ThreadsPanel extends JPanel implements AdjustmentListener, ActionLi
 
         //legendPanel.add(unknownLegend);
         JPanel bottomPanel = new JPanel();
+        bottomPanel.setOpaque(false);
         bottomPanel.setLayout(new BorderLayout());
         bottomPanel.add(legendPanel, BorderLayout.EAST);
 
         //scrollPanel.add(bottomPanel, BorderLayout.SOUTH);
         JPanel dataPanel = new JPanel();
+        dataPanel.setOpaque(false);
         dataPanel.setLayout(new BorderLayout());
         dataPanel.setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.LOWERED));
 
         tableScroll = new JScrollPane();
+        tableScroll.setOpaque(false);
         tableScroll.setBorder(new javax.swing.border.EmptyBorder(0, 0, 0, 0));
         tableScroll.setCorner(JScrollPane.UPPER_RIGHT_CORNER, new JPanel());
         tableScroll.getCorner(JScrollPane.UPPER_RIGHT_CORNER).setBackground(Color.WHITE);
