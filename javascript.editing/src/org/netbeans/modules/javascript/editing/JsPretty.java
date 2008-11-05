@@ -56,7 +56,6 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
-import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
 import org.openide.util.Exceptions;
@@ -70,7 +69,7 @@ public class JsPretty {
 
     private final Logger LOG = Logger.getLogger(JsFormatter.class.getName());
     
-    private final CompilationInfo info;
+    private final JsParseResult info;
     private final BaseDocument doc;
     private final TokenSequence<? extends JsTokenId> ts;
     private final int begin;
@@ -83,7 +82,7 @@ public class JsPretty {
     private final int continuationIndentSize;
     private final int tabSize;
     
-    public JsPretty(CompilationInfo info, BaseDocument document, int begin, int end, int indentSize, int continuationIndentSize) {
+    public JsPretty(JsParseResult info, BaseDocument document, int begin, int end, int indentSize, int continuationIndentSize) {
         this.info = info;
         this.doc = document;
         this.begin = begin;

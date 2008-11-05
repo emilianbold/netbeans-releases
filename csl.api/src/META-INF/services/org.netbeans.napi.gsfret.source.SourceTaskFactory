@@ -1,0 +1,10 @@
+org.netbeans.modules.csl.hints.GsfHintsFactory
+org.netbeans.modules.csl.hints.infrastructure.HintsTaskFactory
+org.netbeans.modules.csl.hints.infrastructure.SelectionHintsTaskFactory
+org.netbeans.modules.csl.hints.infrastructure.SuggestionsTaskFactory
+org.netbeans.modules.csl.navigation.ClassMemberNavigatorSourceFactory
+org.netbeans.modules.csl.editor.semantic.SemanticHighlighterFactory
+org.netbeans.modules.csl.editor.semantic.MarkOccurrencesHighlighterFactory
+org.netbeans.modules.csl.editor.fold.GsfFoldManagerTaskFactory
+org.netbeans.modules.csl.navigation.CaretListeningFactory
+

@@ -45,14 +45,14 @@ import java.util.Map;
 import javax.swing.text.BadLocationException;
 import org.mozilla.nb.javascript.Node;
 import org.mozilla.nb.javascript.Token;
-import org.netbeans.modules.gsf.api.ColoringAttributes;
-import org.netbeans.modules.gsf.api.CompilationInfo;
-import org.netbeans.modules.gsf.api.OccurrencesFinder;
-import org.netbeans.modules.gsf.api.OffsetRange;
+import org.netbeans.modules.csl.api.ColoringAttributes;
+import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.javascript.editing.lexer.JsTokenId;
 import org.netbeans.modules.javascript.editing.lexer.LexUtilities;
+import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -60,13 +60,26 @@ import org.openide.util.Exceptions;
  *
  * @author Tor Norbye
  */
-public class JsOccurrenceFinder implements OccurrencesFinder {
+public class JsOccurrenceFinder extends OccurrencesFinder<JsParseResult> {
     private boolean cancelled;
     private int caretPosition;
     private Map<OffsetRange, ColoringAttributes> occurrences;
     private FileObject file;
 
     public JsOccurrenceFinder() {
+    }
+
+    /**
+     * Gets the default priority for this occurences finder.
+     *
+     * @return The default priority, which is 200.
+     */
+    public @Override int getPriority() {
+        return 200;
+    }
+
+    public final @Override Class<? extends TaskScheduler> getSchedulerClass() {
+        return TaskScheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     public Map<OffsetRange, ColoringAttributes> getOccurrences() {
@@ -89,14 +102,14 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         this.caretPosition = position;
     }
     
-    public void run(CompilationInfo info) {
+    public void run(JsParseResult info) {
         resume();
 
         if (isCancelled()) {
             return;
         }
 
-        FileObject currentFile = info.getFileObject();
+        FileObject currentFile = info.getSnapshot().getSource().getFileObject();
         if (currentFile != file) {
             // Ensure that we don't reuse results from a different file
             occurrences = null;
@@ -143,7 +156,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         // . to the end of Scanf as a CallNode, which is a weird highlight.
         // We don't want occurrences highlights that span lines.
         if (closest != null) {
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument();
             if (doc == null) {
                 // Document was just closed
                 return;
@@ -238,17 +251,15 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
         }
 
         if (highlights.size() > 0) {
-            if (rpr.getTranslatedSource() != null) {
-                Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
-                for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
-                    OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
-                    if (range != OffsetRange.NONE) {
-                        translated.put(range, entry.getValue());
-                    }
+            Map<OffsetRange, ColoringAttributes> translated = new HashMap<OffsetRange,ColoringAttributes>(2*highlights.size());
+            for (Map.Entry<OffsetRange,ColoringAttributes> entry : highlights.entrySet()) {
+                OffsetRange range = LexUtilities.getLexerOffsets(info, entry.getKey());
+                if (range != OffsetRange.NONE) {
+                    translated.put(range, entry.getValue());
                 }
-                
-                highlights = translated;
             }
+
+            highlights = translated;
 
             this.occurrences = highlights;
         } else {
@@ -275,8 +286,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
     }
     
     @SuppressWarnings("unchecked")
-    private void highlightExits(Node node,
-        Map<OffsetRange, ColoringAttributes> highlights, CompilationInfo info) {
+    private void highlightExits(Node node, Map<OffsetRange, ColoringAttributes> highlights, JsParseResult info) {
 
         if (node.hasChildren()) {
             Node child = node.getFirstChild();
@@ -322,8 +332,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
     }
 // first: 3rd, 2nd, 5th, 1st, 2nd
     @SuppressWarnings("unchecked")
-    private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights,
-        CompilationInfo info) {
+    private void highlightExitPoints(Node node, Map<OffsetRange, ColoringAttributes> highlights, JsParseResult info) {
         int type = node.getType();
         
         if (type == Token.THROW || type == Token.RETHROW ||
@@ -331,7 +340,7 @@ public class JsOccurrenceFinder implements OccurrencesFinder {
                 // function) - these have zero size, and we skip these for occurrence highlighting
                 (type == Token.RETURN && node.getSourceEnd() > node.getSourceStart())) {
             OffsetRange astRange = AstUtilities.getRange(node);
-            BaseDocument doc = (BaseDocument)info.getDocument();
+            BaseDocument doc = (BaseDocument)info.getSnapshot().getSource().getDocument();
             if (doc != null) {
                 try {
                     OffsetRange lexRange = LexUtilities.getLexerOffsets(info, astRange);
