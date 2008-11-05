@@ -132,8 +132,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
         }
 
         createComponents(includes);
-        setPreferredSize(new Dimension(NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeW", 500),
-                                       NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeH", 240)));
+        setPreferredSize(new Dimension(NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeW", 500), // NOI18N
+                                       NbPreferences.forModule(ErrorIncludeDialog.class).getInt("dialogSizeH", 240))); // NOI18N
         setMinimumSize(new Dimension(320, 240));
         addHierarchyListener(new HierarchyListener() {
             public void hierarchyChanged(HierarchyEvent e) {
@@ -148,8 +148,8 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                             searchBase.clear();
                         }
                         CsmListeners.getDefault().removeModelListener(ErrorIncludeDialog.this);
-                        NbPreferences.forModule(ErrorIncludeDialog.class).putInt("dialogSizeW", getSize().width);
-                        NbPreferences.forModule(ErrorIncludeDialog.class).putInt("dialogSizeH", getSize().height);
+                        NbPreferences.forModule(ErrorIncludeDialog.class).putInt("dialogSizeW", getSize().width); // NOI18N
+                        NbPreferences.forModule(ErrorIncludeDialog.class).putInt("dialogSizeH", getSize().height); // NOI18N
                     }
                 }
             }
@@ -428,10 +428,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                         int l1 = p.getTopComponent().getHeight();
                         int l2 = p.getBottomComponent().getHeight();
                         if (l1 > 0 && l2 > 0) {
-                            NbPreferences.forModule(ErrorIncludeDialog.class).putDouble("verticalDivider", ((double)l1)/(l1+l2));
+                            NbPreferences.forModule(ErrorIncludeDialog.class).putDouble("verticalDivider", ((double)l1)/(l1+l2)); // NOI18N
                         }
                     } else {
-                        p.setDividerLocation(NbPreferences.forModule(ErrorIncludeDialog.class).getDouble("verticalDivider", 0.65));
+                        p.setDividerLocation(NbPreferences.forModule(ErrorIncludeDialog.class).getDouble("verticalDivider", 0.65)); // NOI18N
                         show = true;
                     }
                 }
@@ -447,10 +447,10 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                         int l1 = p.getLeftComponent().getWidth();
                         int l2 = p.getRightComponent().getWidth();
                         if (l1 > 0 && l2 > 0) {
-                            NbPreferences.forModule(ErrorIncludeDialog.class).putDouble("horisontalDivider", ((double)l1)/(l1+l2));
+                            NbPreferences.forModule(ErrorIncludeDialog.class).putDouble("horisontalDivider", ((double)l1)/(l1+l2)); // NOI18N
                         }
                     } else {
-                        p.setDividerLocation(NbPreferences.forModule(ErrorIncludeDialog.class).getDouble("horisontalDivider", 0.35));
+                        p.setDividerLocation(NbPreferences.forModule(ErrorIncludeDialog.class).getDouble("horisontalDivider", 0.35)); // NOI18N
                         show = true;
                     }
                 }

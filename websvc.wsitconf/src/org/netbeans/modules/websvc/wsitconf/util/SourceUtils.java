@@ -128,18 +128,21 @@ public class SourceUtils {
         controller.toPhase(Phase.ELEMENTS_RESOLVED);
 
         final String mainElementName = controller.getFileObject().getName();
-        for (Tree tree : controller.getCompilationUnit().getTypeDecls()) {
-            if (tree.getKind() != Tree.Kind.CLASS) {
-                continue;
+        CompilationUnitTree cunittree = controller.getCompilationUnit();
+        if (cunittree != null) {
+            for (Tree tree : cunittree.getTypeDecls()) {
+                if (tree.getKind() != Tree.Kind.CLASS) {
+                    continue;
+                }
+                ClassTree classTree = (ClassTree)tree;
+                if (!classTree.getSimpleName().contentEquals(mainElementName)) {
+                    continue;
+                }
+                if (!classTree.getModifiers().getFlags().contains(Modifier.PUBLIC)) {
+                    continue;
+                }
+                return classTree;
             }
-            ClassTree classTree = (ClassTree)tree;
-            if (!classTree.getSimpleName().contentEquals(mainElementName)) {
-                continue;
-            }
-            if (!classTree.getModifiers().getFlags().contains(Modifier.PUBLIC)) {
-                continue;
-            }
-            return classTree;
         }
         return null;
     }

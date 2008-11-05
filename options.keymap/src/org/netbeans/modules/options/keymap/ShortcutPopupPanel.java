@@ -90,10 +90,11 @@ public class ShortcutPopupPanel extends javax.swing.JPanel {
     private void addAlternative() {
         String category = (String) table.getValueAt(row, 2);
         ShortcutAction action = ((ActionHolder) table.getValueAt(row, 0)).getAction();
-        Object[] newRow = new Object[]{new ActionHolder(action, true), new ShortcutCell("", action), category, ""};
+        Object[] newRow = new Object[]{new ActionHolder(action, true), new ShortcutCell(""), category, ""};
         ((DefaultTableModel) ((TableSorter) table.getModel()).getTableModel()).insertRow(row + 1, newRow);
         pm.setVisible(false);
         table.editCellAt(row + 1, 1);
+        ((ShortcutCell) table.getValueAt(row, 1)).getTextField().requestFocus();
     }
 
     private void clear() {
