@@ -47,10 +47,10 @@ import org.netbeans.api.editor.EditorRegistry;
 
 import java.io.IOException;
 import javax.swing.text.Document;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.modules.csl.source.usages.RepositoryUpdater;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -124,7 +124,7 @@ public class ActivatedDocumentListener implements PropertyChangeListener {
             lastValidFile = null;
         }
         
-        Source activeJS = Source.forFileObject(activeFile);
+        Source activeJS = Source.create(activeFile);
         
         if (activeJS == null) {
             //not a GSF document:
