@@ -47,25 +47,56 @@ package org.netbeans.modules.options.keymap;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JList;
 import javax.swing.JTextField;
-import org.netbeans.core.options.keymap.api.ShortcutAction;
+import javax.swing.Popup;
+import javax.swing.PopupFactory;
+import javax.swing.SwingUtilities;
 
 /**
  * Panel representing one shortcut cell inside keymap table
  * @author Max Sauer
  */
 public class ShortcutCell extends javax.swing.JPanel implements Comparable {
-    private Object shortcutAction; //TODO: do we need to hold the action?
     
+    private Popup popup;
+    private static final String[] specialKeys = new String[]{"UP", "DOWN", "LEFT", "RIGHT", "ENTER", "ESCAPE"}; //NOI18N
+    private final JList list = new JList(specialKeys);
+
+    PopupFactory factory = PopupFactory.getSharedInstance();
     /** Creates new form ShortcutCell */
-    public ShortcutCell(Object shortcutAction) {
+    public ShortcutCell() {
         initComponents();
-        this.shortcutAction = shortcutAction;
+
+        list.addMouseListener(new MouseAdapter() {
+
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                int index = list.locationToIndex(new Point(e.getX(), e.getY()));
+                if (popup != null) {
+                    popup.hide();
+                    popup = null;
+                }
+                String text = scField.getText();
+                if (text.endsWith("+")) // NOI18N
+                    scField.setText(text + list.getModel().getElementAt(index));
+                else
+                    scField.setText(text + " " + list.getModel().getElementAt(index)); //NOI18N
+                scField.requestFocus();
+                scField.selectAll();
+                scField.setCaretPosition(scField.getText().length()-1);
+            }
+
+        });
     }
 
-    public ShortcutCell(String displayedShortcut, Object shortcutAction) {
-        this(shortcutAction);
+    public ShortcutCell(String displayedShortcut) {
+        this();
         setText(displayedShortcut);
     }
 
@@ -110,9 +141,6 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable {
         return scField;
     }
 
-    public ShortcutAction getAction() {
-        return (ShortcutAction) shortcutAction;
-    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -140,6 +168,11 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable {
         changeButton.setMinimumSize(new java.awt.Dimension(20, 15));
         changeButton.setPreferredSize(new java.awt.Dimension(20, 15));
         changeButton.setRolloverEnabled(true);
+        changeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                changeButtonActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -158,6 +191,15 @@ public class ShortcutCell extends javax.swing.JPanel implements Comparable {
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void changeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_changeButtonActionPerformed
+        JComponent tf = (JComponent) evt.getSource();
+        Point p = new Point(tf.getX(), tf.getY());
+        SwingUtilities.convertPointToScreen(p, this);
+        //show special key popup
+        if (popup == null)
+            popup = factory.getPopup(this, list, p.x, p.y);
+        popup.show();
+    }//GEN-LAST:event_changeButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton changeButton;
