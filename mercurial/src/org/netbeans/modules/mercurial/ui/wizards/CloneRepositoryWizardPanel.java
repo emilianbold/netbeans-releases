@@ -266,7 +266,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                 // This command validates the url
                 rc.getHgUrl();
                 String urlStr = rc.getUrl();
-                URI uri = new URI(decode(urlStr));
+                URI uri = new URI(urlStr);
                 String uriSch = uri.getScheme();
                 if(uriSch.equals("file")){
                     File f = new File(urlStr.substring("file://".length()));
