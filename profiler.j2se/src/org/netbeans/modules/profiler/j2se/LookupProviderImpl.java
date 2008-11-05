@@ -46,12 +46,14 @@ import java.util.List;
 import org.netbeans.modules.profiler.categories.Categorization;
 import org.netbeans.modules.profiler.categories.CategoryBuilder;
 import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
+import org.netbeans.spi.project.LookupProvider;
 
 
 /**
  *
  * @author Jiri Sedlacek
  */
+@LookupProvider.Register(projectType="org-netbeans-modules-java-j2seproject")
 public class LookupProviderImpl extends AbstractProjectLookupProvider {        
     @Override
     protected List getAdditionalLookups(final Project project) {

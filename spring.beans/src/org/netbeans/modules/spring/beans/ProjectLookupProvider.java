@@ -55,15 +55,21 @@ import org.openide.util.lookup.Lookups;
 public class ProjectLookupProvider implements LookupProvider {
 
     private final Kind kind;
-
+    
+    @LookupProvider.Register(projectType={
+        "org-netbeans-modules-java-j2seproject",
+        "org-netbeans-modules-j2ee-ejbjarproject"
+    })
     public static ProjectLookupProvider standard() {
         return new ProjectLookupProvider(Kind.NON_WEB);
     }
 
+    @LookupProvider.Register(projectType="org-netbeans-modules-web-project")
     public static ProjectLookupProvider web() {
         return new ProjectLookupProvider(Kind.WEB);
     }
 
+    @LookupProvider.Register(projectType="org-netbeans-modules-maven")
     public static ProjectLookupProvider simple() {
         return new ProjectLookupProvider(Kind.SIMPLE);
     }

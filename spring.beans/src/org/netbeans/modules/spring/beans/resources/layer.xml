@@ -155,28 +155,10 @@ made subject to such option by the copyright holder.
         </folder>
     </folder>
     <folder name="Projects">
-        <folder name="org-codehaus-mevenide-netbeans">
-         <!-- to be removed once maven modules are part of standard distro -->
-            <folder name="Customizer">
-                <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
-                    <attr name="position" intvalue="278"/>
-                </file>
-            </folder>
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.standard"/>
-                </file>
-            </folder>
-        </folder>
         <folder name="org-netbeans-modules-maven">
             <folder name="Customizer">
                 <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
                     <attr name="position" intvalue="278"/>
-                </file>
-            </folder>
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.simple"/>
                 </file>
             </folder>
         </folder>
@@ -186,11 +168,6 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="250"/>
                 </file>
             </folder>
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.standard"/>
-                </file>
-            </folder>
         </folder>
         <folder name="org-netbeans-modules-java-j2seproject">
             <folder name="Customizer">
@@ -198,21 +175,11 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="250"/>
                 </file>
             </folder>
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.standard"/>
-                </file>
-            </folder>
         </folder>
         <folder name="org-netbeans-modules-web-project">
             <folder name="Customizer">
                 <file name="org.netbeans.modules.spring.beans.ui.customizer.CustomizerCategoryProvider.instance">
                     <attr name="position" intvalue="250"/>
-                </file>
-            </folder>
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-spring-beans-ProjectLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.spring.beans.ProjectLookupProvider.web"/>
                 </file>
             </folder>
         </folder>

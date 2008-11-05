@@ -49,6 +49,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkleint
  */
+@LookupProvider.Register(projectType="org-netbeans-modules-maven")
 public class LookupProviderImpl implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

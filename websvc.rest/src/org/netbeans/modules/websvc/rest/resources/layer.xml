@@ -201,9 +201,6 @@
           <file name="org.netbeans.modules.websvc.rest.projects.ProjectTestRestServicesAction.instance"/>
         </folder>
         <folder name="org-netbeans-modules-web-project">
-            <folder name="Lookup">
-                <file name="org.netbeans.modules.websvc.rest.projects.WebRestSupportLookupProvider.instance"/>
-            </folder> 
             <folder name="Nodes">
                 <file name="org-netbeans-modules-websvc-rest-nodes-RestServicesNodeFactory.instance">
                     <attr name="position" intvalue="450"/>

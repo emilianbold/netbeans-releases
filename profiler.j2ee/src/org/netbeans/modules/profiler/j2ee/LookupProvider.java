@@ -41,10 +41,8 @@ package org.netbeans.modules.profiler.j2ee;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import org.netbeans.api.project.Project;
 import java.util.List;
-import java.util.Set;
 import org.netbeans.modules.profiler.categories.Categorization;
 import org.netbeans.modules.profiler.categories.CategoryBuilder;
 import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvider;
@@ -54,6 +52,7 @@ import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvide
  * @author Jiri Sedlacek
  */
 public class LookupProvider {
+    @org.netbeans.spi.project.LookupProvider.Register(projectType="org-netbeans-modules-web-project")
     public static class WebProject extends AbstractProjectLookupProvider {
         @Override
         protected List getAdditionalLookups(final Project project) {
@@ -66,6 +65,7 @@ public class LookupProvider {
         
     }
     
+    @org.netbeans.spi.project.LookupProvider.Register(projectType="org-netbeans-modules-j2ee-earproject")
     public static class EarProject extends AbstractProjectLookupProvider {
         @Override
         protected List getAdditionalLookups(final Project project) {
@@ -81,6 +81,7 @@ public class LookupProvider {
         
     }
     
+    @org.netbeans.spi.project.LookupProvider.Register(projectType="org-netbeans-modules-j2ee-ejbjarproject")
     public static class EjbJarProject extends AbstractProjectLookupProvider {
         @Override
         protected List getAdditionalLookups(final Project project) {

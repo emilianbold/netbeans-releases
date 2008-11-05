@@ -133,9 +133,6 @@ made subject to such option by the copyright holder.
                     <attr name="position" intvalue="700"/>
                 </file>
             </folder>    
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-maven-runjar-J2seLookupProvider.instance"/>
-            </folder>    
             <folder name="Customizer">
                 <file name="org-netbeans-modules-maven-customizer-BasicPanelProvider.instance">
                     <attr name="position" intvalue="100"/>

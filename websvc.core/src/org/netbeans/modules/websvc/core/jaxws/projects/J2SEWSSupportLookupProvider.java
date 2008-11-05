@@ -57,6 +57,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
+@LookupProvider.Register(projectType="org-netbeans-modules-java-j2seproject")
 public class J2SEWSSupportLookupProvider implements LookupProvider {
     
     /** Creates a new instance of JaxWSLookupProvider */

@@ -38,6 +38,11 @@ import org.openide.util.lookup.Lookups;
  *
  * @author gpatil
  */
+@LookupProvider.Register(projectType={
+    "org-netbeans-modules-java-j2seproject",
+    "org-netbeans-modules-web-project",
+    "org-netbeans-modules-j2ee-ejbjarproject"
+})
 public class JAXBWizLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

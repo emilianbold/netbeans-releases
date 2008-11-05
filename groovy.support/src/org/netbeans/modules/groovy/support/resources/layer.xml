@@ -41,11 +41,6 @@
                     </file>
                 </folder>
             </folder>
-            <folder name="Lookup">
-                <file name="org-netbeans-modules-groovy-support-GroovyLookupProvider.instance">
-                    <attr name="instanceCreate" methodvalue="org.netbeans.modules.groovy.support.GroovyLookupProvider.createJavaSE"/>
-                </file>
-            </folder>
         </folder>
     </folder>
     <folder name="Editors">

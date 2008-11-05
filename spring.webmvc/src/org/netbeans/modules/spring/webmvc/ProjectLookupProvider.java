@@ -50,6 +50,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Andrei Badea
  */
+@LookupProvider.Register(projectType="org-netbeans-modules-web-project")
 public class ProjectLookupProvider implements LookupProvider {
 
     public Lookup createAdditionalLookup(Lookup baseContext) {

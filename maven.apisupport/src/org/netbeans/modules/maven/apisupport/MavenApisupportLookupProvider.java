@@ -51,7 +51,7 @@ import org.openide.util.lookup.InstanceContent;
  * extending the default maven project lookup.
  * @author  Milos Kleint 
  */
-
+@LookupProvider.Register(projectType="org-netbeans-modules-maven")
 public class MavenApisupportLookupProvider implements LookupProvider {
     
     /** Creates a new instance of MavenApisupportLookupProvider */

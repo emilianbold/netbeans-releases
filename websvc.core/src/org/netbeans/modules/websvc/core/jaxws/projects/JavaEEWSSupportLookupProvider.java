@@ -71,6 +71,11 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
+    @LookupProvider.Register(projectType={
+        "org-netbeans-modules-web-project",
+        "org-netbeans-modules-j2ee-ejbjarproject",
+        "org-netbeans-modules-j2ee-clientproject"
+    })
 public class JavaEEWSSupportLookupProvider implements LookupProvider {
 
     /** Creates a new instance of JavaEEWSSupportLookupProvider */
