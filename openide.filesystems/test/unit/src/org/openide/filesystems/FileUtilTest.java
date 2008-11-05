@@ -46,6 +46,10 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -65,7 +69,7 @@ public class FileUtilTest extends NbTestCase {
 
     public static Test suite() {
         Test suite = null;
-        //suite = new FileUtilTest("testNormalizeFile");
+            //suite = new FileUtilTest("testNormalizeFile");
         if (suite == null) {
             suite = new NbTestSuite(FileUtilTest.class);
         }
@@ -274,6 +278,45 @@ public class FileUtilTest extends NbTestCase {
         /** Always returns the same just to signal it's been queried. */
         public String findMIMEType(FileObject fo) {
             return QUERIED;
+        }
+    }
+
+    /** Test recovery of FileUtil.createFolder(FileObject, String) method when
+     * other thread created folder in the middle of processing (see #152219).
+     */
+    public void testFolderAlreadyExists152219() {
+        final FileObject folder = FileUtil.createMemoryFileSystem().getRoot();
+        final String name = "subfolder";
+        Handler handler = new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().equals("createFolder - before create folder if not exists.")) {
+                    try {
+                        folder.createFolder(name);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        Logger logger = Logger.getLogger(FileUtil.class.getName());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINEST);
+        try {
+            FileUtil.createFolder(folder, name);
+        } catch (IOException ioe) {
+            fail("FileUtil.createFolder(FileObject, String) should try to refresh folder because other thread can create folder before.");
+        } finally {
+            logger.removeHandler(handler);
         }
     }
 }
