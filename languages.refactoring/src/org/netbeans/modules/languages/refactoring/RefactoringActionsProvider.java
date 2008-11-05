@@ -51,7 +51,7 @@ import org.netbeans.api.languages.ASTNode;
 import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParserResult;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -133,7 +133,7 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         final Object[] result = new Object[] {null, document};
         ParserManager.parse (
             Collections.<Source>singleton (source), 
-            new MultiLanguageUserTask() {
+            new UserTask() {
 
                 @Override
                 public void run (ResultIterator resultIterator) throws Exception {

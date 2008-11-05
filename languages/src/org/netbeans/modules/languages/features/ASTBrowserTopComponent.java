@@ -20,7 +20,7 @@
 package org.netbeans.modules.languages.features;
 
 import java.util.Collections;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.openide.ErrorManager;
@@ -241,7 +241,7 @@ final class ASTBrowserTopComponent extends TopComponent {
                 Source source = Source.create (document);
                 if (document == null || !(document instanceof NbEditorDocument)) return;
                 try {
-                    ParserManager.parse (Collections.singleton (source), new MultiLanguageUserTask () {
+                    ParserManager.parse (Collections.singleton (source), new UserTask () {
 
                         @Override
                         public void run (ResultIterator resultIterator) throws ParseException {

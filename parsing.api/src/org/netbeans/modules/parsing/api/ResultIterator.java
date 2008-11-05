@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.parsing.api;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -47,16 +46,12 @@ import java.util.LinkedList;
 import java.util.List;
 
 import java.util.Map;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
-import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
-import org.netbeans.modules.parsing.spi.TaskFactory;
 
 
 /**
@@ -71,8 +66,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 public final class ResultIterator {
     
     private SourceCache     sourceCache;
-    private MultiLanguageUserTask
-                            task;
+    private UserTask        task;
     private Parser.Result   result;
     
     static {
@@ -80,16 +74,23 @@ public final class ResultIterator {
     }
 
     ResultIterator (
+        Result              result
+    ) {
+        this.result = result;
+    }
+
+    ResultIterator (
         SourceCache         sourceCache,
-        MultiLanguageUserTask
-                            task
+        UserTask            task
     ) {
         this.sourceCache = sourceCache;
         this.task = task;
     }
     
     public Snapshot getSnapshot () {
-        return sourceCache.getSnapshot ();
+        if (sourceCache == null)
+            return sourceCache.getSnapshot ();
+        return result.getSnapshot ();
     }
     
     private void invalidate () {
@@ -116,11 +117,25 @@ public final class ResultIterator {
     }
     
     /**
+     * Returns parse {@link Result} for deepest embedding on given offset.
+     * 
+     * @return              parse {@link Result} for current source.
+     */
+    public Result getParserResult (int offset) throws ParseException {
+        for (Embedding embedding : getEmbeddings ())
+            if (embedding.containsOriginalOffset (offset))
+                return getResultIterator (embedding).getParserResult (offset);
+        return getParserResult ();
+    }
+    
+    /**
      * Allows iterate all embedded sources.
      * 
      * @return              {@link Iterator} of all embeddings.
      */
     public Iterable<Embedding> getEmbeddings () {
+        if (sourceCache == null)
+            return Collections.<Embedding> emptyList ();
         return sourceCache.getAllEmbeddings ();
     }
     
@@ -137,6 +152,8 @@ public final class ResultIterator {
      * @return              {@link ResultIterator} for one {@link Embedding}.
      */
     public ResultIterator getResultIterator (Embedding embedding) {
+        if (sourceCache == null)
+            return null;
         ResultIterator resultIterator = embeddingToResultIterator.get (embedding);
         if (resultIterator == null) {
             resultIterator = new ResultIterator (

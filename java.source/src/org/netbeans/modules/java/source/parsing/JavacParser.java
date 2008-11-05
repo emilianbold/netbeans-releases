@@ -121,7 +121,6 @@ import org.netbeans.modules.java.source.usages.RepositoryUpdater;
 import org.netbeans.modules.java.source.util.LowMemoryEvent;
 import org.netbeans.modules.java.source.util.LowMemoryListener;
 import org.netbeans.modules.java.source.util.LowMemoryNotifier;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -345,7 +344,7 @@ public class JavacParser extends Parser {
         }
         final boolean isJavaParserResultTask = task instanceof JavaParserResultTask;
         final boolean isParserResultTask = task instanceof ParserResultTask;
-        final boolean isUserTask = task instanceof MultiLanguageUserTask || task instanceof UserTask;
+        final boolean isUserTask = task instanceof UserTask;
         final boolean isClasspathInfoProvider = task instanceof ClasspathInfoProvider;
         if (isClasspathInfoProvider) {
             //Verify validity of explicit classpath

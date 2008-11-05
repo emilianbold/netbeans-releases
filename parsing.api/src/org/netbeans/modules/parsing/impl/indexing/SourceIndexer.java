@@ -48,7 +48,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -85,7 +85,7 @@ public class SourceIndexer extends CustomIndexer {
                 final FileObject fileObject = URLMapper.findFileObject(dirty.getURI().toURL());
                 if (fileObject != null) {
                     final Source src = Source.create(fileObject);
-                    ParserManager.parse(Collections.singleton(src), new MultiLanguageUserTask() {
+                    ParserManager.parse(Collections.singleton(src), new UserTask() {
                         @Override
                         public void run(ResultIterator resultIterator) throws Exception {
                             final String mimeType = src.getMimeType();

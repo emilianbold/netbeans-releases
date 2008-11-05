@@ -41,7 +41,7 @@ package org.netbeans.modules.parsing.impl;
 
 import java.util.Collection;
 
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.Lookup;
 
 
@@ -51,10 +51,10 @@ import org.openide.util.Lookup;
  */
 public class Schedulers {
 
-    private static Collection<? extends TaskScheduler> taskSchedulers;
+    private static Collection<? extends Scheduler> taskSchedulers;
     
     static void init () {
-        taskSchedulers = Lookup.getDefault ().lookupAll (TaskScheduler.class);
+        taskSchedulers = Lookup.getDefault ().lookupAll (Scheduler.class);
     }
     
 }

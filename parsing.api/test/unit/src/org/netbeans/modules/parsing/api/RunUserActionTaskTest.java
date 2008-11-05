@@ -42,6 +42,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Stack;
 import javax.swing.event.ChangeListener;
@@ -58,7 +59,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -106,7 +107,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return null;
                             }
 
@@ -172,11 +173,11 @@ public class RunUserActionTaskTest extends NbTestCase {
         
         // 3) call user action task
         counter.check (1);
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
                 counter.check (7);
             }
-        }, 15);
+        });
         counter.check (9);
     }
 
@@ -254,19 +255,19 @@ public class RunUserActionTaskTest extends NbTestCase {
 
         // 3) call user action task
         counter.check (1);
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
                 counter.check (5);
             }
-        }, 15);
+        });
 
         // 4) call user action task again
         counter.check (7); 
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
                 counter.check (9); 
             }
-        }, 15);
+        });
         counter.check (11); 
     }
     
@@ -300,7 +301,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return null;
                             }
 
@@ -371,19 +372,19 @@ public class RunUserActionTaskTest extends NbTestCase {
 
         // 3) call user action task
         counter.check (1);
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
                 counter.check (6);
             }
-        }, 15);
+        });
 
         // 4) call user action task again
         counter.check (8);
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
                 counter.check (10);
             }
-        }, 15);
+        });
         counter.check (12);
     }
     
@@ -421,7 +422,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                                 return 10;
                             }
 
-                            public Class<? extends TaskScheduler> getSchedulerClass () {
+                            public Class<? extends Scheduler> getSchedulerClass () {
                                 return null;
                             }
 
@@ -499,21 +500,23 @@ public class RunUserActionTaskTest extends NbTestCase {
         // 3) call user action task
         counter.check (1);
         final String text[] = new String [1];
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
+                Result result = resultIterator.getParserResult (15);
                 counter.check (6);
                 text[0] = result.getSnapshot().getText ().toString ();
             }
-        }, 15);
+        });
 
         // 4) call user action task again
         counter.check (8);
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
+                Result result = resultIterator.getParserResult (15);
                 counter.check (10);
                 assertEquals (text [0], result.getSnapshot().getText ().toString ());
             }
-        }, 15);
+        });
         
         try {
             synchronized (this) {
@@ -531,12 +534,13 @@ public class RunUserActionTaskTest extends NbTestCase {
         writer.close ();
         
         // 6) call user action task
-        ParserManager.parse (source, new UserTask() {
-            public void run (Result result) throws Exception {
+        ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
+            public void run (ResultIterator resultIterator) throws Exception {
+                Result result = resultIterator.getParserResult (15);
                 counter.check (16);
                 assertNotSame (text [0], result.getSnapshot().getText ().toString ());
             }
-        }, 15);
+        });
         counter.check (18);
     }
     

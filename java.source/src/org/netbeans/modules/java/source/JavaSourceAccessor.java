@@ -61,7 +61,7 @@ import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.java.source.JavaParserResultTask;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -127,7 +127,7 @@ public abstract class JavaSourceAccessor {
             }
 
             @Override
-            public Class<? extends TaskScheduler> getSchedulerClass() {
+            public Class<? extends Scheduler> getSchedulerClass() {
                 return null;
             }
 
@@ -279,7 +279,7 @@ public abstract class JavaSourceAccessor {
         }
 
         @Override
-        public Class<? extends TaskScheduler> getSchedulerClass() {
+        public Class<? extends Scheduler> getSchedulerClass() {
             return null;
         }
 

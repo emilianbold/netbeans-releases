@@ -59,7 +59,7 @@ import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.api.languages.database.DatabaseItem;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -92,7 +92,7 @@ public class GoToDeclarationAction extends BaseAction {
         final NbEditorDocument doc = (NbEditorDocument)comp.getDocument();
         Source source = Source.create (doc);
         try {
-            ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+            ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
                 @Override
                 public void run (ResultIterator resultIterator) throws ParseException {
                     int position = comp.getCaretPosition();

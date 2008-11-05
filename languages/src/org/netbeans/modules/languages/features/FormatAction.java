@@ -60,7 +60,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.modules.editor.NbEditorDocument;
 import org.netbeans.modules.languages.Feature;
 import org.netbeans.modules.languages.Language;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -82,7 +82,7 @@ public class FormatAction extends BaseAction {
             final NbEditorDocument doc = (NbEditorDocument) component.getDocument ();
             Source source = Source.create (doc);
             try {
-                ParserManager.parse (Collections.<Source>singleton (source), new MultiLanguageUserTask () {
+                ParserManager.parse (Collections.<Source>singleton (source), new UserTask () {
                     @Override
                     public void run (ResultIterator resultIterator) throws ParseException {
                         try {

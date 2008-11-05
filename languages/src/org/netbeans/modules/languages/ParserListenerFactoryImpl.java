@@ -58,7 +58,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.Lookup;
 
 
@@ -111,8 +111,8 @@ public class ParserListenerFactoryImpl extends TaskFactory {
         }
         
         @Override
-        public Class<? extends TaskScheduler> getSchedulerClass() {
-            return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+        public Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
         }
 
         @Override

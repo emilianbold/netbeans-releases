@@ -62,6 +62,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.net.URL;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
@@ -98,7 +99,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -182,7 +183,7 @@ public class GoToSupport {
         }
     }
 
-    private static String performGoToImpl(final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
+    private static String performGoToImpl (final Document doc, final int offset, final boolean goToSource, final boolean tooltip, final boolean javadoc, final Action<Boolean> atStart) {
         try {
             final FileObject fo = getFileObject(doc);
             
@@ -196,9 +197,10 @@ public class GoToSupport {
             final boolean[] tryToOpen = new boolean[1];
             final ClasspathInfo[] cpInfo = new ClasspathInfo[1];
             
-            ParserManager.parse(Source.create(doc), new UserTask() {
+            ParserManager.parse(Collections.singleton (Source.create(doc)), new UserTask() {
                 @Override
-                public void run(Result res) throws Exception {
+                public void run(ResultIterator resultIterator) throws Exception {
+                    Result res = resultIterator.getParserResult (offset);
                     if (atStart != null && atStart.run() == Boolean.FALSE)
                         return ;
                     CompilationController controller = CompilationController.get(res);
@@ -388,7 +390,7 @@ public class GoToSupport {
                         }
                     }
                 }
-            }, offset);
+            });
             
             if (tryToOpen[0]) {
                 assert result[0] == null;
