@@ -48,8 +48,6 @@ import java.net.URL;
 import junit.framework.*;
 import org.netbeans.junit.NbTestCase;
 import java.util.*;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
 
 /**
  *
@@ -179,14 +177,14 @@ public class WSDLModelTest extends NbTestCase {
             for (Iterator<WsdlPort> it1 = ports.iterator(); it1.hasNext();) {
                 WsdlPort port = it1.next();
                 portNames.add(port.getName());
-                List<WSOperation> operations = port.getOperations();
-                for (Iterator<WSOperation> it2 = operations.iterator(); it2.hasNext();) {
-                    WSOperation op = it2.next();
+                List<WsdlOperation> operations = port.getOperations();
+                for (Iterator<WsdlOperation> it2 = operations.iterator(); it2.hasNext();) {
+                    WsdlOperation op = it2.next();
                     opNames.add(op.getName());
                     opTypes.add(op.getReturnTypeName());
-                    List<WSParameter> parameters = op.getParameters();
-                    for (Iterator<WSParameter> it3 = parameters.iterator(); it3.hasNext();) {
-                        WSParameter param = it3.next();
+                    List<WsdlParameter> parameters = op.getParameters();
+                    for (Iterator<WsdlParameter> it3 = parameters.iterator(); it3.hasNext();) {
+                        WsdlParameter param = it3.next();
                         paramNames.add(param.getName());
                         paramTypes.add(param.getTypeName());
                     }
