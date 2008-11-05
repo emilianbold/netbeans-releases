@@ -52,11 +52,12 @@ import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
+
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
@@ -83,7 +84,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
     /** Cache for looking up tip proposal - usually null (shortlived) */
     static org.netbeans.modules.csl.api.CompletionProposal tipProposal;
     
-    protected CompilationInfo info;
+    protected ParserResult info;
     protected CodeCompletionResult completionResult;
     
     protected static int SMART_TYPE = 1000;
@@ -92,7 +93,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         private org.netbeans.modules.csl.api.CompletionProposal item;
         //private static ImageIcon iconCache[][] = new ImageIcon[2][4];
         
-        private DelegatedItem(CompilationInfo info, 
+        private DelegatedItem(ParserResult info, 
                 CodeCompletionResult completionResult, 
                 org.netbeans.modules.csl.api.CompletionProposal item) {
             super(item.getAnchorOffset());
@@ -352,7 +353,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         }        
     }
 
-    public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, CompilationInfo info) {
+    public static final GsfCompletionItem createItem(CompletionProposal proposal, CodeCompletionResult result, ParserResult info) {
         return new DelegatedItem(info, result, proposal);
     }
     

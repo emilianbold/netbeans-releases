@@ -41,13 +41,12 @@ package org.netbeans.modules.csl.core;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.csl.api.CancellableTask;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.api.project.Project;
@@ -55,20 +54,18 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.spi.classpath.ClassPathProvider;
 import org.netbeans.modules.csl.hints.infrastructure.GsfHintsManager;
-import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.MultiLanguageUserTask;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -316,7 +313,7 @@ public class GsfTaskProvider extends PushTaskScanner  {
 
             final List<Task> tasks = new ArrayList<Task>();
 
-            MultiLanguageUserTask task = new MultiLanguageUserTask () {
+            UserTask task = new UserTask () {
 
                 public void run (ResultIterator resultIterator) throws Exception {
                     // Ensure document is forced open

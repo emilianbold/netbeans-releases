@@ -43,17 +43,24 @@ package org.netbeans.modules.csl.editor.codetemplates;
 
 import java.awt.Toolkit;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -65,7 +72,7 @@ import org.openide.util.NbBundle;
  * @author Dusan Balek
  * @author Tor Norbye
  */
-public class GsfCodeTemplateFilter implements CodeTemplateFilter, CancellableTask<CompilationController> {
+public class GsfCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
     
     private int startOffset;
     private int endOffset;
@@ -74,16 +81,16 @@ public class GsfCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     private GsfCodeTemplateFilter(JTextComponent component, int offset) {
         this.startOffset = offset;
         this.endOffset = component.getSelectionStart() == offset ? component.getSelectionEnd() : -1;            
-        Source js = Source.forDocument(component.getDocument());
+        Source js = Source.create (component.getDocument());
         if (js != null) {
             try {
                 if (SourceUtils.isScanInProgress()) {
                     StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(GsfCodeTemplateFilter.class, "JCT-scanning-in-progress")); //NOI18N
                     Toolkit.getDefaultToolkit().beep();
                 } else {
-                    js.runUserActionTask(this, true);
+                    ParserManager.parse (Collections.<Source> singleton (js), this);
                 }
-            } catch (IOException ex) {
+            } catch (ParseException ex) {
                 Exceptions.printStackTrace(ex);
             }
         }
@@ -104,13 +111,15 @@ public class GsfCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
     public void cancel() {
     }
 
-    public synchronized void run(CompilationController controller) throws IOException {
-        controller.toPhase(Phase.PARSED);
+    public synchronized void run (ResultIterator resultIterator) throws IOException, ParseException {
+        ParserResult parserResult = (ParserResult) resultIterator.getParserResult (startOffset);
+        Snapshot snapshot = parserResult.getSnapshot ();
+        parserResult.toPhase(Phase.PARSED);
         
-        CodeCompletionHandler completer = GsfCompletionProvider.getCompletable(controller,  startOffset);
+        CodeCompletionHandler completer = GsfCompletionProvider.getCompletable (snapshot.getSource ().getDocument (),  startOffset);
             
         if (completer != null) {
-            templates = completer.getApplicableTemplates(controller, startOffset, endOffset);
+            templates = completer.getApplicableTemplates(parserResult, startOffset, endOffset);
         }
     }
 

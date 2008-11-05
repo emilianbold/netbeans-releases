@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.csl.source.usages;
 
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 

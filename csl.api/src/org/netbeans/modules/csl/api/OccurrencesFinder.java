@@ -45,7 +45,7 @@ import java.util.Map;
 import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+
 
 /**
  * A CancellableTask responsible for computing the set of highlights matching

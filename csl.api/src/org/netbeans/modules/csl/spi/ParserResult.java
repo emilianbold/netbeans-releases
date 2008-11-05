@@ -55,7 +55,7 @@ public abstract class ParserResult extends Parser.Result {
         super(snapshot);
     }
 
-    public abstract void toPhase (Phase phase);
+    public abstract Phase toPhase (Phase phase);
     
     public abstract List<? extends Error> getDiagnostics ();
 

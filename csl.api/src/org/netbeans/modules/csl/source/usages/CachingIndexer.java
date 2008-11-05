@@ -50,10 +50,10 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Indexer;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.IndexDocumentFactory;
+import org.netbeans.modules.csl.spi.ParserResult;
 
 /**
  * This class takes parse results, indexes them and stashes the resulting

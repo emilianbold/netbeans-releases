@@ -47,11 +47,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
@@ -70,9 +71,9 @@ public class GsfCompletionDoc implements CompletionDocumentation {
     private AbstractAction goToSource = null;
     private ElementHandle elementHandle;
     private Language language;
-    private CompilationController controller;
+    private ParserResult controller;
 
-    private GsfCompletionDoc(final CompilationController controller, final ElementHandle elementHandle,
+    private GsfCompletionDoc(final ParserResult controller, final ElementHandle elementHandle,
         URL url) {
         this.controller = controller;
         this.language = controller.getLanguage();
@@ -111,7 +112,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
         }
     }
 
-    public static final GsfCompletionDoc create(CompilationController controller,
+    public static final GsfCompletionDoc create(ParserResult controller,
         ElementHandle elementHandle) {
         return new GsfCompletionDoc(controller, elementHandle, null);
     }

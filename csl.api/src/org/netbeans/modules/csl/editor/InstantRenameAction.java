@@ -42,6 +42,7 @@ package org.netbeans.modules.csl.editor;
 
 import java.awt.event.ActionEvent;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.swing.Action;
@@ -53,9 +54,12 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.InstantRenamer;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
@@ -63,6 +67,9 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -106,7 +113,7 @@ public class InstantRenameAction extends BaseAction {
                 return;
             }
 
-            Source js = Source.forFileObject(DataLoadersBridge.getDefault().getFileObject(target));
+            Source js = Source.create (DataLoadersBridge.getDefault().getFileObject(target));
             if (js == null) {
                 return;
             }
@@ -115,13 +122,12 @@ public class InstantRenameAction extends BaseAction {
             final String[] message = new String[1];
             final Set<OffsetRange>[] changePoints = new Set[1];
 
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
-                    }
-
-                    public void run(CompilationController controller)
-                        throws Exception {
-                        if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+            ParserManager.parse (
+                Collections.<Source> singleton (js), 
+                new UserTask () {
+                    public void run (ResultIterator resultIterator) throws Exception {
+                        ParserResult parserResult = (ParserResult) resultIterator.getParserResult (target.getCaretPosition ());
+                        if (parserResult.toPhase (Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                             return;
                         }
 
@@ -143,7 +149,7 @@ public class InstantRenameAction extends BaseAction {
                             String[] descRetValue = new String[1];
 
                             if ((renamer == null) ||
-                                    !renamer.isRenameAllowed(controller, caret, descRetValue)) {
+                                    !renamer.isRenameAllowed(parserResult, caret, descRetValue)) {
                                 wasResolved[0] = false;
                                 message[0] = descRetValue[0];
 
@@ -152,14 +158,15 @@ public class InstantRenameAction extends BaseAction {
 
                             wasResolved[0] = true;
 
-                            Set<OffsetRange> regions = renamer.getRenameRegions(controller, caret);
+                            Set<OffsetRange> regions = renamer.getRenameRegions(parserResult, caret);
 
                             if ((regions != null) && (regions.size() > 0)) {
                                 changePoints[0] = regions;
                             }
                         }
                     }
-                }, true);
+                }
+            );
 
             if (wasResolved[0]) {
                 if (changePoints[0] != null) {
@@ -178,6 +185,8 @@ public class InstantRenameAction extends BaseAction {
         } catch (BadLocationException e) {
             ErrorManager.getDefault().notify(e);
         } catch (IOException ioe) {
+            ErrorManager.getDefault().notify(ioe);
+        } catch (ParseException ioe) {
             ErrorManager.getDefault().notify(ioe);
         }
     }

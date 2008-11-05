@@ -48,11 +48,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
+
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Index;
 import org.netbeans.modules.csl.api.NameKind;
-import org.netbeans.modules.gsfpath.api.classpath.ClassPath;
-import org.netbeans.modules.gsfpath.api.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -65,7 +65,7 @@ import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.csl.source.usages.ClassIndexManager;
 import org.netbeans.modules.csl.source.usages.RepositoryUpdater;
-import org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider.Context;
@@ -75,6 +75,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+
 
 /**
  * Highly similar to GsfTypeProvider; this implements the SymbolProvider instead of
