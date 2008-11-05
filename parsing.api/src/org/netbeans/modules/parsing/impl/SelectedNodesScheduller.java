@@ -39,50 +39,53 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.util.Collections;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
-import javax.swing.text.Document;
-import javax.swing.text.JTextComponent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 
-import org.netbeans.modules.parsing.api.Source;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.nodes.Node;
+import org.openide.windows.TopComponent;
+import org.netbeans.modules.parsing.api.Source;
 
 
 /**
  *
  * @author Jan Jancura
  */
-public class CursorSensitiveTaskScheduller extends CurrentEditorTaskScheduller {
+public class SelectedNodesScheduller extends FileObjectsTaskScheduller {
     
-    private JTextComponent  currentEditor;
-    private CaretListener   caretListener;
-    private Document        currentDocument;
-    
-    protected void setEditor (JTextComponent editor) {
-        if (currentEditor != null)
-            currentEditor.removeCaretListener (caretListener);
-        currentEditor = editor;
-        if (editor != null) {
-            if (caretListener == null)
-                caretListener = new ACaretListener ();
-            editor.addCaretListener (caretListener);
-        }
-        
-        Document document = editor.getDocument ();
-        if (currentDocument == document) return;
-        currentDocument = document;
-        Source source = Source.create (currentDocument);
-        scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
+    public SelectedNodesScheduller () {
+        TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
     }
     
-    private class ACaretListener implements CaretListener {
-
-        public void caretUpdate (CaretEvent e) {
-            scheduleTasks (new SchedulerEvent (this) {});
+    private void refresh () {
+        final List<Source> sources = new ArrayList<Source> ();
+        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
+        for (final Node node : nodes) {
+            final DataObject dataObject = node.getLookup ().lookup (DataObject.class);
+            if (dataObject != null) {
+                final FileObject fileObject = dataObject.getPrimaryFile ();
+                final Source source = Source.create (fileObject);
+                if (source != null) {
+                    sources.add (source);
+                }
+            }
+        }
+        schedule (sources, new SchedulerEvent (this) {});
+    }
+    
+    private class AListener implements PropertyChangeListener {
+    
+        public void propertyChange (PropertyChangeEvent evt) {
+            if (evt.getPropertyName () == null ||
+                evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED_NODES)
+            ) {
+                refresh ();
+            }
         }
     }
 }
-
-
-

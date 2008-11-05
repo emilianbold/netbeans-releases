@@ -40,6 +40,8 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.util.Collections;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
@@ -51,17 +53,34 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
  *
  * @author Jan Jancura
  */
-public class CurrentDocumentTaskScheduller extends CurrentEditorTaskScheduller {
+public class CursorSensitiveScheduller extends CurrentEditorTaskScheduller {
     
+    private JTextComponent  currentEditor;
+    private CaretListener   caretListener;
     private Document        currentDocument;
-    private Source          source;
     
     protected void setEditor (JTextComponent editor) {
+        if (currentEditor != null)
+            currentEditor.removeCaretListener (caretListener);
+        currentEditor = editor;
+        if (editor != null) {
+            if (caretListener == null)
+                caretListener = new ACaretListener ();
+            editor.addCaretListener (caretListener);
+        }
+        
         Document document = editor.getDocument ();
         if (currentDocument == document) return;
-        currentDocument = document;            
-        source = Source.create (currentDocument);
-        scheduleTasks (Collections.singleton (source), new SchedulerEvent (this) {});
+        currentDocument = document;
+        Source source = Source.create (currentDocument);
+        schedule (Collections.singleton (source), new SchedulerEvent (this) {});
+    }
+    
+    private class ACaretListener implements CaretListener {
+
+        public void caretUpdate (CaretEvent e) {
+            scheduleTasks (new SchedulerEvent (this) {});
+        }
     }
 }
 

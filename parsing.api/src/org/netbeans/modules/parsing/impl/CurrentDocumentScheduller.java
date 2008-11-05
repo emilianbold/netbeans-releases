@@ -39,53 +39,31 @@
 
 package org.netbeans.modules.parsing.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
+import java.util.Collections;
+import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 
 /**
  *
  * @author Jan Jancura
  */
-public class SelectedNodesTaskScheduller extends FileObjectsTaskScheduller {
+public class CurrentDocumentScheduller extends CurrentEditorTaskScheduller {
     
-    public SelectedNodesTaskScheduller () {
-        TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
-    }
+    private Document        currentDocument;
+    private Source          source;
     
-    private void refresh () {
-        final List<Source> sources = new ArrayList<Source> ();
-        final Node[] nodes = TopComponent.getRegistry ().getActivatedNodes ();
-        for (final Node node : nodes) {
-            final DataObject dataObject = node.getLookup ().lookup (DataObject.class);
-            if (dataObject != null) {
-                final FileObject fileObject = dataObject.getPrimaryFile ();
-                final Source source = Source.create (fileObject);
-                if (source != null) {
-                    sources.add (source);
-                }
-            }
-        }
-        scheduleTasks (sources, new SchedulerEvent (this) {});
-    }
-    
-    private class AListener implements PropertyChangeListener {
-    
-        public void propertyChange (PropertyChangeEvent evt) {
-            if (evt.getPropertyName () == null ||
-                evt.getPropertyName ().equals (TopComponent.Registry.PROP_ACTIVATED_NODES)
-            ) {
-                refresh ();
-            }
-        }
+    protected void setEditor (JTextComponent editor) {
+        Document document = editor.getDocument ();
+        if (currentDocument == document) return;
+        currentDocument = document;            
+        source = Source.create (currentDocument);
+        schedule (Collections.singleton (source), new SchedulerEvent (this) {});
     }
 }
+
+
+
