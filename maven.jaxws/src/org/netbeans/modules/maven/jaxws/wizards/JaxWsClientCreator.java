@@ -82,7 +82,6 @@ public class JaxWsClientCreator implements ClientCreator {
     }
 
     public void createClient() throws IOException {
-        System.out.println("creating client");
         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
         String wsdlUrl = (String)wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_URL);
         String filePath = (String)wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
@@ -115,6 +114,7 @@ public class JaxWsClientCreator implements ClientCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
             if (wsdlFo != null) {
+                MavenModelUtils.addJaxws21Library(project);
                 String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 JaxWsService service = new JaxWsService(relativePath, false);
                 
@@ -140,7 +140,6 @@ public class JaxWsClientCreator implements ClientCreator {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                jaxWsSupport.addService(service);
             }
         }
     }
