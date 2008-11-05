@@ -50,9 +50,10 @@ import org.netbeans.modules.csl.api.IndexDocument;
 import org.netbeans.modules.csl.api.IndexDocumentFactory;
 import org.netbeans.modules.csl.api.Indexer;
 import org.netbeans.modules.csl.api.ParserFile;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.core.Language;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -97,7 +98,7 @@ public class SourceAnalyser implements IndexDocumentFactory {
         Indexer indexer = language.getIndexer();
         if (indexer != null) {
             for (ParserResult result : data) {
-                String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
+                String fileUrl = indexer.getPersistentUrl(FileUtil.toFile(result.getSnapshot().getSource().getFileObject()));
                 List<IndexDocument> documents = indexer.index(result, this);
                 // Null means delete this document from the index which is different than
                 // a document with no indexable information
@@ -110,8 +111,8 @@ public class SourceAnalyser implements IndexDocumentFactory {
     }
     
     void analyseUnitAndStore (Indexer indexer, ParserResult result) throws IOException {
-        String fileUrl = indexer.getPersistentUrl(result.getFile().getFile());
-        FileObject fo = result.getFile().getFileObject();
+        String fileUrl = indexer.getPersistentUrl(FileUtil.toFile(result.getSnapshot().getSource().getFileObject()));
+        FileObject fo = result.getSnapshot().getSource().getFileObject();
         List<IndexDocument> documents = null;
         if (fo != null && fo.isValid()) {
             // http://www.netbeans.org/issues/show_bug.cgi?id=145386

@@ -47,7 +47,7 @@ import javax.swing.*;
 import java.awt.event.*;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 
 /**
@@ -84,16 +84,14 @@ public final class OpenAction extends AbstractAction {
         FileObject primaryFile = DataLoadersBridge.getDefault().getPrimaryFile(fileObject);
 
         if ((primaryFile != null) && (handle != null)) {
-            Source js =
-                    Source.forFileObject(primaryFile);
-
+            Source js = Source.create(primaryFile);
             if (js != null) {
                 UiUtils.open(js, handle);
             }
         }
     }
 
-    public boolean isEnabled () {
+    public @Override boolean isEnabled () {
           return true;
     }
 
