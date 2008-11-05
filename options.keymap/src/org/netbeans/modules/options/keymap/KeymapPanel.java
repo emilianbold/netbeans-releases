@@ -54,7 +54,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -95,10 +94,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
             public boolean editCellAt(int row, int column) {
                 lastRow = row;
                 lastColumn = column;
-                JTextField textField = (JTextField) ((DefaultCellEditor) getCellEditor(row, column)).getComponent();
+                
                 boolean editCellAt = super.editCellAt(row, column);
-                textField.requestFocus();
-                return editCellAt;
+                ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent().requestFocus();
+               return editCellAt;
             }
 
             @Override
@@ -107,7 +106,9 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                 if (!isEditing())
                     super.processKeyEvent(e);
                 else {
-                    ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent().requestFocus();
+                    Component component = ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent();
+                    component.requestFocus();
+                    component.dispatchEvent(new KeyEvent(component, e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar()));
                 }
             }
         };
