@@ -54,7 +54,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
-import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
@@ -95,10 +94,10 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
             public boolean editCellAt(int row, int column) {
                 lastRow = row;
                 lastColumn = column;
-                JTextField textField = (JTextField) ((DefaultCellEditor) getCellEditor(row, column)).getComponent();
+                
                 boolean editCellAt = super.editCellAt(row, column);
-                textField.requestFocus();
-                return editCellAt;
+                ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent().requestFocus();
+               return editCellAt;
             }
 
             @Override
@@ -107,7 +106,9 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
                 if (!isEditing())
                     super.processKeyEvent(e);
                 else {
-                    ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent().requestFocus();
+                    Component component = ((DefaultCellEditor) getCellEditor(lastRow, lastColumn)).getComponent();
+                    component.requestFocus();
+                    component.dispatchEvent(new KeyEvent(component, e.getID(), e.getWhen(), e.getModifiers(), e.getKeyCode(), e.getKeyChar()));
                 }
             }
         };
@@ -122,7 +123,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
         ActionListener al = new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                update();
+                getModel().setSearchText(searchField.getText());
+                getModel().update();
             }
         };
 
@@ -133,6 +135,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
             public void insertUpdate(DocumentEvent e) {
                 searchSCField.setText("");
+                ((ShortcutListener)searchSCField.getKeyListeners()[0]).clear();
+                
                 if (searchField.getText().length() > 3)
                     searchDelayTimer.setInitialDelay(SEARCH_DELAY_TIME_SHORT);
                 searchDelayTimer.restart();
@@ -146,7 +150,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
             public void changedUpdate(DocumentEvent e) {
                 searchSCField.setText("");
-                update();
+                getModel().setSearchText(searchField.getText());
+                getModel().update();
             }
         });
 
@@ -163,6 +168,7 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
         searchSCField.getDocument().addDocumentListener(new DocumentListener() {
 
             public void insertUpdate(DocumentEvent e) {
+                searchField.setText("");
                 searchDelayTimer2.restart();
             }
 
@@ -246,13 +252,18 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener {
 
     void update() {
         getModel().refreshActions();
-        String searchText = searchField.getText().toLowerCase();
-        getModel().setSearchText(searchText);
 
-        String currentProfile = getModel().getCurrentProfile();
+        //do not remember search state
+        getModel().setSearchText(""); //NOI18N
+        searchSCField.setText("");
+        ((ShortcutListener)searchSCField.getKeyListeners()[0]).clear();
+        searchField.setText(""); //NOI18N
+
+        //update model
         getModel().update();
 
-        // cbProfile
+        //setup profiles
+        String currentProfile = getModel().getCurrentProfile();
         List keymaps = getModel().getProfiles();
         cbProfile.removeAllItems();
         int i, k = keymaps.size();
