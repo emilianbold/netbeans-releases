@@ -50,7 +50,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.util.Exceptions;
 
 /**
@@ -91,8 +91,8 @@ public class EmbeddingProviderImpl extends EmbeddingProvider {
     }
 
     @Override
-    public Class<? extends TaskScheduler> getSchedulerClass() {
-        return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     @Override
