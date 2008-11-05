@@ -76,9 +76,9 @@ public class ParserManagerTest extends NbTestCase {
         FooParser.getResultCount = 0;
         FooParser.parseCount = 0;
         FooParserFactory.createParserCount = 0;
-        ParserManager.parse("text/foo", new UserTask() {
+        ParserManager.parse ("text/foo", new UserTask () {
             @Override
-            public void run(Result result) throws Exception {
+            public void run(ResultIterator resultIterator) throws Exception {
                 called[0]=true;
             }
         });
@@ -89,7 +89,7 @@ public class ParserManagerTest extends NbTestCase {
         called[0] = false;
         ParserManager.parse("text/foo", new UserTask() {
             @Override
-            public void run(Result result) throws Exception {
+            public void run(ResultIterator resultIterator) throws Exception {
                 called[0]=true;
             }
         });
@@ -102,7 +102,7 @@ public class ParserManagerTest extends NbTestCase {
         called[0] = false;
         ParserManager.parse("text/foo", new UserTask() {
             @Override
-            public void run(Result result) throws Exception {
+            public void run(ResultIterator resultIterator) throws Exception {
                 called[0]=true;
             }
         });

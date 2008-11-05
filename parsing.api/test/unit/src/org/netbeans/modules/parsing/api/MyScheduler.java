@@ -13,7 +13,7 @@ public class MyScheduler extends Scheduler {
         myScheduler = this;
     }
 
-    public static void schedule(Collection<Source> sources, SchedulerEvent event) {
+    public static void schedule2 (Collection<Source> sources, SchedulerEvent event) {
         myScheduler.schedule(sources, event);
     }
 }

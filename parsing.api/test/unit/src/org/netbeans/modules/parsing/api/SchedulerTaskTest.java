@@ -253,7 +253,7 @@ public class SchedulerTaskTest extends NbTestCase {
         writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
         Source source = Source.create (testFile);
-        MyScheduler.schedule (
+        MyScheduler.schedule2 (
             Collections.<Source>singleton (source), 
             new ASchedulerEvent ()
         
@@ -483,7 +483,7 @@ public class SchedulerTaskTest extends NbTestCase {
         writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
         writer.close ();
         Source source = Source.create (testFile);
-        MyScheduler.schedule (
+        MyScheduler.schedule2 (
             Collections.<Source>singleton (source), 
             new ASchedulerEvent ()
         
@@ -517,7 +517,7 @@ public class SchedulerTaskTest extends NbTestCase {
         );
         assertEquals (null, counter.errorMessage (false));
         assertEquals (18, counter.count ());
-        MyScheduler.schedule (Collections.singleton (source), new ASchedulerEvent ());
+        MyScheduler.schedule2 (Collections.singleton (source), new ASchedulerEvent ());
         assertEquals (null, counter.errorMessage (true));
         System.out.println("");
     }

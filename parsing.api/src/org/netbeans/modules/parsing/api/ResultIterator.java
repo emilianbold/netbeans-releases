@@ -88,7 +88,7 @@ public final class ResultIterator {
     }
     
     public Snapshot getSnapshot () {
-        if (sourceCache == null)
+        if (sourceCache != null)
             return sourceCache.getSnapshot ();
         return result.getSnapshot ();
     }

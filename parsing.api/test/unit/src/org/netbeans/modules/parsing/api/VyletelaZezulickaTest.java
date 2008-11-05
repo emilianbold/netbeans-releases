@@ -177,7 +177,7 @@ public class VyletelaZezulickaTest extends NbTestCase {
         writer.close ();
         Source source = Source.create (testFile);
 
-        MyScheduler.schedule (
+        MyScheduler.schedule2 (
             Collections.<Source>singleton (source), 
             new ASchedulerEvent ()
         );

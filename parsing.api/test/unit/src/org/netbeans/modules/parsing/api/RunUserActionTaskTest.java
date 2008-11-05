@@ -175,6 +175,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (1);
         ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
             public void run (ResultIterator resultIterator) throws Exception {
+                resultIterator.getParserResult (15);
                 counter.check (7);
             }
         });
@@ -257,6 +258,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (1);
         ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
             public void run (ResultIterator resultIterator) throws Exception {
+                resultIterator.getParserResult (15);
                 counter.check (5);
             }
         });
@@ -265,6 +267,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (7); 
         ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
             public void run (ResultIterator resultIterator) throws Exception {
+                resultIterator.getParserResult (15);
                 counter.check (9); 
             }
         });
@@ -374,6 +377,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (1);
         ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
             public void run (ResultIterator resultIterator) throws Exception {
+                resultIterator.getParserResult (15);
                 counter.check (6);
             }
         });
@@ -382,6 +386,7 @@ public class RunUserActionTaskTest extends NbTestCase {
         counter.check (8);
         ParserManager.parse (Collections.<Source>singleton (source), new UserTask() {
             public void run (ResultIterator resultIterator) throws Exception {
+                resultIterator.getParserResult (15);
                 counter.check (10);
             }
         });
