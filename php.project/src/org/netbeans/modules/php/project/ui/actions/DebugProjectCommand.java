@@ -124,7 +124,7 @@ public class DebugProjectCommand extends Command implements Displayable {
                             startDebugger(dbgStarter,runnable, fileForProject, scriptSelected);
                         } else {
                             String idxFileName = ProjectPropertiesSupport.getIndexFile(getProject());
-                            String err = NbBundle.getMessage(DebugScript.class,
+                            String err = NbBundle.getMessage(DebugProjectCommand.class,
                                     "ERR_Missing_IndexFile", idxFileName);//NOI18N
 
                             final Message messageDecriptor = new NotifyDescriptor.Message(err,
