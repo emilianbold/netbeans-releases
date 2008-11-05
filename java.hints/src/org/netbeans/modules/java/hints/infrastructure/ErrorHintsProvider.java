@@ -57,15 +57,12 @@ import javax.lang.model.type.TypeKind;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import javax.tools.Diagnostic;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.ErrorManager;
-import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import com.sun.source.util.TreePath;
@@ -481,8 +478,8 @@ public final class ErrorHintsProvider extends ParserResultTask {
     }
 
     @Override
-    public Class<? extends TaskScheduler> getSchedulerClass() {
-        return TaskScheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
     private int[] translatePositions(CompilationInfo info, int[] span) {
