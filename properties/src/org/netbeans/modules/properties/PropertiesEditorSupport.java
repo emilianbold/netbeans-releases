@@ -63,7 +63,6 @@ import java.io.Writer;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Enumeration;
@@ -109,7 +108,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.Utilities;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -158,7 +156,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             return true;
         }else{
             DataObject propDO = myEntry.getDataObject();
-            if (propDO == null || !propDO.isModified()) return true;
+            if ((propDO == null) || !propDO.isModified()) {
+                return true;
+            }
             return super.canClose();
         }
     }
@@ -557,8 +557,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             }
 
             newFile = myEntry.copyRename(df.getPrimaryFile(), getFileNameNoExtension(fileName), newExtension);
-            if( null != newFile )
-                newDob = DataObject.find( newFile );
+            if (null != newFile) {
+                newDob = DataObject.find(newFile);
+            }
         } else {
             //the document is modified in editor, we need to save the editor kit instead
             FileObject newFile = FileUtil.createData( folder, fileName );
@@ -615,8 +616,8 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
                         os.close(); // performs firing
                         os = null;
 
-                    } catch( BadLocationException ex ) {
-                        LOG.log( Level.INFO, null, ex );
+                    } catch (BadLocationException ex2) {
+                        LOG.log(Level.INFO, null, ex2);
                     } finally {
                         if (os != null) { // try to close if not yet done
                             os.close();
@@ -671,8 +672,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             throws IOException, ClassNotFoundException {
                 in.defaultReadObject();
                 
-                if(this.entry != null)
+                if (this.entry != null) {
                     super.entry = this.entry;
+                }
         }
     }
 
@@ -727,7 +729,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             // We will handle the object invalidation here.
             if(DataObject.PROP_VALID.equals(evt.getPropertyName ())) { 
                 // do not check it if old value is not true
-                if(Boolean.FALSE.equals(evt.getOldValue())) return;
+                if (Boolean.FALSE.equals(evt.getOldValue())) {
+                    return;
+                }
 
                 // loosing validity
                 PropertiesEditorSupport support = (PropertiesEditorSupport)findCloneableOpenSupport();
@@ -1050,8 +1054,9 @@ implements EditCookie, EditorCookie.Observable, PrintCookie, CloseCookie, Serial
             Element.ItemElem item = myEntry.getHandler().getStructure().getItem(key);
             if (item != null) {
                 int offset = item.getKeyElem().getBounds().getBegin().getOffset();
-                if (editor.getPane() != null && editor.getPane().getCaret() !=null)
+                if ((editor.getPane() != null) && (editor.getPane().getCaret() != null)) {
                     editor.getPane().getCaret().setDot(offset);
+                }
             }
         }
     } // End of inner class PropertiesEditAt.
