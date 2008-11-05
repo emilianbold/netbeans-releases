@@ -684,12 +684,18 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                     jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                     jLabelJaxVersion.setEnabled(false);
                     jComboBoxJaxVersion.setEnabled(false);
-                } else{
-                    jLabelJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setEnabled(false);
-                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);  
-                    jLblClientType.setVisible(true);
-                    jCbxClientType.setVisible(true);
+                } else {
+                    if (WebServicesClientSupport.getWebServicesClientSupport(project.getProjectDirectory()) != null) {
+                        jLabelJaxVersion.setEnabled(false);
+                        jComboBoxJaxVersion.setEnabled(false);
+                        jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);  
+                        jLblClientType.setVisible(true);
+                        jCbxClientType.setVisible(true);
+                    } else { // e.g. for Maven Web Project
+                        jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
+                        jLabelJaxVersion.setEnabled(false);
+                        jComboBoxJaxVersion.setEnabled(false);                        
+                    }
                 }
             }
         } else {
@@ -709,14 +715,15 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
                 } else {
                     //jLabelJaxVersion.setEnabled(true);
                     //jComboBoxJaxVersion.setEnabled(true);
+                    jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
                 }
-            } else {
+            } else { // e.g. for Maven Web Project
                 //jLabelJaxVersion.setEnabled(false);
                 //jComboBoxJaxVersion.setEnabled(false);
-                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_RPC);
+                jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             }
         }
-       if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
+        if(jComboBoxJaxVersion.getSelectedItem().equals(ClientWizardProperties.JAX_WS)){
             jCbxPackageName.setEditable(false);
             jCbxPackageName.setEnabled(false);
             jCbxPackageName.setRenderer(disabledPackageBoxRenderer );
