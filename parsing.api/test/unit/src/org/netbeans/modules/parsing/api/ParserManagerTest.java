@@ -56,7 +56,7 @@ import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -164,7 +164,7 @@ public class ParserManagerTest extends NbTestCase {
         assertTrue(future4.isDone());
     }
 
-    private static class TestTask extends MultiLanguageUserTask {
+    private static class TestTask extends UserTask {
 
         long called = 0;
         final CountDownLatch latch;
@@ -209,7 +209,7 @@ public class ParserManagerTest extends NbTestCase {
         }
 
         @Override
-        public Class<? extends TaskScheduler> getSchedulerClass() {
+        public Class<? extends Scheduler> getSchedulerClass() {
             return null;
         }
 

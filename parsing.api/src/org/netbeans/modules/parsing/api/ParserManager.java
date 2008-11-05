@@ -93,21 +93,21 @@ public final class ParserManager {
         final UserTask
                             userTask
     ) throws ParseException {        
-        TaskProcessor.runUserTask (new MultiLanguageTaskAction(sources, userTask), sources);
+        TaskProcessor.runUserTask (new UserTaskAction(sources, userTask), sources);
     }
 
-    public static Future<Void> parseWhenScanFinished (final Collection<Source>  sources,  final MultiLanguageUserTask userTask) throws ParseException {
-        return TaskProcessor.runWhenScanFinished (new MultiLanguageTaskAction(sources, userTask), sources);
+    public static Future<Void> parseWhenScanFinished (final Collection<Source>  sources,  final UserTask userTask) throws ParseException {
+        return TaskProcessor.runWhenScanFinished (new UserTaskAction(sources, userTask), sources);
     }
 
     //where
 
-    private static class MultiLanguageTaskAction implements Mutex.ExceptionAction<Void> {
+    private static class UserTaskAction implements Mutex.ExceptionAction<Void> {
 
-        private final MultiLanguageUserTask userTask;
+        private final UserTask userTask;
         private final Collection<Source> sources;
 
-        public MultiLanguageTaskAction (final Collection<Source> sources, final MultiLanguageUserTask userTask) {
+        public UserTaskAction (final Collection<Source> sources, final UserTask userTask) {
             assert sources != null;
             assert userTask != null;
             this.userTask = userTask;
