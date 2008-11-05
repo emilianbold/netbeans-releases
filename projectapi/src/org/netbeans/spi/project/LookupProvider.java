@@ -64,4 +64,17 @@ public interface LookupProvider {
      * @return a {@link org.openide.util.Lookup} instance that is to be added to the project's lookup, never null.
      */ 
     Lookup createAdditionalLookup(Lookup baseContext);
+
+    /**
+     * annotation to register LookupProvider instances.
+     * @since org.netbeans.modules.projectapi 1.21
+     */
+    public @interface Register {
+        /**
+         * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
+         * @return
+         */
+        String[] projectType();
+    }
+
 }
