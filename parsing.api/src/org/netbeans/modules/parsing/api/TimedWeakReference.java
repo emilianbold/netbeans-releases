@@ -93,7 +93,6 @@ final class TimedWeakReference<T> extends WeakReference<T> implements Runnable {
     }
 
     public synchronized void run() {
-        System.out.println("RUN");
         if (o != null) {
             //System.err.println("Expire " + k);
             // how long we've really been idle
@@ -101,7 +100,6 @@ final class TimedWeakReference<T> extends WeakReference<T> implements Runnable {
             if (unused > TIMEOUT / 2) {
                 o = null;
                 touched = 0;
-                System.out.println("CLEANED");
             } else {
                 task.schedule(TIMEOUT - (int) unused);
             }

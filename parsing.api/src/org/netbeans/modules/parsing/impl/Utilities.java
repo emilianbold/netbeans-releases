@@ -52,7 +52,8 @@ import org.netbeans.modules.parsing.spi.SchedulerTask;
 public class Utilities {
     
     private Utilities () {}
-    
+
+    //Helpers for asserts in java.source
     /**
      * Temporary method until editor API (formating) will be fixed
      */
@@ -73,14 +74,48 @@ public class Utilities {
     public static boolean holdsParserLock () {
         return TaskProcessor.holdsParserLock();
     }
-    
+
+    //Helpers for indexing in java.source, will be removed when indexing will be part of parsing api
     /**
      * Temporary may be replaced by scheduler, hepefully.
      */
     public static void scheduleSpecialTask (final SchedulerTask task) {
         TaskProcessor.scheduleSpecialTask(task);
     }
-    
+
+    /**
+     * Sets the {@link IndexingStatus}
+     * @param st an {@link IndexingStatus}
+     */
+    public static void setIndexingStatus (final IndexingStatus st) {
+        assert st != null;
+        assert status == null;
+        status = st;
+    }
+
+    /**
+     * Asks the {@link IndexingStatus} about state of indexing
+     * @return true when indexing is active
+     */
+    public static boolean isScanInProgress () {
+        if (status == null) {
+            return true;
+        }
+        else {
+            return status.isScanInProgress();
+        }
+    }
+    //where
+    private static volatile IndexingStatus status;
+
+    /**
+     * Provides state of indexing
+     */
+    public static interface IndexingStatus {
+        boolean isScanInProgress ();
+    }
+
+    //Helpers to bridge java.source factories into parsing.api
     public static void revalidate (final Source source) {
         final EventSupport support = SourceAccessor.getINSTANCE().getEventSupport(source);
         assert support != null;

@@ -3603,6 +3603,14 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public static synchronized RepositoryUpdater getDefault () {
         if (instance == null) {
             instance = new RepositoryUpdater ();
+            //todo: Workaround until indexing will be a part of parsing
+            org.netbeans.modules.parsing.impl.Utilities.setIndexingStatus(
+                    new org.netbeans.modules.parsing.impl.Utilities.IndexingStatus() {
+                        public boolean isScanInProgress() {
+                            return instance.isScanInProgress();
+                        }
+                    }
+            );
         }
         return instance;
     }        

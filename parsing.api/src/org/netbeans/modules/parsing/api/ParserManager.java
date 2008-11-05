@@ -45,6 +45,7 @@ import java.util.Collections;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.parsing.impl.ParserAccessor;
 import org.netbeans.modules.parsing.impl.ResultIteratorAccessor;
@@ -91,27 +92,42 @@ public final class ParserManager {
                             sources, 
         final UserTask
                             userTask
-    ) throws ParseException {
-        //tzezula: ugly, Hanzy isn't here a nicer solution to distinguish single source from multi source?
-        if (sources.size() == 1) {
-            SourceAccessor.getINSTANCE().assignListeners(sources.iterator().next());
+    ) throws ParseException {        
+        TaskProcessor.runUserTask (new MultiLanguageTaskAction(sources, userTask), sources);
+    }
+
+    public static Future<Void> parseWhenScanFinished (final Collection<Source>  sources,  final MultiLanguageUserTask userTask) throws ParseException {
+        return TaskProcessor.runWhenScanFinished (new MultiLanguageTaskAction(sources, userTask), sources);
+    }
+
+    //where
+
+    private static class MultiLanguageTaskAction implements Mutex.ExceptionAction<Void> {
+
+        private final MultiLanguageUserTask userTask;
+        private final Collection<Source> sources;
+
+        public MultiLanguageTaskAction (final Collection<Source> sources, final MultiLanguageUserTask userTask) {
+            assert sources != null;
+            assert userTask != null;
+            this.userTask = userTask;
+            this.sources = sources;
         }
-        TaskProcessor.runUserTask (new Mutex.ExceptionAction<Void>() {
-            public Void run () throws Exception {
-                //tzezula: Wrong - doesn't work for multiple files!
-                for (Source source : sources) {
-                    SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
-                    final ResultIterator resultIterator = new ResultIterator (sourceCache, userTask);
-                    try {
-                        userTask.run (resultIterator);
-                    } finally {
-                        ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
-                    }
-                    
+
+        public Void run () throws Exception {
+            //tzezula: Wrong - doesn't work for multiple files!
+            for (Source source : sources) {
+                SourceCache sourceCache = SourceAccessor.getINSTANCE ().getCache (source);
+                final ResultIterator resultIterator = new ResultIterator (sourceCache, userTask);
+                try {
+                    userTask.run (resultIterator);
+                } finally {
+                    ResultIteratorAccessor.getINSTANCE().invalidate(resultIterator);
                 }
-                return null;
+
             }
-        }, sources);
+            return null;
+        }
     }
     
     /**
