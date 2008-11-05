@@ -44,7 +44,9 @@ package org.netbeans.modules.swingapp.templates;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -246,6 +248,8 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
         FileObject projectFolderFO = AppProjectGenerator.createProjectFromTemplate(
                 template, projectDirectory, templateNames, substNames);
 
+        generatePrivateProperties(projectDirectory);
+
         // remember project location in ProjectChooser
         ProjectChooser.setProjectsFolder(projectDirectory.getParentFile());
 
@@ -411,6 +415,28 @@ public class NewAppWizardIterator implements WizardDescriptor.InstantiatingItera
     }
 
     public void uninitialize(WizardDescriptor wiz) {
+    }
+
+    private void generatePrivateProperties(File projectLocation) throws IOException {
+        FileObject prjLoc = FileUtil.toFileObject(projectLocation);
+        String[] nameElements = AntProjectHelper.PRIVATE_PROPERTIES_PATH.split("/"); // NOI18N
+        FileObject fo = prjLoc;
+        for (int i=0; i<nameElements.length-1; i++) {
+            FileObject tmp = fo.getFileObject (nameElements[i]);
+            if (tmp == null) {
+                tmp = fo.createFolder(nameElements[i]);
+            }
+            fo = tmp;
+        }
+        fo = fo.createData(nameElements[nameElements.length-1]);
+        Properties p = new Properties ();
+        p.put ("compile.on.save","true");   //NOI18N
+        OutputStream out = new FileOutputStream(FileUtil.toFile(fo));
+        try {
+            p.store(out,null);
+        } finally {
+            out.close();
+        }
     }
 
     // -----
