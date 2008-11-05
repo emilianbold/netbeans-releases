@@ -78,7 +78,7 @@ public class CompilerSet {
     /** Recognized (and prioritized) types of compiler sets */
     public static final class CompilerFlavor {
         private static final List<CompilerFlavor> flavors = new ArrayList<CompilerFlavor>();
-        private static Map<Integer, CompilerFlavor> unknown = new HashMap<Integer, CompilerFlavor>();
+        private static final Map<Integer, CompilerFlavor> unknown = new HashMap<Integer, CompilerFlavor>();
         static {
             for(ToolchainDescriptor descriptor : ToolchainManager.getInstance().getAllToolchains()){
                 flavors.add(new CompilerFlavor(descriptor.getName(), descriptor));
@@ -136,19 +136,25 @@ public class CompilerSet {
         public static CompilerFlavor getUnknown(int platform){
             CompilerFlavor unknownFlavor = unknown.get(platform);
             if (unknownFlavor == null) {
-                synchronized(unknown) {
-                    unknownFlavor = unknown.get(platform);
-                    if (unknownFlavor == null) {
-                        ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform); // NOI18N
-                        if (d == null) {
-                            List<ToolchainDescriptor> list = ToolchainManager.getInstance().getToolchains(platform);
-                            if (list.size()>0){
-                                d = list.get(0);
-                            }
+                unknownFlavor = _getUnknown(platform);
+            }
+            return unknownFlavor;
+        }
+
+        private static CompilerFlavor _getUnknown(int platform){
+            CompilerFlavor unknownFlavor = null;
+            synchronized(unknown) {
+                unknownFlavor = unknown.get(platform);
+                if (unknownFlavor == null) {
+                    ToolchainDescriptor d = ToolchainManager.getInstance().getToolchain("GNU", platform); // NOI18N
+                    if (d == null) {
+                        List<ToolchainDescriptor> list = ToolchainManager.getInstance().getToolchains(platform);
+                        if (list.size()>0){
+                            d = list.get(0);
                         }
-                        unknownFlavor = new CompilerFlavor("Unknown", d); // NOI18N
-                        unknown.put(platform, unknownFlavor);
                     }
+                    unknownFlavor = new CompilerFlavor("Unknown", d); // NOI18N
+                    unknown.put(platform, unknownFlavor);
                 }
             }
             return unknownFlavor;
@@ -307,7 +313,7 @@ public class CompilerSet {
     public static List<CompilerFlavor> getCompilerSetFlavor(String directory, int platform) {
         List<CompilerFlavor> list = new ArrayList<CompilerFlavor>();
         for(ToolchainDescriptor d : ToolchainManager.getInstance().getToolchains(platform)) {
-            if (ToolchainManager.getInstance().isMyFolder(directory, d, platform)){
+            if (ToolchainManager.getInstance().isMyFolder(directory, d, platform, false)){
                 CompilerFlavor f = CompilerFlavor.toFlavor(d.getName(), platform);
                 if (f != null) {
                     list.add(f);
@@ -471,8 +477,9 @@ public class CompilerSet {
      */
     public Tool getTool(int kind) {
         for (Tool tool : tools) {
-            if (tool.getKind() == kind)
+            if (tool.getKind() == kind) {
                 return tool;
+            }
         }
         Tool t;
         // Fixup: all tools should go here ....
@@ -493,8 +500,9 @@ public class CompilerSet {
      */
     public Tool findTool(int kind) {
         for (Tool tool : tools) {
-            if (tool.getKind() == kind)
+            if (tool.getKind() == kind) {
                 return tool;
+            }
         }
         return null;
     }
@@ -507,6 +515,7 @@ public class CompilerSet {
         return cCompiler != null && cppCompiler != null && (!CppSettings.getDefault().isFortranEnabled() || fortranCompiler != null);
     }
     
+    @SuppressWarnings("unchecked")
     public List<Tool> getTools() {
         synchronized (tools) {
             return (List<Tool>)tools.clone();
@@ -549,8 +558,7 @@ public class CompilerSet {
         if (path.length() > 1 && path.charAt(1) == ':') {
             return getDriveLetterPrefix() + path.charAt(0) + path.substring(2); // NOI18N
         }
-        else
-            return path;
+        return path;
     }
     
     @Override
