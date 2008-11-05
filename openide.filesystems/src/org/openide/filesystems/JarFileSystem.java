@@ -46,6 +46,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -543,9 +544,13 @@ public class JarFileSystem extends AbstractFileSystem {
         } catch (java.io.FileNotFoundException e) {
             throw e;
         } catch (IOException e) {
-            throw new java.io.FileNotFoundException(e.getMessage());
+            FileNotFoundException fnfe = new FileNotFoundException(root.getAbsolutePath());
+            fnfe.initCause(e);
+            throw fnfe;
         } catch (RuntimeException e) {
-            throw new java.io.FileNotFoundException(e.getMessage());
+            FileNotFoundException fnfe = new FileNotFoundException(root.getAbsolutePath());
+            fnfe.initCause(e);
+            throw fnfe;
         } finally {
             closeCurrentRoot(false);
         }
