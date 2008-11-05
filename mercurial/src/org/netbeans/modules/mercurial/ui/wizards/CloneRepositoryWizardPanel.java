@@ -337,58 +337,5 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         }
     };
 
-/**
-     * Decodes URI by decoding %XX escape sequences.
-     *
-     * @param url url to decode
-     * @return decoded url
-     */
-    private static String decode(String url) {
-        StringBuffer sb = new StringBuffer(url.length());
-
-        boolean inQuery = false;
-        for (int i = 0; i < url.length(); i++) {
-            char c = url.charAt(i);
-            if (c == '?') {
-                inQuery = true;
-            } else if (c == '+' && inQuery) {
-                sb.append(' ');
-            } else if (isEncodedByte(c, url, i)) {
-                List<Byte> byteList = new ArrayList<Byte>();
-                do  {
-                    byteList.add((byte) Integer.parseInt(url.substring(i + 1, i + 3), 16));
-                    i += 3;
-                    if (i >= url.length()) break;
-                    c = url.charAt(i);
-                } while(isEncodedByte(c, url, i));
-
-                if(byteList.size() > 0) {
-                    byte[] bytes = new byte[byteList.size()];
-                    for(int ib = 0; ib < byteList.size(); ib++) {
-                        bytes[ib] = byteList.get(ib);
-                    }
-                    try {
-                        sb.append(new String(bytes, "UTF8"));
-                    } catch (Exception e) {
-                        Mercurial.LOG.log(Level.INFO, null, e);  // oops
-                    }
-                    i--;
-                }
-            } else {
-                sb.append(c);
-            }
-        }
-        return sb.toString();
-    }
-
-    private static boolean isEncodedByte(char c, String s, int i) {
-        return c == '%' && i + 2 < s.length() && isHexDigit(s.charAt(i + 1)) && isHexDigit(s.charAt(i + 2));
-    }
-
-    private static boolean isHexDigit(char c) {
-        return c >= '0' && c <= '9' || c >= 'A' && c <= 'F' || c >= 'a' && c <= 'f';
-    }
-
-
 }
 
