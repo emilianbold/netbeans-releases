@@ -382,6 +382,10 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="2200"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
+            <file name="MinGW_TDM.xml" url="toolchain/MinGW_TDM.xml">
+                <attr name="position" intvalue="2250"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
             <file name="Interix.xml" url="toolchain/Interix.xml">
                 <attr name="position" intvalue="2300"/>
                 <attr name="extends" stringvalue="GNU"/>
