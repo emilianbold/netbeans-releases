@@ -10,7 +10,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>0.5</specification-version>
+                        <specification-version>0.6.1</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
