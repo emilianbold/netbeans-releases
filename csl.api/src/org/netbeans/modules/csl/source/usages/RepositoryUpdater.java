@@ -92,7 +92,10 @@ import org.netbeans.modules.csl.source.parsing.FileObjects;
 import org.netbeans.modules.csl.source.util.LowMemoryEvent;
 import org.netbeans.modules.csl.source.util.LowMemoryListener;
 import org.netbeans.modules.csl.source.util.LowMemoryNotifier;
-
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;

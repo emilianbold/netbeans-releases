@@ -64,7 +64,7 @@ public abstract class Parser {
     }
     
     /**
-     * Called by infastructure when {@link org.netbeans.modules.parsing.api.Source} 
+     * Called by infrastructure when {@link org.netbeans.modules.parsing.api.Source}
      * is changed, and a new {@link org.netbeans.modules.parsing.api.Snapshot}
      * has been created for it. 
      * 
@@ -99,7 +99,7 @@ public abstract class Parser {
      * Registers new listener.
      * 
      * @param changeListener
-     *                      A change listener to be regiserred.
+     *                      A change listener to be registered.
      */
     public abstract void addChangeListener (
         ChangeListener      changeListener
@@ -109,7 +109,7 @@ public abstract class Parser {
      * Unregisters listener.
      * 
      * @param changeListener
-     *                      A change listener to be unregiserred.
+     *                      A change listener to be unregistered.
      */
     public abstract void removeChangeListener (
         ChangeListener      changeListener
@@ -135,7 +135,8 @@ public abstract class Parser {
         
         /**
          * Returns a {@link Snapshot} represented by this {@link Result}
-         * @return
+         * @return Returns a <code>Snapshot</code>, which was used for producing this
+         *   parser result.
          */
         public Snapshot getSnapshot () {
             return this.snapshot;

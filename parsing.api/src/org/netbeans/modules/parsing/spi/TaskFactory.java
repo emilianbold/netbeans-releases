@@ -57,9 +57,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public abstract class TaskFactory {
     
     /**
-     * Returns {@link SchedulerTask}s for given {@link Source}s.
-     * @param source        A {@link Source}.
-     * @return              {@link SchedulerTask}s for given {@link Source}s
+     * Creates new <code>SchedulerTask</code>s for a <code>Snapshot</code>.
+     * 
+     * @param snapshot The {@link Snapshot} to create tasks for.
+     *
+     * @return New {@link SchedulerTask}s for the given {@link Snapshot}.
      */
     public abstract Collection<SchedulerTask> create (Snapshot snapshot);
 

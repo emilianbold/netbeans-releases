@@ -48,8 +48,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
-
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.Index;
 import org.netbeans.modules.csl.api.NameKind;

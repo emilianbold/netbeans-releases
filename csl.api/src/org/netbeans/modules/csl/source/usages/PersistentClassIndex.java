@@ -63,6 +63,8 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.napi.gsfret.source.ClassIndex;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.source.SourceAccessor;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;

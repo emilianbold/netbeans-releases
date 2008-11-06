@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.navigation.Icons;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
@@ -115,7 +116,7 @@ public final class UiUtils {
         assert handle != null; // Only one should be set
 
         try {
-            FileObject fo = js.getFileObjects().iterator().next();
+            FileObject fo = js.getFileObject();
             return getElementLocation(fo, handle);
         } catch (IOException e) {
             ErrorManager.getDefault().notify(e);
