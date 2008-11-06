@@ -58,6 +58,7 @@ import org.netbeans.modules.glassfish.common.wizards.ServerWizardIterator;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.WizardDescriptor.InstantiatingIterator;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 
@@ -254,13 +255,14 @@ public final class ServerUtilities {
      * modules directory.
      * 
      * @param jarList the list "so far"
-     * @param parent the directory to look into
+     * @param parent the directory to look into. Should not be null.
      * @param depth depth of the server
      * @param escape pass true if backslashes in jar names should be escaped
      * @return the complete list of jars that match the selection criteria
      */
-    public static List<String> filterByManifest(List<String> jarList, File parent, int depth, boolean escape) {
-        if(parent.exists()) {
+    public static List<String> filterByManifest(List<String> jarList, FileObject parent, int depth, boolean escape) {
+        // be kind to clients that pass in null
+        if(null != parent) {
             int parentLength = parent.getPath().length();
             /* modules/web/jsf-impl.jar was not seen (or added with wrong relative name).
              * need to calculate size relative to the modules/ dir and not the subdirs
@@ -269,20 +271,21 @@ public final class ServerUtilities {
              * with this test, we now also return "web/jsf-impl.jar" which is correct
              */
             if (depth==1){
-                parentLength = parent.getParentFile().getPath().length();
+                parentLength = parent.getParent().getPath().length();
             }
-            for(File candidate: parent.listFiles()) {
-                if(candidate.isDirectory()) {
+
+            for(FileObject candidate: parent.getChildren()) {
+                if(candidate.isFolder()) {
                     if(depth < 1) {
                         filterByManifest(jarList, candidate, depth+1, escape);
                     }
                     continue;
-                } else if(!candidate.getName().endsWith(".jar")) {
+                } else if(!candidate.getNameExt().endsWith(".jar")) {
                     continue;
                 }
                 JarFile jarFile = null;
                 try {
-                    jarFile = new JarFile(candidate, false);
+                    jarFile = new JarFile(FileUtil.toFile(candidate), false);
                     Manifest manifest = jarFile.getManifest();
                     if(manifest != null) {
                         Attributes attrs = manifest.getMainAttributes();
@@ -290,7 +293,7 @@ public final class ServerUtilities {
                             String bundleName = attrs.getValue("Bundle-SymbolicName");
                             //String bundleName = attrs.getValue("Extension-Name");
                             if(bundleName != null  && bundleName.contains("javax")) {
-                                String val = candidate.getPath().substring(parentLength+1);
+                                String val = candidate.getPath().substring(parentLength);
                                 if(escape) {
                                     val = val.replace("\\", "\\\\");
                                 }
@@ -300,14 +303,14 @@ public final class ServerUtilities {
                     }
                 } catch (IOException ex) {
                     Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO, 
-                            candidate.getAbsolutePath(), ex);
+                            candidate.getPath(), ex);
                 } finally {
                     if (null != jarFile) {
                         try {
                             jarFile.close();
                         } catch (IOException ex) {
                             Logger.getLogger(ServerUtilities.class.getName()).log(Level.INFO,
-                                    candidate.getAbsolutePath(), ex);
+                                    candidate.getPath(), ex);
                         }
                         jarFile = null;
                     }
@@ -315,8 +318,8 @@ public final class ServerUtilities {
 
             }
         } else {
-           Logger.getLogger(ServerUtilities.class.getName()).log(Level.FINER, 
-                            parent.getAbsolutePath() + " does not exist");
+           Logger.getLogger(ServerUtilities.class.getName()).log(Level.FINER,
+                            "Null FileObject passed in as the parent parameter. Returning the original list");
         }
         return jarList;
     }
