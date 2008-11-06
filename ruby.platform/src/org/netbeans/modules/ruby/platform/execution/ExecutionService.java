@@ -113,12 +113,12 @@ public class ExecutionService {
     private InputOutput io;
     private StopAction stopAction;
     private RerunAction rerunAction;
-    protected ExecutionDescriptor descriptor;
+    protected RubyExecutionDescriptor descriptor;
     private String displayName; // May be tweaked from descriptor to deal with duplicate running same-name processes
 
     private boolean rerun;
 
-    public ExecutionService(ExecutionDescriptor descriptor) {
+    public ExecutionService(RubyExecutionDescriptor descriptor) {
         this.descriptor = descriptor;
     }
 

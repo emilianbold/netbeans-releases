@@ -140,7 +140,6 @@ function classpath() {
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-loaders.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-dialogs.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-awt.jar
-        XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-options.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-windows.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-openide-text.jar
         XREF_CP=${XREF_CP}${path_sep}${platform}/modules/org-netbeans-modules-settings.jar

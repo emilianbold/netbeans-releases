@@ -175,7 +175,7 @@ public class CsmFinderImpl implements CsmFinder {
     public CsmClassifier getExactClassifier(String classFullName) {
         // System.out.println ("getExactClassifier: " + classFullName); //NOI18N
 //        CsmClassifier cls = csmFile.getProject().findClassifier(classFullName);
-        CsmClassifier cls = CsmClassifierResolver.getDefault().findClassifierUsedInFile(classFullName, csmFile, true);
+        CsmClassifier cls = CsmClassifierResolver.getDefault().findClassifierUsedInFile(classFullName, csmFile, false);
         return cls;
     }
     
@@ -757,23 +757,24 @@ public class CsmFinderImpl implements CsmFinder {
         return ret;
     }    
     
-    /** Get outer classes to search
-    * the fields and methods there. The original class is added
-    * as the first member of the resulting list.
-    */
-    private List getOuterClasses(CsmClass jc) {        
-        ArrayList outers = new ArrayList();
-        outers.add(jc);
-        while (jc != null) {
-            Collection/*<CsmClass>*/ baseCls = jc.getBaseClasses();
-            if (baseCls != null) {
-                // [PENDING] check for deprecated classes ...
-                // if (showDeprecated || !JCUtilities.isDeprecated(cls)) 
-                outers.add (baseCls);
-            }
-        }
-        return outers;
-    }
+//    /** Get outer classes to search
+//    * the fields and methods there. The original class is added
+//    * as the first member of the resulting list.
+//    */
+//    private List getOuterClasses(CsmClass jc) {
+//        ArrayList outers = new ArrayList();
+//        outers.add(jc);
+//        // NB: that's an INFINITE loop!
+//        while (jc != null) {
+//            Collection/*<CsmClass>*/ baseCls = jc.getBaseClasses();
+//            if (baseCls != null) {
+//                // [PENDING] check for deprecated classes ...
+//                // if (showDeprecated || !JCUtilities.isDeprecated(cls))
+//                outers.add (baseCls);
+//            }
+//        }
+//        return outers;
+//    }
     
 //    //......................................
 //    public Iterator getClasses () {
@@ -872,7 +873,11 @@ public class CsmFinderImpl implements CsmFinder {
     }
 
     public List<CsmClass> findBaseClasses(CsmOffsetableDeclaration contextDeclaration, CsmClassifier c, String name, boolean exactMatch, boolean sort) {
-        c = CsmBaseUtilities.getOriginalClassifier(c);
+        CsmFile contextFile = getCsmFile();
+        if (contextFile == null && contextDeclaration != null) {
+            contextFile = contextDeclaration.getContainingFile();
+        }
+        c = CsmBaseUtilities.getOriginalClassifier(c, contextFile);
         if (CsmKindUtilities.isClass(c)) {
             CsmClass clazz = (CsmClass)c;
             CsmProjectContentResolver contResolver = new CsmProjectContentResolver(getCaseSensitive());

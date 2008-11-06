@@ -48,6 +48,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -60,6 +61,7 @@ import org.openide.util.NbBundle;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.DiscoveryProvider.class)
 public class AnalyzeExecutable extends BaseDwarfProvider {
     private Map<String,ProviderProperty> myProperties = new LinkedHashMap<String,ProviderProperty>();
     public static final String EXECUTABLE_KEY = "executable"; // NOI18N
@@ -184,7 +186,7 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
         return 0;
     }
     
-    public List<Configuration> analyze(ProjectProxy project) {
+    public List<Configuration> analyze(ProjectProxy project, Progress progress) {
         isStoped = false;
         List<Configuration> confs = new ArrayList<Configuration>();
         setCommpilerSettings(project);
@@ -206,14 +208,14 @@ public class AnalyzeExecutable extends BaseDwarfProvider {
                         if (set != null && set.length() > 0) {
                             String[] add = (String[])getProperty(LIBRARIES_KEY).getValue();
                             if (add == null || add.length==0) {
-                                myFileProperties = getSourceFileProperties(new String[]{set});
+                                myFileProperties = getSourceFileProperties(new String[]{set},null);
                             } else {
                                 String[] all = new String[add.length+1];
                                 all[0] = set;
                                 for(int i = 0; i < add.length; i++){
                                     all[i+1]=add[i];
                                 }
-                                myFileProperties = getSourceFileProperties(all);
+                                myFileProperties = getSourceFileProperties(all,null);
                             }
                         }
                     }

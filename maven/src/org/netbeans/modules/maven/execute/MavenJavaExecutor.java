@@ -58,8 +58,6 @@ import org.apache.maven.errors.DefaultCoreErrorReporter;
 import org.apache.maven.execution.DefaultMavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenExecutionResult;
-import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.MojoFailureException;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -75,6 +73,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -111,6 +110,7 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
         handle.addContributor(backupContrib);
     }
     
+    @Override
     protected boolean isEmbedded() {
         return true;
     }
@@ -121,6 +121,16 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
      * not to be called directrly.. use execute();
      */
     public void run() {
+        synchronized (SEMAPHORE) {
+            if (task == null) {
+                try {
+                    SEMAPHORE.wait();
+                } catch (InterruptedException ex) {
+                    LOGGER.log(Level.FINE, "interrupted", ex);
+                }
+            }
+        }
+
         finishing = false;
         RunConfig clonedConfig = new BeanRunConfig(this.config);
         // check the prerequisites
@@ -162,6 +172,8 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
         MavenExecutionRequest req = new DefaultMavenExecutionRequest();
         int executionResult = -10;
         try {
+            BuildExecutionSupport.registerRunningItem(item);
+
             MavenEmbedder embedder;
             ProgressTransferListener.setAggregateHandle(handle);
             out = new JavaOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig);
@@ -256,6 +268,8 @@ public class MavenJavaExecutor extends AbstractMavenExecutor {
         } finally {
             finishing = true; //#103460
             ProgressHandle ph = ProgressHandleFactory.createSystemHandle( "Additional maven build processing");
+            BuildExecutionSupport.registerFinishedItem(item);
+
             ph.start();
             try { //defend against badly written extensions..
                 out.buildFinished();

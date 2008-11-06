@@ -60,6 +60,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.Configuration;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryProvider;
 import org.netbeans.modules.cnd.discovery.api.KnownProject;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.ProjectImpl;
 import org.netbeans.modules.cnd.discovery.api.ProjectProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
@@ -81,6 +82,7 @@ import org.openide.util.NbBundle;
  *
  * @author AlexanderSimon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.discovery.api.KnownProject.class)
 public class OpenSolaris extends KnownProject {
     private static final boolean TRACE = true;
     /*package-local*/ static final boolean READ_MAP_FILE_VERS = false;
@@ -152,13 +154,13 @@ public class OpenSolaris extends KnownProject {
     @Override
     public boolean create(Map<String, String> parameters){
         try{
-            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATE_PROJECT")); //NOI18N
-            if (TRACE) System.out.println(KnownProject.PROJECT+"="+OpenSolaris.PROJECT_NAME); //NOI18N
-            if (TRACE) System.out.println(KnownProject.ROOT+"="+root); //NOI18N
-            if (TRACE) System.out.println(KnownProject.NB_ROOT+"="+nb_root); //NOI18N
-            if (TRACE) System.out.println(OpenSolaris.LOG_FILE+"="+nightly_log); //NOI18N
-            if (TRACE) System.out.println(OpenSolaris.BUILD_SCRIPT+"="+buildScript); //NOI18N
-            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "SCANNING_LOG")); //NOI18N
+            if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATE_PROJECT"));} //NOI18N
+            if (TRACE) {System.out.println(KnownProject.PROJECT+"="+OpenSolaris.PROJECT_NAME);} //NOI18N
+            if (TRACE) {System.out.println(KnownProject.ROOT+"="+root);} //NOI18N
+            if (TRACE) {System.out.println(KnownProject.NB_ROOT+"="+nb_root);} //NOI18N
+            if (TRACE) {System.out.println(OpenSolaris.LOG_FILE+"="+nightly_log);} //NOI18N
+            if (TRACE) {System.out.println(OpenSolaris.BUILD_SCRIPT+"="+buildScript);} //NOI18N
+            if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "SCANNING_LOG"));} //NOI18N
             sources = scan(nightly_log, root);
             if (sources == null || sources.size() == 0) {
                 return false;
@@ -206,7 +208,7 @@ public class OpenSolaris extends KnownProject {
     private boolean createImpl() throws IOException{
         File proto = new File(root+"/proto"); // NOI18N
         if (!proto.exists()) {
-            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "INSTALLING_PROTO")); //NOI18N
+            if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "INSTALLING_PROTO"));} //NOI18N
             for(InstallLine il : copyHeader){
                 il.install();
             }
@@ -269,15 +271,15 @@ public class OpenSolaris extends KnownProject {
             } else {
                 display = "os."+display; // NOI18N
             }
-            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_PROJECT", n)); //NOI18N
+            if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_PROJECT", n));} //NOI18N
             createImpl(r, n, name, display, projectList, entry.getValue().myFileProperties);
         }
         // and super projects
-        if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_COMMANDS", nb_root)); //NOI18N
+        if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_COMMANDS", nb_root));} //NOI18N
         createImpl(srcRoot+"cmd", nb_root+"/commands", "commands", "os.commands", projectList, sources); // NOI18N
-        if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_LIBRARIES", nb_root)); //NOI18N
-        createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources); // NOI18N
-        if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_SOURCES", nb_root)); //NOI18N
+        if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_LIBRARIES", nb_root));} //NOI18N
+        createImpl(srcRoot+"lib", nb_root+"/libraries", "libraries", "os.libraries", projectList, sources);// NOI18N
+        if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "CREATING_SOURCES", nb_root));} //NOI18N
         createImpl(root+"/usr/src", nb_root+"/sources", "sources", "os.sources", projectList, sources); // NOI18N
         return true;
     }
@@ -322,7 +324,7 @@ public class OpenSolaris extends KnownProject {
             }
         }
         if (res.size() > 0) {
-            if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "REQUIRED_PROJECTS", ""+res)); //NOI18N
+            if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "REQUIRED_PROJECTS", ""+res));} //NOI18N
         }
         return res;
     }
@@ -340,7 +342,7 @@ public class OpenSolaris extends KnownProject {
                 return;
             }
             try {
-                if (TRACE) System.out.println(NbBundle.getMessage(OpenSolaris.class, "WRITING_GLOBALS", ""+res.size())); //NOI18N
+                if (TRACE) {System.out.println(NbBundle.getMessage(OpenSolaris.class, "WRITING_GLOBALS", ""+res.size()));} //NOI18N
                 grepDefinitions(res, list);
                 OutputStream os = new FileOutputStream(nbRoot + "/nbproject/private/globals.xml"); // NOI18N
                 res.storeToXML(os, "Globals"); // NOI18N
@@ -440,7 +442,7 @@ public class OpenSolaris extends KnownProject {
             this.project = project;
             this.provider = provider;
             this.root = root;
-            this.configurations = provider.analyze(null);
+            this.configurations = provider.analyze(null,null);
         }
         public Project getProject() {
             return project;
@@ -504,7 +506,7 @@ public class OpenSolaris extends KnownProject {
 
         public List<ProjectConfiguration> getConfigurations() {
             if (projectConfigurations ==null) {
-                provider.analyze(null);
+                provider.analyze(null,null);
                 projectConfigurations = new ArrayList<ProjectConfiguration>();
                 for (Iterator<Configuration> it = configurations.iterator(); it.hasNext();) {
                     Configuration conf = it.next();
@@ -603,7 +605,7 @@ public class OpenSolaris extends KnownProject {
             throw new UnsupportedOperationException("Not supported yet."); // NOI18N
         }
 
-        public List<Configuration> analyze(ProjectProxy project) {
+        public List<Configuration> analyze(ProjectProxy project, Progress progress) {
             List<Configuration> confs = new ArrayList<Configuration>();
             Configuration conf = new Configuration() {
 

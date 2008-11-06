@@ -164,6 +164,7 @@ public class ChildrenKeysTest extends NbTestCase {
      * getNodes() by another thread callig getNodes.
      * Other thread
      */
+    @RandomlyFails // NB-Core-Build #1643, in ChildrenLazyKeysTest
     public void testGetNodesFromWriteAccess() throws Exception {
         final String[] keys = { "Nenik", "Tulach" };
         Keys o = new Keys (lazy(), keys);
@@ -254,6 +255,32 @@ public class ChildrenKeysTest extends NbTestCase {
 
         assertSame("First node the same", now[0].getName(), after[0].getName());
         assertSame("Last node the same", now[2].getName(), after[1].getName());
+    }
+
+    public void testGetNodesOptimal() throws Exception {
+        class KOpt extends Keys {
+
+            KOpt() {
+                super(lazy());
+            }
+            int cnt;
+
+            @Override
+            public Node[] getNodes(boolean optimal) {
+                assertTrue("Only calling with true", optimal);
+                cnt++;
+                return super.getNodes(optimal);
+            }
+        }
+
+        KOpt k = new KOpt();
+        k.keys("1", "2", "3");
+        Node n = createNode(k);
+
+        Node[] arr = n.getChildren().getNodes(true);
+        assertEquals("3 nodes", 3, arr.length);
+        assertEquals("Calling cnt once", 1, k.cnt);
+
     }
 
     public void testRefreshOnFavoritesAdding() throws Exception {
@@ -729,6 +756,8 @@ public class ChildrenKeysTest extends NbTestCase {
         assertNull ("Garbage collected nodes are not notified", k.arr);
         l.assertNoEvents("GC does not generate events");
 
+        List<Node> snapshot = node.getChildren().snapshot();
+        assertEquals("Count remains one", 1, snapshot.size());
         assertEquals("Count remains one", 1, node.getChildren().getNodesCount());
         // emptied
         k.keys();

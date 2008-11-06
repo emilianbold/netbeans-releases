@@ -50,6 +50,7 @@ import org.netbeans.modules.vmd.api.model.EnumDescriptorFactory;
  *
  * @author Karol Harezlak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.EnumDescriptorFactory.class)
 public class TestEnumDescriptorFactory implements EnumDescriptorFactory {
     
     private PrimitiveDescriptorSupport descriptor = new PrimitiveDescriptorSupport();

@@ -6,7 +6,7 @@ int globInt;
 void A::f() {
     
     char* str = "string";
-    
+           int i = ::globInt;
     return;
 }
 

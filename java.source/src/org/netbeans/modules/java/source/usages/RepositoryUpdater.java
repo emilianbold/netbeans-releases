@@ -283,11 +283,12 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             assert changedCp != null;
             if (LOGGER.isLoggable(Level.FINE))
                 LOGGER.log(Level.FINE, "ClassPath change, cp={0}", changedCp.toString());
-            for (ClassPath.Entry e : changedCp.entries()) {
-                URL root = e.getURL();
-                scheduleCompilation(root,root, true, false);
+            final List<ClassPath.Entry> entries = changedCp.entries();
+            final List<URL> roots = new ArrayList<URL>(entries.size());            
+            for (ClassPath.Entry e : entries) {
+                roots.add (e.getURL());                
             }
-            
+            submit(Work.filterChange(roots, true));
             return ;
         }
         
@@ -1292,6 +1293,8 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         
         public void run (final CompilationInfo nullInfo) throws IOException {
             ACTIVITY_LOGGER.finest("START");    //NOI18N
+            final Logger PERF_LOGGER = Logger.getLogger("org.netbeans.log.startup"); // NOI18N
+            PERF_LOGGER.log(Level.FINE, "start", RepositoryUpdater.class.getName()); // NOI18N
             try {
             ClassIndexManager.getDefault().writeLock (new ClassIndexManager.ExceptionAction<Void> () {
                 
@@ -1629,6 +1632,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
             }
             finally {
                 ACTIVITY_LOGGER.finest("FINISHED");    //NOI18N
+                PERF_LOGGER.log(Level.FINE, "end", RepositoryUpdater.class.getName()); // NOI18N
             }
         }
         

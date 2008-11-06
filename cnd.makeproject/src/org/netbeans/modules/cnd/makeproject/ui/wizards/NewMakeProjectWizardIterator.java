@@ -84,10 +84,10 @@ import org.openide.util.NbBundle;
 public class NewMakeProjectWizardIterator implements WizardDescriptor.InstantiatingIterator {
     private static final long serialVersionUID = 1L;
     
-    public static String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
-    public static String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
-    public static String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
-    public static String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
+    public static final String APPLICATION_PROJECT_NAME = "Application"; // NOI18N
+    public static final String DYNAMICLIBRARY_PROJECT_NAME = "DynamicLibrary";  // NOI18N
+    public static final String STATICLIBRARY_PROJECT_NAME = "StaticLibrary"; // NOI18N
+    public static final String MAKEFILEPROJECT_PROJECT_NAME = "MakefileProject"; // NOI18N
     
     static final String PROP_NAME_INDEX = "nameIndex"; // NOI18N
     

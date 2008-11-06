@@ -63,6 +63,7 @@ import org.netbeans.core.startup.TopLogging;
  *
  * @author Jaroslav Tulach, Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=java.util.logging.Handler.class)
 public final class NbErrorManager extends Handler {
     
     static Exc createExc(Throwable t, Level severity, LogRecord add) {

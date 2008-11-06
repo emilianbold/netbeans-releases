@@ -45,8 +45,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ActionMap;
@@ -106,6 +104,7 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
         if (panel == null) {
             final BeanTreeView view = new BeanTreeView();
             view.setRootVisible(true);
+            view.setUseSubstringInQuickSearch(true);
             view.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
             class Panel extends JPanel implements ExplorerManager.Provider, Lookup.Provider {
                 // Make sure action context works correctly:

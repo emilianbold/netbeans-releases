@@ -191,6 +191,7 @@ public class SwitchToDisplayableElement extends JPanel implements PropertyEditor
         return Collections.singleton(SwitchDisplayableEventHandlerCD.TYPEID);
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class SwitchToDisplayableElementFactory implements PropertyEditorElementFactory {
 
         public PropertyEditorEventHandlerElement createElement() {

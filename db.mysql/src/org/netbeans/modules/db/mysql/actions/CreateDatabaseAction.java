@@ -107,12 +107,11 @@ public class CreateDatabaseAction extends CookieAction {
         Node node = activatedNodes[0];
 
         final DatabaseServer server = node.getCookie(DatabaseServer.class);
-
-                try {
-                    CreateDatabasePanel panel = new CreateDatabasePanel(server);
-                    panel.showCreateDatabaseDialog();
-                } catch (DatabaseException dbe) {
-                    Utils.displayErrorMessage(dbe.getMessage());
-                }
+        try {
+            CreateDatabasePanel panel = new CreateDatabasePanel(server);
+            panel.showCreateDatabaseDialog();
+        } catch (DatabaseException dbe) {
+            Utils.displayErrorMessage(dbe.getMessage());
+        }
     }
 }

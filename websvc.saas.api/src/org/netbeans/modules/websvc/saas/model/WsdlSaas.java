@@ -171,7 +171,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         }
     }
 
-    private List<WSPort> filterNonSoapPorts(List<WSPort> ports) {
+    private List<WSPort> filterNonSoapPorts(List<? extends WSPort> ports) {
         List<WSPort> filterPorts = new java.util.ArrayList<WSPort>(ports.size());
 
         for (WSPort port : ports) {

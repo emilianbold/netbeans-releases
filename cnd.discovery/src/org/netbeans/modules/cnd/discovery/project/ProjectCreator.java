@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConf
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -291,6 +292,7 @@ public class ProjectCreator {
 
         // Create new project descriptor with default configurations and save it to disk
         MakeConfigurationDescriptor projectDescriptor = new MakeConfigurationDescriptor(FileUtil.toFile(dirFO).getPath());
+        projectDescriptor.setState(State.READY);
         projectDescriptor.setProjectMakefileName(makefileName);
         projectDescriptor.init(confs);
         baseDir = projectDescriptor.getBaseDir();

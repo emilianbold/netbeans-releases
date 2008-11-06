@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.uihandler;
 
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -93,28 +92,26 @@ public class ExceptionsTest extends NbTestCase {
         uiLogger.log(log2);
         uiLogger.log(log3);
         UIHandler.waitFlushed();
-        assertEquals(3, Installer.getLogsSize());
+        assertEquals(3, InstallerTest.getLogsSize());
         if (Installer.getThrown().getMessage().indexOf("TESTING ERROR") == -1) {
             fail("Wrong message " + Installer.getThrown().getMessage());
         }
         log1 = new LogRecord(Level.SEVERE, "TESTING 2");
         log1.setThrown(t1);
         uiLogger.log(log1);
-        assertEquals(4, Installer.getLogsSize());
-        List<LogRecord> arr = Installer.getLogs();
-        assertEquals("The same amount of logs is loaded: " + arr, 4, arr.size());
+        assertEquals(4, InstallerTest.getLogsSize());
         if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
             fail("Wrong message " + Installer.getThrown().getMessage());
         }
         for (int i= 0; i < 10; i++){
             uiLogger.warning("MESSAGE "+Integer.toString(i));
         }
-        assertEquals(14, Installer.getLogsSize());
+        assertEquals(14, InstallerTest.getLogsSize());
         if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1) {
             fail("Wrong message " + Installer.getThrown().getMessage());
         }
         uiLogger.log(log4);
-        assertEquals(15, Installer.getLogsSize());
+        assertEquals(15, InstallerTest.getLogsSize());
         if (Installer.getThrown().getMessage().indexOf("TESTING THROWABLE") == -1){
             fail("Wrong message " + Installer.getThrown().getMessage());
         }

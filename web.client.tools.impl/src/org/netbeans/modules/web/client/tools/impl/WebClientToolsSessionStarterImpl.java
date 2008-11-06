@@ -65,6 +65,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Sandip V. Chitale <sandipchitale@netbeans.org>
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.client.tools.spi.WebClientToolsSessionStarter.class)
 public class WebClientToolsSessionStarterImpl implements WebClientToolsSessionStarter {
 
     public void startSession(final URI uri, final Factory browser, final Lookup lookup) throws WebClientToolsSessionException {

@@ -88,6 +88,7 @@ import org.netbeans.modules.visualweb.jsfsupport.container.FacesContainer;
  * @author eric
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.api.insync.InSyncService.class)
 public class InSyncServiceProvider extends InSyncService {
 
     protected static InSyncServiceProvider singleton;

@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Lahoda, Petr Hrebejk
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public final class ClassMemberNavigatorJavaSourceFactory extends LookupBasedJavaSourceTaskFactory {
             
     private ClassMemberPanelUI ui;

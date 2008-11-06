@@ -63,9 +63,10 @@ public abstract class ColumnModel implements Model {
     public abstract String getID ();
 
     /**
-     * Returns display name of this column.
+     * Returns display name of this column. The returned String can contain an
+     * ampersand marking the location of the mnemonic.
      *
-     * @return display name of this column
+     * @return display name of this column, including an optional ampersand for mnemonic location.
      */
     public abstract String getDisplayName ();
     
@@ -75,6 +76,7 @@ public abstract class ColumnModel implements Model {
      *
      * @return the mnemonic key or <code>null</code>.
      * @since 1.11
+     * @deprecated Use ampersand in {@link #getDisplayName()}.
      */
     public Character getDisplayedMnemonic() {
         return null;

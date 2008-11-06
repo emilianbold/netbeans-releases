@@ -273,9 +273,18 @@
 		 value="ml"/>
         </if>
 
+        <if property="gf-mod.build.type" value="">
+            <set property="gf-mod.build.suffix"
+	         value="en"/>
+        </if>
+        <if property="gf-mod.build.type" value="ml">
+            <set property="gf-mod.build.suffix"
+		 value="ml"/>
+        </if>
+
 
 	<set property="nb.full.version"
-             value="6.5.0.${nb.build.type.number}.${build.number}"/>
+             value="7.0.0.0.${build.number}"/>
 
         <set property="nb.zip.files.prefix"
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
@@ -287,7 +296,7 @@
              value="${nb.files.prefix}-${build.number}${nb.build.suffix}"/>
 	
         <set property="jdk.bundle.files.suffix"
-             value="nb-6_5"/>
+             value="nb-7_0"/>
 	
 	<set property="nb.bundles.output.dir"
              value="${output.dir}/bundles"/>
@@ -376,10 +385,16 @@
             prefix="glassfish-mod"/>
 
 	<!--
-	<set property="glassfish-mod.milestone.number"      value="15"/>
-	<set property="glassfish-mod.milestone.number.real" value="15a"/>
-	<set property="glassfish-mod.build.type"            value="express"/>
-	<set property="glassfish-mod.build.number"          value="20080722"/>
+	<set property="glassfish-mod.milestone.number"      value="28"/>
+	<set property="glassfish-mod.milestone.number.real" value="28c"/>
+	<set property="glassfish-mod.build.type"            value="prelude"/>
+
+	<if property="gf-mod.build.type" value="">
+	    <set property="glassfish-mod.build.number"          value="20081022"/>
+	</if>
+	<if property="gf-mod.build.type" value="ml">
+	    <set property="glassfish-mod.build.number"          value="20081022"/>
+	</if>
 	-->
 
         <!--
@@ -721,7 +736,7 @@ jarsigner.storepass=${jarsigner.storepass}
 	<export-registry 
             root="${output.dir}/registry-temp" 
             destination="${output.dir}/registry" 
-            codebase="http://bits.netbeans.org/download/6.5/nightly/${build.number}/registry"/>
+            codebase="http://bits.netbeans.org/download/7.0/nightly/${build.number}/registry"/>
     </target>
 
 
@@ -948,7 +963,17 @@ jarsigner.storepass=${jarsigner.storepass}
     </target>
 
 
-    <target name="build-nb-product">
+    <target name="build-nb-product" depends="build-nb-product-default-mapping,build-nb-product-custom-mapping"/>
+
+    <target name="build-nb-product-default-mapping" unless="use.custom.package.data.mapping">
+	<antcall target="build-product">
+	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
+            <param name="product.packaged.data.file"            value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar"/>
+	    <param name="product.packaged.data.properties.file" value="${packaged.data.dir}/${product.uid}${nb.build.suffix},${product.version},${product.platforms},${i}.jar.properties"/>
+        </antcall>
+    </target>
+
+    <target name="build-nb-product-custom-mapping" if="use.custom.package.data.mapping">
 	<antcall target="build-product">
 	    <param name="release.parent.uid" value="${netbeans.group.uid}"/>
         </antcall>
@@ -1002,6 +1027,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-nb-javame">        
 	<antcall target="build-nb-product">
 	    <param name="component.uid"  value="nb-javame"/>
+	    <param name="use.custom.package.data.mapping" value="1"/>
         </antcall>
     </target>
 

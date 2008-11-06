@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.napi.gsfret.source.SourceTaskFactory.class)
 public class GsfFoldManagerTaskFactory extends EditorAwareSourceTaskFactory {
 
     /** Creates a new instance of GsfFoldManagerTaskFactory */

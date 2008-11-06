@@ -73,6 +73,12 @@ import java.util.Map;
  * <br/><br/>
  * No explicit sorting recognized (may be sorted e.g. by display name).
  *
+ * <p><b>Related documentation</b>
+ *
+ * <ul>
+ * <li><a href="http://platform.netbeans.org/tutorials/nbm-options.html">NetBeans Options Window Module Tutorial</a>
+ * </ul>
+ *
  * @see OptionsCategory
  * @see OptionsPanelController 
  * @author Jan Jancura

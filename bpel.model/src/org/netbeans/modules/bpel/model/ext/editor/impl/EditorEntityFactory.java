@@ -48,6 +48,7 @@ import org.w3c.dom.Element;
  * @author Vitaly Bychkov
  * @version 1.0
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.spi.EntityFactory.class)
 public class EditorEntityFactory implements EntityFactory {
 
     public EditorEntityFactory() {

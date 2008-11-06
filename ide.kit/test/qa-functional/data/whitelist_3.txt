@@ -2218,6 +2218,8 @@ org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory
 org.netbeans.modules.localhistory.store.LocalHistoryStoreImpl
 org.netbeans.modules.localhistory.store.LocalHistoryStoreImpl$DataFilesTurboProvider
 org.netbeans.modules.localhistory.store.StoreEntry
+org.netbeans.modules.masterfs.ExLocalFileSystem
+org.netbeans.modules.masterfs.ExLocalFileSystem$OneFileAttributeAttachedToRoot
 org.netbeans.modules.masterfs.GlobalSharabilityQueryImpl
 org.netbeans.modules.masterfs.GlobalVisibilityQueryImpl
 org.netbeans.modules.masterfs.MasterURLMapper

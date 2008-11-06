@@ -234,8 +234,9 @@ public class NodeFactorySupport {
         public void resultChanged(LookupEvent ev) {
             int index = 0;
             synchronized (this) {
-                Lookup.Result<NodeFactory> res = (Lookup.Result<NodeFactory>)ev.getSource();
-                for (NodeFactory factory : res.allInstances()) {
+                Lookup.Result<?> res = (Lookup.Result<?>) ev.getSource();
+                for (Object _factory : res.allInstances()) {
+                    NodeFactory factory = (NodeFactory) _factory;
                     if (!factories.contains(factory)) {
                         factories.add(index, factory);
                         NodeList<?> lst = factory.createNodes(project);

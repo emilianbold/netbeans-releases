@@ -369,7 +369,7 @@ public class DefaultProjectActionHandler implements ActionListener {
                             // we need to run the application under cmd on windows
                             exe = "cmd.exe"; // NOI18N
                             // exe path naturalization is needed for cmd on windows, see issue 149404
-                            args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable()))
+                            args = "/c " + IpeUtils.quoteIfNecessary(FilePathAdaptor.naturalize(pae.getExecutable())) // NOI18N
                                    + " " + pae.getProfile().getArgsFlat(); // NOI18N
                         } else if (conf.getDevelopmentHost().isLocalhost()) {
                             exe = IpeUtils.toAbsolutePath(pae.getProfile().getBaseDir(), pae.getExecutable());
@@ -621,9 +621,11 @@ public class DefaultProjectActionHandler implements ActionListener {
      * @return true if executable exists and is an executable, otherwise false
      */
     private boolean verifyRemoteExecutable(String hkey, String executable) {
+        PathMap mapper = HostInfoProvider.getDefault().getMapper(hkey);
+        String remoteExecutable = mapper.getRemotePath(executable);
         CommandProvider cmd = Lookup.getDefault().lookup(CommandProvider.class);
         if (cmd != null) {
-            return cmd.run(hkey, "test -x " + executable + " -a -f " + executable, null) == 0; // NOI18N
+            return cmd.run(hkey, "test -x " + remoteExecutable + " -a -f " + remoteExecutable, null) == 0; // NOI18N
         }
         return false;
     }

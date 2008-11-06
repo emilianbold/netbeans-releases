@@ -99,6 +99,7 @@ public final class DatasourceUIHelper {
     
     static final Separator SEPARATOR_ITEM = new Separator();
     static final Object NEW_ITEM = new Object() {
+        @Override
         public String toString() {
             return NbBundle.getMessage(DatasourceUIHelper.class, "LBL_NEW_DATASOURCE"); // NOI18N
         }
@@ -116,13 +117,10 @@ public final class DatasourceUIHelper {
             this.items = items;
         }
 
-        public void setSelectedItem(Object anItem) {
-            
+        public void setSelectedItem(Object anItem) {            
             if (selectedItem == null || !selectedItem.equals(anItem)) {
-                        
                 previousItem = selectedItem;
                 selectedItem = anItem;
-
                 fireContentsChanged(this, 0, -1);
             }
         }
@@ -176,6 +174,7 @@ public final class DatasourceUIHelper {
     
     private static class DatasourceListCellRenderer extends DefaultListCellRenderer {
 
+        @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
 
             if (isSelected) {
@@ -253,13 +252,10 @@ public final class DatasourceUIHelper {
         }
 
         public void setItem(Object anObject) {
-            
             JTextComponent editor = getEditor();
-            
             if (anObject != null)  {
                 String text = (anObject instanceof Datasource ? ((Datasource)anObject).getJndiName() : anObject.toString());
                 editor.setText(text);
-
                 oldValue = anObject;
             } 
             else {
@@ -287,6 +283,7 @@ public final class DatasourceUIHelper {
                         newValue = method.invoke(oldValue, new Object[] { editor.getText() });
                     } catch (Exception ex) {
                         // Fail silently and return the newValue (a String object)
+                        Logger.getLogger("DatasourceUIHelper").log(Level.FINE, "ignored exception", ex); //NOI18N
                     }
                 }
             }
@@ -359,6 +356,7 @@ public final class DatasourceUIHelper {
         Component toListenOn = (combo.isEditable() ? combo.getEditor().getEditorComponent() : combo);
             
         toListenOn.addKeyListener(new KeyAdapter() {
+            @Override
             public void keyPressed(final KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 if (KeyEvent.VK_ENTER == keyCode) {
@@ -435,6 +433,7 @@ public final class DatasourceUIHelper {
                     }
                 }
                 
+                @Override
                 public boolean isEnabled() {
                     return password != null;
                 }
@@ -453,6 +452,7 @@ public final class DatasourceUIHelper {
                 }
             }
 
+            @Override
             public boolean isEnabled() {
                 return ds[0] != null;
             }
@@ -509,13 +509,11 @@ public final class DatasourceUIHelper {
         combo.setModel(model);
         
         if (selectedDatasource != null) {
-
             // Ensure that the correct item is selected before listeners like FocusListener are called.
             // ActionListener.actionPerformed() is not called if this method is already called from 
             // actionPerformed(), in that case selectItemLater should be set to true and setSelectedItem()
             // below is called asynchronously so that the actionPerformed() is called
             setSelectedItem(combo, selectedDatasource); 
-
             if (selectItemLater) {
                 SwingUtilities.invokeLater(new Runnable() { // postpone item selection to enable event firing from JCombobox.setSelectedItem()
                     public void run() {
@@ -523,7 +521,6 @@ public final class DatasourceUIHelper {
                     }
                 });
             }
-
         }
         
         return datasources;

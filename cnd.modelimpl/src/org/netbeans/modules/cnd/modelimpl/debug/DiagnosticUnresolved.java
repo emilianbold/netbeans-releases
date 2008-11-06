@@ -138,6 +138,7 @@ public class DiagnosticUnresolved {
             super(name);
         }
         
+        @Override
         public void registerOccurence(CsmFile file, int offset) {
             super.registerOccurence(file, offset);
             IntArray ia = (IntArray) files.get(file);
@@ -148,6 +149,7 @@ public class DiagnosticUnresolved {
             ia.add(offset);
         }
 
+        @Override
         public void dumpStatistics(PrintStream out) {
             
             out.println(getName() + ' ' + getCount());
@@ -162,13 +164,6 @@ public class DiagnosticUnresolved {
                     IntArray ia2 = (IntArray) files.get(o2);
                     return (ia1.size() > ia2.size()) ? -1 : 1;
                 }
-                public boolean equals(Object obj) {
-                    return obj == this;
-                }
-                
-                public int hashCode() {
-                    return 5; // any dummy value
-                }                   
             };
             
             List list = new ArrayList(files.keySet());
@@ -185,7 +180,7 @@ public class DiagnosticUnresolved {
     }
     
     private Map/*<String, UnresolvedInfoBase>*/ map = new HashMap();
-    private static int level;
+    private int level;
     
     public DiagnosticUnresolved(int level) {
         this.level = level;
@@ -238,10 +233,13 @@ public class DiagnosticUnresolved {
                 UnresolvedInfoBase ui2 = (UnresolvedInfoBase) o2;
                 return (ui1.getCount() > ui2.getCount()) ? -1 : 1;
             }
+
+            @Override
             public boolean equals(Object obj) {
                 return obj == this;
             }
             
+            @Override
             public int hashCode() {
                 return 3; // any dummy value
             }               

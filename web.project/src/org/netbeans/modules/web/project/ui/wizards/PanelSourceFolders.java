@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.web.project.ui.wizards;
 
+import org.netbeans.modules.java.api.common.project.ui.wizards.FolderList;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;

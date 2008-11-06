@@ -269,7 +269,7 @@ class AppClientActionProvider implements ActionProvider {
     /*private*/ String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
         if (Arrays.asList(platformSensitiveActions).contains(command)) {
             final String activePlatformId = this.project.evaluator().getProperty(AppClientProjectProperties.JAVA_PLATFORM);  //NOI18N
-            if (AppClientProjectUtil.getActivePlatform(activePlatformId) == null) {
+            if (Utils.getActivePlatform(activePlatformId) == null) {
                 showPlatformWarning();
                 return null;
             }
@@ -413,7 +413,7 @@ class AppClientActionProvider implements ActionProvider {
                 }
                 clazz = clazz.replace('/','.');
                 
-                if (!AppClientProjectUtil.hasMainMethod(file)) {
+                if (!Utils.hasMainMethod(file)) {
                     NotifyDescriptor nd = new NotifyDescriptor.Message(NbBundle.getMessage(AppClientActionProvider.class, "LBL_No_Main_Classs_Found", clazz), NotifyDescriptor.INFORMATION_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                     return null;
@@ -656,7 +656,7 @@ class AppClientActionProvider implements ActionProvider {
         ClassPath bootPath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.BOOT);        //Single compilation unit
         ClassPath compilePath = ClassPath.getClassPath (sourcesRoots[0], ClassPath.COMPILE);
         ClassPath sourcePath = ClassPath.getClassPath(sourcesRoots[0], ClassPath.SOURCE);
-        if (AppClientProjectUtil.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
+        if (Utils.isMainClass (mainClass, bootPath, compilePath, sourcePath)) {
             return MainClassStatus.SET_AND_VALID;
         }
         return MainClassStatus.SET_BUT_INVALID;

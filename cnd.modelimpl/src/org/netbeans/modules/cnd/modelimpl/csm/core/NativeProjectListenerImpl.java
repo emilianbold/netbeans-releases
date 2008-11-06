@@ -285,16 +285,16 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
         return csmProject;
     }
     
-    private Collection<NativeProject> getNativeProjects() {
-        Set<NativeProject> res = new HashSet<NativeProject>();
-        for(CsmProject project : model.projects()){
-            Object prj = project.getPlatformProject();
-            if (prj instanceof NativeProject) {
-                res.add((NativeProject)prj);
-            }
-        }
-        return res;
-    }
+//    private Collection<NativeProject> getNativeProjects() {
+//        Set<NativeProject> res = new HashSet<NativeProject>();
+//        for(CsmProject project : model.projects()){
+//            Object prj = project.getPlatformProject();
+//            if (prj instanceof NativeProject) {
+//                res.add((NativeProject)prj);
+//            }
+//        }
+//        return res;
+//    }
 
     private static class FileDeleteListener extends FileChangeAdapter {
         private final ProjectBase project;

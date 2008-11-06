@@ -68,18 +68,16 @@ import org.netbeans.modules.cnd.debugger.gdb.Variable;
 import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 public class VariablesTableModel implements TableModel, Constants {
     
-    private GdbDebugger      debugger;
-    private ContextProvider  lookupProvider;
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private final GdbDebugger      debugger;
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public VariablesTableModel(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     
     public Object getValueAt(Object row, String columnID) throws UnknownTypeException {
         
-        if (debugger == null || !debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+        if (debugger == null || debugger.getState() != GdbDebugger.State.STOPPED) {
                 return "";
         } else if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) || columnID.equals(WATCH_TO_STRING_COLUMN_ID)) {
             if (row instanceof Variable) {
@@ -111,7 +109,7 @@ public class VariablesTableModel implements TableModel, Constants {
     public boolean isReadOnly(Object row, String columnID) throws UnknownTypeException {
         if (row instanceof AbstractVariable) {
             AbstractVariable var = (AbstractVariable) row;
-            if (debugger == null || !debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+            if (debugger == null || debugger.getState() != GdbDebugger.State.STOPPED) {
                 return true;
             } else if (columnID.equals(LOCALS_TO_STRING_COLUMN_ID) ||
                     columnID.equals(WATCH_TO_STRING_COLUMN_ID) ||
@@ -121,7 +119,7 @@ public class VariablesTableModel implements TableModel, Constants {
             } else if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {
                 String t = var.waitForType();
                 if (t == null) {
-                    if (log.isLoggable(Level.FINE) && debugger.getState().equals(GdbDebugger.STATE_STOPPED) &&
+                    if (log.isLoggable(Level.FINE) && debugger.getState() == GdbDebugger.State.STOPPED &&
                             !SwingUtilities.isEventDispatchThread()) {
                         log.fine("VTM.isReadOnly: null type for " + var.getName() + " (state is " + debugger.getState() + ")"); // NOI18N
                     }
@@ -144,7 +142,7 @@ public class VariablesTableModel implements TableModel, Constants {
     
     public void setValueAt(Object row, String columnID, Object value) throws UnknownTypeException {
         
-        if (debugger == null || !debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+        if (debugger == null || debugger.getState() != GdbDebugger.State.STOPPED) {
             return;
         } else if (row instanceof LocalVariable) {
             if (columnID.equals(LOCALS_VALUE_COLUMN_ID) || columnID.equals(WATCH_VALUE_COLUMN_ID)) {

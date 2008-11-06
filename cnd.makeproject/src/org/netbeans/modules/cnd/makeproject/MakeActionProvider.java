@@ -619,7 +619,7 @@ public class MakeActionProvider implements ActionProvider {
                 String args;
                 if (conf.getPlatform().getValue() == Platform.PLATFORM_WINDOWS) {
                     buildCommand = "cmd.exe"; // NOI18N
-                    args = "/c sh"; // NOI18N
+                    args = "/c sh "; // NOI18N
                 } else {
                     buildCommand = "bash"; // NOI18N
                     args = "";
@@ -1083,7 +1083,7 @@ public class MakeActionProvider implements ActionProvider {
         }
         
         if (PackagerManager.getDefault().getPackager(conf.getPackagingConfiguration().getType().getValue()) == null) {
-            errormsg = errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL4", conf.getPackagingConfiguration().getType().getValue()); // NOI18N
+            errormsg = NbBundle.getMessage(MakeActionProvider.class, "ERR_MISSING_TOOL4", conf.getPackagingConfiguration().getType().getValue()); // NOI18N
         }
 
         if (errormsg == null) {

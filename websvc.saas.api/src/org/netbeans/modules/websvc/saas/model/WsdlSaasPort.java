@@ -73,8 +73,8 @@ public class WsdlSaasPort implements Comparable<WsdlSaasPort> {
     public List<WsdlSaasMethod> getWsdlMethods() {
         if (methods == null) {
             methods = new ArrayList<WsdlSaasMethod>();
-            for (Object op : port.getOperations()) {
-                methods.add(new WsdlSaasMethod(this,(WSOperation) op));
+            for (WSOperation op : port.getOperations()) {
+                methods.add(new WsdlSaasMethod(this, op));
             }
         }
         return methods;

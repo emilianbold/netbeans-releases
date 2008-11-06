@@ -380,6 +380,7 @@ tokens {
 	protected static final StorageClass scSTATIC = new StorageClass("scSTATIC");
 	protected static final StorageClass scEXTERN = new StorageClass("scEXTERN");
 	protected static final StorageClass scMUTABLE = new StorageClass("scMUTABLE");
+	protected static final StorageClass scTHREAD = new StorageClass("scTHREAD");
 
 	public static class DeclSpecifier extends Enum { public DeclSpecifier(String id) { super(id); } }
 
@@ -640,14 +641,7 @@ tokens {
 	//protected int getOffset() { /*TODO: implement*/ throw new NotImplementedException(); }
 	//protected int getLine()	{ /*TODO: implement*/ throw new NotImplementedException(); }
 
-	protected void printf(String pattern, int i) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i, Object o1, Object o2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i1, int i2, boolean b1, Object o) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf(String pattern, int i1, int i2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf (String pattern, int i1, Object o1, int i2, Object o2) { /*TODO: implement*/ throw new NotImplementedException(); }
-	protected void printf (String pattern, int i1, int i2, int i3, String s) { /*TODO: implement*/ throw new NotImplementedException(); }
+	protected void printf(String pattern, Object... params) { /*TODO: implement*/ throw new NotImplementedException(); }
 
 	protected void balanceBraces(int left, int right) throws RecognitionException, TokenStreamException { throw new NotImplementedException(); };
 
@@ -1594,11 +1588,12 @@ typeof_param :
         ;
 
 storage_class_specifier returns [CPPParser.StorageClass sc = scInvalid]
-	:	LITERAL_auto		{sc = scAUTO;}
-	|	LITERAL_register	{sc = scREGISTER;}
-	|	LITERAL_static	{sc = scSTATIC;}
-	|	LITERAL_extern	{sc = scEXTERN;}        
-	|	LITERAL_mutable	{sc = scMUTABLE;}                     
+    :   LITERAL_auto        {sc = scAUTO;}
+    |   LITERAL_register    {sc = scREGISTER;}
+    |   LITERAL_static      {sc = scSTATIC;}
+    |   LITERAL_extern      {sc = scEXTERN;}
+    |   LITERAL_mutable     {sc = scMUTABLE;}
+    |   LITERAL___thread    {sc = scTHREAD;}
 	;
 
 cv_qualifier returns [CPPParser.TypeQualifier tq = tqInvalid] // aka cv_qualifier

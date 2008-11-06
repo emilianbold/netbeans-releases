@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
  *
  * @author Samaresh (Samaresh.Panda@Sun.Com)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class DefaultModelProvider extends CompletionModelProvider {
     
     private CompletionContextImpl context;

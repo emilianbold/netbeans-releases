@@ -41,6 +41,7 @@
 package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 import org.w3c.dom.svg.SVGLocatableElement;
 import org.w3c.dom.svg.SVGMatrix;
 import org.w3c.dom.svg.SVGRect;
@@ -208,6 +209,51 @@ public class SVGSlider extends SVGComponent {
             return ret;
         }
         
+        public void handlePointerPress( PointerEvent event ) {
+            SVGRect rect = myKnobElement.getScreenBBox();
+            if ( rect == null ){
+                super.handlePointerPress(event);
+                return;
+            }
+            myStartKnobX = rect.getX();
+            myStartKnobY = rect.getY();
+            if ( myStartKnobX <= event.getX() && 
+                    myStartKnobX +rect.getWidth()>= event.getX() )
+            {
+                isKnobPressed = true;
+            }
+            super.handlePointerPress(event);
+        }
+        
+        public void handlePointerRelease( PointerEvent event ) {
+            SVGRect rect = myKnobElement.getScreenBBox();
+            if ( rect == null ){
+                super.handlePointerRelease( event );
+                return;
+            }
+            float knobX = rect.getX();
+            if ( isKnobPressed ){
+                isKnobPressed = false;
+                SVGRect ruleRect = myRuleElement.getScreenBBox();
+                if ( ruleRect == null ){
+                    super.handlePointerRelease(event);
+                    return;
+                }
+                float factor = (event.getX()-ruleRect.getX())/ruleRect.getWidth();
+                setValue(myMin + (int)(factor*(myMax - myMin)));
+            }
+            else if ( knobX > event.getX() ){
+                setValue( Math.max( myMin , myValue - myStep ) );
+            }
+            else {
+                setValue(  Math.min( myMax , myValue + myStep ) );
+            }
+            super.handlePointerRelease(event);
+        }
+        
+        private boolean isKnobPressed;
+        private float myStartKnobX;
+        private float myStartKnobY;
     }
     
     private int myMin;

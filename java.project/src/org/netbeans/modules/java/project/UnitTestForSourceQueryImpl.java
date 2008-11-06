@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
  * owns the binary file.
  */
 @SuppressWarnings("deprecation")
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.MultipleRootsUnitTestForSourceQueryImplementation.class), @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.UnitTestForSourceQueryImplementation.class)})
 public class UnitTestForSourceQueryImpl implements UnitTestForSourceQueryImplementation, MultipleRootsUnitTestForSourceQueryImplementation {
     
     /** Default constructor for lookup. */

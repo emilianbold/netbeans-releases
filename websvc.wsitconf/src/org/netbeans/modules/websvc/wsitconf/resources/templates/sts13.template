@@ -51,13 +51,12 @@ made subject to such option by the copyright holder.
                                               xmlns:xsd="http://www.w3.org/2001/XMLSchema"
                                               xmlns:wsp="http://www.w3.org/ns/ws-policy"
                                               xmlns:tns="http://tempuri.org/"
-                                              xmlns:soap="http://schemas.xmlsoap.org/soap/envelope/"
+                                              xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
                                               xmlns:wsx="http://schemas.xmlsoap.org/ws/2004/09/mex"
                                               xmlns:q1="http://schemas.message.com/Message"
                                               xmlns:q2="http://schemas.message.com/Message"
                                               xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
                                               xmlns:wsa10="http://www.w3.org/2005/08/addressing" xmlns="http://schemas.xmlsoap.org/wsdl/">
-
     <wsp:Policy wsu:Id="I__SERVICENAME___policy">
 		<wsp:ExactlyOne>
 			<wsp:All>
@@ -106,13 +105,13 @@ made subject to such option by the copyright holder.
 						<sp:MustSupportRefEncryptedKey/>
 					</wsp:Policy>
 				</sp:Wss11>
-				<sp:Trust10 xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
+				<sp:Trust13 xmlns:sp="http://docs.oasis-open.org/ws-sx/ws-securitypolicy/200702">
 					<wsp:Policy>
 						<sp:MustSupportIssuedTokens/>
 						<sp:RequireClientEntropy/>
 						<sp:RequireServerEntropy/>
 					</wsp:Policy>
-				</sp:Trust10>
+				</sp:Trust13>
 
                 <sc:ValidatorConfiguration xmlns:sc="http://schemas.sun.com/2006/03/wss/server">
                 </sc:ValidatorConfiguration>

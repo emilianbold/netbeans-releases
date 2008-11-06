@@ -69,6 +69,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author joelle
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.jsf.navigation.pagecontentmodel.PageContentModelProvider.class)
 public class VWPContentModelProvider implements PageContentModelProvider {
 
     private Map<FileObject, Reference<VWPContentModel>> map = Collections.synchronizedMap(new WeakHashMap<FileObject, Reference<VWPContentModel>>());

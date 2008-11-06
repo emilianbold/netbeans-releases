@@ -82,8 +82,6 @@ public abstract class GdbTimer {
     }
         
     
-    GdbTimer() {}
-    
     /** Start the timer running */
     public abstract void start(String msg);
     

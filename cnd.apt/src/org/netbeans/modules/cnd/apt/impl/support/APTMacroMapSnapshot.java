@@ -56,8 +56,8 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
  * @author gorrus
  */
 public final class APTMacroMapSnapshot {
-    protected final Map<String/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<String, APTMacro>();
-    protected final APTMacroMapSnapshot parent;
+    /*package*/ final Map<String/*getTokenTextKey(token)*/, APTMacro> macros = new HashMap<String, APTMacro>();
+    /*package*/ final APTMacroMapSnapshot parent;
 
     public APTMacroMapSnapshot(APTMacroMapSnapshot parent) {
         this.parent = parent;

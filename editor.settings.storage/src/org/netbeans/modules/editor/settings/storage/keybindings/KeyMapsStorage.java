@@ -71,6 +71,7 @@ import org.xml.sax.SAXException;
 /**
  * @author Jan Jancura, Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageDescription.class)
 public final class KeyMapsStorage implements StorageDescription<Collection<KeyStroke>, MultiKeyBinding> {
 
     // -J-Dorg.netbeans.modules.editor.settings.storage.keybindings.KeyMapsStorage.level=FINE

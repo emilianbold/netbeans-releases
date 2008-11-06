@@ -255,7 +255,7 @@ public class Saas implements Comparable<Saas> {
     }
 
     public String getDisplayName() {
-        return (String) delegate.getDisplayName();
+        return delegate.getDisplayName();
     }
 
     public String getDescription() {

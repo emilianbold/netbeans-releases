@@ -203,28 +203,17 @@ public final class PlatformComponentFactory {
     public static class RubyPlatformListModel extends AbstractListModel
             implements ComboBoxModel {
 
-        private static RubyPlatform[] getSortedPlatforms(RubyPlatform extra) {
-            Set<RubyPlatform> platforms = RubyPlatformManager.getSortedPlatforms();
-            if (extra != null) {
-                platforms.add(extra);
-            }
+        private static RubyPlatform[] getSortedPlatforms() {
+            Set<? extends RubyPlatform> platforms = RubyPlatformManager.getSortedPlatforms();
             return platforms.toArray(new RubyPlatform[platforms.size()]);
         }
         private RubyPlatform[] nbPlafs;
         private Object selectedPlaf;
 
         public RubyPlatformListModel() {
-            this(null);
-        }
-
-        public RubyPlatformListModel(final RubyPlatform initiallySelected) {
-            nbPlafs = getSortedPlatforms(initiallySelected);
-            if (initiallySelected == null) {
-                if (nbPlafs.length > 0) {
-                    selectedPlaf = nbPlafs[0];
-                }
-            } else {
-                selectedPlaf = initiallySelected;
+            nbPlafs = getSortedPlatforms();
+            if (nbPlafs.length > 0) {
+                selectedPlaf = nbPlafs[0];
             }
         }
 
@@ -251,7 +240,7 @@ public final class PlatformComponentFactory {
         void removePlatform(RubyPlatform plaf) {
             try {
                 RubyPlatformManager.removePlatform(plaf);
-                nbPlafs = getSortedPlatforms(null); // refresh
+                nbPlafs = getSortedPlatforms(); // refresh
                 fireContentsChanged(this, 0, nbPlafs.length - 1);
             } catch (IOException e) {
                 // tell the user that something goes wrong
@@ -263,7 +252,7 @@ public final class PlatformComponentFactory {
             try {
                 RubyPlatform platform = RubyPlatformManager.addPlatform(interpreter);
                 if (platform != null) {
-                    nbPlafs = getSortedPlatforms(null); // refresh
+                    nbPlafs = getSortedPlatforms(); // refresh
                     fireContentsChanged(this, 0, nbPlafs.length - 1);
                 }
                 return platform;

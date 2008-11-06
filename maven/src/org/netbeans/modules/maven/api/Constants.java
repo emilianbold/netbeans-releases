@@ -147,8 +147,9 @@ public interface Constants {
      * Possible values
      * <ul>
      * <li>all  - both tests and application gets run by netbeans quick run infrastructure</li>
-     * <li>test  - only tests are run by netbeans quick run infrastructure, not application</li>
+     * <li>test  - only tests are run by netbeans quick run infrastructure, not application - default value</li>
      * <li>app  - only application is run by netbeans quick run infrastructure, not tests</li>
+     * <li>none - no compile on save
      * </ul>
      * @since NetBeans 7.0
      */

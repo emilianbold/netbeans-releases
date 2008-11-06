@@ -54,6 +54,7 @@ import org.netbeans.modules.ruby.spi.project.rake.RakeArtifactQueryImplementatio
  * {@link RakeArtifactProvider}.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.ruby.spi.project.rake.RakeArtifactQueryImplementation.class)
 public class StandardRakeArtifactQueryImpl implements RakeArtifactQueryImplementation {
     
     /** Default constructor for lookup. */

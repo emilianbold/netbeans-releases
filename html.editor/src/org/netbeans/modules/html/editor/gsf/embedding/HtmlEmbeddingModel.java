@@ -54,6 +54,7 @@ import org.netbeans.modules.gsf.api.IncrementalEmbeddingModel;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class HtmlEmbeddingModel implements IncrementalEmbeddingModel {
 //    // Depend on RhtmlTokenId?
     static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N

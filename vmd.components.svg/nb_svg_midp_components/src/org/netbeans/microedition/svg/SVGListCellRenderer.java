@@ -42,7 +42,7 @@ package org.netbeans.microedition.svg;
 
 
 /**
- * {@link #getCellRendererComponent(SVGList, Object, int, boolean)} method 
+ * {@link #getCellRendererComponent(SVGList, Object, int, boolean, boolean )} method 
  * is called in Document Update Thread. So one should not care about
  * safety of document access in implementation of this class. 
  * @author ads
@@ -51,6 +51,6 @@ package org.netbeans.microedition.svg;
 public interface SVGListCellRenderer {
 
     SVGComponent getCellRendererComponent( SVGList list , Object value, 
-            int index , boolean isSelected );
+            int index , boolean isSelected , boolean cellHasFocus);
     
 }

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.elf;
 
+import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 /**
@@ -82,5 +83,13 @@ public class SectionHeader {
         out.printf("  %-20s %s\n", "Length:", sh_size); // NOI18N
         out.printf("  %-20s %s\n", "Memory alignment:", sh_addralign); // NOI18N
         out.println();
+    }
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
     }
 }

@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.project.ui.NoMainProjectWarning;
 import org.netbeans.modules.project.ui.OpenProjectList;
 import org.netbeans.spi.project.ActionProvider;
@@ -112,8 +113,10 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
     public void actionPerformed(Lookup context) {
 
+        // first try to find main project
         Project p = OpenProjectList.getDefault().getMainProject();
 
+        // then try to find some selected project
         if (p == null) {
             Project[] projects = ActionsUtil.getProjectsFromLookup(context, command);
             if (projects.length == 1) {
@@ -121,7 +124,16 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
             }
         }
 
-        // if no main project than show warning and allow choose a main project
+        // then if there is only one project opened in IDE - use it
+        if (p == null) {
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            if (projects.length == 1) {
+                p = projects[0];
+            }
+        }
+
+        // if no main project or no selected or more than one project opened,
+        // then show warning and allow choose a main project
         if (p == null) {
             // show warning, if cancel then return
             if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), 
@@ -178,6 +190,13 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
                 if (projects.length == 1) {
                     p = projects[0];
                 }
+            }
+        }
+
+        if (p == null) {
+            Project[] projects = OpenProjects.getDefault().getOpenProjects();
+            if (projects.length == 1) {
+                p = projects[0];
             }
         }
 

@@ -85,6 +85,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.symbol.SymbolProvider.class)
 public class JavaSymbolProvider implements SymbolProvider {
     
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N

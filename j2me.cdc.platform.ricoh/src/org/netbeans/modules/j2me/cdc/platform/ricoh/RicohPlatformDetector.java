@@ -67,6 +67,7 @@ import org.openide.filesystems.JarFileSystem;
  *
  * @author suchys
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2me.cdc.platform.spi.CDCPlatformDetector.class)
 public class RicohPlatformDetector extends CDCPlatformDetector{
     
     /** Creates a new instance of CDCPlatform */

@@ -115,8 +115,6 @@ public class NodeTreeModelTest extends NbTestCase {
             }
 
             private void assertEvent(TreeModelEvent e, boolean removed) {
-                assertTrue("We are under read access", Children.MUTEX.isReadAccess());
-
                 Object parent = e.getTreePath().getLastPathComponent();
                 int[] arr = e.getChildIndices();
                 if (arr == null) {

@@ -74,7 +74,6 @@ import org.openide.util.NbBundle;
 public final class MarkOccurrencesHighlighter extends HighlighterBase {
 
     private static AttributeSet defaultColors;
-    private final static String COLORS = "cc-highlighting-mark-occurrences"; // NOI18N
 
     public static OffsetsBag getHighlightsBag(Document doc) {
         if (doc == null) {

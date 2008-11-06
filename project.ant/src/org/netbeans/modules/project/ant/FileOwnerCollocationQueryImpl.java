@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
  * TODO should this class move to project.api module? Som that the behaviour stays
  * even if ant based projects are disabled or missing
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=500)
 public class FileOwnerCollocationQueryImpl implements CollocationQueryImplementation {
 
 

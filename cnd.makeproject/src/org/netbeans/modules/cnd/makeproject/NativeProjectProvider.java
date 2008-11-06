@@ -328,7 +328,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     private void checkConfigurationChanged(final Configuration oldConf, final Configuration newConf) {
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 checkConfigurationChangedWorker(oldConf, newConf);
             }
@@ -428,7 +428,7 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
     
     public void checkForChangedItems(final Folder folder, final Item item) {
-        RequestProcessor.Task task = RequestProcessor.getDefault().post(new Runnable() {
+        RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
                 checkForChangedItemsWorker(folder, item);
             }

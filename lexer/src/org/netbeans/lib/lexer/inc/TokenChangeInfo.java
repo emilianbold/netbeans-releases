@@ -125,6 +125,10 @@ public final class TokenChangeInfo<T extends TokenId> {
         this.addedTokenCount = addedTokenCount;
     }
     
+    public void updateAddedTokenCount(int diff) {
+        addedTokenCount += diff;
+    }
+
     public TokenList<T> currentTokenList() {
         return currentTokenList;
     }

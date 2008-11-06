@@ -114,13 +114,13 @@ public class Issue141873 extends cc
 
     // Check constructor
     String sCode = "function __con";
-    String sIdeal = "function __construct()";
+    String sIdeal = "function __construct() {";
     TypeCode( eoPHP, sCode );
     eoPHP.typeKey( ' ', InputEvent.CTRL_MASK );
     WaitCompletionScanning( );
 
     // Get code
-    String sText = eoPHP.getText( eoPHP.getLineNumber( ) );
+    String sText = eoPHP.getText( eoPHP.getLineNumber( ) - 1 );
 
     // Check code completion list
     if( -1 == sText.indexOf( sIdeal ) )

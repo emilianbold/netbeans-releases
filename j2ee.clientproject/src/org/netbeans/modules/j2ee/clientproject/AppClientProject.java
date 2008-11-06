@@ -66,9 +66,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifact;
 import org.netbeans.api.project.ant.AntBuildExtender;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.j2ee.clientproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.clientproject.ui.AppClientLogicalViewProvider;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
@@ -76,12 +74,13 @@ import org.netbeans.modules.j2ee.clientproject.ui.customizer.CustomizerProviderI
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectJAXWSClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesClientSupport;
 import org.netbeans.modules.j2ee.clientproject.wsclient.AppClientProjectWebServicesSupportProvider;
-import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.SharabilityUtility;
+import org.netbeans.modules.java.api.common.classpath.ClassPathExtender;
+import org.netbeans.modules.java.api.common.classpath.ClassPathModifier;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -90,6 +89,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.CarFactory;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -137,7 +137,6 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -195,13 +194,18 @@ public final class AppClientProject implements Project, AntProjectListener, File
         jaxWsClientSupport = new AppClientProjectJAXWSClientSupport(this, helper);
         apiWebServicesClientSupport = WebServicesClientSupportFactory.createWebServicesClientSupport(carProjectWebServicesClientSupport);
         apiJAXWSClientSupport = JAXWSClientSupportFactory.createJAXWSClientSupport(jaxWsClientSupport);
-        cpProvider = new ClassPathProviderImpl(this.helper, evaluator(), getSourceRoots(),getTestSourceRoots());
+        this.cpProvider = new ClassPathProviderImpl(helper, evaluator(), getSourceRoots(), getTestSourceRoots(),
+                ProjectProperties.BUILD_CLASSES_DIR, AppClientProjectProperties.DIST_JAR, ProjectProperties.BUILD_TEST_CLASSES_DIR,
+                new String[] {"javac.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {"javac.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {"debug.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }, // NOI18N
+                new String[] {"run.test.classpath", AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH }); // NOI18N
         appClient = new AppClientProvider(this, helper, cpProvider);
         apiJar = CarFactory.createCar(appClient);
         enterpriseResourceSupport = new JarContainerImpl(this, refHelper, helper);
         cpMod = new ClassPathModifier(this, this.updateHelper, eval, refHelper,
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), 
-            getClassPathUiSupportCallback(), new String[]{ProjectProperties.JAVAC_CLASSPATH});
+            getClassPathUiSupportCallback());
         classPathExtender = new ClassPathExtender(cpMod, ProjectProperties.JAVAC_CLASSPATH, ClassPathSupportCallbackImpl.ELEMENT_INCLUDED_LIBRARIES);
         lookup = createLookup(aux, cpProvider);
         helper.addAntProjectListener(this);
@@ -212,11 +216,11 @@ public final class AppClientProject implements Project, AntProjectListener, File
             public String getClassPathProperty(SourceGroup sg, String type) {
                 assert sg != null : "SourceGroup cannot be null";  //NOI18N
                 assert type != null : "Type cannot be null";  //NOI18N
-                final String classPathProperty = getClassPathProvider().getPropertyName (sg, type);
-                if (classPathProperty == null) {
+                final String classPathProperty[] = getClassPathProvider().getPropertyName (sg, type);
+                if (classPathProperty == null || classPathProperty.length == 0) {
                     throw new UnsupportedOperationException ("Modification of [" + sg.getRootFolder().getPath() +", " + type + "] is not supported"); //NOI18N
                 }
-                return classPathProperty;
+                return classPathProperty[0];
             }
 
             public String getElementName(String classpathProperty) {
@@ -339,7 +343,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
             LookupMergerSupport.createSFBLookupMerger(),
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
-            BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
+            QuerySupport.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
         });
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-clientproject/Lookup"); //NOI18N
     }
@@ -480,7 +484,7 @@ public final class AppClientProject implements Project, AntProjectListener, File
                             EditableProperties projectProps = helper.getProperties(
                                     AntProjectHelper.PROJECT_PROPERTIES_PATH);
 
-                            if (!ProjectProperties.isUsingServerLibrary(projectProps,
+                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps,
                                     AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH)) { 
                                 String classpath = Utils.toClasspathString(platform.getClasspathEntries());
                                 ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
@@ -796,12 +800,12 @@ public final class AppClientProject implements Project, AntProjectListener, File
             WSUtils.setJaxWsEndorsedDirProperty(ep);
 
             // #134642 - use Ant task from copylibs library
-            ClassPathSupport.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
+            SharabilityUtility.makeSureProjectHasCopyLibsLibrary(helper, refHelper);
             
             //update lib references in project properties
             EditableProperties props = updateHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            ProjectProperties.removeObsoleteLibraryLocations(ep);
-            ProjectProperties.removeObsoleteLibraryLocations(props);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(ep);
+            J2EEProjectProperties.removeObsoleteLibraryLocations(props);
             
             if (!props.containsKey(ProjectProperties.INCLUDES)) {
                 props.setProperty(ProjectProperties.INCLUDES, "**"); // NOI18N

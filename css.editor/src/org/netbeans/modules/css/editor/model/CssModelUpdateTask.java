@@ -93,6 +93,7 @@ public final class CssModelUpdateTask implements CancellableTask<CompilationInfo
         CssModel.get(getDocument()).parsed(info);
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.napi.gsfret.source.SourceTaskFactory.class)
     public static class CssModelUpdateTaskFactory extends EditorAwareSourceTaskFactory {
 
         public CssModelUpdateTaskFactory() {

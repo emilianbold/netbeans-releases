@@ -49,6 +49,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
 /**
  * Factory for simple Make projects.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class MakeProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.cnd.makeproject"; // NOI18N

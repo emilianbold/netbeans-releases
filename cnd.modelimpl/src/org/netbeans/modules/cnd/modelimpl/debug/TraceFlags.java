@@ -130,15 +130,15 @@ public class TraceFlags {
     public static final boolean NEED_TO_TRACE_UNRESOLVED_INCLUDE = DebugUtils.getBoolean("cnd.modelimpl.trace.failed.include", false);   
     public static final boolean TRACE_VALIDATION = DebugUtils.getBoolean("cnd.modelimpl.trace.validation", false);
 
-    public static boolean TRACE_XREF_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.trace.xref.repository", false);
+    public static final boolean TRACE_XREF_REPOSITORY = DebugUtils.getBoolean("cnd.modelimpl.trace.xref.repository", false);
 
-    public static boolean TRACE_REPOSITORY_LISTENER = DebugUtils.getBoolean("cnd.repository.listener.trace", false);
-    public static boolean TRACE_UP_TO_DATE_PROVIDER = DebugUtils.getBoolean("cnd.uptodate.trace", false);
-    public static boolean TRACE_PROJECT_COMPONENT_RW = DebugUtils.getBoolean("cnd.project.compoment.rw.trace", false);
+    public static final boolean TRACE_REPOSITORY_LISTENER = DebugUtils.getBoolean("cnd.repository.listener.trace", false);
+    public static final boolean TRACE_UP_TO_DATE_PROVIDER = DebugUtils.getBoolean("cnd.uptodate.trace", false);
+    public static final boolean TRACE_PROJECT_COMPONENT_RW = DebugUtils.getBoolean("cnd.project.compoment.rw.trace", false);
 
-    public static boolean TRACE_RESOLVED_LIBRARY = DebugUtils.getBoolean("cnd.project.trace.resolved.library", false);
+    public static final boolean TRACE_RESOLVED_LIBRARY = DebugUtils.getBoolean("cnd.project.trace.resolved.library", false);
     
-    public static boolean TRACE_EXTERNAL_CHANGES = DebugUtils.getBoolean("cnd.modelimpl.trace.external.changes", false);
+    public static final boolean TRACE_EXTERNAL_CHANGES = DebugUtils.getBoolean("cnd.modelimpl.trace.external.changes", false);
     
     public static final boolean TRACE_ERROR_PROVIDER = DebugUtils.getBoolean("cnd.modelimpl.trace.error.provider", false);
     public static final boolean PARSE_STATISTICS = DebugUtils.getBoolean("cnd.parse.statistics", false);

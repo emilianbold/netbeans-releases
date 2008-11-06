@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.awt.Component;
@@ -52,6 +51,7 @@ import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 public class DevelopmentHostNodeProp extends Node.Property {
+
     private DevelopmentHostConfiguration configuration;
     private boolean canWrite;
     private String name;
@@ -73,9 +73,9 @@ public class DevelopmentHostNodeProp extends Node.Property {
 
     @Override
     public String getShortDescription() {
-	return description;
+        return description;
     }
-    
+
     @Override
     public String getHtmlDisplayName() {
         if (configuration.getModified()) {
@@ -84,25 +84,25 @@ public class DevelopmentHostNodeProp extends Node.Property {
             return null;
         }
     }
-    
+
     public Object getValue() {
         return configuration.getValue();
     }
-    
+
     public void setValue(Object value) {
         configuration.setValue((String) value, true);
-}
-    
+    }
+
     @Override
     public void restoreDefaultValue() {
         configuration.reset();
     }
-    
+
     @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
     @Override
     public boolean isDefaultValue() {
         return !configuration.getModified();
@@ -111,7 +111,7 @@ public class DevelopmentHostNodeProp extends Node.Property {
     public boolean canWrite() {
         return canWrite;
     }
-    
+
     public boolean canRead() {
         return true;
     }
@@ -129,17 +129,17 @@ public class DevelopmentHostNodeProp extends Node.Property {
         public String getJavaInitializationString() {
             return getAsText();
         }
-        
+
         @Override
         public String getAsText() {
             return configuration.getDisplayName(true);
         }
-        
+
         @Override
         public void setAsText(String text) throws IllegalArgumentException {
-            setValue(text);
+            super.setValue(text);
         }
-        
+
         @Override
         public String[] getTags() {
             return configuration.getServerNames();

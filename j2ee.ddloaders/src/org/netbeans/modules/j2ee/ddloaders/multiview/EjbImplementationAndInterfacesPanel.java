@@ -41,21 +41,13 @@
 
 package org.netbeans.modules.j2ee.ddloaders.multiview;
 
-import java.awt.Component;
 import org.netbeans.modules.j2ee.dd.api.ejb.EntityAndSession;
 import org.netbeans.modules.j2ee.ddloaders.multiview.ui.EjbImplementationAndInterfacesForm;
-import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.LinkButton;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import java.awt.event.FocusAdapter;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
-import javax.swing.JTextField;
 
 /**
  * @author pfiala
@@ -91,7 +83,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         }
     };
 
-    private String className = null;
     private static final String LINK_BEAN = "linkBean";
     private static final String LINK_LOCAL = "linkLocal";
     private static final String LINK_LOCAL_HOME = "linkLocalHome";
@@ -113,19 +104,6 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
 
         scheduleRefreshView();
 
-        FocusListener focusListener = new FocusAdapter() {
-            public void focusGained(FocusEvent e) {
-                Component component = e.getComponent();
-                if (component instanceof JTextField) {
-                    className = ((JTextField) component).getText().trim();
-                }
-            }
-        };
-        addFocusListener(focusListener);
-
-        XmlMultiViewDataSynchronizer synchronizer =
-                ((EjbJarMultiViewDataObject) sectionNodeView.getDataObject()).getModelSynchronizer();
-
         initLinkButton(getBeanClassLinkButton(), LINK_BEAN);
         initLinkButton(getLocalComponentLinkButton(), LINK_LOCAL);
         initLinkButton(getLocalHomeLinkButton(), LINK_LOCAL_HOME);
@@ -137,47 +115,7 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         LinkButton.initLinkButton(button, this, null, key);
     }
 
-    private void addInterfaces(boolean local) {
-        String interfaceType = Utils.getBundleMessage(local ? "TXT_Local" : "TXT_Remote");
-        String msg = Utils.getBundleMessage("MSG_AddInterfaces", interfaceType);
-        String title = Utils.getBundleMessage("LBL_AddInterfaces");
-        NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE, null, null);
-        DialogDisplayer.getDefault().notify(descriptor);
-        if (NotifyDescriptor.YES_OPTION == descriptor.getValue()) {
-            try {
-                helper.addInterfaces(local);
-            } finally {
-                scheduleRefreshView();
-            }
-        }
-    }
-
-    private void removeInterfaces(boolean local) {
-        String componentInterface = local ? helper.getLocal() : helper.getRemote();
-        String homeInterface = local ? helper.getLocalHome() : helper.getHome();
-//        String businessInterfaceName = helper.getBusinessInterfaceName(local);
-//        String msg;
-//        if (businessInterfaceName == null) {
-//            msg = Utils.getBundleMessage("MSG_RemoveInterfaces", homeInterface, componentInterface);
-//        } else {
-//            msg = Utils.getBundleMessage("MSG_RemoveInterfaces2", homeInterface, componentInterface,
-//                    businessInterfaceName);
-//        }
-        String interfaceType = Utils.getBundleMessage(local ? "TXT_Local" : "TXT_Remote");
-        String title = Utils.getBundleMessage("LBL_RemoveInterfaces", interfaceType);
-//        NotifyDescriptor descriptor = new NotifyDescriptor(msg, title, NotifyDescriptor.YES_NO_OPTION,
-//                NotifyDescriptor.WARNING_MESSAGE, null, null);
-//        DialogDisplayer.getDefault().notify(descriptor);
-//        if (NotifyDescriptor.YES_OPTION == descriptor.getValue()) {
-//            try {
-//                helper.removeInterfaces(local);
-//            } finally {
-//                scheduleRefreshView();
-//            }
-//        }
-    }
-
+    @Override
     public void refreshView() {
         beanClassDocument.init();
         localComponentDocument.init();
@@ -186,12 +124,14 @@ public class EjbImplementationAndInterfacesPanel extends EjbImplementationAndInt
         remoteHomeDocument.init();
     }
 
+    @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         if (source instanceof EntityAndSession) {
             scheduleRefreshView();
         }
     }
 
+    @Override
     public void linkButtonPressed(Object ddBean, String ddProperty) {
         String javaClass = null;
         if(LINK_BEAN.equals(ddProperty)) {

@@ -70,6 +70,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=200)
 public class PackageRename implements RefactoringPluginFactory{
     
     /** Creates a new instance of PackageRename */

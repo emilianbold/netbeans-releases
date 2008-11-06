@@ -91,8 +91,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new KeywordItem(kwd, 0, postfix, substitutionOffset, smartType);
     }
     
-    public static final JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
-        return new PackageItem(pkgFQN, substitutionOffset, isDeprecated);
+    public static final JavaCompletionItem createPackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
+        return new PackageItem(pkgFQN, substitutionOffset, inPackageStatement);
     }
 
     public static final JavaCompletionItem createTypeItem(TypeElement elem, DeclaredType type, int substitutionOffset, boolean displayPkgName, boolean isDeprecated, boolean insideNew, boolean smartType) {
@@ -248,37 +248,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     public void processKeyEvent(KeyEvent evt) {
         if (evt.getID() == KeyEvent.KEY_TYPED) {
-            switch (evt.getKeyChar()) {
-                case ':':
-                case ';':
-                case ',':
-                case '(':
-                case '[':
-                case '+':
-                case '-':
-                case '=':
-                    Completion.get().hideDocumentation();
+            if (Utilities.getJavaCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+                Completion.get().hideDocumentation();
+                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(evt.getKeyChar()) < 0)
                     Completion.get().hideCompletion();
-                    JTextComponent component = (JTextComponent)evt.getSource();
-                    int caretOffset = component.getSelectionEnd();
-                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    evt.consume();
-                    break;
-                case '.':
-                    Completion.get().hideDocumentation();
-                    component = (JTextComponent)evt.getSource();
-                    caretOffset = component.getSelectionEnd();
-                    substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
-                    evt.consume();
-                    caretOffset = component.getSelectionEnd();
-                    try {
-                        if (caretOffset > 0 && !".".equals(component.getDocument().getText(caretOffset - 1, 1))) {
-                            Completion.get().hideCompletion();
-                            break;
-                        }
-                    } catch (BadLocationException ble) {}
-                    Completion.get().showCompletion();
-                    break;
+                JTextComponent component = (JTextComponent)evt.getSource();
+                int caretOffset = component.getSelectionEnd();
+                substituteText(component, substitutionOffset, caretOffset - substitutionOffset, Character.toString(evt.getKeyChar()));
+                evt.consume();
             }
         }
     }
@@ -534,14 +511,14 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
         private static ImageIcon icon;
         
-        private boolean isDeprecated;
+        private boolean inPackageStatement;
         private String simpleName;
         private String sortText;
         private String leftText;
 
-        private PackageItem(String pkgFQN, int substitutionOffset, boolean isDeprecated) {
+        private PackageItem(String pkgFQN, int substitutionOffset, boolean inPackageStatement) {
             super(substitutionOffset);
-            this.isDeprecated = isDeprecated;
+            this.inPackageStatement = inPackageStatement;
             int idx = pkgFQN.lastIndexOf('.');
             this.simpleName = idx < 0 ? pkgFQN : pkgFQN.substring(idx + 1);
             this.sortText = this.simpleName + "#" + pkgFQN; //NOI18N
@@ -568,15 +545,15 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (leftText == null) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(PACKAGE_COLOR);
-                if (isDeprecated)
-                    sb.append(STRIKE);
                 sb.append(simpleName);
-                if (isDeprecated)
-                    sb.append(STRIKE_END);
                 sb.append(COLOR_END);
                 leftText = sb.toString();
             }
             return leftText;
+        }
+
+        protected void substituteText(JTextComponent c, int offset, int len, String toAdd) {
+            super.substituteText(c, offset, len, inPackageStatement || toAdd != null ? toAdd : "."); //NOI18N
         }
         
         public String toString() {
@@ -719,77 +696,79 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     public void run(final CompilationController controller) throws IOException {
                         controller.toPhase(Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
-                        final TypeElement elem = (TypeElement)type.asElement();
+                        final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
                         boolean asTemplate = false;
                         StringBuilder sb = new StringBuilder();
-                        int cnt = 1;
-                        sb.append("${PAR"); //NOI18N
-                        sb.append(cnt++);
-                        if ((type == null || type.getKind() != TypeKind.ERROR) &&
-                                EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
-                            sb.append(" type=\""); //NOI18N
-                            sb.append(elem.getQualifiedName());
-                            sb.append("\" default=\""); //NOI18N
-                            sb.append(elem.getSimpleName());
-                        } else {
-                            sb.append(" default=\""); //NOI18N
-                            sb.append(elem.getQualifiedName());
-                        }
-                        sb.append("\" editable=false}"); //NOI18N
-                        Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
-                        if (tas != null && tas.hasNext()) {
-                            sb.append('<'); //NOI18N
-                            while (tas.hasNext()) {
-                                TypeMirror ta = tas.next();
-                                sb.append("${PAR"); //NOI18N
-                                sb.append(cnt++);
-                                if (ta.getKind() == TypeKind.TYPEVAR) {
-                                    TypeVariable tv = (TypeVariable)ta;
-                                    if (elem == tv.asElement().getEnclosingElement()) {
+                        if (elem != null) {
+                            int cnt = 1;
+                            sb.append("${PAR"); //NOI18N
+                            sb.append(cnt++);
+                            if ((type == null || type.getKind() != TypeKind.ERROR) &&
+                                    EnumSet.range(ElementKind.PACKAGE, ElementKind.INTERFACE).contains(elem.getEnclosingElement().getKind())) {
+                                sb.append(" type=\""); //NOI18N
+                                sb.append(elem.getQualifiedName());
+                                sb.append("\" default=\""); //NOI18N
+                                sb.append(elem.getSimpleName());
+                            } else {
+                                sb.append(" default=\""); //NOI18N
+                                sb.append(elem.getQualifiedName());
+                            }
+                            sb.append("\" editable=false}"); //NOI18N
+                            Iterator<? extends TypeMirror> tas = type != null ? type.getTypeArguments().iterator() : null;
+                            if (tas != null && tas.hasNext()) {
+                                sb.append('<'); //NOI18N
+                                while (tas.hasNext()) {
+                                    TypeMirror ta = tas.next();
+                                    sb.append("${PAR"); //NOI18N
+                                    sb.append(cnt++);
+                                    if (ta.getKind() == TypeKind.TYPEVAR) {
+                                        TypeVariable tv = (TypeVariable)ta;
+                                        if (elem == tv.asElement().getEnclosingElement()) {
+                                            sb.append(" type=\""); //NOI18N
+                                            ta = tv.getUpperBound();
+                                            sb.append(Utilities.getTypeName(ta, true));
+                                            sb.append("\" default=\""); //NOI18N
+                                            sb.append(Utilities.getTypeName(ta, false));
+                                        } else {
+                                            sb.append(" editable=false default=\""); //NOI18N
+                                            sb.append(Utilities.getTypeName(ta, true));
+                                            asTemplate = true;
+                                        }
+                                        sb.append("\"}"); //NOI18N
+                                    } else if (ta.getKind() == TypeKind.WILDCARD) {
                                         sb.append(" type=\""); //NOI18N
-                                        ta = tv.getUpperBound();
+                                        TypeMirror bound = ((WildcardType)ta).getExtendsBound();
+                                        if (bound == null)
+                                            bound = ((WildcardType)ta).getSuperBound();
+                                        sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
+                                        sb.append("\" default=\""); //NOI18N
+                                        sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
+                                        sb.append("\"}"); //NOI18N
+                                        asTemplate = true;
+                                    } else if (ta.getKind() == TypeKind.ERROR) {
+                                        sb.append(" default=\""); //NOI18N
+                                        sb.append(((ErrorType)ta).asElement().getSimpleName());
+                                        sb.append("\"}"); //NOI18N
+                                        asTemplate = true;
+                                    } else {
+                                        sb.append(" type=\""); //NOI18N
                                         sb.append(Utilities.getTypeName(ta, true));
                                         sb.append("\" default=\""); //NOI18N
                                         sb.append(Utilities.getTypeName(ta, false));
-                                    } else {
-                                        sb.append(" editable=false default=\""); //NOI18N
-                                        sb.append(Utilities.getTypeName(ta, true));
+                                        sb.append("\" editable=false}"); //NOI18N
                                         asTemplate = true;
                                     }
-                                    sb.append("\"}"); //NOI18N
-                                } else if (ta.getKind() == TypeKind.WILDCARD) {
-                                    sb.append(" type=\""); //NOI18N
-                                    TypeMirror bound = ((WildcardType)ta).getExtendsBound();
-                                    if (bound == null)
-                                        bound = ((WildcardType)ta).getSuperBound();
-                                    sb.append(bound != null ? Utilities.getTypeName(bound, true) : "Object"); //NOI18N
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(bound != null ? Utilities.getTypeName(bound, false) : "Object"); //NOI18N
-                                    sb.append("\"}"); //NOI18N
-                                    asTemplate = true;
-                                } else if (ta.getKind() == TypeKind.ERROR) {
-                                    sb.append(" default=\""); //NOI18N
-                                    sb.append(((ErrorType)ta).asElement().getSimpleName());
-                                    sb.append("\"}"); //NOI18N
-                                    asTemplate = true;
-                                } else {
-                                    sb.append(" type=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(ta, true));
-                                    sb.append("\" default=\""); //NOI18N
-                                    sb.append(Utilities.getTypeName(ta, false));
-                                    sb.append("\" editable=false}"); //NOI18N
-                                    asTemplate = true;
+                                    if (tas.hasNext())
+                                        sb.append(", "); //NOI18N
                                 }
-                                if (tas.hasNext())
-                                    sb.append(", "); //NOI18N
+                                sb.append('>'); //NOI18N
                             }
-                            sb.append('>'); //NOI18N
-                        }
-                        for(int i = 0; i < dim; i++) {
-                            sb.append("[${PAR"); //NOI18N
-                            sb.append(cnt++);
-                            sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
-                            asTemplate = true;
+                            for(int i = 0; i < dim; i++) {
+                                sb.append("[${PAR"); //NOI18N
+                                sb.append(cnt++);
+                                sb.append(" instanceof=\"int\" default=\"\"}]"); //NOI18N
+                                asTemplate = true;
+                            }
                         }
                         if (asTemplate) {
                             if (insideNew)
@@ -815,7 +794,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     try {
                                         Position semiPosition = semiPos > -1 && !insideNew ? doc.createPosition(semiPos) : null;
                                         TreePath tp = controller.getTreeUtilities().pathFor(offset);
-                                        CharSequence cs = enclName == null ? elem.getSimpleName() : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem)); 
+                                        CharSequence cs = enclName == null ? elem != null ? elem.getSimpleName() : simpleName : AutoImport.resolveImport(controller, tp, controller.getTypes().getDeclaredType(elem));
                                         if (!insideNew)
                                             cs = text.insert(0, cs);
                                         String textToReplace = doc.getText(offset, finalLen);
@@ -1599,9 +1578,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.setter = setter;
             this.simpleName = elem.getSimpleName().toString();
             if (setter)
-                this.name = "set" + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+                this.name = "set" + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             else
-                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + Character.toUpperCase(simpleName.charAt(0)) + simpleName.substring(1, simpleName.length()); //NOI18N
+                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
             this.typeName = Utilities.getTypeName(type, false).toString();
         }
         

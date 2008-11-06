@@ -133,7 +133,7 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
                 break;
             default:
                 if( AstRenderer.isStatement(token) ) {
-                    body = body = AstRenderer.renderStatement(token, getContainingFile(), this);
+                    body = AstRenderer.renderStatement(token, getContainingFile(), this);
                 }
                 else if( AstRenderer.isExpression(token) ) {
                     iteration = renderer.renderExpression(token, ForStatementImpl.this);

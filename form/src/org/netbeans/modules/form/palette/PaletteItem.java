@@ -44,6 +44,7 @@ package org.netbeans.modules.form.palette;
 import java.beans.*;
 import java.awt.Image;
 
+import java.util.Collections;
 import org.openide.ErrorManager;
 import org.openide.nodes.Node;
 
@@ -111,7 +112,15 @@ public final class PaletteItem implements Node.Cookie {
      * normally used only for project output).
      */
     public void setClassFromCurrentProject(String className, FileObject fileInProject) {
-        setComponentClassSource(new ClassSource((className == null) ? null : className.trim()));
+        String typeParameters = null;
+        if (className != null) {
+            int index = className.indexOf('<');
+            if (index != -1) {
+                typeParameters = className.substring(index);
+                className = className.substring(0,index);
+            }
+        }
+        setComponentClassSource(new ClassSource((className == null) ? null : className.trim(), Collections.EMPTY_LIST, typeParameters));
         cpRepresentative = fileInProject;
     }
 
@@ -119,7 +128,7 @@ public final class PaletteItem implements Node.Cookie {
 
     /** @return a node visually representing this palette item */
     public Node getNode() {
-        return (itemDataObject == null) ? null : itemDataObject.getNodeDelegate();
+        return ((itemDataObject == null) || !itemDataObject.isValid()) ? null : itemDataObject.getNodeDelegate();
     }
 
     /** @return a String identifying this palette item */

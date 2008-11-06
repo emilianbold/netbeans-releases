@@ -58,7 +58,7 @@ import javax.swing.event.TableModelListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.j2ee.clientproject.AppClientProject;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
 import org.netbeans.modules.java.api.common.SourceRoots;

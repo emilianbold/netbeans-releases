@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
+import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
 
 /**
  * Implements CsmNamespaceDefinition
@@ -127,11 +128,11 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void addDeclaration(CsmOffsetableDeclaration decl) {
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
-        declarations.add(uid);
+        insertIntoSortedDeclArray(uid);
         if (decl instanceof VariableImpl) {
             VariableImpl v = (VariableImpl) decl;
             if (!NamespaceImpl.isNamespaceScope(v, false)) {
-                v.setScope(this);
+                v.setScope(this, true);
             }
         }
         if (decl instanceof FunctionImpl) {
@@ -142,6 +143,17 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         }
         // update repository
         RepositoryUtils.put(this);
+    }
+    
+    private void insertIntoSortedDeclArray(CsmUID<CsmOffsetableDeclaration> uid) {
+        for (int pos = 0; pos < declarations.size(); pos++) {
+            CsmUID<CsmOffsetableDeclaration> currUID = declarations.get(pos);
+            if (UIDUtilities.compareWithinFile(uid, currUID) <= 0) {
+                declarations.add(pos, uid);
+                return;
+            }
+        }
+        declarations.add(uid);
     }
     
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {

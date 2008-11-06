@@ -44,19 +44,36 @@ package org.openide.filesystems;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
+import junit.framework.Test;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.test.TestFileUtils;
 import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.test.MockLookup;
 
 /**
- * @author Jesse Glick
+ * @author Jesse Glick, Jiri Skrivanek
  */
 public class FileUtilTest extends NbTestCase {
 
     public FileUtilTest(String n) {
         super(n);
+    }
+
+    public static Test suite() {
+        Test suite = null;
+            //suite = new FileUtilTest("testNormalizeFile");
+        if (suite == null) {
+            suite = new NbTestSuite(FileUtilTest.class);
+        }
+        return suite;
     }
 
     public void testToFileObjectSlash() throws Exception { // #98388
@@ -163,10 +180,54 @@ public class FileUtilTest extends NbTestCase {
         }
     }
     
-    /** Tests whether java.io.File(".") is normalized. */
-    public void testNormalizeFile137407() {
-        File file = new File(".");
-        assertTrue("java.io.File(\".\") not normalized.", FileUtil.normalizeFile(FileUtil.normalizeFile(file)).equals(FileUtil.normalizeFile(file)));
+    /** Tests normalizeFile() method. */
+    public void testNormalizeFile() throws IOException {
+        System.out.println("java.version="+System.getProperty("java.version"));
+        // pairs of path before and after normalization
+        Map<String, String> paths = new HashMap<String, String>();
+        if (Utilities.isWindows()) {
+            paths.put("A:\\", "A:\\");
+            paths.put("A:\\dummy", "A:\\dummy");
+            paths.put("a:\\", "A:\\");
+            try {
+                new File("a:\\dummy").getCanonicalPath();
+                paths.put("a:\\dummy", "A:\\dummy");
+            } catch (IOException e) {
+                // if getCanonicalPath fails, normalization returns File.getAbsolutePath
+                paths.put("a:\\dummy", "a:\\dummy");
+            }
+            paths.put("C:\\", "C:\\");
+            paths.put("C:\\dummy", "C:\\dummy");
+            paths.put("c:\\", "C:\\");
+            paths.put("c:\\dummy", "C:\\dummy");
+            paths.put("c:\\.", "C:\\");
+            paths.put("c:\\..", "C:\\");
+            paths.put("c:\\dummy\\.", "C:\\dummy");
+            paths.put("c:\\dummy\\..", "C:\\");
+            paths.put("c:\\dummy\\.\\foo", "C:\\dummy\\foo");
+            paths.put("c:\\dummy\\..\\foo", "C:\\foo");
+            paths.put("\\\\", "\\\\");
+            paths.put("\\\\computerName\\sharedFolder", "\\\\computerName\\sharedFolder");
+            paths.put("\\\\computerName\\sharedFolder\\dummy\\.", "\\\\computerName\\sharedFolder\\dummy");
+            paths.put("\\\\computerName\\sharedFolder\\dummy\\..", "\\\\computerName\\sharedFolder");
+            paths.put("\\\\computerName\\sharedFolder\\dummy\\.\\foo", "\\\\computerName\\sharedFolder\\dummy\\foo");
+            paths.put("\\\\computerName\\sharedFolder\\dummy\\..\\foo", "\\\\computerName\\sharedFolder\\foo");
+        } else {
+            paths.put("/", "/");
+            paths.put("/dummy/.", "/dummy");
+            paths.put("/dummy/..", "/");
+            paths.put("/dummy/./foo", "/dummy/foo");
+            paths.put("/dummy/../foo", "/foo");
+        }
+        // #137407 - java.io.File(".") should be normalized
+        paths.put(".", new File(".").getCanonicalPath());
+        paths.put("..", new File("..").getCanonicalPath());
+
+        for (String path : paths.keySet()) {
+            File file = new File(path);
+            assertTrue("Idempotency violated for path: " + path, FileUtil.normalizeFile(FileUtil.normalizeFile(file)).equals(FileUtil.normalizeFile(file)));
+            assertEquals("File not normalized: " + path, paths.get(path), FileUtil.normalizeFile(file).getPath());
+        }
     }
 
     /** Tests that only resolvers are queried which supply at least one of
@@ -217,6 +278,45 @@ public class FileUtilTest extends NbTestCase {
         /** Always returns the same just to signal it's been queried. */
         public String findMIMEType(FileObject fo) {
             return QUERIED;
+        }
+    }
+
+    /** Test recovery of FileUtil.createFolder(FileObject, String) method when
+     * other thread created folder in the middle of processing (see #152219).
+     */
+    public void testFolderAlreadyExists152219() {
+        final FileObject folder = FileUtil.createMemoryFileSystem().getRoot();
+        final String name = "subfolder";
+        Handler handler = new Handler() {
+
+            @Override
+            public void publish(LogRecord record) {
+                if (record.getMessage().equals("createFolder - before create folder if not exists.")) {
+                    try {
+                        folder.createFolder(name);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
+                }
+            }
+
+            @Override
+            public void flush() {
+            }
+
+            @Override
+            public void close() throws SecurityException {
+            }
+        };
+        Logger logger = Logger.getLogger(FileUtil.class.getName());
+        logger.addHandler(handler);
+        logger.setLevel(Level.FINEST);
+        try {
+            FileUtil.createFolder(folder, name);
+        } catch (IOException ioe) {
+            fail("FileUtil.createFolder(FileObject, String) should try to refresh folder because other thread can create folder before.");
+        } finally {
+            logger.removeHandler(handler);
         }
     }
 }

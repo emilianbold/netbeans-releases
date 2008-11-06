@@ -58,6 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Quy Nguyen <quynguyen@netbeans.org>
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.client.tools.api.LocationMappersFactory.class, position=65535)
 public final class IdentityLocationMappersFactory implements LocationMappersFactory {
     static final String[] SUPPORTED_MIME_TYPES = {
         "text/html",       // NOI18N

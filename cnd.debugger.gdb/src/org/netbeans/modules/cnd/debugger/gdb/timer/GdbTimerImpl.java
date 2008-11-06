@@ -56,9 +56,6 @@ class GdbTimerImpl extends GdbTimer {
     private int skipCount = 0;
     private boolean in_use = false;
     
-    GdbTimerImpl() {
-    }
-    
     public void reset() {
         skipCount = 0;
         in_use = false;

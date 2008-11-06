@@ -104,7 +104,7 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
     
     private static final boolean CHECK_SCOPE = false;
     
-    protected FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
+    public FunctionImpl(AST ast, CsmFile file, CsmScope scope, boolean register) throws AstRendererException {
         
         super(ast, file);
         assert !CHECK_SCOPE || (scope != null);
@@ -490,9 +490,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
             switch( type ) {
                 case CPPTokenTypes.CSM_TYPE_BUILTIN:
                 case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                case CPPTokenTypes.LITERAL_typename:
                     return token;
                 default:
-                    if( AstRenderer.isQualifier(type) ) {
+                    if( AstRenderer.isCVQualifier(type) ) {
                         return token;
                     }
             }

@@ -289,15 +289,14 @@ made subject to such option by the copyright holder.
                 </file>
                 -->
             </folder>
+            <folder name="bat">
+                <!-- Prevent languages.bat from creating data objects for batch files. See also Loaders/text/bat. -->
+                <attr name="createDataObject" boolvalue="false"/>
+            </folder>
         </folder>
     </folder>
     
     <folder name="Services">
-            
-        <file name="org-netbeans-modules-cnd-settings-CppSettings.settings" url="CppSettings.settings">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.settings.Bundle"/>
-            <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/loaders/CCSrcIcon.gif"/>
-        </file>
         
         <folder name="MIMEResolver">
             
@@ -370,6 +369,10 @@ made subject to such option by the copyright holder.
             <file name="SunStudio.xml" url="toolchain/SunStudio.xml">
                 <attr name="position" intvalue="2000"/>
             </file>
+            <file name="SunStudio_Linux.xml" url="toolchain/SunStudio_Linux.xml">
+                <attr name="position" intvalue="2050"/>
+                <attr name="extends" stringvalue="SunStudio"/>
+            </file>
 
             <file name="Cygwin.xml" url="toolchain/Cygwin.xml">
                 <attr name="position" intvalue="2100"/>
@@ -377,6 +380,10 @@ made subject to such option by the copyright holder.
             </file>
             <file name="MinGW.xml" url="toolchain/MinGW.xml">
                 <attr name="position" intvalue="2200"/>
+                <attr name="extends" stringvalue="GNU"/>
+            </file>
+            <file name="MinGW_TDM.xml" url="toolchain/MinGW_TDM.xml">
+                <attr name="position" intvalue="2250"/>
                 <attr name="extends" stringvalue="GNU"/>
             </file>
             <file name="Interix.xml" url="toolchain/Interix.xml">
@@ -960,6 +967,15 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder> <!-- Actions -->
             </folder> <!-- x-shell -->
+            <folder name="bat">
+                <!-- We want our own ShellDataObjects for batch files. See also Editors/text/bat. -->
+                <folder name="Factories">
+                    <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
+                        <attr name="position" intvalue="99999"/>
+                    </file>
+                </folder>
+            </folder>
             <folder name="x-fortran">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">

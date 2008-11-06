@@ -49,6 +49,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -65,6 +66,7 @@ import org.openide.windows.OutputListener;
  * Standard logger for producing Ant output messages.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=100)
 public final class StandardLogger extends AntLogger {
     
     private static final Logger ERR = Logger.getLogger(StandardLogger.class.getName());
@@ -106,6 +108,7 @@ public final class StandardLogger extends AntLogger {
      * <li>message
      * </ol>
      */
+    // should be consistent with o.apache.tools.ant.module.ForkedJavaOverride.HYPERLINK
     private static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
     
     /**
@@ -369,11 +372,12 @@ public final class StandardLogger extends AntLogger {
                 }
             }
         }
-        OutputListener hyperlink = findHyperlink(session, line);
+        AtomicBoolean isHypelink = new AtomicBoolean();
+        OutputListener hyperlink = findHyperlink(session, line, isHypelink);
         if (hyperlink instanceof Hyperlink) {
             getSessionData(session).lastHyperlink = (Hyperlink) hyperlink;
         }
-        if (hyperlink == null && "java".equals(event.getTaskName()) && 
+        if (!isHypelink.get() && "java".equals(event.getTaskName()) &&
                 (event.getLogLevel() == AntEvent.LOG_WARN || event.getLogLevel() == AntEvent.LOG_INFO)) {
             // stdout and stderr (except hyperlinks) is printed directly for java
             return;
@@ -391,13 +395,15 @@ public final class StandardLogger extends AntLogger {
     /**
      * Possibly hyperlink a message logged event.
      */
-    private OutputListener findHyperlink(AntSession session, String line) {
+    private OutputListener findHyperlink(AntSession session, String line, AtomicBoolean isHyperlink) {
         Stack<File> cwd = getSessionData(session).currentDir;
         Matcher m = HYPERLINK.matcher(line);
         if (!m.matches()) {
+            isHyperlink.set(false);
             ERR.fine("does not look like a hyperlink");
             return null;
         }
+        isHyperlink.set(true);
         String path = m.group(1);
         File file;
         if (path.startsWith("file:")) {

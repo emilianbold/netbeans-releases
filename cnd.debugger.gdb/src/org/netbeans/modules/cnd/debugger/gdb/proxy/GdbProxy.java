@@ -79,14 +79,14 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
  *    tell low level to send a signal to the application to interrupt the execution
  *    tell low level to kill the debugger
  */
-public class GdbProxy implements GdbMiDefinitions {
+public class GdbProxy {
 
     private final GdbDebugger debugger;
     private final GdbProxyEngine engine;
     private final GdbLogger gdbLogger;
-    private final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.gdbproxy.logger"); // NOI18N
     
-    private final Map<Integer, CommandBuffer> map = new HashMap<Integer, CommandBuffer>();
+    private final Map<Integer, CommandBuffer> map = Collections.synchronizedMap(new HashMap<Integer, CommandBuffer>());
 
     /**
      * Creates a new instance of GdbProxy
@@ -137,24 +137,24 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param program - a name of an external program to debug
      */
-    public int file_exec_and_symbols(String programName) {
-        return engine.sendCommand("-file-exec-and-symbols " + programName); // NOI18N
+    public void file_exec_and_symbols(String programName) {
+        engine.sendCommand("-file-exec-and-symbols " + programName); // NOI18N
     }
     
-    public int addSymbolFile(String path, String addr) {
-        return engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
+    public void addSymbolFile(String path, String addr) {
+        engine.sendCommand("add-symbol-file " + path + " " + addr); // NOI18N
     }
     
     /** Attach to a running program */
-    public int target_attach(CommandBuffer cb, String pid) {
+    public CommandBuffer target_attach(String pid) {
 //        return engine.sendCommand("-target-attach " + pid); // NOI18N - no implementaion
-        return engine.sendCommand(cb, "attach " + pid); // NOI18N
+        return engine.sendCommandEx("attach " + pid); // NOI18N
     }
     
     /** Detach from a running program */
-    public int target_detach() {
+    public void target_detach() {
 //        return engine.sendCommand("-target-detach"); // NOI18N - no implementaion
-        return engine.sendCommand("detach"); // NOI18N
+        engine.sendCommand("detach"); // NOI18N
     }
 
     /**
@@ -162,18 +162,18 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param program - a name of an external program to debug
      */
-    public int file_symbol_file(String path) {
-        return engine.sendCommand("-file-symbol-file " + path); // NOI18N
+    public void file_symbol_file(String path) {
+        engine.sendCommand("-file-symbol-file " + path); // NOI18N
     }
 
     /** Ask gdb for its version */
-    public int gdb_version(CommandBuffer cb) {
-        return engine.sendCommand(cb, "-gdb-version"); // NOI18N
+    public CommandBuffer gdb_version() {
+        return engine.sendCommandEx("-gdb-version"); // NOI18N
     }
 
     /** Ask gdb about a variable (currently used to find the current language) */
-    public int gdb_show(String arg) {
-        return engine.sendCommand("-gdb-show " + arg); // NOI18N
+    public void gdb_show(String arg) {
+        engine.sendCommand("-gdb-show " + arg); // NOI18N
     }
 
     /**
@@ -183,7 +183,7 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param path The directory we want to run from
      */
-    public int environment_cd(String dir) {
+    public void environment_cd(String dir) {
         StringBuilder cmd = new StringBuilder();
 
         cmd.append(debugger.getVersionPeculiarity().environmentCdCommand());
@@ -192,7 +192,7 @@ public class GdbProxy implements GdbMiDefinitions {
         cmd.append(dir);
         cmd.append("\""); // NOI18N
         
-        return engine.sendCommand(cmd.toString());
+        engine.sendCommand(cmd.toString());
     }
 
     /**
@@ -202,8 +202,8 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param path The directory we want to run from
      */
-    public int environment_directory(String dir) {
-        return environment_directory(Collections.singletonList(dir));
+    public void environment_directory(String dir) {
+        environment_directory(Collections.singletonList(dir));
     }
 
     /**
@@ -213,8 +213,8 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param path The directory we want to run from
      */
-    public int environment_directory(List<String> dirs) {
-        assert dirs.size() > 0;
+    public void environment_directory(List<String> dirs) {
+        assert !dirs.isEmpty();
         StringBuilder cmd = new StringBuilder();
         
         cmd.append(debugger.getVersionPeculiarity().environmentDirectoryCommand());
@@ -224,7 +224,7 @@ public class GdbProxy implements GdbMiDefinitions {
             cmd.append(dir);
             cmd.append("\""); // NOI18N
         }
-        return engine.sendCommand(cmd.toString());
+        engine.sendCommand(cmd.toString());
     }
 
     /**
@@ -234,85 +234,77 @@ public class GdbProxy implements GdbMiDefinitions {
      *  Note: In gdb 6.5.50 the -threads-list-all-threads command isn't implemented so we
      *  revert to the gdb command "info threads".
      */
-    public int info_threads(CommandBuffer cb) {
-        return engine.sendCommand(cb, "info threads"); // NOI18N;
+    public CommandBuffer info_threads() {
+        return engine.sendCommandEx("info threads"); // NOI18N;
     }
-    
-    public int info_threads() {
-        return engine.sendCommand("info threads"); // NOI18N;
-    }
-    
-    public int info_files(CommandBuffer cb) {
-        return engine.sendCommand(cb, "info files"); // NOI18N
+   
+    public CommandBuffer info_files() {
+        return engine.sendCommandEx("info files"); // NOI18N
     }
 
     /** Set the current thread */
-    public int thread_select(String id) {
-        return engine.sendCommand("-thread-select " + id); // NOI18N
+    public void thread_select(String id) {
+        engine.sendCommand("-thread-select " + id); // NOI18N
     }
 
     /**
      *  Ask gdb about /proc info. We don't really care about the /proc, but it also returns
      *  the process ID, which we do care about.
      */
-    public int info_proc() {
-        return engine.sendCommand("info proc"); // NOI18N
+    public void info_proc() {
+        engine.sendCommand("info proc"); // NOI18N
     }
     
-    public int info_share() {
-        return engine.sendCommand("info share"); // NOI18N
-    }
-    
-    public int info_share(CommandBuffer cb) {
-        return engine.sendCommand(cb, "info share"); // NOI18N
+    public CommandBuffer info_share(boolean waitForCompletion) {
+        return engine.sendCommandEx("info share", waitForCompletion); // NOI18N
     }
 
     /**
      *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
      */
-    public int data_evaluate_expression(CommandBuffer cb, String string) {
-        return engine.sendCommand(cb, "-data-evaluate-expression " + string); // NOI18N
+    public CommandBuffer data_evaluate_expressionEx(String string) {
+        return engine.sendCommandEx("-data-evaluate-expression " + string); // NOI18N
     }
 
     /**
      *  Use this to call _CndSigInit() to initialize signals in Cygwin processes.
      */
-    public int data_evaluate_expression(String string) {
-        return engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
+    public void data_evaluate_expression(String string) {
+        engine.sendCommand("-data-evaluate-expression " + string); // NOI18N
     }
     
     /**
      */
-    public int data_list_register_names(String regIds) {
-        return engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
+    public void data_list_register_names(String regIds) {
+        engine.sendCommand("-data-list-register-names " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_register_values(CommandBuffer cb, String regIds) {
-        return engine.sendCommand(cb, "-data-list-register-values x " + regIds); // NOI18N
+    public void data_list_register_values(String regIds) {
+        engine.sendCommand("-data-list-register-values x " + regIds); // NOI18N
     }
     
     /**
      */
-    public int data_list_changed_registers(CommandBuffer cb) {
-        return engine.sendCommand(cb, "-data-list-changed-registers"); // NOI18N
+    public void data_list_changed_registers() {
+        engine.sendCommand("-data-list-changed-registers"); // NOI18N
     }
     
     /*
      * @param filename - source file to disassemble
      */
-    public int data_disassemble(String filename, int line, boolean withSource) {
+    public void data_disassemble(String filename, int line, boolean withSource) {
         int src = withSource ? 1 : 0;
-        return engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- " + src); // NOI18N
+        engine.sendCommand("-data-disassemble -f " + filename + " -l " + line + " -- " + src); // NOI18N
     }
     
     /*
      * @param size - size in bytes
      */
-    public int data_disassemble(int size, boolean withSource) {
+    public void data_disassemble(int size, boolean withSource) {
         int src = withSource ? 1 : 0;
-        return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
+        engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
     }
 
     public static final int MEMORY_READ_WIDTH = 16;
@@ -320,12 +312,12 @@ public class GdbProxy implements GdbMiDefinitions {
     /*
      * @param addr - address to read from
      */
-    public int data_read_memory(CommandBuffer cb, String addr, int lines) {
-        return engine.sendCommand(cb, "-data-read-memory " + addr + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " ."); // NOI18N
+    public CommandBuffer data_read_memory(String addr, int lines) {
+        return engine.sendCommandEx("-data-read-memory " + addr + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " ."); // NOI18N
     }
     
-    public int print(CommandBuffer cb, String expression) {
-        return engine.sendCommand(cb, "print " + expression); // NOI18N
+    public CommandBuffer print(String expression) {
+        return engine.sendCommandEx("print " + expression); // NOI18N
     }
 
     /**
@@ -335,8 +327,8 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @return null if action is accepted, otherwise return error message
      */
-    public int file_list_exec_source_file() {
-        return engine.sendCommand("-file-list-exec-source-file"); // NOI18N
+    public CommandBuffer file_list_exec_source_file() {
+        return engine.sendCommandEx("-file-list-exec-source-file"); // NOI18N
     }
 
     /**
@@ -347,8 +339,8 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param programParameters - command line options for the program
      */
-    public int exec_run(String programParameters) {
-        return engine.sendCommand("-exec-run " + programParameters); // NOI18N
+    public void exec_run(String programParameters) {
+        engine.sendCommand("-exec-run " + programParameters); // NOI18N
     }
 
     /**
@@ -357,8 +349,8 @@ public class GdbProxy implements GdbMiDefinitions {
      * The inferior executes until either a breakpoint is encountered or
      * the program exits.
      */
-    public int exec_run() {
-        return exec_run("");
+    public void exec_run() {
+        exec_run("");
     }
 
     /**
@@ -368,9 +360,9 @@ public class GdbProxy implements GdbMiDefinitions {
      * source line is not a function call.
      * If it is, stop at the first instruction of the called function.
      */
-    public int exec_step() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_STEP);
-        return engine.sendCommand("-exec-step"); // NOI18N
+    public void exec_step() {
+        debugger.setLastGo(GdbDebugger.LastGoState.STEP);
+        engine.sendCommand("-exec-step"); // NOI18N
     }
 
     /**
@@ -378,23 +370,25 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command resumes execution of the inferior program, stopping
      * when the beginning of the next source line is reached.
      */
-    public int exec_next() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_NEXT);
-        return engine.sendCommand("-exec-next"); // NOI18N
+    public void exec_next() {
+        debugger.setLastGo(GdbDebugger.LastGoState.NEXT);
+        engine.sendCommand("-exec-next"); // NOI18N
     }
     
     /**
      * Execute single instruction
      */
-    public int exec_step_instruction() {
-        return engine.sendCommand("-exec-step-instruction"); // NOI18N
+    public void exec_step_instruction() {
+        // TODO: don't we need to set last go state here?
+        engine.sendCommand("-exec-step-instruction"); // NOI18N
     }
 
     /**
      * Execute next instruction
      */
-    public int exec_next_instruction() {
-        return engine.sendCommand("-exec-next-instruction"); // NOI18N
+    public void exec_next_instruction() {
+        // TODO: don't we need to set last go state here?
+        engine.sendCommand("-exec-next-instruction"); // NOI18N
     }
 
     /**
@@ -402,9 +396,9 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command resumes execution of the inferior program until
      * the current function is exited.
      */
-    public int exec_finish() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_FINISH);
-        return engine.sendCommand("-exec-finish"); // NOI18N
+    public void exec_finish() {
+        debugger.setLastGo(GdbDebugger.LastGoState.FINISH);
+        engine.sendCommand("-exec-finish"); // NOI18N
     }
 
     /**
@@ -412,9 +406,9 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command resumes execution of the inferior program, until a
      * breakpoint is encountered, or until the inferior exits.
      */
-    public int exec_continue() {
-        debugger.setLastGo(GdbDebugger.LAST_GO_WAS_CONTINUE);
-        return engine.sendCommand("-exec-continue"); // NOI18N
+    public void exec_continue() {
+        debugger.setLastGo(GdbDebugger.LastGoState.CONTINUE);
+        engine.sendCommand("-exec-continue"); // NOI18N
     }
 
     /**
@@ -423,23 +417,23 @@ public class GdbProxy implements GdbMiDefinitions {
      * but this feature is not implemented in gdb yet, so it is replaced
      * with sending a signal "INT" (Unix) or signal TSTP (Windows).
      */
-    public int exec_interrupt() {
-        if (debugger.getState().equals(GdbDebugger.STATE_RUNNING) || debugger.getState().equals(GdbDebugger.STATE_SILENT_STOP)) {
+    public void exec_interrupt() {
+        if (debugger.getState() == GdbDebugger.State.RUNNING || debugger.getState() == GdbDebugger.State.SILENT_STOP) {
             if (Utilities.isWindows()) {
                 debugger.kill(18);
             } else {
                 debugger.kill(2);
             }
         }
-        return 0;
+        //return 0;
     }
 
     /**
      * Send "-exec-abort" to the debugger
      * This command kills the inferior program.
      */
-    public int exec_abort() {
-        return engine.sendCommand(debugger.getVersionPeculiarity().execAbortCommand());
+    public void exec_abort() {
+        engine.sendCommand(debugger.getVersionPeculiarity().execAbortCommand());
     }
     
 
@@ -494,15 +488,15 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param name The function name or linenumber information
      * @return token number
      */
-    public int break_insert(String name) {
-        return break_insert(0, false, name, null);
+    public void break_insert(String name) {
+        break_insert(0, false, name, null);
     }
 
     /**
      * Insert temporary breakpoint
      */
-    public int break_insert_temporary(String name) {
-        return break_insert(0, true, name, null);
+    public void break_insert_temporary(String name) {
+        break_insert(0, true, name, null);
     }
 
     /**
@@ -512,8 +506,19 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param number - breakpoint's number
      */
-    public int break_delete(int number) {
-        return engine.sendCommand("-break-delete " + Integer.toString(number)); // NOI18N
+    public void break_delete(int number) {
+        engine.sendCommand("-break-delete " + Integer.toString(number)); // NOI18N
+    }
+
+    /**
+     * Send "-break-delete number" to the debugger
+     * This command deletes the breakpoints
+     * whose number(s) are specified in the argument list.
+     *
+     * @param number - breakpoint's number
+     */
+    public void break_delete(String number) {
+        engine.sendCommand("-break-delete " + number); // NOI18N
     }
 
     /**
@@ -524,12 +529,12 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param ids - breakpoints number array
      */
-    public int break_enable(Integer... ids) {
+    public void break_enable(Integer... ids) {
         StringBuilder cmd = new StringBuilder("-break-enable"); // NOI18N
         for (int id : ids) {
             cmd.append(" " + id); // NOI18N
         }
-        return engine.sendCommand(cmd.toString());
+        engine.sendCommand(cmd.toString());
     }
 
     /**
@@ -540,25 +545,25 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param ids - breakpoints number array
      */
-    public int break_disable(Integer... ids) {
+    public void break_disable(Integer... ids) {
         StringBuilder cmd = new StringBuilder("-break-disable"); // NOI18N
         for (int id : ids) {
             cmd.append(" " + id); // NOI18N
         }
-        return engine.sendCommand(cmd.toString());
+        engine.sendCommand(cmd.toString());
     }
     
-    public int break_condition(int number, String condition) {
-        return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
+    public void break_condition(int number, String condition) {
+        engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
     }
     
-    public int break_after(int number, int count) {
-        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
+    public void break_after(int number, int count) {
+        engine.sendCommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */
-    public int stack_list_locals() {
-        return stack_list_locals(""); // NOI18N
+    public void stack_list_locals() {
+        stack_list_locals(""); // NOI18N
     }
 
     /**
@@ -573,12 +578,12 @@ public class GdbProxy implements GdbMiDefinitions {
      *
      * @param printValues defines output format
      */
-    public int stack_list_locals(String printValues) {
-        return engine.sendCommand("-stack-list-locals " + printValues); // NOI18N
+    public void stack_list_locals(String printValues) {
+        engine.sendCommand("-stack-list-locals " + printValues); // NOI18N
     }
 
-    public int stack_list_arguments(int showValues, int low, int high) {
-        return engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
+    public void stack_list_arguments(int showValues, int low, int high) {
+        engine.sendCommand("-stack-list-arguments " + showValues + " " + low + " " + high); // NOI18N
     }
 
     /**
@@ -586,59 +591,59 @@ public class GdbProxy implements GdbMiDefinitions {
      * This command tells gdb to change the current frame.
      * Select a different frame frameNumber on the stack.
      */
-    public int stack_select_frame(int frameNumber) {
-        return engine.sendCommand("-stack-select-frame " + Integer.valueOf(frameNumber)); // NOI18N
+    public void stack_select_frame(int frameNumber) {
+        engine.sendCommand("-stack-select-frame " + Integer.valueOf(frameNumber)); // NOI18N
     }
 
     /**
      * Send "-stack-info-frame " to the debugger
      * This command asks gdb to provide information about current frame.
      */
-    public int stack_info_frame() {
-        return engine.sendCommand("-stack-info-frame "); // NOI18N
+    public void stack_info_frame() {
+        engine.sendCommand("-stack-info-frame "); // NOI18N
     }
 
     /** Request a stack dump from gdb */
-    public int stack_list_frames() {
-        return engine.sendCommand("-stack-list-frames "); // NOI18N
+    public void stack_list_frames() {
+        engine.sendCommand("-stack-list-frames "); // NOI18N
     }
 
     /** Request a stack dump from gdb */
-    public int stack_list_frames(CommandBuffer cb) {
-        return engine.sendCommand(cb, "-stack-list-frames "); // NOI18N
+    public CommandBuffer stack_list_framesEx() {
+        return engine.sendCommandEx("-stack-list-frames "); // NOI18N
     }
     
-    public int gdb_set(String command, String value) {
+    public void gdb_set(String command, String value) {
         StringBuilder sb = new StringBuilder();
         sb.append("-gdb-set "); // NOI18N
         sb.append(command);
         sb.append(' ');
         sb.append(value);
-        return engine.sendCommand(sb.toString());
+        engine.sendCommand(sb.toString());
     }
 
     /**
      * Send "set new-console" to the debugger
      * This command tells gdb to execute inferior program with console.
      */
-    public int set_new_console() {
-        return engine.sendCommand(CLI_CMD_SET_NEW_CONSOLE);
+    public void set_new_console() {
+        engine.sendCommand("set new-console"); // NOI18N
     }
 
     /**
      * Send "set new-console" to the debugger
      * This command tells gdb to execute inferior program with console.
      */
-    public int set_unwindonsignal(String on_off) {
-        return engine.sendCommand("set unwindonsignal " + on_off); // NOI18N
+    public void set_unwindonsignal(String on_off) {
+        engine.sendCommand("set unwindonsignal " + on_off); // NOI18N
     }
 
     /**
      * Request the type of a symbol. As of gdb 6.6, this is unimplemented so we send a
      * non-mi command "ptype". We should only be called when symbol is in scope.
      */
-    public int symbol_type(CommandBuffer cb, String symbol) {
-        return engine.sendCommand(cb, "ptype " + symbol); // NOI18N
+    public CommandBuffer symbol_type(String symbol) {
+        return engine.sendCommandEx("ptype " + symbol); // NOI18N
     }
 
     /**
@@ -646,17 +651,16 @@ public class GdbProxy implements GdbMiDefinitions {
      * so we send a gdb "whatis" command. This is different from -system-type in the case
      * of abstract data structures (structs and classes). Its the same for other types.
      */
-    public int whatis(CommandBuffer cb, String symbol) {
-        return engine.sendCommand(cb, "whatis " + symbol); // NOI18N
+    public CommandBuffer whatis(String symbol) {
+        return engine.sendCommandEx("whatis " + symbol); // NOI18N
     }
 
     /**
      * Send "-gdb-exit" to the debugger
      * This command forces gdb to exit immediately.
      */
-    public int gdb_exit() {
-        int token = engine.sendCommand("-gdb-exit "); // NOI18N
+    public void gdb_exit() {
+        engine.sendCommand("-gdb-exit "); // NOI18N
         engine.stopSending();
-        return token;
     }
 } /* End of public class GdbProxy */

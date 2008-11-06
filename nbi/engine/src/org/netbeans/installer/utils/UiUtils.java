@@ -41,6 +41,7 @@ import java.awt.HeadlessException;
 import java.awt.Toolkit;
 import java.io.File;
 import java.io.FileFilter;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -52,6 +53,7 @@ import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JProgressBar;
 import javax.swing.LookAndFeel;
+import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import org.netbeans.installer.Installer;
@@ -312,8 +314,23 @@ public final class UiUtils {
                                     }
                                 }
                                 
+                                                                
                                 
-                                new JFileChooser();                                
+                                if (SwingUtilities.isEventDispatchThread()) {
+                                    new JFileChooser();
+                                } else {
+                                    try {
+                                        SwingUtilities.invokeAndWait(new Runnable() {
+                                            public void run() {
+                                                new JFileChooser();
+                                            }
+                                        });
+                                    } catch (InvocationTargetException e) {
+                                        throw (e.getCause() != null) ? e.getCause() : e;
+                                    }
+                                }
+                                
+                                
                                 if(jdkFileChooserWarningLogThread!=null) {
                                     jdkFileChooserWarningLogThread.interrupt();
                                     jdkFileChooserWarningLogThread = null;

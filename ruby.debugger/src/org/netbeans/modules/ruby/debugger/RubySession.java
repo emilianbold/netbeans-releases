@@ -44,6 +44,7 @@ package org.netbeans.modules.ruby.debugger;
 import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
@@ -67,7 +68,9 @@ import org.rubyforge.debugcommons.model.RubyValue;
 import org.rubyforge.debugcommons.model.RubyVariable;
 
 public final class RubySession {
-    
+
+    public static final Logger LOGGER = Logger.getLogger(RubySession.class.getName());
+
     /**
      * Used by the NetBeans META-INF tree to identify the language type session
      * directory.
@@ -138,7 +141,7 @@ public final class RubySession {
             activeThread.stepInto(forceNewLine());
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
-            Util.severe("Cannot step into", e); // NOI18N
+            LOGGER.log(Level.SEVERE, "Cannot step into: " + e.getLocalizedMessage(), e);
         }
     }
     
@@ -146,7 +149,7 @@ public final class RubySession {
         try {
             stepOver(forceNewLine());
         } catch (RubyDebuggerException e) {
-            Util.severe("Cannot step over", e); // NOI18N
+            LOGGER.log(Level.SEVERE, "Cannot step over: " + e.getLocalizedMessage(), e);
         }
     }
 
@@ -159,7 +162,7 @@ public final class RubySession {
             activeThread.stepOver(forceNewLine);
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
-            Util.severe("Cannot step over", e); // NOI18N
+            LOGGER.log(Level.SEVERE, "Cannot step voer: " + e.getLocalizedMessage(), e);
         }
     }
     
@@ -169,7 +172,7 @@ public final class RubySession {
             activeThread.stepReturn();
             state = State.RUNNING;
         } catch (RubyDebuggerException e) {
-            Util.severe("Cannot step return", e); // NOI18N
+            LOGGER.log(Level.SEVERE, "Cannot step return: " + e.getLocalizedMessage(), e);
         }
     }
     
@@ -197,7 +200,7 @@ public final class RubySession {
                 activeThread.runTo(file.getAbsolutePath(), line);
                 state = State.RUNNING;
             } catch (RubyDebuggerException e) {
-                Util.severe("Cannot step return", e); // NOI18N
+                LOGGER.log(Level.SEVERE, "Cannot run to cursor: " + e.getLocalizedMessage(), e);
             }
         }
     }
@@ -233,15 +236,13 @@ public final class RubySession {
      */
     public RubyThreadInfo[] getThreadInfos() {
         try {
-            return proxy.checkConnection() ? proxy.readThreadInfo() : EMPTY_THREAD_INFOS;
+            return proxy.isReady() ? proxy.readThreadInfo() : EMPTY_THREAD_INFOS;
         } catch (RubyDebuggerException e) {
-            if (proxy.checkConnection()) {
-                Util.LOGGER.log(Level.INFO, "Cannot read thread information", e);
-            }
+            logIfNotFinished("Cannot read threads from a live proxy" , e);
             return EMPTY_THREAD_INFOS;
         }
     }
-    
+
     /**
      * Returns latest known frames for this session.
      */
@@ -249,7 +250,7 @@ public final class RubySession {
         try {
             return isSessionSuspended() ? activeThread.getFrames() : EMPTY_FRAMES;
         } catch (RubyDebuggerException e) {
-            Util.severe("Cannot read frames information", e); // NOI18N
+            logIfNotFinished("Cannot read frames from a live proxy" , e);
             return EMPTY_FRAMES;
         }
     }
@@ -276,7 +277,7 @@ public final class RubySession {
         try {
             return selectedFrame == null ? getTopFrame() : selectedFrame;
         } catch (RubyDebuggerException e) {
-            Util.LOGGER.log(Level.INFO, "Unable to read top stack frame", e); // NOI18N
+            logIfNotFinished("Unable to read top stack frame" , e);
             return null;
         }
     }
@@ -289,7 +290,7 @@ public final class RubySession {
         try {
             return isSessionSuspended() ? proxy.readGlobalVariables() : EMPTY_VARIABLES;
         } catch (RubyDebuggerException e) {
-            Util.LOGGER.log(Level.INFO, "Cannot read global variables information", e); // NOI18N
+            logIfNotFinished("Cannot read global variables from a live proxy" , e);
             return EMPTY_VARIABLES;
         }
     }
@@ -302,7 +303,7 @@ public final class RubySession {
             RubyFrame frame = getSelectedFrame();
             return frame == null ? EMPTY_VARIABLES : frame.getVariables();
         } catch (RubyDebuggerException e) {
-            Util.LOGGER.log(Level.INFO, "Cannot read variables information", e); // NOI18N
+            logIfNotFinished("Cannot read variables from a live proxy", e);
             return EMPTY_VARIABLES;
         }
     }
@@ -312,7 +313,7 @@ public final class RubySession {
             RubyValue val = parent.getValue();
             return val == null ? EMPTY_VARIABLES : val.getVariables();
         } catch (RubyDebuggerException e) {
-            Util.severe("Cannot read variables information", e); // NOI18N
+            logIfNotFinished("Cannot read variables from a live proxy", e);
             return EMPTY_VARIABLES;
         }
     }
@@ -322,7 +323,7 @@ public final class RubySession {
             RubyFrame frame = getSelectedFrame();
             return frame == null ? null : frame.inspectExpression(expression);
         } catch (RubyDebuggerException e) {
-            Util.finer("Unable to inspect expression [" + expression + ']'); // NOI18N
+            LOGGER.finer("Unable to inspect expression [" + expression + ']'); // NOI18N
             return null;
         }
     }
@@ -349,10 +350,10 @@ public final class RubySession {
                     contextProvider.fireModelChanges();
                 }
             } catch (RubyDebuggerException e) {
-                Util.severe("Cannot switch thread", e); // NOI18N
+                LOGGER.log(Level.SEVERE, "Cannot switch thread" + e.getLocalizedMessage(), e);
             }
         } else {
-            Util.finer("Cannot switch to thread which is not suspended [" + thread + "]");
+            LOGGER.finer("Cannot switch to thread which is not suspended [" + thread + "]");
         }
     }
     
@@ -385,7 +386,7 @@ public final class RubySession {
             }
         }
         if (result == null) {
-            Util.finer("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
+            LOGGER.finer("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
         }
         return result;
     }
@@ -395,7 +396,7 @@ public final class RubySession {
         if (thread != null) {
             return thread.isSuspended();
         } else {
-            Util.warning("There is no thread for: " + ti);
+            LOGGER.warning("There is no thread for: " + ti);
             return false; // 'default'
         }
     }
@@ -413,7 +414,7 @@ public final class RubySession {
             }
             CallStackAnnotation.annotate(callSites);
         } catch (RubyDebuggerException e) {
-            Util.LOGGER.log(Level.WARNING, "Cannot annotated current call stack", e);
+            logIfNotFinished("Cannot annotated current call stack. Unable to read frames from a live proxy" , e);
         }
 
     }
@@ -447,6 +448,12 @@ public final class RubySession {
         return proxy;
     }
     
+    private void logIfNotFinished(final String message, final RubyDebuggerException e) {
+        if (proxy.isReady()) {
+            LOGGER.log(Level.INFO, message + ": " + e.getLocalizedMessage(), e);
+        }
+    }
+
     SessionProvider createSessionProvider() {
         return new SessionProvider() {
             public String getSessionName() {

@@ -473,7 +473,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log(e);
         }
 
-	
+	product.setProperty("installation.timestamp", new Long(System.currentTimeMillis()).toString());
+        
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -534,6 +535,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         e);
             }
         }
+        
+        product.setProperty("uninstallation.timestamp", new Long(System.currentTimeMillis()).toString());
 
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);

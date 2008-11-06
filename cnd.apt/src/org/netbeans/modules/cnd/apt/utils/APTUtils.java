@@ -83,7 +83,7 @@ public class APTUtils {
         } else {
             try {
                 LOG.setLevel(Level.parse(level));
-            } catch (Exception e) {
+            } catch (IllegalArgumentException e) {
                 // skip
             }
         }
@@ -427,7 +427,7 @@ public class APTUtils {
     }
     
     public static APTToken createAPTToken(Token token, int ttype) {
-        APTToken newToken = null;
+        APTToken newToken;
         if (APTTraceFlags.USE_APT_TEST_TOKEN) {
             newToken = new APTTestToken(token, ttype);
         } else {
@@ -441,7 +441,7 @@ public class APTUtils {
     }
     
     public static APTToken createAPTToken() {
-        APTToken newToken = null;
+        APTToken newToken;
         if (APTTraceFlags.USE_APT_TEST_TOKEN) {
             newToken = new APTTestToken();
         } else {

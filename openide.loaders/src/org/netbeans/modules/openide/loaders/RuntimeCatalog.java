@@ -56,6 +56,7 @@ import org.xml.sax.SAXException;
  * <li>of the hihgest priority
  * <li>last registration prevails
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.xml.EntityCatalog.class)
 public final class RuntimeCatalog extends EntityCatalog {
 
     /** Public constructor for lookup. */

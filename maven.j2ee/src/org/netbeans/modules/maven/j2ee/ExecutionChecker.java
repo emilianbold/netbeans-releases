@@ -53,7 +53,7 @@ import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
-import org.netbeans.modules.maven.bridges.debugger.MavenDebugger;
+import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.maven.j2ee.web.WebRunCustomizerPanel;
 import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
@@ -140,10 +140,8 @@ public class ExecutionChecker implements ExecutionResultChecker {
                     } else {
                         address = Integer.toString(sdi.getPort());
                     }
-                    MavenDebugger deb = Lookup.getDefault().lookup(MavenDebugger.class);
-                    MavenProject prj = project.getLookup().lookup(NbMavenProject.class).getMavenProject();
-                    //TODO get rid of MavenProject here..
-                    deb.attachDebugger(prj, null, "Debug Deployed app", transport, h, address);//NOI18N - no localization in maven build now.
+                    MavenDebugger deb = project.getLookup().lookup(MavenDebugger.class);
+                    deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address);//NOI18N - no localization in maven build now.
                 }
             }
         } catch (Exception ex) {

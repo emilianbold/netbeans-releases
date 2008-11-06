@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.Instantiation;
  * 
  * @author Nick Krasilnikov
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider.class)
 public class InstantiationProviderImpl extends CsmInstantiationProvider {
 
     @Override

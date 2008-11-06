@@ -113,6 +113,7 @@ import org.netbeans.modules.maven.operations.OperationsImpl;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.cos.CosChecker;
 import org.netbeans.modules.maven.debug.DebuggerChecker;
+import org.netbeans.modules.maven.debug.MavenDebuggerImpl;
 import org.netbeans.modules.maven.execute.BackwardCompatibilityWithMevenideChecker;
 import org.netbeans.modules.maven.execute.PrereqCheckerMerger;
 import org.netbeans.modules.maven.queries.MavenBinaryForSourceQueryImpl;
@@ -738,6 +739,8 @@ public final class NbMavenProjectImpl implements Project {
                     //operations
                     new OperationsImpl(this, state),
                     configEnabler,
+                    new MavenDebuggerImpl(this),
+
                     // default mergers..        
                     UILookupMergerSupport.createPrivilegedTemplatesMerger(),
                     UILookupMergerSupport.createRecommendedTemplatesMerger(),

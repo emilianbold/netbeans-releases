@@ -54,6 +54,11 @@ import java.lang.reflect.Method;
 class Util {
     private static boolean verbose = (System.getProperty("servicetag.verbose") != null);
     private static String jrepath = null;
+    private static final String REGKEY_TAIL = 
+	"microsoft\\windows\\currentversion\\app paths\\stclient.exe";
+    private static final String STCLIENT_TAIL =  "sun\\servicetag\\stclient.exe";
+    private static final String WIN32_STCLIENT = 
+	"c:\\Program Files (x86)\\" + STCLIENT_TAIL;
 
     // for debugging and tracing
     static boolean isVerbose() {
@@ -231,21 +236,60 @@ class Util {
 
     /**
      * Gets the stclient path using a well known location from 
-     * the Windows platform Registry, otherwise it will return null.
+     * the Windows platform Registry, ensuring the path returned
+     * by the registry is really the one we are looking for, 
+     * otherwise it will return null.
      */
-    static File getWindowsStClientFile() {
+    private static File getWindowsStClientFile(boolean wow64) {
         File out = null;
-        String regKey = "software\\microsoft\\windows\\currentversion\\app paths\\stclient.exe";
+        String regKey = (wow64 == true) 
+	    ? "software\\Wow6432Node\\" + REGKEY_TAIL
+	    : "software\\" + REGKEY_TAIL;
         String keyName = "" ; // use the default  key
         String path = getRegistryKey(regKey, keyName);
-
-        if (path != null && (new File(path)).exists()) {
+        if (path != null 
+	        && (new File(path)).exists() 
+                && path.toLowerCase().endsWith(STCLIENT_TAIL.toLowerCase())) {
             out = new File(path);
         }
         if (isVerbose()) {
             System.out.println("stclient=" + out);
         }
         return out;
+    }
+
+    /**
+     * Finds a stclient in 32 and 64 bit environments, first by querying 
+     * the windows registry, if not then get the well known paths for 
+     * 64bit see http://support.microsoft.com/kb/896459 
+     */
+
+    static File getWindowsStClientFile() {
+    	File stclient = null;
+	
+	if (System.getProperty("os.arch").equals("x86")) {
+	    // try to get the default entry
+	    stclient = getWindowsStClientFile(false);
+	    if (stclient != null) {
+	        return stclient;
+	    }
+	} else { // we are on 64-bit system
+	    // try the wow64 area
+            stclient = getWindowsStClientFile(true);
+	    if (stclient != null) {
+	        return stclient;
+	    }
+	    // try the default hard coded path, maybe wow64 registry is missing
+        stclient = new File(WIN32_STCLIENT);
+        if (isVerbose()) {
+                System.out.println("stclient(default)=" + stclient);
+            }
+        return stclient;
+	}
+	if (isVerbose()) {
+            System.out.println("stclient not found");
+        }
+        return null;
     }
 
     /**

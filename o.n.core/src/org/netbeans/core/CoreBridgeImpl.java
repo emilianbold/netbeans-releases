@@ -58,6 +58,7 @@ import org.openide.util.Lookup;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.startup.CoreBridge.class)
 public final class CoreBridgeImpl extends org.netbeans.core.startup.CoreBridge
 implements Runnable {
     /** counts the number of CLI invocations */

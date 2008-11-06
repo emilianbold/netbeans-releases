@@ -223,7 +223,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
     // look up the jars and return a resource based on a content of jars
     @Override
-    protected URL findResource(String name) {
+    public URL findResource(String name) {
         for( int i=0; i<sources.length; i++ ) {
             URL item = sources[i].getResource(name);
             if (item != null) return item;
@@ -232,7 +232,7 @@ public class JarClassLoader extends ProxyClassLoader {
     }
 
     @Override
-    protected Enumeration<URL> simpleFindResources(String name) {
+    public Enumeration<URL> findResources(String name) {
         Vector<URL> v = new Vector<URL>(3);
         // look up the jars and return a resource based on a content of jars
 
@@ -550,7 +550,7 @@ public class JarClassLoader extends ProxyClassLoader {
                 }
                 
                 sources.add(source); // now register the newly opened
-                LOGGER.log(Level.FINE, "Opening module JAR {0}", source.file);
+                LOGGER.log(Level.FINE, "Opening module JAR {0} for {1}", new Object[] {source.file, forWhat});
                 LOGGER.log(Level.FINE, "Currently open JARs: {0}", sources.size());
             }
         }

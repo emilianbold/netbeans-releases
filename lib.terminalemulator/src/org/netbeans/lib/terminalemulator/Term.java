@@ -1209,6 +1209,23 @@ public class Term extends JComponent implements Accessible {
     public void setAttribute(int value) {
         st.attr = Attr.setAttribute(st.attr, value);
     }
+
+    
+    /**
+     * Return the complete state of attributes.
+     * @return Complete state of attributes.
+     */
+    int attrSave() {
+        return st.attr;
+    }
+
+    /**
+     * Restore the complete set of attributes.
+     * @param attr Attributes to be restored.
+     */
+    void attrRestore(int attr) {
+        st.attr = attr;
+    }
     
     /**
      * Set or unset the display attribute for characters from 'begin' to 'end'
@@ -1967,7 +1984,7 @@ public class Term extends JComponent implements Accessible {
     
     static void indent(boolean indented) {
         if (indented)
-            System.out.println("\t");
+            System.out.println("\t");   // NOI18N
     }
     
     private MemUse lastMemUse = new MemUse();
@@ -1984,21 +2001,21 @@ public class Term extends JComponent implements Accessible {
         buf.printStats(indented);
         
         indent(indented);
-        System.out.println("  View:" +
-                "  rows " + st.rows +	// NOI18N
-                "  v cols " + buf.visibleCols() + // NOI18N
-                "  t cols " + buf.totalCols() + // NOI18N
-                "  history " + history_size);	// NOI18N
+        System.out.println("  View:" +              // NOI18N
+                "  rows " + st.rows +               // NOI18N
+                "  v cols " + buf.visibleCols() +   // NOI18N
+                "  t cols " + buf.totalCols() +     // NOI18N
+                "  history " + history_size);       // NOI18N
         
         indent(indented);
-        System.out.println("       " +
-                "  firstx " + st.firstx +	// NOI18N
-                "  firsty " + st.firsty +	// NOI18N
-                "  firsta " + firsta);	// NOI18N
+        System.out.println("       " +              // NOI18N
+                "  firstx " + st.firstx +           // NOI18N
+                "  firsty " + st.firsty +           // NOI18N
+                "  firsta " + firsta);              // NOI18N
         
         indent(indented);
-        System.out.println("       " +
-                "  gutter " + glyph_gutter_width);	// NOI18N
+        System.out.println("       " +              // NOI18N
+                "  gutter " + glyph_gutter_width);  // NOI18N
         
         indent(indented);
         System.out.println("Cursor:" +          // NOI18N
@@ -2012,9 +2029,9 @@ public class Term extends JComponent implements Accessible {
         MemUse delta = memUse.changeFrom(lastMemUse);
         
         indent(indented);
-        memUse.print("Memory:");
+        memUse.print("Memory:");                    // NOI18N
         indent(indented);
-        delta .print(" Delta:");
+        delta .print(" Delta:");                    // NOI18N
     }
     
     public void printCounts(boolean indented) {
@@ -2071,10 +2088,10 @@ public class Term extends JComponent implements Accessible {
         
         private void print(String msg) {
             System.out.println(msg +
-                               "  max " +  max/1024 + "K" + " = " +
-                               "  total " + total/1024 + "K" + " + " +
-                               "  free " +  free/1024 + "K" + " + " +
-                               "  unused " + unused()/1024 + "K"
+                               "  max " +  max/1024 + "K" + " = " +     // NOI18N
+                               "  total " + total/1024 + "K" + " + " +  // NOI18N
+                               "  free " +  free/1024 + "K" + " + " +   // NOI18N
+                               "  unused " + unused()/1024 + "K"        // NOI18N
                                );
         }
     }
@@ -3323,7 +3340,7 @@ public class Term extends JComponent implements Accessible {
                 // reverse of op_dl()
                 // Rotate a line from bottom to top
                 if (!do_margins) {
-                    l = buf.moveLineFromTo(buf.nlines-1, st.cursor.row);
+                    l = buf.moveLineFromTo(buf.nlines/*OLD-1*/, st.cursor.row);
                 } else {
                     l = buf.moveLineFromTo(st.firstx + botMargin(), st.cursor.row);
                 }
@@ -3464,10 +3481,10 @@ public class Term extends JComponent implements Accessible {
                 // Rotate a line from top to bottom
                 if (!do_margins) {
                     l = buf.moveLineFromTo(st.cursor.row,
-                            (beginx()+st.rows-1)-1);
+                            (beginx()+st.rows-1)/*OLD-1*/);
                 } else {
                     l = buf.moveLineFromTo(st.cursor.row,
-                            (beginx()+botMargin())-1);
+                            (beginx()+botMargin())/*OLD-1*/);
                 }
                 l.reset();
                 
@@ -3692,6 +3709,10 @@ public class Term extends JComponent implements Accessible {
             repaint(true);
             // TMP setRefreshEnabled(repaint);
         }
+
+        public void op_hyperlink(String url, String text) {
+            hyperlink(url, text);
+        }
         
         public int op_get_width() {
             return horizontally_scrollable? buf.totalCols(): buf.visibleCols();
@@ -3754,6 +3775,18 @@ public class Term extends JComponent implements Accessible {
             }
         }
     }
+
+    /**
+     * Create a hyperlink.
+     * @param url
+     * @param text
+     */
+    protected void hyperlink(String url, String text) {
+        // default implementation just dumps out the text
+        for (char c : text.toCharArray())
+            ops.op_char(c);
+    }
+
     
     private void putc_work(char c) {
         interp.processChar(c);

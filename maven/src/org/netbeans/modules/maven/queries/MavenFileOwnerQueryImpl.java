@@ -70,6 +70,7 @@ import org.openide.util.Mutex.Action;
  *
  * @author  Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.FileOwnerQueryImplementation.class, position=97)
 public class MavenFileOwnerQueryImpl implements FileOwnerQueryImplementation {
     
     private Set<NbMavenProjectImpl> set;

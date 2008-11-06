@@ -68,7 +68,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.loaders.InstanceSupport;
-import org.openide.loaders.RepositoryNodeFactory;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
@@ -84,6 +83,7 @@ import org.openide.util.actions.SystemAction;
 *
 * @author Jaroslav Tulach, Petr Hamernik
 */
+@Deprecated
 public final class DataSystem extends AbstractNode 
 implements RepositoryListener {
     /** default instance */
@@ -234,7 +234,7 @@ implements RepositoryListener {
 
     /** Children that listens to changes in filesystem pool.
     */
-    static class DSMap extends Children.Keys implements PropertyChangeListener {
+    static class DSMap extends Children.Keys<DataFolder> implements PropertyChangeListener {
 
         public void propertyChange (PropertyChangeEvent ev) {
             //System.out.println ("Property change"); // NOI18N
@@ -253,8 +253,7 @@ implements RepositoryListener {
             return (DataSystem)getNode ();
         }
 
-        protected Node[] createNodes (Object key) {
-            DataFolder df = (DataFolder)key;
+        protected Node[] createNodes (DataFolder df) {
             Node n = new FilterNode(df.getNodeDelegate(), df.createNodeChildren (getDS ().filter));
             return new Node[] {n};
         }
@@ -356,7 +355,8 @@ implements RepositoryListener {
     }
     
     /** @deprecated No longer useful in the UI. */
-    public static final class NbRepositoryNodeFactory extends RepositoryNodeFactory {
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.RepositoryNodeFactory.class)
+    public static final class NbRepositoryNodeFactory extends org.openide.loaders.RepositoryNodeFactory {
         
         public Node repository(DataFilter f) {
             return DataSystem.getDataSystem(f == DataFilter.ALL ? null : f);

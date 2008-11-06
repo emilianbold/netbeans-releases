@@ -66,5 +66,10 @@ made subject to such option by the copyright holder.
     </cpp>
     <fortran>
         <version flags="-V" pattern=".*Sun Fortran 95 8.3"/>
+        <architecture>
+            <default flags="" default="true"/>
+            <bits_32 flags="-m32"/>
+            <bits_64 flags="-m64"/>
+        </architecture>
     </fortran>
 </toolchaindefinition>

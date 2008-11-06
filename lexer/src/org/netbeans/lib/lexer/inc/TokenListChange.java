@@ -215,7 +215,7 @@ public class TokenListChange<T extends TokenId> {
         TokenOrEmbedding<T>[] empty = (TokenOrEmbedding<T>[]) EMPTY_TOKENS;
         setRemovedTokens(empty);
     }
-    
+
     public boolean isBoundsChange() {
         return tokenChangeInfo.isBoundsChange();
     }
@@ -231,7 +231,7 @@ public class TokenListChange<T extends TokenId> {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append('"').append(languagePath().innerLanguage().mimeType());
+        sb.append('"').append(languagePath().mimePath());
         sb.append("\", ind=").append(index());
         sb.append(", off=").append(offset());
         sb.append(", maInd=").append(matchIndex);

@@ -67,6 +67,7 @@ import org.netbeans.modules.collab.channel.filesharing.*;
 import org.netbeans.modules.collab.core.Debug;
 
 
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=100)
 public class CollabAntLogger extends AntLogger {
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(CollabAntLogger.class.getName());
     private static final boolean LOGGABLE = ERR.isLoggable(ErrorManager.INFORMATIONAL);

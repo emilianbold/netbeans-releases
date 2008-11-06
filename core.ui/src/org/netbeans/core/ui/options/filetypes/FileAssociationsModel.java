@@ -355,7 +355,7 @@ final class FileAssociationsModel {
     }
     
     /** To store MIME type and its loader display name. It is used in combo box. */
-    static final class MimeItem implements Comparable {
+    static final class MimeItem implements Comparable<MimeItem> {
 
         String mimeType;
         String displayName;
@@ -374,7 +374,7 @@ final class FileAssociationsModel {
             return displayName == null ? mimeType : displayName + " (" + mimeType + ")";
         }
 
-        public int compareTo(Object o) {
+        public int compareTo(MimeItem o) {
             return toString().compareToIgnoreCase(o.toString());
         }
     }

@@ -232,6 +232,7 @@ public class WebAppImpl implements WebApp, JavaContextListener {
                 
     }
     
+    @Override
     public WebApp clone() {
         // no other model supports clone
         throw new UnsupportedOperationException("This operation is not implemented yet.");

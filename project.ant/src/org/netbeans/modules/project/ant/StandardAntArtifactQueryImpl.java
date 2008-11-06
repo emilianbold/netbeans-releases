@@ -54,6 +54,7 @@ import org.netbeans.spi.project.ant.AntArtifactQueryImplementation;
  * {@link AntArtifactProvider}.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.ant.AntArtifactQueryImplementation.class)
 public class StandardAntArtifactQueryImpl implements AntArtifactQueryImplementation {
     
     /** Default constructor for lookup. */

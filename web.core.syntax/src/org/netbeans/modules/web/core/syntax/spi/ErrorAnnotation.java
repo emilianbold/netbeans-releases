@@ -154,17 +154,12 @@ public class ErrorAnnotation {
                 }
             };
 
-            if (document != null) {
-                document.render(docRenderer);
-            } else {
-                docRenderer.run();
-            }
+            document.render(docRenderer);
         }
         
         // remember current annotations
         annotations=unchanged;
         annotations.addAll(added);
-       
     }
     
     /** Transforms ErrosInfo to Annotation

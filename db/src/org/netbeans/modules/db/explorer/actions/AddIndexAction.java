@@ -42,22 +42,23 @@
 package org.netbeans.modules.db.explorer.actions;
 
 import java.sql.*;
-import java.text.MessageFormat;
 import java.util.*;
-import org.netbeans.modules.db.explorer.DbUtilities;
 
-import org.openide.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.db.explorer.DatabaseException;
 import org.openide.nodes.*;
 
-import org.netbeans.lib.ddl.*;
 import org.netbeans.lib.ddl.impl.*;
-import org.netbeans.lib.ddl.adaptors.*;
 import org.netbeans.modules.db.explorer.*;
 import org.netbeans.modules.db.explorer.dlg.*;
 import org.netbeans.modules.db.explorer.nodes.*;
 import org.netbeans.modules.db.explorer.infos.*;
+import org.openide.util.RequestProcessor;
 
 public class AddIndexAction extends DatabaseAction {
+    private static final Logger LOGGER = Logger.getLogger(AddIndexAction.class .getName());
+
     public void performAction (Node[] activatedNodes) {
         Node node;
         if (activatedNodes != null && activatedNodes.length>0)
@@ -67,7 +68,7 @@ public class AddIndexAction extends DatabaseAction {
 
         try {
             DatabaseNodeInfo info = (DatabaseNodeInfo)node.getCookie(DatabaseNodeInfo.class);
-            IndexListNodeInfo nfo = (IndexListNodeInfo)info.getParent(nodename);
+            final IndexListNodeInfo nfo = (IndexListNodeInfo)info.getParent(nodename);
 
             String tablename = (String)nfo.get(DatabaseNode.TABLE);
             String columnname = (String)nfo.get(DatabaseNode.COLUMN);
@@ -93,12 +94,24 @@ public class AddIndexAction extends DatabaseAction {
                 throw new Exception(bundle().getString("EXC_NoUsableColumnInPlace")); // NOI18N
 
             // Create and execute command
-            AddIndexDialog dlg = new AddIndexDialog(cols, spec, info);
+            final AddIndexDialog dlg = new AddIndexDialog(cols, spec, info);
             dlg.setIndexName(tablename + "_idx"); // NOI18N
             if (dlg.run()) {
-                nfo.addIndex(dlg.getIndexName());
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        try {
+                            nfo.addIndex(dlg.getIndexName());
+                            nfo.refreshChildren();
+                        } catch (DatabaseException dbe) {
+                            LOGGER.log(Level.INFO, dbe.getMessage(), dbe);
+                            DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), dbe.getMessage()); // NOI18N
+                        }
+
+                    }
+                });
             }
         } catch(Exception exc) {
+            LOGGER.log(Level.INFO, exc.getMessage(), exc);
             DbUtilities.reportError(bundle().getString("ERR_UnableToAddIndex"), exc.getMessage()); // NOI18N
         }
     }

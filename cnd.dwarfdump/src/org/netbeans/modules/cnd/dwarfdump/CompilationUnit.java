@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump;
 
+import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,6 +65,9 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ElfConstants;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
+import org.netbeans.modules.cnd.dwarfdump.section.DwarfRelaDebugInfoSection;
+import org.netbeans.modules.cnd.dwarfdump.section.StringTableSection;
 
 /**
  *
@@ -99,7 +103,7 @@ public class CompilationUnit {
         readCompilationUnitHeader();
         root = getDebugInfo(false);
     }
-    
+
     public String getProducer() {
         return (String)root.getAttributeValue(ATTR.DW_AT_producer);
     }
@@ -332,7 +336,9 @@ public class CompilationUnit {
     public long getUnitTotalLength() {
         return unit_total_length;
     }
-    
+
+    private DwarfRelaDebugInfoSection rela;
+
     private void readCompilationUnitHeader() throws IOException {
         reader.seek(debugInfoSectionOffset + unit_offset);
         
@@ -362,6 +368,7 @@ public class CompilationUnit {
         
         DwarfAbbriviationTableSection abbrSection = (DwarfAbbriviationTableSection)reader.getSection(SECTIONS.DEBUG_ABBREV);
         abbr_table = abbrSection.getAbbriviationTable(debug_abbrev_offset);
+        rela = (DwarfRelaDebugInfoSection)reader.getSection(SECTIONS.RELA_DEBUG_INFO);
     }
     
     public DwarfStatementList getStatementList() {
@@ -438,10 +445,20 @@ public class CompilationUnit {
         
         DwarfEntry entry = new DwarfEntry(this, abbreviationEntry, refference, level);
         entries.put(refference, entry);
-        
         for (int i = 0; i < abbreviationEntry.getAttributesCount(); i++) {
             DwarfAttribute attr = abbreviationEntry.getAttribute(i);
-            entry.addValue(reader.readAttrValue(attr));
+            long dif = reader.getFilePointer() - debugInfoSectionOffset;
+            Long replace = null;
+            if (rela != null){
+                replace = rela.getAddend(dif);
+            }
+            if (replace != null && attr.valueForm.equals(FORM.DW_FORM_strp)) {
+                reader.readAttrValue(attr);
+                String s = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(replace.longValue());
+                entry.addValue(s);
+            } else {
+                entry.addValue(reader.readAttrValue(attr));
+            }
         }
 
         if (readChildren == true && entry.hasChildren()) {
@@ -580,7 +597,12 @@ public class CompilationUnit {
         
         out.println();
     }
-    
-    
-    
+
+    @Override
+    public String toString() {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out);
+        return st.toString();
+    }
 }

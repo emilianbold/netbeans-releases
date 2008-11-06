@@ -55,6 +55,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
  * @author Petr Pisl
  */
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class JSFRefactoringFactory implements RefactoringPluginFactory {
     
     private static final Logger LOGGER = Logger.getLogger(JSFRefactoringFactory.class.getName());

@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.java.api.common.SourceRoots;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.GenericSources;
 import org.netbeans.spi.project.support.ant.SourcesHelper;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -175,8 +176,8 @@ public class J2SESources implements Sources, PropertyChangeListener, ChangeListe
             String prop = propNames[i];
             String displayName = roots.getRootDisplayName(rootNames[i], prop);
             String loc = "${" + prop + "}"; // NOI18N
-            String includes = "${" + J2SEProjectProperties.INCLUDES + "}"; // NOI18N
-            String excludes = "${" + J2SEProjectProperties.EXCLUDES + "}"; // NOI18N
+            String includes = "${" + ProjectProperties.INCLUDES + "}"; // NOI18N
+            String excludes = "${" + ProjectProperties.EXCLUDES + "}"; // NOI18N
             sourcesHelper.addPrincipalSourceRoot(loc, includes, excludes, displayName, null, null); // NOI18N
             sourcesHelper.addTypedSourceRoot(loc, includes, excludes, JavaProjectConstants.SOURCES_TYPE_JAVA, displayName, null, null); // NOI18N
         }

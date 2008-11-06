@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.api.configurations;
 
 import java.beans.PropertyChangeEvent;
@@ -73,6 +72,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 
 public class Item implements NativeFileItem, PropertyChangeListener {
+
     private final String path;
     private final String sortName;
     private Folder folder;
@@ -91,72 +91,82 @@ public class Item implements NativeFileItem, PropertyChangeListener {
 //        }
         folder = null;
     }
-    
+
     /**
      * Rename item.
      * @param newname new name without suffic or path
      */
     public void rename(String newname) {
-        if (newname == null || newname.length() == 0 || getFolder() == null)
+        if (newname == null || newname.length() == 0 || getFolder() == null) {
             return;
-        
+        }
+
         // Rename name in path
         int indexName = path.lastIndexOf('/');
-        if (indexName < 0)
+        if (indexName < 0) {
             indexName = 0;
-        else
+        } else {
             indexName++;
+        }
         int indexDot = path.lastIndexOf('.');
-        if (indexDot < indexName)
+        if (indexDot < indexName) {
             indexDot = -1;
-        
+        }
+
         String oldname;
-        if (indexDot >= 0)
+        if (indexDot >= 0) {
             oldname = path.substring(indexName, indexDot);
-        else
+        } else {
             oldname = path.substring(indexName);
-        if (oldname.equals(newname))
+        }
+        if (oldname.equals(newname)) {
             return;
-        
+        }
+
         String newPath = ""; // NOI18N
-        if (indexName > 0)
+        if (indexName > 0) {
             newPath = path.substring(0, indexName);
+        }
         newPath += newname;
-        if (indexDot >= 0)
+        if (indexDot >= 0) {
             newPath += path.substring(indexDot);
+        }
         // Remove old item and insert new with new name
         moveTo(newPath);
     }
-    
+
     public void moveTo(String newPath) {
         Folder f = getFolder();
         String oldPath = getAbsPath();
         Item item = new Item(newPath);
         f.addItem(item);
-        copyItemConfigurations(this, item);
+        if (item.getFolder().isProjectFiles()) {
+            copyItemConfigurations(this, item);
+        }
         f.removeItem(this);
-        f.renameItemAction(oldPath,  item);
+        f.renameItemAction(oldPath, item);
     }
-    
+
     public String getPath() {
         return path;
     }
-    
+
     public String getSortName() {
         return sortName;
     }
-    
+
     public String getPath(boolean norm) {
         String pat = "./"; // UNIX path  // NOI18N
-        if (norm && getPath().startsWith(pat))
+        if (norm && getPath().startsWith(pat)) {
             return getPath().substring(2);
-        else
+        } else {
             return getPath();
+        }
     }
-    
+
     public String getAbsPath() {
         String retPath = null;
-        if (IpeUtils.isPathAbsolute(getPath()))  {// UNIX path
+        if (IpeUtils.isPathAbsolute(getPath())) {// UNIX path
             retPath = getPath();
             retPath = FilePathAdaptor.mapToLocal(retPath);
         } else if (getFolder() != null) {
@@ -164,7 +174,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return retPath;
     }
-    
+
     public void setFolder(Folder folder) {
         this.folder = folder;
         if (folder == null) { // Item is removed, let's clean up.
@@ -176,19 +186,19 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         }
     }
-    
-    public DataObject getLastDataObject(){
+
+    public DataObject getLastDataObject() {
         return lastDataObject;
     }
-    
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals("name")) { // NOI18N
             // File has been renamed
-            rename((String)evt.getNewValue());
+            rename((String) evt.getNewValue());
         } else if (evt.getPropertyName().equals("valid")) { // NOI18N
             // File has been deleted
             // Do nothing (IZ 87557, 94935)
-            if (!((Boolean)evt.getNewValue()).booleanValue()) {
+            if (!((Boolean) evt.getNewValue()).booleanValue()) {
 //                getFolder().removeItemAction(this);
                 Folder containingFolder = getFolder();
                 if (containingFolder != null) {
@@ -197,7 +207,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             }
         } else if (evt.getPropertyName().equals("primaryFile")) { // NOI18N
             // File has been moved
-            FileObject fo = (FileObject)evt.getNewValue();
+            FileObject fo = (FileObject) evt.getNewValue();
             String newPath = FileUtil.toFile(fo).getPath();
             if (!IpeUtils.isPathAbsolute(getPath())) {
                 newPath = IpeUtils.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDir(), newPath);
@@ -206,11 +216,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             moveTo(newPath);
         }
     }
-    
+
     public Folder getFolder() {
         return folder;
     }
-    
+
     public File getFile() {
         String aPath = getAbsPath();
         if (aPath != null) {
@@ -218,7 +228,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return null;
     }
-    
+
     public File getCanonicalFile() {
         if (file == null) {
             try {
@@ -229,26 +239,27 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return file;
     }
-    
+
     public String getId() {
         if (id == null) {
             id = "i-" + getPath(); // NOI18N
         }
         return id;
     }
-    
+
     public ItemConfiguration getItemConfiguration(Configuration configuration) {
         if (configuration != null) {
-            return (ItemConfiguration)configuration.getAuxObject(getId());
+            return (ItemConfiguration) configuration.getAuxObject(getId());
         }
         return null;
     }
-    
+
     public ItemConfiguration[] getItemConfigurations() {
         ItemConfiguration[] itemConfigurations;
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
-        if (makeConfigurationDescriptor == null)
+        if (makeConfigurationDescriptor == null) {
             return new ItemConfiguration[0];
+        }
         Configuration[] configurations = makeConfigurationDescriptor.getConfs().getConfs();
         itemConfigurations = new ItemConfiguration[configurations.length];
         for (int i = 0; i < configurations.length; i++) {
@@ -285,7 +296,7 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return fo;
     }
-    
+
     public DataObject getDataObject() {
         DataObject dataObject = null;
         FileObject fo = getFileObject();
@@ -312,11 +323,11 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         }
         return dataObject;
     }
-    
+
     public int getDefaultTool() {
         DataObject dataObject = getDataObject();
         int tool;
-        
+
         if (dataObject == null) {
             if (CCDataLoader.getInstance().getExtensions().isRegistered(path)) {
                 tool = Tool.CCCompiler;
@@ -327,149 +338,167 @@ public class Item implements NativeFileItem, PropertyChangeListener {
             } else {
                 tool = Tool.CustomTool;
             }
-        } else if (dataObject instanceof CDataObject)
+        } else if (dataObject instanceof CDataObject) {
             tool = Tool.CCompiler;
-        else if (dataObject instanceof HDataObject)
+        } else if (dataObject instanceof HDataObject) {
             tool = Tool.CustomTool;
-        else if (dataObject instanceof CCDataObject)
+        } else if (dataObject instanceof CCDataObject) {
             tool = Tool.CCCompiler;
-        else if (CppSettings.getDefault().isFortranEnabled() && dataObject instanceof FortranDataObject)
+        } else if (CppSettings.getDefault().isFortranEnabled() && dataObject instanceof FortranDataObject) {
             tool = Tool.FortranCompiler;
-        else
+        } else {
             tool = Tool.CustomTool;
+        }
         return tool;
     }
-    
+
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {
-        if (getFolder() == null)
+        if (getFolder() == null) {
             return null;
-        return (MakeConfigurationDescriptor)getFolder().getConfigurationDescriptor();
+        }
+        return (MakeConfigurationDescriptor) getFolder().getConfigurationDescriptor();
     }
-    
+
     private MakeConfiguration getMakeConfiguration() {
         MakeConfigurationDescriptor makeConfigurationDescriptor = getMakeConfigurationDescriptor();
-        if (makeConfigurationDescriptor == null)
+        if (makeConfigurationDescriptor == null) {
             return null;
+        }
         Configurations confs = makeConfigurationDescriptor.getConfs();
-        if( confs == null )
+        if (confs == null) {
             return null;
-        return (MakeConfiguration)confs.getActive();
+        }
+        return (MakeConfiguration) confs.getActive();
     }
-    
+
     public NativeProject getNativeProject() {
         Folder folder = getFolder();
         if (folder != null) {
             Project project = folder.getProject();
-            return (NativeProject)project.getLookup().lookup(NativeProject.class);
+            return (NativeProject) project.getLookup().lookup(NativeProject.class);
         }
         return null;
     }
-    
+
     public List getSystemIncludePaths() {
         List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
+        {
             return vec;
+        }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-        if (compilerSet == null)
+        if (compilerSet == null) {
             return vec;
-        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
+        }
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from compiler
-            if( compiler != null  && compiler.getPath() != null && compiler.getPath().length() > 0) {
+            if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
                 vec.addAll(compiler.getSystemIncludeDirectories());
             }
         }
         return vec;
     }
-    
+
     public List getUserIncludePaths() {
         List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration);//ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: sometimes itemConfiguration is null (should not happen)
+        {
             return vec;
+        }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-        if (compilerSet == null)
+        if (compilerSet == null) {
             return vec;
+        }
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
             // Get include paths from project/file
             List vec2 = new ArrayList();
-            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
+            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+            CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritIncludes().getValue()) {
                 vec2.addAll(master.getIncludeDirectories().getValue());
-                if (master.getInheritIncludes().getValue())
-                    master = (CCCCompilerConfiguration)master.getMaster();
-                else
+                if (master.getInheritIncludes().getValue()) {
+                    master = (CCCCompilerConfiguration) master.getMaster();
+                } else {
                     master = null;
+                }
             }
             vec2.addAll(cccCompilerConfiguration.getIncludeDirectories().getValue());
             // Convert all paths to absolute paths
             Iterator iter = vec2.iterator();
             while (iter.hasNext()) {
-                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String)iter.next()));
+                vec.add(IpeUtils.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDir(), (String) iter.next()));
             }
         }
         return vec;
     }
-    
+
     public List getSystemMacroDefinitions() {
         List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
+        {
             return vec;
+        }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-        if (compilerSet == null)
+        if (compilerSet == null) {
             return vec;
-        BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(itemConfiguration.getTool());
+        }
+        BasicCompiler compiler = (BasicCompiler) compilerSet.getTool(itemConfiguration.getTool());
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            if( compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
+            if (compiler != null && compiler.getPath() != null && compiler.getPath().length() > 0) {
                 // Get macro definitions from compiler
                 vec.addAll(compiler.getSystemPreprocessorSymbols());
             }
         }
         return vec;
     }
-    
+
     public List getUserMacroDefinitions() {
         List vec = new ArrayList();
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         ItemConfiguration itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
         if (itemConfiguration == null || !itemConfiguration.isCompilerToolConfiguration()) // FIXUP: itemConfiguration should never be null
+        {
             return vec;
+        }
         CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
-        if (compilerSet == null)
+        if (compilerSet == null) {
             return vec;
+        }
         BasicCompilerConfiguration compilerConfiguration = itemConfiguration.getCompilerConfiguration();
         if (compilerConfiguration instanceof CCCCompilerConfiguration) {
-            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration)compilerConfiguration;
-            CCCCompilerConfiguration master = (CCCCompilerConfiguration)cccCompilerConfiguration.getMaster();
+            CCCCompilerConfiguration cccCompilerConfiguration = (CCCCompilerConfiguration) compilerConfiguration;
+            CCCCompilerConfiguration master = (CCCCompilerConfiguration) cccCompilerConfiguration.getMaster();
             while (master != null && cccCompilerConfiguration.getInheritPreprocessor().getValue()) {
                 vec.addAll(master.getPreprocessorConfiguration().getValue());
-                if (master.getInheritIncludes().getValue())
-                    master = (CCCCompilerConfiguration)master.getMaster();
-                else
+                if (master.getInheritIncludes().getValue()) {
+                    master = (CCCCompilerConfiguration) master.getMaster();
+                } else {
                     master = null;
+                }
             }
             vec.addAll(cccCompilerConfiguration.getPreprocessorConfiguration().getValue());
         }
         return vec;
     }
-    
+
     public boolean hasHeaderOrSourceExtension(boolean cFiles, boolean ccFiles) {
         // Method return true for source files also.
         String itemPath = getPath();
         return HDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
-               ccFiles && CCDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
-               cFiles && CDataLoader.getInstance().getExtensions().isRegistered(itemPath);
+                ccFiles && CCDataLoader.getInstance().getExtensions().isRegistered(itemPath) ||
+                cFiles && CDataLoader.getInstance().getExtensions().isRegistered(itemPath);
     }
-    
+
     /**
      * NativeFileItem interface
      **/
@@ -478,35 +507,37 @@ public class Item implements NativeFileItem, PropertyChangeListener {
         Language language;
         ItemConfiguration itemConfiguration = null;
         MakeConfiguration makeConfiguration = getMakeConfiguration();
-        if (makeConfiguration != null)
+        if (makeConfiguration != null) {
             itemConfiguration = getItemConfiguration(makeConfiguration); //ItemConfiguration)makeConfiguration.getAuxObject(ItemConfiguration.getId(getPath()));
-        
-        if (itemConfiguration != null)
+        }
+        if (itemConfiguration != null) {
             tool = itemConfiguration.getTool();
-        else
+        } else {
             tool = getDefaultTool();
-        
-        if (tool == Tool.CCompiler)
+        }
+
+        if (tool == Tool.CCompiler) {
             language = NativeFileItem.Language.C;
-        else if (tool == Tool.CCCompiler)
+        } else if (tool == Tool.CCCompiler) {
             language = NativeFileItem.Language.CPP;
-        else if (tool == Tool.FortranCompiler)
+        } else if (tool == Tool.FortranCompiler) {
             language = NativeFileItem.Language.FORTRAN;
-        else if (hasHeaderOrSourceExtension(true,true))
+        } else if (hasHeaderOrSourceExtension(true, true)) {
             language = NativeFileItem.Language.C_HEADER;
-        else
+        } else {
             language = NativeFileItem.Language.OTHER;
-        
+        }
+
         return language;
     }
-    
+
     /**
      * NativeFileItem interface
      **/
     public LanguageFlavor getLanguageFlavor() {
         return NativeFileItem.LanguageFlavor.GENERIC;
     }
-    
+
     /**
      * NativeFileItem interface
      **/
@@ -522,5 +553,4 @@ public class Item implements NativeFileItem, PropertyChangeListener {
     public String toString() {
         return path;
     }
-
 }

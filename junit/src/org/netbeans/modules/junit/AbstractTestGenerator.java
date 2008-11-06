@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -57,6 +57,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -73,8 +74,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -90,6 +94,10 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
+import static javax.lang.model.element.Modifier.ABSTRACT;
+import static javax.lang.model.element.Modifier.PRIVATE;
+import static javax.lang.model.element.Modifier.PUBLIC;
+import static javax.lang.model.element.Modifier.STATIC;
 import static org.netbeans.modules.junit.TestCreator.ACCESS_MODIFIERS;
 
 /**
@@ -355,10 +363,405 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                            String name,
                                            TypeElement srcClass,
                                            List<ExecutableElement> srcMethods) {
+
+        String instanceClassName = null;
+        ClassTree abstractClassImpl = null;
+        if (srcClass.getModifiers().contains(ABSTRACT)
+                && hasInstanceMethods(srcMethods)) {
+            instanceClassName = getAbstractClassImplName(srcClass.getSimpleName());
+            abstractClassImpl = generateAbstractClassImpl(srcClass,
+                                                          instanceClassName,
+                                                          workingCopy);
+        }
+
         List<MethodTree> testMethods = generateTestMethods(srcClass,
+                                                           instanceClassName,
                                                            srcMethods,
                                                            workingCopy);
-        return composeNewTestClass(workingCopy, name, testMethods);
+
+        List<? extends Tree> members;
+        if (abstractClassImpl == null) {
+            members = testMethods;
+        } else if (testMethods.isEmpty()) {
+            members = Collections.singletonList(abstractClassImpl);
+        } else {
+            members = new ArrayList<Tree>(testMethods.size() + 1);
+            ((List<Tree>) members).addAll(testMethods);
+            ((List<Tree>) members).add(abstractClassImpl);
+        }
+        return composeNewTestClass(workingCopy, name, members);
+    }
+
+    /**
+     * Generates a trivial non-abstract subclass of a given abstract class.
+     *
+     * @param  srcClass  abstract class for which an impl. class is to be made
+     * @param  name  desired name of the subclass
+     */
+    private ClassTree generateAbstractClassImpl(TypeElement srcClass,
+                                                CharSequence name,
+                                                WorkingCopy workingCopy) {
+
+        int membersCount = 0;
+        MethodTree constructor = generateAbstractClassImplCtor(srcClass,
+                                                               workingCopy);
+        if (constructor != null) {
+            membersCount++;
+        }
+
+        List<ExecutableElement> methods
+                = ElementFilter.methodsIn(srcClass.getEnclosedElements());
+        List<ExecutableElement> abstractMethods = findAbstractMethods(methods);
+        if (!abstractMethods.isEmpty()) {
+            membersCount += abstractMethods.size();
+        }
+
+        List<MethodTree> members;
+        if (membersCount == 0) {
+            members = Collections.emptyList();
+        } else if (membersCount == 1) {
+            if (constructor != null) {
+                members = Collections.singletonList(constructor);
+            } else {
+                members = Collections.singletonList(
+                        generateAbstractMethodImpl(abstractMethods.get(0),
+                                                   workingCopy));
+            }
+        } else {
+            members = new ArrayList(membersCount);
+            if (constructor != null) {
+                members.add(constructor);
+            }
+            for (ExecutableElement abstractMethod : abstractMethods) {
+                members.add(generateAbstractMethodImpl(abstractMethod,
+                                                       workingCopy));
+            }
+
+        }
+
+        final TreeMaker maker = workingCopy.getTreeMaker();
+
+        return maker.Class(
+                    maker.Modifiers(Collections.singleton(PUBLIC)),
+                    name,                                         //name
+                    Collections.<TypeParameterTree>emptyList(),   //type params
+                    maker.QualIdent(srcClass),                    //extends
+                    Collections.<ExpressionTree>emptyList(),      //implements
+                    members);                                     //members
+    }
+
+    /**
+     * Makes a name for a simple implementation of an abstract class.
+     * 
+     * @param  baseName  name of the abstract class
+     * @return  name for the simple class
+     */
+    private static String getAbstractClassImplName(CharSequence baseName) {
+        return baseName + "Impl";                                       //NOI18N
+    }
+
+    /**
+     * Generates a constructor for a simple subclass of a given abstract class,
+     * if necessary.
+     *
+     * @param  srcClass  abstract class for which a subclass is being created
+     * @param  name
+     * @param  workingCopy  working copy of the class being created
+     * @return  constructor for the class being generated,
+     *          or {@code null} if no explicit constructor is necessary
+     */
+    private static MethodTree generateAbstractClassImplCtor(
+                                                    TypeElement srcClass,
+                                                    WorkingCopy workingCopy) {
+
+        List<? extends VariableElement> superCtorParams;
+
+        ExecutableElement superConstructor = findAccessibleConstructor(srcClass);
+        if ((superConstructor == null)
+            || (superCtorParams = superConstructor.getParameters()).isEmpty()
+               && !throwsNonRuntimeExceptions(workingCopy, superConstructor)) {
+            return null;
+        }
+
+        final TreeMaker maker = workingCopy.getTreeMaker();
+
+        List<? extends VariableElement> defaultCtorParams
+                = new ArrayList(superCtorParams);
+
+        List<ExpressionTree> throwsList =
+                (superConstructor != null)
+                    ? generateThrowsList(superConstructor, workingCopy, maker)
+                    : Collections.<ExpressionTree>emptyList();
+
+        BlockTree body = maker.Block(
+                Collections.singletonList(
+                        maker.ExpressionStatement(
+                                maker.MethodInvocation(
+                                        Collections.<ExpressionTree>emptyList(),
+                                        maker.Identifier("super"),      //NOI18N
+                                        generateDefaultParamValues(
+                                                defaultCtorParams, maker)))),
+                false);
+
+        return maker.Constructor(
+                maker.Modifiers(Collections.singleton(PUBLIC)),
+                Collections.<TypeParameterTree>emptyList(),
+                Collections.<VariableTree>emptyList(),
+                throwsList,
+                body);
+    }
+
+    /**
+     * Generates default values (to be used in a method invocation)
+     * for the given list of formal method parameters.
+     *
+     * @param  params  formal parameters to create default values for
+     * @param  maker  tree maker to use for generating the default values
+     * @return  list of default values for the given formal parameters
+     */
+    private static List<ExpressionTree> generateDefaultParamValues(
+                                        List<? extends VariableElement> params,
+                                        TreeMaker maker) {
+        if (params.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<ExpressionTree> result = new ArrayList(params.size());
+        for (VariableElement param : params) {
+            result.add(getDefaultValue(maker, param.asType()));
+        }
+        return result;
+    }
+
+    /**
+     * Finds an non-private constructor in the given class.
+     * It tries to find the following types of constructors, in this order:
+     * <ol>
+     *     <li>no-arg constructor</li>
+     *     <li>one-argument constructor without throws-clause</li>
+     *     <li>one-argument constructor with a throws-clause</li>
+     *     <li>two-argument constructor without throws-clause</li>
+     *     <li>two-argument constructor with a throws-clause</li>
+     *     <li>etc.</li>
+     * </ol>
+     *
+     * @param  clazz  class to find constructor in
+     * @return  accessible (non-private) constructor,
+     *          or {@code null} if none was found
+     */
+    private static ExecutableElement findAccessibleConstructor(TypeElement clazz) {
+        List<ExecutableElement> ctors
+                = ElementFilter.constructorsIn(clazz.getEnclosedElements());
+        if (ctors.isEmpty()) {
+            return null;
+        }
+
+        ExecutableElement best = null;
+        int bestArgsCount = -1;
+        boolean bestHasThrown = false;
+
+        for (ExecutableElement ctor : ctors) {
+            if (ctor.getModifiers().contains(PRIVATE)) {
+                continue;
+            }
+
+            List args = ctor.getParameters();
+            if (args.isEmpty()) {
+                return ctor;        //this is the best constructor we could find
+            }
+
+            int argsCount = args.size();
+            boolean hasThrown = !ctor.getThrownTypes().isEmpty();
+            if ((best == null)
+                    || (argsCount < bestArgsCount)
+                    || (argsCount == bestArgsCount) && bestHasThrown && !hasThrown) {
+                best = ctor;
+                bestArgsCount = argsCount;
+                bestHasThrown = hasThrown;
+            }
+        }
+        return best;
+    }
+
+    /**
+     * Generates a simple implementation of an abstract method declared
+     * in a supertype.
+     *
+     * @param abstractMethod  the method whose implementation is to be generated
+     */
+    private static MethodTree generateAbstractMethodImpl(
+                                            ExecutableElement abstractMethod,
+                                            WorkingCopy workingCopy) {
+        final TreeMaker maker = workingCopy.getTreeMaker();
+
+        TypeMirror returnType = abstractMethod.getReturnType();
+        List<? extends StatementTree> content;
+        if (returnType.getKind() == TypeKind.VOID) {
+            content = Collections.<StatementTree>emptyList();
+        } else {
+            content = Collections.singletonList(
+                            maker.Return(getDefaultValue(maker, returnType)));
+        }
+        BlockTree body = maker.Block(content, false);
+
+        return maker.Method(
+                maker.Modifiers(Collections.singleton(PUBLIC)),
+                abstractMethod.getSimpleName(),
+                maker.Type(returnType),
+                makeTypeParamsCopy(abstractMethod.getTypeParameters(), maker),
+                makeParamsCopy(abstractMethod.getParameters(), maker),
+                makeDeclaredTypesCopy((List<? extends DeclaredType>)
+                                              abstractMethod.getThrownTypes(),
+                                      maker),
+                body,
+                null);
+    }
+
+    /**
+     * Makes a list of trees representing the given type parameter elements.
+     */
+    private static List<TypeParameterTree> makeTypeParamsCopy(
+                                List<? extends TypeParameterElement> typeParams,
+                                TreeMaker maker) {
+        if (typeParams.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        int size = typeParams.size();
+        if (size == 1) {
+            return Collections.singletonList(makeCopy(typeParams.get(0), maker));
+        }
+
+        List<TypeParameterTree> result = new ArrayList(size);
+        for (TypeParameterElement typeParam : typeParams) {
+            result.add(makeCopy(typeParam, maker));
+        }
+        return result;
+    }
+
+    private static List<VariableTree> makeParamsCopy(
+                                        List<? extends VariableElement> params,
+                                        TreeMaker maker) {
+        if (params.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        int size = params.size();
+        if (size == 1) {
+            return Collections.singletonList(makeCopy(params.get(0), maker));
+        }
+
+        List<VariableTree> result = new ArrayList(size);
+        for (VariableElement param : params) {
+            result.add(makeCopy(param, maker));
+        }
+        return result;
+    }
+
+    /**
+     * Makes a tree representing the given {@code TypeParameterElement}.
+     *
+     * @param  typeParamElem  {@code TypeParameterElement} to make a copy of
+     * @param  maker  tree maker to use when for creation of the copy
+     * @return  {@code Tree} respresenting the given
+     *          {@code TypeParameterElement}
+     */
+    private static TypeParameterTree makeCopy(TypeParameterElement typeParamElem,
+                                              TreeMaker maker) {
+        return maker.TypeParameter(
+                typeParamElem.getSimpleName(),
+                makeDeclaredTypesCopy((List<? extends DeclaredType>)
+                                              typeParamElem.getBounds(),
+                                      maker));
+    }
+
+    private static List<ExpressionTree> makeDeclaredTypesCopy(
+                                          List<? extends DeclaredType> typeList,
+                                          TreeMaker maker) {
+        if (typeList.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        int size = typeList.size();
+        if (size == 1) {
+            DeclaredType bound = typeList.get(0);
+            return isRootObjectType(bound)                  //java.lang.Object
+                   ? Collections.<ExpressionTree>emptyList()
+                   : Collections.singletonList((ExpressionTree) maker.Type(bound));
+        } else {
+            List<ExpressionTree> result = new ArrayList(size);
+            for (DeclaredType type : typeList) {
+                result.add((ExpressionTree) maker.Type(type));
+            }
+            return result;
+        }
+    }
+
+    /**
+     * Checks whether the given type object represents type
+     * {@code java.lang.Object}.
+     * 
+     * @param  type  type to be checked
+     * @return  {@code true} if the passed type object represents type
+     *          {@code java.lang.Object}, {@code false} otherwise
+     */
+    private static boolean isRootObjectType(DeclaredType type) {
+        if (type.getKind() != TypeKind.DECLARED) {
+            return false;
+        }
+
+        TypeElement elem = (TypeElement) type.asElement();
+        return (elem.getKind() == ElementKind.CLASS)
+               && (elem.getSuperclass().getKind() == TypeKind.NONE);
+    }
+
+    /**
+     * Makes a tree representing the given {@code VariableElement}.
+     *
+     * @param  paramElem  {@code VariableElement} to make a copy of
+     * @param  maker  tree maker to use when for creation of the copy
+     * @return  {@code Tree} respresenting the given {@code VariableElement}
+     */
+    private static VariableTree makeCopy(VariableElement paramElem,
+                                         TreeMaker maker) {
+        return maker.Variable(
+                    maker.Modifiers(Collections.<Modifier>emptySet()),
+                    paramElem.getSimpleName(),
+                    maker.Type(paramElem.asType()),
+                    null);
+    }
+
+    /**
+     * Finds abstract methods in the given class.
+     *
+     * @param  methods  method to find abstract methods among
+     * @return  sublist of the passed list of methods, containing only
+     *          abstract methods
+     */
+    private static List<ExecutableElement> findAbstractMethods(
+                                              List<ExecutableElement> methods) {
+        if (methods.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        ArrayList<ExecutableElement> result = null;
+        int remainingCount = methods.size();
+        for (ExecutableElement method : methods) {
+            Set<Modifier> modifiers = method.getModifiers();
+            if (modifiers.contains(ABSTRACT) && !modifiers.contains(STATIC)) {
+                if (result == null) {
+                    result = new ArrayList(remainingCount);
+                }
+                result.add(method);
+            }
+            remainingCount--;
+        }
+
+        if (result != null) {
+            result.trimToSize();
+        }
+        return (result == null) ? Collections.<ExecutableElement>emptyList()
+                                : result;
     }
 
     /**
@@ -444,9 +847,11 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
             return tstClass;
         }
 
+        final Trees trees = workingCopy.getTrees();
+
         ClassMap clsMap = ClassMap.forClass(tstClass,
                                             tstClassTreePath,
-                                            workingCopy.getTrees());
+                                            trees);
 
         List<? extends Tree> tstMembersOrig = tstClass.getMembers();
         List<Tree> tstMembers = new ArrayList<Tree>(tstMembersOrig.size() + 4);
@@ -464,7 +869,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         /* Generate test method names: */
         TypeElement tstClassElem
-            = (TypeElement) workingCopy.getTrees().getElement(tstClassTreePath);
+                = (TypeElement) trees.getElement(tstClassTreePath);
         List<String> testMethodNames
                 = TestMethodNameGenerator.getTestMethodNames(srcMethods,
                                                              tstClassElem,
@@ -473,6 +878,27 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
         Iterator<ExecutableElement> srcMethodsIt = srcMethods.iterator();
         Iterator<String> tstMethodNamesIt = testMethodNames.iterator();
+
+        CharSequence instanceClassName = null;
+        ClassTree newAbstractClassImpl = null;
+        if (srcClass.getModifiers().contains(ABSTRACT)
+                && hasInstanceMethods(srcMethods)) {
+            String prefInstanceClassName
+                    = getAbstractClassImplName(srcClass.getSimpleName());
+            instanceClassName = findAbstractClassImplName(srcClass,
+                                                          tstClass,
+                                                          tstClassTreePath,
+                                                          clsMap,
+                                                          prefInstanceClassName,
+                                                          trees,
+                                                          workingCopy.getTypes());
+            if (instanceClassName == null) {
+                instanceClassName = prefInstanceClassName;
+                newAbstractClassImpl = generateAbstractClassImpl(srcClass,
+                                                                 instanceClassName,
+                                                                 workingCopy);
+            }
+        }
 
         Boolean useNoArgConstrutor = null;
         while (srcMethodsIt.hasNext()) {
@@ -494,12 +920,18 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                             srcMethod,
                             testMethodName,
                             useNoArgConstrutor.booleanValue(),
+                            instanceClassName,
                             workingCopy);
 
             tstMembers.add(newTestMethod);
             clsMap.addNoArgMethod(newTestMethod.getName().toString());
         }
         assert !tstMethodNamesIt.hasNext();
+
+        if (newAbstractClassImpl != null) {
+            tstMembers.add(newAbstractClassImpl);
+            clsMap.addNestedClass(instanceClassName.toString());
+        }
 
         if (tstMembers.size() == tstMembersOrig.size()) {  //no test method added
             return tstClass;
@@ -529,10 +961,13 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      * The test class does not exist at the moment this method is called.
      * 
      * @param  srcClass  source class containing the source methods
+     * @param  instanceClsName  name of a class whose instance should be created
+     *                          if appropriate
      * @param  srcMethods  source methods the test methods should be created for
      */
     private List<MethodTree> generateTestMethods(
                                        TypeElement srcClass,
+                                       CharSequence instanceClsName,
                                        List<ExecutableElement> srcMethods,
                                        WorkingCopy workingCopy) {
         if (srcMethods.isEmpty()) {
@@ -561,6 +996,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                                        srcMethod,
                                        testMethodName,
                                        useNoArgConstrutor,
+                                       instanceClsName,
                                        workingCopy));
         }
         assert !tstMethodNamesIt.hasNext();
@@ -578,28 +1014,27 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      *                             it should not be {@code true} unless
      *                             the source class contains an accessible
      *                             no-argument constructor
+     * @param  instanceClsName  name of a class of which a constructor should be
+     *                          createc if {@code useNoArgConstrutor} is
+     *                          {@code true}
      * @return  the generated test method
      */
     protected MethodTree generateTestMethod(TypeElement srcClass,
                                           ExecutableElement srcMethod,
                                           String testMethodName,
                                           boolean useNoArgConstructor,
+                                          CharSequence instanceClsName,
                                           WorkingCopy workingCopy) {
         final TreeMaker maker = workingCopy.getTreeMaker();
 
-        List<ExpressionTree> throwsList;
-        if (throwsNonRuntimeExceptions(workingCopy, srcMethod)) {
-            throwsList = Collections.<ExpressionTree>singletonList(
-                                    maker.Identifier("Exception"));     //NOI18N
-        } else {
-            throwsList = Collections.<ExpressionTree>emptyList();
-        }
-
         MethodTree method = composeNewTestMethod(
                 testMethodName,
-                generateTestMethodBody(srcClass, srcMethod, useNoArgConstructor,
+                generateTestMethodBody(srcClass,
+                                       srcMethod,
+                                       useNoArgConstructor,
+                                       instanceClsName,
                                        workingCopy),
-                throwsList,
+                generateThrowsList(srcMethod, workingCopy, maker),
                 workingCopy);
 
         if (setup.isGenerateMethodJavadoc()) {
@@ -615,6 +1050,33 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         }
 
         return method;
+    }
+
+    /**
+     * Generates a {@code throws}-clause of a method or constructor such that
+     * it declares all non-runtime exceptions and errors that are declared
+     * in the {@code throws}-clause of the given executable element (method or
+     * constructor).
+     *
+     * @param  execElem  executable element (method or constructor) that serves
+     *                   as the model for the generated throws-list
+     * @param  compInfo  {@code CompilationInfo} to be used for obtaining
+     *                   information about the given executable element
+     * @param  maker  maker to be used for construction of the resulting list
+     * @return  list of {@code ExpressionTree}s representing the throws-list
+     *          that can be used for construction of a method with the same
+     *          throws-clause as the given executable element
+     */
+    private static List<ExpressionTree> generateThrowsList(
+                                                    ExecutableElement execElem,
+                                                    CompilationInfo compInfo,
+                                                    TreeMaker maker) {
+        if (throwsNonRuntimeExceptions(compInfo, execElem)) {
+            return Collections.<ExpressionTree>singletonList(
+                                        maker.Identifier("Exception")); //NOI18N
+        } else {
+            return Collections.emptyList();
+        }
     }
     
     /**
@@ -815,158 +1277,6 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return mainMethod;
     }
 
-    // <editor-fold defaultstate="collapsed" desc=" disabled code ">
-//        /**
-//         */
-//        private void createAbstractImpl(JavaClass srcClass,
-//                                        JavaClass tstClass) {
-//            String implClassName = srcClass.getSimpleName() + "Impl";   //NOI18N
-//            JavaClass innerClass = tstClass.getInnerClass(implClassName, false);
-//
-//            if (innerClass == null) {
-//                String javadocText = 
-//                        generateMethodJavadoc
-//                        ? javadocText = NbBundle.getMessage(
-//                              TestCreator.class,
-//                              "TestCreator.abstracImpl.JavaDoc.comment",//NOI18N
-//                              srcClass.getName())
-//                        : null;
-//
-//                // superclass
-//                MultipartId supClass
-//                        = tgtPkg.getMultipartId().createMultipartId(
-//                                srcClass.isInner() ? srcClass.getName()
-//                                                   : srcClass.getSimpleName(),
-//                                null,
-//                                Collections.EMPTY_LIST);
-//
-//                innerClass = tgtPkg.getJavaClass().createJavaClass(
-//                                implClassName,          // class name
-//                                Collections.EMPTY_LIST, // annotations
-//                                Modifier.PRIVATE,       // modifiers
-//                                javadocText,            // Javadoc text
-//                                null,                   // Javadoc - object
-//                                Collections.EMPTY_LIST, // contents
-//                                null,                   // super class name
-//                                Collections.EMPTY_LIST, // interface names
-//                                Collections.EMPTY_LIST);// type parameters
-//                
-//                if (srcClass.isInterface()) {
-//                    innerClass.getInterfaceNames().add(supClass);
-//                } else {
-//                    innerClass.setSuperClassName(supClass);
-//                }
-//
-//                createImpleConstructors(srcClass, innerClass);
-//                tstClass.getFeatures().add(innerClass);
-//            }
-//
-//            // created dummy implementation for all abstract methods
-//            List abstractMethods = TestUtil.collectFeatures(
-//                                            srcClass,
-//                                            Method.class,
-//                                            Modifier.ABSTRACT,
-//                                            true);
-//            for (Iterator i = abstractMethods.iterator(); i.hasNext(); ) {
-//                Method oldMethod = (Method) i.next();
-//                if (innerClass.getMethod(
-//                        oldMethod.getName(),
-//                        TestUtil.getParameterTypes(oldMethod.getParameters()),
-//                        false) == null) {
-//                    Method newMethod = createMethodImpl(oldMethod);
-//                    innerClass.getFeatures().add(newMethod);
-//                }
-//
-//            }
-//        }
-//
-//        /**
-//         */
-//        private void createImpleConstructors(JavaClass srcClass,
-//                                             JavaClass tgtClass) {
-//            List constructors = TestUtil.filterFeatures(srcClass,
-//                                                        Constructor.class);
-//            for (Iterator i = constructors.iterator(); i.hasNext(); ) {
-//                Constructor ctr = (Constructor) i.next();
-//                
-//                if (Modifier.isPrivate(ctr.getModifiers())) {
-//                    continue;
-//                }
-//                
-//                Constructor nctr = tgtPkg.getConstructor().createConstructor();
-//                nctr.setBodyText("super("                               //NOI18N
-//                                 + getParameterString(ctr.getParameters())
-//                                 + ");\n");                             //NOI18N
-//                nctr.getParameters().addAll(
-//                        TestUtil.cloneParams(ctr.getParameters(), tgtPkg));
-//                tgtClass.getFeatures().add(nctr);
-//            }
-//        }
-//
-//        /**
-//         */
-//        private Method createMethodImpl(Method origMethod)  {
-//            Method  newMethod = tgtPkg.getMethod().createMethod();
-//
-//            newMethod.setName(origMethod.getName());
-//
-//            /* Set modifiers of the method: */
-//            int mod = origMethod.getModifiers() & ~Modifier.ABSTRACT;
-//            if (((JavaClass) origMethod.getDeclaringClass()).isInterface()) {
-//                mod |= Modifier.PUBLIC;
-//            }
-//            newMethod.setModifiers(mod);
-//
-//            // prepare the body of method implementation
-//            StringBuffer    body = new StringBuffer(200);
-//            if (generateSourceCodeHints) {
-//                body.append(NbBundle.getMessage(
-//                        TestCreator.class,
-//                        "TestCreator.methodImpl.bodyComment"));         //NOI18N
-//                body.append("\n\n");                                    //NOI18N
-//            }
-//
-//            newMethod.setType(origMethod.getType());
-//            Type type = origMethod.getType();
-//            if (type != null) {
-//                String value = null;
-//                if ((type instanceof JavaClass) || (type instanceof Array)) {
-//                    value = "null";                                     //NOI18N
-//                } else if (type instanceof PrimitiveType) {
-//                    PrimitiveTypeKindEnum tke = (PrimitiveTypeKindEnum)
-//                                               ((PrimitiveType) type).getKind();
-//                    if (tke.equals(PrimitiveTypeKindEnum.BOOLEAN)) {
-//                        value = "false";                                //NOI18N
-//                    } else if (!tke.equals(PrimitiveTypeKindEnum.VOID)) {
-//                        value = "0";                                    //NOI18N
-//                    }
-//                }
-//
-//                if (value != null) {
-//                    body.append("return ").append(value).append(";\n"); //NOI18N
-//                }
-//            }
-//
-//            newMethod.setBodyText(body.toString());
-//
-//            // parameters
-//            newMethod.getParameters().addAll(
-//                    TestUtil.cloneParams(origMethod.getParameters(), tgtPkg));
-//
-//            return newMethod;
-//        }
-//
-//        /**
-//         */
-//        private String generateJavadoc(JavaClass srcClass, Method srcMethod) {
-//            return NbBundle.getMessage(
-//                        TestCreator.class,
-//                        "TestCreator.variantMethods.JavaDoc.comment",   //NOI18N
-//                        srcMethod.getName(),
-//                        srcClass.getName());
-//        }
-    // </editor-fold>
-
     /**
      * Generates a default body of a test method.
      * 
@@ -977,10 +1287,13 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
      *                             it should not be {@code true} unless
      *                             the source class contains an accessible
      *                             no-argument constructor
+     * @param  instanceClsName  name of a class of instance - only used if
+     *                          {@code useNoArgConstrutor} is {@code true}
      */
     protected BlockTree generateTestMethodBody(TypeElement srcClass,
                                                ExecutableElement srcMethod,
                                                boolean useNoArgConstructor,
+                                               CharSequence instanceClsName,
                                                WorkingCopy workingCopy) {
         TreeMaker maker = workingCopy.getTreeMaker();
 
@@ -1003,7 +1316,9 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                         INSTANCE_VAR_NAME,
                         maker.QualIdent(srcClass),
                         useNoArgConstructor
-                             ? generateNoArgConstructorCall(maker, srcClass)
+                             ? generateNoArgConstructorCall(maker,
+                                                            srcClass,
+                                                            instanceClsName)
                              : maker.Literal(null));
                 statements.add(instanceVarInit);
             }
@@ -1231,7 +1546,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      */
-    private ExpressionTree getDefaultValue(TreeMaker maker,
+    private static ExpressionTree getDefaultValue(TreeMaker maker,
                                            TypeMirror type) {
         ExpressionTree defValue;
         TypeKind typeKind = type.getKind();
@@ -1278,11 +1593,14 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     /**
      */
     private ExpressionTree generateNoArgConstructorCall(TreeMaker maker,
-                                                        TypeElement cls) {
+                                                        TypeElement cls,
+                                                        CharSequence instanceClsName) {
         return maker.NewClass(
                 null,                                   //enclosing instance
                 Collections.<ExpressionTree>emptyList(),//type arguments
-                maker.QualIdent(cls),                   //class identifier
+                instanceClsName != null
+                        ? maker.Identifier(instanceClsName)
+                        : maker.QualIdent(cls),         //class identifier
                 Collections.<ExpressionTree>emptyList(),//arguments list
                 null);                                  //class body
     }
@@ -1328,6 +1646,85 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
     }
 
     /**
+     * Finds a non-abstract, direct or indirect subclass of a given source class
+     * among nested classes of the given test class. Both static nested classes
+     * and inner classes are taken into account. Anonymous inner classes and
+     * classes defined inside code blocks are ignored. If there are multiple
+     * nested/inner classes the one having the given preferred name, if any,
+     * is chosen.
+     * 
+     * @param  srcClass  abstract class the subclass of which is to be found
+     * @param  tstClass  test class to search
+     * @param  tstClassPath  tree-path to the test class
+     * @param  tstClassMap  content index of the test class
+     * @param  preferredName  preferred name of the nested/inner class
+     * @return  name of the found nested class, or {@code null} if non was found
+     */
+    private static CharSequence findAbstractClassImplName(TypeElement srcClass,
+                                                          ClassTree tstClass,
+                                                          TreePath tstClassPath,
+                                                          ClassMap tstClassMap,
+                                                          String preferredName,
+                                                          Trees trees,
+                                                          Types types) {
+        if (!tstClassMap.containsNestedClasses()) {
+            return null;
+        }
+
+        boolean mayContainPreferred = tstClassMap.getNestedClasses()
+                                      .contains(preferredName);
+
+        List<? extends Tree> tstClassMembers = tstClass.getMembers();
+        TypeMirror srcClassType = null;
+        Name firstFound = null;
+        for (int index : tstClassMap.getNestedClassIndexes()) {
+            Tree member = tstClassMembers.get(index);
+            assert member.getKind() == Tree.Kind.CLASS;
+            ClassTree nestedClass = (ClassTree) member;
+            if (nestedClass.getModifiers().getFlags().contains(ABSTRACT)) {
+                continue;
+            }
+
+            TreePath nestedClassPath = new TreePath(tstClassPath, nestedClass);
+            TypeMirror nestedClassType = trees.getTypeMirror(nestedClassPath);
+            if (srcClassType == null) {
+                srcClassType = srcClass.asType();
+            }
+            if (types.isSubtype(nestedClassType, srcClassType)) {
+                Name name = nestedClass.getSimpleName();
+                if (!mayContainPreferred || name.contentEquals(preferredName)) {
+                    return name;
+                } else if (firstFound == null) {
+                    firstFound = name;
+                }
+            }
+
+        }
+        return firstFound;      //may be null
+    }
+
+    /**
+     * Checks whether there is an instance (non-static) method among the given
+     * methods.
+     * 
+     * @param  methods  methods to probe
+     * @return  {@code true} if there is at least one non-static method in the
+     *          given list of methods, {@code false} otherwise
+     */
+    private static boolean hasInstanceMethods(List<ExecutableElement> methods) {
+        if (methods.isEmpty()) {
+            return false;
+        }
+
+        for (ExecutableElement method : methods) {
+            if (!method.getModifiers().contains(STATIC)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      */
     protected boolean hasAccessibleNoArgConstructor(TypeElement srcClass) {
         boolean answer;
@@ -1351,8 +1748,8 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
 
     /**
      */
-    private boolean throwsNonRuntimeExceptions(CompilationInfo compInfo,
-                                               ExecutableElement method) {
+    private static boolean throwsNonRuntimeExceptions(CompilationInfo compInfo,
+                                                      ExecutableElement method) {
         List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
         if (thrownTypes.isEmpty()) {
             return false;

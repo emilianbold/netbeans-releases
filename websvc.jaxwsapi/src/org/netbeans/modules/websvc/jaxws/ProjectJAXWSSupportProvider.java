@@ -47,6 +47,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider.class)
 public class ProjectJAXWSSupportProvider implements JAXWSSupportProvider {
     
     public ProjectJAXWSSupportProvider() {

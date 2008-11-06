@@ -48,8 +48,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
+import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -96,6 +98,21 @@ public final class RubyPlatformManager {
     private static final String PLATFORM_ID_DEFAULT = "default"; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger(RubyPlatformManager.class.getName());
+
+    /** 
+     * Compares alphabetically by the long descriptions. Fallbacks to
+     * interpreter's paths comparison
+     */
+    private static final Comparator<RubyPlatform> ALPHABETICAL_COMPARATOR = new Comparator<RubyPlatform>() {
+        public int compare(RubyPlatform p1, RubyPlatform p2) {
+            int result = Collator.getInstance().compare(
+                    p1.getInfo().getLongDescription(), p2.getInfo().getLongDescription());
+            if (result != 0) {
+                result = p1.getInterpreter().compareTo(p2.getInterpreter());
+            }
+            return result;
+        }
+    };
     
     private static Set<RubyPlatform> platforms;
     
@@ -128,10 +145,12 @@ public final class RubyPlatformManager {
 
     /**
      * Get a set of all registered platforms, sorted alphabetically by long
-     * description.
+     * description. Fallbacks to the interpreter's paths comparison.
      */
-    public static synchronized SortedSet<RubyPlatform> getSortedPlatforms() {
-        return new TreeSet<RubyPlatform>(getPlatformsInternal());
+    public static synchronized SortedSet<? extends RubyPlatform> getSortedPlatforms() {
+        SortedSet<RubyPlatform> _platforms = new TreeSet<RubyPlatform>(ALPHABETICAL_COMPARATOR);
+        _platforms.addAll(getPlatformsInternal());
+        return _platforms;
     }
 
     /**

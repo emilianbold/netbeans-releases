@@ -102,6 +102,7 @@ import org.netbeans.modules.profiler.utils.ProjectUtilities;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.profiler.spi.ProjectTypeProfiler.class)
 public final class J2EEProjectTypeProfiler extends AbstractProjectTypeProfiler {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------
 

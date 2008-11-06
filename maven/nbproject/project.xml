@@ -40,7 +40,6 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
 <project xmlns="http://www.netbeans.org/ns/project/1">
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
@@ -136,21 +135,12 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.maven.bridges.debugger</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.maven.embedder</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0.1</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -159,7 +149,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.0.1</specification-version>
+                        <specification-version>1.1</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -204,7 +194,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.31</specification-version>
+                        <specification-version>1.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -323,10 +313,9 @@ made subject to such option by the copyright holder.
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.netbeans.modules.hudson.maven</friend>
                 <friend>org.netbeans.modules.jbi.fuji.support</friend>
-                <friend>org.netbeans.modules.testng.maven</friend>
-                <friend>org.nbheaven.sqe.core.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.maven.buildplan</friend>
                 <friend>org.netbeans.modules.maven.grammar</friend>
@@ -334,12 +323,14 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.maven.gsf</friend>
                 <friend>org.netbeans.modules.maven.hints</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
+                <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.maven.junit</friend>
                 <friend>org.netbeans.modules.maven.kit</friend>
                 <friend>org.netbeans.modules.maven.persistence</friend>
                 <friend>org.netbeans.modules.maven.profiler</friend>
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.maven.spring</friend>
+                <friend>org.netbeans.modules.testng.maven</friend>
                 <package>org.netbeans.modules.maven.api</package>
                 <package>org.netbeans.modules.maven.api.archetype</package>
                 <package>org.netbeans.modules.maven.api.classpath</package>

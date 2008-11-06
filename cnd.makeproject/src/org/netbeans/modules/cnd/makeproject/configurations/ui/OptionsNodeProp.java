@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.beans.PropertyEditor;
@@ -54,102 +53,110 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
 
 public class OptionsNodeProp extends PropertySupport {
+
     private OptionsConfiguration commandLineConfiguration;
     private BooleanConfiguration inheritValues;
     private AllOptionsProvider optionsProvider;
     private BasicCompiler compiler;
     private String delimiter = ""; // NOI18N
-    private String txt1;
-    private String txt2;
-    private String txt3;
     private String[] texts;
-    
+
     public OptionsNodeProp(OptionsConfiguration commandLineConfiguration, BooleanConfiguration inheritValues, AllOptionsProvider optionsProvider, BasicCompiler compiler, String delimiter, String[] texts) {
         super("ID", String.class, texts[0], texts[1], true, true); // NOI18N
         this.commandLineConfiguration = commandLineConfiguration;
         this.inheritValues = inheritValues;
         this.optionsProvider = optionsProvider;
         this.compiler = compiler;
-	if (delimiter != null)
-	    this.delimiter = delimiter;
-	this.texts = texts;
+        if (delimiter != null) {
+            this.delimiter = delimiter;
+        }
+        this.texts = texts;
     }
-    
+
+    @Override
     public String getHtmlDisplayName() {
-        if (commandLineConfiguration.getModified())
+        if (commandLineConfiguration.getModified()) {
             return "<b>" + getDisplayName(); // NOI18N
-        else
+        } else {
             return null;
+        }
     }
-    
+
     public Object getValue() {
         return commandLineConfiguration.getValue();
     }
-    
+
     public void setValue(Object v) {
-	String s = CppUtils.reformatWhitespaces((String)v);
+        String s = CppUtils.reformatWhitespaces((String) v);
         commandLineConfiguration.setValue(s);
     }
-    
+
+    @Override
     public PropertyEditor getPropertyEditor() {
         return new CommandLinePropEditor();
     }
-    
+
     /*
     public Object getValue(String attributeName) {
-        if (attributeName.equals("canEditAsText")) // NOI18N
-            return Boolean.FALSE;
-        else
-	    return super.getValue(attributeName);
+    if (attributeName.equals("canEditAsText")) // NOI18N
+    return Boolean.FALSE;
+    else
+    return super.getValue(attributeName);
     }
-    */
-    
+     */
+    @Override
     public void restoreDefaultValue() {
         commandLineConfiguration.optionsReset();
     }
-    
+
+    @Override
     public boolean supportsDefaultValue() {
         return true;
     }
-    
+
+    @Override
     public boolean isDefaultValue() {
         return !commandLineConfiguration.getModified();
     }
-    
+
     private class CommandLinePropEditor extends PropertyEditorSupport implements ExPropertyEditor {
+
         private PropertyEnv env;
-        
+
+        @Override
         public void setAsText(String text) {
-	    StringBuilder newText = new StringBuilder();
-	    if (delimiter.length() > 0) {
-		// Remove delimiter
-		StringTokenizer st = new StringTokenizer(text, delimiter);
-		while (st.hasMoreTokens()) {
-		    newText.append(st.nextToken());
-		}
-	    }
-	    else {
-		newText.append(text);
-	    }
-	    setValue(newText.toString());
+            StringBuilder newText = new StringBuilder();
+            if (delimiter.length() > 0) {
+                // Remove delimiter
+                StringTokenizer st = new StringTokenizer(text, delimiter);
+                while (st.hasMoreTokens()) {
+                    newText.append(st.nextToken());
+                }
+            } else {
+                newText.append(text);
+            }
+            super.setValue(newText.toString());
         }
-        
+
+        @Override
         public String getAsText() {
-	    String s = (String)getValue();
-	    return CppUtils.reformatWhitespaces(s, "", delimiter); // NOI18N
+            String s = (String) super.getValue();
+            return CppUtils.reformatWhitespaces(s, "", delimiter); // NOI18N
         }
-        
+
+        @Override
         public java.awt.Component getCustomEditor() {
-	    OptionsEditorPanel commandLineEditorPanel = new OptionsEditorPanel(texts, inheritValues, this, env);
-	    commandLineEditorPanel.setAllOptions(optionsProvider.getAllOptions(compiler));
-	    commandLineEditorPanel.setAdditionalOptions((String)getValue());
+            OptionsEditorPanel commandLineEditorPanel = new OptionsEditorPanel(texts, inheritValues, this, env);
+            commandLineEditorPanel.setAllOptions(optionsProvider.getAllOptions(compiler));
+            commandLineEditorPanel.setAdditionalOptions((String) super.getValue());
             return commandLineEditorPanel;
         }
-        
+
+        @Override
         public boolean supportsCustomEditor() {
             return true;
         }
-        
+
         public void attachEnv(PropertyEnv env) {
             this.env = env;
         }
