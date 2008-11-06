@@ -1798,7 +1798,7 @@ public abstract class Children extends Object {
                 if (mutex != null && (mutex.isReadAccess() || mutex.isWriteAccess())) {
                     throw new IllegalStateException("Should not acquire Children.MUTEX while holding ProjectManager.mutex()");
                 }
-                }
+            }
             command.run();
         }
 
