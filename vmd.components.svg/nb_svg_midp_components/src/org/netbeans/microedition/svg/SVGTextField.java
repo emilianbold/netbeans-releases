@@ -73,7 +73,8 @@ public class SVGTextField extends SVGComponent {
         SVGRect textBox    = myTextElement.getBBox();
         
         if (textBox != null) {
-            elemWidth = (int) (outlineBox.getWidth() + 0.5f - (textBox.getX() - outlineBox.getX()) * 2);
+            elemWidth = (int) (outlineBox.getWidth() + 0.5f - 
+                    (textBox.getX() - outlineBox.getX()) * 2);
         } else {
             elemWidth = 0;
         }
@@ -217,6 +218,7 @@ public class SVGTextField extends SVGComponent {
                     getElement(), 
                 TYPE , CARETELEM );
         }
+        initEmpiricalLetterWidth( myTextElement );
     }
     
     private void verify() {
@@ -260,6 +262,11 @@ public class SVGTextField extends SVGComponent {
             }
         }
         );
+        
+        if ( myLetterWidth == 0 ){
+            setTraitSafely( myHiddenTextElement , TRAIT_TEXT, TEXT);
+            initEmpiricalLetterWidth( myHiddenTextElement);
+        }
     }
     
 
@@ -307,12 +314,36 @@ public class SVGTextField extends SVGComponent {
             text = text.substring(myStartOffset);
         }
 
-        while ( getTextWidth(text) > elemWidth) {
-            text = text.substring(0, text.length() - 1);
-        }
+        text = truncateToShownText(text);
         
         setTextTrait(text);
         myEndOffset = myStartOffset + text.length();
+    }
+
+    private String truncateToShownText( String text ) {
+        int count = (int)(elemWidth/myLetterWidth);
+        String result = text;
+        result = text.substring( 0 , Math.min( text.length(), count + 1));
+
+        float width = getTextWidth(result);
+        boolean isShort = true;
+        while ( width > elemWidth) {
+            result = result.substring(0, result.length() - 1);
+            width = getTextWidth(result);
+            isShort = false;
+        }
+        
+        String tmpText = result;
+        while ( isShort && width <= elemWidth && count <= text.length() ){
+            result = tmpText;
+            tmpText = text.substring( 0, count );
+            count ++;
+            width = getTextWidth(tmpText);
+        }
+        if ( count == text.length() ){
+            result = tmpText;
+        }
+        return result;
     }
 
     private String getTextTrait() {
@@ -321,6 +352,16 @@ public class SVGTextField extends SVGComponent {
     
     private void setTextTrait( String text) {
         setTraitSafely( myTextElement, TRAIT_TEXT , text);
+    }
+    
+    private void initEmpiricalLetterWidth( SVGLocatableElement element ) {
+        if ( myLetterWidth != 0 ){
+            return;
+        }
+        String text = element.getTrait( TRAIT_TEXT );
+        if ( text != null && text.length() != 0 && element.getBBox() != null){
+            myLetterWidth = element.getBBox().getWidth()/text.length();
+        }
     }
     
     private SVGLocatableElement myTextElement;
@@ -334,6 +375,7 @@ public class SVGTextField extends SVGComponent {
     private       int                 myCaretPos = -1;
     private       float               caretWidth = 0;
     private       String              myTitle;
+    private       float               myLetterWidth;
     
     private boolean isReadOnly;
     
