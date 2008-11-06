@@ -111,8 +111,8 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         return null;
     }
 
-    public RemoteConfigurationPanel getRemoteConfigurationPanel(RemoteConfiguration remoteConfiguration) {
-        if (remoteConfiguration instanceof FtpConfiguration) {
+    public RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration configuration) {
+        if (accept(configuration)) {
             return new FtpConfigurationPanel();
         }
         return null;

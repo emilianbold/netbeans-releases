@@ -40,9 +40,6 @@
 package org.netbeans.modules.php.project.connections;
 
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
-import java.awt.Dialog;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -55,27 +52,13 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import javax.swing.JButton;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
-import org.openide.util.TaskListener;
 
 /**
  * @author Tomas Mysik
@@ -85,17 +68,12 @@ public final class RemoteConnections {
     static final Logger LOGGER = Logger.getLogger(RemoteConnections.class.getName());
 
     private static final String PREFERENCES_PATH = "RemoteConnections"; // NOI18N
-    private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
     private static final RemoteConfiguration UNKNOWN_REMOTE_CONFIGURATION =
             new RemoteConfiguration.Empty("unknown-config", NbBundle.getMessage(RemoteConnections.class, "LBL_UnknownRemoteConfiguration")); // NOI18N
 
     private final ConfigManager configManager;
     private final ConfigManager.ConfigProvider configProvider = new DefaultConfigProvider();
-    private final ChangeListener defaultChangeListener = new DefaultChangeListener();
     RemoteConnectionsPanel panel = null;
-    private DialogDescriptor descriptor = null;
-    private JButton testConnectionButton = null;
-    private RequestProcessor.Task testConnectionTask = null;
 
     public static RemoteConnections get() {
         return new RemoteConnections();
@@ -109,28 +87,8 @@ public final class RemoteConnections {
         if (panel != null) {
             return;
         }
-        panel = new RemoteConnectionsPanel(this);
-        // data
+        panel = new RemoteConnectionsPanel(this, configManager);
         panel.setConfigurations(getConfigurations());
-
-        // listeners
-        panel.addChangeListener(defaultChangeListener);
-        panel.addAddButtonActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                addConfig();
-            }
-        });
-        panel.addRemoveButtonActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                removeConfig();
-            }
-        });
-        panel.addConfigListListener(new ListSelectionListener() {
-            public void valueChanged(ListSelectionEvent e) {
-                selectCurrentConfig();
-                enableTestConnection();
-            }
-        });
     }
 
     /**
@@ -148,60 +106,10 @@ public final class RemoteConnections {
      * @param configName configuration name to be preselected, can be <code>null</code>.
      * @return <code>true</code> if there are changes in remote configurations.
      */
-    public boolean openManager(final RemoteConfiguration remoteConfiguration) {
+    public boolean openManager(RemoteConfiguration remoteConfiguration) {
         initPanel();
-        testConnectionButton = new JButton(NbBundle.getMessage(RemoteConnections.class, "LBL_TestConnection"));
-        testConnectionTask = TEST_CONNECTION_RP.create(new Runnable() {
-            public void run() {
-                testConnection();
-            }
-        }, true);
-        descriptor = new DialogDescriptor(
-                panel,
-                NbBundle.getMessage(RemoteConnections.class, "LBL_ManageRemoteConnections"),
-                true,
-                new Object[] {testConnectionButton, NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION},
-                NotifyDescriptor.OK_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN,
-                null,
-                null);
-        descriptor.setClosingOptions(new Object[] {NotifyDescriptor.OK_OPTION, NotifyDescriptor.CANCEL_OPTION});
-        testConnectionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                testConnectionTask.schedule(0);
-            }
-        });
-        testConnectionTask.addTaskListener(new TaskListener() {
-            public void taskFinished(Task task) {
-                enableTestConnection();
-            }
-        });
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(descriptor);
-        try {
-            // XXX probably not the best solution
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    if (panel.getConfigurations().isEmpty()) {
-                        // no config available => show add config dialog
-                        addConfig();
-                    } else {
-                        // this would need to implement hashCode() and equals() for RemoteConfiguration.... hmm, probably not needed
-                        //assert getConfigurations().contains(remoteConfiguration) : "Unknow remote configration: " + remoteConfiguration;
-                        if (remoteConfiguration != null) {
-                            // select config
-                            panel.selectConfiguration(remoteConfiguration.getName());
-                        } else {
-                            // select the first one
-                            panel.selectConfiguration(0);
-                        }
-                    }
-                }
-            });
-            dialog.setVisible(true);
-        } finally {
-            dialog.dispose();
-        }
-        boolean changed = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
+        assert panel != null;
+        boolean changed = panel.open(remoteConfiguration);
         if (changed) {
             saveRemoteConnections();
         }
@@ -221,7 +129,8 @@ public final class RemoteConnections {
         return Collections.unmodifiableList(names);
     }
 
-    private RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
+    /** can be null */
+    public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration cfg) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
             RemoteConfiguration configuration = provider.getRemoteConfiguration(cfg);
             if (configuration != null) {
@@ -233,12 +142,8 @@ public final class RemoteConnections {
 
     /** can be null */
     public RemoteConfigurationPanel getConfigurationPanel(ConfigManager.Configuration cfg) {
-        RemoteConfiguration remoteConfiguration = getRemoteConfiguration(cfg);
-        if (remoteConfiguration == null) {
-            return null;
-        }
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
-            RemoteConfigurationPanel configurationPanel = provider.getRemoteConfigurationPanel(remoteConfiguration);
+            RemoteConfigurationPanel configurationPanel = provider.getRemoteConfigurationPanel(cfg);
             if (configurationPanel != null) {
                 return configurationPanel;
             }
@@ -284,63 +189,6 @@ public final class RemoteConnections {
         return null;
     }
 
-    void testConnection() {
-        testConnectionButton.setEnabled(false);
-
-        Configuration selectedConfiguration = panel.getSelectedConfiguration();
-        assert selectedConfiguration != null;
-        RemoteConfiguration remoteConfiguration = getRemoteConfiguration(selectedConfiguration);
-        assert remoteConfiguration != null : "Cannot find remote configuration for config manager configuration " + selectedConfiguration.getName();
-
-        String configName = selectedConfiguration.getDisplayName();
-        String progressTitle = NbBundle.getMessage(RemoteConnections.class, "MSG_TestingConnection", configName);
-        ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle);
-        RemoteClient client = new RemoteClient(remoteConfiguration);
-        RemoteException exception = null;
-        try {
-            progressHandle.start();
-            client.connect();
-        } catch (RemoteException ex) {
-            exception = ex;
-        } finally {
-            try {
-                client.disconnect();
-            } catch (RemoteException ex) {
-                // ignored
-            }
-            progressHandle.finish();
-        }
-
-        // notify user
-        String msg = null;
-        int msgType = 0;
-        if (exception != null) {
-            if (exception.getRemoteServerAnswer() == null) {
-                msg = exception.getMessage();
-            } else {
-                msg = NbBundle.getMessage(RemoteConnections.class, "MSG_TestConnectionFailed", exception.getMessage(), exception.getRemoteServerAnswer());
-            }
-            msgType = NotifyDescriptor.ERROR_MESSAGE;
-        } else {
-            msg = NbBundle.getMessage(RemoteConnections.class, "MSG_TestConnectionSucceeded");
-            msgType = NotifyDescriptor.INFORMATION_MESSAGE;
-        }
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor(
-                    msg,
-                    configName,
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    msgType,
-                    new Object[] {NotifyDescriptor.OK_OPTION},
-                    NotifyDescriptor.OK_OPTION));
-    }
-
-    void enableTestConnection() {
-        assert testConnectionButton != null;
-        assert testConnectionTask != null;
-        assert panel != null;
-        testConnectionButton.setEnabled(testConnectionTask.isFinished() && panel.getSelectedConfiguration() != null && panel.getSelectedConfiguration().isValid());
-    }
-
     private List<Configuration> getConfigurations() {
         Collection<String> cfgNames = configManager.configurationNames();
         List<Configuration> configs = new ArrayList<Configuration>(cfgNames.size() - 1); // without default config
@@ -359,109 +207,6 @@ public final class RemoteConnections {
         }
         Collections.sort(configs, ConfigManager.getConfigurationComparator());
         return configs;
-    }
-
-    void addConfig() {
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(NbBundle.getMessage(RemoteConnections.class, "LBL_ConnectionName"),
-                NbBundle.getMessage(RemoteConnections.class, "LBL_CreateNewConnection"));
-
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-            String name = d.getInputText();
-            String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
-
-            String err = null;
-            if (name.trim().length() == 0) {
-                err = NbBundle.getMessage(RemoteConnections.class, "MSG_EmptyConnectionExists");
-            } else if (configManager.exists(config)) {
-                err = NbBundle.getMessage(RemoteConnections.class, "MSG_ConnectionExists", config);
-            }
-            if (err != null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(err, NotifyDescriptor.WARNING_MESSAGE));
-                return;
-            }
-            Configuration cfg = configManager.createNew(config, name);
-            // XXX
-//            cfg.putValue(PORT, String.valueOf(DEFAULT_PORT));
-//            cfg.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
-//            cfg.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
-            panel.addConfiguration(cfg);
-            configManager.markAsCurrentConfiguration(config);
-        }
-    }
-
-    void removeConfig() {
-        assert panel != null;
-        Configuration cfg = panel.getSelectedConfiguration();
-        assert cfg != null;
-        configManager.configurationFor(cfg.getName()).delete();
-        panel.removeConfiguration(cfg); // this will change the current selection in the list => selectCurrentConfig() is called
-    }
-
-    void selectCurrentConfig() {
-        assert panel != null;
-        Configuration cfg = panel.getSelectedConfiguration();
-
-        // unregister default listener (validate() would be called soooo many times)
-        panel.removeChangeListener(defaultChangeListener);
-
-        // change the state of the fields
-        panel.setEnabledFields(cfg != null);
-
-        if (cfg != null) {
-            configManager.markAsCurrentConfiguration(cfg.getName());
-            panel.setActiveConfig(cfg);
-        } else {
-            panel.resetFields();
-        }
-        // register default listener
-        panel.addChangeListener(defaultChangeListener);
-
-        if (cfg != null) {
-            // validate fields only if there's valid config
-            validate();
-        }
-    }
-
-    void validate() {
-        assert panel != null;
-
-        panel.isValidConfiguration();
-        setError(panel.getError());
-
-        // check whether all the configs are errorless
-        checkAllTheConfigs();
-    }
-
-    private void checkAllTheConfigs() {
-        for (Configuration cfg : panel.getConfigurations()) {
-            assert cfg != null;
-            if (!cfg.isValid()) {
-                panel.setError(NbBundle.getMessage(RemoteConnections.class, "MSG_InvalidConfiguration", cfg.getDisplayName()));
-                assert descriptor != null;
-                descriptor.setValid(false);
-                return;
-            }
-        }
-    }
-
-    private void setError(String error) {
-        assert panel != null;
-        Configuration cfg = panel.getSelectedConfiguration();
-        cfg.setErrorMessage(error);
-        panel.setError(error);
-        assert descriptor != null;
-        descriptor.setValid(error == null);
-        enableTestConnection();
-    }
-
-    private void updateActiveConfig() {
-        assert panel != null;
-        Configuration cfg = panel.getSelectedConfiguration();
-        if (cfg == null) {
-            // no config selected
-            return;
-        }
-        panel.updateActiveConfig(cfg);
     }
 
     private void saveRemoteConnections() {
@@ -531,13 +276,6 @@ public final class RemoteConnections {
             } catch (BackingStoreException bse) {
                 LOGGER.log(Level.INFO, "Error while reading existing remote connections", bse);
             }
-        }
-    }
-
-    private class DefaultChangeListener implements ChangeListener {
-        public void stateChanged(ChangeEvent e) {
-            updateActiveConfig();
-            validate();
         }
     }
 }

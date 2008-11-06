@@ -61,5 +61,5 @@ public interface RemoteConnectionProvider {
     RemoteConfiguration createRemoteConfiguration(String name, String displayName);
     RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration);
     RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io);
-    RemoteConfigurationPanel getRemoteConfigurationPanel(RemoteConfiguration remoteConfiguration);
+    RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration remoteConfiguration);
 }
