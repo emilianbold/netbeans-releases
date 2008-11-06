@@ -55,6 +55,7 @@ import java.io.IOException;
 
 import org.netbeans.api.project.Project;
 
+import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportIml;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
 import org.openide.DialogDisplayer;
@@ -82,7 +83,6 @@ public class JaxWsClientCreator implements ClientCreator {
     }
 
     public void createClient() throws IOException {
-        System.out.println("creating client");
         JAXWSLightSupport jaxWsSupport = JAXWSLightSupport.getJAXWSLightSupport(project.getProjectDirectory());
         String wsdlUrl = (String)wiz.getProperty(WizardProperties.WSDL_DOWNLOAD_URL);
         String filePath = (String)wiz.getProperty(WizardProperties.WSDL_FILE_PATH);
@@ -92,11 +92,21 @@ public class JaxWsClientCreator implements ClientCreator {
             wsdlUrl = FileUtil.toFileObject(FileUtil.normalizeFile(new File(filePath))).getURL().toExternalForm();
         }
         FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(true);
+        
+        boolean hasConfigFolder = false;
+        File configFile = new File (FileUtil.toFile(project.getProjectDirectory()),"src/jaxws"); //NOI18N
+        if (configFile.exists()) {
+            hasConfigFolder = true;
+        } else {
+            hasConfigFolder = configFile.mkdirs();
+        }
+        
         if (localWsdlFolder != null) {
             FileObject wsdlFo = null;
             try {
                 wsdlFo = WSUtils.retrieveResource(
                         localWsdlFolder,
+                        (hasConfigFolder ? new URI(MavenJAXWSSupportIml.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
                         new URI(wsdlUrl));
             } catch (URISyntaxException ex) {
                 //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -115,6 +125,7 @@ public class JaxWsClientCreator implements ClientCreator {
                 DialogDisplayer.getDefault().notify(desc);
             }
             if (wsdlFo != null) {
+                MavenModelUtils.addJaxws21Library(project);
                 String relativePath = FileUtil.getRelativePath(localWsdlFolder, wsdlFo);
                 JaxWsService service = new JaxWsService(relativePath, false);
                 
@@ -140,7 +151,6 @@ public class JaxWsClientCreator implements ClientCreator {
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
-                jaxWsSupport.addService(service);
             }
         }
     }

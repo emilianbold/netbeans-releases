@@ -41,6 +41,7 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +66,7 @@ import org.openide.filesystems.FileUtil;
 public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     Project prj;
     private List<JaxWsService> services = new LinkedList<JaxWsService>();
+    public static final String CATALOG_PATH = "src/jaxws/jax-ws-catalog.xml"; //NOI18N
     
     MavenJAXWSSupportIml(Project prj) {
         this.prj = prj;
@@ -114,7 +116,12 @@ public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     }
 
     public URL getCatalog() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        File catalogFile = FileUtilities.resolveFilePath(FileUtil.toFile(prj.getProjectDirectory()), CATALOG_PATH);
+        try {
+            return catalogFile.toURL();
+        } catch (MalformedURLException ex) {
+            return null;
+        }
     }
 
     public FileObject getDeploymentDescriptorFolder() {

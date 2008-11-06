@@ -40,6 +40,8 @@ package org.netbeans.modules.maven.jaxws;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +54,7 @@ import org.netbeans.modules.j2ee.dd.api.webservices.Webservices;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
@@ -61,7 +64,6 @@ import org.netbeans.modules.websvc.jaxws.light.spi.JAXWSLightSupportProvider;
 import org.netbeans.modules.websvc.project.spi.WebServiceDataProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -90,8 +92,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         ProjectOpenedHook openhook = new ProjectOpenedHook() {
 
             PropertyChangeListener pcl;
-            FileObject wsdlFolder;
-            FileChangeListener wsdlFolderListener;
+            PropertyChangeListener wsdlFolderListener;
 
             protected void projectOpened() {
                 final MetadataModel<WebservicesMetadata> wsModel = jaxWsSupport.getWebservicesMetadataModel();
@@ -111,14 +112,22 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
                     }
                 }
 
-                wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
                 
                 if (wsdlFolder != null) {
-                    try {
-                        detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                    }
+                    detectWsdlClients(prj, jaxWsSupport, wsdlFolder);
+                }
+                NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
+                if (mp != null) {
+                    wsdlFolderListener = new PropertyChangeListener() {
+
+                        public void propertyChange(PropertyChangeEvent evt) {
+                            if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                                updateClients();
+                            }
+                        }
+                    };
+                    mp.addPropertyChangeListener(wsdlFolderListener);
                 }
 
             }
@@ -139,6 +148,51 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 
                     }
                 }
+                NbMavenProject mp = prj.getLookup().lookup(NbMavenProject.class);
+                if (mp != null) {
+                    mp.removePropertyChangeListener(wsdlFolderListener);
+                }
+            }
+            
+            void updateClients() {
+                // get old clients
+                List<JaxWsService> oldClients = new ArrayList<JaxWsService>();
+                Set<String> oldNames = new HashSet<String>();
+                for (JaxWsService s:jaxWsSupport.getServices()) {
+                    if (!s.isServiceProvider()) {
+                        oldClients.add(s);
+                        oldNames.add(s.getLocalWsdl());
+                    }
+                }
+                FileObject wsdlFolder = jaxWsSupport.getLocalWsdlFolder(false);
+                if (wsdlFolder != null) {
+                    List<JaxWsService> newClients = getJaxWsClients(prj, jaxWsSupport, wsdlFolder);
+                    Set<String> commonNames = new HashSet<String>();
+                    for (JaxWsService client: newClients) {
+                        String localWsdl = client.getLocalWsdl();
+                        if (oldNames.contains(localWsdl)) {
+                            commonNames.add(localWsdl);
+                        }
+                    }
+                    // removing old clients
+                    for (JaxWsService oldClient: oldClients) {
+                        if (!commonNames.contains(oldClient.getLocalWsdl())) {
+                            jaxWsSupport.removeService(oldClient);
+                        }
+                    }
+                    // add new clients
+                    for (JaxWsService newClient: newClients) {
+                        if (!commonNames.contains(newClient.getLocalWsdl())) {
+                            jaxWsSupport.addService(newClient);
+                        }
+                    }
+                } else {
+                    // removing all clients
+                    for (JaxWsService client: oldClients) {
+                        jaxWsSupport.removeService(client);
+                    }
+                }
+
             }
         };
         WebServiceDataProvider servicedataProvider = new MavenWebServicesProvider(prj, jaxWsSupport); 
@@ -233,7 +287,7 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
         }
     }
         
-    private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) throws Exception {
+    private void detectWsdlClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder)  {
         String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
                 "org.codehaus.mojo", //NOI18N
                 "jaxws-maven-plugin", //NOI18N
@@ -256,5 +310,24 @@ public class MavenJaxWsLookupProvider implements LookupProvider {
 //            }
         }
     }
+    
+    private List<JaxWsService> getJaxWsClients(Project prj, JAXWSLightSupport jaxWsSupport, FileObject wsdlFolder) {
+        String[] filepaths = PluginPropertyUtils.getPluginPropertyList(prj,
+            "org.codehaus.mojo", //NOI18N
+            "jaxws-maven-plugin", //NOI18N
+            "wsdlFiles", //NOI18N
+            "wsdlFile", //NOI18N
+            "wsimport"); //NOI18N
+        if (filepaths != null) {
+            List<JaxWsService> clients = new ArrayList<JaxWsService>();
+            for (String filePath:filepaths) {
+                JaxWsService client = new JaxWsService(filePath, false);
+                clients.add(client);
+            }
+            return clients;
+        } else {
+            return Collections.<JaxWsService>emptyList();
+        }
+    } 
 
 }
