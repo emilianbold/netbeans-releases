@@ -40,54 +40,16 @@
  */
 
 package org.netbeans.modules.mobility.project.ui;
-import java.io.CharConversionException;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeEvent;
 import org.netbeans.api.project.*;
-import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.modules.mobility.project.J2MEActionProvider;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
-import org.netbeans.modules.mobility.project.ui.customizer.J2MEProjectProperties;
-import org.netbeans.modules.mobility.project.DefaultPropertiesDescriptor;
-import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.api.java.platform.JavaPlatformManager; 
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.support.ant.AntProjectEvent;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.AntProjectListener;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.netbeans.spi.project.ui.support.CommonProjectActions;
-import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
 import org.openide.ErrorManager;
-import org.openide.actions.FindAction;
 import org.openide.filesystems.FileObject;
-import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.ProxyLookup;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.ResourceBundle;
-import org.openide.nodes.ChildFactory;
-import org.openide.nodes.Children;
-import org.openide.util.NbCollections;
-import org.openide.util.WeakListeners;
-import org.openide.util.lookup.Lookups;
-import org.openide.xml.XMLUtil;
 
 
 /**
@@ -141,22 +103,5 @@ public class J2MEPhysicalViewProvider implements LogicalViewProvider {
             }
         }
         return null;
-    }
-
-    
-    public void refreshNode(String name)
-    {
-        if (rootNode != null)
-        {
-//            LogicalViewChildren children = rootNode.childFactory;
-//            children.refreshNode(name);
-//            rootNode.checkBroken();
-        }
-    }
-
-    // Common class for all nodes in our project
-    abstract static class ChildLookup extends ProxyLookup
-    {
-        abstract public Node[] createNodes(J2MEProject project) ;
     }
 }

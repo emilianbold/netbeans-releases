@@ -65,37 +65,37 @@ public final class VisualClassPathItem {
     public static final int TYPE_CLASSPATH = 3;
     public static final int TYPE_FOLDER = 4;
     
-    final private static String RESOURCE_ICON_JAR = "org/netbeans/modules/project/support/customizer/resources/jar.gif"; //NOI18N
-    final private static String RESOURCE_ICON_FOLDER = "org/netbeans/modules/project/support/customizer/resources/folder.gif"; //NOI18N
-    final private static String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/project/support/customizer/resources/libraries.gif"; //NOI18N
-    final private static String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/project/support/customizer/resources/projectDependencies.gif"; //NOI18N
-    final private static String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/project/support/customizer/resources/project.gif"; //NOI18N
-    final private static String RESOURCE_ICON_BROKEN = "org/netbeans/modules/project/support/customizer/resources/brokenProjectBadge.gif"; //NOI18N
+    final private String RESOURCE_ICON_JAR = "org/netbeans/modules/project/support/customizer/resources/jar.gif"; //NOI18N
+    final private String RESOURCE_ICON_FOLDER = "org/netbeans/modules/project/support/customizer/resources/folder.gif"; //NOI18N
+    final private String RESOURCE_ICON_LIBRARY = "org/netbeans/modules/project/support/customizer/resources/libraries.gif"; //NOI18N
+    final private String RESOURCE_ICON_ARTIFACT = "org/netbeans/modules/project/support/customizer/resources/projectDependencies.gif"; //NOI18N
+    final private String RESOURCE_ICON_CLASSPATH = "org/netbeans/modules/project/support/customizer/resources/project.gif"; //NOI18N
+    final private String RESOURCE_ICON_BROKEN = "org/netbeans/modules/project/support/customizer/resources/brokenProjectBadge.gif"; //NOI18N
     
-    private static Icon ICON_JAR;
-    private static Icon ICON_LIBRARY;
-    private static Icon ICON_ARTIFACT;
-    private static Icon ICON_CLASSPATH;
-    private static Icon ICON_FOLDER;
-    private static Icon ICON_BROKEN_JAR;
-    private static Icon ICON_BROKEN_LIBRARY;
-    private static Icon ICON_BROKEN_ARTIFACT;
-    private static Icon ICON_BROKEN_CLASSPATH;
-    private static Icon ICON_BROKEN_FOLDER;
+    private Icon ICON_JAR;
+    private Icon ICON_LIBRARY;
+    private Icon ICON_ARTIFACT;
+    private Icon ICON_CLASSPATH;
+    private Icon ICON_FOLDER;
+    private Icon ICON_BROKEN_JAR;
+    private Icon ICON_BROKEN_LIBRARY;
+    private Icon ICON_BROKEN_ARTIFACT;
+    private Icon ICON_BROKEN_CLASSPATH;
+    private Icon ICON_BROKEN_FOLDER;
 
-    private static Image IMAGE_JAR;
-    private static Image IMAGE_LIBRARY;
-    private static Image IMAGE_ARTIFACT;
-    private static Image IMAGE_CLASSPATH;
-    private static Image IMAGE_FOLDER;
-    private static Image IMAGE_BROKEN_JAR;
-    private static Image IMAGE_BROKEN_LIBRARY;
-    private static Image IMAGE_BROKEN_ARTIFACT;
-    private static Image IMAGE_BROKEN_CLASSPATH;
-    private static Image IMAGE_BROKEN_FOLDER;
+    private Image IMAGE_JAR;
+    private Image IMAGE_LIBRARY;
+    private Image IMAGE_ARTIFACT;
+    private Image IMAGE_CLASSPATH;
+    private Image IMAGE_FOLDER;
+    private Image IMAGE_BROKEN_JAR;
+    private Image IMAGE_BROKEN_LIBRARY;
+    private Image IMAGE_BROKEN_ARTIFACT;
+    private Image IMAGE_BROKEN_CLASSPATH;
+    private Image IMAGE_BROKEN_FOLDER;
 
     
-    static {
+    {
         //XXX no need to hold these bitmaps forever, should be
         //created dynamically - Tim
         Image broken = ImageUtilities.loadImage(RESOURCE_ICON_BROKEN);

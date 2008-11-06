@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,6 +75,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.MutexException;
 import org.openide.util.Mutex;
@@ -103,7 +105,16 @@ public class J2MEProjectProperties implements ProjectProperties {
     private void initPropertyDescriptors() {
         Collection <? extends ProjectPropertiesDescriptor> c = Lookup.getDefault().lookupAll(ProjectPropertiesDescriptor.class);
         for (ProjectPropertiesDescriptor p : c) {
-            PROPERTY_DESCRIPTORS.addAll(p.getPropertyDescriptors());
+            try {
+                PROPERTY_DESCRIPTORS.addAll(p.getPropertyDescriptors());
+            } catch (ConcurrentModificationException cme) {
+                ConcurrentModificationException nue = 
+                        new ConcurrentModificationException("Property descriptor " + //NOI18N
+                        "class " + p.getClass().getName() + " should return a " + //NOI18N
+                        "defensive copy of its property descriptors - they have" + //NOI18N
+                        "been modified"); //NOI18N
+                Exceptions.printStackTrace (nue);
+            }
         }
         for (DeploymentPlugin p : Lookup.getDefault().lookup(new Lookup.Template<DeploymentPlugin>(DeploymentPlugin.class)).allInstances() ) {
             final Iterator it2 = p.getProjectPropertyDefaultValues().entrySet().iterator();

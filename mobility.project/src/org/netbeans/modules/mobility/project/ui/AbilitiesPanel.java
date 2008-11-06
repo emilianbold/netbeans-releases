@@ -55,6 +55,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -105,8 +107,6 @@ import org.openide.util.NbBundle;
 
 public class AbilitiesPanel implements NavigatorPanel
 {
-    private static ABPanel instance=null;
-    
     static class ABHint implements NavigatorLookupHint
     {
         static String hint= "j2me/abilities";
@@ -135,17 +135,12 @@ public class AbilitiesPanel implements NavigatorPanel
         private static J2MEProject project=null;
         private static Node[] selectedNodes=null;
         private static Node defaultConfig=null;
-        private static Action[] actions = { new AddAction(), new RemoveAction(), new CopyAction(), new PasteAction() };
+        private Action[] actions = { new AddAction(), new RemoveAction(), new CopyAction(), new PasteAction() };
         private static ExplorerManager manager=new ExplorerManager();
         private static HashMap<String,String> copiedAbilities=new HashMap<String,String>();
         private static boolean pasteActionEnabled = false;
-        //To disable paste at the beginning
-        static
-        {
-            actions[3].setEnabled(pasteActionEnabled);
-        }
         
-        static void addAbility(EditableProperties ep,AntProjectHelper helper, String key, String value)
+        void addAbility(EditableProperties ep,AntProjectHelper helper, String key, String value)
         {
             //Save the change
             if (defaultConfig != null)
@@ -199,7 +194,7 @@ public class AbilitiesPanel implements NavigatorPanel
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);   
         }
         
-        static private class CopyAction extends AbstractAction {
+        private class CopyAction extends AbstractAction {
             private CopyAction()
             {
                 putValue(Action.NAME,COPY);
@@ -220,7 +215,7 @@ public class AbilitiesPanel implements NavigatorPanel
             }
         }
         
-        static private class PasteAction extends AbstractAction {
+        private class PasteAction extends AbstractAction {
             private PasteAction()
             {
                 putValue(Action.NAME,PASTE);
@@ -260,7 +255,7 @@ public class AbilitiesPanel implements NavigatorPanel
             }
         }
         
-        static private class AddAction extends AbstractAction {
+        private class AddAction extends AbstractAction {
 
             private AddAction()
             {
@@ -405,6 +400,8 @@ public class AbilitiesPanel implements NavigatorPanel
         
         private ABPanel()
         {
+            //To disable paste at the beginning
+            actions[3].setEnabled(pasteActionEnabled);
             initComponents();            
             scrollPane.setViewportView(table);
             table.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);                                    
@@ -416,10 +413,12 @@ public class AbilitiesPanel implements NavigatorPanel
             
             MouseAdapter listener=new MouseAdapter()
             {
+                @Override
                 public void mousePressed(MouseEvent e) {
                   showPopup(e);
                 }
 
+                @Override
                 public void mouseReleased(MouseEvent e) {
                   showPopup(e);
                 }
@@ -516,7 +515,7 @@ public class AbilitiesPanel implements NavigatorPanel
         }
 
         
-        public static void setAbilities(final Node[] nodes)
+        void setAbilities(final Node[] nodes)
         {
             HashSet<String> abSet = new HashSet<String>();
             HashMap<String,String> abIntersection = new HashMap<String,String>();
@@ -625,23 +624,28 @@ public class AbilitiesPanel implements NavigatorPanel
             gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
             add(scrollPane, gridBagConstraints);
         }
-        
-        private static JComponent getInstance()
-        {
-            if (instance == null)
-                instance = new ABPanel();
-            return instance;
-        }
 
         public ExplorerManager getExplorerManager()
         {
             return manager;
         }
     }
-        
-    public synchronized JComponent getComponent()
-    {
-        return ABPanel.getInstance();
+
+    private Reference <ABPanel> instance;
+    public JComponent getComponent() {
+        return getComponent(true);
+    }
+
+    private ABPanel getComponent(boolean create) {
+        ABPanel result = null;
+        if (instance != null) {
+            result = instance.get();
+        }
+        if (result == null) {
+            result = new ABPanel();
+            instance = new WeakReference<ABPanel> (result);
+        }
+        return result;
     }
     
     public String getDisplayName()
@@ -658,16 +662,19 @@ public class AbilitiesPanel implements NavigatorPanel
         return "Abilities";
     }
     
-    public synchronized void panelActivated(final Lookup context)
-    {
+    public void panelActivated(final Lookup context) {
         context.lookupAll(Node.class);
         Node[] nodes = (Node[]) context.lookupAll(Node.class).toArray(new Node[context.lookupAll(Node.class).size()]);
-        ABPanel.setAbilities(nodes);
+        ABPanel pnl = getComponent(true);
+        pnl.setAbilities(nodes);
     }
     
-    public synchronized void panelDeactivated()
+    public void panelDeactivated()
     {
-        ABPanel.setAbilities(new Node[0]);
+        ABPanel pnl = getComponent(false);
+        if (pnl != null) {
+            pnl.setAbilities(new Node[0]);
+        }
     }
     
     public Lookup getLookup()
