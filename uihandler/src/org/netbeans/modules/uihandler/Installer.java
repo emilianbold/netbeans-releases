@@ -1271,7 +1271,6 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void alterMessage(DialogDescriptor dd);
         protected abstract boolean viewData();
         protected abstract void assignInternalURL(URL u);
-        protected abstract void saveUserName();
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL);
 
@@ -1465,8 +1464,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
                     public void run() {
                         if (dataType == DataType.DATA_UIGESTURE) {
-                            saveUserName();
-                            LogRecord userData = getUserData(true);
+                            LogRecord userData = getUserData(true, reportPanel);
                             LogRecord thrownLog = getThrownLog(recs);
                             if (thrownLog != null) {
                                 recs.add(thrownLog);//exception selected by user
@@ -1474,8 +1472,8 @@ public class Installer extends ModuleInstall implements Runnable {
                             recs.add(TimeToFailure.logFailure());
                             recs.add(BuildInfo.logBuildInfoRec());
                             recs.add(userData);
-                            if ((report) && !(reportPanel.asAGuest())) {
-                                if (!checkUserName()) {
+                            if ((report) && (!reportPanel.asAGuest())) {
+                                if (!checkUserName(reportPanel)) {
                                     EventQueue.invokeLater(new Runnable(){
                                         public void run() {
                                             submitButton.setEnabled(true);
@@ -1567,11 +1565,10 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-        private boolean checkUserName() {
+        private boolean checkUserName(ReportPanel panel) {
             checkingResult = true;
-            ExceptionsSettings settings = new ExceptionsSettings();
-            String login = settings.getUserName();
-            String passwd = settings.getPasswd();
+            String login = panel.getUserName();
+            String passwd = panel.getPasswd();
             try {
                 char[] array = new char[100];
                 URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
@@ -1626,15 +1623,21 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-        protected final LogRecord getUserData(boolean openPasswd) {
+        protected final LogRecord getUserData(boolean openPasswd, ReportPanel panel) {
             LogRecord userData;
-            ExceptionsSettings settings = new ExceptionsSettings();
             ArrayList<String> params = new ArrayList<String>(6);
             params.add(getOS());
             params.add(getVM());
             params.add(getVersion());
-            saveUserName();
-            params.add(settings.getUserName());
+            if (panel != null){
+                if (panel.asAGuest()){
+                    params.add("");
+                }else{
+                    params.add(panel.getUserName());
+                }
+            } else {
+                params.add(new ExceptionsSettings().getUserName());
+            }
             addMoreLogs(params, openPasswd);
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
@@ -1712,11 +1715,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 reportPanel = new ReportPanel();
             }
             Throwable t = getThrown(recs);
-            if (t != null && reportPanel !=null){
+            if (t != null){
                 reportPanel.setSummary(createMessage(t));
-                if ("ERROR_URL".equals(msg)) {
-                    dim = new Dimension(470, 450);
-                }
+            }
+            if ("ERROR_URL".equals(msg)) {
+                dim = new Dimension(470, 450);
             }
             browser = new JEditorPane();
             try {
@@ -1769,7 +1772,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (d == null) {
                 return;
             }
-
+            reportPanel.saveUserData();
             dd.setValue(DialogDescriptor.CLOSED_OPTION);
             d.setVisible(false);
             d = null;
@@ -1781,7 +1784,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 AbstractNode root = new AbstractNode(new Children.Array());
                 root.setName("root"); // NOI18N
                 List<LogRecord> shownRecs = new ArrayList<LogRecord>(recs);
-                shownRecs.add(getUserData(false));
+                shownRecs.add(getUserData(false, reportPanel));
                 root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", shownRecs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
                 LinkedList<Node> nodes = new LinkedList<Node>();
@@ -1821,11 +1824,6 @@ public class Installer extends ModuleInstall implements Runnable {
             LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
         }
-        protected void saveUserName() {
-            if (reportPanel != null && report) {
-                reportPanel.saveUserName();
-            }
-        }
 
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
             if ((reportPanel != null)&&(report)){
@@ -1833,7 +1831,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 params.add(reportPanel.getComment());
                 try {
                     if (openPasswd) {
-                        String passwd = new ExceptionsSettings().getPasswd();
+                        String passwd = reportPanel.getPasswd();
                         if ((passwd.length() != 0) && (!reportPanel.asAGuest())){
                             passwd = PasswdEncryption.encrypt(passwd);
                         }
@@ -1930,8 +1928,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void showURL(URL u) {
             hintURL = u;
         }
-        protected void saveUserName() {
-        }
+
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
         }
         protected Object showDialogAndGetValue(DialogDescriptor dd) {
