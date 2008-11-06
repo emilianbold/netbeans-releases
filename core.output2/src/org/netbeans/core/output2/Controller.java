@@ -1102,12 +1102,7 @@ public class Controller { //XXX public only for debug access to logging code
                 if (!win.isOpened()) {
                     win.open();
                 }
-                //#60960 creating component doesn't make the tabs visible, do it in select (also #58738)
-                if (!io.isFocusTaken()) {
-                    win.requestVisibleForNewTab();
-                } else {
-                    win.requestActiveForNewTab();
-                }
+                win.requestActive();
                 if (win.getSelectedTab() != tab) {
                     if (tab.getParent() == null) {
                         //It was hidden

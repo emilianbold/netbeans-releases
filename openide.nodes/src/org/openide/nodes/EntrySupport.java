@@ -199,8 +199,8 @@ abstract class EntrySupport {
 
         public Node[] getNodes(boolean optimalResult) {
             final boolean LOG_ENABLED = LOGGER.isLoggable(Level.FINER);
-            ChildrenArray hold;
-            Node find;
+            ChildrenArray hold = null;
+            Node find = null;
             if (optimalResult) {
                 if (LOG_ENABLED) {
                     LOGGER.finer("computing optimal result");// NOI18N
@@ -753,8 +753,8 @@ abstract class EntrySupport {
 
                     // now attach to entrySupport, so when entrySupport == null => we are
                     // not fully initialized!!!!
-                    inited = true;
                     arr.entrySupport = this;
+                    inited = true;
                     class SetAndNotify implements Runnable {
 
                         public ChildrenArray toSet;
