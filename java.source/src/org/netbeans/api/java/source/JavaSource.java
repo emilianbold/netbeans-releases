@@ -73,6 +73,7 @@ import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
 import org.netbeans.modules.java.source.parsing.CompilationInfoImpl;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserFactory;
+import org.netbeans.modules.java.source.parsing.NewComilerTask;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -525,29 +526,33 @@ public final class JavaSource {
     }
     
     
-    long createTaggedController (final long timestamp, final Object[] controller) throws IOException {        
-        assert controller.length == 1;
-        if (isCurrent(timestamp)) {
-            assert controller[0] instanceof CompilationController;
-            return timestamp;
+    long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
+         assert controller.length == 1;
+         assert controller[0] == null || controller[0] instanceof CompilationController;
+        try {
+            CompilationController cc = (CompilationController) controller[0];
+            final NewComilerTask _task = new NewComilerTask(this.classpathInfo, cc, timestamp);
+            ParserManager.parse(sources, _task);
+            controller[0] = _task.getCompilationController();
+            return _task.getTimeStamp();
+        } catch (final ParseException pe) {
+            final Throwable rootCase = pe.getCause();
+            if (rootCase instanceof CompletionFailure) {
+                IOException ioe = new IOException ();
+                ioe.initCause(rootCase);
+                throw ioe;
+            }
+            else if (rootCase instanceof RuntimeException) {
+                throw (RuntimeException) rootCase;
+            }
+            else {
+                IOException ioe = new IOException ();
+                ioe.initCause(rootCase);
+                throw ioe;
+            }
         }
-        else {
-            final Task<CompilationController> wrapperTask = new Task<CompilationController>() {
-                public void run(CompilationController parameter) throws Exception {
-                    controller[0] = parameter;
-                }
-            };            
-            final long newTimestamp = runUserActionTaskImpl(wrapperTask, false);
-            assert controller[0] != null;
-            return newTimestamp;
-        }        
     }
-    //where
-    private boolean isCurrent (long timestamp) {        
-        //return eventCounter == timestamp;
-        return true;
-    }
-    
+        
     /**
      * Performs the given task when the scan finished. When no background scan is running
      * it performs the given task synchronously. When the background scan is active it queues

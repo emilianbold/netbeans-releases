@@ -209,6 +209,8 @@ public class JavacParser extends Parser {
     private boolean invalid;
     //Last used snapshot
     private Snapshot cachedSnapShot;
+    //Lamport clock of parse calls
+    private long parseId;
     
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
@@ -284,6 +286,7 @@ public class JavacParser extends Parser {
     public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
+        parseId++;
         canceled.set(false);
         try {            
             LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
@@ -371,7 +374,7 @@ public class JavacParser extends Parser {
             }
             Phase reachedPhase;
             try {
-                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
+                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
             }
@@ -385,6 +388,21 @@ public class JavacParser extends Parser {
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N
+        }
+        //Todo: shared = false should replace this
+        //for now it creates a new parser and passes it outside the infrastructure
+        //used by debugger private api
+        if (task instanceof NewComilerTask) {
+            NewComilerTask nct = (NewComilerTask)task;
+            if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
+                try {
+                    nct.setCompilationController(
+                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, false)),
+                        parseId);
+                } catch (IOException ioe) {
+                    throw new ParseException ("Javac Failure", ioe);
+                }
+            }
         }
         return result;
     }
@@ -433,7 +451,7 @@ public class JavacParser extends Parser {
      * @throws IOException when the javac throws an exception
      */
     Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo,
-            final boolean cancellable, final boolean hasMoreFiles) throws IOException {
+            final boolean cancellable, final boolean hasMoreFiles, final boolean clone) throws IOException {
         JavaSource.Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
         Phase currentPhase = currentInfo.getPhase();        
@@ -466,7 +484,7 @@ public class JavacParser extends Parser {
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
                 final Document doc = listener == null ? null : listener.document;
-                if (doc != null && supportsReparse) {
+                if (doc != null && supportsReparse && !clone) {
                     FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions());
                     v.visit(unit, null);
                     synchronized (positions) {
@@ -557,7 +575,7 @@ public class JavacParser extends Parser {
             final FileObject root,
             final Snapshot snapshot,
             final JavacTaskImpl javac) throws IOException {                
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot);
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot, false);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});

@@ -90,7 +90,8 @@ public final class CompilationInfoImpl {
     private final JavacParser parser;
     private final boolean isClassFile;
     boolean needsRestart;
-    JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase        
+    JavaSource.Phase parserCrashed = JavaSource.Phase.UP_TO_DATE;      //When javac throws an error, the moveToPhase sets this to the last safe phase
+    private final boolean clone;
         
     /**
      * Creates a new CompilationInfoImpl for given source file
@@ -105,7 +106,7 @@ public final class CompilationInfoImpl {
                          final FileObject file,
                          final FileObject root,
                          final JavacTaskImpl javacTask,
-                         final Snapshot snapshot) throws IOException {
+                         final Snapshot snapshot, boolean clone) throws IOException {
         assert parser != null;
         this.parser = parser;
         this.cpInfo = parser.getClasspathInfo();
@@ -117,13 +118,14 @@ public final class CompilationInfoImpl {
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
         this.isClassFile = false;
+        this.clone = clone;
     }
     
     /**
      * Creates a new CompilationInfoImpl for classpaths
      * @param cpInfo classpaths
      */
-    public CompilationInfoImpl (final ClasspathInfo cpInfo) {
+    CompilationInfoImpl (final ClasspathInfo cpInfo) {
         assert cpInfo != null;
         this.parser = null;
         this.file = null;
@@ -132,6 +134,7 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = false;
+        this.clone = false;
     }
     
     /**
@@ -140,9 +143,9 @@ public final class CompilationInfoImpl {
      * @param file to be analyzed
      * @param root the owner of analyzed file
      */
-    public CompilationInfoImpl (final ClasspathInfo cpInfo,
-                                final FileObject file,
-                                final FileObject root) throws IOException {
+    CompilationInfoImpl (final ClasspathInfo cpInfo,
+                         final FileObject file,
+                         final FileObject root) throws IOException {
         assert cpInfo != null;
         assert file != null;
         assert root != null;
@@ -153,6 +156,7 @@ public final class CompilationInfoImpl {
         this.snapshot = null;
         this.cpInfo = cpInfo;
         this.isClassFile = true;
+        this.clone = false;
     }
     
     void update (final Snapshot snapshot) throws IOException {
@@ -343,7 +347,7 @@ public final class CompilationInfoImpl {
             return currentPhase;
         }
         else {
-            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false, false);
+            JavaSource.Phase currentPhase = parser.moveToPhase(phase, this, false, false, clone);
             return currentPhase.compareTo (phase) < 0 ? currentPhase : phase;
         }
     }
@@ -382,7 +386,7 @@ public final class CompilationInfoImpl {
     public synchronized JavacTaskImpl getJavacTask() {	
         if (javacTask == null) {
             javacTask = JavacParser.createJavacTask(this.file, this.root, this.cpInfo,
-                    this.parser, new DiagnosticListenerImpl(this.jfo), null);
+                    clone ? null : this.parser, new DiagnosticListenerImpl(this.jfo), null);
         }
 	return javacTask;
     }
