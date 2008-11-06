@@ -220,15 +220,23 @@ public final class RubySession {
     }
 
     String getName() {
-        RubyDebugTarget debugTarged = proxy.getDebugTarged();
-        File f = new File(debugTarged.getDebuggedFile());
+        return getDebuggeePath() + " (localhost:" + proxy.getDebugTarget().getPort() + ')'; // NOI18N
+    }
+
+    private String getDebuggeePath() {
+        RubyDebugTarget debugTarged = proxy.getDebugTarget();
+        String debuggee = debugTarged.getDebuggedFile();
+        if (debuggee == null) {
+            return "[Remotely attached]";
+        }
+        File debuggeeF = new File(debuggee);
         String path;
-        if (f.isAbsolute()) {
-            path = f.getAbsolutePath();
+        if (debuggeeF.isAbsolute()) {
+            path = debuggeeF.getAbsolutePath();
         } else {
             path = new File(debugTarged.getBaseDir(), debugTarged.getDebuggedFile()).getAbsolutePath();
         }
-        return path + " (localhost:" + proxy.getDebugTarged().getPort() + ')'; // NOI18N
+        return path;
     }
     
     /**
@@ -358,7 +366,7 @@ public final class RubySession {
     }
     
     public void switchThread(final int threadID, final ContextProviderWrapper contextProvider) {
-        RubyThread thread = proxy.getDebugTarged().getThreadById(threadID);
+        RubyThread thread = proxy.getDebugTarget().getThreadById(threadID);
         if (thread != null) {
             switchThread(thread, contextProvider);
         }
@@ -392,7 +400,7 @@ public final class RubySession {
     }
 
     public boolean isSuspended(final RubyThreadInfo ti) {
-        RubyThread thread = proxy.getDebugTarged().getThreadById(ti.getId());
+        RubyThread thread = proxy.getDebugTarget().getThreadById(ti.getId());
         if (thread != null) {
             return thread.isSuspended();
         } else {

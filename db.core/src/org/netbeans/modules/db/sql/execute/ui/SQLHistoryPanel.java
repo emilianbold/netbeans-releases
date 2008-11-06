@@ -423,12 +423,13 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 }
             } else {
                 inputWarningLabel.setText(""); // NOI18N
-                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot);
-                List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
-                view.setCurrentSQLHistoryList(sqlHistoryList);
-                ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
-                view.updateConnectionUrl();
-                NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+                if (SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot).size() > 0) {
+                    List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
+                    view.setCurrentSQLHistoryList(sqlHistoryList);
+                    ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
+                    view.updateConnectionUrl();
+                    NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N
+                }
             }
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
