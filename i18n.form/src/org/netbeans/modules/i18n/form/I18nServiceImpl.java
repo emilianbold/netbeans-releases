@@ -81,6 +81,7 @@ import org.openide.filesystems.FileUtil;
  * internationalization of forms while i18n module owns all the technical means
  * (i18n values, property editors, bundle files).
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.I18nService.class)
 public class I18nServiceImpl implements I18nService {
 
     // remembered original state for changes made for given source data objects

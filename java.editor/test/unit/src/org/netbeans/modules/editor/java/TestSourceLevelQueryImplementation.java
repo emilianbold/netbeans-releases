@@ -47,6 +47,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=0)
 public class TestSourceLevelQueryImplementation implements SourceLevelQueryImplementation {
 
     /** Creates a new instance of TestSourceLevelQueryImplementation */

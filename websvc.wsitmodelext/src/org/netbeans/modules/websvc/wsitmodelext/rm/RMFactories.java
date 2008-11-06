@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class RMFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RMAssertionFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -69,6 +70,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AcknowledgementIntervalFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -80,6 +82,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class DeliveryAssuranceFactory extends ElementFactory {
 
         @Override
@@ -93,6 +96,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ExactlyOnceFactory extends ElementFactory {
 
         @Override
@@ -106,6 +110,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AtMostOnceFactory extends ElementFactory {
 
         @Override
@@ -119,6 +124,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AtLeastOnceFactory extends ElementFactory {
 
         @Override
@@ -132,6 +138,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class InOrderFactory extends ElementFactory {
 
         @Override
@@ -145,6 +152,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SequenceSTRFactory extends ElementFactory {
 
         @Override
@@ -158,6 +166,7 @@ public class RMFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class SequenceTransportSecurityFactory extends ElementFactory {
 
         @Override

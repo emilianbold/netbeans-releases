@@ -21,12 +21,10 @@
     <h1>Tag Plugin Examples - &lt;c:forEach></h1>
 
     <hr>
-    </br>
-    <a href="notes.html">Plugin Introductory Notes<font <font color="#0000FF"></
-a>
+    <br>
+    <a href="notes.html">Plugin Introductory Notes</a>
     <br/>
-    <a href="howto.html">Brief Instructions for Writing Plugins<font color="#0000
-FF"></a>
+    <a href="howto.html">Brief Instructions for Writing Plugins</a>
     <br/> <br/>
     <hr>
 

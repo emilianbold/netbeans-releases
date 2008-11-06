@@ -87,6 +87,7 @@ import org.openide.util.Exceptions;
  * Manages the Design Time Data sources transferables
  * @author Winston Prakash, John Baker
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.api.designerapi.DesignTimeTransferDataCreator.class)
 public class DatasourceTransferManager implements DesignTimeTransferDataCreator{
     
     protected static String dataProviderClassName = "com.sun.data.provider.impl.CachedRowSetDataProvider";

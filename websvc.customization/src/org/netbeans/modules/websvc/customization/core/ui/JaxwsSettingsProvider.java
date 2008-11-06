@@ -49,6 +49,7 @@ import org.openide.util.Lookup;
  *
  * @author rico
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.wseditor.spi.WSEditorProvider.class)
 public class JaxwsSettingsProvider implements WSEditorProvider{
 
     public boolean enable(Node node) {

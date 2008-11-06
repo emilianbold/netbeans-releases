@@ -74,6 +74,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider.class)
 public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
 
     public Set<String> getSupportedExtensions() {

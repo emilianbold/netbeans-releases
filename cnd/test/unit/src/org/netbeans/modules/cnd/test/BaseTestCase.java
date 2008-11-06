@@ -195,5 +195,51 @@ public abstract class BaseTestCase extends NbTestCase {
     @Override
     public void compareReferenceFiles() {
         compareReferenceFiles(this.getName()+".ref",this.getName()+".ref"); // NOI18N
-    }    
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Remote tests support
+    // <editor-fold defaultstate="collapsed" desc="Remote tests support">
+
+    private static Boolean isRemoteSupported = null;
+
+    protected boolean canTestRemote()  {
+        if (isRemoteSupported == null) {
+            isRemoteSupported = new Boolean(getUserName()!=null && getHostName()!=null);
+        }
+        return isRemoteSupported.booleanValue();
+    }
+
+    protected String getHKey(){
+        return getUserName() + "@" + getHostName();
+    }
+
+    private static String userName = null;
+
+    protected String getUserName() {
+        //TODO: add password for automatization
+        if (userName == null) {
+            String name = System.getProperty("cnd.remote.testuserinfo");
+            if( name == null ) {
+                name = System.getenv("CND_REMOTE_USER_NAME");
+            }
+            userName = name;
+        }
+        return userName;
+    }
+
+    private static String hostName = null;
+
+    protected String getHostName() {
+        if (hostName == null) {
+            String host = System.getProperty("cnd.remote.host.name");
+            if( host == null ) {
+                host = System.getenv("CND_REMOTE_HOST_NAME");
+            }
+            hostName = host;
+        }
+        return hostName;
+    }
+
+    //</editor-fold>
 }

@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.wsdl.model.extensions.bpel.validation.Validation
  *
  * @author radval
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class BPELExtensionSemanticValidator extends AbstractValidator {
     
     /**

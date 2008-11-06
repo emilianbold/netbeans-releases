@@ -119,6 +119,7 @@ public class JAXWSElementFactoryProvider {
         return factories;
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class BindingsFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.BINDINGS.getQName());
@@ -176,6 +177,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JavaExceptionFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.JAVAEXCEPTION.getQName());
@@ -189,6 +191,7 @@ public class JAXWSElementFactoryProvider {
             return new JavaExceptionImpl(context.getModel(), element);
         }
     }
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EnableAsyncMappingFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.ENABLEASYNCMAPPING.getQName());
@@ -202,6 +205,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EnableWrapperStyleFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.ENABLEWRAPPERSTYLE.getQName());
@@ -215,6 +219,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class EnableMIMEContentFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.ENABLEMIMECONTENT.getQName());
@@ -228,6 +233,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JavaClassFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.CLASS.getQName());
@@ -241,6 +247,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JavaDocFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.JAVADOC.getQName());
@@ -254,6 +261,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JavaMethodFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.METHOD.getQName());
@@ -266,6 +274,7 @@ public class JAXWSElementFactoryProvider {
             return new JavaMethodImpl(context.getModel(), element);
         }
     }
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JavaPackageFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.PACKAGE.getQName());
@@ -279,6 +288,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class JavaParameterFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.PARAMETER.getQName());
@@ -292,6 +302,7 @@ public class JAXWSElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ProviderFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(JAXWSQName.PROVIDER.getQName());

@@ -79,6 +79,7 @@ import org.openide.util.NbBundle;
  * 
  * @author Tomas Pavek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.ResourceService.class)
 public class ResourceServiceImpl implements ResourceService {
 
     public void prepareNew(FileObject srcFile) {

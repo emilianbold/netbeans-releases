@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Andrei Badea
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.persistence.spi.EntityClassScopeProvider.class)
 public class ProjectEntityClassScopeProvider implements EntityClassScopeProvider {
 
     public EntityClassScope findEntityClassScope(FileObject fo) {

@@ -63,6 +63,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {
@@ -177,8 +178,16 @@ public class GroovyRefactoringFactory implements RefactoringPluginFactory {
 
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(JavaSource.Phase.RESOLVED);
-                    Element element = treePathHandle.resolveElement(parameter);
-                    result[0] = element.asType().toString();
+
+                    // The treePathHandle seems to have been set to null
+                    // by another thread somewhere else. We have to put a guard here.
+                    // cf. # 151775
+
+                    if (treePathHandle != null) {
+                        Element element = treePathHandle.resolveElement(parameter);
+                        result[0] = element.asType().toString();
+                    }
+
                 }
             }, true);
         }catch(IOException ioe){

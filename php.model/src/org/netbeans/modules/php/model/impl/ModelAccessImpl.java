@@ -52,6 +52,7 @@ import org.netbeans.modules.php.model.PhpModel;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.model.ModelAccess.class)
 public class ModelAccessImpl extends ModelAccess {
 
     /* (non-Javadoc)

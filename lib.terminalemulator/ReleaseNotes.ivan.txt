@@ -1,4 +1,105 @@
 ================================================================================
+nobugid (get working on Windows again)
+	- richexecution
+	  - build.xml now recognizes windows (XP) as a platform
+	  - Use ${user.name} instead of ${env.USER}.
+	  - Command needs to pass /c instead of -c on Windows.
+	  - Pty constructor throws UnsupportedOperationException on Windows.
+	  - PtyExecutor.start() needs to initialize pid to -1 so that
+	    PtyProcess knows to not use unixy signals (it tests for -1).
+	  - On Windows PtyProcess should return the processes streams
+	    not the Pty's because there is no Pty. At some point we'll be
+	    able to do RAW Pty's on Windows and then this won't be neccessary.
+	- termsupport
+	  - set the pty Mode to NONE on Windows.
+================================================================================
+nobugid (bugs in line insertion/deletion w and w/o margins)
+	Symptom:
+		vi a file in a 24x80 terminal.
+		^D
+		line 23 isn't refreshed properly.
+	Fix in Term.OpsImpl.op_al(), op_dl().
+
+	Seems to have fixed another symptom where fast ^D'ing when
+	running 'vim' resulted in the "middle" line having lots of []'s.
+
+nobugid (towards distributing demo NBM)
+	- Adjust Suite/build.xml to special-case the creation of
+	  lib.terminalemulators nbm's because it can't be added to the suite.
+	- Add extra.module.files to RichExecution's project.properties to
+	  ensure that process_start* ends up in the NBM.
+	- Enhance richexecution.PtyExecutor to "chmod u+x" process_start*
+	  because when they are extracted from an NBM zip cannot maintain
+	  their execution permission.
+	- Module collateral information (Description home page etc.) filled in.
+
+	Suite/build.xml
+
+	richexcution/project.properties
+
+	richexcution/PtyExecutor.java
+
+	richexcution/Bundle.properties
+
+	termsupport/project.properties
+	termsupport/Bundle.properties
+
+	terminal/example/project.properties
+	terminal/example/Bundle.properties
+
+	terminal/project.properties
+	terminal/Bundle.properties
+
+	terminalemulator/project.properties
+	terminalemulator/Bundle.properties
+
+nobugid (i18n-check: misc. warnings in terminalemulator)
+	terminalemulator/Term.java
+	terminalemulator/Buffer.java
+
+Started a debug/test infrastructure although it's not in the mainline
+NB src code yet. The following were done to support it ...
+
+nobugid (Suppport for raw pty's on linux)
+	On Solaris one makes a pty raw by just not pushing the stream
+	modules ptem ldterm and ttcompat.
+
+	On linux pty's are be default non-raw. One can make them
+	act like a raw terminal by using cfmakeraw(). It only 
+	sets up a termios structure; one still needs to do a
+	read/modify/write using tcgetattr() and tcsetattr().
+	So added all of these to richexecution.PtyLibrary:
+		class Termios		Linux only
+		tcgetattr()
+		tcsetattr()	plus relevant constants
+		cfmakeraw()
+
+	JNAPty.assigFd() and getFd() moved to new Util class.
+
+	JNAPty now uses the above functions to do a read/modiy/write for
+	raw pty's.
+
+	richexecution.PtyLibrary.java
+	richexecution.JNAPty.java
+	richexecution.Util.java
+
+nobugid (nbterm: couldn't find itself if executed through a soft link)
+	Had to enhance the "find yourself" stuff at the beginning.
+
+nobugid (nbterm: xterm-like -e and -geometry flags)
+	The terminal debugging/testing infrastructure fires up nbterm
+	and a reference existing implementation like xterm or konsole
+	and broadcasts sequences to all for visual comparison.
+
+	Needed to add -e and -geometry to nbterm for this to work.
+
+	-e used to mean "try error detection mode". That is now
+	renamed to -E.
+
+nobugid (TermExecutor debugmode to emit more debugging stuff)
+	termsupport/TermExecutor.java
+
+================================================================================
 151644 (Return of the terminalemulator)
 	Second large chunk of work.
 	Additional functionality and a more conventional module and pkg 

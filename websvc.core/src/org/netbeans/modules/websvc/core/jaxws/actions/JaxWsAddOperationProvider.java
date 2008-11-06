@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.support.AddOperationActionProvider.class)
 public class JaxWsAddOperationProvider implements AddOperationActionProvider {
     
     public AddOperationCookie getAddOperationCookie(FileObject fileObject) {

@@ -67,6 +67,7 @@ import org.openide.util.NbBundle;
  *
  * @author skini
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator.class)
 public class HttpAddressConfigurator extends ExtensibilityElementConfigurator {
     
     

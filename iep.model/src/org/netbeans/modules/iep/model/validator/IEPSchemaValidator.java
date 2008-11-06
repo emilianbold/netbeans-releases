@@ -39,6 +39,7 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class IEPSchemaValidator extends XsdBasedValidator {
     
     static final String iepXSDUrl = "/org/netbeans/modules/iep/model/validator/resources/iep_def.xsd";

@@ -143,6 +143,7 @@ public class CallElement extends JPanel implements PropertyEditorEventHandlerEle
         return list;
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class CallElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new CallElement();

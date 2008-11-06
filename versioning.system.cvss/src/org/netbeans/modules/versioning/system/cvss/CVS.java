@@ -59,6 +59,7 @@ import java.util.prefs.PreferenceChangeListener;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class CVS extends VersioningSystem implements VersioningListener, PreferenceChangeListener {
 
     public CVS() {

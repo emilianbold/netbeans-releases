@@ -51,6 +51,7 @@ import org.w3c.dom.Element;
  *
  * @author zgursky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.spi.EntityFactory.class)
 public class LoggingEntityFactory implements EntityFactory {
 
     public LoggingEntityFactory() {

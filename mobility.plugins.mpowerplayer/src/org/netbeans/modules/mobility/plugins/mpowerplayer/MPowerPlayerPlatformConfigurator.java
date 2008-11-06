@@ -54,6 +54,7 @@ import org.netbeans.spi.mobility.cldcplatform.CLDCPlatformDescriptor;
 import org.netbeans.spi.mobility.cldcplatform.CustomCLDCPlatformConfigurator;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.cldcplatform.CustomCLDCPlatformConfigurator.class)
 public final class MPowerPlayerPlatformConfigurator implements CustomCLDCPlatformConfigurator {
 
     private static final String DISPLY_NAME = "Emulator_displayname"; //NOI18N

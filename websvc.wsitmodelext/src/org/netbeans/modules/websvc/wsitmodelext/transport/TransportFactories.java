@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.wsitmodelext.transport.impl.OptimizedFastInfo
 
 public class TransportFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OptimizedFastInfosetSerialization extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -66,6 +67,7 @@ public class TransportFactories {
         }
     }   
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AutomaticallySelectFastInfoset extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -77,6 +79,7 @@ public class TransportFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class OptimizedTCPTransport extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -88,6 +91,7 @@ public class TransportFactories {
         }
     }   
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AutomaticallySelectOptimalTransport extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

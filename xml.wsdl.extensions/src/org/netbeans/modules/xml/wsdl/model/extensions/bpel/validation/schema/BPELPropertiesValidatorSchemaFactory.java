@@ -52,6 +52,7 @@ import org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory;
  *
  * @author skini
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.validator.spi.ValidatorSchemaFactory.class)
 public class BPELPropertiesValidatorSchemaFactory extends ValidatorSchemaFactory{
     static final String bpwsXSDUrl = "/org/netbeans/modules/xml/wsdl/model/extensions/bpel/validation/schema/resources/ws-bpel_varprop.xsd";
     

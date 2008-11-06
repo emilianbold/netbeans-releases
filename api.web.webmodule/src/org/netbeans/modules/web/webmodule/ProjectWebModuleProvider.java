@@ -47,6 +47,7 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
 import org.openide.filesystems.FileObject;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.web.spi.webmodule.WebModuleProvider.class)
 public class ProjectWebModuleProvider implements WebModuleProvider {
 
     public ProjectWebModuleProvider () {

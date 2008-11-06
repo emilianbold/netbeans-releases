@@ -50,6 +50,7 @@ import org.openide.util.actions.CallbackSystemAction;
  *
  * @author Martin Roskanin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public class PopupInitializer implements Class2LayerFolder{
 
     /** Creates a new instance of TestClass2LayerFolderInitializer */

@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  * @author  Pavel Buzek
  * @author  Lukas Jungmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.spi.ejbjar.CarProvider.class)
 public class CustomProviderCar implements CarProvider {
     
    private HashMap cache = new HashMap ();

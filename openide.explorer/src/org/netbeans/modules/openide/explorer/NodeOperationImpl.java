@@ -53,6 +53,7 @@ import org.openide.util.UserCancelException;
 /**
  * Default implementation of node operations like show properties, etc.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.nodes.NodeOperation.class)
 public final class NodeOperationImpl extends org.openide.nodes.NodeOperation {
 
     public boolean customize(Node node) {

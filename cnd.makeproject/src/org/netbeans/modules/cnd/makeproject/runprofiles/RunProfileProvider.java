@@ -46,6 +46,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxO
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObjectProvider.class)
 public class RunProfileProvider implements ConfigurationAuxObjectProvider {
     /**
      * Creates an instance of the auxiliary information object

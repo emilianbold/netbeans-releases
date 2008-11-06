@@ -57,6 +57,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class AddressingWsdlFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class UsingAddressingFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -68,6 +69,7 @@ public class AddressingWsdlFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AddressingFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -81,6 +83,7 @@ public class AddressingWsdlFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AnonymousResponsesFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

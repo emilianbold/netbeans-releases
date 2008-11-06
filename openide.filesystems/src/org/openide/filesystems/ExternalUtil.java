@@ -213,6 +213,9 @@ final class ExternalUtil extends Object {
                         is.close();
                     }
                 }
+                for (URL generatedLayer : NbCollections.iterable(l.getResources("META-INF/generated-layer.xml"))) { // NOI18N
+                    layerUrls.add(generatedLayer);
+                }
                 layers.setXmlUrls(layerUrls.toArray(new URL[layerUrls.size()]));
                 LOG.log(Level.FINE, "Loading classpath layers: {0}", layerUrls);
             } catch (Exception x) {

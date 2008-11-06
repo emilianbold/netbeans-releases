@@ -60,6 +60,7 @@ import org.openide.util.Exceptions;
  *
  * @author Petr Jiricka, David Konecny
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class)
 public class HttpServerURLMapper extends URLMapper {
     
     /** Creates a new instance of HttpServerURLMapper */

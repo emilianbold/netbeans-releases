@@ -49,6 +49,7 @@ import org.netbeans.modules.websvc.jaxws.spi.JAXWSViewProvider;
  *
  * @author mkuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.jaxws.spi.JAXWSViewProvider.class)
 public class ProjectJAXWSViewProvider implements JAXWSViewProvider {
     
     private ProjectJAXWSView wsView = new ProjectJAXWSView();

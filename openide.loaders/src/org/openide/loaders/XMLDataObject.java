@@ -248,13 +248,16 @@ public class XMLDataObject extends MultiDataObject {
     * @return the node representation for this data object
     * @see DataNode
     */
-    protected Node createNodeDelegate () {  //??? what about interaction with Looks
+    @Override
+    protected Node createNodeDelegate () {
         XMLNode xn = new XMLNode (this);
         // netbeans.core.nodes.description
         xn.setShortDescription (NbBundle.getMessage ( 
                                         XMLDataObject.class, "HINT_XMLDataObject")); // NOI18N
         return xn;
     }
+
+
 
     /** Called when the info file is parsed and the icon should change.
     * @param res resource for the icon
@@ -299,6 +302,7 @@ public class XMLDataObject extends MultiDataObject {
      * @return a cookie (instanceof cls) that has been found in info or
      * super.getCookie(cls).
      */
+    @Override
     public <T extends Node.Cookie> T getCookie(Class<T> cls) {
         getIP ().waitFinished();
 
@@ -326,6 +330,18 @@ public class XMLDataObject extends MultiDataObject {
         }
         
         return cls.cast(cake);
+    }
+
+    @Override
+    public Lookup getLookup() {
+        if (getClass() == XMLDataObject.class) {
+            Node n = getNodeDelegateOrNull();
+            if (n == null) {
+                setNodeDelegate(n = createNodeDelegate());
+            }
+            return n.getLookup();
+        }
+        return super.getLookup();
     }
 
     /** Special support of InstanceCookie.Of. If the Info class

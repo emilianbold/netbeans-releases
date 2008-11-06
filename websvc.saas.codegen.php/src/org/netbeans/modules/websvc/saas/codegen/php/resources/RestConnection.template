@@ -133,7 +133,8 @@
             $p = "";
             if($params != null) {
                 foreach ($params as $key => $value) {
-                    $p = $p.$key."=".urlencode($value)."&";
+                    if($value != null)
+                        $p = $p.$key."=".urlencode($value)."&";
                 }
                 $p = substr($p, 0, strlen($p)-1);
             }

@@ -51,13 +51,17 @@ import org.openide.util.NbBundle;
 import org.openide.util.actions.CallableSystemAction;
 
 public final class GemAction extends CallableSystemAction {
-    
+
     public void performAction() {
         showGemManager(null, null, true);
     }
     
-    public static boolean showGemManager(final String availableFilter) {
+    public static boolean GemManager(final String availableFilter) {
         return showGemManager(null, availableFilter);
+    }
+
+    public static boolean showGemManager(final RubyPlatform platform) {
+        return showGemManager(platform, null);
     }
 
     public static boolean showGemManager(final RubyPlatform platform, final boolean canManagePlatforms) {
@@ -67,14 +71,13 @@ public final class GemAction extends CallableSystemAction {
     public static boolean showGemManager(final RubyPlatform platform, final String availableFilter) {
         return showGemManager(availableFilter, platform, true);
     }
-    
 
     /**
      * Displays the gem manager panel.
      * 
-     * @param availableFilter the filter to use for displaying gems, e.g. 
+     * @param availableFilter the filter to use for displaying gems, e.g.
      * <code>"generators$"</code> for displaying only generator gems.
-     * @param preselected the platform that should be preselected in the panel; 
+     * @param preselected the platform that should be preselected in the panel;
      * may be <code>null</code> in which case the last selected platform is preselected.
      */
     public static boolean showGemManager(final String availableFilter,

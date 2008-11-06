@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.java.j2seproject.ui.customizer;
 
+import javax.swing.ButtonModel;
 import javax.swing.JPanel;
+import javax.swing.JToggleButton;
 import org.netbeans.modules.java.j2seproject.J2SEProjectUtil;
 import org.openide.util.HelpCtx;
 
@@ -51,8 +53,8 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
         initComponents();
 
         uiProperties.COMPILE_ON_SAVE_MODEL.setMnemonic(compileOnSave.getMnemonic());
-        compileOnSave.setModel(uiProperties.COMPILE_ON_SAVE_MODEL);
-        compileOnSave.setEnabled(J2SEProjectUtil.isCompileOnSaveSupported(uiProperties.getProject()));
+        compileOnSave.setModel(new UnselectedWhenDisabledButtonModel(uiProperties.COMPILE_ON_SAVE_MODEL,
+                                                                     J2SEProjectUtil.isCompileOnSaveSupported(uiProperties.getProject())));
         
         uiProperties.JAVAC_DEPRECATION_MODEL.setMnemonic( deprecationCheckBox.getMnemonic() );
         deprecationCheckBox.setModel( uiProperties.JAVAC_DEPRECATION_MODEL );
@@ -156,4 +158,23 @@ public class CustomizerCompile extends JPanel implements HelpCtx.Provider {
     private javax.swing.JCheckBox doDependCheckBox;
     // End of variables declaration//GEN-END:variables
 
+    private static final class UnselectedWhenDisabledButtonModel extends JToggleButton.ToggleButtonModel {
+        private final ButtonModel delegate;
+
+        public UnselectedWhenDisabledButtonModel(ButtonModel delegate, boolean enabled) {
+            this.delegate = delegate;
+            setEnabled(enabled);
+        }
+
+        @Override
+        public boolean isSelected() {
+            return isEnabled() && delegate.isSelected();
+        }
+
+        @Override
+        public void setSelected(boolean b) {
+            delegate.setSelected(b);
+        }
+
+    }
 }

@@ -70,6 +70,7 @@ made subject to such option by the copyright holder.
                 <project>../../apisupport.refactoring</project>
                 <project>../../applemenu</project>
                 <project>../../asm</project>
+                <project>../../autoupdate.pluginimporter</project>
                 <project>../../autoupdate.services</project>
                 <project>../../autoupdate.ui</project>
                 <project>../../beans</project>

@@ -57,49 +57,51 @@ import org.openide.util.NbBundle;
  */
 public abstract class GNUCCCCompiler extends CCCCompiler {
 
-    private PersistentList systemIncludeDirectoriesList = null;
-    private PersistentList systemPreprocessorSymbolsList = null;
+    private PersistentList<String> systemIncludeDirectoriesList = null;
+    private PersistentList<String> systemPreprocessorSymbolsList = null;
 
     public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
 
     @Override
-    public boolean setSystemIncludeDirectories(List values) {
+    public boolean setSystemIncludeDirectories(List<String> values) {
         assert values != null;
         if (values.equals(systemIncludeDirectoriesList)) {
             return false;
         }
-        systemIncludeDirectoriesList = new PersistentList(values);
+        systemIncludeDirectoriesList = new PersistentList<String>(values);
         normalizePaths(systemIncludeDirectoriesList);
         saveSystemIncludesAndDefines();
         return true;
     }
 
     @Override
-    public boolean setSystemPreprocessorSymbols(List values) {
+    public boolean setSystemPreprocessorSymbols(List<String> values) {
         assert values != null;
         if (values.equals(systemPreprocessorSymbolsList)) {
             return false;
         }
-        systemPreprocessorSymbolsList = new PersistentList(values);
+        systemPreprocessorSymbolsList = new PersistentList<String>(values);
         saveSystemIncludesAndDefines();
         return true;
     }
 
     @Override
-    public List getSystemPreprocessorSymbols() {
-        if (systemPreprocessorSymbolsList != null)
+    public List<String> getSystemPreprocessorSymbols() {
+        if (systemPreprocessorSymbolsList != null){
             return systemPreprocessorSymbolsList;
+        }
 
         getSystemIncludesAndDefines();
         return systemPreprocessorSymbolsList;
     }
 
     @Override
-    public List getSystemIncludeDirectories() {
-        if (systemIncludeDirectoriesList != null)
+    public List<String> getSystemIncludeDirectories() {
+        if (systemIncludeDirectoriesList != null){
             return systemIncludeDirectoriesList;
+        }
 
         getSystemIncludesAndDefines();
         return systemIncludeDirectoriesList;
@@ -107,10 +109,12 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
 
     @Override
     public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null)
+        if (systemIncludeDirectoriesList != null){
             systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        if (systemPreprocessorSymbolsList != null)
+        }
+        if (systemPreprocessorSymbolsList != null){
             systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
+        }
     }
 
     private void restoreSystemIncludesAndDefines() {
@@ -150,8 +154,8 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     }
 
     private void getFreshSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = new PersistentList();
-        systemPreprocessorSymbolsList = new PersistentList();
+        systemIncludeDirectoriesList = new PersistentList<String>();
+        systemPreprocessorSymbolsList = new PersistentList<String>();
 //        if (!getHostKey().endsWith(CompilerSetManager.LOCALHOST)) {
 //            // TODO: this is temporary to test CA for remote projects
 //            String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc\\" + getHostKey() + "\\"; //NOI18N //TODO
@@ -217,46 +221,52 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         return line;
     }
 
-    @Override
-    protected void parseCompilerOutput(BufferedReader reader) {
+   @Override
+   protected void parseCompilerOutput(BufferedReader reader) {
 
-        try {
-            String line;
-            boolean startIncludes = false;
-            while ((line = reader.readLine()) != null) {
-                //System.out.println(line);
-                if (line.contains("#include <...>")) { // NOI18N
-                    startIncludes = true;
-                    continue;
-                }
-		if (startIncludes) {
-                    if (line.startsWith("End of search") || ! startsWithPath(line)) { // NOI18N
-                        startIncludes = false;
-                        continue;
-                    }
-                    line = cutIncludePrefix(line.trim());
-                    systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
-                    if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
-                        // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
-                        // we shouldn't add original dir (fix later to avoid regression before release)
-                        systemIncludeDirectoriesList.addUnique(applyPathPrefix(line.substring(4)));
-                    }
-                    continue;
-                }
-                parseUserMacros(line, systemPreprocessorSymbolsList);
-                if (line.startsWith("#define ")) { // NOI18N
-                    int i = line.indexOf(' ', 8);
-                    if (i > 0) {
-                        String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
-                        systemPreprocessorSymbolsList.add(token);
-                    }
-                }
-            }
-            reader.close();
-        } catch (IOException ioe) {
-            ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
-        }
-    }
+       try {
+           String line;
+           boolean startIncludes = false;
+           while ((line = reader.readLine()) != null) {
+               //System.out.println(line);
+               line = line.trim();
+               if (line.contains("#include <...>")) { // NOI18N
+                   startIncludes = true;
+                   continue;
+               }
+               if (startIncludes) {
+                   if (line.startsWith("End of search") || ! startsWithPath(line)) { // NOI18N
+                       startIncludes = false;
+                       continue;
+                   }
+                   if (line.length()>2 && line.charAt(1)==':') {
+                       systemIncludeDirectoriesList.addUnique(normalizePath(line));
+                   } else {
+                       line = cutIncludePrefix(line);
+                       systemIncludeDirectoriesList.addUnique(applyPathPrefix(line));
+                       if (getDescriptor().getRemoveIncludePathPrefix()!=null && line.startsWith("/usr/lib")) { // NOI18N
+                           // TODO: if we are fixing cygwin's include location (C:\Cygwin\lib) it seems
+                           // we shouldn't add original dir (fix later to avoid regression before release)
+                           systemIncludeDirectoriesList.addUnique(applyPathPrefix(line.substring(4)));
+                       }
+                   }
+                   continue;
+               }
+               parseUserMacros(line, systemPreprocessorSymbolsList);
+               if (line.startsWith("#define ")) { // NOI18N
+                   int i = line.indexOf(' ', 8);
+                   if (i > 0) {
+                       String token = line.substring(8, i) + "=" + line.substring(i+1); // NOI18N
+                       systemPreprocessorSymbolsList.add(token);
+                   }
+               }
+           }
+           reader.close();
+       } catch (IOException ioe) {
+           ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
+       }
+   }
+
 
 
     private void dumpLists() {

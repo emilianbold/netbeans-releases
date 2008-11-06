@@ -65,6 +65,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author Tomas Pavek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory.class)
 public class GuardedBlockHandlerFactoryImpl implements GuardedBlockHandlerFactory {
     
     public GuardedBlockHandlerFactoryImpl() {

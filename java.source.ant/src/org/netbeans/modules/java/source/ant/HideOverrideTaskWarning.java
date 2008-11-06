@@ -47,6 +47,7 @@ import org.apache.tools.ant.module.spi.AntSession;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=90)
 public class HideOverrideTaskWarning extends AntLogger {
 
     public static ThreadLocal<Boolean> cleanBuild = new ThreadLocal<Boolean>() {

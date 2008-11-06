@@ -72,6 +72,7 @@ import org.openide.util.WeakListeners;
  * Finds the locations of sources for various libraries.
  * @since 1.5
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class)
 public class J2eePlatformSourceForBinaryQuery implements SourceForBinaryQueryImplementation2 {
 
     private final Map<URL,SourceForBinaryQueryImplementation2.Result> cache = new HashMap<URL,SourceForBinaryQueryImplementation2.Result>();

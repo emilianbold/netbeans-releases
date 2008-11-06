@@ -60,6 +60,7 @@ import org.openide.filesystems.FileUtil;
  * 
  * @author Tomas Stupka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=1)
 public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {                        
     
     private Map<File, Charset> fileToCharset;

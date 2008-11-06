@@ -59,6 +59,7 @@ import org.openide.text.IndentEngine;
 *
 * @author  Jaroslav Tulach
 */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateHandler.class)
 public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandler {
     private static ScriptEngineManager manager;
     private static final Logger LOG = Logger.getLogger(ScriptingCreateFromTemplateHandler.class.getName());

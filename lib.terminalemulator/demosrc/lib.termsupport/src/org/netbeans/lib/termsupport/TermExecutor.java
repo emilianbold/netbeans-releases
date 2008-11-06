@@ -64,6 +64,13 @@ public class TermExecutor extends PtyExecutor {
     private boolean debug = false;
 
     public TermExecutor() {
+        switch (os) {
+            case WINDOWS:
+		setMode(Mode.NONE);
+                break;
+	    default:
+		break;
+        }
     }
 
     private class MyTermListener implements TermListener {
@@ -161,7 +168,9 @@ public class TermExecutor extends PtyExecutor {
         // Create Term
         //
         if (debug)
-            term.setDebugFlags(Term.DEBUG_OUTPUT | Term.DEBUG_KEYS);
+            term.setDebugFlags(Term.DEBUG_INPUT |
+                               Term.DEBUG_OUTPUT |
+                               Term.DEBUG_OPS);
 
         if (pty != null)
             term.addListener(new MyTermListener(pty));

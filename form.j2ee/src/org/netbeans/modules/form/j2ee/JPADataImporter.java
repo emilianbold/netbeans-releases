@@ -76,6 +76,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Stola
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.DataImporter.class)
 public class JPADataImporter extends JPanel implements DataImporter {
     
     /** This method is called from within the constructor to
