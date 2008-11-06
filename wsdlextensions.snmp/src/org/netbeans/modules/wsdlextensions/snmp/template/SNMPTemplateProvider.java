@@ -23,6 +23,7 @@ import java.io.InputStream;
 import org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.bindingsupport.spi.ExtensibilityElementTemplateProvider.class)
 public class SNMPTemplateProvider extends ExtensibilityElementTemplateProvider {
     
     static final String snmpTemplateUrl = "/org/netbeans/modules/wsdlextensions/snmp/template/template.xml";

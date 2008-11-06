@@ -60,45 +60,6 @@ public abstract class RemoteTestBase extends BaseTestCase {
         super(testName);
     }
     
-    protected String getKey() throws Exception {
-        return getUserName() + "@" + getHostName();
-    }
-
-    private static String userName = null;
-
-    protected String getUserName() {
-        if (userName == null) {
-            String name = System.getProperty("cnd.remote.user.name");
-            if( name == null ) {
-                name = System.getenv("CND_REMOTE_USER_NAME");
-            }
-            userName = name;
-        }
-        return userName;
-    }
-
-    private static String hostName = null;
-
-    protected String getHostName() throws Exception {
-        if (hostName == null) {
-            String host = System.getProperty("cnd.remote.host.name");
-            if( host == null ) {
-                host = System.getenv("CND_REMOTE_HOST_NAME");
-            }
-            hostName = host;
-        }
-        return hostName;
-    }
-
-    private static Boolean canTest = null;
-
-    protected boolean canTest() throws Exception {
-        if (canTest == null) {
-            canTest = new Boolean(getUserName()!=null && getHostName()!=null);
-        }
-        return canTest.booleanValue();
-    }
-
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());

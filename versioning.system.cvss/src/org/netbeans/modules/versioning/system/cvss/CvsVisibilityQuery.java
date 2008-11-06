@@ -60,6 +60,7 @@ import java.util.logging.Level;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VisibilityQueryImplementation.class)
 public class CvsVisibilityQuery implements VisibilityQueryImplementation2, VersioningListener {
 
     private static CvsVisibilityQuery instance;

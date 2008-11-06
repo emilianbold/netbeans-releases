@@ -81,6 +81,7 @@ import org.openide.windows.TopComponent;
  *
  * @author Sonali
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class)
 public class XMLRefactoringActionsProvider extends ActionsImplementationProvider {
     
     /** Creates a new instance of XMLRefactoringActionsProvider */

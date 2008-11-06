@@ -35,6 +35,7 @@ import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
  * @author Vladimir Yaroslavskiy
  * @version 2007.08.13
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.design.decoration.DecorationProviderFactory.class)
 public final class LoggingDecorator extends DecorationProvider
         implements DecorationProviderFactory, DiagramSelectionListener {
 

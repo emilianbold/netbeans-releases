@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
  *
  * @author Sergey Grinev
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFileReferences.class)
 public class FileReferencesImpl extends CsmFileReferences  {
 
     public FileReferencesImpl() {

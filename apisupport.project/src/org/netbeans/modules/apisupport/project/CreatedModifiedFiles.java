@@ -55,6 +55,7 @@ import org.netbeans.modules.apisupport.project.layers.LayerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.modules.SpecificationVersion;
 
 /**
@@ -304,6 +305,8 @@ public final class CreatedModifiedFiles {
      * exists in <em>META-INF/services</em> directory
      * <code>implClass</code> will be appended to the end of the list of
      * implementations. If it doesn't exist a new file will be created.
+     * <p><strong>Note:</strong> this style of registration should not be used
+     * for any new APIs. Use {@link ServiceProvider} instead.
      *
      * @param interfaceClass e.g. org.example.spi.somemodule.ProvideMe
      * @param implClass e.g. org.example.module1.ProvideMeImpl

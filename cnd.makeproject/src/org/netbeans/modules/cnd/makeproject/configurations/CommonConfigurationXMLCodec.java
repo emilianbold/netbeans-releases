@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.List;
@@ -72,7 +71,6 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
 /**
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec
  */
-
 /**
  * Change History:
  * V51
@@ -141,15 +139,15 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerManager;
  *   added FORTRANCOMPILERTOOL_ELEMENT
  */
 public abstract class CommonConfigurationXMLCodec
-    extends XMLDecoder
-    implements XMLEncoder {
+        extends XMLDecoder
+        implements XMLEncoder {
 
     public final static int CURRENT_VERSION = 51;
 
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
- // Old style. FIXUP: should be removed....
+    // Old style. FIXUP: should be removed....
     protected final static String CONFIGURATION_DESCRIPTOR_ELEMENT = "configurationDescriptor"; // NOI18N
     protected final static String DEFAULT_CONF_ELEMENT = "defaultConf"; // NOI18N
     protected final static String CONFS_ELEMENT = "confs"; // NOI18N
@@ -255,7 +253,6 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String ARCHIVERTOOL_RUN_RANLIB_ELEMENT = "runRanlib"; // NOI18N
     protected final static String ARCHIVERTOOL_VERBOSE_ELEMENT = "archiverVerbose"; // NOI18N
     protected final static String ARCHIVERTOOL_SUPRESS_ELEMENT = "archiverSupress"; // NOI18N
-
     protected final static String VERSION_ATTR = "version"; // NOI18N
     protected final static String TYPE_ATTR = "type"; // NOI18N
     protected final static String NAME_ATTR = "name"; // NOI18N
@@ -269,12 +266,10 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PERM_ATTR = "perm"; // NOI18N
     protected final static String OWNER_ATTR = "owner"; // NOI18N
     protected final static String GROUP_ATTR = "group"; // NOI18N
-
     protected final static String TRUE_VALUE = "true"; // NOI18N
     protected final static String FALSE_VALUE = "false"; // NOI18N
     protected final static String LIST_ELEMENT = "Elem"; // NOI18N
     protected final static String VERBOSE_ELEMENT = "verbose"; // NOI18N
-    
     protected final static String PACK_ELEMENT = "packaging"; // NOI18N
     protected final static String PACK_TYPE_ELEMENT = "packType"; // NOI18N
     protected final static String PACK_FILES_LIST_ELEMENT = "packFileList"; // NOI18N
@@ -282,155 +277,161 @@ public abstract class CommonConfigurationXMLCodec
     protected final static String PACK_INFOS_LIST_ELEMENT = "packInfoList"; // NOI18NP
     protected final static String PACK_INFO_LIST_ELEMENT = "packInfoListElem"; // NOI18NP
     protected final static String PACK_TOPDIR_ELEMENT = "packTopDir"; // NOI18N
-
-
     private ConfigurationDescriptor projectDescriptor;
     private boolean publicLocation;
 
     protected CommonConfigurationXMLCodec(ConfigurationDescriptor projectDescriptor,
-                                          boolean publicLocation) {
-	this.projectDescriptor = projectDescriptor;
-	this.publicLocation = publicLocation;
+            boolean publicLocation) {
+        this.projectDescriptor = projectDescriptor;
+        this.publicLocation = publicLocation;
     }
 
     // interface XMLEncoder
     public void encode(XMLEncoderStream xes) {
-	xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
-	    if (publicLocation) {
-		writeLogicalFolders(xes);
-                writeSourceRoots(xes);
-                //writeSourceEncoding(xes);
-	    }
-	    xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getProjectMakefileName());
-	    if (!publicLocation) {
-                xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
-            }
-	    writeConfsBlock(xes);
-	xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
+        xes.elementOpen(CONFIGURATION_DESCRIPTOR_ELEMENT, CURRENT_VERSION);
+        if (publicLocation) {
+            writeLogicalFolders(xes);
+            writeSourceRoots(xes);
+        //writeSourceEncoding(xes);
+        }
+        xes.element(PROJECT_MAKEFILE_ELEMENT, ((MakeConfigurationDescriptor) projectDescriptor).getProjectMakefileName());
+        if (!publicLocation) {
+            xes.element(DEFAULT_CONF_ELEMENT, "" + projectDescriptor.getConfs().getActiveAsIndex()); // NOI18N
+        }
+        writeConfsBlock(xes);
+        xes.elementClose(CONFIGURATION_DESCRIPTOR_ELEMENT);
     }
 
     private void writeConfsBlock(XMLEncoderStream xes) {
-	xes.elementOpen(CONFS_ELEMENT);
+        xes.elementOpen(CONFS_ELEMENT);
 
-	Configurations confs = projectDescriptor.getConfs();
-	for (int i = 0; i < confs.size(); i++) {
+        Configurations confs = projectDescriptor.getConfs();
+        for (int i = 0; i < confs.size(); i++) {
 
-	    MakeConfiguration makeConfiguration =
-		(MakeConfiguration) confs.getConf(i);
+            MakeConfiguration makeConfiguration =
+                    (MakeConfiguration) confs.getConf(i);
 
-	    xes.elementOpen(CONF_ELEMENT,
-		new AttrValuePair[] {
-		    new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
-		    new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
-		});
-	    
-	    if (publicLocation) {
+            xes.elementOpen(CONF_ELEMENT,
+                    new AttrValuePair[]{
+                        new AttrValuePair(NAME_ATTR, "" + makeConfiguration.getName()), // NOI18N
+                        new AttrValuePair(TYPE_ATTR, "" + makeConfiguration.getConfigurationType().getValue()), // NOI18N
+                    });
+
+            if (publicLocation) {
                 writeToolsSetBlock(xes, makeConfiguration);
-		if (makeConfiguration.isCompileConfiguration())
-		    writeCompiledProjectConfBlock(xes, makeConfiguration);
-		if (makeConfiguration.isMakefileConfiguration())
-		    writeMakefileProjectConfBlock(xes, makeConfiguration);
+                if (makeConfiguration.isCompileConfiguration()) {
+                    writeCompiledProjectConfBlock(xes, makeConfiguration);
+                }
+                if (makeConfiguration.isMakefileConfiguration()) {
+                    writeMakefileProjectConfBlock(xes, makeConfiguration);
+                }
                 writePackaging(xes, makeConfiguration.getPackagingConfiguration());
-		ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-		for (int j = 0; j < profileAuxObjects.length; j++) {
-		    ConfigurationAuxObject auxObject = profileAuxObjects[j];
-		    if (auxObject.shared()) {
-			XMLEncoder encoder = auxObject.getXMLEncoder();
-			encoder.encode(xes);
-		    }
-		}
-	    } else {
-		ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
-		for (int j = 0; j < profileAuxObjects.length; j++) {
-		    ConfigurationAuxObject auxObject = profileAuxObjects[j];
-		    if (!auxObject.shared()) {
-			XMLEncoder encoder = auxObject.getXMLEncoder();
-			encoder.encode(xes);
-		    }
-		}
-	    }
-	    xes.elementClose(CONF_ELEMENT);
-	} 
+                ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
+                for (int j = 0; j < profileAuxObjects.length; j++) {
+                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                    if (auxObject.shared()) {
+                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        encoder.encode(xes);
+                    }
+                }
+            } else {
+                ConfigurationAuxObject[] profileAuxObjects = confs.getConf(i).getAuxObjects();
+                for (int j = 0; j < profileAuxObjects.length; j++) {
+                    ConfigurationAuxObject auxObject = profileAuxObjects[j];
+                    if (!auxObject.shared()) {
+                        XMLEncoder encoder = auxObject.getXMLEncoder();
+                        encoder.encode(xes);
+                    }
+                }
+            }
+            xes.elementClose(CONF_ELEMENT);
+        }
 
-	xes.elementClose(CONFS_ELEMENT);
+        xes.elementClose(CONFS_ELEMENT);
     }
-    
+
     private void writeToolsSetBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
-	xes.elementOpen(TOOLS_SET_ELEMENT);
-	xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getName());
+        xes.elementOpen(TOOLS_SET_ELEMENT);
+        xes.element(DEVELOPMENT_SERVER_ELEMENT, makeConfiguration.getDevelopmentHost().getName());
         xes.element(COMPILER_SET_ELEMENT, "" + makeConfiguration.getCompilerSet().getNameAndFlavor());
-        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault())
+        if (makeConfiguration.getCRequired().getValue() != makeConfiguration.getCRequired().getDefault()) {
             xes.element(C_REQUIRED_ELEMENT, "" + makeConfiguration.getCRequired().getValue());
-        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault())
+        }
+        if (makeConfiguration.getCppRequired().getValue() != makeConfiguration.getCppRequired().getDefault()) {
             xes.element(CPP_REQUIRED_ELEMENT, "" + makeConfiguration.getCppRequired().getValue());
-        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault())
+        }
+        if (makeConfiguration.getFortranRequired().getValue() != makeConfiguration.getFortranRequired().getDefault()) {
             xes.element(FORTRAN_REQUIRED_ELEMENT, "" + makeConfiguration.getFortranRequired().getValue());
-	xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
-        if (makeConfiguration.getDependencyChecking().getModified())
+        }
+        xes.element(PLATFORM_ELEMENT, "" + makeConfiguration.getPlatform().getValue()); // NOI18N
+        if (makeConfiguration.getDependencyChecking().getModified()) {
             xes.element(DEPENDENCY_CHECKING, "" + makeConfiguration.getDependencyChecking().getValue()); // NOI18N
-	xes.elementClose(TOOLS_SET_ELEMENT);
+        }
+        xes.elementClose(TOOLS_SET_ELEMENT);
     }
 
     private void writeCompiledProjectConfBlock(XMLEncoderStream xes, MakeConfiguration makeConfiguration) {
-	xes.elementOpen(COMPILE_TYPE_ELEMENT);
-	writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
-	writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
-	writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
-	if (makeConfiguration.isLinkerConfiguration())
-	    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
-	if (makeConfiguration.isArchiverConfiguration())
-	    writeArchiverConfiguration(xes, makeConfiguration.getArchiverConfiguration());
-	xes.elementClose(COMPILE_TYPE_ELEMENT);
+        xes.elementOpen(COMPILE_TYPE_ELEMENT);
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
+        writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+        if (makeConfiguration.isLinkerConfiguration()) {
+            writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
+        }
+        if (makeConfiguration.isArchiverConfiguration()) {
+            writeArchiverConfiguration(xes, makeConfiguration.getArchiverConfiguration());
+        }
+        writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
+        xes.elementClose(COMPILE_TYPE_ELEMENT);
     }
 
     private void writeMakefileProjectConfBlock(XMLEncoderStream xes,
-				   MakeConfiguration makeConfiguration) {
-	xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
-	xes.elementOpen(MAKETOOL_ELEMENT);
-	xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
-	xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
-	xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
-	xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
-	writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
-	writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
-	writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
+            MakeConfiguration makeConfiguration) {
+        xes.elementOpen(MAKEFILE_TYPE_ELEMENT);
+        xes.elementOpen(MAKETOOL_ELEMENT);
+        xes.element(BUILD_COMMAND_WORKING_DIR_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommandWorkingDir().getValue());
+        xes.element(BUILD_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getBuildCommand().getValue());
+        xes.element(CLEAN_COMMAND_ELEMENT, makeConfiguration.getMakefileConfiguration().getCleanCommand().getValue());
+        xes.element(EXECUTABLE_PATH_ELEMENT, makeConfiguration.getMakefileConfiguration().getOutput().getValue());
+        writeCCompilerConfiguration(xes, makeConfiguration.getCCompilerConfiguration());
+        writeCCCompilerConfiguration(xes, makeConfiguration.getCCCompilerConfiguration());
+        writeFortranCompilerConfiguration(xes, makeConfiguration.getFortranCompilerConfiguration());
         //IZ#110443:Adding "Dependencies" node for makefile projects property is premature
-	//if (makeConfiguration.getLinkerConfiguration() != null)
-	//    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
-	xes.elementClose(MAKETOOL_ELEMENT);
+        //if (makeConfiguration.getLinkerConfiguration() != null)
+        //    writeLinkerConfiguration(xes, makeConfiguration.getLinkerConfiguration());
+        xes.elementClose(MAKETOOL_ELEMENT);
         writeRequiredProjects(xes, makeConfiguration.getRequiredProjectsConfiguration());
-	xes.elementClose(MAKEFILE_TYPE_ELEMENT);
+        xes.elementClose(MAKEFILE_TYPE_ELEMENT);
     }
 
     private void writeLogicalFolders(XMLEncoderStream xes) {
-	writeLogicalFolder(xes, ((MakeConfigurationDescriptor)projectDescriptor).getLogicalFolders());
-    }
-    
-    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
-	xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
-		new AttrValuePair[] {
-		    new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
-		    new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
-		    new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
-	});
-	// write out subfolders
-	Folder[] subfolders = folder.getFoldersAsArray();
-	for (int i = 0; i < subfolders.length; i++) {
-	    writeLogicalFolder(xes, subfolders[i]);
-	}
-	// write out items
-	Item[] items = folder.getItemsAsArray();
-	for (int i = 0; i < items.length; i++) {
-	    xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
-	}
-	xes.elementClose(LOGICAL_FOLDER_ELEMENT);
+        writeLogicalFolder(xes, ((MakeConfigurationDescriptor) projectDescriptor).getLogicalFolders());
     }
 
-    
-    private void writeSourceRoots(XMLEncoderStream xes) {
-	writeSourceRoots(xes, ((MakeConfigurationDescriptor)projectDescriptor).getSourceRoots());
+    private void writeLogicalFolder(XMLEncoderStream xes, Folder folder) {
+        xes.elementOpen(LOGICAL_FOLDER_ELEMENT,
+                new AttrValuePair[]{
+                    new AttrValuePair(NAME_ATTR, "" + folder.getName()), // NOI18N
+                    new AttrValuePair(DISPLAY_NAME_ATTR, "" + folder.getDisplayName()), // NOI18N
+                    new AttrValuePair(PROJECT_FILES_ATTR, "" + folder.isProjectFiles()), // NOI18N
+                });
+        // write out subfolders
+        Folder[] subfolders = folder.getFoldersAsArray();
+        for (int i = 0; i < subfolders.length; i++) {
+            writeLogicalFolder(xes, subfolders[i]);
+        }
+        // write out items
+        Item[] items = folder.getItemsAsArray();
+        for (int i = 0; i < items.length; i++) {
+            xes.element(ITEM_PATH_ELEMENT, items[i].getPath());
+        }
+        xes.elementClose(LOGICAL_FOLDER_ELEMENT);
     }
-    
+
+    private void writeSourceRoots(XMLEncoderStream xes) {
+        writeSourceRoots(xes, ((MakeConfigurationDescriptor) projectDescriptor).getSourceRoots());
+    }
+
     private void writeSourceRoots(XMLEncoderStream xes, List<String> list) {
         if (list.size() > 0) {
             xes.elementOpen(SOURCE_ROOT_LIST_ELEMENT);
@@ -440,289 +441,350 @@ public abstract class CommonConfigurationXMLCodec
             xes.elementClose(SOURCE_ROOT_LIST_ELEMENT);
         }
     }
-    
+
 //    private void writeSourceEncoding(XMLEncoderStream xes) {
 //        xes.element(SOURCE_ENCODING_ELEMENT, ((MakeConfigurationDescriptor)projectDescriptor).getSourceEncoding());
 //    }
-    
     public static void writeCCompilerConfiguration(XMLEncoderStream xes, CCompilerConfiguration cCompilerConfiguration) {
-        if (!cCompilerConfiguration.getModified())
+        if (!cCompilerConfiguration.getModified()) {
             return;
-	xes.elementOpen(CCOMPILERTOOL_ELEMENT);
-	if (cCompilerConfiguration.getDevelopmentMode().getModified())
-	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
-	if (cCompilerConfiguration.getStrip().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue()); // NOI18N
-	if (cCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
-	if (cCompilerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
-	if (cCompilerConfiguration.getIncludeDirectories().getModified())
-	    writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, cCompilerConfiguration.getIncludeDirectories().getValueAsArray());
-	if (cCompilerConfiguration.getStandardsEvolution().getModified())
-	    xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
-	if (cCompilerConfiguration.getLanguageExt().getModified())
-	    xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + cCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
-	if (cCompilerConfiguration.getInheritIncludes().getModified())
-	    xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
-	if (cCompilerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-	if (cCompilerConfiguration.getPreprocessorConfiguration().getModified())
-	    writeList(xes, PREPROCESSOR_LIST_ELEMENT, cCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
-	if (cCompilerConfiguration.getInheritPreprocessor().getModified())
-	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
-	if (cCompilerConfiguration.getWarningLevel().getModified())
-	    xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
-	if (cCompilerConfiguration.getMTLevel().getModified())
-	    xes.element(MT_LEVEL_ELEMENT, "" + cCompilerConfiguration.getMTLevel().getValue()); // NOI18N
-	if (cCompilerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
-	xes.elementClose(CCOMPILERTOOL_ELEMENT);
+        }
+        xes.elementOpen(CCOMPILERTOOL_ELEMENT);
+        if (cCompilerConfiguration.getDevelopmentMode().getModified()) {
+            xes.element(DEVELOPMENT_MODE_ELEMENT, "" + cCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getStrip().getModified()) {
+            xes.element(STRIP_SYMBOLS_ELEMENT, "" + cCompilerConfiguration.getStrip().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getSixtyfourBits().getModified()) {
+            xes.element(ARCHITECTURE_ELEMENT, "" + cCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + cCompilerConfiguration.getTool().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getIncludeDirectories().getModified()) {
+            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, cCompilerConfiguration.getIncludeDirectories().getValueAsArray());
+        }
+        if (cCompilerConfiguration.getStandardsEvolution().getModified()) {
+            xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + cCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getLanguageExt().getModified()) {
+            xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + cCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getInheritIncludes().getModified()) {
+            xes.element(INHERIT_INC_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getCommandLineConfiguration().getModified()) {
+            xes.element(COMMAND_LINE_ELEMENT, "" + cCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
+            writeList(xes, PREPROCESSOR_LIST_ELEMENT, cCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
+        }
+        if (cCompilerConfiguration.getInheritPreprocessor().getModified()) {
+            xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + cCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getWarningLevel().getModified()) {
+            xes.element(WARNING_LEVEL_ELEMENT, "" + cCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getMTLevel().getModified()) {
+            xes.element(MT_LEVEL_ELEMENT, "" + cCompilerConfiguration.getMTLevel().getValue()); // NOI18N
+        }
+        if (cCompilerConfiguration.getAdditionalDependencies().getModified()) {
+            xes.element(ADDITIONAL_DEP_ELEMENT, "" + cCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+        }
+        xes.elementClose(CCOMPILERTOOL_ELEMENT);
     }
 
     public static void writeCCCompilerConfiguration(XMLEncoderStream xes, CCCompilerConfiguration ccCompilerConfiguration) {
-        if (!ccCompilerConfiguration.getModified())
+        if (!ccCompilerConfiguration.getModified()) {
             return;
-	xes.elementOpen(CCCOMPILERTOOL_ELEMENT);
-	if (ccCompilerConfiguration.getDevelopmentMode().getModified())
-	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getStrip().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getIncludeDirectories().getModified())
-	    writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValueAsArray()); // NOI18N
-	if (ccCompilerConfiguration.getStandardsEvolution().getModified())
-	    xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getLanguageExt().getModified())
-	    xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + ccCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getInheritIncludes().getModified())
-	    xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified())
-	    writeList(xes, PREPROCESSOR_LIST_ELEMENT, ccCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
-	if (ccCompilerConfiguration.getInheritPreprocessor().getModified())
-	    xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getWarningLevel().getModified())
-	    xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getMTLevel().getModified())
-	    xes.element(MT_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getMTLevel().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getLibraryLevel().getModified())
-	    xes.element(LIBRARY_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getLibraryLevel().getValue()); // NOI18N
-	if (ccCompilerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
-	xes.elementClose(CCCOMPILERTOOL_ELEMENT);
+        }
+        xes.elementOpen(CCCOMPILERTOOL_ELEMENT);
+        if (ccCompilerConfiguration.getDevelopmentMode().getModified()) {
+            xes.element(DEVELOPMENT_MODE_ELEMENT, "" + ccCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getStrip().getModified()) {
+            xes.element(STRIP_SYMBOLS_ELEMENT, "" + ccCompilerConfiguration.getStrip().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getSixtyfourBits().getModified()) {
+            xes.element(ARCHITECTURE_ELEMENT, "" + ccCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + ccCompilerConfiguration.getTool().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getIncludeDirectories().getModified()) {
+            writeDirectories(xes, INCLUDE_DIRECTORIES_ELEMENT, ccCompilerConfiguration.getIncludeDirectories().getValueAsArray()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getStandardsEvolution().getModified()) {
+            xes.element(STANDARDS_EVOLUTION_ELEMENT, "" + ccCompilerConfiguration.getStandardsEvolution().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getLanguageExt().getModified()) {
+            xes.element(LANGUAGE_EXTENSION_ELEMENT, "" + ccCompilerConfiguration.getLanguageExt().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getInheritIncludes().getModified()) {
+            xes.element(INHERIT_INC_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritIncludes().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getCommandLineConfiguration().getModified()) {
+            xes.element(COMMAND_LINE_ELEMENT, "" + ccCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getPreprocessorConfiguration().getModified()) {
+            writeList(xes, PREPROCESSOR_LIST_ELEMENT, ccCompilerConfiguration.getPreprocessorConfiguration().getValueAsArray());
+        }
+        if (ccCompilerConfiguration.getInheritPreprocessor().getModified()) {
+            xes.element(INHERIT_PRE_VALUES_ELEMENT, "" + ccCompilerConfiguration.getInheritPreprocessor().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getWarningLevel().getModified()) {
+            xes.element(WARNING_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getMTLevel().getModified()) {
+            xes.element(MT_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getMTLevel().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getLibraryLevel().getModified()) {
+            xes.element(LIBRARY_LEVEL_ELEMENT, "" + ccCompilerConfiguration.getLibraryLevel().getValue()); // NOI18N
+        }
+        if (ccCompilerConfiguration.getAdditionalDependencies().getModified()) {
+            xes.element(ADDITIONAL_DEP_ELEMENT, "" + ccCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+        }
+        xes.elementClose(CCCOMPILERTOOL_ELEMENT);
     }
-    
+
     public static void writeFortranCompilerConfiguration(XMLEncoderStream xes, FortranCompilerConfiguration fortranCompilerConfiguration) {
-        if (!fortranCompilerConfiguration.getModified())
+        if (!fortranCompilerConfiguration.getModified()) {
             return;
-	xes.elementOpen(FORTRANCOMPILERTOOL_ELEMENT);
-	if (fortranCompilerConfiguration.getDevelopmentMode().getModified())
-	    xes.element(DEVELOPMENT_MODE_ELEMENT, "" + fortranCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
-	if (fortranCompilerConfiguration.getStrip().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + fortranCompilerConfiguration.getStrip().getValue()); // NOI18N
-	if (fortranCompilerConfiguration.getSixtyfourBits().getModified())
-	    xes.element(ARCHITECTURE_ELEMENT, "" + fortranCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
-	if (fortranCompilerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + fortranCompilerConfiguration.getTool().getValue()); // NOI18N
-	if (fortranCompilerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + fortranCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-	if (fortranCompilerConfiguration.getWarningLevel().getModified())
-	    xes.element(WARNING_LEVEL_ELEMENT, "" + fortranCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
-	if (fortranCompilerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + fortranCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
-	xes.elementClose(FORTRANCOMPILERTOOL_ELEMENT);
+        }
+        xes.elementOpen(FORTRANCOMPILERTOOL_ELEMENT);
+        if (fortranCompilerConfiguration.getDevelopmentMode().getModified()) {
+            xes.element(DEVELOPMENT_MODE_ELEMENT, "" + fortranCompilerConfiguration.getDevelopmentMode().getValue()); // NOI18N
+        }
+        if (fortranCompilerConfiguration.getStrip().getModified()) {
+            xes.element(STRIP_SYMBOLS_ELEMENT, "" + fortranCompilerConfiguration.getStrip().getValue()); // NOI18N
+        }
+        if (fortranCompilerConfiguration.getSixtyfourBits().getModified()) {
+            xes.element(ARCHITECTURE_ELEMENT, "" + fortranCompilerConfiguration.getSixtyfourBits().getValue()); // NOI18N
+        }
+        if (fortranCompilerConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + fortranCompilerConfiguration.getTool().getValue()); // NOI18N
+        }
+        if (fortranCompilerConfiguration.getCommandLineConfiguration().getModified()) {
+            xes.element(COMMAND_LINE_ELEMENT, "" + fortranCompilerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+        }
+        if (fortranCompilerConfiguration.getWarningLevel().getModified()) {
+            xes.element(WARNING_LEVEL_ELEMENT, "" + fortranCompilerConfiguration.getWarningLevel().getValue()); // NOI18N
+        }
+        if (fortranCompilerConfiguration.getAdditionalDependencies().getModified()) {
+            xes.element(ADDITIONAL_DEP_ELEMENT, "" + fortranCompilerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+        }
+        xes.elementClose(FORTRANCOMPILERTOOL_ELEMENT);
     }
 
     public static void writeCustomToolConfiguration(XMLEncoderStream xes, CustomToolConfiguration customToolConfiguration) {
-	if (!customToolConfiguration.getModified())
-	    return;
-	xes.elementOpen(CUSTOMTOOL_ELEMENT);
-	if (customToolConfiguration.getCommandLine().getModified())
-	    xes.element(CUSTOMTOOL_COMMANDLINE_ELEMENT, "" + customToolConfiguration.getCommandLine().getValue()); // NOI18N
-	if (customToolConfiguration.getDescription().getModified())
-	    xes.element(CUSTOMTOOL_DESCRIPTION_ELEMENT, "" + customToolConfiguration.getDescription().getValue()); // NOI18N
-	if (customToolConfiguration.getOutputs().getModified())
-	    xes.element(CUSTOMTOOL_OUTPUTS_ELEMENT, "" + customToolConfiguration.getOutputs().getValue()); // NOI18N
-	if (customToolConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT, "" + customToolConfiguration.getAdditionalDependencies().getValue()); // NOI18N
-	xes.elementClose(CUSTOMTOOL_ELEMENT);
+        if (!customToolConfiguration.getModified()) {
+            return;
+        }
+        xes.elementOpen(CUSTOMTOOL_ELEMENT);
+        if (customToolConfiguration.getCommandLine().getModified()) {
+            xes.element(CUSTOMTOOL_COMMANDLINE_ELEMENT, "" + customToolConfiguration.getCommandLine().getValue()); // NOI18N
+        }
+        if (customToolConfiguration.getDescription().getModified()) {
+            xes.element(CUSTOMTOOL_DESCRIPTION_ELEMENT, "" + customToolConfiguration.getDescription().getValue()); // NOI18N
+        }
+        if (customToolConfiguration.getOutputs().getModified()) {
+            xes.element(CUSTOMTOOL_OUTPUTS_ELEMENT, "" + customToolConfiguration.getOutputs().getValue()); // NOI18N
+        }
+        if (customToolConfiguration.getAdditionalDependencies().getModified()) {
+            xes.element(CUSTOMTOOL_ADDITIONAL_DEP_ELEMENT, "" + customToolConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+        }
+        xes.elementClose(CUSTOMTOOL_ELEMENT);
     }
 
     public static void writeLinkerConfiguration(XMLEncoderStream xes, LinkerConfiguration linkerConfiguration) {
-	xes.elementOpen(LINKERTOOL_ELEMENT);
-	if (linkerConfiguration.getOutput().getModified())
-	    xes.element(OUTPUT_ELEMENT, linkerConfiguration.getOutput().getValue());
-	if (linkerConfiguration.getAdditionalLibs().getModified())
-	    writeDirectories(xes, LINKER_ADD_LIB_ELEMENT, linkerConfiguration.getAdditionalLibs().getValueAsArray());
-	if (linkerConfiguration.getDynamicSearch().getModified())
-	    writeDirectories(xes, LINKER_DYN_SERCH_ELEMENT, linkerConfiguration.getDynamicSearch().getValueAsArray());
-	if (linkerConfiguration.getStripOption().getModified())
-	    xes.element(STRIP_SYMBOLS_ELEMENT, "" + linkerConfiguration.getStripOption().getValue()); // NOI18N
-	if (linkerConfiguration.getPICOption().getModified())
-	    xes.element(LINKER_KPIC_ELEMENT, "" + linkerConfiguration.getPICOption().getValue()); // NOI18N
-	if (linkerConfiguration.getNorunpathOption().getModified())
-	    xes.element(LINKER_NORUNPATH_ELEMENT, "" + linkerConfiguration.getNorunpathOption().getValue()); // NOI18N
-	if (linkerConfiguration.getNameassignOption().getModified())
-	    xes.element(LINKER_ASSIGN_ELEMENT, "" + linkerConfiguration.getNameassignOption().getValue()); // NOI18N
-	if (linkerConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + linkerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
-	if (linkerConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, linkerConfiguration.getTool().getValue());
-	writeLibrariesConfiguration(xes, linkerConfiguration.getLibrariesConfiguration());
-	if (linkerConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
-	xes.elementClose(LINKERTOOL_ELEMENT);
+        xes.elementOpen(LINKERTOOL_ELEMENT);
+        if (linkerConfiguration.getOutput().getModified()) {
+            xes.element(OUTPUT_ELEMENT, linkerConfiguration.getOutput().getValue());
+        }
+        if (linkerConfiguration.getAdditionalLibs().getModified()) {
+            writeDirectories(xes, LINKER_ADD_LIB_ELEMENT, linkerConfiguration.getAdditionalLibs().getValueAsArray());
+        }
+        if (linkerConfiguration.getDynamicSearch().getModified()) {
+            writeDirectories(xes, LINKER_DYN_SERCH_ELEMENT, linkerConfiguration.getDynamicSearch().getValueAsArray());
+        }
+        if (linkerConfiguration.getStripOption().getModified()) {
+            xes.element(STRIP_SYMBOLS_ELEMENT, "" + linkerConfiguration.getStripOption().getValue()); // NOI18N
+        }
+        if (linkerConfiguration.getPICOption().getModified()) {
+            xes.element(LINKER_KPIC_ELEMENT, "" + linkerConfiguration.getPICOption().getValue()); // NOI18N
+        }
+        if (linkerConfiguration.getNorunpathOption().getModified()) {
+            xes.element(LINKER_NORUNPATH_ELEMENT, "" + linkerConfiguration.getNorunpathOption().getValue()); // NOI18N
+        }
+        if (linkerConfiguration.getNameassignOption().getModified()) {
+            xes.element(LINKER_ASSIGN_ELEMENT, "" + linkerConfiguration.getNameassignOption().getValue()); // NOI18N
+        }
+        if (linkerConfiguration.getAdditionalDependencies().getModified()) {
+            xes.element(ADDITIONAL_DEP_ELEMENT, "" + linkerConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+        }
+        if (linkerConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, linkerConfiguration.getTool().getValue());
+        }
+        writeLibrariesConfiguration(xes, linkerConfiguration.getLibrariesConfiguration());
+        if (linkerConfiguration.getCommandLineConfiguration().getModified()) {
+            xes.element(COMMAND_LINE_ELEMENT, "" + linkerConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+        }	//xes.element(DEBUGGING_ELEMENT, "" + linkerConfiguration.getTool().getValue() + " " + linkerConfiguration.getOptions()); // NOI18N
+        xes.elementClose(LINKERTOOL_ELEMENT);
     }
 
     public static void writeLibrariesConfiguration(XMLEncoderStream xes, LibrariesConfiguration librariesConfiguration) {
-	xes.elementOpen(LINKER_LIB_ITEMS_ELEMENT);
-	LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
-	for (int i = 0; i < libraryItems.length; i++) {
-	    if (libraryItems[i] instanceof LibraryItem.ProjectItem) {
-		xes.elementOpen(LINKER_LIB_PROJECT_ITEM_ELEMENT);
-		writeMakeArtifact(xes, ((LibraryItem.ProjectItem)libraryItems[i]).getMakeArtifact());
-		xes.elementClose(LINKER_LIB_PROJECT_ITEM_ELEMENT);
-	    }
-	    else if (libraryItems[i] instanceof LibraryItem.StdLibItem) {
-		xes.element(LINKER_LIB_STDLIB_ITEM_ELEMENT, ((LibraryItem.StdLibItem)libraryItems[i]).getName());
-	    }
-	    else if (libraryItems[i] instanceof LibraryItem.LibItem) {
-		xes.element(LINKER_LIB_LIB_ITEM_ELEMENT, ((LibraryItem.LibItem)libraryItems[i]).getLibName());
-	    }
-	    else if (libraryItems[i] instanceof LibraryItem.LibFileItem) {
-		xes.element(LINKER_LIB_FILE_ITEM_ELEMENT, ((LibraryItem.LibFileItem)libraryItems[i]).getPath());
-	    }
-	    else if (libraryItems[i] instanceof LibraryItem.OptionItem) {
-		xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem)libraryItems[i]).getLibraryOption());
-	    }
-	}
-	xes.elementClose(LINKER_LIB_ITEMS_ELEMENT);
-    }
-    
-    public static void writeRequiredProjects(XMLEncoderStream xes, RequiredProjectsConfiguration requiredProjectsConfiguration) {
-	LibraryItem.ProjectItem[] projectItems = requiredProjectsConfiguration.getRequiredProjectItemsAsArray();
-	xes.elementOpen(REQUIRED_PROJECTS_ELEMENT);
-	for (int i = 0; i < projectItems.length; i++) {
-            writeMakeArtifact(xes, projectItems[i].getMakeArtifact());
-	}
-	xes.elementClose(REQUIRED_PROJECTS_ELEMENT);
+        xes.elementOpen(LINKER_LIB_ITEMS_ELEMENT);
+        LibraryItem[] libraryItems = librariesConfiguration.getLibraryItemsAsArray();
+        for (int i = 0; i < libraryItems.length; i++) {
+            if (libraryItems[i] instanceof LibraryItem.ProjectItem) {
+                xes.elementOpen(LINKER_LIB_PROJECT_ITEM_ELEMENT);
+                writeMakeArtifact(xes, ((LibraryItem.ProjectItem) libraryItems[i]).getMakeArtifact());
+                xes.elementClose(LINKER_LIB_PROJECT_ITEM_ELEMENT);
+            } else if (libraryItems[i] instanceof LibraryItem.StdLibItem) {
+                xes.element(LINKER_LIB_STDLIB_ITEM_ELEMENT, ((LibraryItem.StdLibItem) libraryItems[i]).getName());
+            } else if (libraryItems[i] instanceof LibraryItem.LibItem) {
+                xes.element(LINKER_LIB_LIB_ITEM_ELEMENT, ((LibraryItem.LibItem) libraryItems[i]).getLibName());
+            } else if (libraryItems[i] instanceof LibraryItem.LibFileItem) {
+                xes.element(LINKER_LIB_FILE_ITEM_ELEMENT, ((LibraryItem.LibFileItem) libraryItems[i]).getPath());
+            } else if (libraryItems[i] instanceof LibraryItem.OptionItem) {
+                xes.element(LINKER_LIB_OPTION_ITEM_ELEMENT, ((LibraryItem.OptionItem) libraryItems[i]).getLibraryOption());
+            }
+        }
+        xes.elementClose(LINKER_LIB_ITEMS_ELEMENT);
     }
 
-    
+    public static void writeRequiredProjects(XMLEncoderStream xes, RequiredProjectsConfiguration requiredProjectsConfiguration) {
+        LibraryItem.ProjectItem[] projectItems = requiredProjectsConfiguration.getRequiredProjectItemsAsArray();
+        if (projectItems.length > 0) {
+            xes.elementOpen(REQUIRED_PROJECTS_ELEMENT);
+            for (int i = 0; i < projectItems.length; i++) {
+                writeMakeArtifact(xes, projectItems[i].getMakeArtifact());
+            }
+            xes.elementClose(REQUIRED_PROJECTS_ELEMENT);
+        }
+    }
+
     private static void writePackaging(XMLEncoderStream xes, PackagingConfiguration packagingConfiguration) {
         if (!packagingConfiguration.isModified()) {
             return;
         }
-	xes.elementOpen(PACK_ELEMENT);
+        xes.elementOpen(PACK_ELEMENT);
         xes.element(PACK_TYPE_ELEMENT, "" + packagingConfiguration.getName()); // NOI18N
-	if (packagingConfiguration.getVerbose().getModified())
-	    xes.element(VERBOSE_ELEMENT, "" + packagingConfiguration.getVerbose().getValue()); // NOI18N
-	if (packagingConfiguration.getOutput().getModified())
-	    xes.element(OUTPUT_ELEMENT, packagingConfiguration.getOutput().getValue());
-	if (packagingConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, packagingConfiguration.getTool().getValue());
-	if (packagingConfiguration.getOptions().getModified())
-	    xes.element(ADDITIONAL_OPTIONS_ELEMENT, packagingConfiguration.getOptions().getValue());
-        if (packagingConfiguration.getTopDir().getModified())
-	    xes.element(PACK_TOPDIR_ELEMENT, packagingConfiguration.getTopDir().getValue());
-	xes.elementOpen(PACK_FILES_LIST_ELEMENT);
+        if (packagingConfiguration.getVerbose().getModified()) {
+            xes.element(VERBOSE_ELEMENT, "" + packagingConfiguration.getVerbose().getValue()); // NOI18N
+        }
+        if (packagingConfiguration.getOutput().getModified()) {
+            xes.element(OUTPUT_ELEMENT, packagingConfiguration.getOutput().getValue());
+        }
+        if (packagingConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, packagingConfiguration.getTool().getValue());
+        }
+        if (packagingConfiguration.getOptions().getModified()) {
+            xes.element(ADDITIONAL_OPTIONS_ELEMENT, packagingConfiguration.getOptions().getValue());
+        }
+        if (packagingConfiguration.getTopDir().getModified()) {
+            xes.element(PACK_TOPDIR_ELEMENT, packagingConfiguration.getTopDir().getValue());
+        }
+        xes.elementOpen(PACK_FILES_LIST_ELEMENT);
         List<PackagerFileElement> filesList = packagingConfiguration.getFiles().getValue();
         for (PackagerFileElement elem : filesList) {
             xes.element(PACK_FILE_LIST_ELEMENT,
-                    new AttrValuePair[] {
+                    new AttrValuePair[]{
                         new AttrValuePair(TYPE_ATTR, "" + elem.getType().toString()), // NOI18N
                         new AttrValuePair(TO_ATTR, "" + elem.getTo()), // NOI18N
                         new AttrValuePair(FROM_ATTR, "" + elem.getFrom()), // NOI18N
                         new AttrValuePair(PERM_ATTR, "" + elem.getPermission()), // NOI18N
                         new AttrValuePair(OWNER_ATTR, "" + elem.getOwner()), // NOI18N
                         new AttrValuePair(GROUP_ATTR, "" + elem.getGroup()), // NOI18N
-            });
+                    });
         }
-	xes.elementClose(PACK_FILES_LIST_ELEMENT);
+        xes.elementClose(PACK_FILES_LIST_ELEMENT);
         PackagerDescriptor packager = PackagerManager.getDefault().getPackager(packagingConfiguration.getType().getValue());
         if (packager.hasInfoList()) {
             xes.elementOpen(PACK_INFOS_LIST_ELEMENT);
             List<PackagerInfoElement> infoList = packagingConfiguration.getHeaderSubList(packagingConfiguration.getType().getValue());
             for (PackagerInfoElement elem : infoList) {
                 xes.element(PACK_INFO_LIST_ELEMENT,
-                        new AttrValuePair[] {
+                        new AttrValuePair[]{
                             new AttrValuePair(NAME_ATTR, "" + elem.getName()), // NOI18N
                             new AttrValuePair(VALUE_ATTR, "" + elem.getValue()), // NOI18N
                             new AttrValuePair(MANDATORY_ATTR, "" + elem.isMandatory()), // NOI18N
-                });
+                        });
             }
             xes.elementClose(PACK_INFOS_LIST_ELEMENT);
         }
-	xes.elementClose(PACK_ELEMENT);
+        xes.elementClose(PACK_ELEMENT);
     }
-    
+
     public static void writeMakeArtifact(XMLEncoderStream xes, MakeArtifact makeArtifact) {
-	xes.elementOpen(MAKE_ARTIFACT_ELEMENT,
-		new AttrValuePair[] {
-		    new AttrValuePair(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation()),
-		    new AttrValuePair(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()), // NOI18N
-		    new AttrValuePair(MAKE_ARTIFACT_CN_ELEMENT, makeArtifact.getConfigurationName()),
-		    new AttrValuePair(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()), // NOI18N
-		    new AttrValuePair(MAKE_ARTIFACT_BL_ELEMENT, "" + makeArtifact.getBuild()), // NOI18N
-		    new AttrValuePair(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory()),
-		    new AttrValuePair(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand()),
-		    new AttrValuePair(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand()),
-		    new AttrValuePair(MAKE_ARTIFACT_OP_ELEMENT, makeArtifact.getOutput()),
-	});
-	/*
-	xes.elementOpen(MAKE_ARTIFACT_ELEMENT);
-	xes.element(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation());
-	xes.element(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()); // NOI18N
-	xes.element(MAKE_ARTIFACT_CN_ELEMENT, makeArtifact.getConfigurationName());
-	xes.element(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()); // NOI18N
-	xes.element(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory());
-	xes.element(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand());
-	xes.element(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand());
-	xes.element(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getOutput());
-	*/
-	xes.elementClose(MAKE_ARTIFACT_ELEMENT);
+        xes.elementOpen(MAKE_ARTIFACT_ELEMENT,
+                new AttrValuePair[]{
+                    new AttrValuePair(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation()),
+                    new AttrValuePair(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()), // NOI18N
+                    new AttrValuePair(MAKE_ARTIFACT_CN_ELEMENT, makeArtifact.getConfigurationName()),
+                    new AttrValuePair(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()), // NOI18N
+                    new AttrValuePair(MAKE_ARTIFACT_BL_ELEMENT, "" + makeArtifact.getBuild()), // NOI18N
+                    new AttrValuePair(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory()),
+                    new AttrValuePair(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand()),
+                    new AttrValuePair(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand()),
+                    new AttrValuePair(MAKE_ARTIFACT_OP_ELEMENT, makeArtifact.getOutput()),});
+        /*
+        xes.elementOpen(MAKE_ARTIFACT_ELEMENT);
+        xes.element(MAKE_ARTIFACT_PL_ELEMENT, makeArtifact.getProjectLocation());
+        xes.element(MAKE_ARTIFACT_CT_ELEMENT, "" + makeArtifact.getConfigurationType()); // NOI18N
+        xes.element(MAKE_ARTIFACT_CN_ELEMENT, makeArtifact.getConfigurationName());
+        xes.element(MAKE_ARTIFACT_AC_ELEMENT, "" + makeArtifact.getActive()); // NOI18N
+        xes.element(MAKE_ARTIFACT_WD_ELEMENT, makeArtifact.getWorkingDirectory());
+        xes.element(MAKE_ARTIFACT_BC_ELEMENT, makeArtifact.getBuildCommand());
+        xes.element(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getCleanCommand());
+        xes.element(MAKE_ARTIFACT_CC_ELEMENT, makeArtifact.getOutput());
+         */
+        xes.elementClose(MAKE_ARTIFACT_ELEMENT);
     }
 
     public static void writeArchiverConfiguration(XMLEncoderStream xes, ArchiverConfiguration archiverConfiguration) {
-	xes.elementOpen(ARCHIVERTOOL_ELEMENT);
-	if (archiverConfiguration.getOutput().getModified())
-	    xes.element(OUTPUT_ELEMENT, archiverConfiguration.getOutput().getValue());
-	if (archiverConfiguration.getRunRanlib().getModified())
-	    xes.element(ARCHIVERTOOL_RUN_RANLIB_ELEMENT, "" + archiverConfiguration.getRunRanlib().getValue()); // NOI18N
-	if (archiverConfiguration.getVerboseOption().getModified())
-	    xes.element(ARCHIVERTOOL_VERBOSE_ELEMENT, "" + archiverConfiguration.getVerboseOption().getValue()); // NOI18N
-	if (archiverConfiguration.getSupressOption().getModified())
-	    xes.element(ARCHIVERTOOL_SUPRESS_ELEMENT, "" + archiverConfiguration.getSupressOption().getValue()); // NOI18N
-	if (archiverConfiguration.getAdditionalDependencies().getModified())
-	    xes.element(ADDITIONAL_DEP_ELEMENT, "" + archiverConfiguration.getAdditionalDependencies().getValue()); // NOI18N
-	if (archiverConfiguration.getTool().getModified())
-	    xes.element(COMMANDLINE_TOOL_ELEMENT, "" + archiverConfiguration.getTool().getValue()); // NOI18N
-	if (archiverConfiguration.getCommandLineConfiguration().getModified())
-	    xes.element(COMMAND_LINE_ELEMENT, "" + archiverConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
-	//xes.element(DEBUGGING_ELEMENT, "" + archiverConfiguration.getTool().getValue() + " " + archiverConfiguration.getOptions()); // NOI18N
-	xes.elementClose(ARCHIVERTOOL_ELEMENT);
+        xes.elementOpen(ARCHIVERTOOL_ELEMENT);
+        if (archiverConfiguration.getOutput().getModified()) {
+            xes.element(OUTPUT_ELEMENT, archiverConfiguration.getOutput().getValue());
+        }
+        if (archiverConfiguration.getRunRanlib().getModified()) {
+            xes.element(ARCHIVERTOOL_RUN_RANLIB_ELEMENT, "" + archiverConfiguration.getRunRanlib().getValue()); // NOI18N
+        }
+        if (archiverConfiguration.getVerboseOption().getModified()) {
+            xes.element(ARCHIVERTOOL_VERBOSE_ELEMENT, "" + archiverConfiguration.getVerboseOption().getValue()); // NOI18N
+        }
+        if (archiverConfiguration.getSupressOption().getModified()) {
+            xes.element(ARCHIVERTOOL_SUPRESS_ELEMENT, "" + archiverConfiguration.getSupressOption().getValue()); // NOI18N
+        }
+        if (archiverConfiguration.getAdditionalDependencies().getModified()) {
+            xes.element(ADDITIONAL_DEP_ELEMENT, "" + archiverConfiguration.getAdditionalDependencies().getValue()); // NOI18N
+        }
+        if (archiverConfiguration.getTool().getModified()) {
+            xes.element(COMMANDLINE_TOOL_ELEMENT, "" + archiverConfiguration.getTool().getValue()); // NOI18N
+        }
+        if (archiverConfiguration.getCommandLineConfiguration().getModified()) {
+            xes.element(COMMAND_LINE_ELEMENT, "" + archiverConfiguration.getCommandLineConfiguration().getValue()); // NOI18N
+        }	//xes.element(DEBUGGING_ELEMENT, "" + archiverConfiguration.getTool().getValue() + " " + archiverConfiguration.getOptions()); // NOI18N
+        xes.elementClose(ARCHIVERTOOL_ELEMENT);
     }
-    
+
     public static void writeList(XMLEncoderStream xes, String tag, String[] list) {
         writeList(xes, tag, LIST_ELEMENT, list);
     }
-    
+
     public static void writeDirectories(XMLEncoderStream xes, String tag, String[] directories) {
         writeList(xes, tag, DIRECTORY_PATH_ELEMENT, directories);
     }
 
     public static void writeList(XMLEncoderStream xes, String tag, String listTag, String[] directories) {
-	if (directories.length == 0)
-	    return;
-	xes.elementOpen(tag);
-	for (int i = 0; i < directories.length; i++)
-	    xes.element(listTag, directories[i]);
-	xes.elementClose(tag);
+        if (directories.length == 0) {
+            return;
+        }
+        xes.elementOpen(tag);
+        for (int i = 0; i < directories.length; i++) {
+            xes.element(listTag, directories[i]);
+        }
+        xes.elementClose(tag);
     }
 }

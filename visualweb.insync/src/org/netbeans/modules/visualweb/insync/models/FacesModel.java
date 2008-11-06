@@ -275,6 +275,7 @@ public class FacesModel extends Model {
     /**
      * A Model.Factory that knows how and when to make faces page FacesModels from file objects.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.insync.Model.Factory.class, position=10)
     public static class FacesFactory implements Model.Factory {
 //        static final String[] mimes = DesignerService.getDefault().getMimeTypes();
         static final String[] mimes = InSyncServiceProvider.get().getMimeTypes();
@@ -324,6 +325,7 @@ public class FacesModel extends Model {
     /**
      * A Model.Factory that knows how and when to make simple bean FacesModels from file objects.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.insync.Model.Factory.class, position=20)
     public static class BeansFactory implements Model.Factory {
         static final String[] mimes = { "text/x-java" };
 

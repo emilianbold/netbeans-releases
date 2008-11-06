@@ -355,6 +355,7 @@ implements RepositoryListener {
     }
     
     /** @deprecated No longer useful in the UI. */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.RepositoryNodeFactory.class)
     public static final class NbRepositoryNodeFactory extends org.openide.loaders.RepositoryNodeFactory {
         
         public Node repository(DataFilter f) {

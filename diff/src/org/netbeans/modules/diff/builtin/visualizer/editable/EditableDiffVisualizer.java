@@ -62,6 +62,7 @@ import java.beans.PropertyChangeEvent;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.diff.DiffVisualizer.class)
 public class EditableDiffVisualizer extends DiffVisualizer {
 
     /**

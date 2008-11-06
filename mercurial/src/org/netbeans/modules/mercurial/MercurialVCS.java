@@ -55,6 +55,7 @@ import org.netbeans.modules.versioning.spi.VersioningSystem;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class MercurialVCS extends VersioningSystem implements PropertyChangeListener {
 
     public MercurialVCS() {

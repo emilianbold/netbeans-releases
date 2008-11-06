@@ -61,6 +61,7 @@ import org.openide.util.Lookup;
  * netbeans related support for refactoring
  * @author Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class NbRefactoringFactory implements RefactoringPluginFactory {
     
 

@@ -9,5 +9,7 @@ void iz149783_foo() {
     ss->field;
     ss->ar->field;
     ss->ar2->field;
+    iz149783_S ss2;
+    ss2.ar2[0].ar->field;
 }
 

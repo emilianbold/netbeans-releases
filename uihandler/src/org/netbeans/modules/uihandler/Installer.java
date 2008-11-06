@@ -147,6 +147,7 @@ public class Installer extends ModuleInstall implements Runnable {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
+    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data"); // NOI18N
     public static RequestProcessor RP_OPT = null;
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
@@ -624,7 +625,7 @@ public class Installer extends ModuleInstall implements Runnable {
         return prefs.getInt("count", 0); // NOI18N
     }
 
-    public static List<LogRecord> getLogs() {
+    static List<LogRecord> getLogs() {
         UIHandler.waitFlushed();
 
         File f = logFile(0);
@@ -868,12 +869,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public boolean closing() {
         UIHandler.waitFlushed();
-
-        if (getLogsSize() == 0) {
-            return true;
-        }
-
-        return displaySummary("EXIT_URL", false, false,true); // NOI18N
+        return true;
     }
 
     static void logDeactivated(){
@@ -911,8 +907,12 @@ public class Installer extends ModuleInstall implements Runnable {
         return displaySummary(msg, explicit, auto, connectDialog, DataType.DATA_UIGESTURE);
     }
 
-    protected static Throwable getThrown(){
-        LogRecord log = getThrownLog();
+    static Throwable getThrown() {
+        return getThrown(getLogs());
+    }
+
+    private static Throwable getThrown(List<LogRecord> recs) {
+        LogRecord log = getThrownLog(recs);
         if (log == null){
             return null;
         }else{
@@ -920,7 +920,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    protected static LogRecord getThrownLog(){
+    private static LogRecord getThrownLog(List<LogRecord> list) {
         String firstLine = null;
         String message = null;
         if (selectedExcParams != null){
@@ -931,7 +931,6 @@ public class Installer extends ModuleInstall implements Runnable {
                 firstLine = (String)selectedExcParams[1];
             }
         }
-        List<LogRecord> list = getLogs();
         ListIterator<LogRecord> it = list.listIterator(list.size());
         Throwable thr = null;
         LogRecord result = null;
@@ -1240,10 +1239,11 @@ public class Installer extends ModuleInstall implements Runnable {
         protected boolean okToExit;
         protected ReportPanel reportPanel;
         private URL url;
-        private boolean dialogCreated;
+        private boolean dialogCreated = false;
         private boolean checkingResult, refresh = false;
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
+        final protected List<LogRecord> recs;
 
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
@@ -1253,6 +1253,11 @@ public class Installer extends ModuleInstall implements Runnable {
             this.msg = msg;
             this.dataType = dataType;
             isSubmiting = new AtomicBoolean(false);
+            if (dataType == DataType.DATA_METRICS) {
+                recs = getLogsMetrics();
+            }else{
+                recs = new ArrayList<LogRecord>(getLogs());
+            }
             if ("ERROR_URL".equals(msg)) { // NOI18N
                 report = true;
             } else {
@@ -1381,7 +1386,7 @@ public class Installer extends ModuleInstall implements Runnable {
             LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
         }
 
-        private synchronized final void doCloseDialog() {
+        protected synchronized final void doCloseDialog() {
             dialogCreated = false;
             closeDialog();
             notifyAll();
@@ -1446,48 +1451,60 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             if (submit) { // NOI18N
+                JButton button = null;
+                if (e.getSource() instanceof JButton){
+                    button = (JButton) e.getSource();
+                    button.setEnabled(false);
+                }
+                final JButton submitButton = button;
                 if (isSubmiting.getAndSet(true)) {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                try {
-                    List<LogRecord> recs = null;
-                    if (dataType == DataType.DATA_UIGESTURE) {
-                        recs = getLogs();
-                        saveUserName();
-                        LogRecord userData = getUserData(true);
-                        LogRecord thrownLog = getThrownLog();
-                        if (thrownLog != null) {
-                            recs.add(thrownLog);//exception selected by user
-                        }
-                        recs.add(TimeToFailure.logFailure());
-                        recs.add(BuildInfo.logBuildInfoRec());
-                        recs.add(userData);
-                        if ((report) && !(reportPanel.asAGuest())) {
-                            if (!checkUserName()) {
-                                reportPanel.showWrongPassword();
-                                return;
+                RP_SUBMIT.post(new Runnable() {
+
+                    public void run() {
+                        if (dataType == DataType.DATA_UIGESTURE) {
+                            saveUserName();
+                            LogRecord userData = getUserData(true);
+                            LogRecord thrownLog = getThrownLog(recs);
+                            if (thrownLog != null) {
+                                recs.add(thrownLog);//exception selected by user
                             }
+                            recs.add(TimeToFailure.logFailure());
+                            recs.add(BuildInfo.logBuildInfoRec());
+                            recs.add(userData);
+                            if ((report) && !(reportPanel.asAGuest())) {
+                                if (!checkUserName()) {
+                                    EventQueue.invokeLater(new Runnable(){
+                                        public void run() {
+                                            submitButton.setEnabled(true);
+                                            reportPanel.showWrongPassword();
+                                        }
+                                    });
+                                    isSubmiting.set(false);
+                                    return;
+                                }
+                            }
+                            LOG.fine("posting upload UIGESTURES");// NOI18N
+                        } else if (dataType == DataType.DATA_METRICS) {
+                            LOG.fine("posting upload METRICS");// NOI18N
                         }
-                        LOG.fine("posting upload UIGESTURES");// NOI18N
-                    } else if (dataType == DataType.DATA_METRICS) {
-                        recs = getLogsMetrics();
-                        LOG.fine("posting upload METRICS");// NOI18N
+                        final List<LogRecord> recsFinal = recs;
+                        RP_SUBMIT.post(new Runnable() {
+                            public void run() {
+                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
+                            }
+                        });
+                        okToExit = false;
+                        // this should close the descriptor
+                        EventQueue.invokeLater(new Runnable(){
+                            public void run() {
+                                doCloseDialog();
+                            }
+                        });
                     }
-                    final List<LogRecord> recsFinal = recs;
-                    RP.post(new Runnable() {
-                        public void run() {
-                            uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
-                        }
-                    });
-                    okToExit = false;
-                    // this should close the descriptor
-                    doCloseDialog();
-                } catch (InterruptedException exc) {
-                    LOG.log(Level.INFO, "submitting data failed", exc);// NOI18N
-                } finally {
-                    isSubmiting.set(false);
-                }
+                });
                 return;
             }
 
@@ -1550,28 +1567,23 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-        private boolean checkUserName() throws InterruptedException{
-            checkingResult=true;
-            RequestProcessor.Task checking;
-            checking = RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    ExceptionsSettings settings = new ExceptionsSettings();
-                    String login = settings.getUserName();
-                    String passwd = settings.getPasswd();
-                    try {
-                        char[] array = new char[100];
-                        URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
-                        URLConnection connection = url.openConnection();
-                        connection.setRequestProperty("User-Agent", "NetBeans");
-                        Reader reader = new InputStreamReader(connection.getInputStream());
-                        int length = reader.read(array);
-                        checkingResult = new Boolean(new String(array, 0, length));
-                    } catch (Exception exception) {
-                        Logger.getLogger(Installer.class.getName()).log(Level.INFO, "CHECKING PASSWORD FAILED", exception); // NOI18N
-                    }
-                }
-                });
-            checking.waitFinished(10000);
+        private boolean checkUserName() {
+            checkingResult = true;
+            ExceptionsSettings settings = new ExceptionsSettings();
+            String login = settings.getUserName();
+            String passwd = settings.getPasswd();
+            try {
+                char[] array = new char[100];
+                URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
+                URLConnection connection = checkingServerURL.openConnection();
+                connection.setRequestProperty("User-Agent", "NetBeans");
+                connection.setReadTimeout(10000);
+                Reader reader = new InputStreamReader(connection.getInputStream());
+                int length = reader.read(array);
+                checkingResult = new Boolean(new String(array, 0, length));
+            } catch (Exception exception) {
+                Logger.getLogger(Installer.class.getName()).log(Level.WARNING, "CHECKING PASSWORD FAILED", exception); // NOI18N
+            }
             return checkingResult;
         }
 
@@ -1683,7 +1695,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private SubmitPanel panel;
         private JEditorPane browser;
         private boolean urlAssigned;
-
+        
         public SubmitInteractive(String msg, boolean connectDialog, DataType dataType) {
             super(msg,dataType);
             this.connectDialog = connectDialog;
@@ -1699,7 +1711,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (reportPanel==null) {
                 reportPanel = new ReportPanel();
             }
-            Throwable t = getThrown();
+            Throwable t = getThrown(recs);
             if (t != null && reportPanel !=null){
                 reportPanel.setSummary(createMessage(t));
                 if ("ERROR_URL".equals(msg)) {
@@ -1768,12 +1780,12 @@ public class Installer extends ModuleInstall implements Runnable {
                 panel = new SubmitPanel();
                 AbstractNode root = new AbstractNode(new Children.Array());
                 root.setName("root"); // NOI18N
-                List<LogRecord> recs = getLogs();
-                recs.add(getUserData(false));
-                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", recs.size(), new Date()));
+                List<LogRecord> shownRecs = new ArrayList<LogRecord>(recs);
+                shownRecs.add(getUserData(false));
+                root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", shownRecs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
                 LinkedList<Node> nodes = new LinkedList<Node>();
-                for (LogRecord r : recs) {
+                for (LogRecord r : shownRecs) {
                     Node n = UINode.create(r);
                     nodes.add(n);
                     panel.addRecord(r, n);
@@ -1789,7 +1801,7 @@ public class Installer extends ModuleInstall implements Runnable {
             view.setVisible(true);
             return false;
         }
-        protected synchronized void assignInternalURL(URL u) {
+        protected void assignInternalURL(URL u) {
             if (browser != null) {
                 try {
                     browser.setPage(u);
@@ -1797,9 +1809,14 @@ public class Installer extends ModuleInstall implements Runnable {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            markAssigned();
+        }
+
+        private synchronized void markAssigned(){
             urlAssigned = true;
             notifyAll();
         }
+
         protected void showURL(URL u) {
             LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
@@ -1844,9 +1861,27 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
+            d.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    doCloseDialog();
+                }
+            });
+            d.setModal(false);
             d.setVisible(true);
+            synchronized (this){
+                while (d != null && !dontWaitForUserInputInTests){
+                    try{
+                        wait();
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
             return dd.getValue();
         }
+        
         protected void alterMessage(DialogDescriptor dd) {
             if ("ERROR_URL".equals(msg)&(dd.getOptions().length > 1)){
                 Object obj = dd.getOptions()[0];
@@ -1982,4 +2017,10 @@ public class Installer extends ModuleInstall implements Runnable {
             return SUBMIT.isCommand(n) || AUTO_SUBMIT.isCommand(n);
         }
     } // end of Buttons
+
+    //  JUST FOR TESTS //
+    private static boolean dontWaitForUserInputInTests = false;
+    static void dontWaitForUserInputInTests(){
+        dontWaitForUserInputInTests = true;
+    }
 }

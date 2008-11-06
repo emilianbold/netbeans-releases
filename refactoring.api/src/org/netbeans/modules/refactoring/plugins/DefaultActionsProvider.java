@@ -54,6 +54,7 @@ import org.openide.util.Lookup;
  *
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class)
 public class DefaultActionsProvider extends ActionsImplementationProvider {
     
     /** Creates a new instance of DefaultActionsProvider */

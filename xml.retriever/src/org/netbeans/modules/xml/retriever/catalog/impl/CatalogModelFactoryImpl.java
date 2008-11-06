@@ -58,6 +58,7 @@ import org.w3c.dom.ls.LSResourceResolver;
  *
  * @author girix
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.locator.CatalogModelFactory.class)
 public class CatalogModelFactoryImpl extends CatalogWriteModelFactory{
     private static Logger logger = Logger.getLogger(CatalogModelFactoryImpl.class.getName());
     

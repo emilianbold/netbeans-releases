@@ -66,6 +66,7 @@ import org.netbeans.modules.php.model.VariableAppearance;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.model.refs.ReferenceResolver.class)
 public class ClassStaticMemberReferenceResover 
     extends InterfaceStaticMemberReferenceResover 
 {

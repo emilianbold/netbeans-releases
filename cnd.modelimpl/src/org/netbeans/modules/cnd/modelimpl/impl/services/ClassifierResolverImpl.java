@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ResolverFactory;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver.class)
 public class ClassifierResolverImpl extends CsmClassifierResolver {
 
     @Override

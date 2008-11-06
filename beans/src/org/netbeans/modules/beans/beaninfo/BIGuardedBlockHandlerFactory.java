@@ -73,6 +73,7 @@ import org.openide.util.Exceptions;
  * 
  * @author Jan Pokorsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.GuardedBlockHandlerFactory.class)
 public final class BIGuardedBlockHandlerFactory implements GuardedBlockHandlerFactory {
 
     public GuardedBlockHandler createInstance(AbstractRefactoring refactoring) {

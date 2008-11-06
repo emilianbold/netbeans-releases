@@ -215,7 +215,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
         inheritValues.setValue(inheritCheckBox.isSelected());
     }//GEN-LAST:event_inheritCheckBoxActionPerformed
 
-    private class MyListEditorPanel extends ListEditorPanel {
+    private static class MyListEditorPanel extends ListEditorPanel {
 
         public MyListEditorPanel(Object[] objects) {
             super(objects);
@@ -278,7 +278,7 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
 
         @Override
         public Object copyAction(Object o) {
-            return new String((String) o);
+            return (String) o;
         }
 
         @Override
@@ -292,8 +292,8 @@ public class StringListPanel extends javax.swing.JPanel implements HelpCtx.Provi
                 return;
             }
             String newS = notifyDescriptor.getInputText();
-            Vector vector = getListData();
-            Object[] arr = getListData().toArray();
+            Vector vector = super.getListData();
+            Object[] arr = super.getListData().toArray();
             for (int i = 0; i < arr.length; i++) {
                 if (arr[i] == o) {
                     vector.remove(i);

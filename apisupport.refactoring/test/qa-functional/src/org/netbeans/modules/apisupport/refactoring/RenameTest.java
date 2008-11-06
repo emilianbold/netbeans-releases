@@ -63,14 +63,12 @@ public class RenameTest extends NbTestCase {
         "src/testRename/layer.xml",
         "src/testRename/RenamedLoader.java",
         "manifest.mf",
-        "src/META-INF/services/org.openide.loaders.UniFileLoader"                        
     };
     private static String[] goldenFiles = {
         "RenamedAction.java.pass",
         "layer.xml.pass",
         "RenamedLoader.java.pass",
         "manifest.mf.pass",
-        "org.openide.loaders.UniFileLoader.pass"                               
     };
     
     private String PATH_PREFIX = "";

@@ -58,6 +58,7 @@ import org.openide.filesystems.FileUtil;
  * Ant logger which handles compilation of JSPs
  * @author Martin Grebac
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=21)
 public final class TldAntLogger extends AntLogger {
     
     /**

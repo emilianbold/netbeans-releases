@@ -49,6 +49,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.CreateFromTemplateAttributesProvider.class)
 public final class PropertiesProvider implements CreateFromTemplateAttributesProvider {
 
     public Map<String, ?> attributesFor(DataObject template, DataFolder target, String name) {

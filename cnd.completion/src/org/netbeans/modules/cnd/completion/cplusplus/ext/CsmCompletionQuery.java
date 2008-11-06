@@ -824,6 +824,112 @@ abstract public class CsmCompletionQuery {
             return CsmCompletionQuery.this.isProjectBeeingParsed(openingSource);
         }
 
+        private ExprKind extractKind(CsmCompletionExpression exp, int i, int startIdx, boolean lastDot, boolean reset) {
+            ExprKind kind = ExprKind.NONE;
+            int tokCount = exp.getTokenCount();
+            if (i == startIdx) {
+                kind = ExprKind.NONE;
+            } else if (i - 1 < tokCount) {
+                switch (exp.getTokenID(i - 1)) {
+                    case ARROW:
+                        kind = ExprKind.ARROW;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case DOT:
+                        kind = ExprKind.DOT;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case SCOPE:
+                        kind = ExprKind.SCOPE;
+                        if (reset) {
+                            scopeAccessedClassifier = true;
+                        }
+                        break;
+                    default:
+                        System.err.println("unexpected token " + exp.getTokenID(i));
+                }
+            } else if (lastDot) {
+                switch (exp.getExpID()) {
+                    case CsmCompletionExpression.ARROW:
+                    case CsmCompletionExpression.ARROW_OPEN:
+                        kind = ExprKind.ARROW;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case CsmCompletionExpression.DOT:
+                    case CsmCompletionExpression.DOT_OPEN:
+                        kind = ExprKind.DOT;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case CsmCompletionExpression.SCOPE:
+                    case CsmCompletionExpression.SCOPE_OPEN:
+                        kind = ExprKind.SCOPE;
+                        if (reset) {
+                            scopeAccessedClassifier = true;
+                        }
+                        break;
+                    default:
+                        System.err.println("unexpected expression" + exp);
+                }
+            }
+            return kind;
+        }
+        
+        private boolean resolveParams(CsmCompletionExpression exp, boolean lastDot, /*out*/ExprKind[] lastKind) {
+            boolean ok = true;
+            int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
+            // Fix for IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
+            // Resolving should start after the last "->*" or ".*".
+            int startIdx = 0;
+            int tokCount = exp.getTokenCount();
+            for (int i = tokCount - 1; 0 <= i; --i) {
+                CppTokenId token = exp.getTokenID(i);
+                if (token == CppTokenId.DOTMBR || token == CppTokenId.ARROWMBR) {
+                    startIdx = i + 1;
+                    break;
+                }
+            }
+            ExprKind kind = ExprKind.NONE;
+            ExprKind nextKind = ExprKind.NONE;
+            int lastInd = parmCnt - 1;
+            for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in exp
+                kind = extractKind(exp, i, startIdx, lastDot, true);
+                nextKind = extractKind(exp, i + 1, startIdx, lastDot, false);
+                /*resolve arrows*/
+                if ((kind == ExprKind.ARROW) && (i != startIdx) && (i < parmCnt || lastDot || findType)
+                        && (lastType != null) && (lastType.getArrayDepth() == 0)) {
+                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
+                    if (cls != null) {
+                        lastType = CsmCompletion.getType(cls, 0);
+                    }
+                }
+                ok = resolveItem(exp.getParameter(i), (i == startIdx),
+                                 (!lastDot && i == lastInd),
+                                kind, nextKind);
+
+            }
+            if (ok && lastDot) {
+                kind = extractKind(exp, tokCount + 1, startIdx, true, true);
+                /*resolve arrows*/
+                if ((kind == ExprKind.ARROW) && (lastDot || findType)
+                        && (lastType != null) && (lastType.getArrayDepth() == 0)) {
+                    CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
+                    if (cls != null) {
+                        lastType = CsmCompletion.getType(cls, 0);
+                    }
+                }
+            }
+            lastKind[0] = kind;
+            return ok;
+        }
+        
         boolean resolveExp(CsmCompletionExpression exp) {
             boolean lastDot = false; // dot at the end of the whole expression?
             boolean ok = true;
@@ -835,50 +941,15 @@ abstract public class CsmCompletionQuery {
                 // let it flow to DOT
             case CsmCompletionExpression.DOT: // Dot expression
             case CsmCompletionExpression.ARROW: // Arrow expression
-                int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-                // Fix for IZ#139143 : unresolved identifiers in "(*cur.object).*cur.creator"
-                // Resolving should start after the last "->*" or ".*".
-                int startIdx = 0;
-                for (int i = exp.getTokenCount() - 1; 0 <= i; --i) {
-                    CppTokenId token = exp.getTokenID(i);
-                    if (token == CppTokenId.DOTMBR || token == CppTokenId.ARROWMBR) {
-                        startIdx = i + 1;
-                        break;
-                    }
-                }
-                ExprKind kind = ExprKind.NONE;
-                for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in a dot exp
-                    if (i < exp.getTokenCount()) {
-                        kind = exp.getTokenID(i) == CppTokenId.ARROW ? ExprKind.ARROW : ExprKind.DOT;
-                    } else {
-                        if (exp.getExpID() == CsmCompletionExpression.ARROW ||
-                                exp.getExpID() == CsmCompletionExpression.ARROW_OPEN) {
-                            kind = ExprKind.ARROW;
-                        } else {
-                            kind = ExprKind.DOT;
-                        }
-                        if (i == exp.getTokenCount()) {
-                            kind = exp.getTokenID(i - 1) == CppTokenId.SCOPE ? ExprKind.SCOPE : kind;
-                        }
-                    }
-                    ok = resolveItem(exp.getParameter(i), (i == startIdx),
-                                     (!lastDot && i == parmCnt - 1),
-                                    kind);
-
-                    if ((i < parmCnt-1 || lastDot || findType) && lastType != null && lastType.getArrayDepth() == 0 && kind == ExprKind.ARROW) {
-                        CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
-                        if (cls != null) {
-                            lastType = CsmCompletion.getType(cls, 0);
-                        }
-                    }
-                }
+                ExprKind lastParamKind[] = new ExprKind[] { ExprKind.NONE };
+                ok = resolveParams(exp, lastDot, lastParamKind);
 
                 if (ok && lastDot) { // Found either type or package help
                     // Need to process dot at the end of the expression
                     int tokenCntM1 = exp.getTokenCount() - 1;
                     int substPos = exp.getTokenOffset(tokenCntM1) + exp.getTokenLength(tokenCntM1);
                     if (lastType != null) { // Found type
-                        CsmClassifier cls = extractLastTypeClassifier(kind);
+                        CsmClassifier cls = extractLastTypeClassifier(lastParamKind[0]);
                         List res;
                         if (openingSource) {
                             res = new ArrayList();
@@ -938,13 +1009,8 @@ abstract public class CsmCompletionQuery {
                 // let it flow to SCOPE
             case CsmCompletionExpression.SCOPE: // Scope expression
                 staticOnly = true;
-                parmCnt = exp.getParameterCount(); // Number of items in the dot exp
-
-                for (int i = 0; i < parmCnt && ok; i++) { // resolve all items in a dot exp
-                    ok = resolveItem(exp.getParameter(i), (i == 0),
-                                     (!lastDot && i == parmCnt - 1),
-                                    ExprKind.SCOPE);
-                }
+                lastParamKind = new ExprKind[] { ExprKind.NONE };
+                ok = resolveParams(exp, lastDot, lastParamKind);
 
                 if (ok && lastDot) { // Found either type or namespace help
                     // Need to process dot at the end of the expression
@@ -1025,7 +1091,7 @@ abstract public class CsmCompletionQuery {
                 exp = exp.getParameter(0);
 
             default: // The rest of the situations is resolved as a singleton item
-                ok = resolveItem(exp, true, true, ExprKind.NONE);
+                ok = resolveItem(exp, true, true, ExprKind.NONE, ExprKind.NONE);
                 break;
             }
 
@@ -1037,7 +1103,7 @@ abstract public class CsmCompletionQuery {
         * @param first whether this expression is the first one in a dot expression
         * @param last whether this expression is the last one in a dot expression
         */
-        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
+        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind, ExprKind nextKind) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
             boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
@@ -1064,24 +1130,6 @@ abstract public class CsmCompletionQuery {
                             staticOnly = false;
                         }
                         break;
-
-//                    case SUPER: // 'super' keyword
-//                        if (first) { // only allowed as the first item
-//                            CsmClass cls = sup.getClass(item.getTokenOffset(0));
-//                            if (cls != null) {
-//                                cls = finder.getExactClass(cls.getFullName());
-//                                if (cls != null) {
-//                                    cls = cls.getSuperclass();
-//                                    if (cls != null) {
-//                                        lastType = CsmCompletion.getType(cls, 0);
-//                                        staticOnly = false;
-//                                    }
-//                                }
-//                            }
-//                        } else {
-//                            cont = false;
-//                        }
-//                        break;
 
 //                    case CLASS: // 'class' keyword
 //                        if (!first) {
@@ -1111,40 +1159,10 @@ abstract public class CsmCompletionQuery {
                                 if (compResolver.refresh() && compResolver.resolve(varPos, var, openingSource)) {
                                     res = compResolver.getResult();
                                 }
-//                                CsmClass cls = sup.getClass(varPos); // get baseDocument class
-//                                if (cls != null) {
-//                                    res.addAll(findFieldsAndMethods(finder, getNamespaceName(cls), cls, var, false,
-//                                                                    sup.isStaticBlock(varPos), true));
-//                                }
-//                                if (var.length() > 0 || !openingSource) {
-//                                    res.addAll(finder.findNestedNamespaces(var, false, false)); // add matching packages
-//                                    if (var.length() > 0) { // if at least one char
-//                                        res.addAll(finder.findClasses(null, var, false)); // add matching classes
-//                                        if (cls!=null){
-//                                            // add matching inner classes too
-////XXX                                            JCPackage pkg = finder.getExactPackage(cls.getPackageName());
-////                                            List lst = finder.findClasses(pkg, cls.getName()+"."+var, false); // NOI18N
-////                                            for (int i=0; i<lst.size(); i++){
-////                                                if (!res.contains(lst.get(i))){
-////                                                    res.add(lst.get(i));
-////                                                }
-////                                            }
-//                                        }
-//
-//                                        List importedCls = sup.getImportedInnerClasses();
-//                                        for (int i=0; i<importedCls.size(); i++){
-//                                            CsmClass iCls = (CsmClass)importedCls.get(i);
-//                                            if (iCls.getName().indexOf("."+var)>0 && !res.contains(iCls)){ // NOI18N
-//                                                res.add(iCls);
-//                                            }
-//                                        }
-//                                    }
-//
-//                                }
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed(), contextElement);  //NOI18N
                             } else { // not last item or finding type
-                                if (kind != ExprKind.SCOPE) {
-                                    // find type of variable
+                                // find type of variable
+                                if (nextKind != ExprKind.SCOPE) {
                                     lastType = findExactVarType(var, varPos);
                                     if (lastType == null) {
                                         // try to find with resolver
@@ -1167,9 +1185,9 @@ abstract public class CsmCompletionQuery {
                                 }
                                 if (lastType != null) { // variable found
                                     staticOnly = false;
-                                } else if ((kind == ExprKind.SCOPE) || (kind == ExprKind.NONE)){ // no variable found
-                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
-                                    if (scopeAccessedClassifier && var.length() == 0) {
+                                } else { // no variable found
+//                                    scopeAccessedClassifier = (kind == ExprKind.SCOPE);
+                                    if (var.length() == 0) {
                                         lastNamespace = finder.getCsmFile().getProject().getGlobalNamespace();
                                     } else {
                                         compResolver.setResolveTypes(
@@ -1184,9 +1202,9 @@ abstract public class CsmCompletionQuery {
                                             Collection<? extends CsmObject> res = compResolver.getResult().addResulItemsToCol(new ArrayList<CsmObject>());
                                             if (!res.isEmpty()) {
                                                 CsmObject obj = res.iterator().next();
-                                                if (scopeAccessedClassifier && CsmKindUtilities.isNamespace(obj)) {
+                                                if (CsmKindUtilities.isNamespace(obj)) {
                                                     lastNamespace = (CsmNamespace)obj;
-                                                } else if (scopeAccessedClassifier && CsmKindUtilities.isNamespaceAlias(obj)) {
+                                                } else if (CsmKindUtilities.isNamespaceAlias(obj)) {
                                                     lastNamespace = ((CsmNamespaceAlias)obj).getReferencedNamespace();
                                                 } else if (CsmKindUtilities.isClassifier(obj)) {
                                                     obj = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)obj,contextFile);
@@ -1822,14 +1840,6 @@ abstract public class CsmCompletionQuery {
                 return null;
             }
             CsmContext context = CsmOffsetResolver.findContext(file, varPos, getFileReferencesContext());
-            for(CsmDeclaration decl : CsmContextUtilities.findFunctionLocalVariables(context)){
-                if (decl instanceof CsmVariable) {
-                    CsmVariable v = (CsmVariable) decl;
-                    if (v.getName().toString().equals(var)) {
-                        return v.getType();
-                    }
-                }
-            }
             if (var.length() == 0 && CsmKindUtilities.isVariable(context.getLastObject())) {
                 // probably in initializer of variable, like
                 // struct AAA a[] = { { .field = 1}, { .field = 2}};
@@ -1843,6 +1853,14 @@ abstract public class CsmCompletionQuery {
                         }
                     }
                     return type;
+                }
+            }
+            for(CsmDeclaration decl : CsmContextUtilities.findFunctionLocalVariables(context)){
+                if (decl instanceof CsmVariable) {
+                    CsmVariable v = (CsmVariable) decl;
+                    if (v.getName().toString().equals(var)) {
+                        return v.getType();
+                    }
                 }
             }
             return null;

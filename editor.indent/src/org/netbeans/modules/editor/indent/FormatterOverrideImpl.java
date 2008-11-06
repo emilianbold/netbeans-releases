@@ -50,6 +50,7 @@ import org.netbeans.modules.editor.lib.FormatterOverride;
  *
  * @author Miloslav Metelka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.lib.FormatterOverride.class)
 public final class FormatterOverrideImpl implements FormatterOverride {
 
     public Formatter getFormatter(Document doc, Formatter defaultFormatter) {

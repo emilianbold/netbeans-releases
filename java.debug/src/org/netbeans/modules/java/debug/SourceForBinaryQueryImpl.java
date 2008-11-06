@@ -61,6 +61,7 @@ import org.openide.util.Mutex.Action;
  *
  * @author Jan Lahoda
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=1000)
 public class SourceForBinaryQueryImpl implements SourceForBinaryQueryImplementation {
 
     private Map<URL,Reference<Result>> url2Result = new WeakHashMap<URL, Reference<Result>>();

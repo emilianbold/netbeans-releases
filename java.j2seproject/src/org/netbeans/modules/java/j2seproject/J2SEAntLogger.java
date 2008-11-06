@@ -48,6 +48,7 @@ import org.netbeans.modules.java.api.common.ProjectAntLogger;
  * j2seproject's build-impl.xml.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class, position=25)
 public final class J2SEAntLogger extends ProjectAntLogger {
     
     /** Default constructor for lookup. */

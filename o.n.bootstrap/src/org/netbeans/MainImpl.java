@@ -250,7 +250,7 @@ final class MainImpl extends Object {
                 if (cp.isEmpty ()) {
                     value = searchBuildNumber(this.getResources("META-INF/MANIFEST.MF"));
                 } else {
-                    value = searchBuildNumber(this.simpleFindResources("META-INF/MANIFEST.MF"));
+                    value = searchBuildNumber(this.findResources("META-INF/MANIFEST.MF"));
                 }
             } catch (IOException ex) {
                 ex.printStackTrace();

@@ -55,6 +55,7 @@ import org.openide.filesystems.FileObject;
  * @author Vita Stejskal
  * @since 1.39
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public final class EditorActionsProvider extends ActionsList implements  Class2LayerFolder<EditorActionsProvider>, InstanceProvider<EditorActionsProvider> {
 
     private static final String EDITOR_ACTIONS_FOLDER_NAME = "Actions"; //NOI18N

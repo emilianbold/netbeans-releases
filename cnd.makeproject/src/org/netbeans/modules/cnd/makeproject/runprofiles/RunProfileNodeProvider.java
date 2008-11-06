@@ -53,6 +53,7 @@ import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.makeproject.api.configurations.CustomizerNodeProvider.class)
 public class RunProfileNodeProvider implements CustomizerNodeProvider {
     
     /**

@@ -54,6 +54,7 @@ import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base;
  * Assumes an instance of SourceForBinaryQueryImplementation is in project's lookup.
  * @author Jesse Glick, Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation.class, position=100)
 public class ProjectSourceForBinaryQuery extends SourceForBinaryQueryImpl2Base {
     
     /** Default constructor for lookup. */

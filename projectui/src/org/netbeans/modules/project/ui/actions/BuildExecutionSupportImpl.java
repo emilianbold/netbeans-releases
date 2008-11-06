@@ -52,6 +52,7 @@ import org.openide.util.Lookup;
  *
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.project.uiapi.BuildExecutionSupportImplementation.class)
 public class BuildExecutionSupportImpl implements BuildExecutionSupportImplementation {
 
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();

@@ -53,6 +53,7 @@ import javax.swing.JLabel;
 /**
  * Provides deployment functionality to Nokia devices.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.deployment.DeploymentPlugin.class, position=104)
 public class NokiaDeploymentPlugin implements DeploymentPlugin {
 
     static final String PROP_DEPLOY_TO_ALL_DEVICES = "deployment.nokia.deploytoalldevices"; //NOI18N

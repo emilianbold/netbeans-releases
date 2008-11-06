@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
  *
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider.class, position=20)
 public class IncludeErrorProvider extends CsmErrorProvider {
 
     public String getName() {

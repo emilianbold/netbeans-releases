@@ -1,5 +1,0 @@
-org.netbeans.modules.xml.wsdl.validator.WSDLSchemaValidator
-org.netbeans.modules.xml.wsdl.validator.WSDLSemanticValidator
-org.netbeans.modules.xml.wsdl.validator.WSDLInlineSchemaValidator
-org.netbeans.modules.xml.wsdl.model.extensions.soap.validation.SOAPComponentValidator
-org.netbeans.modules.xml.wsdl.model.extensions.http.validation.HTTPComponentValidator

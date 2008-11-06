@@ -42,40 +42,69 @@ package org.netbeans.modules.db.mysql.impl;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.sql.support.SQLIdentifiers;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.openide.util.NbBundle;
 
 /**
  * This class encapsulates a database connection and serializes
  * interaction with this connection through a blocking queue.
  *
+ * This is a thread-safe class
+ *
  * @author David Van Couvering
  */
-public class ConnectionProcessor implements Runnable {
+public final class ConnectionProcessor implements Runnable {
     private static final Logger LOGGER = Logger.getLogger(ConnectionProcessor.class.getName());
     final BlockingQueue<Runnable> inqueue;
     
+    // INVARIANT: if connection is null or not connected, quoter is null
+    // if connection is connected, quoter is set based on DBMD for the connection
+    // synchronized on this
     private Connection conn;
-    private Thread taskThread;
-    
-    void setConnection(Connection conn) {
+    // synchronized on this
+    private Quoter quoter;
+
+    private final AtomicReference<Thread> taskThreadRef = new AtomicReference<Thread>();;
+
+    synchronized void setConnection(Connection conn) throws DatabaseException {
         this.conn = conn;
+        setQuoter();
     }
     
-    Connection getConnection() {
-        return this.conn;
+    synchronized private void setQuoter() throws DatabaseException {
+        try {
+            if (conn != null && ! conn.isClosed()) {
+                this.quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
+            } else {
+                this.quoter = null;
+            }
+        } catch (SQLException sqle) {
+            throw new DatabaseException(sqle);
+        }
+        
+    }
+    
+    synchronized Connection getConnection() {
+        return conn;
     }
 
-    void validateConnection() throws DatabaseException {
+    synchronized Quoter getQuoter() {
+        return quoter;
+    }
+
+    synchronized void validateConnection() throws DatabaseException {
         try {
             // A connection only needs to be validated if it already exists.
             // We're trying to see if something went wrong to an existing connection...
             if (conn == null) {
                 return;
             }
-            
+
             if (conn.isClosed()) {
                 conn = null;
                 throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"));
@@ -83,19 +112,21 @@ public class ConnectionProcessor implements Runnable {
 
             // Send a command to the server, if it fails we know the connection is invalid.
             conn.getMetaData().getTables(null, null, " ", new String[] { "TABLE" }).close();
+            quoter = SQLIdentifiers.createQuoter(conn.getMetaData());
         } catch (SQLException e) {
             conn = null;
+            quoter = null;
             LOGGER.log(Level.FINE, null, e);
             throw new DatabaseException(NbBundle.getMessage(ConnectionProcessor.class, "MSG_ConnectionLost"), e);
         }
     }
     
-    boolean isConnected() {
+    synchronized boolean isConnected() {
         return conn != null;
     }
 
     boolean isConnProcessorThread() {
-        return Thread.currentThread().equals(taskThread);
+        return Thread.currentThread().equals(taskThreadRef.get());
     }
     
     public ConnectionProcessor(BlockingQueue<Runnable> inqueue) {
@@ -103,13 +134,16 @@ public class ConnectionProcessor implements Runnable {
     } 
     
     public void run() {
-        taskThread = Thread.currentThread();
+        if (taskThreadRef.getAndSet(Thread.currentThread()) != null) {
+            throw new IllegalStateException("Run method called more than once on connection command processor");
+        }
         for ( ; ; ) {
             try {              
                 Runnable command = inqueue.take();
                 
                 command.run();                
             } catch ( InterruptedException ie ) {
+                LOGGER.log(Level.INFO, null, ie);
                 return;
             }
         }

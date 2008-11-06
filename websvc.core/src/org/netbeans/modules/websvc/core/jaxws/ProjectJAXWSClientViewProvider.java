@@ -50,6 +50,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author mkuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.spi.jaxws.client.JAXWSClientViewProvider.class)
 public class ProjectJAXWSClientViewProvider implements JAXWSClientViewProvider {
     
     private ProjectJAXWSClientView clientView = new ProjectJAXWSClientView();

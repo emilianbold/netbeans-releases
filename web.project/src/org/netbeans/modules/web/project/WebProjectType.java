@@ -49,6 +49,7 @@ import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.util.Lookup;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public final class WebProjectType implements AntBasedProjectType {
 
     public static final String TYPE = "org.netbeans.modules.web.project";

@@ -70,6 +70,7 @@ import org.openide.windows.TopComponent;
  *
  * @author martin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
 public class GroovyRefactoringActionsProvider extends ActionsImplementationProvider {
 
     private static boolean isFindUsages;

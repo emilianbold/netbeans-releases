@@ -52,6 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author vk155633
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.gotodeclaration.element.spi.ElementProvider.class)
 public class MacroProvider extends BaseProvider implements ElementProvider {
 
 private static class MacroDelegate extends ProviderDelegate {

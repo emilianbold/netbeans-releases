@@ -59,6 +59,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.15
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.search.api.SearchManager.class)
 public final class Manager extends SearchManager {
 
   public Manager() {

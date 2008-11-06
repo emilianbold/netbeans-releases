@@ -66,6 +66,7 @@ import org.openide.filesystems.URLMapper;
  *
  * @author Sandip V. Chitale (Sandip.Chitale@Sun.Com)
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.classloaderprovider.CommonClassloaderProvider.class)
 public class J2EE15CommonClassloaderProvider implements CommonClassloaderProvider {
 	private String[] designtimeJars = {
         // XXX Need to add these jars here so that META-INF/faces-config.xml files can be

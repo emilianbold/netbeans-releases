@@ -51,6 +51,7 @@ import org.netbeans.modules.gsf.api.TranslatedSource;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
     final Set<String> sourceMimeTypes = Collections.singleton(YamlTokenId.YAML_MIME_TYPE);
     static final String RUBY_MIME_TYPE = "text/x-ruby"; // NOI18N

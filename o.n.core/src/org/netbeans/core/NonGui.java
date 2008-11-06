@@ -64,6 +64,7 @@ import org.openide.windows.WindowManager;
  * Most of the NetBeans startup logic that is not closely tied to the GUI.
  * The meat of the startup sequence is in {@link #run}.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.startup.RunLevel.class)
 public class NonGui extends NbTopManager 
 implements Runnable, org.netbeans.core.startup.RunLevel {
     private static int count;

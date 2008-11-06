@@ -53,6 +53,7 @@ import org.netbeans.modules.ruby.rhtml.lexer.api.RhtmlTokenId;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.EmbeddingModel.class)
 public class RubyEmbeddingModel implements IncrementalEmbeddingModel {
     final Set<String> sourceMimeTypes = Collections.singleton(RhtmlTokenId.MIME_TYPE);
 

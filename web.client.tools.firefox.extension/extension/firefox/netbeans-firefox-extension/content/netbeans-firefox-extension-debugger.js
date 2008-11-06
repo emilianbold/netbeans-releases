@@ -1463,8 +1463,8 @@
                 val.type
                 }
                 numchildren="0"
-                encoding="none">{
-                val.displayValue
+                encoding="base64">{
+                window.btoa(val.displayValue)
                 }</property>;
                 if (val.type == "object" || val.type == "function" || val.type == "array") {
                     evalResponse.property.@classname = val.displayType;
@@ -1497,12 +1497,12 @@
             // transmit them in UTF-8 - the default XML encoding.
             // We may need to convert the source text to UTF-8
             // here using nsIScriptableUnicodeConverter service.
-            data = "N" + data.join("\n");
+            data = data.join("\n");
 
             var sourceResponse =
-              <response command="source" encoding="none"
+              <response command="source" encoding="base64"
                   success="1"
-                  transaction_id={transaction_id}>{data}</response>;
+                  transaction_id={transaction_id}>{window.btoa(data)}</response>;
             socket.send(sourceResponse);
         } else {
             var sourceResponse =
@@ -2188,8 +2188,8 @@
                             exceptionVal.displayType
                             }
                             numchildren="-1"
-                            encoding="none">{
-                            exceptionVal.displayValue
+                            encoding="base64">{
+                            window.btoa(exceptionVal.displayValue)
                             }</property>;
                         }
                         propertyGetResponse.property.property += buildPropertiesList(".", rval);
@@ -2209,8 +2209,8 @@
                                 argumentsVal.displayType
                                 }
                                 numchildren="-1"
-                                encoding="none">{
-                                argumentsVal.displayValue
+                                encoding="base64">{
+                                window.btoa(argumentsVal.displayValue)
                                 }</property>;
                             }
                             var argumentsLengthVariable = resolveVariable(rval, "arguments.length");
@@ -2227,8 +2227,8 @@
                                 argumentsLengthVal.displayType
                                 }
                                 numchildren="-1"
-                                encoding="none">{
-                                argumentsLengthVal.displayValue
+                                encoding="base64">{
+                                window.btoa(argumentsLengthVal.displayValue)
                                 }</property>;
                             }
                             var functionLengthVariable = resolveVariable(rval, "arguments.callee.length");
@@ -2245,8 +2245,8 @@
                                 functionLengthVal.displayType
                                 }
                                 numchildren="-1"
-                                encoding="none">{
-                                functionLengthVal.displayValue
+                                encoding="base64">{
+                                window.btoa(functionLengthVal.displayValue)
                                 }</property>;
                             }
 
@@ -2299,8 +2299,8 @@
                     val.displayType
                     }
                     numchildren="0"
-                    encoding="none">{
-                    val.displayValue
+                    encoding="base64">{
+                    window.btoa(val.displayValue)
                     }</property>;
                     if( rval ) {
                         propertyGetResponse.property.property = buildPropertiesList("this", rval);
@@ -2322,8 +2322,8 @@
                         val.displayType
                         }
                         numchildren="0"
-                        encoding="none">{
-                        val.displayValue
+                        encoding="base64">{
+                        window.btoa(val.displayValue)
                         }</property>;
                         if( rval ) {
                             propertyGetResponse.property.property = buildPropertiesList("[exception]", rval);
@@ -2390,8 +2390,8 @@
                         val.type
                         }
                         numchildren="0"
-                        encoding="none">{
-                        val.displayValue
+                        encoding="base64">{
+                        window.btoa(val.displayValue)
                         }</property>;
                         if (val.type == "object" || val.type == "function" || val.type == "array") {
                             propertyGetResponse.property.@classname = val.displayType;
@@ -2426,8 +2426,8 @@
                 val.type
                 }
                 numchildren="0"
-                encoding="none">{
-                val.displayValue
+                encoding="base64">{
+                window.btoa(val.displayValue)
                 }</property>;
                 if (val.type == "object" || val.type == "function" || val.type == "array") {
                     property.@classname = val.displayType;

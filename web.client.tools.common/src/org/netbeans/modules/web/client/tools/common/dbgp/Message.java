@@ -196,7 +196,7 @@ public abstract class Message {
     }        
     
     protected static String getNodeValue( Node node ){
-        return replaceHtmlEntities( getNodeValueImpl(node).toString() );
+        return getNodeValueImpl(node).toString();
     }
     
     protected static StringBuilder getNodeValueImpl( Node node ){
@@ -216,7 +216,7 @@ public abstract class Message {
 
     protected static String getAttribute( Node node , String attrName ){
         Node attr = node.getAttributes().getNamedItem( attrName );
-        return attr == null ? null : replaceHtmlEntities( attr.getNodeValue() );
+        return attr == null ? null : attr.getNodeValue();
     }
 
     protected static int getInt(Node node , String attrName ){
@@ -346,19 +346,6 @@ public abstract class Message {
             notifyPacketError(e);
         }
         return null;
-    }
-
-    protected static String replaceHtmlEntities( String str ) {
-        if ( str.indexOf( "&" ) == -1 ) {
-            return str;
-        } else {
-            for( Entry<String, Character> entry : ENTITIES.entrySet() ) {
-                String entity = entry.getKey();
-                Character ch = entry.getValue();
-                str = str.replace( entity , ch +"" );
-            }
-            return str;
-        }
     }
 
     static Message createMessage(String body) {

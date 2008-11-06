@@ -106,7 +106,28 @@ public abstract class Pty {
         return new JNAPty(mode);
     }
 
+    /**
+     * Create a Pty in the given mode.
+     * <p>
+     * Pty's are a kind of enhanced "named fifos/pipes". The enhancement
+     * has to do with terminal related stuff, line discipline and
+     * all that. Otherwise they are just conduits of information.
+     * In fact that is just what RAW Pty's are.
+     * <p>
+     * Now there's gotta be something similar to "named fifos" on
+     * Windows ... SHOULD look for it.
+     * <br>
+     * Until then, even if mode is NONE or RAW, we really can't create
+     * Ptys on Windows.
+     * <p>
+     * Note that {@link PtyProcess} and all the higher level stuff that is
+     * based on it still works on Windows ... it uses direct Process streams
+     * rather than Pty's.
+     */
     protected Pty(Mode mode) throws PtyException {
+	if (OS.get() == OS.WINDOWS) {
+	    throw new UnsupportedOperationException("Pty's not supported on windows");
+	}
         this.mode = mode;
         setup();
     }
