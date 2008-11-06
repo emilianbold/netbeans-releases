@@ -253,9 +253,10 @@ public final class ExecutionDescriptor {
      * processor. The factory is used by {@link ExecutionService} to create
      * additional processor for standard output.
      * <p>
-     * Note that {@link ExecutionService} always automatically uses
+     * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
-     * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
+     * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}
+     * if there is no configured factory.
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
@@ -281,9 +282,10 @@ public final class ExecutionDescriptor {
      * processor. The factory is used by {@link ExecutionService} to create
      * additional processor for standard error output.
      * <p>
-     * Note that {@link ExecutionService} always automatically uses
+     * Note that {@link ExecutionService} automatically uses
      * the printing processor created by
-     * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}.
+     * {@link org.netbeans.modules.extexecution.api.input.InputProcessors#printing(org.openide.windows.OutputWriter, org.netbeans.modules.extexecution.api.print.LineConvertor, boolean)}
+     * if there is no configured factory.
      * <p>
      * The default (not configured) value is <code>null</code>.
      * <p>
@@ -493,9 +495,11 @@ public final class ExecutionDescriptor {
         /**
          * Creates and returns new input processor.
          *
+         * @param defaultProcessor default processor created by
+         *             infrastructure that is printing chars to the output window
          * @return new input processor
          */
-        InputProcessor newInputProcessor();
+        InputProcessor newInputProcessor(InputProcessor defaultProcessor);
 
     }
 

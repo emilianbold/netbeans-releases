@@ -108,8 +108,8 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 ExecutionDescriptor descriptor = new ExecutionDescriptor()
                         .frontWindow(true).inputVisible(true);
                 descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-                    public InputProcessor newInputProcessor() {
-                        return InputProcessors.bridge(new ProgressSnooper(handle, 100, 2));
+                    public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                        return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
                     }
                 });
                 descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
