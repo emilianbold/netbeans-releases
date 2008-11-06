@@ -2148,7 +2148,8 @@ public abstract class TreeView extends JScrollPane {
             }
 
             public void focusGained(FocusEvent e) {
-                // Do nothing
+                // make sure nothing is selected
+                searchTextField.select(1, 1);
             }
 
             public void focusLost(FocusEvent e) {
