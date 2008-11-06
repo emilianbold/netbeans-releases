@@ -337,7 +337,9 @@ public class CsmContextUtilities {
             int offsetInScope = entry.getOffset();
             if (CsmKindUtilities.isFile(scope)){
                 CsmFile file = (CsmFile)scope;
-                for (Iterator itFile = file.getDeclarations().iterator(); itFile.hasNext();) {
+                CsmFilter fileFilter = createFilter(new CsmDeclaration.Kind[] {CsmDeclaration.Kind.ENUM, CsmDeclaration.Kind.NAMESPACE_DEFINITION},
+                                   null, match, caseSensitive, true);
+                for (Iterator itFile = CsmSelect.getDefault().getDeclarations(file, fileFilter); itFile.hasNext();) {
                     CsmDeclaration decl = (CsmDeclaration) itFile.next();
                     if (canBreak(offsetInScope, decl, context)) {
                         break;
