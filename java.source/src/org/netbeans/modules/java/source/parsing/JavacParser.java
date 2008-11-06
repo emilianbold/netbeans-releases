@@ -317,13 +317,13 @@ public class JavacParser extends Parser {
                     }
                 }
                 if (needsFullReparse) {
-                    ciImpl = createCurrentInfo (this, file, root,snapshot, event, null);
+                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
             } 
             else {
                 init (snapshot, task, false);
-                ciImpl = createCurrentInfo(this, file, root, snapshot, event, 
+                ciImpl = createCurrentInfo(this, file, root, snapshot,
                         ciImpl == null ? null : ciImpl.getJavacTask());
             }            
             cachedSnapShot = snapshot;
@@ -380,11 +380,11 @@ public class JavacParser extends Parser {
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
-                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
+                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl), event);
             }
         }
         else if (isUserTask) {
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl), event);
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N
@@ -397,7 +397,7 @@ public class JavacParser extends Parser {
             if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
                 try {
                     nct.setCompilationController(
-                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, false, null)),
+                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, false)),
                         parseId);
                 } catch (IOException ioe) {
                     throw new ParseException ("Javac Failure", ioe);
@@ -574,9 +574,8 @@ public class JavacParser extends Parser {
             final FileObject file,
             final FileObject root,
             final Snapshot snapshot,
-            final SchedulerEvent event,
             final JavacTaskImpl javac) throws IOException {                
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot, false, event);
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot, false);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});
