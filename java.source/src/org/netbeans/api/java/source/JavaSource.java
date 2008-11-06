@@ -734,13 +734,10 @@ public final class JavaSource {
             return new PositionConverter(fo, offset, length, component);
         }
         
-        public CompilationController createCompilationController (final JavaSource js) throws IOException, ParseException {
-            Parameters.notNull("js", js);
-            if (js.sources.size() != 1) {
-                throw new IllegalArgumentException ();
-            }
+        public CompilationController createCompilationController (final Source s) throws IOException, ParseException {
+            Parameters.notNull("s", s);
             JavacParserFactory factory = JavacParserFactory.getDefault();
-            final Snapshot snapshot = js.sources.iterator().next().createSnapshot();
+            final Snapshot snapshot = s.createSnapshot();
             final JavacParser parser = factory.createPrivateParser(snapshot);
             final UserTask dummy = new UserTask() {
                 @Override

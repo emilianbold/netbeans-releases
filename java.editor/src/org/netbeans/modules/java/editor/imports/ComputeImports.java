@@ -132,7 +132,7 @@ public class ComputeImports {
                 return null;
             
             List<TypeElement> classes = new ArrayList<TypeElement>();
-            Set<ElementHandle<TypeElement>> typeNames = info.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
+            Set<ElementHandle<TypeElement>> typeNames = info.getClasspathInfo().getClassIndex().getDeclaredTypes(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
             if (typeNames == null) {
                 //Canceled
                 return null;
