@@ -421,8 +421,8 @@ public class PathRegistry {
         }
     }
 
-    private void lookup (final Set<? super String> sourceIds,
-            final Set<? super String> binaryIds) {
+    private void lookup (final Set<String> sourceIds,
+            final Set<String> binaryIds) {
         for (PathRecognizer f : pathRecognizers.allInstances()) {
             Set<String> ids = f.getSourcePathIds();
             assert ids != null;
