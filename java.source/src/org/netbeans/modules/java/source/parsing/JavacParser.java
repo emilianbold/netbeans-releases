@@ -314,13 +314,13 @@ public class JavacParser extends Parser {
                     }
                 }
                 if (needsFullReparse) {
-                    ciImpl = createCurrentInfo (this, file, root,snapshot, null);
+                    ciImpl = createCurrentInfo (this, file, root,snapshot, event, null);
                     LOGGER.fine("\t:created new javac");                                    //NOI18N
                 }
             } 
             else {
                 init (snapshot, task, false);
-                ciImpl = createCurrentInfo(this, file, root, snapshot,
+                ciImpl = createCurrentInfo(this, file, root, snapshot, event, 
                         ciImpl == null ? null : ciImpl.getJavacTask());
             }            
             cachedSnapShot = snapshot;
@@ -556,8 +556,9 @@ public class JavacParser extends Parser {
             final FileObject file,
             final FileObject root,
             final Snapshot snapshot,
+            final SchedulerEvent event,
             final JavacTaskImpl javac) throws IOException {                
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot);
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot, event);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});

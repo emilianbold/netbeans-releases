@@ -64,6 +64,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -87,6 +88,7 @@ public final class CompilationInfoImpl {
     final JavaFileObject jfo;    
     //@NotThreadSafe    //accessed under parser lock
     private Snapshot snapshot;
+    private SchedulerEvent event;
     private final JavacParser parser;
     private final boolean isClassFile;
     boolean needsRestart;
@@ -101,11 +103,14 @@ public final class CompilationInfoImpl {
      * @param snapshot rendered content of the file
      * @throws java.io.IOException
      */
-    CompilationInfoImpl (final JavacParser parser,
-                         final FileObject file,
-                         final FileObject root,
-                         final JavacTaskImpl javacTask,
-                         final Snapshot snapshot) throws IOException {
+    CompilationInfoImpl (
+        final JavacParser parser,
+        final FileObject file,
+        final FileObject root,
+        final JavacTaskImpl javacTask,
+        final Snapshot snapshot,
+        final SchedulerEvent event                 
+    ) throws IOException {
         assert parser != null;
         this.parser = parser;
         this.cpInfo = parser.getClasspathInfo();
@@ -113,6 +118,7 @@ public final class CompilationInfoImpl {
         this.file = file;
         this.root = root;
         this.snapshot = snapshot;
+        this.event = event;
         assert file == null || (root != null && snapshot != null);
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
@@ -163,6 +169,10 @@ public final class CompilationInfoImpl {
     
     public Snapshot getSnapshot () {
         return this.snapshot;
+    }
+    
+    public SchedulerEvent getEvent () {
+        return this.event;
     }
         
     /**

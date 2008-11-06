@@ -382,7 +382,7 @@ public final class Source {
             assert source != null;
             assert event != null;
             synchronized (source) {
-                if (event != null) {
+                if (event == null) {
                     throw new IllegalStateException();
                 }
                 source.schedulerEvent = event;

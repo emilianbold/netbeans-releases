@@ -105,7 +105,7 @@ public class ParserImpl extends Parser {
                 if (root1 != null)
                     root = root1;
             }
-            parserResult = ParserResult.create (snapshot, null, root, syntaxErrors);
+            parserResult = ParserResult.create (snapshot, event, null, root, syntaxErrors);
         } catch (LanguageDefinitionNotFoundException ex) {
             ex.printStackTrace ();
         } catch (ParseException ex) {
