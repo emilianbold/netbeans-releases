@@ -158,7 +158,8 @@ class RegistrationDocument {
 
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document doc = builder.parse(new InputSource(in));
-            validator.validate(new DOMSource(doc));
+            //Switch off validation as workaround for issue #151843
+            //validator.validate(new DOMSource(doc));
             return doc;
         } catch (SAXException sxe) {
             IllegalArgumentException e = new IllegalArgumentException("Error generated in parsing");
