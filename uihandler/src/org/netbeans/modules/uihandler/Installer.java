@@ -67,6 +67,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -1574,10 +1575,12 @@ public class Installer extends ModuleInstall implements Runnable {
                 URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
                 URLConnection connection = checkingServerURL.openConnection();
                 connection.setRequestProperty("User-Agent", "NetBeans");
-                connection.setReadTimeout(10000);
+                connection.setReadTimeout(20000);
                 Reader reader = new InputStreamReader(connection.getInputStream());
                 int length = reader.read(array);
                 checkingResult = new Boolean(new String(array, 0, length));
+            }catch (SocketTimeoutException ste){
+                Logger.getLogger(Installer.class.getName()).log(Level.INFO, "Connection timeout", ste); // NOI18N
             } catch (Exception exception) {
                 Logger.getLogger(Installer.class.getName()).log(Level.WARNING, "CHECKING PASSWORD FAILED", exception); // NOI18N
             }
