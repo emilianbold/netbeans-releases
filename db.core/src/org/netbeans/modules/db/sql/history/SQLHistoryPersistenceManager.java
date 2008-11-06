@@ -160,7 +160,7 @@ public class SQLHistoryPersistenceManager {
         List<SQLHistory> updatedSQLHistoryList = null;
         try {
             historyFilePath = FileUtil.getFileDisplayName(historyFileObject) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            if (historyFileObject == null) {
+            if (historyFileObject == null || !(new File(historyFilePath).exists())) {
                 return new ArrayList<SQLHistory>();
             }
             updatedSQLHistoryList = retrieve(historyFilePath, historyFileObject);  

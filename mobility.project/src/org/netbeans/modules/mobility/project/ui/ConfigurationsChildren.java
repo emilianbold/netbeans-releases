@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,35 +31,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-/*
- * ResViewProvider.java
  *
- * Created on 21 July 2006, 16:25
+ * Contributor(s):
  *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.mobility.project.ui;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import org.netbeans.modules.mobility.project.J2MEProject;
+import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
 
 /**
  *
- * @author Lukas Waldmann
+ * @author Tim Boudreau
  */
-class ResViewProvider extends J2MEPhysicalViewProvider.ChildLookup
-{   
-    final private NodeCache cache;
-    
-    ResViewProvider(final NodeCache c)
-    {
-        cache=c;
+final class ConfigurationsChildren extends ChildFactory<ProjectConfiguration> {
+    private final J2MEProject project;
+    ConfigurationsChildren (J2MEProject project) {
+        this.project = project;
     }
-    
-    public Node[] createNodes(J2MEProject project)
-    {
-        return cache.getClones(project.getConfigurationHelper().getActiveConfiguration());
-    }    
+
+    @Override
+    protected boolean createKeys(List<ProjectConfiguration> toPopulate) {
+        toPopulate.addAll (project.getConfigurationHelper().getConfigurations());
+        Collections.sort (toPopulate, new ConfigurationComparator());
+        return true;
+    }
+
+    private static final class ConfigurationComparator implements Comparator<ProjectConfiguration> {
+        public int compare(ProjectConfiguration o1, ProjectConfiguration o2) {
+            String nm1 = o1 == null ? "" : o1.getDisplayName();
+            String nm2 = o2 == null ? "" : o2.getDisplayName();
+            if (nm1.equals(nm2)) {
+                return 0;
+            }
+            if (nm1.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME)) {
+                return -1;
+            }
+            if (nm2.equals(ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME)) {
+                return 1;
+            }
+            return nm1.compareToIgnoreCase(nm2);
+        }
+    }
+
+
+    @Override
+    protected Node createNodeForKey(ProjectConfiguration config) {
+        return new OneConfigurationNode (project, config);
+    }
+
+    void update() {
+        refresh (true);
+    }
 }

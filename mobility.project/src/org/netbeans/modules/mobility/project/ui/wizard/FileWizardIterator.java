@@ -48,7 +48,6 @@ import javax.swing.event.ChangeListener;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 
 import org.netbeans.api.java.classpath.ClassPath;
