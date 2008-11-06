@@ -73,6 +73,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.maven.jaxws.ServerType;
 import org.netbeans.modules.maven.jaxws.WSStackUtils;
+import org.netbeans.modules.maven.jaxws.WSUtils;
 import org.netbeans.modules.maven.jaxws.actions.AddOperationAction;
 import org.netbeans.modules.maven.jaxws.actions.WsTesterPageAction;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
@@ -555,70 +556,10 @@ public class JaxWsNode extends AbstractNode {
         }
     }
 
-//    @Override
-//    public void destroy() throws java.io.IOException {
-//        String serviceName = service.getName();
-//        NotifyDescriptor.Confirmation notifyDesc = new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsNode.class, "MSG_CONFIRM_DELETE", serviceName));
-//        DialogDisplayer.getDefault().notify(notifyDesc);
-//        if (notifyDesc.getValue() == NotifyDescriptor.YES_OPTION) {
-//            JAXWSSupport wss = JAXWSSupport.getJAXWSSupport(project.getProjectDirectory());
-//            if (wss != null) {
-//                FileObject localWsdlFolder = wss.getLocalWsdlFolderForService(serviceName, false);
-//                if (localWsdlFolder != null) {
-//                    // removing local wsdl and xml artifacts
-//                    FileLock lock = null;
-//                    FileObject clientArtifactsFolder = localWsdlFolder.getParent();
-//                    try {
-//                        lock = clientArtifactsFolder.lock();
-//                        clientArtifactsFolder.delete(lock);
-//                    } finally {
-//                        if (lock != null) {
-//                            lock.releaseLock();
-//                        }
-//                    }
-//                    // removing wsdl and xml artifacts from WEB-INF/wsdl
-//                    FileObject wsdlFolder = wss.getWsdlFolder(false);
-//                    if (wsdlFolder != null) {
-//                        FileObject serviceWsdlFolder = wsdlFolder.getFileObject(serviceName);
-//                        if (serviceWsdlFolder != null) {
-//                            try {
-//                                lock = serviceWsdlFolder.lock();
-//                                serviceWsdlFolder.delete(lock);
-//                            } finally {
-//                                if (lock != null) {
-//                                    lock.releaseLock();
-//                                }
-//                            }
-//                        }
-//                    }
-//                    // cleaning java artifacts
-//                    FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//                    try {
-//                        ExecutorTask wsimportTask = ActionUtils.runTarget(buildImplFo, new String[]{"wsimport-service-clean-" + serviceName}, null); //NOI18N
-//                        wsimportTask.waitFinished();
-//                    } catch (java.io.IOException ex) {
-//                        ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//                    } catch (IllegalArgumentException ex) {
-//                        ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//                    }
-//                }
-//
-//                // removing service from jax-ws.xml
-//                wss.removeService(serviceName);
-//
-//                // remove non JSR109 entries
-//                Boolean isJsr109 = jaxWsModel.getJsr109();
-//                if (isJsr109 != null && !isJsr109.booleanValue()) {
-//                    if (service.getWsdlUrl() != null) {
-//                        //if coming from wsdl
-//                        serviceName = service.getServiceName();
-//                    }
-//                    wss.removeNonJsr109Entries(serviceName);
-//                }
-//                super.destroy();
-//            }
-//        }
-//    }
+    @Override
+    public void destroy() throws java.io.IOException {
+        WSUtils.removeImplClass(project, service.getImplementationClass());
+    }
 
     private FileObject getImplBean() {
         String implBean = service.getImplementationClass();

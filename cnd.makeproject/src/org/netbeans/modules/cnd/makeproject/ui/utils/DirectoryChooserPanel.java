@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject.ui.utils;
 
 import java.beans.PropertyChangeEvent;
@@ -57,63 +56,63 @@ import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener { 
+public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx.Provider, PropertyChangeListener {
+
     private MyListEditorPanel myListEditorPanel;
     private String baseDir;
     private boolean addPathPanel;
     private BooleanConfiguration inheritValues;
     private PropertyEditorSupport editor;
     private HelpCtx helpCtx;
-    
+
     public DirectoryChooserPanel(String baseDir, Object[] data, boolean addPathPanel, BooleanConfiguration inheritValues, String inheritText, PropertyEditorSupport editor, PropertyEnv env, HelpCtx helpCtx) {
-	this.baseDir = baseDir;
-	this.addPathPanel = addPathPanel;
-	this.inheritValues = inheritValues;
+        this.baseDir = baseDir;
+        this.addPathPanel = addPathPanel;
+        this.inheritValues = inheritValues;
         this.editor = editor;
         this.helpCtx = helpCtx;
         initComponents();
-	myListEditorPanel = new MyListEditorPanel(data);
+        myListEditorPanel = new MyListEditorPanel(data);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         listPanel.add(myListEditorPanel, gridBagConstraints);
-	if (inheritValues != null) {
-	    inheritTextArea.setBackground(inheritPanel.getBackground());
-	    inheritTextArea.setText(inheritText);
-	    setPreferredSize(new java.awt.Dimension(450, 330));
-	    inheritCheckBox.setSelected(inheritValues.getValue());
-	}
-	else {
-	    remove(inheritPanel);
-	    //setPreferredSize(new java.awt.Dimension(450, 350));
-	    setPreferredSize(new java.awt.Dimension(450, 220));
-	}
-        
+        if (inheritValues != null) {
+            inheritTextArea.setBackground(inheritPanel.getBackground());
+            inheritTextArea.setText(inheritText);
+            setPreferredSize(new java.awt.Dimension(450, 330));
+            inheritCheckBox.setSelected(inheritValues.getValue());
+        } else {
+            remove(inheritPanel);
+            //setPreferredSize(new java.awt.Dimension(450, 350));
+            setPreferredSize(new java.awt.Dimension(450, 220));
+        }
+
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
-        
+
         // Accessibility
         inheritCheckBox.getAccessibleContext().setAccessibleDescription(getString("INHERIT_CHECKBOX_AD"));
     }
 
     public void setInstructionsText(String txt) {
-	//instructionsTextArea.setText(txt);
+        //instructionsTextArea.setText(txt);
     }
 
-    public void setListData(Object[] data){
-	myListEditorPanel.setListData(data);
+    public void setListData(Object[] data) {
+        myListEditorPanel.setListData(data);
     }
 
     public Vector getListData() {
-	return myListEditorPanel.getListData();
+        return myListEditorPanel.getListData();
     }
 
     private Object getPropertyValue() throws IllegalStateException {
-	return new ArrayList(getListData());
+        return new ArrayList(getListData());
     }
-    
+
     public void propertyChange(PropertyChangeEvent evt) {
         if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
             editor.setValue(getPropertyValue());
@@ -218,110 +217,117 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     }// </editor-fold>//GEN-END:initComponents
 
     private void inheritCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_inheritCheckBoxActionPerformed
-	inheritValues.setValue(inheritCheckBox.isSelected());
+        inheritValues.setValue(inheritCheckBox.isSelected());
     }//GEN-LAST:event_inheritCheckBoxActionPerformed
-    
+
     private class MyListEditorPanel extends ListEditorPanel {
-	public MyListEditorPanel(Object[] objects) {
-	    super(objects);
-	    getDefaultButton().setVisible(false);
-	}
+
+        public MyListEditorPanel(Object[] objects) {
+            super(objects);
+            getDefaultButton().setVisible(false);
+        }
 
         @Override
-	public Object addAction() {
-	    String seed = null;
-	    if (FileChooser.getCurrectChooserFile() != null)
-		seed = FileChooser.getCurrectChooserFile().getPath();
-	    if (seed == null)
-		seed = baseDir;
-	    FileChooser fileChooser = new FileChooser(getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
-	    PathPanel pathPanel = null;
-	    if (addPathPanel)
-		pathPanel = new PathPanel();
-	    fileChooser.setAccessory(pathPanel);
-	    int ret = fileChooser.showOpenDialog(this);
-	    if (ret == JFileChooser.CANCEL_OPTION)
-		return null;
-	    String itemPath = fileChooser.getSelectedFile().getPath();
-	    itemPath = FilePathAdaptor.mapToRemote(itemPath);
-	    itemPath = FilePathAdaptor.naturalize(itemPath);
-	    String bd = baseDir;
-	    bd = FilePathAdaptor.mapToRemote(bd);
-	    bd = FilePathAdaptor.naturalize(bd);
-	    if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS)
-		itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
-	    else if (pathPanel != null && pathPanel.getMode() == PathPanel.REL)
-		itemPath = IpeUtils.toRelativePath(bd, itemPath);
-	    else
-		itemPath = itemPath;
-	    itemPath = FilePathAdaptor.normalize(itemPath);
-	    return itemPath;
-	}
+        public Object addAction() {
+            String seed = null;
+            if (FileChooser.getCurrectChooserFile() != null) {
+                seed = FileChooser.getCurrectChooserFile().getPath();
+            }
+            if (seed == null) {
+                seed = baseDir;
+            }
+            FileChooser fileChooser = new FileChooser(getString("ADD_DIRECTORY_DIALOG_TITLE"), getString("ADD_DIRECTORY_BUTTON_TXT"), JFileChooser.DIRECTORIES_ONLY, null, seed, true);
+            PathPanel pathPanel = null;
+            if (addPathPanel) {
+                pathPanel = new PathPanel();
+            }
+            fileChooser.setAccessory(pathPanel);
+            int ret = fileChooser.showOpenDialog(this);
+            if (ret == JFileChooser.CANCEL_OPTION) {
+                return null;
+            }
+            String itemPath = fileChooser.getSelectedFile().getPath();
+            itemPath = FilePathAdaptor.mapToRemote(itemPath);
+            itemPath = FilePathAdaptor.naturalize(itemPath);
+            String bd = baseDir;
+            bd = FilePathAdaptor.mapToRemote(bd);
+            bd = FilePathAdaptor.naturalize(bd);
+            if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
+                itemPath = IpeUtils.toAbsoluteOrRelativePath(bd, itemPath);
+            } else if (pathPanel != null && pathPanel.getMode() == PathPanel.REL) {
+                itemPath = IpeUtils.toRelativePath(bd, itemPath);
+            }
+            itemPath = FilePathAdaptor.normalize(itemPath);
+            return itemPath;
+        }
 
         @Override
-	public String getListLabelText() {
-	    return getString("DIRECTORIES_LABEL_TXT");
-	}
+        public String getListLabelText() {
+            return getString("DIRECTORIES_LABEL_TXT");
+        }
+
         @Override
-	public char getListLabelMnemonic() {
-	    return getString("DIRECTORIES_LABEL_MN").charAt(0);
-	}
-    
+        public char getListLabelMnemonic() {
+            return getString("DIRECTORIES_LABEL_MN").charAt(0);
+        }
+
         @Override
-	public String getAddButtonText() {
-	    return getString("ADD_BUTTON_TXT");
-	}
+        public String getAddButtonText() {
+            return getString("ADD_BUTTON_TXT");
+        }
+
         @Override
-	public char getAddButtonMnemonics() {
-	    return getString("ADD_BUTTON_MN").charAt(0);
-	}
-    
+        public char getAddButtonMnemonics() {
+            return getString("ADD_BUTTON_MN").charAt(0);
+        }
+
         @Override
-	public String getRenameButtonText() {
-	    return getString("EDIT_BUTTON_TXT");
-	}
+        public String getRenameButtonText() {
+            return getString("EDIT_BUTTON_TXT");
+        }
+
         @Override
-	public char getRenameButtonMnemonics() {
-	    return getString("EDIT_BUTTON_MN").charAt(0);
-	}
+        public char getRenameButtonMnemonics() {
+            return getString("EDIT_BUTTON_MN").charAt(0);
+        }
 
         @Override
         public String getDownButtonText() {
             return getString("DOWN_BUTTON_TXT");
         }
-        
+
         @Override
         public char getDownButtonMnemonics() {
-	    return getString("DOWN_BUTTON_MN").charAt(0);
+            return getString("DOWN_BUTTON_MN").charAt(0);
         }
-        
-        @Override
-	public Object copyAction(Object o) {
-	    return new String((String)o);
-	}
 
         @Override
-	public void editAction(Object o) {
-	    String s = (String)o;
+        public Object copyAction(Object o) {
+            return (String) o;
+        }
 
-	    NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-	    notifyDescriptor.setInputText(s);
-	    DialogDisplayer.getDefault().notify(notifyDescriptor);
-	    if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION)
-		return;
-	    String newS = notifyDescriptor.getInputText();
-	    Vector vector = getListData();
-	    Object[] arr = getListData().toArray();
-	    for (int i = 0; i < arr.length; i++) {
-		if (arr[i] == o) {
-		    vector.remove(i);
-		    vector.add(i, newS);
-		    break;
-		}
-	    }
-	}
+        @Override
+        public void editAction(Object o) {
+            String s = (String) o;
+
+            NotifyDescriptor.InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
+            notifyDescriptor.setInputText(s);
+            DialogDisplayer.getDefault().notify(notifyDescriptor);
+            if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
+                return;
+            }
+            String newS = notifyDescriptor.getInputText();
+            Vector vector = super.getListData();
+            Object[] arr = super.getListData().toArray();
+            for (int i = 0; i < arr.length; i++) {
+                if (arr[i] == o) {
+                    vector.remove(i);
+                    vector.add(i, newS);
+                    break;
+                }
+            }
+        }
     }
-    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox inheritCheckBox;
     private javax.swing.JLabel inheritLabel;
@@ -331,7 +337,7 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
     private javax.swing.JPanel panel;
     private javax.swing.JScrollPane scrollPanel;
     // End of variables declaration//GEN-END:variables
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(DirectoryChooserPanel.class, key);
     }

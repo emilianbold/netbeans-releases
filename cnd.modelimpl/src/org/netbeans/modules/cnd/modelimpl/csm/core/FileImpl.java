@@ -162,7 +162,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     /** 
      * It's a map since we need to eliminate duplications 
      */
-    private Map<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
+    private SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>>();
     private final ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
     private Set<CsmUID<CsmInclude>> includes = createIncludes();
     private final ReadWriteLock includesLock = new ReentrantReadWriteLock();
@@ -219,7 +219,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         state = State.INITIAL;
         setBuffer(fileBuffer);
         this.projectUID = UIDCsmConverter.projectToUID(project);
-        this.projectRef = new WeakReference(project);
+        this.projectRef = new WeakReference<ProjectBase>(project); // Suppress Warnings
         this.fileType = fileType;
         if (nativeFileItem != null) {
             project.putNativeFileItem(getUID(), nativeFileItem);
@@ -243,7 +243,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             if (projectRef instanceof ProjectBase) {
                 prj = (ProjectBase) projectRef;
             } else if (projectRef instanceof Reference) {
-                prj = ((Reference<ProjectBase>) projectRef).get();
+                prj = (ProjectBase)((Reference) projectRef).get();
             }
             if (prj == null) {
                 prj = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);
@@ -471,6 +471,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 case BEING_PARSED:
                 case PARSED:
                     state = State.PARTIAL;
+                    break;
                 case INITIAL:
                 case MODIFIED:
                 case PARTIAL:
@@ -1097,6 +1098,39 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    public Iterator<CsmOffsetableDeclaration> getDeclarations(int offset) {
+        if (!SKIP_UNNECESSARY_FAKE_FIXES) {
+            fixFakeRegistrations();
+        }
+        List<CsmUID<CsmOffsetableDeclaration>> res = new ArrayList<CsmUID<CsmOffsetableDeclaration>>();
+        try {
+            declarationsLock.readLock().lock();
+            OffsetSortedKey key = new OffsetSortedKey(offset+1,""); // NOI18N
+            while(true) {
+                SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> head = declarations.headMap(key);
+                if (head.isEmpty()) {
+                    break;
+                }
+                OffsetSortedKey last = head.lastKey();
+                if (last == null) {
+                    break;
+                }
+                CsmUID<CsmOffsetableDeclaration> aUid = declarations.get(last);
+                int from = UIDUtilities.getStartOffset(aUid);
+                int to = UIDUtilities.getEndOffset(aUid);
+                if (from <= offset && offset <= to) {
+                    res.add(0, aUid);
+                    key = last;
+                } else {
+                    break;
+                }
+            }
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+        return UIDCsmConverter.UIDsToDeclarations(res).iterator();
+    }
+
     @SuppressWarnings("unchecked")
     public void addMacro(CsmMacro macro) {
         CsmUID<CsmMacro> macroUID = RepositoryUtils.put(macro);
@@ -1535,6 +1569,11 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         private OffsetSortedKey(CsmOffsetableDeclaration declaration) {
             start = ((CsmOffsetable) declaration).getStartOffset();
             name = declaration.getName();
+        }
+
+        private OffsetSortedKey(int offset, String name) {
+            start = offset;
+            this.name = name;
         }
 
         public int compareTo(OffsetSortedKey o) {

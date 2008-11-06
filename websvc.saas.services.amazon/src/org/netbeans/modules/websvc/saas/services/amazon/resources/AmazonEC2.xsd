@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="http://ec2.amazonaws.com/doc/2007-01-19/"
+            xmlns:tns="http://ec2.amazonaws.com/doc/2007-01-19/"
+            elementFormDefault="qualified">
+    <xsd:element name="DescribeImagesResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="imagesSet">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:imagesSetItem"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="DescribeInstancesResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="reservationSet">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:reservationSetItem"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="RunInstancesResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="instancesSet">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:runInstancesSetItem"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="userData">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="data"/>
+                        </xsd:sequence>
+                        <xsd:attribute name="version" type="xsd:string" default="1.0"/>
+                        <xsd:attribute name="encoding" type="xsd:string" default="base64"/>
+                    </xsd:complexType>
+                </xsd:element>
+                <xsd:element name="addressingType"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="TerminateInstancesResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="instancesSet">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:terminateInstancesSetItem"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="CreateKeyPairResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="keyName" type="xsd:string"/>
+                <xsd:element name="keyFingerprint" type="xsd:string"/>
+                <xsd:element name="keyMaterial" type="xsd:string"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="DeleteKeyPairResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="return" type="xsd:boolean"/>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="DescribeKeyPairsResponse">
+        <xsd:complexType>
+            <xsd:sequence>
+                <xsd:element name="keySet">
+                    <xsd:complexType>
+                        <xsd:sequence>
+                            <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:keySetItem"/>
+                        </xsd:sequence>
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:complexType name="State">
+        <xsd:sequence>
+            <xsd:element name="code"/>
+            <xsd:element name="name"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="groupSetItem">
+        <xsd:sequence>
+            <xsd:element name="groupId" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="productCodesSetItem">
+        <xsd:sequence>
+            <xsd:element name="productCode"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="reservationSetItem">
+        <xsd:sequence>
+            <xsd:element name="reservationId" type="xsd:string"/>
+            <xsd:element name="ownerId" type="xsd:string"/>
+            <xsd:element name="groupSet">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:groupSetItem"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="instancesSet">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:instancesSetItem"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="instancesSetItem">
+        <xsd:sequence>
+            <xsd:element name="instanceId" type="xsd:string"/>
+            <xsd:element name="imageId" type="xsd:string"/>
+            <xsd:element name="instanceState" type="tns:State"/>
+            <xsd:element name="privateDnsName" type="xsd:string"/>
+            <xsd:element name="dnsName" type="xsd:string"/>
+            <xsd:element name="keyName" type="xsd:string"/>
+            <xsd:element name="productCodesSet">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:productCodesSetItem"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="InstanceType" type="xsd:string"/>
+            <xsd:element name="launchTime" type="xsd:string"/>
+            <xsd:element name="placement">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="availabilityZone"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="kernelId" type="xsd:string"/>
+            <xsd:element name="ramdiskId" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="terminateInstancesSetItem">
+        <xsd:sequence>
+            <xsd:element name="instanceId" type="xsd:string"/>
+            <xsd:element name="shutdownState" type="tns:State"/>
+            <xsd:element name="previousState" type="tns:State"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="blockDeviceMappingItem">
+        <xsd:sequence>
+            <xsd:element name="virtualName"/>
+            <xsd:element name="deviceName"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="runInstancesSetItem">
+        <xsd:sequence>
+            <xsd:element name="imageId" type="xsd:string"/>
+            <xsd:element name="minCount" type="xsd:string"/>
+            <xsd:element name="maxCount"/>
+            <xsd:element name="keyName"/>
+            <xsd:element name="placement">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="availabilityZone"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+            <xsd:element name="kernelId"/>
+            <xsd:element name="ramDiskId"/>
+            <xsd:element name="blockDeviceMapping">
+                <xsd:complexType>
+                    <xsd:sequence>
+                        <xsd:element name="item" minOccurs="0" maxOccurs="unbounded" type="tns:blockDeviceMappingItem"/>
+                    </xsd:sequence>
+                </xsd:complexType>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="keySetItem">
+        <xsd:sequence>
+            <xsd:element name="keyName"/>
+            <xsd:element name="keyFingerprint"/>
+        </xsd:sequence>
+    </xsd:complexType>
+    <xsd:complexType name="imagesSetItem">
+        <xsd:sequence>
+            <xsd:element name="imageId" type="xsd:string"/>
+            <xsd:element name="imageLocation" type="xsd:string"/>
+            <xsd:element name="imageState" type="xsd:string"/>
+            <xsd:element name="imageOwnerId" type="xsd:string"/>
+            <xsd:element name="isPublic" type="xsd:string"/>
+        </xsd:sequence>
+    </xsd:complexType>
+</xsd:schema>

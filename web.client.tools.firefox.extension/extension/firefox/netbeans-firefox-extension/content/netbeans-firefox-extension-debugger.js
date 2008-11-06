@@ -1493,16 +1493,19 @@
           data = currentFirebugContext.sourceCache.load(sourceURI);
         }
         if (data) {
-            // Firebug converts sources to Unicode, but we
-            // transmit them in UTF-8 - the default XML encoding.
-            // We may need to convert the source text to UTF-8
-            // here using nsIScriptableUnicodeConverter service.
-            data = "N" + data.join("\n");
+            data = data.join("\n");
+            
+            var converter = NetBeans.Utils.CCSV(
+            NetBeans.Constants.ScriptableUnicodeConverterServiceCID,
+            NetBeans.Constants.ScriptableUnicodeConverterIF);
+
+            converter.charset = "UTF-8";
+            data = converter.ConvertFromUnicode(data);
 
             var sourceResponse =
-              <response command="source" encoding="none"
+              <response command="source" encoding="base64"
                   success="1"
-                  transaction_id={transaction_id}>{data}</response>;
+                  transaction_id={transaction_id}>{window.btoa(data)}</response>;
             socket.send(sourceResponse);
         } else {
             var sourceResponse =

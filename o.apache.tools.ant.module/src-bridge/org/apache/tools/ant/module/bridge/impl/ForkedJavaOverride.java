@@ -58,9 +58,6 @@ public class ForkedJavaOverride extends Java {
     private static final Pattern STACK_TRACE = Pattern.compile(
     "(?:\t|\\[catch\\] )at ((?:[a-zA-Z_$][a-zA-Z0-9_$]*\\.)*)[a-zA-Z_$][a-zA-Z0-9_$]*\\.[a-zA-Z_$<][a-zA-Z0-9_$>]*\\(([a-zA-Z_$][a-zA-Z0-9_$]*\\.java):([0-9]+)\\)"); // NOI18N
 
-    // should be consistent with org.apache.tools.ant.module.run.StandardLogger.HYPERLINK
-    private static final Pattern HYPERLINK = Pattern.compile("\"?(.+?)\"?(?::|, line )(?:(\\d+):(?:(\\d+):(?:(\\d+):(\\d+):)?)?)? +(.+)"); // NOI18N
-
     public ForkedJavaOverride() {
         redirector = new NbRedirector(this);
         super.setFork(true);
@@ -216,7 +213,7 @@ public class ForkedJavaOverride extends Java {
                                         str = str.substring(0, len - 1);
                                     }
                                     // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
-                                    if (!STACK_TRACE.matcher(str).matches() && !HYPERLINK.matcher(str).matches()) {
+                                    if (!STACK_TRACE.matcher(str).matches() && !org.apache.tools.ant.module.run.StandardLogger.HYPERLINK.matcher(str).matches()) {
                                         ow.println(str);
                                     }
                                     log(str, logLevel);

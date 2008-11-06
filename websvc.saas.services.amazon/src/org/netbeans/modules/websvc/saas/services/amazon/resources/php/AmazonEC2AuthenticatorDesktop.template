@@ -1,0 +1,72 @@
+<?php
+
+    // get this with `pear install Crypt_HMAC`
+    require_once "Crypt/HMAC.php";
+    include_once "org_netbeans_saas/RestConnection.php";
+    include_once "__NAME__Profile.php";
+    
+    class  __NAME__ {
+
+        private static $inited = false;
+
+        public static function init() {
+            if(self::$inited)
+              return;
+            self::$inited = true;
+        }
+
+        public static function getAWSAccessKeyId() {
+            $apiKey = __NAME__Profile::getApiKey();
+            if ($apiKey == null || $apiKey == "") {
+                throw new Exception("Please specify your api key in the Profile file.");
+            }
+            return $apiKey;
+        }
+
+        public static function getSecret() {
+            $secret = __NAME__Profile::getSecret();
+            if ($secret == null || $secret == "") {
+                throw new Exception("Please specify your secret key in the Profile file.");
+            }
+            return $secret;
+        }
+
+        public static function getExpires() {
+            return gmdate("Y-m-d\TH:i:s\Z");
+        }
+
+        public static function login() {
+        }
+
+        private static function logout() {
+        }
+
+        public static function sign($params)
+        {
+            $sign = '';
+            $values = array();
+            uksort($params, '__NAME__::caseSort');
+            foreach($params as $k => $v) {
+                if($v != null)
+                    $sign .= $k . $v;
+            }
+            $hasher =& new Crypt_HMAC($secret, "sha1");
+            return self::hex2b64($hasher->hash($sign));
+        }
+
+        private static function hex2b64($str) {
+            $raw = '';
+            for ($i=0; $i < strlen($str); $i+=2) {
+                $raw .= chr(hexdec(substr($str, $i, 2)));
+            }
+            return base64_encode($raw);
+        }
+
+        private static function caseSort($a, $b) {
+            if(ord(substr(strtolower($a),0,1)) == ord(substr(strtolower($b),0,1)))
+                return 0;
+            return (ord(substr(strtolower($a),0,1)) < ord(substr(strtolower($b),0,1))) ? -1 : 1;
+        }
+    }
+
+?>

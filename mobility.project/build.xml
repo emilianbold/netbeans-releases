@@ -42,6 +42,7 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="mobility.project">
     <import file="../nbbuild/templates/projectized.xml"/>
+    <property file="nbproject/private.properties"/>
     <target name="nblib" depends="init,jar">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" deprecation="true">

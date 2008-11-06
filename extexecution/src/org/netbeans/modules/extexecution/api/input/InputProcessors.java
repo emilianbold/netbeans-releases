@@ -136,7 +136,8 @@ public final class InputProcessors {
     /**
      * Returns the processor converting <i>whole</i> lines with convertor and
      * printing the result including unterminated tail (if present) to the
-     * given output writer.
+     * given output writer. If the covertor does not handle line passed to it
+     * (returning <code>null</code>) raw lines are printed.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
      * by passing <code>true</code> as <code>resetEnabled</code>. Processor
@@ -345,7 +346,13 @@ public final class InputProcessors {
                 return;
             }
 
-            for (ConvertedLine converted : convertor.convert(line)) {
+            List<ConvertedLine> convertedLines = convertor.convert(line);
+            if (convertedLines == null) {
+                out.println(line);
+                return;
+            }
+
+            for (ConvertedLine converted : convertedLines) {
                 if (converted.getListener() == null) {
                     out.println(converted.getText());
                 } else {

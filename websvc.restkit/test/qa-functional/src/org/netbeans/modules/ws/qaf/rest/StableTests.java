@@ -43,7 +43,7 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
- *
+ * Duration of this test suite: aprox. 14min
  * @author lukas
  */
 public class StableTests extends J2eeTestCase {
@@ -57,7 +57,12 @@ public class StableTests extends J2eeTestCase {
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
+                addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH, NbModuleSuite.emptyConfiguration(),
+                FromDBTest.class,
+                "testFromDB", //NOI18N
+                "testDeploy", //NOI18N
+                "testUndeploy"), //NOI18N
                 CRUDTest.class,
                 "testRfE",
                 "testPropAccess",

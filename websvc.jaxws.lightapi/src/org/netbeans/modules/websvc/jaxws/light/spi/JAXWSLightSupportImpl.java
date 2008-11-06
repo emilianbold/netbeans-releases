@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.websvc.jaxws.light.spi;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
@@ -57,8 +56,6 @@ import org.openide.filesystems.FileObject;
 /** SPI for JAXWSSupport
  */ 
 public interface JAXWSLightSupportImpl {
-
-    public static final String CATALOG_FILE="catalog.xml"; //NOI18N
     
     /**
      * Add web service to jax-ws.xml intended for web services from java
@@ -86,7 +83,6 @@ public interface JAXWSLightSupportImpl {
      */
     public boolean isFromWSDL(JaxWsService service);
     
-
     /** Get WSDL folder for the project (folder containing wsdl files)
      *  The folder is used to save remote or local wsdl files to be available within the jar/war files.
      *  it is usually META-INF/wsdl folder (or WEB-INF/wsdl for web application)
@@ -102,6 +98,7 @@ public interface JAXWSLightSupportImpl {
      * @return the file object (folder) where wsdl files are located in project 
      */
     public FileObject getLocalWsdlFolder(boolean createFolder);
+    
     /** Get folder for local jaxb binding (xml) files for given service
      *  This is the location where external jaxb binding files are downloaded to the project.
      *  JAX-WS java artifacts will be generated using these local binding files instead of remote.
