@@ -635,7 +635,7 @@ public class JavacParser extends Parser {
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
-        
+        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -645,13 +645,17 @@ public class JavacParser extends Parser {
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
+            options.add("-target");                     //NOI18N
+            options.add(validatedSourceLevel.requiredTarget().name);
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
+        options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
         options.add("-g:");      // NOI18N, Enable some debug info
+        options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
-        options.add(validateSourceLevel(sourceLevel));
+        options.add(validatedSourceLevel.name);
         options.add("-proc:none"); // NOI18N, Disable annotation processors
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
@@ -674,25 +678,25 @@ public class JavacParser extends Parser {
         }
     }
     
-    private static String validateSourceLevel (String sourceLevel) {        
+    private static com.sun.tools.javac.code.Source validateSourceLevel (String sourceLevel) {
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         if (sourceLevel == null) {
             //Should never happen but for sure
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
         for (com.sun.tools.javac.code.Source source : sources) {
             if (source.name.equals(sourceLevel)) {
-                return sourceLevel;
+                return source;
             }
         }
         SpecificationVersion specVer = new SpecificationVersion (sourceLevel);
         SpecificationVersion JAVA_12 = new SpecificationVersion ("1.2");   //NOI18N
         if (JAVA_12.compareTo(specVer)>0) {
             //Some SourceLevelQueries return 1.1 source level which is invalid, use 1.2
-            return sources[0].name;
+            return sources[0];
         }
         else {
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
     }
     
