@@ -286,6 +286,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
     public void assertServerRunning() {
         if (!REGISTERED_SERVER.equals(ServerType.GLASSFISH)) {
             LOGGER.info("not yet supported for server: " + REGISTERED_SERVER.toString());
+            return;
         }
         GlassFishV2ServerNode gf = GlassFishV2ServerNode.invoke();
         gf.refresh();
