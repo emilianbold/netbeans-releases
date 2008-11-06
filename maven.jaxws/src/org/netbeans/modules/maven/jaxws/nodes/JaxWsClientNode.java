@@ -43,6 +43,11 @@ package org.netbeans.modules.maven.jaxws.nodes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.maven.api.customizer.ModelHandle;
+import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
@@ -98,12 +103,13 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
     }
     
     private JaxWsClientNode(JAXWSLightSupport jaxWsSupport, JaxWsService client, InstanceContent content) {
-        super(new JaxWsClientChildren(client), new AbstractLookup(content));
+        super(new JaxWsClientChildren(jaxWsSupport, client), new AbstractLookup(content));
         this.jaxWsSupport=jaxWsSupport;
         this.client=client;
         this.content = content;
         content.add(this);
         content.add(client);
+        content.add(jaxWsSupport);
         final WsdlModeler modeler = getWsdlModeler();
         if (modeler!=null) {
             changeIcon();
@@ -261,65 +267,23 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
 
     @Override
     public void destroy() throws java.io.IOException {
-//        String clientName = client.getName();
-////        NotifyDescriptor.Confirmation notifyDesc =
-////                new NotifyDescriptor.Confirmation(NbBundle.getMessage(JaxWsClientNode.class, "MSG_CONFIRM_DELETE", clientName));
-////        DialogDisplayer.getDefault().notify(notifyDesc);
-////        if(notifyDesc.getValue() == NotifyDescriptor.YES_OPTION){
-//            
-//            JAXWSClientSupport support = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-//            // removing local wsdl and xml artifacts
-//            FileObject localWsdlFolder = support.getLocalWsdlFolderForClient(clientName,false);
-//            if (localWsdlFolder!=null) {
-//                FileObject clientArtifactsFolder = localWsdlFolder.getParent();
-//                FileLock lock=null;
-//                try {
-//                    lock = clientArtifactsFolder.lock();
-//                    clientArtifactsFolder.delete(lock);
-//                } finally {
-//                    if (lock!=null) lock.releaseLock();
-//                }
-//            }
-//            
-//            Project project = FileOwnerQuery.getOwner(srcRoot);
-//            // remove also client xml artifacs from WEB-INF[META-INF]/wsdl
-//            if (project.getLookup().lookup(J2eeModuleProvider.class)!=null) {
-//                FileObject webInfClientFolder = findWsdlFolderForClient(support, clientName);
-//                if (webInfClientFolder!=null) {
-//                    FileObject webInfClientRootFolder = webInfClientFolder.getParent();
-//                    FileLock lock=null;
-//                    try {
-//                        lock = webInfClientFolder.lock();
-//                        webInfClientFolder.delete(lock);
-//                    } finally {
-//                        if (lock!=null) lock.releaseLock();
-//                    }
-//                    if (webInfClientRootFolder.getChildren().length==0) {
-//                        try {
-//                            lock = webInfClientRootFolder.lock();
-//                            webInfClientRootFolder.delete(lock);
-//                        } finally {
-//                            if (lock!=null) lock.releaseLock();
-//                        }
-//                    }
-//                }
-//            }
-//            // cleaning java artifacts
-//            FileObject buildImplFo = project.getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH);
-//            try {
-//                ExecutorTask wsimportTask =
-//                        ActionUtils.runTarget(buildImplFo,
-//                        new String[]{"wsimport-client-clean-"+clientName},null); //NOI18N
-//                wsimportTask.waitFinished();
-//            } catch (java.io.IOException ex) {
-//                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//            } catch (IllegalArgumentException ex) {
-//                ErrorManager.getDefault().log(ex.getLocalizedMessage());
-//            }
-//            // removing entry from jax-ws.xml
-//            support.removeServiceClient(clientName);
-//            super.destroy();
-//        }
+        if (wsdlFileObject != null) {
+            // remove entry in wsimport configuration
+            Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+            if (project != null) {
+                try {
+                    ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
+                    if (mavenHandle != null) {
+                        MavenModelUtils.removeWsdlFile(mavenHandle, client.getLocalWsdl());
+                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+            // remove wsdl file
+            wsdlFileObject.delete();
+        }
     }
     
     /**
@@ -436,7 +400,7 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
 //                    } else {
 //                        modeler.setPackageName(null);
 //                    }
-//                    modeler.setCatalog(getJAXWSClientSupport().getCatalog());
+                    modeler.setCatalog(jaxWsSupport.getCatalog());
 //                    setBindings(modeler);
                     return modeler;
                 }

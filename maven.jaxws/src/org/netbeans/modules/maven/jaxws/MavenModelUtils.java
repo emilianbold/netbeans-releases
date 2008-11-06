@@ -136,6 +136,7 @@ public class MavenModelUtils {
             xnocompile.setValue("true");
             conf.addChild(xnocompile);
         }
+        
         Xpp3Dom verbose = conf.getChild("verbose"); //NOI18N
         if (verbose == null) {
             verbose = new Xpp3Dom("verbose"); //NOI18N
@@ -143,12 +144,18 @@ public class MavenModelUtils {
             conf.addChild(verbose);
         }
 
+        Xpp3Dom catalog = conf.getChild("catalog"); //NOI18N
+        if (catalog == null) {
+            catalog = new Xpp3Dom("catalog"); //NOI18N
+            catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
+            conf.addChild(catalog);
+        }
+
         handle.markAsModified(handle.getPOMModel());
         return plugin; 
     }
     
-    public static void addWsdlFile(ModelHandle handle, String wsdlPath) {
-        
+    public static void addWsdlFile(ModelHandle handle, String wsdlPath) {       
         @SuppressWarnings("unchecked")
         List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
         for (Plugin plugin : plugins) {
@@ -171,6 +178,10 @@ public class MavenModelUtils {
                     Xpp3Dom verbose = new Xpp3Dom("verbose"); //NOI18N
                     verbose.setValue("true"); //NOI18N
                     conf.addChild(verbose);
+                    
+                    Xpp3Dom catalog = new Xpp3Dom("catalog"); //NOI18N
+                    catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
+                    conf.addChild(catalog);
                 }
                 
                 Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
@@ -187,7 +198,34 @@ public class MavenModelUtils {
                 
             }
         }
-
+    }
+    
+    public static void removeWsdlFile(ModelHandle handle, String wsdlPath) {       
+        @SuppressWarnings("unchecked")
+        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
+        for (Plugin plugin : plugins) {
+            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plugin.getKey())) { //NOI18N
+                Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
+                if (conf != null) {
+                    Xpp3Dom wsdlFilesNode = conf.getChild("wsdlFiles"); //NOI18N
+                    if (wsdlFilesNode != null) {
+                        int clientToRemove = -1;
+                        Xpp3Dom[] wsdlFiles = wsdlFilesNode.getChildren();
+                        for (int i=0; i<wsdlFiles.length;i++) {
+                            if (wsdlPath.equals(wsdlFiles[i].getValue())) {
+                                clientToRemove = i;
+                                break;
+                            }
+                        }
+                        if (clientToRemove >= 0) {
+                            wsdlFilesNode.removeChild(clientToRemove);
+                            handle.markAsModified(handle.getPOMModel());
+                        }
+                    }
+                    
+                }
+            }
+        }
     }
     
     public static void addJaxws21Library(Project project) throws IOException {
