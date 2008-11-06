@@ -282,7 +282,7 @@ public abstract class Module extends ModuleInfo {
         // Code name
         codeName = attr.getValue("OpenIDE-Module"); // NOI18N
         if (codeName == null) {
-            InvalidException e = new InvalidException("Not a module: no OpenIDE-Module tag in manifest of " + /* #17629: important! */this); // NOI18N
+            InvalidException e = new InvalidException("Not a module: no OpenIDE-Module tag in manifest of " + /* #17629: important! */this, getManifest()); // NOI18N
             // #29393: plausible user mistake, deal with it politely.
             Exceptions.attachLocalizedMessage(e,
                                               NbBundle.getMessage(Module.class,
