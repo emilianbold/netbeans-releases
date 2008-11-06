@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,55 +38,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.modules.ruby.debugger.ui;
 
-/*
- * J2MEProjectModuleInstallTest.java
- * JUnit based test
- *
- * Created on 06 February 2006, 18:55
- */
-package org.netbeans.modules.mobility.project;
+import javax.swing.JComponent;
+import org.netbeans.spi.debugger.ui.AttachType;
+import org.openide.util.NbBundle;
 
-import java.io.IOException;
-import junit.framework.*;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+public final class RubyAttachType extends AttachType {
 
-/**
- *
- * @author lukas
- */
-public class J2MEProjectModuleInstallTest extends NbTestCase {
-    
-    public J2MEProjectModuleInstallTest(String testName) {
-        super(testName);
+    public String getTypeDisplayName() {
+        return NbBundle.getMessage(RubyAttachType.class, "RubyAttachType.ConnectorName");
     }
-    
-    protected void setUp() throws Exception {
-    }
-    
-    protected void tearDown() throws Exception {
-    }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(J2MEProjectModuleInstallTest.class);
-        
-        return suite;
-    }
-    
-    /**
-     * Test of restored method, of class org.netbeans.modules.mobility.project.J2MEProjectModuleInstall.
-     */
-    public void testRestored() throws IOException {
-        System.out.println("restored");
-        
-        System.setProperty("netbeans.user","test/tiredTester");
-        J2MEProjectModuleInstall instance = new J2MEProjectModuleInstall();
-        
-        EditableProperties pr1=PropertyUtils.getGlobalProperties();
-        instance.restored();
-        EditableProperties pr2=PropertyUtils.getGlobalProperties();
-        assertEquals(pr1,pr2);
+
+    public JComponent getCustomizer() {
+        return new ConnectPanel();
     }
 }

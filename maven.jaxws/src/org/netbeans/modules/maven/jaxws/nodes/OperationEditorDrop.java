@@ -45,8 +45,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.editor.NbEditorUtilities;
-//import org.netbeans.modules.websvc.core.JaxWsUtils;
-//import org.netbeans.modules.websvc.core.jaxws.actions.JaxWsCodeGenerator;
+import org.netbeans.modules.maven.jaxws.actions.JaxWsCodeGenerator;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -69,14 +69,18 @@ public class OperationEditorDrop implements ActiveEditorDrop {
         if (mimeType!=null && ("text/x-java".equals(mimeType) || "text/x-jsp".equals(mimeType) )) { //NOI18N
             
             try {
-                Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
-                FileObject srcRoot = clientNode.getLookup().lookup(FileObject.class);
-                Project clientProject = FileOwnerQuery.getOwner(srcRoot);
                 FileObject targetFo = NbEditorUtilities.getFileObject(targetComponent.getDocument());
-//                if (JaxWsUtils.addProjectReference(clientProject, targetFo)) {
-//                    JaxWsCodeGenerator.insertMethod(targetComponent.getDocument(), targetComponent.getCaret().getDot(), operationNode);
-//                    return true;
+                
+                Node clientNode = operationNode.getParentNode().getParentNode().getParentNode();
+                JAXWSLightSupport jaxWsSupport = clientNode.getLookup().lookup(JAXWSLightSupport.class);
+                if (jaxWsSupport != null) {
+                    Project clientProject = FileOwnerQuery.getOwner(jaxWsSupport.getLocalWsdlFolder(false));
+                    // TODO: how to add dependency on other project
+//                    if (JaxWsUtils.addProjectReference(clientProject, targetFo)) {
+                    JaxWsCodeGenerator.insertMethod(targetComponent.getDocument(), targetComponent.getCaret().getDot(), operationNode);
+                    return true;
 //                }
+                }
             } catch (Exception ex) {
                 ErrorManager.getDefault().log(ex.getLocalizedMessage());
             }

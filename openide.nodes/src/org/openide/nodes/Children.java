@@ -41,6 +41,7 @@
 
 package org.openide.nodes;
 
+import java.awt.Panel;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;

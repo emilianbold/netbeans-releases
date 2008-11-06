@@ -236,7 +236,7 @@ public class ModelSupport implements PropertyChangeListener {
         if (!CndUtils.isStandalone()) {
             Project project = ModelImpl.findProjectByNativeProject(getNativeProject(platformProject));
             if (project != null) {
-                return new CodeAssistanceOptions(project,true).getParseOrphanEnabled().booleanValue();
+                return new CodeAssistanceOptions(project,true).getParseOrphanEnabled();
             }
         }
         return true;
@@ -339,7 +339,7 @@ public class ModelSupport implements PropertyChangeListener {
             nativeProject.runOnCodeModelReadiness(new Runnable() {
 
                 public void run() {
-                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled().booleanValue();
+                    boolean enableModel = new CodeAssistanceOptions(project).getCodeAssistanceEnabled();
 
                     model.addProject(nativeProject, nativeProject.getProjectDisplayName(), enableModel);
                 }
