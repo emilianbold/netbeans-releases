@@ -45,13 +45,12 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.filecreation.ExtensionsSettings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Recognize certain hard-to-recognize types. Most types are recognized by the
  * declarative mime resolver.
  */
-@ServiceProvider(service=MIMEResolver.class)
+/*@ServiceProvider(service=MIMEResolver.class)*/
 public class CndMIMEResolver extends MIMEResolver {
     
     public CndMIMEResolver() {
