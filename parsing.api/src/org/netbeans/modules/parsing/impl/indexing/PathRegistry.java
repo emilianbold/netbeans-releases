@@ -59,7 +59,6 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.classpath.GlobalPathRegistryEvent;
 import org.netbeans.api.java.classpath.GlobalPathRegistryListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.modules.parsing.spi.indexing.CustomIndexerFactory;
 import org.netbeans.modules.parsing.spi.indexing.PathRecognizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -108,7 +107,7 @@ public class PathRegistry {
         this.unknownRoots = new HashMap<URL, WeakValue>();
         this.translatedRoots = new HashMap<URL, URL[]> ();
         this.listeners = new CopyOnWriteArrayList<PathRegistryListener>();
-        this.regs.addGlobalPathRegistryListener ((GlobalPathRegistryListener)WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.regs));
+        this.regs.addGlobalPathRegistryListener (WeakListeners.create(GlobalPathRegistryListener.class,this.listener,this.regs));
     }
 
     public static synchronized PathRegistry getDefault () {
@@ -249,7 +248,7 @@ public class PathRegistry {
         }
     }
 
-    private Result createResources (final Request request) {
+    private static Result createResources (final Request request) {
         assert request != null;
         final Set<URL> sourceResult = new HashSet<URL> ();
         final Set<URL> unknownResult = new HashSet<URL> ();
@@ -285,7 +284,7 @@ public class PathRegistry {
                     assert !newSR.containsKey(url);
                     newSR.put(url,sr);
                     final List<URL> cacheURLs = new ArrayList<URL> ();
-                    Collection<URL> srcRoots = getSources(sr,cacheURLs, request.unknownRoots);
+                    Collection<URL> srcRoots = getSources(sr, cacheURLs, request.unknownRoots);
                     if (srcRoots.isEmpty()) {
                         binaryResult.add(url);
                     }
@@ -317,7 +316,7 @@ public class PathRegistry {
                 newCps,newSR,translatedRoots, request.unknownRoots);
     }
 
-    private Collection <URL> getSources (final SourceForBinaryQuery.Result2 sr, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
+    private static Collection <URL> getSources (final SourceForBinaryQuery.Result2 sr, final List<URL> cacheDirs, final Map<URL, WeakValue> unknownRoots) {
         assert sr != null;
         if (sr.preferSources()) {
             final FileObject[] roots = sr.getRoots();
@@ -376,12 +375,12 @@ public class PathRegistry {
         if (pathId == null) {
             return null;
         }
-        final Set<String> sourceIds = getSourceIds();
-        if (sourceIds.contains(pathId)) {
+        final Set<String> sIds = getSourceIds();
+        if (sIds.contains(pathId)) {
             return PathKind.SOURCE;
         }
-        final Set<String> binaryIds = getBinaryIds();
-        if (binaryIds.contains(pathId)) {
+        final Set<String> bIds = getBinaryIds();
+        if (bIds.contains(pathId)) {
             return PathKind.BINARY;
         }
         return null;
@@ -393,12 +392,12 @@ public class PathRegistry {
                 return this.sourceIds;
             }
         }
-        final Set<String> sourceIds = new HashSet<String>();
-        final Set<String> binaryIds = new HashSet<String>();
-        lookup (sourceIds, binaryIds);
+        final Set<String> sIds = new HashSet<String>();
+        final Set<String> bIds = new HashSet<String>();
+        lookup (sIds, bIds);
         synchronized (this) {
             if (this.sourceIds == null) {
-                this.sourceIds = sourceIds;
+                this.sourceIds = sIds;
             }
             return this.sourceIds;
         }
@@ -410,12 +409,12 @@ public class PathRegistry {
                 return this.binaryIds;
             }
         }
-        final Set<String> sourceIds = new HashSet<String>();
-        final Set<String> binaryIds = new HashSet<String>();
-        lookup (sourceIds, binaryIds);
+        final Set<String> sIds = new HashSet<String>();
+        final Set<String> bIds = new HashSet<String>();
+        lookup (sIds, bIds);
         synchronized (this) {
             if (this.binaryIds == null) {
-                this.binaryIds = binaryIds;
+                this.binaryIds = bIds;
             }
             return this.binaryIds;
         }
