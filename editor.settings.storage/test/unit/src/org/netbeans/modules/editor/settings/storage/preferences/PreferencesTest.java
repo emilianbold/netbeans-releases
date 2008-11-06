@@ -199,7 +199,35 @@ public class PreferencesTest extends NbTestCase {
         assertSame("Wrong Preferences instance in the A event", prefsA, listenerA.lastEvent.getNode());
         assertEquals("Wrong number of B events", 0, listenerB.count);
     }
-    
+
+    public void testEvents142723() throws Exception {
+        Preferences prefsA = MimeLookup.getLookup(MimePath.EMPTY).lookup(Preferences.class);
+        Preferences prefsB = MimeLookup.getLookup(MimePath.parse("text/x-testA")).lookup(Preferences.class);
+
+        String key1 = "all-lang-key-" + getName();
+        prefsA.put(key1, "xyz");
+        assertEquals("'" + key1 + "' has wrong value", "xyz", prefsA.get(key1, null));
+
+        // attach listeners
+        L listenerA = new L();
+        prefsA.addPreferenceChangeListener(listenerA);
+        L listenerB = new L();
+        prefsB.addPreferenceChangeListener(listenerB);
+        
+        // putting the same value again should not fire an event
+        prefsA.put(key1, "xyz");
+        assertEquals("'" + key1 + "' has wrong value", "xyz", prefsA.get(key1, null));
+        assertEquals("There should be no events from prefsA", 0, listenerA.count);
+
+        assertEquals("'" + key1 + "' should inherit the value", "xyz", prefsB.get(key1, null));
+        assertEquals("There should be no events from prefsB", 0, listenerB.count);
+
+        // putting the same value again should not fire an event
+        prefsB.put(key1, "xyz");
+        assertEquals("'" + key1 + "' has wrong value in prefsB", "xyz", prefsB.get(key1, null));
+        assertEquals("There should still be no events from prefsB", 0, listenerB.count);
+    }
+
     private static final class L implements PreferenceChangeListener {
         public int count = 0;
         public PreferenceChangeEvent lastEvent = null;
