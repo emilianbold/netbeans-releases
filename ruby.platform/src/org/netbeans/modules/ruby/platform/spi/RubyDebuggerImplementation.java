@@ -72,6 +72,8 @@ public interface RubyDebuggerImplementation {
      */
     Process debug();
 
+    void attach(String host, int port, int timeout);
+
     /**
      * Action which shall be performed when a debugger is <em>forced</em> to
      * stop, like pressing output window's <em>stop button</em>.

@@ -41,6 +41,7 @@
 
 package org.netbeans.modules.ruby.debugger;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import org.netbeans.modules.ruby.platform.execution.FileLocator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.netbeans.spi.debugger.SessionProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.NbBundle;
 import org.rubyforge.debugcommons.RubyDebuggerFactory;
@@ -70,6 +72,7 @@ import org.rubyforge.debugcommons.RubyDebuggerException;
 import org.rubyforge.debugcommons.RubyDebuggerProxy;
 
 import static org.netbeans.modules.ruby.debugger.Util.FastDebugInstallationResult.*;
+import org.rubyforge.debugcommons.model.RubyDebugTarget;
 
 /**
  * Implementation of {@link RubyDebuggerImplementation} SPI, providing an entry
@@ -85,6 +88,17 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
     private RubyExecutionDescriptor descriptor;
     
     private RubySession rubySession;
+
+    /**
+     * User for remote debugging.
+     * <P>
+     * TODO: Replace by valid RubyFileLocator.
+     */
+    private static final FileLocator DUMMY_FILE_LOCATOR = new FileLocator() {
+        public FileObject find(String filename) {
+            return null;
+        }
+    };
     
     static {
         String path = "ruby/debug-commons-0.9.5/classic-debug.rb"; // NOI18N
@@ -109,8 +123,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         try {
             rubySession = startDebugging(descriptor);
             if (rubySession != null) {
-                rubySession.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
-                p = rubySession.getProxy().getDebugTarged().getProcess();
+                rubySession.getProxy().attach(RubyBreakpointManager.getBreakpoints());
+                p = rubySession.getProxy().getDebugTarget().getProcess();
             }
         } catch (IOException e) {
             getFinishAction().run();
@@ -120,6 +134,24 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
             problemOccurred(e);
         }
         return p;
+    }
+
+    public void attach(final String host, final int port, final int timeout) {
+        assert !EventQueue.isDispatchThread() : "do not call attach from EDT";
+        try {
+            RubyDebuggerProxy proxy = new RubyDebuggerProxy(RubyDebuggerProxy.RUBY_DEBUG, timeout);
+            RubyDebuggerProxy.PROXIES.add(proxy);
+            RubyDebugTarget debugTarget = new RubyDebugTarget(proxy, host, port);
+            proxy.setDebugTarget(debugTarget);
+            rubySession = intializeIDEDebuggerEngine(proxy, DUMMY_FILE_LOCATOR);
+            proxy.attach(RubyBreakpointManager.getBreakpoints());
+        } catch (IOException e) {
+            getFinishAction().run();
+            problemOccurred(e);
+        } catch (RubyDebuggerException e) {
+            getFinishAction().run();
+            problemOccurred(e);
+        }
     }
 
     /** @see RubyDebuggerImplementation#getFinishAction */
@@ -136,8 +168,8 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
 
     private static void problemOccurred(final Exception e) {
         String message = NbBundle.getMessage(RubyDebugger.class, "RubyDebugger.startup.problem", e.getLocalizedMessage());
-        Util.showWarning(message);
         LOGGER.log(Level.WARNING, message, e);
+        Util.showWarning(message);
     }
     
     /**
@@ -162,7 +194,7 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         RubyDebuggerFactory.Descriptor debugDesc = new RubyDebuggerFactory.Descriptor();
         debugDesc.useDefaultPort(false);
         debugDesc.setJRuby(jrubySet);
-        debugDesc.setScriptPath(descriptor.getScript());
+        debugDesc.setDebuggeePath(descriptor.getScript());
         
         if(descriptor.useInterpreter()) {
             List<String> additionalOptions = new ArrayList<String>();
@@ -306,5 +338,5 @@ public final class RubyDebugger implements RubyDebuggerImplementation {
         proxy.addRubyDebugEventListener(provider);
         return rubySession;
     }
-    
+
 }

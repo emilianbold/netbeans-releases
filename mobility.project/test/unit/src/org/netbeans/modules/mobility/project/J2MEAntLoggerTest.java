@@ -66,7 +66,6 @@ import org.apache.tools.ant.module.spi.AntLogger;
 import org.apache.tools.ant.module.spi.AntSession;
 import org.apache.tools.ant.module.spi.TaskStructure;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakSet;
 import org.openide.windows.OutputListener;
@@ -84,7 +83,6 @@ public class J2MEAntLoggerTest extends NbTestCase {
     {
         TestUtil.setLookup( new Object[] {            
         }, J2MEAntLoggerTest.class.getClassLoader());
-        assertNotNull(MasterFileSystem.settingsFactory(null));
         
         Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
                 public void publish(LogRecord record) {

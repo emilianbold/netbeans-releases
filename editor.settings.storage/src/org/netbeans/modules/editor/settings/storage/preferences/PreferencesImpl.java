@@ -151,7 +151,33 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
             }
         }
     }
-    
+
+    public @Override void remove(String key) {
+        synchronized(lock) {
+            String bareKey;
+            boolean removeValue;
+
+            if (key.startsWith(JAVATYPE_KEY_PREFIX)) {
+                bareKey = key.substring(JAVATYPE_KEY_PREFIX.length());
+                removeValue = false;
+            } else {
+                bareKey = key;
+                removeValue = true;
+            }
+
+            if (getLocal().containsKey(bareKey)) {
+                if (removeValue) {
+                    getLocal().remove(bareKey);
+                } else {
+                    getLocal().get(bareKey).setJavaType(null);
+                }
+
+                firePreferenceChange(key, null);
+                asyncInvocationOfFlushSpi();
+            }
+        }
+    }
+
     public @Override void putInt(String key, int value) {
         putValueJavaType.set(Integer.class.getName());
         try {
@@ -296,26 +322,7 @@ public final class PreferencesImpl extends AbstractPreferences implements Prefer
     }
 
     protected @Override void removeSpi(String key) {
-        String bareKey;
-        boolean removeValue;
-        
-        if (key.startsWith(JAVATYPE_KEY_PREFIX)) {
-            bareKey = key.substring(JAVATYPE_KEY_PREFIX.length());
-            removeValue = false;
-        } else {
-            bareKey = key;
-            removeValue = true;
-        }
-        
-        if (getLocal().containsKey(bareKey)) {
-            if (removeValue) {
-                getLocal().remove(bareKey);
-            } else {
-                getLocal().get(bareKey).setJavaType(null);
-            }
-            
-            asyncInvocationOfFlushSpi();
-        }
+        throw new IllegalStateException("Should never be called!"); //NOI18N
     }
 
     protected @Override String[] keysSpi() throws BackingStoreException {

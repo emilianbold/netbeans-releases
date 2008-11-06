@@ -94,9 +94,8 @@ public class NewGrailsProjectWizardIterator implements WizardDescriptor.Progress
 
             ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true).inputVisible(true);
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-
-                public InputProcessor newInputProcessor() {
-                    return InputProcessors.bridge(new ProgressSnooper(handle, 100, 2));
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ProgressSnooper(handle, 100, 2)));
                 }
             });
             // TODO refresh

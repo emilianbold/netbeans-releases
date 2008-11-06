@@ -53,8 +53,9 @@ public interface LineConvertor {
 
     /**
      * Converts the line to lines for output window. Method may return
-     * no line or any other number of lines for single input line, however it
-     * <i>must not</i> return <code>null</code>.
+     * no line or any other number of lines for single input line. If
+     * the method returns <code>null</code> the line was not handled by the
+     * convertor.
      *
      * @param line input line to convert
      * @return converted lines for output window

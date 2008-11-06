@@ -73,7 +73,7 @@ public class MissedSemicolonErrorFilter extends BaseParserErrorFilter {
                     }
                 }
                 result.add(toErrorInfo(text, line, col, file));
-                result.remove(e);
+//                result.remove(e);
                 break;
 //                BitSet t = (BitSet) expected.clone();
 //                t.remove(CPPTokenTypes.SEMICOLON);

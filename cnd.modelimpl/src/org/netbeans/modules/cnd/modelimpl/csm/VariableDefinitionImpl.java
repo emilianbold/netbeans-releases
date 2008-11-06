@@ -266,7 +266,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
             switch( token.getType() ) {
                 case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                 case CPPTokenTypes.CSM_ARRAY_DECLARATION:
-                    return token = token.getFirstChild();
+                    return token.getFirstChild();
                 case CPPTokenTypes.CSM_QUALIFIED_ID:
                 case CPPTokenTypes.ID:
                     return token;
