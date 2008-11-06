@@ -58,7 +58,7 @@ public class ReportPanel extends javax.swing.JPanel {
     public ReportPanel() {
         initComponents();
         jLabel10.setVisible(false);
-        jCheckBox1ActionPerformed(null);
+        asAGuestCheckBoxActionPerformed(null);
     }
     /** This method is called from within the constructor to
      * initialize the form.
@@ -84,9 +84,12 @@ public class ReportPanel extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jPasswordField1 = new javax.swing.JPasswordField();
-        jCheckBox1 = new javax.swing.JCheckBox();
+        rememberCheckBox = new javax.swing.JCheckBox();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
+        asAGuestCheckBox = new javax.swing.JCheckBox();
+
+        setPreferredSize(new java.awt.Dimension(630, 430));
 
         jLabel3.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel3.text")); // NOI18N
 
@@ -129,19 +132,22 @@ public class ReportPanel extends javax.swing.JPanel {
 
         jPasswordField1.setText(exSettings.getPasswd());
 
-        jCheckBox1.setSelected(exSettings.isGuest());
-        org.openide.awt.Mnemonics.setLocalizedText(jCheckBox1, org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N
-        jCheckBox1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        jCheckBox1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox1ActionPerformed(evt);
-            }
-        });
+        rememberCheckBox.setSelected(exSettings.rememberPasswd());
+        org.openide.awt.Mnemonics.setLocalizedText(rememberCheckBox, org.openide.util.NbBundle.getMessage(ReportPanel.class, "jCheckBox1.text")); // NOI18N
+        rememberCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
         jLabel10.setForeground(new java.awt.Color(255, 51, 51));
         jLabel10.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel10.text")); // NOI18N
 
         jLabel11.setText(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jLabel11.text")); // NOI18N
+
+        asAGuestCheckBox.setSelected(exSettings.isGuest());
+        org.openide.awt.Mnemonics.setLocalizedText(asAGuestCheckBox, org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.asAGuestCheckBox.text")); // NOI18N
+        asAGuestCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asAGuestCheckBoxActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
@@ -151,42 +157,46 @@ public class ReportPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
+                        .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addContainerGap())
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jLabel8)
-                            .add(layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel1)
-                                    .add(jLabel5))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jPasswordField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
-                                    .add(jCheckBox1)
-                                    .add(loginField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE))
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 13, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(jLabel10)
-                                    .add(jLabel11))))
+                            .add(jLabel1)
+                            .add(jLabel5))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jPasswordField1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                            .add(loginField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 293, Short.MAX_VALUE)
+                            .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, asAGuestCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .add(org.jdesktop.layout.GroupLayout.LEADING, rememberCheckBox, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(jLabel10)
+                            .add(jLabel11))
                         .addContainerGap())
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
                                 .add(jLabel9)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(summaryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 393, Short.MAX_VALUE))
-                            .add(jLabel3, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE)
+                                .add(summaryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 515, Short.MAX_VALUE))
                             .add(layout.createSequentialGroup()
                                 .add(jLabel2)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(jLabel6)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE))
-                            .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 453, Short.MAX_VALUE))
+                                .add(jLabel7, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 283, Short.MAX_VALUE))
+                            .add(jLabel4, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 593, Short.MAX_VALUE))
                         .addContainerGap())
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE)
-                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 454, Short.MAX_VALUE))
-                        .add(11, 11, 11))))
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE)
+                            .add(jSeparator1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 594, Short.MAX_VALUE))
+                        .add(11, 11, 11))
+                    .add(layout.createSequentialGroup()
+                        .add(jLabel8)
+                        .addContainerGap(168, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -205,7 +215,7 @@ public class ReportPanel extends javax.swing.JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(jLabel4)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 224, Short.MAX_VALUE)
+                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
                 .add(jSeparator1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -219,8 +229,10 @@ public class ReportPanel extends javax.swing.JPanel {
                     .add(jLabel10)
                     .add(jPasswordField1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .add(4, 4, 4)
-                .add(jCheckBox1)
+                .add(rememberCheckBox)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(asAGuestCheckBox)
+                .add(9, 9, 9)
                 .add(jLabel8))
         );
 
@@ -228,6 +240,9 @@ public class ReportPanel extends javax.swing.JPanel {
         loginField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.loginField.AccessibleContext.accessibleDescription")); // NOI18N
         summaryField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.summaryField.AccessibleContext.accessibleName")); // NOI18N
         summaryField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.summaryField.AccessibleContext.accessibleDescription")); // NOI18N
+        jPasswordField1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jPasswordField1.AccessibleContext.accessibleName")); // NOI18N
+        jPasswordField1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.jPasswordField1.AccessibleContext.accessibleDescription")); // NOI18N
+        rememberCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.rememberCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ReportPanel.class, "ReportPanel.AccessibleContext.accessibleDescription")); // NOI18N
@@ -240,37 +255,49 @@ public class ReportPanel extends javax.swing.JPanel {
             }
     }//GEN-LAST:event_registerClicked
 
-        private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox1ActionPerformed
-            if (jCheckBox1.isSelected()){
+        private void asAGuestCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asAGuestCheckBoxActionPerformed
+            if (asAGuestCheckBox.isSelected()){
                 loginField.setEnabled(false);
                 jPasswordField1.setEnabled(false);
+                rememberCheckBox.setEnabled(false);
                 jLabel10.setVisible(false);
             }else{
                 loginField.setEnabled(true);
                 jPasswordField1.setEnabled(true);
+                rememberCheckBox.setEnabled(true);
             }
-        }//GEN-LAST:event_jCheckBox1ActionPerformed
+        }//GEN-LAST:event_asAGuestCheckBoxActionPerformed
         
-        public void saveUserName() {
-            if (jCheckBox1.isSelected()){
+       public  void saveUserData() {
+            if (asAGuestCheckBox.isSelected()){
                 exSettings.setGuest(true);
                 return;
             }
             String login = loginField.getText();
-            if ((login != null) && (login.length() != 0)) {
-                exSettings.setUserName(login);
-            }
-            String passwd = new String(jPasswordField1.getPassword());
-            if ((passwd != null) && (passwd.length() != 0)) {
-                exSettings.setPasswd(passwd);
-            }
+            exSettings.setUserName(login);
             exSettings.setGuest(false);
+            boolean rememberPasswd = rememberCheckBox.isSelected();
+            exSettings.setRememberPasswd(rememberPasswd);
+            if (rememberPasswd){
+                String passwd = new String(jPasswordField1.getPassword());
+                exSettings.setPasswd(passwd);
+            }else{
+                exSettings.setPasswd("");   //NOI18N
+            }
         }
         
         public boolean asAGuest(){
-            return jCheckBox1.isSelected();
+            return asAGuestCheckBox.isSelected();
         }
-        
+
+        public String getUserName(){
+            return loginField.getText();
+        }
+
+        public String getPasswd(){
+            return new String(jPasswordField1.getPassword());
+        }
+
         public String getSummary() {
             return summaryField.getText();
         }
@@ -288,8 +315,8 @@ public class ReportPanel extends javax.swing.JPanel {
         }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox asAGuestCheckBox;
     private javax.swing.JTextArea commentArea;
-    private javax.swing.JCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -305,6 +332,7 @@ public class ReportPanel extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField loginField;
+    private javax.swing.JCheckBox rememberCheckBox;
     private javax.swing.JTextField summaryField;
     // End of variables declaration//GEN-END:variables
 }

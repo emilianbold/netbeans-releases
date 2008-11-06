@@ -38,20 +38,24 @@
  */
 package org.netbeans.test.mobility;
 
-import java.awt.Component;
+import java.io.BufferedInputStream;
 import java.io.File;
-import org.netbeans.core.windows.view.ui.slides.SlideBar;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
+import java.util.Properties;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.NewProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jemmy.ComponentChooser;
 import org.netbeans.jemmy.operators.DialogOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
-import org.netbeans.jemmy.operators.JComponentOperator;
 import org.netbeans.jemmy.operators.JMenuBarOperator;
-import org.netbeans.jemmy.operators.JRadioButtonMenuItemOperator;
 import org.netbeans.jemmy.operators.JRadioButtonOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.junit.NbModuleSuite;
@@ -61,6 +65,9 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.TopComponentOperator;
+import org.netbeans.junit.Manager;
+import org.netbeans.modules.mobility.cldcplatform.startup.PostInstallJ2meAction;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -88,23 +95,162 @@ public class ValidationTest extends JellyTestCase {
                 NbModuleSuite.createConfiguration(ValidationTest.class).addTest(tests).clusters(".*").enableModules(".*").gui(true));
     }
 
+    private static void createPlatform() {
+        //See original version of this in TestUtil.java in unit tests
+        String wtkZipPath = null;
+        String cp = System.getProperty ("java.class.path");
+        String[] x = cp.split(File.pathSeparator);
+        String oneModule = x[0];
+        int ix = oneModule.indexOf ("nbbuild" + File.separatorChar + "netbeans");
+        String srcPath = oneModule.substring(0, ix);
+        File userBuildProps = new File (new File (srcPath),
+                File.separator + "nbbuild" +
+                File.separator + "user.build.properties");
+        userBuildProps = FileUtil.normalizeFile(userBuildProps);
+        if (userBuildProps.exists()) {
+            InputStream in = null;
+            try {
+                Properties p = new Properties();
+                in = new BufferedInputStream(new FileInputStream(userBuildProps));
+                try {
+                    p.load(in);
+                } finally {
+                    in.close();
+                }
+                wtkZipPath = p.getProperty("wtk.zip");
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            } finally {
+                try {
+                    in.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException (ex);
+                }
+            }
+        }
+
+        if (wtkZipPath == null) {
+            return;
+        }
+        File wtkZip = new File (wtkZipPath);
+        File parent = wtkZip.getAbsoluteFile();
+        String osarch = System.getProperty("os.name", null);
+        if (!wtkZip.exists() || !wtkZip.isFile()) {
+            if (parent.isDirectory() && parent.exists()) {
+                String ossuf = null;
+                NbTestCase.assertNotNull(osarch);
+                for (int i=20; i < 40; i++) {
+                    String ver = Integer.toString(i);
+                    if (osarch.toLowerCase().indexOf("windows") != -1) {
+                        ossuf = ver + "_win";
+                    } else if (osarch.toLowerCase().indexOf("linux") != -1) {
+                        ossuf = ver + "_linux";
+                    } else if (osarch.toLowerCase().indexOf("sunos") != -1) {
+                        /* For Solaris we have just wtk21 */
+                        ossuf = ver + "_sunos";
+                    }
+                    if (ossuf != null) {
+                        wtkZip = new File (parent, "wtk_" + ossuf);
+                        System.err.println("Try " + wtkZip.getPath());
+                        if (wtkZip.isFile() && wtkZip.exists()) {
+                            break;
+                        } else {
+                            wtkZip = null;
+                        }
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+
+        //For new emulator install test
+        System.setProperty ("wtk.zip", wtkZip.getPath());
+        String destPath=Manager.getWorkDirPath();
+
+        System.out.println("Unzipping wireless toolkit into " + destPath);
+        ZipFile zip = null;
+        String root = null;
+        try {
+            zip = new ZipFile(wtkZip);
+            Enumeration files = zip.entries();
+            while (files.hasMoreElements()) {
+                ZipEntry entry = (ZipEntry) files.nextElement();
+                if (entry.isDirectory()){
+                    if (root == null || entry.getName().length() < root.length()) {
+                        root = entry.getName();
+                    }
+                    new File(destPath, entry.getName()).mkdirs();
+                } else {
+                    /* Extract only if not already present */
+                    File test=new File(destPath+"/"+entry.getName());
+                    if (!(test.isFile() && test.length() == entry.getSize()))
+                        copy(zip.getInputStream(entry), entry.getName(), new File(destPath));
+                }
+            }
+        } catch (IOException ex) {
+            throw new Error (ex);
+        } finally {
+            if (zip != null) {
+                try {
+                    zip.close();
+                } catch (IOException e) {
+                    throw new RuntimeException (e);
+                }
+            }
+        }
+
+        String home = destPath + File.separatorChar + root + File.separatorChar;
+        try {
+            PostInstallJ2meAction.installAction(home);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        System.out.println("platform.home for unit tests set to " + home);
+        System.setProperty ("platform.home", home);
+        System.setProperty("platform.type","UEI-1.0");
+    }
+
+    private static void copy(InputStream input, String file, File target) throws IOException {
+        if (input == null  ||  file == null  ||  "".equals(file)) //NOI18N
+            return;
+        File output = new File(target, file);
+        output.getParentFile().mkdirs();
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(output);
+            FileUtil.copy(input, fos);
+        } finally {
+            if (input != null) try { input.close(); } catch (IOException e) {}
+            if (fos != null) try { fos.close(); } catch (IOException e) {}
+        }
+    }
+
+    private String initWtk() {
+        //Try new way, with wtk location specified in nbbuild/user.build.properties
+        createPlatform();
+        String wtkZip = System.getProperty ("wtk.zip");
+        if (wtkZip == null) {
+            String wtkPath = System.getProperty("wtk.dir");
+            //perhaps automated tests still need this?
+            String osarch = System.getProperty("os.name", null);
+            String ossuf = null;
+            if (osarch.toLowerCase().indexOf("windows") != -1) {
+                ossuf = "22_win";
+            } else if (osarch.toLowerCase().indexOf("linux") != -1) {
+                ossuf = "22_linux";
+            }
+
+            wtkZip = wtkPath + File.separator + "wtk" + ossuf + ".zip";
+        }
+        return wtkZip;
+    }
+
     /**
      * test of adding ME emulator
      */
     public void testAddEmulator() {
-        String wtkPath = System.getProperty("wtk.dir");
-
-        String wtkZip = "";
-
-        String osarch = System.getProperty("os.name", null);
-        String ossuf = null;
-        if (osarch.toLowerCase().indexOf("windows") != -1) {
-            ossuf = "22_win";
-        } else if (osarch.toLowerCase().indexOf("linux") != -1) {
-            ossuf = "22_linux";
-        }
-
-        wtkZip = wtkPath + File.separator + "wtk" + ossuf + ".zip";
+        String wtkZip = initWtk();
 
         String unzipDir = System.getProperty("nbjunit.workdir") + File.separator + "wtkemulator";
 
@@ -154,6 +300,7 @@ public class ValidationTest extends JellyTestCase {
     }
 
     public void testCreateNewFiles() {
+        initWtk();
         //select the project in project view
         new ProjectsTabOperator().getProjectRootNode(PROJECT_TO_BE_CREATED).select();
         //create all new files in the project
@@ -170,6 +317,7 @@ public class ValidationTest extends JellyTestCase {
     }
 
     public void testCreateMIDPApplication() {
+        initWtk();
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory("Java ME"); // XXX use Bundle.getString instead
         wizard.selectProject("Mobile Application");

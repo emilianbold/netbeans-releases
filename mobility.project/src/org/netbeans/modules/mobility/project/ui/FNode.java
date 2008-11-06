@@ -38,35 +38,87 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * Actions.java
- *
- * Created on 6.9.2004, 15:07
- */
 package org.netbeans.modules.mobility.project.ui;
 
+import java.awt.Image;
 import javax.swing.Action;
-import org.netbeans.modules.mobility.project.J2MEActionProvider;
-import org.netbeans.spi.project.ui.support.MainProjectSensitiveActions;
-import org.openide.util.NbBundle;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.mobility.project.ui.customizer.VisualClassPathItem;
+import org.openide.actions.CopyAction;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.Lookup;
+import org.openide.util.actions.SystemAction;
 
-/**
- *
- * @author  Adam Sotona
- */
-public class Actions {
-    
-    private Actions()
-    {
-        // To avoid instantiation
+class FNode extends FilterNode {
+
+    private final Action[] actions;
+    private final Image icon;
+    final boolean origProp;
+
+    FNode(Node original, Lookup lookup, Action[] acts, VisualClassPathItem it) {
+        super(original, new ActionFilterChildren(original), lookup);
+        actions = acts == null ? new Action[0] : acts;
+        icon = ((ImageIcon) it.getIcon()).getImage();
+        origProp = false;
     }
-    
-    public static Action buildAllConfigurationsAction() {
-        return MainProjectSensitiveActions.mainProjectCommandAction(J2MEActionProvider.COMMAND_BUILD_ALL, NbBundle.getMessage(Actions.class, "LBL_BuildAllMainProjectCfg"), null); //NOI18N
+
+    FNode(Node original, Image it) {
+        super(original, new ActionFilterChildren(original), null);
+        origProp = true;
+        actions = original.getActions(false);
+        icon = it;
     }
-    
-    public static Action rebuildAllConfigurationsAction() {
-        return MainProjectSensitiveActions.mainProjectCommandAction(J2MEActionProvider.COMMAND_REBUILD_ALL, NbBundle.getMessage(Actions.class, "LBL_CleanAndBuildAllMainProjectCfg"), null); //NOI18N
+
+    @Override
+    public Action[] getActions(boolean context) {
+        return actions == null ? 
+            new Action[]{
+                NodeActions.RemoveResourceAction.getStaticInstance(),
+                SystemAction.get(CopyAction.class)
+        }
+            : actions;
+    }
+
+    @Override
+    public Image getIcon(int i) {
+        return icon;
+    }
+
+    @Override
+    public Image getOpenedIcon(int i) {
+        return icon;
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return origProp == true ? super.canDestroy() : false;
+    }
+
+    @Override
+    public boolean canRename() {
+        return origProp == true ? super.canRename() : false;
+    }
+
+    @Override
+    public boolean canCut() {
+        return origProp == true ? super.canCut() : false;
+    }
+
+    @Override
+    public boolean canCopy() {
+        return origProp == true ? super.canCopy() : true;
+    }
+
+    private static class ActionFilterChildren extends FilterNode.Children {
+
+        ActionFilterChildren(Node original) {
+            super(original);
+        }
+
+        @Override
+        protected Node[] createNodes(Node n) {
+            return new Node[]{new FNode(n, n.getIcon(1))};
+        }
     }
 }

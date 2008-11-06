@@ -352,7 +352,8 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         String  s=J2MEProjectUtils.detectConfiguration(churl,url);
         assertNull(s);
     }
-    
+
+    /*
     public void testCreateProjectFromSuite() throws Exception {
         File studiodemo=getGoldenFile("Studio");
         FileObject projectDir=FileUtil.toFileObject(getWorkDir()).createFolder("Studio");
@@ -370,7 +371,6 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         }
         assertNotNull(aph);
         
-        /* Test ProjectUtils */
         Project prj=ProjectManager.getDefault().findProject(projectDir);
         FileObject fo=projectDir.getFileObject("Midlet.java");
         DataObject dob=DataObject.find(fo);
@@ -392,6 +392,7 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         p=J2MEProjectUtils.getActiveProject();
         assertNull(p);
     }
+     */
     
     public void testCreateProjectFromTemplate() throws Exception {
         final FileObject projectDir=FileUtil.toFileObject(getWorkDir()).createFolder("Suite");
@@ -409,7 +410,8 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         assertNotNull(aph);
         assertTrue(checkFiles(projectDir,aph,false));
     }
-    
+
+    /*
     public void testCreateProjectFromWTK() throws Exception {
         File wtkdemo=getGoldenFile("WTKDemo");
         FileObject projectDir=FileUtil.toFileObject(getWorkDir()).createFolder("Demo");
@@ -423,7 +425,9 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         assertNotNull(aph);
         assertTrue(checkFiles(projectDir,aph,false));
     }
-    
+     */
+
+    /*
     public void testCreateProjectFromSource() throws Exception {
         FileObject scratchDir = TestUtil.makeScratchDir( this );
         FileObject projectDir = scratchDir.createFolder( "testProject" );
@@ -458,6 +462,7 @@ public class J2MEProjectGeneratorTest extends NbTestCase {
         assertNotNull(dph);
         assertTrue(checkFiles(dupldir,dph,true));
     }
+     */
     
     public void testCreateProject() throws Exception {
         File workDir = getWorkDir();

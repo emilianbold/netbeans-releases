@@ -60,7 +60,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.ProjectConfigurationsHelper;
 import org.netbeans.modules.mobility.project.TestUtil;
@@ -81,7 +80,6 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
     {
         TestUtil.setLookup( new Object[] {            
         }, ProjectConfigurationsHelperTest.class.getClassLoader());
-        assertNotNull(MasterFileSystem.settingsFactory(null));
         
         Logger.getLogger("org.openide.util.RequestProcessor").addHandler(new Handler() {
                 public void publish(LogRecord record) {
@@ -106,17 +104,16 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         TestUtil.setEnv();
     }
     
-    void waitFinished()
-    {
-        while (true)
-        {
-            try   {
-                syncObj.wait();
-                break;
+    void waitFinished(File proj) {
+        File f = new File (new File (proj, "nbproject"), "project.properties");
+        int ct=0;
+        try {
+            while (!f.exists() && ct++ < 200) {
+                Thread.sleep(100);
             }
-            catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            Thread.sleep(500);
+        } catch (InterruptedException interruptedException) {
+            throw new RuntimeException (interruptedException);
         }
     }
     
@@ -129,7 +126,7 @@ public class ProjectConfigurationsHelperTest extends NbTestCase {
         
         synchronized(syncObj) {
             aph = J2MEProjectGenerator.createNewProject(proj, "testProject", null, null,null);
-            waitFinished();
+            waitFinished(proj);
         }
         Project p=ProjectManager.getDefault().findProject(FileUtil.toFileObject(proj));
         assertNotNull(p);
