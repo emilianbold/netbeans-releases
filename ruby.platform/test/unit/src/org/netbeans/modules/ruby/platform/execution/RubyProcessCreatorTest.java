@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +37,30 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.platform.execution;
 
-package org.netbeans.modules.ruby.rubyproject.spi;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.api.ruby.platform.RubyPlatformManager;
+import org.netbeans.api.ruby.platform.RubyTestBase;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
+public final class RubyProcessCreatorTest extends RubyTestBase {
 
-/**
- * Provides a possiblity to customize rake tasks, such as adding/removing parameters or
- * adding <code>OutputRecognizer</code>s before the tasks are run.
- *
- * @author Erno Mononen
- */
-public interface RakeTaskCustomizer {
+    public RubyProcessCreatorTest(String testName) {
+        super(testName);
+    }
 
-    /**
-     * Configures the given <code>task</code> and <code>taskDescriptor</code> as
-     * necessary.
-     *
-     * @param project the project in which the <code>task</code> is invoked.
-     * @param task the task being invoked.
-     * @param taskDescriptor the descriptor for the given <code>task</code>.
-     * @param debug
-     */
-    ExecutionDescriptor customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug);
-
+    public void testCreateProcess() throws Exception {
+        RubyPlatform platform = RubyPlatformManager.getDefaultPlatform();
+        RubyExecutionDescriptor descriptor = new RubyExecutionDescriptor(platform);
+        descriptor.cmd(platform.getInterpreterFile());
+        descriptor.additionalArgs("-v");
+        descriptor.pwd = getWorkDir();
+        RubyProcessCreator creator = new RubyProcessCreator(descriptor);
+        Process process = creator.call();
+        assertEquals(0, process.waitFor());
+    }
 
 }
+
+

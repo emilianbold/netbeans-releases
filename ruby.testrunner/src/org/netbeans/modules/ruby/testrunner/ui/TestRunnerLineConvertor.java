@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.ruby.testrunner.ui;
@@ -42,47 +42,32 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.openide.util.NbBundle;
+import org.netbeans.modules.extexecution.api.print.ConvertedLine;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 
 /**
  *
  * @author Erno Mononen
  */
-public final class TestRecognizer extends OutputRecognizer {
+public final class TestRunnerLineConvertor implements LineConvertor {
 
-    private static final Logger LOGGER = Logger.getLogger(TestRecognizer.class.getName());
-    
+    private static final Logger LOGGER = Logger.getLogger(TestRunnerLineConvertor.class.getName());
     private final Manager manager;
     private TestSession session;
     private final List<TestRecognizerHandler> handlers;
-    private final boolean printSummary;
 
-    public TestRecognizer(Manager manager, 
-            List<TestRecognizerHandler> handlers, 
-            TestSession session, boolean printSummary) {
-        
+    public TestRunnerLineConvertor(Manager manager, TestSession session, TestHandlerFactory handlerFactory) {
         this.manager = manager;
-        this.handlers = handlers;
         this.session = session;
-        this.printSummary = printSummary;
+        this.handlers = handlerFactory.createHandlers();
     }
 
-    public synchronized void refreshSession() {
-        // workaround for making re-run work correctly, need to rethink
-        // when migrating to the new Execution API
+    public void refreshSession() {
         this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType());
     }
-    
-    @Override
-    public synchronized void start() {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Session starting: " + session);
-        }
-    }
 
-    @Override
-    public synchronized RecognizedOutput processLine(String line) {
+    public synchronized List<ConvertedLine> convert(String line) {
 
         for (TestRecognizerHandler handler : handlers) {
             if (handler.matches(line)) {
@@ -91,15 +76,13 @@ public final class TestRecognizer extends OutputRecognizer {
                 }
                 try {
                     handler.updateUI(manager, session);
-                    return handler.getRecognizedOutput();
+                    return asConvertedLines(handler.getRecognizedOutput());
                 } catch (IllegalStateException ise) {
                     // ISE is thrown when mathing a group fails, should be enough to log a warning
                     LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ise);
-                    return null;
                 } catch (IndexOutOfBoundsException ioobe) {
                     // IOOBE is thrown when there is no group with the expected index.
                     LOGGER.log(Level.WARNING, "Failed to process line: " + line + " with handler: " + handler, ioobe);
-                    return null;
                 }
             }
         }
@@ -107,39 +90,27 @@ public final class TestRecognizer extends OutputRecognizer {
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "No handler for line: " + line);
         }
-
         manager.displayOutput(session, line, false);
         return null;
     }
-    
-    @Override
-    public synchronized void finish() {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Session finished: " + session);
+
+    private List<ConvertedLine> asConvertedLines(List<String> lines) {
+        List<ConvertedLine> result = new ArrayList<ConvertedLine>(lines.size());
+
+        boolean handled = false;
+        for (String line : lines) {
+            for (LineConvertor convertor : RubyLineConvertorFactory.getStandardConvertors(session.getFileLocator())) {
+                List<ConvertedLine> converted = convertor.convert(line);
+                if (converted != null) {
+                    result.addAll(converted);
+                    handled = true;
+                    break;
+                }
+            }
+            if (!handled) {
+                result.add(ConvertedLine.forText(line, null));
+            }
         }
-        manager.sessionFinished(session);
+        return result;
     }
-
-    @Override
-    public synchronized String[] beforeFinish() {
-        if (!printSummary) {
-            return new String[0];
-        }
-        List<String> output = new ArrayList<String>(2);
-        output.add("");
-        output.add(NbBundle.getMessage(TestRecognizer.class,
-                "MSG_TestSessionFinished", new Double(session.getSessionResult().getElapsedTime() / 1000d)));
-        output.add(NbBundle.getMessage(TestRecognizer.class,
-                "MSG_TestSessionFinishedSummary",
-                session.getSessionResult().getTotal(),
-                session.getSessionResult().getFailed(),
-                session.getSessionResult().getErrors()));
-
-        for (String line : output) {
-            manager.displayOutput(session, line, false);
-        }
-
-        return output.toArray(new String[output.size()]);
-    }
-
 }

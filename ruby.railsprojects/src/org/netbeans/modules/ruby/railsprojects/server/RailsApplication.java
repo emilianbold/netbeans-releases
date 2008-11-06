@@ -39,7 +39,7 @@
 
 package org.netbeans.modules.ruby.railsprojects.server;
 
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import java.util.concurrent.Future;
 
 /**
  * This class represent a running Rails application.
@@ -59,9 +59,9 @@ public class RailsApplication {
     /**
      * The execution process of the application.
      */
-    private final RubyExecution execution;
+    private final Future<Integer> execution;
 
-    public RailsApplication(String name, int port, RubyExecution execution) {
+    public RailsApplication(String name, int port, Future<Integer> execution) {
         this.name = name;
         this.port = port;
         this.execution = execution;
@@ -76,7 +76,7 @@ public class RailsApplication {
     }
     
     public void stop(){
-        execution.kill();
+        execution.cancel(true);
     }
     
 }

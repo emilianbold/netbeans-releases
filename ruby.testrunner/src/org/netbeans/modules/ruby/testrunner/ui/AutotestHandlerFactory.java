@@ -48,14 +48,18 @@ import org.netbeans.modules.ruby.testrunner.TestExecutionManager;
  *
  * @author Erno Mononen
  */
-public final class AutotestHandlerFactory {
+public final class AutotestHandlerFactory implements TestHandlerFactory {
 
-    public static List<TestRecognizerHandler> getHandlers() {
+    public List<TestRecognizerHandler> createHandlers() {
         List<TestRecognizerHandler> result = new ArrayList<TestRecognizerHandler>();
         result.add(new AutotestResetHandler());
-        result.addAll(RspecHandlerFactory.getHandlers());
-        result.addAll(TestUnitHandlerFactory.getHandlers());
+        result.addAll(new RspecHandlerFactory().createHandlers());
+        result.addAll(new TestUnitHandlerFactory().createHandlers());
         return result;
+    }
+
+    public boolean printSummary() {
+        return true;
     }
 
     static class AutotestResetHandler extends TestRecognizerHandler {
@@ -69,7 +73,6 @@ public final class AutotestHandlerFactory {
             manager.sessionFinished(session);
             TestExecutionManager.getInstance().refresh();
         }
-
 
     }
     

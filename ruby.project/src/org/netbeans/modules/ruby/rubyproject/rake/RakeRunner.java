@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.ruby.rubyproject.rake;
 
 import java.io.File;
@@ -49,11 +48,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
 import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
@@ -165,7 +167,7 @@ public final class RakeRunner {
      */
     public void run(String... taskNames) {
         if (taskNames.length == 0) {
-            taskNames = new String[] {"default"}; // NOI18N
+            taskNames = new String[]{"default"}; // NOI18N
         }
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
             return;
@@ -215,6 +217,24 @@ public final class RakeRunner {
         List<RakeTask> tasksToRun = Arrays.asList(tasks);
         computeAndSetDisplayName(tasksToRun);
 
+        final List<ExecutionService> services = getExecutionServices(tasksToRun);
+
+        for (ExecutionService each : services) {
+            each.run();
+        }
+    }
+
+    private List<ExecutionService> getExecutionServices(List<? extends RakeTask> tasks) {
+        List<ExecutionService> result = new ArrayList<ExecutionService>(tasks.size());
+
+        for (DescriptorHolder descriptor : getDescriptors(tasks)) {
+            result.add(buildExecutionService(descriptor.rubyDescriptor, descriptor.executionDescriptor));
+        }
+
+        return result;
+    }
+
+    private ExecutionService buildExecutionService(RubyExecutionDescriptor rubyDescriptor, ExecutionDescriptor descriptor) {
         String charsetName = null;
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -222,36 +242,17 @@ public final class RakeRunner {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
             }
         }
-
-        final String finalCharSet = charsetName;
-        final List<RubyExecutionDescriptor> descs = getExecutionDescriptors(tasksToRun);
-        RAKE_RUNNER_RP.post(new Runnable() {
-
-            public void run() {
-                for (RubyExecutionDescriptor desc : descs) {
-                    Task task = new RubyExecution(desc, finalCharSet).run();
-                    try {
-                        task.waitFinished(10000);
-                    } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            }
-        });
+        RubyProcessCreator processCreator = new RubyProcessCreator(rubyDescriptor, charsetName);
+        return ExecutionService.newService(processCreator, descriptor, displayName);
     }
 
-    /**
-     * Builds <code>ExecutionDescriptor</code>s for the given tasks.
-     * <i>package private for tests</i>
-     * @param tasks the tasks to build <code>ExecutionDescriptor</code>s for.
-     * @return
-     */
-    List<RubyExecutionDescriptor> getExecutionDescriptors(List<? extends RakeTask> tasks) {
+    // package private for unit tests
+    List<DescriptorHolder> getDescriptors(List<? extends RakeTask> tasks) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
         String rake = platform.getRake();
         Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
-        List<RubyExecutionDescriptor> result = new ArrayList<RubyExecutionDescriptor>(5);
+        List<DescriptorHolder> result = new ArrayList<DescriptorHolder>(tasks.size());
 
         for (RakeTask task : tasks) {
             RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, rake);
@@ -259,8 +260,12 @@ public final class RakeRunner {
             String[] existingInitialArgs = desc.getInitialArgs() != null ? desc.getInitialArgs() : new String[0];
             List<String> initialArgs = new ArrayList<String>(Arrays.asList(existingInitialArgs));
 
+            ExecutionDescriptor executionDescriptor = null;
             for (RakeTaskCustomizer customizer : customizers) {
-                customizer.customize(project, task, desc, debug);
+                executionDescriptor = customizer.customize(project, task, desc, debug);
+                if (executionDescriptor != null) {
+                    break;
+                }
             }
 
             initialArgs.addAll(task.getRakeParameters());
@@ -283,11 +288,14 @@ public final class RakeRunner {
             }
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
-            result.add(desc);
+            if (executionDescriptor == null) {
+                executionDescriptor = desc.toExecutionDescriptor();
+            }
+            result.add(new DescriptorHolder(desc, executionDescriptor));
         }
         return result;
-
     }
+
 
     private void doStandardConfiguration(RubyExecutionDescriptor desc) {
 
@@ -398,4 +406,17 @@ public final class RakeRunner {
             new RubyExecution(desc, charsetName).run();
         }
     }
+
+    // package private for unit tests
+    static final class DescriptorHolder {
+        
+        final RubyExecutionDescriptor rubyDescriptor;
+        final ExecutionDescriptor executionDescriptor;
+
+        DescriptorHolder(RubyExecutionDescriptor rubyDescriptor, ExecutionDescriptor executionDescriptor) {
+            this.rubyDescriptor = rubyDescriptor;
+            this.executionDescriptor = executionDescriptor;
+        }
+    }
+
 }

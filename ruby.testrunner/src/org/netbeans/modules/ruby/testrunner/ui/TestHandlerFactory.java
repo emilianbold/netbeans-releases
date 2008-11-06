@@ -37,31 +37,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.ruby.rubyproject.spi;
+package org.netbeans.modules.ruby.testrunner.ui;
 
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.rubyproject.rake.RakeTask;
+import java.util.List;
 
 /**
- * Provides a possiblity to customize rake tasks, such as adding/removing parameters or
- * adding <code>OutputRecognizer</code>s before the tasks are run.
  *
  * @author Erno Mononen
  */
-public interface RakeTaskCustomizer {
+public interface TestHandlerFactory {
 
-    /**
-     * Configures the given <code>task</code> and <code>taskDescriptor</code> as
-     * necessary.
-     *
-     * @param project the project in which the <code>task</code> is invoked.
-     * @param task the task being invoked.
-     * @param taskDescriptor the descriptor for the given <code>task</code>.
-     * @param debug
-     */
-    ExecutionDescriptor customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug);
+    List<TestRecognizerHandler> createHandlers();
 
+    boolean printSummary();
 
 }

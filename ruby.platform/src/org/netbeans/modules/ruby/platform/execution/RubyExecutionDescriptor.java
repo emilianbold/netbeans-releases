@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
@@ -86,6 +87,7 @@ public class RubyExecutionDescriptor {
     private String encoding;
     private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
+    private boolean runThroughRuby = true;
     /**
      * Defines whether rerun should be allowed. <i>Currently needed
      * only because rerunning rake test tasks in the test runner does not
@@ -225,6 +227,12 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
+    public RubyExecutionDescriptor runThroughRuby(boolean runThroughRuby) {
+        this.runThroughRuby = runThroughRuby;
+        return this;
+    }
+
+
     /**
      * Builder property which sets whether the JDK should be added to the PATH
      * for the executed process. The default is false. If it is set, it will be
@@ -243,7 +251,7 @@ public class RubyExecutionDescriptor {
         return this;
     }
 
-    String getDisplayName() {
+    public String getDisplayName() {
         return debug ? displayName + " (debug)" : displayName; // NOI18N
     }
 
@@ -251,6 +259,10 @@ public class RubyExecutionDescriptor {
         return platform;
     }
     
+    public boolean isRunThroughRuby() {
+        return runThroughRuby;
+    }
+
     public File getCmd() {
         return cmd;
     }
@@ -370,5 +382,16 @@ public class RubyExecutionDescriptor {
     public void setRerun(boolean rerun) {
         this.rerun = rerun;
     }
+
+    public ExecutionDescriptor toExecutionDescriptor() {
+        return new ExecutionDescriptor()
+            .showProgress(showProgress)
+            .controllable(isRerun())
+            .inputVisible(inputVisible)
+            .frontWindow(frontWindow)
+            .showSuspended(showSuspended)
+            .postExecution(postBuildAction);
+    }
+
 
 }

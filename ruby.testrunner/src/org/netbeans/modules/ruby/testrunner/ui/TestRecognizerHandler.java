@@ -38,26 +38,26 @@
  */
 package org.netbeans.modules.ruby.testrunner.ui;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FilteredOutput;
 
 /**
  * Base class for test recognizer handlers. 
  * 
  * @author Erno Mononen
  */
-public abstract class TestRecognizerHandler {
+abstract class TestRecognizerHandler {
 
     private static final Logger LOGGER = Logger.getLogger(TestRecognizerHandler.class.getName());
     
     protected final Pattern pattern;
     protected Matcher matcher;
 
-    public TestRecognizerHandler(String regex) {
+    TestRecognizerHandler(String regex) {
         // handle newline chars at the end -- see #143508
         if (!regex.endsWith(".*")) { //NOI18N
             regex += ".*";  //NOI18N
@@ -88,8 +88,8 @@ public abstract class TestRecognizerHandler {
      * @return the RecognizedOutput for output that should be passed on 
      * for printing to Output. 
      */
-    RecognizedOutput getRecognizedOutput() {
-        return new FilteredOutput(new String[0]);
+    List<String> getRecognizedOutput() {
+        return Collections.<String>emptyList();
     }
 
     protected static int toMillis(String timeInSeconds) {

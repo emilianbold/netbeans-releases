@@ -104,6 +104,8 @@
                 <friend>org.netbeans.modules.scala.console</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.python.core</friend>
+                <friend>org.netbeans.modules.ruby.platform</friend>
+                <friend>org.netbeans.modules.ruby.railsprojects</friend>
                 <package>org.netbeans.modules.extexecution.api</package>
                 <package>org.netbeans.modules.extexecution.api.print</package>
                 <package>org.netbeans.modules.extexecution.api.input</package>
