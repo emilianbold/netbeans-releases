@@ -232,7 +232,8 @@ public class DefaultPropertiesDescriptor implements ProjectPropertiesDescriptor 
             set.add(new PropertyDescriptor(DEPLOYMENT_JARURL, true, DefaultPropertyParsers.STRING_PARSER, "${dist.jar}")); //NOI18N
             ref = new WeakReference(set);
         }
-        return set;
+        //Defensive copy - getting CMEs when creating new configurations
+        return new HashSet(set);
     }
     
 }

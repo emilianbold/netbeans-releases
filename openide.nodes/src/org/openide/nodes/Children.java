@@ -41,6 +41,7 @@
 
 package org.openide.nodes;
 
+import java.awt.Panel;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -1792,7 +1793,7 @@ public abstract class Children extends Object {
                 if (mutex != null && (mutex.isReadAccess() || mutex.isWriteAccess())) {
                     throw new IllegalStateException("Should not acquire Children.MUTEX while holding ProjectManager.mutex()");
                 }
-            }
+                }
             command.run();
         }
 

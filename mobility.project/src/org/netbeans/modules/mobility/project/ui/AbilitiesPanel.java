@@ -660,10 +660,14 @@ public class AbilitiesPanel implements NavigatorPanel
     
     public synchronized void panelActivated(final Lookup context)
     {
+        context.lookupAll(Node.class);
+        Node[] nodes = (Node[]) context.lookupAll(Node.class).toArray(new Node[context.lookupAll(Node.class).size()]);
+        ABPanel.setAbilities(nodes);
     }
     
     public synchronized void panelDeactivated()
     {
+        ABPanel.setAbilities(new Node[0]);
     }
     
     public Lookup getLookup()
