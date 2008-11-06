@@ -44,8 +44,11 @@ import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
 
 /**
+ *  Test suite for web services support in various project types in the IDE.
  *
- * @author lukas
+ *  Duration of this test suite: aprox. 20min
+ *
+ * @author lukas.jungmann@sun.com
  */
 public class FullWsValidation extends J2eeTestCase {
 
@@ -84,8 +87,12 @@ public class FullWsValidation extends J2eeTestCase {
                     ), EjbWsValidation.class,
                     "testCreateNewWs",
                     "testAddOperation",
+                    "testSetSOAP",
+                    "testGenerateWSDL",
+                    "testStartServer",
                     "testWsHandlers",
                     "testDeployWsProject",
+                    "testTestWS",
                     "testCreateWsClient",
                     "testCallWsOperationInSessionEJB",
                     "testCallWsOperationInJavaClass",
