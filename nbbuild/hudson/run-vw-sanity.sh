@@ -39,9 +39,7 @@ run_sanity() {
 	# Run Sanity test on VisualWeb build
         #cd $TEST_ROOT
 	#ant build-test-tools
-        # ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../xtest/instance/results -Dxtest.timeout=1200000 -Dxtest.instance.name="Visualweb tests"
         # XXX temporarily store results separately until fixed
-        #ant commit-validation -Dxtest.no.cleanresults=true -Dxtest.results=$TEST_ROOT/../../xtest/instance/results/vw -Dxtest.timeout=1200000 -Dxtest.instance.name="Visualweb tests"
         ant -f visualweb.kit/build.xml -Dtest.config=uicommit -Dcontinue.after.failing.tests=true test
 
 	ERROR_CODE=$?
