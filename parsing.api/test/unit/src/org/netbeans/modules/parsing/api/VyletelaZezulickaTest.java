@@ -93,7 +93,7 @@ public class VyletelaZezulickaTest extends NbTestCase {
                         }
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                 }
                             };

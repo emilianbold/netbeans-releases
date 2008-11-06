@@ -240,7 +240,7 @@ public class ParserManagerTest extends NbTestCase {
 
         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
             getResultCount++;
-            return new Result (last) {
+            return new Result (last, event) {
                 public void invalidate () {
                 }
             };

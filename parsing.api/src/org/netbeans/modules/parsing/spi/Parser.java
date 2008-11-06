@@ -123,14 +123,19 @@ public abstract class Parser {
      */
     public abstract static class Result {
         
-        private final Snapshot snapshot;
+        private final Snapshot          snapshot;
+        private final SchedulerEvent    event;
         
         /**
          * Creates a {@link Result} for given snapshot
          * @param snapshot
          */
-        protected Result (final Snapshot snapshot) {
-            this.snapshot = snapshot;
+        protected Result (
+            final Snapshot              _snapshot,
+            final SchedulerEvent        _event
+        ) {
+            snapshot = _snapshot;
+            event = _event;
         }
         
         /**
@@ -139,7 +144,17 @@ public abstract class Parser {
          */
         public Snapshot getSnapshot () {
             return this.snapshot;
-        }                        
+        }
+
+        /**
+         * Returns a {@link SchedulerEvent} represented by this {@link Result}
+         * @return
+         */
+        public SchedulerEvent getEvent () {
+            return event;
+        }
+        
+        
         /**
          * This method is called by Parsing API, when {@link Task} is finished.
          */

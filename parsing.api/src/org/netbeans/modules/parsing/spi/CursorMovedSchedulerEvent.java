@@ -37,44 +37,29 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.parsing;
+package org.netbeans.modules.parsing.spi;
 
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
-import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
- * @author Tomas Zezula
+ * @author hanz
  */
-public class JavacParserResult extends Parser.Result {
-    
-    private final CompilationInfo info;
+public class CursorMovedSchedulerEvent extends SchedulerEvent {
 
-    public JavacParserResult (final CompilationInfo info) {
-        super (
-            JavaSourceAccessor.getINSTANCE ().getCompilationInfoImpl (info).getSnapshot (),
-            JavaSourceAccessor.getINSTANCE ().getCompilationInfoImpl (info).getEvent ()
-        );
-        assert info != null;
-        this.info = info;
-    }
-        
-    private boolean supports (Class<? extends CompilationInfo> clazz) {
-        assert clazz != null;
-        return clazz.isInstance(info);
-    }
-    
-    public <T extends CompilationInfo> T get (final Class<T> clazz) {
-        if (supports(clazz)) {
-            return clazz.cast(info);
-        }
-        return null;
+    private int             caretOffset;
+
+    protected CursorMovedSchedulerEvent (
+        Object              source,
+        int                 _caretOffset
+    ) {
+        super (source);
+        caretOffset = _caretOffset;
     }
 
-    @Override
-    public void invalidate() {
-        JavaSourceAccessor.getINSTANCE().invalidate (info);
+    public int getCaretOffset () {
+        return caretOffset;
     }
-
 }
+
+
+

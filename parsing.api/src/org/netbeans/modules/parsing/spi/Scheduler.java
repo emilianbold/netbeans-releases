@@ -146,6 +146,7 @@ public abstract class Scheduler {
                 public void run () {
                     for (Source source : Scheduler.this.sources) {
                         SourceCache cache = SourceAccessor.getINSTANCE ().getCache (source);
+                        SourceAccessor.getINSTANCE ().setEvent (source, event);
                         cache.scheduleTasks (Scheduler.this.getClass ());
                     }
                 }

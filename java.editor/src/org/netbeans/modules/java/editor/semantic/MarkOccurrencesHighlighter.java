@@ -53,8 +53,8 @@ import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+
 import java.awt.Color;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -75,10 +75,9 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -86,17 +85,15 @@ import org.netbeans.modules.editor.errorstripe.privatespi.Mark;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.MarkOccurencesSettings;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
-import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
-import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
-import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+
 
 /**
  *
@@ -139,7 +136,9 @@ public class MarkOccurrencesHighlighter extends ParserResultTask {
 
         long start = System.currentTimeMillis();
 
-        int caretPosition = CaretAwareJavaSourceTaskFactory.getLastPosition(file);//XXX
+        int caretPosition = parseResult.getEvent () instanceof CursorMovedSchedulerEvent ? 
+            ((CursorMovedSchedulerEvent) parseResult.getEvent ()).getCaretOffset () :
+            CaretAwareJavaSourceTaskFactory.getLastPosition(file);//XXX
 
         if (isCancelled())
             return;

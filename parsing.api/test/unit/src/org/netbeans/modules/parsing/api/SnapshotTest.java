@@ -180,7 +180,7 @@ public class SnapshotTest extends NbTestCase {
                     }
 
                     public Result getResult (Task task, SchedulerEvent event) throws ParseException {
-                        return new Result (last) {
+                        return new Result (last, event) {
                             protected void invalidate (){}
                         };
                     }
