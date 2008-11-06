@@ -53,7 +53,7 @@ import org.netbeans.spi.project.LookupProvider;
  *
  * @author Jiri Sedlacek
  */
-@LookupProvider.Register(projectType="org-netbeans-modules-java-j2seproject")
+@LookupProvider.Registration(projectType="org-netbeans-modules-java-j2seproject")
 public class LookupProviderImpl extends AbstractProjectLookupProvider {        
     @Override
     protected List getAdditionalLookups(final Project project) {

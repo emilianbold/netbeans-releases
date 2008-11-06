@@ -73,7 +73,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
-@LookupProvider.Register(projectType="org-netbeans-modules-web-project")
+@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
 public class WebJaxWsLookupProvider implements LookupProvider {
     
     private String JAX_WS_XML_RESOURCE="/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xml"; //NOI18N

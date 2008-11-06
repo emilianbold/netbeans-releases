@@ -52,7 +52,7 @@ import org.netbeans.modules.profiler.projectsupport.AbstractProjectLookupProvide
  * @author Jiri Sedlacek
  */
 public class LookupProvider {
-    @org.netbeans.spi.project.LookupProvider.Register(projectType="org-netbeans-modules-web-project")
+    @org.netbeans.spi.project.LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
     public static class WebProject extends AbstractProjectLookupProvider {
         @Override
         protected List getAdditionalLookups(final Project project) {
@@ -65,7 +65,7 @@ public class LookupProvider {
         
     }
     
-    @org.netbeans.spi.project.LookupProvider.Register(projectType="org-netbeans-modules-j2ee-earproject")
+    @org.netbeans.spi.project.LookupProvider.Registration(projectType="org-netbeans-modules-j2ee-earproject")
     public static class EarProject extends AbstractProjectLookupProvider {
         @Override
         protected List getAdditionalLookups(final Project project) {
@@ -81,7 +81,7 @@ public class LookupProvider {
         
     }
     
-    @org.netbeans.spi.project.LookupProvider.Register(projectType="org-netbeans-modules-j2ee-ejbjarproject")
+    @org.netbeans.spi.project.LookupProvider.Registration(projectType="org-netbeans-modules-j2ee-ejbjarproject")
     public static class EjbJarProject extends AbstractProjectLookupProvider {
         @Override
         protected List getAdditionalLookups(final Project project) {

@@ -56,7 +56,7 @@ public class ProjectLookupProvider implements LookupProvider {
 
     private final Kind kind;
     
-    @LookupProvider.Register(projectType={
+    @LookupProvider.Registration(projectType={
         "org-netbeans-modules-java-j2seproject",
         "org-netbeans-modules-j2ee-ejbjarproject"
     })
@@ -64,12 +64,12 @@ public class ProjectLookupProvider implements LookupProvider {
         return new ProjectLookupProvider(Kind.NON_WEB);
     }
 
-    @LookupProvider.Register(projectType="org-netbeans-modules-web-project")
+    @LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
     public static ProjectLookupProvider web() {
         return new ProjectLookupProvider(Kind.WEB);
     }
 
-    @LookupProvider.Register(projectType="org-netbeans-modules-maven")
+    @LookupProvider.Registration(projectType="org-netbeans-modules-maven")
     public static ProjectLookupProvider simple() {
         return new ProjectLookupProvider(Kind.SIMPLE);
     }

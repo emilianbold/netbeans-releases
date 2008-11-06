@@ -53,7 +53,7 @@ import org.netbeans.spi.project.LookupProvider;
  *
  * @author Jiri Sedlacek
  */
-@LookupProvider.Register(projectType={
+@LookupProvider.Registration(projectType={
         "org-netbeans-modules-apisupport-project",
         "org-netbeans-modules-apisupport-project-suite"
 })

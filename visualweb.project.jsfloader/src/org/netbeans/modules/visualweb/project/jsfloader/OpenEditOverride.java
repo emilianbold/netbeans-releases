@@ -59,7 +59,7 @@ import org.w3c.dom.NodeList;
  * 
  * @author quynguyen
  */
-@LookupProvider.Register(projectType="org-netbeans-modules-web-project")
+@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
 public final class OpenEditOverride  implements LookupProvider {
     // Taken from org.netbeans.modules.project.ui.ProjectUtilities
     private static final String OPEN_FILES_NS = "http://www.netbeans.org/ns/projectui-open-files/1"; // NOI18N

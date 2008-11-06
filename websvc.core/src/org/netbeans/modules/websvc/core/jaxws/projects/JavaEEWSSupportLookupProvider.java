@@ -71,7 +71,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
-    @LookupProvider.Register(projectType={
+    @LookupProvider.Registration(projectType={
         "org-netbeans-modules-web-project",
         "org-netbeans-modules-j2ee-ejbjarproject",
         "org-netbeans-modules-j2ee-clientproject"

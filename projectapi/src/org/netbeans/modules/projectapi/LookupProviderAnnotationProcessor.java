@@ -66,8 +66,8 @@ public class LookupProviderAnnotationProcessor extends LayerGeneratingProcessor 
         if (roundEnv.processingOver()) {
             return false;
         }
-        for (Element e : roundEnv.getElementsAnnotatedWith(LookupProvider.Register.class)) {
-            LookupProvider.Register lpr = e.getAnnotation(LookupProvider.Register.class);
+        for (Element e : roundEnv.getElementsAnnotatedWith(LookupProvider.Registration.class)) {
+            LookupProvider.Registration lpr = e.getAnnotation(LookupProvider.Registration.class);
             for (String type : lpr.projectType()) {
                 layer(e).instanceFile("Projects/" + type + "/Lookup", null, LookupProvider.class).write();
             }

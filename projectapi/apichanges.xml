@@ -107,14 +107,14 @@ is the proper place.
 
         <change id="lookupprovider-ann">
             <api name="general"/>
-            <summary>Add annotation @LookupProvider.Register</summary>
+            <summary>Add annotation @LookupProvider.Registration</summary>
             <version major="1" minor="21"/>
             <date day="13" month="11" year="2008"/>
             <author login="mkleint"/>
             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
             <description>
                 <p>
-                  Add annotation @LookupProvider.Register to replace registration in layer files.
+                  Add annotation @LookupProvider.Registration to replace registration in layer files.
                 </p>
             </description>
             <class package="org.netbeans.spi.project" name="LookupProvider"/>

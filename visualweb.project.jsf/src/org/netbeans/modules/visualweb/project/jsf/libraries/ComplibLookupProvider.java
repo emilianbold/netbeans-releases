@@ -19,7 +19,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Edwin Goei
  */
-@LookupProvider.Register(projectType="org-netbeans-modules-web-project")
+@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
 public class ComplibLookupProvider implements LookupProvider {
 
     public static class ComplibProjectOpenedHook extends ProjectOpenedHook {

@@ -69,7 +69,7 @@ public interface LookupProvider {
      * annotation to register LookupProvider instances.
      * @since org.netbeans.modules.projectapi 1.21
      */
-    public @interface Register {
+    public @interface Registration {
         /**
          * token(s) denoting one or more project types, eg. org-netbeans-modules-maven or org-netbeans-modules-java-j2seproject
          * @return

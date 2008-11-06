@@ -52,7 +52,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author mkuchtiak
  */
-@LookupProvider.Register(projectType="org-netbeans-modules-web-project")
+@LookupProvider.Registration(projectType="org-netbeans-modules-web-project")
 public class WebRestSupportLookupProvider implements LookupProvider {
     
     /** Creates a new instance of JaxWSLookupProvider */
