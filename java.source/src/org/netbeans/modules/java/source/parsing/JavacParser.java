@@ -354,7 +354,7 @@ public class JavacParser extends Parser {
             //Not sure about the parsing.api contract for multiple files
             //maybe not needed and assertion is enough
             final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
-            if (cpInfo != providedInfo) {
+            if (providedInfo != null && cpInfo != providedInfo) {
                 if (sourceCount != 0) {
                     LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
                 }

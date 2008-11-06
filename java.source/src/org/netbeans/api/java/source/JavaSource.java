@@ -527,8 +527,8 @@ public final class JavaSource {
     
     
     long createTaggedController (final long timestamp, final Object[] controller) throws IOException {
-         assert controller.length == 1;
-         assert controller[0] == null || controller[0] instanceof CompilationController;
+        assert controller.length == 1;
+        assert controller[0] == null || controller[0] instanceof CompilationController;
         try {
             CompilationController cc = (CompilationController) controller[0];
             final NewComilerTask _task = new NewComilerTask(this.classpathInfo, cc, timestamp);

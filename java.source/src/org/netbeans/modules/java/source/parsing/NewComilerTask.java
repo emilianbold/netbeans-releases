@@ -39,9 +39,15 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.util.Collection;
+import java.util.LinkedList;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
@@ -60,6 +66,33 @@ public class NewComilerTask extends ClasspathInfoTask {
 
     @Override
     public void run(ResultIterator resultIterator) throws Exception {
+        final Snapshot snapshot = resultIterator.getSnapshot();
+        if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
+            resultIterator.getParserResult();
+        }
+        else {
+            findEmbeddedJava (resultIterator);
+        }
+    }
+
+    private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
+        final Collection<Embedding> todo = new LinkedList<Embedding>();
+        //BFS should perform better than DFS in this dark.
+        for (Embedding embedding : theMess.getEmbeddings()) {
+            if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
+                return theMess.getResultIterator(embedding).getParserResult();
+            }
+            else {
+                todo.add(embedding);
+            }
+        }
+        for (Embedding embedding : todo) {
+            Parser.Result result  = findEmbeddedJava(theMess.getResultIterator(embedding));
+            if (result != null) {
+                return result;
+            }
+        }
+        return null;
     }
 
     public void setCompilationController (final CompilationController result, final long timestamp) {
