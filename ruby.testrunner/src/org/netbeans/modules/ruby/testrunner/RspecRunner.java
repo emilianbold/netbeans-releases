@@ -50,8 +50,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -61,7 +64,8 @@ import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.RspecHandlerFactory;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.openide.filesystems.FileObject;
@@ -288,7 +292,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         }
     }
 
-    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
+    public ExecutionDescriptor customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -297,7 +301,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         });
           
         if (!useRunner) {
-            return;
+            return null;
         }
 
         TestExecutionManager.getInstance().reset();
@@ -322,15 +326,15 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
                 debug ? SessionType.DEBUG : SessionType.TEST);
         addSpecOptsWarningIfNeeded(session, specOpts);
         
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                new RspecHandlerFactory(),
-                session,
-                false);
-        taskDescriptor.addOutputRecognizer(recognizer);
-        // using a shorter wait time than for test/unit since the only cases
-        // i've seen requiring more than 1000ms have all been test/unit executions
-        taskDescriptor.setReadMaxWaitTime(1500);
         taskDescriptor.setRerun(false);
+        Manager manager = Manager.getInstance();
+        LineConvertor convertor = new TestRunnerLineConvertor(manager, session, new RspecHandlerFactory());
+        return taskDescriptor.toExecutionDescriptor()
+                .outConvertorFactory(new RubyLineConvertorFactory(locator, convertor))
+                .errConvertorFactory(new RubyLineConvertorFactory(locator, convertor))
+                .errProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false))
+                .outProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+
     }
 
 }

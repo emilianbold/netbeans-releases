@@ -57,17 +57,17 @@ public final class TestRunnerLineConvertor implements LineConvertor {
     private TestSession session;
     private final List<TestRecognizerHandler> handlers;
 
-    public TestRunnerLineConvertor(Manager manager, TestSession session, List<TestRecognizerHandler> handlers) {
+    public TestRunnerLineConvertor(Manager manager, TestSession session, TestHandlerFactory handlerFactory) {
         this.manager = manager;
         this.session = session;
-        this.handlers = handlers;
+        this.handlers = handlerFactory.createHandlers();
     }
 
     public void refreshSession() {
         this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType());
     }
 
-    public List<ConvertedLine> convert(String line) {
+    public synchronized List<ConvertedLine> convert(String line) {
 
         for (TestRecognizerHandler handler : handlers) {
             if (handler.matches(line)) {

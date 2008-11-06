@@ -46,13 +46,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.extexecution.api.print.LineConvertors;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
@@ -135,7 +133,7 @@ public class RubyProcessCreator implements Callable<Process> {
         }
         ExternalProcessBuilder builder = null;
         List<? extends String> args = buildArgs();
-        if (!descriptor.cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
+        if (!descriptor.cmd.getName().startsWith("jruby") || LAUNCH_JRUBY_SCRIPT) { // NOI18N
             builder = new ExternalProcessBuilder(descriptor.cmd.getPath());
         } else {
             builder = new ExternalProcessBuilder(args.get(0));
@@ -155,17 +153,9 @@ public class RubyProcessCreator implements Callable<Process> {
     }
 
     public ExecutionDescriptor buildExecutionDescriptor() {
-        ExecutionDescriptor result = new ExecutionDescriptor()
-            .showProgress(descriptor.showProgress)
-            .controllable(descriptor.isRerun())
-            .inputVisible(descriptor.inputVisible)
-            .frontWindow(descriptor.frontWindow)
-            .showSuspended(descriptor.showSuspended)
-            .postExecution(descriptor.postBuildAction)
+        return descriptor.toExecutionDescriptor()
             .errConvertorFactory(errFactory)
             .outConvertorFactory(outFactory);
-        
-        return result;
     }
 
     private List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor) {

@@ -50,14 +50,14 @@ import java.util.regex.Pattern;
  * 
  * @author Erno Mononen
  */
-public abstract class TestRecognizerHandler {
+abstract class TestRecognizerHandler {
 
     private static final Logger LOGGER = Logger.getLogger(TestRecognizerHandler.class.getName());
     
     protected final Pattern pattern;
     protected Matcher matcher;
 
-    public TestRecognizerHandler(String regex) {
+    TestRecognizerHandler(String regex) {
         // handle newline chars at the end -- see #143508
         if (!regex.endsWith(".*")) { //NOI18N
             regex += ".*";  //NOI18N

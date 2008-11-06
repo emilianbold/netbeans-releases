@@ -106,8 +106,8 @@ public final class TestExecutionManager {
     synchronized void start(RubyExecutionDescriptor rubyDescriptor,
             TestHandlerFactory handlerFactory, TestSession session) {
         final Manager manager = Manager.getInstance();
-        outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory.createHandlers());
-        errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory.createHandlers());
+        outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
+        errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
 
         setFinished(false);
 

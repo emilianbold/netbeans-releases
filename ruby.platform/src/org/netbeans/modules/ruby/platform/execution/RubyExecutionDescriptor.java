@@ -46,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
@@ -381,5 +382,16 @@ public class RubyExecutionDescriptor {
     public void setRerun(boolean rerun) {
         this.rerun = rerun;
     }
+
+    public ExecutionDescriptor toExecutionDescriptor() {
+        return new ExecutionDescriptor()
+            .showProgress(showProgress)
+            .controllable(isRerun())
+            .inputVisible(inputVisible)
+            .frontWindow(frontWindow)
+            .showSuspended(showSuspended)
+            .postExecution(postBuildAction);
+    }
+
 
 }

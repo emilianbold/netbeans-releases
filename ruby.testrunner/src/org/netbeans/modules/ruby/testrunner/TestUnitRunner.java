@@ -48,8 +48,11 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -58,7 +61,8 @@ import org.netbeans.modules.ruby.rubyproject.spi.RakeTaskCustomizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.TestRunnerUtilities.DefaultTaskEvaluator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
-import org.netbeans.modules.ruby.testrunner.ui.TestRecognizer;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerInputProcessorFactory;
+import org.netbeans.modules.ruby.testrunner.ui.TestRunnerLineConvertor;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession;
 import org.netbeans.modules.ruby.testrunner.ui.TestSession.SessionType;
 import org.netbeans.modules.ruby.testrunner.ui.TestUnitHandlerFactory;
@@ -177,7 +181,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         return type == TestType.TEST_UNIT;
     }
 
-    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
+    public ExecutionDescriptor customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -186,7 +190,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         });
 
         if (!useRunner) {
-            return;
+            return null;
         }
         
         TestExecutionManager.getInstance().reset();
@@ -197,17 +201,18 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         TestSession session = new TestSession(task.getDisplayName(),
                 project,
                 debug ? SessionType.DEBUG : SessionType.TEST);
-        TestRecognizer recognizer = new TestRecognizer(Manager.getInstance(),
-                new TestUnitHandlerFactory(),
-                session,
-                true);
 
         Map<String, String> env = new HashMap<String, String>(1);
         addTestUnitRunnerToEnv(env);
         taskDescriptor.addAdditionalEnv(env);
-        taskDescriptor.addOutputRecognizer(recognizer);
-        taskDescriptor.setReadMaxWaitTime(DEFAULT_WAIT_TIME);
+        Manager manager = Manager.getInstance();
         taskDescriptor.setRerun(false);
-    }
+        LineConvertor testConvertor = new TestRunnerLineConvertor(manager, session, new TestUnitHandlerFactory());
+        return taskDescriptor.toExecutionDescriptor()
+                .outConvertorFactory(new RubyLineConvertorFactory(taskDescriptor.getFileLocator(), testConvertor))
+                .errConvertorFactory(new RubyLineConvertorFactory(taskDescriptor.getFileLocator(), testConvertor))
+                .errProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false))
+                .outProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, true));
+  }
 
 }
