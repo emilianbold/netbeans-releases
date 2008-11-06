@@ -39,11 +39,15 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.net.URL;
 import java.util.Collection;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -52,13 +56,32 @@ import org.openide.filesystems.FileObject;
  */
 public class ClassParserFactory extends ParserFactory {
 
+    private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
+
     @Override
     public Parser createParser(final Collection<Snapshot> snapshots) {
         assert snapshots != null;
         assert !snapshots.isEmpty();
         final FileObject file = snapshots.iterator().next().getSource().getFileObject();
         assert file != null;
-        final ClasspathInfo cpInfo = ClasspathInfo.create(file);
+        ClassPath bootPath = ClassPath.getClassPath(file, ClassPath.BOOT);
+        if (bootPath == null) {
+            //javac requires at least java.lang
+            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
+        ClassPath compilePath = ClassPath.getClassPath(file, ClassPath.COMPILE);
+        if (compilePath == null) {
+            compilePath = EMPTY_PATH;
+        }
+        ClassPath executePath = ClassPath.getClassPath(file, ClassPath.EXECUTE);
+        if (executePath == null) {
+            executePath = EMPTY_PATH;
+        }
+        ClassPath srcPath = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        if (srcPath == null) {
+            srcPath = EMPTY_PATH;
+        }
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, ClassPathSupport.createProxyClassPath(compilePath,executePath),srcPath);
         return new ClassParser (cpInfo);
     }
 

@@ -378,22 +378,11 @@ public final class JavaSource {
     }
     
     private long runUserActionTaskImpl ( final Task<CompilationController> task, final boolean shared) throws IOException {
-        if (task == null) {
-            throw new IllegalArgumentException ("Task cannot be null");     //NOI18N
-        }
+        Parameters.notNull("task", task);
         long currentId = -1;
         if (sources.isEmpty()) {
             try {
-                ParserManager.parse(JavacParser.MIME_TYPE,new ClasspathInfoTask(this.classpathInfo) {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        Result result = resultIterator.getParserResult ();
-                        final CompilationController cc = CompilationController.get(result);
-                        assert cc != null;
-                        cc.setJavaSource(JavaSource.this);
-                        task.run (cc);
-                    }
-                });
+                ParserManager.parse(JavacParser.MIME_TYPE,new MimeTask(this, task, this.classpathInfo));
             } catch (final ParseException pe) {
                 final Throwable rootCase = pe.getCause();
                 if (rootCase instanceof CompletionFailure) {
@@ -413,60 +402,7 @@ public final class JavaSource {
         }
         else {
             try {
-                    final UserTask _task = new ClasspathInfoMultiLanguageTask (this.classpathInfo) {
-                        @Override
-                        public void run(ResultIterator resultIterator) throws Exception {
-                            final Snapshot snapshot = resultIterator.getSnapshot();
-                            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
-                                Parser.Result result = resultIterator.getParserResult();
-                                final CompilationController cc = CompilationController.get(result);
-                                assert cc != null;
-                                cc.setJavaSource(JavaSource.this);
-                                task.run (cc);
-                                final JavacTaskImpl jt = cc.impl.getJavacTask();
-                                Log.instance(jt.getContext()).nerrors = 0;
-                            }
-                            else {
-                                Parser.Result result = findEmbeddedJava (resultIterator);
-                                if (result == null) {
-                                    //No embedded java
-                                    return;
-                                }
-                                final CompilationController cc = CompilationController.get(result);
-                                assert cc != null;
-                                cc.setJavaSource(JavaSource.this);
-                                task.run (cc);
-                                final JavacTaskImpl jt = cc.impl.getJavacTask();
-                                Log.instance(jt.getContext()).nerrors = 0;
-                            }
-                        }
-                        
-                        @Override 
-                        public String toString () {
-                            return this.getClass().getName()+"["+task.getClass().getName()+"]";     //NOI18N
-                        }
-                        
-                        private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
-                            final Collection<Embedding> todo = new LinkedList<Embedding>();
-                            //BFS should perform better than DFS in this dark.
-                            for (Embedding embedding : theMess.getEmbeddings()) {
-                                if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
-                                    return theMess.getResultIterator(embedding).getParserResult();
-                                }
-                                else {
-                                    todo.add(embedding);
-                                }
-                            }
-                            for (Embedding embedding : todo) {
-                                Parser.Result result  = findEmbeddedJava(theMess.getResultIterator(embedding));
-                                if (result != null) {
-                                    return result;
-                                }
-                            }
-                            return null;
-                        }
-                        
-                    };
+                    final UserTask _task = new MultiTask(this, task, this.classpathInfo);
                     ParserManager.parse(sources, _task);
                 } catch (final ParseException pe) {
                     final Throwable rootCase = pe.getCause();
@@ -486,6 +422,101 @@ public final class JavaSource {
                 }                
         }
         return currentId;
+    }
+
+    //where
+    private static class MultiTask extends ClasspathInfoMultiLanguageTask {
+
+        private final JavaSource js;
+        private final Task<CompilationController> task;
+
+        public MultiTask (final JavaSource js,
+                          final  Task<CompilationController> task,
+                          final ClasspathInfo cpInfo) {
+            super (cpInfo);
+            assert js != null;
+            assert task != null;
+            this.js = js;
+            this.task = task;
+        }
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            final Snapshot snapshot = resultIterator.getSnapshot();
+            if (JavacParser.MIME_TYPE.equals(snapshot.getMimeType())) {
+                Parser.Result result = resultIterator.getParserResult();
+                final CompilationController cc = CompilationController.get(result);
+                assert cc != null;
+                cc.setJavaSource(this.js);
+                task.run (cc);
+                final JavacTaskImpl jt = cc.impl.getJavacTask();
+                Log.instance(jt.getContext()).nerrors = 0;
+            }
+            else {
+                Parser.Result result = findEmbeddedJava (resultIterator);
+                if (result == null) {
+                    //No embedded java
+                    return;
+                }
+                final CompilationController cc = CompilationController.get(result);
+                assert cc != null;
+                cc.setJavaSource(this.js);
+                task.run (cc);
+                final JavacTaskImpl jt = cc.impl.getJavacTask();
+                Log.instance(jt.getContext()).nerrors = 0;
+            }
+        }
+
+        @Override
+        public String toString () {
+            return this.getClass().getName()+"["+task.getClass().getName()+"]";     //NOI18N
+        }
+
+        private Parser.Result findEmbeddedJava (final ResultIterator theMess) throws ParseException {
+            final Collection<Embedding> todo = new LinkedList<Embedding>();
+            //BFS should perform better than DFS in this dark.
+            for (Embedding embedding : theMess.getEmbeddings()) {
+                if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
+                    return theMess.getResultIterator(embedding).getParserResult();
+                }
+                else {
+                    todo.add(embedding);
+                }
+            }
+            for (Embedding embedding : todo) {
+                Parser.Result result  = findEmbeddedJava(theMess.getResultIterator(embedding));
+                if (result != null) {
+                    return result;
+                }
+            }
+            return null;
+        }
+
+    }
+
+    private static class MimeTask extends ClasspathInfoTask {
+
+        private final Task<CompilationController> task;
+        private final JavaSource js;
+
+        public MimeTask (final JavaSource js,
+                         final Task<CompilationController> task,
+                         final ClasspathInfo cpInfo) {
+            super (cpInfo);
+            assert js != null;
+            assert task != null;
+            this.js = js;
+            this.task = task;
+        }
+
+        @Override
+        public void run(ResultIterator resultIterator) throws Exception {
+            Result result = resultIterator.getParserResult ();
+            final CompilationController cc = CompilationController.get(result);
+            assert cc != null;
+            cc.setJavaSource(this.js);
+            task.run (cc);
+        }
     }
 
     private void runUserActionTask( final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
@@ -531,11 +562,48 @@ public final class JavaSource {
      * @since 0.12
      */
     public Future<Void> runWhenScanFinished (final Task<CompilationController> task, final boolean shared) throws IOException {
-        //todo: Implement me, when there will be a support from parsing API!
-        runUserActionTask(task, shared);
-        final ScanSync sync = new ScanSync(task);
-        sync.taskFinished();
-        return sync;
+        Parameters.notNull("task", task);
+        if (sources.isEmpty()) {
+            try {
+                return ParserManager.parseWhenScanFinished(JavacParser.MIME_TYPE,new MimeTask(this, task, this.classpathInfo));
+            } catch (final ParseException pe) {
+                final Throwable rootCase = pe.getCause();
+                if (rootCase instanceof CompletionFailure) {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(rootCase);
+                    throw ioe;
+                }
+                else if (rootCase instanceof RuntimeException) {
+                    throw (RuntimeException) rootCase;
+                }
+                else {
+                    IOException ioe = new IOException ();
+                    ioe.initCause(rootCase);
+                    throw ioe;
+                }
+            }
+        }
+        else {
+            try {
+                    final UserTask _task = new MultiTask(this, task, this.classpathInfo);
+                    return ParserManager.parseWhenScanFinished(sources, _task);
+                } catch (final ParseException pe) {
+                    final Throwable rootCase = pe.getCause();
+                    if (rootCase instanceof CompletionFailure) {
+                        IOException ioe = new IOException ();
+                        ioe.initCause(rootCase);
+                        throw ioe;
+                    }
+                    else if (rootCase instanceof RuntimeException) {
+                        throw (RuntimeException) rootCase;
+                    }
+                    else {
+                        IOException ioe = new IOException ();
+                        ioe.initCause(rootCase);
+                        throw ioe;
+                    }
+                }
+        }
     }
 
     private Future<Void> runWhenScanFinished (final CancellableTask<CompilationController> task, final boolean shared) throws IOException {
@@ -727,80 +795,5 @@ public final class JavaSource {
             assert info != null;
             return info.impl;
         }
-    }
-    
-                
-    static final class ScanSync implements Future<Void> {
-        
-        private Task<CompilationController> task;
-        private final CountDownLatch sync;
-        private final AtomicBoolean canceled;
-        
-        public ScanSync (final Task<CompilationController> task) {
-            assert task != null;
-            this.task = task;
-            this.sync = new CountDownLatch (1);
-            this.canceled = new AtomicBoolean (false);
-        }
-
-        public boolean cancel(boolean mayInterruptIfRunning) {
-            if (this.sync.getCount() == 0) {
-                return false;
-            }
-//Todo: fixme when parsing API provides support for run when scan finished            
-//            synchronized (todo) {
-//                boolean _canceled = canceled.getAndSet(true);
-//                if (!_canceled) {
-//                    for (Iterator<DeferredTask> it = todo.iterator(); it.hasNext();) {
-//                        DeferredTask task = it.next();
-//                        if (task.task == this.task) {
-//                            it.remove();
-//                            return true;
-//                        }
-//                    }
-//                }
-//            }            
-            return false;
-        }
-
-        public boolean isCancelled() {
-            return this.canceled.get();
-        }
-
-        public synchronized boolean isDone() {
-            return this.sync.getCount() == 0;
-        }
-
-        public Void get() throws InterruptedException, ExecutionException {
-            this.sync.await();
-            return null;
-        }
-
-        public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-            this.sync.await(timeout, unit);
-            return null;
-        }
-        
-        private void taskFinished () {
-            this.sync.countDown();
-        }            
-    }
-    
-    static final class DeferredTask {
-        final JavaSource js;
-        final Task<CompilationController> task;
-        final boolean shared;
-        final ScanSync sync;
-        
-        public DeferredTask (final JavaSource js, final Task<CompilationController> task, final boolean shared, final ScanSync sync) {
-            assert js != null;
-            assert task != null;
-            assert sync != null;
-            
-            this.js = js;
-            this.task = task;
-            this.shared = shared;
-            this.sync = sync;
-        }
-    }                            
+    }                                                
 }
