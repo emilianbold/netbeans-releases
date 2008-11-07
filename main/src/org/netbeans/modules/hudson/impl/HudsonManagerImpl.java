@@ -216,8 +216,8 @@ public class HudsonManagerImpl extends HudsonManager {
         }
         Repository repository = Lookup.getDefault().lookup(Repository.class);
         FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
-        
-        String fileName = instance.getName().replace(" ", "_").toLowerCase() + ".xml";
+
+        String fileName = getFileName(instance.getName());
         try {
             FileObject file = directory.getFileObject(fileName);
             
@@ -230,12 +230,22 @@ public class HudsonManagerImpl extends HudsonManager {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, e);
         }
     }
+
+    private String getFileName(String name) {
+        // sort of defend against names like http://deadlock.netbeans.org/hudson
+        String fileName = name.replace(" ", "_");
+        fileName = fileName.replace(":", "_");
+        fileName = fileName.replace("/", "_");
+        fileName = fileName.replace(".", "_");
+        fileName = fileName.toLowerCase() + ".xml";
+        return fileName;
+    }
     
     private void removeInstanceFile(HudsonInstanceImpl instance) {
         Repository repository = Lookup.getDefault().lookup(Repository.class);
         FileObject directory = repository.getDefaultFileSystem().findResource(DIR_INSTANCES);
         
-        String fileName = instance.getName().replace(" ", "_").toLowerCase() + ".xml";
+        String fileName = getFileName(instance.getName());
         
         try {
             FileObject file = directory.getFileObject(fileName);
@@ -311,7 +321,7 @@ public class HudsonManagerImpl extends HudsonManager {
                     }
                 } else if (prov == null && exists) {
                     HudsonInstanceImpl remove = projectInstances.remove(project);
-                    if (remove != null) {
+                    if (remove != null && !remove.isPersisted()) {
                         ProjectHIP props = (ProjectHIP)remove.getProperties();
                         props.removeProvider(project);
                         if (props.getProviders().isEmpty()) {
@@ -324,7 +334,7 @@ public class HudsonManagerImpl extends HudsonManager {
             newprjs.removeAll(Arrays.asList(prjs));
             for (Project project : newprjs) {
                 HudsonInstanceImpl remove = projectInstances.remove(project);
-                if (remove != null) {
+                if (remove != null && !remove.isPersisted()) {
                     ProjectHIP props = (ProjectHIP)remove.getProperties();
                     props.removeProvider(project);
                     if (props.getProviders().isEmpty()) {

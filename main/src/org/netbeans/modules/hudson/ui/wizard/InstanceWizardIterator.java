@@ -47,7 +47,7 @@ public class InstanceWizardIterator implements WizardDescriptor.InstantiatingIte
     
     private InstancePropertiesPanel propertiesPanel = new InstancePropertiesPanel();
     
-    private List<ChangeListener> listeners = new ArrayList<ChangeListener>();
+    private final List<ChangeListener> listeners = new ArrayList<ChangeListener>();
     
     /**
      * Initialize panels representing individual wizard's steps and sets

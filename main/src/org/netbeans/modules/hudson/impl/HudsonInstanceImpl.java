@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Semaphore;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
@@ -32,7 +34,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
-import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
@@ -141,6 +142,33 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public boolean isPersisted() {
         return !(properties instanceof ProjectHIP);
     }
+
+    public void makePersistent() {
+        if (isPersisted()) {
+            return;
+        }
+        String name = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_NAME);
+        String url = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_URL);
+        String sync = (String) properties.get(HudsonInstanceProperties.HUDSON_INSTANCE_SYNC);
+
+        HudsonInstanceProperties newProps = new HudsonInstanceProperties(name, url, sync);
+        //just in case there are also other properties.
+        for (Map.Entry<Object, Object> ent : properties.entrySet()) {
+            newProps.put(ent.getKey(), ent.getValue());
+        }
+        
+        //reassign listeners
+        List<PropertyChangeListener> list = ((ProjectHIP)properties).getCurrentListeners();
+        for (PropertyChangeListener listener : list) {
+            newProps.addPropertyChangeListener(listener);
+            properties.removePropertyChangeListener(listener);
+        }
+        properties = newProps;
+
+        //will this make the propes to get persisted reliably?
+        properties.put(HudsonInstanceProperties.HUDSON_INSTANCE_URL, url);
+        fireContentChanges();
+    }
     
     /**
      *
@@ -217,6 +245,22 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     
     public synchronized Collection<HudsonJob> getJobs() {
         return jobs;
+    }
+
+    public synchronized Collection<HudsonJob> getPreferredJobs() {
+        Collection<HudsonJob> prefs = new ArrayList<HudsonJob>();
+        Collection<HudsonJob> all = getJobs();
+        String prop = getProperties().getProperty(HudsonInstanceProperties.HUDSON_INSTANCE_PREF_JOBS);
+        if (prop != null && prop.trim().length() > 0) {
+            String[] ids = prop.trim().split("\\|");
+            List<String> idsList = Arrays.asList(ids);
+            for (HudsonJob jb : all) {
+                if (idsList.contains(jb.getName())) {
+                    prefs.add(jb);
+                }
+            }
+        }
+        return prefs;
     }
     
     public synchronized Collection<HudsonView> getViews() {
@@ -329,6 +373,7 @@ public class HudsonInstanceImpl implements HudsonInstance, OpenableInBrowser {
     public int compareTo(HudsonInstance o) {
         return getName().compareTo(o.getName());
     }
+
     
     private class Synchronization implements Runnable {
         

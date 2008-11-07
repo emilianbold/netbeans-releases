@@ -31,8 +31,10 @@ import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
 import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
+import org.netbeans.modules.hudson.impl.HudsonJobImpl;
 import org.netbeans.modules.hudson.impl.HudsonViewImpl;
 import org.netbeans.modules.hudson.ui.actions.OpenUrlAction;
+import org.netbeans.modules.hudson.ui.actions.PersistInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.RemoveInstanceAction;
 import org.netbeans.modules.hudson.ui.actions.SynchronizeAction;
 import org.netbeans.modules.hudson.util.Utilities;
@@ -102,19 +104,23 @@ public class HudsonInstanceNode extends AbstractNode {
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_WrongVersion",
                 HudsonVersion.SUPPORTED_VERSION) + "</font>") : " <font color=\"#A40000\">" +
                 NbBundle.getMessage(HudsonInstanceNode.class, "MSG_Disconnected") + "</font>") +
-                (!pers ? "<i>" : "") + "(Project based)" + (!pers ? "</i>" : "");
+                (!pers ? "<i>(from open project)" : "");
     }
     
     @Override
     public Action[] getActions(boolean context) {
-        return new Action[] {
-            SystemAction.get(SynchronizeAction.class),
-            SystemAction.get(OpenUrlAction.class),
-            null,
-            SystemAction.get(RemoveInstanceAction.class),
-            null,
-            SystemAction.get(PropertiesAction.class)
-        };
+        List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(SynchronizeAction.class));
+        actions.add(SystemAction.get(OpenUrlAction.class));
+        actions.add(null);
+        if (!instance.isPersisted()) {
+            actions.add(SystemAction.get(PersistInstanceAction.class));
+        } else {
+            actions.add(SystemAction.get(RemoveInstanceAction.class));
+        }
+        actions.add(null);
+        actions.add(SystemAction.get(PropertiesAction.class));
+        return actions.toArray(new Action[0]);
     }
     
     @Override
@@ -130,7 +136,7 @@ public class HudsonInstanceNode extends AbstractNode {
     
     private synchronized void refreshState() {
         // Save html name
-        String oldHtmlName = getHtmlDisplayName();
+        String oldHtmlName = "";
         
         alive = instance.isConnected();
         version = Utilities.isSupportedVersion(instance.getVersion());
@@ -147,7 +153,7 @@ public class HudsonInstanceNode extends AbstractNode {
     
     private synchronized void refreshContent() {
         // Get HTML Display Name
-        String oldHtmlName = getHtmlDisplayName();
+        String oldHtmlName = null;
         
         // Clear flags
         warn = false;
@@ -165,7 +171,6 @@ public class HudsonInstanceNode extends AbstractNode {
             if (warn && run)
                 break; // it's not necessary to continue
         }
-        
         // Fire changes if any
         fireDisplayNameChange(oldHtmlName, getHtmlDisplayName());
     }
@@ -203,10 +208,16 @@ public class HudsonInstanceNode extends AbstractNode {
         
         private void refreshKeys() {
             List<Node> l = new ArrayList<Node>();
-            
-            // Add queue node
+
+            Collection<HudsonJob> prefs = instance.getPreferredJobs();
+            if (prefs != null && prefs.size() > 0) {
+                for (HudsonJob jb : prefs) {
+                    l.add(HudsonNodesFactory.getDefault().getHudsonJobNode(this, (HudsonJobImpl)jb));
+                }
+            }
+
             l.add(queue);
-            
+
             for (Node n : getKeys())
                 l.add(n);
             

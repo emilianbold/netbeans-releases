@@ -19,11 +19,14 @@
 
 package org.netbeans.modules.hudson.impl;
 
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.InvalidPropertiesFormatException;
+import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
@@ -47,13 +50,16 @@ class ProjectHIP extends HudsonInstanceProperties {
         if (p != null) {
             setProperty(HUDSON_INSTANCE_URL, p.getServerUrl());
             setProperty(HUDSON_INSTANCE_NAME, p.getName());
+            setPreferedJobs();
         }
+        //TODO listen on changes from the provider and refire them as changed properties.
     }
 
     public void removeProvider(Project prov) {
         synchronized (providers) {
             providers.remove(prov);
         }
+        setPreferedJobs();
     }
 
     public Set<Project> getProviders() {
@@ -87,5 +93,26 @@ class ProjectHIP extends HudsonInstanceProperties {
     public synchronized void storeToXML(OutputStream os, String comment, String encoding) throws IOException {
     }
 
+    public List<PropertyChangeListener> getCurrentListeners() {
+        List<PropertyChangeListener> lst = new ArrayList<PropertyChangeListener>();
+        synchronized (listeners) {
+            lst.addAll(listeners);
+        }
+        return lst;
+    }
+
+    private void setPreferedJobs() {
+        String list = "";
+        for (Project prj : getProviders()) {
+            ProjectHudsonProvider p = prj.getLookup().lookup(ProjectHudsonProvider.class);
+            if (p != null) {
+                String name = p.getJobName();
+                if (name != null && name.trim().length() > 0) {
+                    list = list + "|" + name.trim(); //NOI18N
+                }
+            }
+        }
+        put(HUDSON_INSTANCE_PREF_JOBS, list);
+        }
 
 }

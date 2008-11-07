@@ -97,8 +97,12 @@ public class HudsonNotificationController implements ChangeListener {
             
             boolean exists = false;
             boolean passed = false;
+            Collection<HudsonJob> instjobs = hudsonInstance.getPreferredJobs();
+            if (instjobs == null || instjobs.size() == 0) {
+                instjobs = hudsonInstance.getJobs();
+            }
             
-            for (HudsonJob j : hudsonInstance.getJobs()) {
+            for (HudsonJob j : instjobs) {
                 if (j.getUrl().equals(job.getUrl())) {
                     exists = true;
                     
