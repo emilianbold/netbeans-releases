@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript.editing;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 
@@ -91,6 +92,18 @@ public class JsCommentFormatterTest extends JsTestBase {
         FunctionAstElement element = ElementUtilitiesTest.getFunctionAstElement(info, caretLine);
         return ElementUtilities.getComments(info, element);
     }
+
+    public void testEmpty() throws Exception {
+        List<String> comments = Collections.emptyList();
+        // Regression test for 151016: StringIndexOutOfBoundsException: String index out of range: -1
+        JsCommentFormatter jsComment = new JsCommentFormatter(comments);
+
+        List<String> tags = jsComment.getParams();
+        List<String> expected = Arrays.asList("");
+        jsComment.toHtml();
+        assertEquals(expected, tags);
+    }
+
 
     /* TODO: Test formatting this - it currently ends up with @return on the same line!
  * Create a new table caption object or return an

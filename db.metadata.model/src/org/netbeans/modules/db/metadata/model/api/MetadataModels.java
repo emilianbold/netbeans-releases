@@ -39,12 +39,10 @@
 
 package org.netbeans.modules.db.metadata.model.api;
 
+import java.sql.Connection;
 import java.util.WeakHashMap;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.modules.db.api.explorer.MetaDataListener;
-import org.netbeans.modules.db.metadata.model.DBConnMetadataModel;
+import org.netbeans.modules.db.metadata.model.JDBCConnMetadataModel;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.openide.util.RequestProcessor;
 
 /**
  * Provides access to the database model for DB Explorer database connections.
@@ -58,70 +56,28 @@ public class MetadataModels {
     // XXX test against memory leak.
     // XXX test if DatabaseConnection can be GC'd.
 
-    private final static WeakHashMap<DatabaseConnection, MetadataModel> dbconn2Model = new WeakHashMap<DatabaseConnection, MetadataModel>();
+    private final static WeakHashMap<Connection, MetadataModel> conn2Model = new WeakHashMap<Connection, MetadataModel>();
 
     private MetadataModels() {}
 
-    public static MetadataModel get(DatabaseConnection dbconn) {
+    public static MetadataModel get(Connection conn, String defaultSchemaName) {
         synchronized (MetadataModels.class) {
-            MetadataModel model = dbconn2Model.get(dbconn);
+            MetadataModel model = conn2Model.get(conn);
             if (model == null) {
-                model = MetadataAccessor.getDefault().createMetadataModel(new DBConnMetadataModel(dbconn));
-                dbconn2Model.put(dbconn, model);
+                model = MetadataAccessor.getDefault().createMetadataModel(new JDBCConnMetadataModel(conn, defaultSchemaName));
+                conn2Model.put(conn, model);
             }
             return model;
         }
     }
 
-    private static DBConnMetadataModel getModelImpl(DatabaseConnection dbconn) {
+    private static JDBCConnMetadataModel getModelImpl(Connection conn) {
         synchronized (MetadataModels.class) {
-            MetadataModel model = dbconn2Model.get(dbconn);
+            MetadataModel model = conn2Model.get(conn);
             if (model != null) {
-                return (DBConnMetadataModel) model.impl;
+                return (JDBCConnMetadataModel) model.impl;
             }
             return null;
-        }
-    }
-
-    private final static class Listener implements MetaDataListener {
-
-        // Remove when issue 141698 is fixed.
-        private static Listener create() {
-            return new Listener();
-        }
-
-        private Listener() {}
-
-        // Refreshing in the calling thread is prone to deadlock:
-        //
-        // 1. TH1: SQL completion acquires model lock, model calls showConnectionDialog() in EDT.
-        // 2. EDT: DB Explorer posts connect dialog in EDT, spawns TH2 to connect.
-        // 3. TH2: notifies tables have changed.
-        // 4. TH2: closes the dialog opened in #2.
-        //
-        // If in #3 TH2 wants to acquire the model lock, it doesn't get it since it
-        // is held by TH1, #4 is never performed and the connect dialog stays open.
-
-        public void tablesChanged(DatabaseConnection dbconn) {
-            final DBConnMetadataModel modelImpl = getModelImpl(dbconn);
-            if (modelImpl != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        modelImpl.refresh();
-                    }
-                });
-            }
-        }
-
-        public void tableChanged(DatabaseConnection dbconn, final String tableName) {
-            final DBConnMetadataModel modelImpl = getModelImpl(dbconn);
-            if (modelImpl != null) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        modelImpl.refreshTable(tableName);
-                    }
-                });
-            }
         }
     }
 }
