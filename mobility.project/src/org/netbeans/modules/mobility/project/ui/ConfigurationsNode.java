@@ -130,7 +130,7 @@ final class ConfigurationsNode extends DecoratedNode implements PropertyChangeLi
 
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getSource() instanceof ProjectConfigurationsHelper) {
-            if (PROP_CONFIGURATIONS.equals(evt.getPropertyName())) {
+            if (PROP_CONFIGURATIONS.equals(evt.getPropertyName()) && isAlive()) {
                 kids.update();
             }
         }
