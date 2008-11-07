@@ -112,9 +112,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private static final String PROP_CMP = "wizard-is-cmp"; //NOI18N
-
     private static final String PROP_HELPER = "wizard-helper"; //NOI18N
-
     private static final Lookup.Result<PersistenceGeneratorProvider> PERSISTENCE_PROVIDERS =
             Lookup.getDefault().lookupResult(PersistenceGeneratorProvider.class);
     private RelatedCMPHelper helper;
@@ -129,7 +127,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
         helper = new RelatedCMPHelper(project, configFilesFolder, generator);
         wizard.putProperty(PROP_HELPER, helper);
         wizard.putProperty(PROP_CMP, new Boolean(false));
-        
+
         // Moved to getPanels()
         //String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
         //wizard.putProperty("NewFileWizard_Title", NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey)); // NOI18N
@@ -268,9 +266,30 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
 
             RestUtils.ensureRestDevelopmentReady(project);
             FileObject targetFolder = (FileObject) wizard.getProperty(WizardProperties.TARGET_SRC_ROOT);
-            String targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
-            String resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
-            String converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+            String targetPackage = null;
+            String resourcePackage = null;
+            String converterPackage = null;
+
+            if (targetFolder != null) {
+                targetPackage = SourceGroupSupport.packageForFolder(targetFolder);
+                resourcePackage = (String) wizard.getProperty(WizardProperties.RESOURCE_PACKAGE);
+                converterPackage = (String) wizard.getProperty(WizardProperties.CONVERTER_PACKAGE);
+            } else {
+                targetFolder = Templates.getTargetFolder(wizard);
+                SourceGroup targetSourceGroup = null;
+                targetPackage = "";
+                if (targetFolder != null) {
+                    SourceGroup[] sourceGroups = SourceGroupSupport.getJavaSourceGroups(project);
+                    targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
+                    if (targetSourceGroup != null) {
+                        targetPackage = SourceGroupSupport.getPackageForFolder(targetSourceGroup, targetFolder);
+                    }
+                }
+
+                targetPackage = (targetPackage.length() == 0) ? "" : targetPackage + ".";
+                resourcePackage = targetPackage + EntityResourcesGenerator.RESOURCE_FOLDER;
+                converterPackage = targetPackage + EntityResourcesGenerator.CONVERTER_FOLDER;
+            }
 
             final EntityResourcesGenerator gen = EntityResourcesGeneratorFactory.newInstance(project);
             gen.initialize(model, project, targetFolder, targetPackage, resourcePackage, converterPackage, pu);
@@ -310,7 +329,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
      */
     private WizardDescriptor.Panel[] getPanels() {
         if (panels == null) {
-            
+
             String wizardBundleKey = "Templates/Persistence/RelatedCMP"; // NOI18N
             String wizardTitle = NbBundle.getMessage(RelatedCMPWizard.class, wizardBundleKey); // NOI18N
             panels = new WizardDescriptor.Panel[]{
