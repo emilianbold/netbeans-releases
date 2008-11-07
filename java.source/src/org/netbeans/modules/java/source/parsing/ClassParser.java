@@ -128,10 +128,10 @@ class ClassParser extends Parser {
             if (currentPhase.compareTo(requiredPhase)<0) {
                 ciImpl.setPhase(requiredPhase);
             }
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl), event);
         }
         else if (isUserTask) {
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl), event);
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N
