@@ -39,15 +39,24 @@
 
 package org.netbeans.modules.php.project.connections.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -55,20 +64,91 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class NewRemoteConnectionPanel extends JPanel {
-    private static final long serialVersionUID = 2806959931297531044L;
+    private static final long serialVersionUID = 2806958431387531044L;
 
-    public NewRemoteConnectionPanel() {
+    private final ConfigManager configManager;
+    private DialogDescriptor descriptor;
+
+    public NewRemoteConnectionPanel(ConfigManager configManager) {
+        this.configManager = configManager;
         initComponents();
 
+        errorLabel.setText(" "); // NOI18N
         connectionTypeComboBox.setModel(new DefaultComboBoxModel(new Vector<String>(RemoteConnections.get().getRemoteConnectionTypes())));
+
+        registerListeners();
+    }
+
+    public boolean open() {
+        descriptor = new DialogDescriptor(
+                this,
+                NbBundle.getMessage(NewRemoteConnectionPanel.class, "LBL_CreateNewConnection"),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                null);
+        descriptor.setValid(false);
+
+        return DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION;
     }
 
     public String getConnectionName() {
         return connectionNameTextField.getText().trim();
     }
 
+    public String getConfigName() {
+        return getConnectionName().replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
+    }
+
     public String getConnectionType() {
         return (String) connectionTypeComboBox.getSelectedItem();
+    }
+
+    void validateFields() {
+        String name = getConnectionName();
+        String config = getConfigName();
+        String type = getConnectionType();
+
+        String err = null;
+        if (name.length() == 0) {
+            err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_EmptyConnectionName");
+        } else if (type.length() == 0) {
+            err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_EmptyConnectionType");
+        } else if (configManager.exists(config)) {
+            err = NbBundle.getMessage(NewRemoteConnectionPanel.class, "MSG_ConnectionExists", config);
+        }
+        setError(err);
+    }
+
+    private void registerListeners() {
+        connectionNameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void removeUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            public void changedUpdate(DocumentEvent e) {
+                processUpdate();
+            }
+            private void processUpdate() {
+                validateFields();
+            }
+        });
+        connectionTypeComboBox.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                validateFields();
+            }
+        });
+    }
+
+    private void setError(String msg) {
+        errorLabel.setText(" "); // NOI18N
+        errorLabel.setForeground(UIManager.getColor("nb.errorForeground")); // NOI18N
+        errorLabel.setText(msg);
+
+        assert descriptor != null;
+        descriptor.setValid(msg == null);
     }
 
     /** This method is called from within the constructor to
@@ -84,6 +164,7 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionNameTextField = new JTextField();
         connectionTypeLabel = new JLabel();
         connectionTypeComboBox = new JComboBox();
+        errorLabel = new JLabel();
 
         connectionNameLabel.setLabelFor(connectionNameTextField);
 
@@ -92,7 +173,9 @@ public class NewRemoteConnectionPanel extends JPanel {
         connectionNameTextField.setText(NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionNameTextField.text")); // NOI18N
         connectionTypeLabel.setLabelFor(connectionTypeComboBox);
 
+
         Mnemonics.setLocalizedText(connectionTypeLabel, NbBundle.getMessage(NewRemoteConnectionPanel.class, "NewRemoteConnectionPanel.connectionTypeLabel.text"));
+        Mnemonics.setLocalizedText(errorLabel, "dummy");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -103,11 +186,12 @@ public class NewRemoteConnectionPanel extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(connectionNameLabel)
                         .addPreferredGap(LayoutStyle.RELATED)
-                        .add(connectionNameTextField, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
+                        .add(connectionNameTextField, GroupLayout.DEFAULT_SIZE, 221, Short.MAX_VALUE))
                     .add(layout.createSequentialGroup()
                         .add(connectionTypeLabel)
                         .addPreferredGap(LayoutStyle.UNRELATED)
-                        .add(connectionTypeComboBox, 0, 127, Short.MAX_VALUE)))
+                        .add(connectionTypeComboBox, 0, 220, Short.MAX_VALUE))
+                    .add(errorLabel))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -121,6 +205,8 @@ public class NewRemoteConnectionPanel extends JPanel {
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(connectionTypeLabel)
                     .add(connectionTypeComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(errorLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -131,6 +217,7 @@ public class NewRemoteConnectionPanel extends JPanel {
     private JTextField connectionNameTextField;
     private JComboBox connectionTypeComboBox;
     private JLabel connectionTypeLabel;
+    private JLabel errorLabel;
     // End of variables declaration//GEN-END:variables
 
 }

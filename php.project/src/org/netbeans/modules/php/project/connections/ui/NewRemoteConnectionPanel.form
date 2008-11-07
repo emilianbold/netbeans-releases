@@ -22,13 +22,14 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="connectionNameLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="connectionNameTextField" pref="128" max="32767" attributes="0"/>
+                      <Component id="connectionNameTextField" pref="221" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="connectionTypeLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                      <Component id="connectionTypeComboBox" pref="127" max="32767" attributes="0"/>
+                      <Component id="connectionTypeComboBox" pref="220" max="32767" attributes="0"/>
                   </Group>
+                  <Component id="errorLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -47,6 +48,8 @@
                   <Component id="connectionTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="connectionTypeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="errorLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
@@ -81,6 +84,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="connectionTypeComboBox">
+    </Component>
+    <Component class="javax.swing.JLabel" name="errorLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="dummy" noResource="true"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

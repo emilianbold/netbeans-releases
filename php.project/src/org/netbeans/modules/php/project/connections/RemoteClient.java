@@ -65,10 +65,12 @@ import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
 /**
- * Remote client able to connect/disconnect to FTP
- * as well as download/upload files to a FTP server.
+ * Remote client able to connect/disconnect to a remote server
+ * as well as download/upload files from/to a remote server.
  * <p>
  * Every method throws {@link RemoteException} if any error occurs.
+ * <p>
+ * This class is not threadsafe.
  * @author Tomas Mysik
  */
 public class RemoteClient implements Cancellable {

@@ -84,7 +84,7 @@ import org.openide.util.TaskListener;
  * @author Tomas Mysik
  */
 public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
-    private static final long serialVersionUID = -2869758745445123236L;
+    private static final long serialVersionUID = -2869751187565123236L;
 
     private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
 
@@ -417,30 +417,13 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     }
 
     void addConfig() {
-        NewRemoteConnectionPanel panel = new NewRemoteConnectionPanel();
-        DialogDescriptor descriptor = new DialogDescriptor(
-                panel,
-                NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_CreateNewConnection"),
-                true,
-                DialogDescriptor.OK_CANCEL_OPTION,
-                DialogDescriptor.OK_OPTION,
-                null);
-
-        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION) {
+        NewRemoteConnectionPanel panel = new NewRemoteConnectionPanel(configManager);
+        if (panel.open()) {
+            String config = panel.getConfigName();
             String name = panel.getConnectionName();
-            String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
-
-            String err = null;
-            if (name.trim().length() == 0) {
-                err = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_EmptyConnectionExists");
-            } else if (configManager.exists(config)) {
-                err = NbBundle.getMessage(RemoteConnectionsPanel.class, "MSG_ConnectionExists", config);
-            }
-            if (err != null) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(err, NotifyDescriptor.WARNING_MESSAGE));
-                return;
-            }
             String type = panel.getConnectionType();
+            assert config != null;
+            assert name != null;
             assert type != null;
 
             Configuration cfg = configManager.createNew(config, name);
