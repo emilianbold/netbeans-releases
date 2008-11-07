@@ -121,7 +121,7 @@ public final class RemoteConnections {
         return Collections.<RemoteConnectionProvider>singletonList(FtpConnectionProvider.get());
     }
 
-    public List<String> getRemoteConnections() {
+    public List<String> getRemoteConnectionTypes() {
         List<String> names = new ArrayList<String>();
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
             names.add(provider.getDisplayName());
@@ -184,6 +184,19 @@ public final class RemoteConnections {
         for (RemoteConfiguration remoteConfig : getRemoteConfigurations()) {
             if (remoteConfig.getName().equals(name)) {
                 return remoteConfig;
+            }
+        }
+        return null;
+    }
+
+    /** can be null */
+    public RemoteConfiguration createRemoteConfiguration(String type, ConfigManager.Configuration configuration) {
+        assert type != null;
+        for (RemoteConnectionProvider provider : getConnectionProviders()) {
+            if (type.equals(provider.getDisplayName())) {
+                RemoteConfiguration remoteConfiguration = provider.createRemoteConfiguration(configuration);
+                assert remoteConfiguration != null : "Remote configuration must be provided for " + type;
+                return remoteConfiguration;
             }
         }
         return null;

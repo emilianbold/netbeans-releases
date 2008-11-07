@@ -77,6 +77,9 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         TIMEOUT,
         PASSIVE_MODE
     ));
+    private static final int DEFAULT_PORT = 21;
+    private static final int DEFAULT_TIMEOUT = 30;
+    private static final String DEFAULT_INITIAL_DIRECTORY = "/"; // NOI18N
 
     private FtpConnectionProvider() {
     }
@@ -93,8 +96,20 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
         return PROPERTIES;
     }
 
-    public RemoteConfiguration createRemoteConfiguration(String name, String displayName) {
-        return new FtpConfiguration(name, displayName);
+    public RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration) {
+        configuration.putValue(TYPE, FTP_CONNECTION_TYPE);
+        configuration.putValue(HOST, ""); // NOI18N
+        configuration.putValue(PORT, String.valueOf(DEFAULT_PORT));
+        configuration.putValue(USER, ""); // NOI18N
+        configuration.putValue(PASSWORD, ""); // NOI18N
+        configuration.putValue(ANONYMOUS_LOGIN, String.valueOf(false));
+        configuration.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
+        configuration.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
+        configuration.putValue(PASSIVE_MODE, String.valueOf(false));
+
+        assert accept(configuration) : "Not my configuration?!";
+
+        return new FtpConfiguration(configuration);
     }
 
     public RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration) {

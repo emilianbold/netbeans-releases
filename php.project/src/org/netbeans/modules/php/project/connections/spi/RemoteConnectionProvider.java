@@ -58,7 +58,8 @@ public interface RemoteConnectionProvider {
      * @return the list of property names.
      */
     Set<String> getPropertyNames();
-    RemoteConfiguration createRemoteConfiguration(String name, String displayName);
+    /** put default values there */
+    RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration);
     RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration);
     RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io);
     RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration remoteConfiguration);

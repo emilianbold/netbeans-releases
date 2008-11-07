@@ -87,7 +87,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         warningLabel.setText(" "); // NOI18N
 
         setEnabledLoginCredentials();
-        for (String connectionType : RemoteConnections.get().getRemoteConnections()) {
+        for (String connectionType : RemoteConnections.get().getRemoteConnectionTypes()) {
             typeComboBox.addItem(connectionType);
         }
 

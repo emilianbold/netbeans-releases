@@ -61,22 +61,6 @@ public final class FtpConfiguration extends RemoteConfiguration {
     private final int timeout;
     private final boolean passiveMode;
 
-    /**
-     * For newly created configurations
-     */
-    public FtpConfiguration(String name, String displayName) {
-        super(name, displayName);
-
-        host = ""; // NOI18N
-        port = 21;
-        userName = ""; // NOI18N
-        password = ""; // NOI18N
-        anonymousLogin = false;
-        initialDirectory = PATH_SEPARATOR;
-        timeout = 30;
-        passiveMode = false;
-    }
-
     public FtpConfiguration(final ConfigManager.Configuration cfg) {
         super(cfg);
 

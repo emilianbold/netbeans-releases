@@ -400,11 +400,17 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     }
 
     void addConfig() {
-        NotifyDescriptor.InputLine d = new NotifyDescriptor.InputLine(NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_ConnectionName"),
-                NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_CreateNewConnection"));
+        NewRemoteConnectionPanel panel = new NewRemoteConnectionPanel();
+        DialogDescriptor descriptor = new DialogDescriptor(
+                panel,
+                NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_CreateNewConnection"),
+                true,
+                DialogDescriptor.OK_CANCEL_OPTION,
+                DialogDescriptor.OK_OPTION,
+                null);
 
-        if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
-            String name = d.getInputText();
+        if (DialogDisplayer.getDefault().notify(descriptor) == NotifyDescriptor.OK_OPTION) {
+            String name = panel.getConnectionName();
             String config = name.replaceAll("[^a-zA-Z0-9_.-]", "_"); // NOI18N
 
             String err = null;
@@ -417,11 +423,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(err, NotifyDescriptor.WARNING_MESSAGE));
                 return;
             }
+            String type = panel.getConnectionType();
+            assert type != null;
+
             Configuration cfg = configManager.createNew(config, name);
-            // XXX
-//            cfg.putValue(PORT, String.valueOf(DEFAULT_PORT));
-//            cfg.putValue(INITIAL_DIRECTORY, DEFAULT_INITIAL_DIRECTORY);
-//            cfg.putValue(TIMEOUT, String.valueOf(DEFAULT_TIMEOUT));
+            RemoteConfiguration remoteConfiguration = remoteConnections.createRemoteConfiguration(type, cfg);
+            assert remoteConfiguration != null : "No remote configuration created for type: " + type;
             addConfiguration(cfg);
             configManager.markAsCurrentConfiguration(config);
         }
