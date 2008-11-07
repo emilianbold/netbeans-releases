@@ -191,11 +191,15 @@ public class SvnClientFactory {
                factoryType.trim().equals("") ||
                factoryType.trim().equals("javahl"))
             {
-                setupJavaHl();
+                if(!setupJavaHl()) {
+                    setupCommandline() ;
+                }
+            } else if(factoryType.trim().equals("svnkit")) {
+                if(!setupSvnKit()) {
+                    setupCommandline();
+                }
             } else if(factoryType.trim().equals("commandline")) {
                 setupCommandline();
-            } else if(factoryType.trim().equals("svnkit")) {
-                setupSvnKit();
             } else {
                 throw new SVNClientException("Unknown factory: " + factoryType);
             }
@@ -226,14 +230,13 @@ public class SvnClientFactory {
         return false;
     }
 
-    private void setupJavaHl () {
+    private boolean setupJavaHl () {
 
         String jhlInitFile = System.getProperty("netbeans.user") + "/config/svn/jhlinit";
         File initFile = new File(jhlInitFile);
 
         if(checkJavahlCrash(initFile)) {
-            setupCommandline();
-            return;
+            return false;
         }
         try {
             if(!initFile.exists()) initFile.createNewFile();
@@ -245,8 +248,7 @@ public class SvnClientFactory {
         try {            
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
                LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
-               setupCommandline();
-               return;
+               return false;
             }
         } catch (SVNClientException e) {
             LOG.log(Level.WARNING, null, e); // should not happen
@@ -268,6 +270,7 @@ public class SvnClientFactory {
             }
         };
         LOG.info("running on javahl");
+        return true;
     }
 
     private void presetJavahl() {
@@ -425,19 +428,17 @@ public class SvnClientFactory {
         }
     }
 
-    private void setupSvnKit () {
+    private boolean  setupSvnKit () {
         try {
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.svnkit)) {
                 LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
-                setupCommandline();
-                return;
+                return false;
             }
         } catch (SVNClientException ex) {
             LOG.log(Level.INFO, null, ex);
             LOG.log(Level.INFO, null, ex.getCause());
             LOG.log(Level.INFO, "Could not setup svnkit. Falling back on commandline!");
-            setupCommandline();
-            return;
+            return false;
         }
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
@@ -454,6 +455,7 @@ public class SvnClientFactory {
             }
         };
         LOG.info("svnClientAdapter running on svnkit");
+        return true;
     }
 
     public void setupCommandline () {
