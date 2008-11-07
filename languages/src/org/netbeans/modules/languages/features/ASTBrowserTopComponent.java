@@ -19,19 +19,23 @@
 
 package org.netbeans.modules.languages.features;
 
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTItem;
-import org.netbeans.api.languages.ASTNode;
-import org.netbeans.api.languages.ASTPath;
-import org.netbeans.api.languages.ParserManager;
-import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.netbeans.api.languages.ParserResult;
+import org.netbeans.api.languages.ASTItem;
+import org.netbeans.api.languages.ASTNode;
+import org.netbeans.api.languages.ASTPath;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.editor.NbEditorDocument;
+import org.netbeans.modules.parsing.api.ParserManager;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -215,37 +219,42 @@ final class ASTBrowserTopComponent extends TopComponent {
     private void refresh () {
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
-                ASTNode nr = getCurrentRootNode ();
-                if (nr == rootNode) return;
-                rootNode = nr;
-                DefaultTreeModel model = new DefaultTreeModel (new TNode (null, rootNode));
-                tree.setModel (model);
+                Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
+                if (ns.length != 1) return;
+                EditorCookie editorCookie = ns [0].getLookup ().
+                    lookup (EditorCookie.class);
+                if (editorCookie == null) return;
+                if (editorCookie.getOpenedPanes () == null) return;
+                if (editorCookie.getOpenedPanes ().length < 1) return;
+                JEditorPane pane = editorCookie.getOpenedPanes () [0];
+                if (caretListener == null)
+                    caretListener = new CListener ();
+                if (lastPane != null && lastPane != pane) {
+                    lastPane.removeCaretListener (caretListener);
+                    lastPane = null;
+                }
+                if (lastPane == null) {
+                    pane.addCaretListener (caretListener);
+                    lastPane = pane;
+                }
+                Document document = editorCookie.getDocument ();
+                Source source = Source.create (document);
+                if (document == null || !(document instanceof NbEditorDocument)) return;
+                try {
+                    ParserManager.parse (Collections.singleton (source), new UserTask () {
+
+                        @Override
+                        public void run (ResultIterator resultIterator) throws ParseException {
+                            rootNode = ((ParserResult) resultIterator.getParserResult ()).getRootNode ();
+                            DefaultTreeModel model = new DefaultTreeModel (new TNode (null, rootNode));
+                            tree.setModel (model);
+                        }
+                    });
+                } catch (ParseException ex) {
+                    ex.printStackTrace ();
+                }
             }
         });
-    }
-    
-    private ASTNode getCurrentRootNode () {
-        Node[] ns = TopComponent.getRegistry ().getActivatedNodes ();
-        if (ns.length != 1) return null;
-        EditorCookie editorCookie = ns [0].getLookup ().
-            lookup (EditorCookie.class);
-        if (editorCookie == null) return null;
-        if (editorCookie.getOpenedPanes () == null) return null;
-        if (editorCookie.getOpenedPanes ().length < 1) return null;
-        JEditorPane pane = editorCookie.getOpenedPanes () [0];
-        if (caretListener == null)
-            caretListener = new CListener ();
-        if (lastPane != null && lastPane != pane) {
-            lastPane.removeCaretListener (caretListener);
-            lastPane = null;
-        }
-        if (lastPane == null) {
-            pane.addCaretListener (caretListener);
-            lastPane = pane;
-        }
-        Document document = editorCookie.getDocument ();
-        if (document == null || !(document instanceof NbEditorDocument)) return null;
-        return ParserManagerImpl.getImpl (document).getAST ();
     }
 
     
