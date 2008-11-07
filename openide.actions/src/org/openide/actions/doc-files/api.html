@@ -332,7 +332,7 @@ Global installation of an action may be accomplished using the
 
 <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#sec-action">Modules API</a>, by
 adding it to the <code>Actions</code> folder of the system filesystem,
-and optionally creating links in the <code>Toolbars</code> or <code>MenuBar</code>
+and optionally creating links in the <code>Toolbars</code> or <code>Menu</code>
 folders.
 <p>
 Actions only present in the popup menu of specific Nodes need no installation.
@@ -469,7 +469,7 @@ For details see <a href="@org-openide-util@/org/openide/util/doc-files/api.html#
 
 <h3><a name="install-menu">Menu installation</a></h3>
 The main menu in NetBeans is constructed from a set of folders in the 
-system filesystem.  There is a folder called <samp>MenuBar</samp>.  Each
+system filesystem.  There is a folder called <samp>Menu</samp>.  Each
 child folder of it is one menu;  child folders may contain additional child
 folders to represent submenus.
 <p>
@@ -502,7 +502,7 @@ Typical installation of an action into a menu looks like this:
 You could also, if you wished, provide an object whose
 instance was of type
 <a href="@JDK@/javax/swing/JMenu.html"><code>JMenu</code></a>,
-as an item in the top-level <code>MenuBar</code> folder if you had very
+as an item in the top-level <code>Menu</code> folder if you had very
 special requirements that demanded complete control over the menu at all
 times.
 
