@@ -88,7 +88,7 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private Throwable exception = null;
     private boolean parsed = false;
     private Reference<StyledDocument> styledDocRef = null;
-    private Object parseLock; // see init()
+    private final Object parseLock; // see init()
 
     private final ChangeSupport cs = new ChangeSupport(this);
     private Reference<EditorCookie.Observable> editorRef;

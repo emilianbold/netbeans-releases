@@ -171,7 +171,7 @@ import org.netbeans.modules.cnd.apt.support.*;
         addIncludesIfNeeded();
         // there could be errors with unbalanced directives => check 
         if (!ppStartDirectives.empty()) {
-            APT start = (APT) ppStartDirectives.pop();
+            APT start = ppStartDirectives.pop();
             // we want fold after full "#if A" directive
             int startFold = start.getEndOffset();
             int endFold = end.getEndOffset();

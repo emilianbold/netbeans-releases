@@ -242,8 +242,12 @@ public abstract class SvnCommand implements CommandNotificationListener {
     
     protected static String createTempCommandFile(String[] lines) throws IOException {
         String tmp = System.getProperty("java.io.tmpdir");
-        File targetFile;
-        targetFile = File.createTempFile("svn_", "", new File(tmp));
+        if(tmp == null || tmp.trim().equals("")) {
+            File f = File.createTempFile("svncommit", null);
+            tmp = f.getParentFile().getAbsolutePath();
+            f.delete();
+        }
+        File targetFile = File.createTempFile("svn_", "", new File(tmp));
         targetFile.deleteOnExit();
 
         PrintWriter writer = null; 

@@ -50,6 +50,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataLoaderPool;
 import org.openide.loaders.OperationEvent;
 import org.openide.loaders.OperationEvent.Copy;
@@ -124,6 +125,11 @@ final class CopyHandler implements OperationListener {
         FileObject origFO = ev.getOriginalDataObject().getPrimaryFile();
         JavaSource js = JavaSource.forFileObject(copyFO);
         if (js == null) {
+            return;
+        }
+        if ("application/x-class-file".equals(FileUtil.getMIMEType(copyFO)) //NOI18N
+                || "class".equals(copyFO.getExt())) { //NOI18N
+            // #151288: JavaSource may exist even for .class file
             return;
         }
         ClassPath cp = ClassPath.getClassPath(copyFO, ClassPath.SOURCE);
