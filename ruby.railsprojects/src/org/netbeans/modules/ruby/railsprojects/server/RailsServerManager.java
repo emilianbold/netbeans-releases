@@ -290,11 +290,15 @@ public final class RailsServerManager {
     private void runServer(RubyExecutionDescriptor desc, String displayName, LineConvertor... convertors) {
         IN_USE_PORTS.add(port);
         String charsetName = project.evaluator().getProperty(RailsProjectProperties.SOURCE_ENCODING);
+        for (LineConvertor each : convertors) {
+            desc.addOutConvertor(each);
+        }
+        for (LineConvertor each : convertors) {
+            desc.addErrConvertor(each);
+        }
         RubyProcessCreator rpc = new RubyProcessCreator(desc,
-                charsetName, 
-                new RubyLineConvertorFactory(desc.getFileLocator(), convertors),
-                new RubyLineConvertorFactory(desc.getFileLocator(), convertors));
-        ExecutionService executionService = ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
+                charsetName);
+        ExecutionService executionService = ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
         this.execution = executionService.run();
     }
     

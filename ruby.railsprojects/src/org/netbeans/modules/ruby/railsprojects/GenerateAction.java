@@ -287,14 +287,14 @@ public final class GenerateAction extends NodeAction {
                             RubyExecutionDescriptor descriptor =
                                     new RubyExecutionDescriptor(RubyPlatform.platformFor(project), displayName, pwd, script)
                                     .additionalArgs(argv)
-                                    .fileLocator(locator);
+                                    .fileLocator(locator)
+                                    .addStandardRecognizers()
+                                    .addOutConvertor(convertor)
+                                    .addErrConvertor(convertor);
 
-                            RubyProcessCreator rpc = new RubyProcessCreator(descriptor, charsetName,
-                                    new RubyLineConvertorFactory(descriptor.getFileLocator(), convertor),
-                                    new RubyLineConvertorFactory(descriptor.getFileLocator(), convertor));
-
+                            RubyProcessCreator rpc = new RubyProcessCreator(descriptor, charsetName);
                             Future<Integer> execution =
-                                    ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName).run();
+                                    ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                             try {
                                 execution.get();
                             } catch (InterruptedException ex) {

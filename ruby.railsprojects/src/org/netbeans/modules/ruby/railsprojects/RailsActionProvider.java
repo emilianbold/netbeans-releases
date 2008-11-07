@@ -476,8 +476,9 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 // see #130264
                 additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()])). //NOI18N
                 fileLocator(new RailsFileLocator(context, project));
+        descriptor.addStandardRecognizers();
         RubyProcessCreator rpc = new RubyProcessCreator(descriptor, getSourceEncoding());
-        ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName).run();
+        ExecutionService.newService(rpc, descriptor.toExecutionDescriptor(), displayName).run();
                 
         // request focus for the output window - see #133519
         final String outputWindowId = "output"; //NOI18N

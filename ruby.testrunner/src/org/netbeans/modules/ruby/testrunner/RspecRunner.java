@@ -50,11 +50,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -293,7 +290,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         }
     }
 
-    public ExecutionDescriptor customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
+    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.SPEC_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -302,7 +299,7 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
         });
           
         if (!useRunner) {
-            return null;
+            return;
         }
 
         TestExecutionManager.getInstance().reset();
@@ -327,15 +324,19 @@ public class RspecRunner implements TestRunner, RakeTaskCustomizer {
                 debug ? SessionType.DEBUG : SessionType.TEST);
         addSpecOptsWarningIfNeeded(session, specOpts);
         
-        taskDescriptor.setRerun(false);
         Manager manager = Manager.getInstance();
-        LineConvertor convertor = new TestRunnerLineConvertor(manager, session, new RspecHandlerFactory());
-        return taskDescriptor.toExecutionDescriptor()
-                .outConvertorFactory(new RubyLineConvertorFactory(locator, convertor))
-                .errConvertorFactory(new RubyLineConvertorFactory(locator, convertor))
-                .errProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false))
-                .outProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        final TestRunnerLineConvertor convertor = new TestRunnerLineConvertor(manager, session, new RspecHandlerFactory());
+        taskDescriptor.addOutConvertor(convertor);
+        taskDescriptor.addErrConvertor(convertor);
+        taskDescriptor.lineBased(true);
+        taskDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        taskDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        taskDescriptor.postBuild(new Runnable() {
 
+            public void run() {
+                convertor.refreshSession();
+            }
+        });
     }
 
 }

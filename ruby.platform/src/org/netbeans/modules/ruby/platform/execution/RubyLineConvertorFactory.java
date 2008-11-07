@@ -73,10 +73,21 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
 
     private final FileLocator locator;
     private final LineConvertor[] convertors;
+    private final boolean stdConvertors;
 
-    public RubyLineConvertorFactory(FileLocator locator, LineConvertor... convertors) {
+
+    public static RubyLineConvertorFactory create(FileLocator locator, LineConvertor... convertors) {
+        return new RubyLineConvertorFactory(locator, false, convertors);
+    }
+
+    public static RubyLineConvertorFactory withStandardConvertors(FileLocator locator, LineConvertor... convertors) {
+        return new RubyLineConvertorFactory(locator, true, convertors);
+    }
+
+    private RubyLineConvertorFactory(FileLocator locator, boolean stdConvertors, LineConvertor... convertors) {
         this.locator = locator;
         this.convertors = convertors;
+        this.stdConvertors = stdConvertors;
     }
 
     public static List<LineConvertor> getStandardConvertors(FileLocator locator) {
@@ -100,7 +111,9 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
             }
         }
 
-        convertorList.addAll(getStandardConvertors(locator));
+        if (stdConvertors) {
+            convertorList.addAll(getStandardConvertors(locator));
+        }
         return LineConvertors.proxy(convertorList.toArray(new LineConvertor[convertorList.size()]));
     }
 }

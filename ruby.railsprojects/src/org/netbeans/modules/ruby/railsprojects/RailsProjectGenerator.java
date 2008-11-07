@@ -145,13 +145,14 @@ public class RailsProjectGenerator {
 
             LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
             LineConvertor convertor = LineConvertors.filePattern(locator, RAILS_GENERATOR_PATTERN, RubyLineConvertorFactory.EXT_RE, 2, -1);
+            desc.addStandardRecognizers();
+            desc.addErrConvertor(convertor);
+            desc.addOutConvertor(convertor);
 
-            RubyProcessCreator rpc = new RubyProcessCreator(desc, null,
-                    new RubyLineConvertorFactory(desc.getFileLocator(), convertor),
-                    new RubyLineConvertorFactory(desc.getFileLocator(), convertor));
+            RubyProcessCreator rpc = new RubyProcessCreator(desc);
 
             org.netbeans.modules.extexecution.api.ExecutionService es =
-                    org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, rpc.buildExecutionDescriptor(), displayName);
+                    org.netbeans.modules.extexecution.api.ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
             try {
                 es.run().get();
             } catch (InterruptedException ex) {
@@ -223,9 +224,10 @@ public class RailsProjectGenerator {
         desc.additionalArgs("pluginize"); //NOI18N
 
         RubyProcessCreator processCreator = new RubyProcessCreator(desc);
+        desc.addStandardRecognizers();
 
         ExecutionService.newService(processCreator,
-                processCreator.buildExecutionDescriptor(),
+                desc.toExecutionDescriptor(),
                 NbBundle.getMessage(RailsProjectGenerator.class, "WarblePluginize")).run();
     }
 

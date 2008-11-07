@@ -63,7 +63,7 @@ public final class TestRunnerLineConvertor implements LineConvertor {
         this.handlers = handlerFactory.createHandlers();
     }
 
-    public void refreshSession() {
+    public synchronized void refreshSession() {
         this.session = new TestSession(session.getName(), session.getProject(), session.getSessionType());
     }
 

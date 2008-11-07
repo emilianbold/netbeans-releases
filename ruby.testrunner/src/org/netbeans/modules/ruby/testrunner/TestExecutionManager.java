@@ -48,7 +48,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.testrunner.ui.Manager;
 import org.netbeans.modules.ruby.testrunner.ui.TestHandlerFactory;
@@ -105,20 +104,21 @@ public final class TestExecutionManager {
      */
     synchronized void start(RubyExecutionDescriptor rubyDescriptor,
             TestHandlerFactory handlerFactory, TestSession session) {
+
+        setFinished(false);
         final Manager manager = Manager.getInstance();
         outConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
         errConvertor = new TestRunnerLineConvertor(manager, session, handlerFactory);
+        rubyDescriptor.addOutConvertor(outConvertor);
+        rubyDescriptor.addErrConvertor(errConvertor);
+        rubyDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, handlerFactory.printSummary()));
+        rubyDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        rubyDescriptor.lineBased(true);
 
-        setFinished(false);
 
-        RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor, 
-                null,
-                new RubyLineConvertorFactory(rubyDescriptor.getFileLocator(), outConvertor),
-                new RubyLineConvertorFactory(rubyDescriptor.getFileLocator(), errConvertor));
-        
-        ExecutionDescriptor descriptor = rpc.buildExecutionDescriptor()
-                .errProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false))
-                .outProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, handlerFactory.printSummary()))
+        RubyProcessCreator rpc = new RubyProcessCreator(rubyDescriptor);
+
+        ExecutionDescriptor descriptor = rubyDescriptor.toExecutionDescriptor()
                 .postExecution(new Runnable() {
 
             public void run() {

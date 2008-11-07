@@ -42,19 +42,18 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionService;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.extexecution.api.print.ConvertedLine;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.RecognizedOutput;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -64,13 +63,12 @@ import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Task;
 import org.openide.util.Utilities;
+import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  * Provides Rake running infrastructure.
@@ -85,10 +83,6 @@ public final class RakeRunner {
     private File pwd;
     private String displayName;
     private final List<String> parameters = new ArrayList<String>();
-    /**
-     * The RP for running tasks.
-     */
-    private static final RequestProcessor RAKE_RUNNER_RP = new RequestProcessor("RakeRunner"); //NOI18N
 
     public RakeRunner(final Project project) {
         this.project = project;
@@ -227,14 +221,14 @@ public final class RakeRunner {
     private List<ExecutionService> getExecutionServices(List<? extends RakeTask> tasks) {
         List<ExecutionService> result = new ArrayList<ExecutionService>(tasks.size());
 
-        for (DescriptorHolder descriptor : getDescriptors(tasks)) {
-            result.add(buildExecutionService(descriptor.rubyDescriptor, descriptor.executionDescriptor));
+        for (RubyExecutionDescriptor descriptor : getDescriptors(tasks)) {
+            result.add(buildExecutionService(descriptor));
         }
 
         return result;
     }
 
-    private ExecutionService buildExecutionService(RubyExecutionDescriptor rubyDescriptor, ExecutionDescriptor descriptor) {
+    private ExecutionService buildExecutionService(RubyExecutionDescriptor descriptor) {
         String charsetName = null;
         if (project != null) {
             PropertyEvaluator evaluator = project.getLookup().lookup(PropertyEvaluator.class);
@@ -242,17 +236,17 @@ public final class RakeRunner {
                 charsetName = evaluator.getProperty(SharedRubyProjectProperties.SOURCE_ENCODING);
             }
         }
-        RubyProcessCreator processCreator = new RubyProcessCreator(rubyDescriptor, charsetName);
-        return ExecutionService.newService(processCreator, descriptor, displayName);
+        RubyProcessCreator processCreator = new RubyProcessCreator(descriptor, charsetName);
+        return ExecutionService.newService(processCreator, descriptor.toExecutionDescriptor(), displayName);
     }
 
     // package private for unit tests
-    List<DescriptorHolder> getDescriptors(List<? extends RakeTask> tasks) {
+    List<RubyExecutionDescriptor> getDescriptors(List<? extends RakeTask> tasks) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
         String rake = platform.getRake();
         Collection<? extends RakeTaskCustomizer> customizers = Lookup.getDefault().lookupAll(RakeTaskCustomizer.class);
-        List<DescriptorHolder> result = new ArrayList<DescriptorHolder>(tasks.size());
+        List<RubyExecutionDescriptor> result = new ArrayList<RubyExecutionDescriptor>(tasks.size());
 
         for (RakeTask task : tasks) {
             RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, rake);
@@ -260,12 +254,8 @@ public final class RakeRunner {
             String[] existingInitialArgs = desc.getInitialArgs() != null ? desc.getInitialArgs() : new String[0];
             List<String> initialArgs = new ArrayList<String>(Arrays.asList(existingInitialArgs));
 
-            ExecutionDescriptor executionDescriptor = null;
             for (RakeTaskCustomizer customizer : customizers) {
-                executionDescriptor = customizer.customize(project, task, desc, debug);
-                if (executionDescriptor != null) {
-                    break;
-                }
+                customizer.customize(project, task, desc, debug);
             }
 
             initialArgs.addAll(task.getRakeParameters());
@@ -288,14 +278,10 @@ public final class RakeRunner {
             }
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
-            if (executionDescriptor == null) {
-                executionDescriptor = desc.toExecutionDescriptor();
-            }
-            result.add(new DescriptorHolder(desc, executionDescriptor));
+            result.add(desc);
         }
         return result;
     }
-
 
     private void doStandardConfiguration(RubyExecutionDescriptor desc) {
 
@@ -346,7 +332,8 @@ public final class RakeRunner {
             desc.appendJdkToPath(true);
         }
 
-        desc.addOutputRecognizer(new RakeErrorRecognizer(desc, charsetName)).debug(debug);
+        desc.addOutConvertor(new RakeErrorLineConvertor(desc, charsetName, displayName));
+        desc.addErrConvertor(new RakeErrorLineConvertor(desc, charsetName, displayName));
 
     }
 
@@ -364,59 +351,40 @@ public final class RakeRunner {
         setDisplayName(displayNameSB.toString()); // NOI18N
     }
 
-    private class RakeErrorRecognizer extends OutputRecognizer implements Runnable {
+    private static class RakeErrorLineConvertor implements LineConvertor {
 
         private final RubyExecutionDescriptor desc;
         private final String charsetName;
+        private final String displayName;
 
-        RakeErrorRecognizer(RubyExecutionDescriptor desc, String charsetName) {
+        public RakeErrorLineConvertor(RubyExecutionDescriptor desc, String charsetName, String displayName) {
             this.desc = desc;
             this.charsetName = charsetName;
+            this.displayName = displayName;
         }
 
-        @Override
-        public RecognizedOutput processLine(String line) {
+        public List<ConvertedLine> convert(String line) {
             if (line.indexOf("(See full trace by running task with --trace)") != -1) { // NOI18N
-                return new OutputRecognizer.ActionText(new String[]{line},
-                        new String[]{NbBundle.getMessage(RakeRunner.class, "RakeSupport.RerunRakeWithTrace")},
-                        new Runnable[]{RakeErrorRecognizer.this}, null);
-            }
+                return Collections.<ConvertedLine>singletonList(
+                        ConvertedLine.forText(
+                        NbBundle.getMessage(RakeRunner.class, "RakeSupport.RerunRakeWithTrace"),
+                        new OutputListener() {
 
+                            public void outputLineSelected(OutputEvent ev) {
+                            }
+
+                            public void outputLineAction(OutputEvent ev) {
+                                RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName);
+                                ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
+                            }
+
+                            public void outputLineCleared(OutputEvent ev) {
+                            }
+                        }));
+            }
             return null;
         }
 
-        public void run() {
-            String[] additionalArgs = desc.getAdditionalArgs();
-            if (additionalArgs != null) {
-                List<String> args = new ArrayList<String>();
-                boolean found = false;
-                for (String s : additionalArgs) {
-                    args.add(s);
-                    if (s.equals("--trace")) { // NOI18N
-                        found = true;
-                    }
-                }
-                if (!found) {
-                    args.add(0, "--trace"); // NOI18N
-                }
-                desc.additionalArgs(args.toArray(new String[args.size()]));
-            } else {
-                desc.additionalArgs("--trace"); // NOI18N
-            }
-            new RubyExecution(desc, charsetName).run();
-        }
-    }
-
-    // package private for unit tests
-    static final class DescriptorHolder {
-        
-        final RubyExecutionDescriptor rubyDescriptor;
-        final ExecutionDescriptor executionDescriptor;
-
-        DescriptorHolder(RubyExecutionDescriptor rubyDescriptor, ExecutionDescriptor executionDescriptor) {
-            this.rubyDescriptor = rubyDescriptor;
-            this.executionDescriptor = executionDescriptor;
-        }
     }
 
 }

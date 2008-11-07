@@ -47,6 +47,9 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
@@ -88,6 +91,12 @@ public class RubyExecutionDescriptor {
     private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
     private boolean runThroughRuby = true;
+    private final List<LineConvertor> outConvertors = new ArrayList<LineConvertor>();
+    private final List<LineConvertor> errConvertors = new ArrayList<LineConvertor>();
+    private InputProcessorFactory outProcessorFactory;
+    private InputProcessorFactory errProcessorFactory;
+    private boolean addStandardConvertors;
+    private boolean lineBased;
     /**
      * Defines whether rerun should be allowed. <i>Currently needed
      * only because rerunning rake test tasks in the test runner does not
@@ -160,6 +169,7 @@ public class RubyExecutionDescriptor {
 
     public RubyExecutionDescriptor addStandardRecognizers() {
         outputRecognizers.addAll(RubyExecution.getStandardRubyRecognizers());
+        addStandardConvertors = true;
         return this;
     }
 
@@ -383,6 +393,37 @@ public class RubyExecutionDescriptor {
         this.rerun = rerun;
     }
 
+    public RubyExecutionDescriptor addOutConvertor(LineConvertor convertor) {
+        this.outConvertors.add(convertor);
+        return this;
+    }
+
+    public RubyExecutionDescriptor addErrConvertor(LineConvertor convertor) {
+        this.errConvertors.add(convertor);
+        return this;
+    }
+
+//    public List<LineConvertor> getErrConvertors() {
+//        return errConvertors;
+//    }
+//
+//    public List<LineConvertor> getOutConvertors() {
+//        return outConvertors;
+//    }
+//
+    public void setErrProcessorFactory(InputProcessorFactory errProcessorFactory) {
+        this.errProcessorFactory = errProcessorFactory;
+    }
+
+    public void setOutProcessorFactory(InputProcessorFactory outProcessorFactory) {
+        this.outProcessorFactory = outProcessorFactory;
+    }
+
+    public RubyExecutionDescriptor lineBased(boolean lineBased) {
+        this.lineBased = lineBased;
+        return this;
+    }
+    
     public ExecutionDescriptor toExecutionDescriptor() {
         return new ExecutionDescriptor()
             .showProgress(showProgress)
@@ -390,8 +431,21 @@ public class RubyExecutionDescriptor {
             .inputVisible(inputVisible)
             .frontWindow(frontWindow)
             .showSuspended(showSuspended)
-            .postExecution(postBuildAction);
+            .postExecution(postBuildAction)
+            .errLineBased(lineBased)
+            .outLineBased(lineBased)
+            .outConvertorFactory(lineConvertorFactory(outConvertors))
+            .errConvertorFactory(lineConvertorFactory(errConvertors))
+            .outProcessorFactory(outProcessorFactory)
+            .errProcessorFactory(errProcessorFactory);
     }
 
+    private LineConvertorFactory lineConvertorFactory(List<LineConvertor> convertors) {
+        LineConvertor[] convertorArray = convertors.toArray(new LineConvertor[convertors.size()]);
+        if (addStandardConvertors) {
+            return RubyLineConvertorFactory.withStandardConvertors(fileLocator, convertorArray);
+        }
+        return RubyLineConvertorFactory.create(fileLocator, convertorArray);
+    }
 
 }

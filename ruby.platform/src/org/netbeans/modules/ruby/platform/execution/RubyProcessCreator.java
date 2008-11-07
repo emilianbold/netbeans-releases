@@ -47,7 +47,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
 import org.netbeans.modules.extexecution.api.print.LineConvertors;
@@ -76,25 +75,13 @@ public class RubyProcessCreator implements Callable<Process> {
     private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
     private final RubyExecutionDescriptor descriptor;
     private final String charsetName;
-    private final LineConvertorFactory outFactory;
-    private final LineConvertorFactory errFactory;
-
 
     public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
-        this(descriptor, null, null, null);
-    }
-
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor, String charsetName) {
-        this(descriptor,
-                charsetName,
-                new RubyLineConvertorFactory(descriptor.getFileLocator()),
-                new RubyLineConvertorFactory(descriptor.getFileLocator()));
+        this(descriptor, null);
     }
 
     public RubyProcessCreator(RubyExecutionDescriptor descriptor,
-            String charsetName,
-            LineConvertorFactory outFactory,
-            LineConvertorFactory errFactory) {
+            String charsetName) {
 
         if (descriptor.getCmd() == null) {
             descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
@@ -103,8 +90,6 @@ public class RubyProcessCreator implements Callable<Process> {
         descriptor.addBinPath(true);
         this.descriptor = descriptor;
         this.charsetName = charsetName;
-        this.outFactory = outFactory;
-        this.errFactory = errFactory;
     }
 
     /**
@@ -150,12 +135,6 @@ public class RubyProcessCreator implements Callable<Process> {
         }
 
         return builder.call();
-    }
-
-    public ExecutionDescriptor buildExecutionDescriptor() {
-        return descriptor.toExecutionDescriptor()
-            .errConvertorFactory(errFactory)
-            .outConvertorFactory(outFactory);
     }
 
     private List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor) {

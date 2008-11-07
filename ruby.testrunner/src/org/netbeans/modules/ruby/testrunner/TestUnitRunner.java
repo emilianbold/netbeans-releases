@@ -48,11 +48,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
-import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
-import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
@@ -182,7 +179,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         return type == TestType.TEST_UNIT;
     }
 
-    public ExecutionDescriptor customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
+    public void customize(Project project, RakeTask task, RubyExecutionDescriptor taskDescriptor, boolean debug) {
         boolean useRunner = TestRunnerUtilities.useTestRunner(project, SharedRubyProjectProperties.TEST_TASKS, task, new DefaultTaskEvaluator() {
 
             public boolean isDefault(RakeTask task) {
@@ -191,7 +188,7 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         });
 
         if (!useRunner) {
-            return null;
+            return;
         }
         
         TestExecutionManager.getInstance().reset();
@@ -207,13 +204,19 @@ public final class TestUnitRunner implements TestRunner, RakeTaskCustomizer {
         addTestUnitRunnerToEnv(env);
         taskDescriptor.addAdditionalEnv(env);
         Manager manager = Manager.getInstance();
-        taskDescriptor.setRerun(false);
-        LineConvertor testConvertor = new TestRunnerLineConvertor(manager, session, new TestUnitHandlerFactory());
-        return taskDescriptor.toExecutionDescriptor()
-                .outConvertorFactory(new RubyLineConvertorFactory(taskDescriptor.getFileLocator(), testConvertor))
-                .errConvertorFactory(new RubyLineConvertorFactory(taskDescriptor.getFileLocator(), testConvertor))
-                .errProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false))
-                .outProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, true));
+        final TestRunnerLineConvertor testConvertor = new TestRunnerLineConvertor(manager, session, new TestUnitHandlerFactory());
+        taskDescriptor.addStandardRecognizers();
+        taskDescriptor.addOutConvertor(testConvertor);
+        taskDescriptor.addErrConvertor(testConvertor);
+        taskDescriptor.lineBased(true);
+        taskDescriptor.setOutProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, true));
+        taskDescriptor.setErrProcessorFactory(new TestRunnerInputProcessorFactory(manager, session, false));
+        taskDescriptor.postBuild(new Runnable() {
+
+            public void run() {
+                testConvertor.refreshSession();
+            }
+        });
   }
 
 }
