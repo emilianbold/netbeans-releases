@@ -1445,7 +1445,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     if (node.nodeId == NodeType.CALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 3 && it.hasNext(); i++) {
                                 // It's not really a peek in the sense
                                 // that there's no reason to retry these
                                 // nodes later
@@ -1454,7 +1454,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                                         Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
-                                    it.previous();
+                                    if (it.hasPrevious()) {
+                                        it.previous();
+                                    }
                                     continue nodesearch;
                                 }
                             }
@@ -1486,7 +1488,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                     } else if (node.nodeId == NodeType.FCALLNODE) {
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 3 && it.hasNext(); i++) {
                                 // It's not really a peek in the sense
                                 // that there's no reason to retry these
                                 // nodes later
@@ -1495,7 +1497,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                                         Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
-                                    it.previous();
+                                    if (it.hasPrevious()) {
+                                        it.previous();
+                                    }
                                     continue nodesearch;
                                 }
                             }
@@ -1527,7 +1531,7 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                         
                         final OffsetRange callRange = AstUtilities.getCallRange(node);
                         if (haveSanitizedComma && originalAstOffset > callRange.getEnd() && it.hasNext()) {
-                            for (int i = 0; i < 3; i++) {
+                            for (int i = 0; i < 3 && it.hasNext(); i++) {
                                 // It's not really a peek in the sense
                                 // that there's no reason to retry these
                                 // nodes later
@@ -1536,7 +1540,9 @@ public class RubyCodeCompleter implements CodeCompletionHandler {
                                         Utilities.getRowStart(doc, LexUtilities.getLexerOffset(info, peek.getPosition().getStartOffset())) ==
                                         Utilities.getRowStart(doc, lexOffset)) {
                                     // Use the outer method call instead
-                                    it.previous();
+                                    if (it.hasPrevious()) {
+                                        it.previous();
+                                    }
                                     continue nodesearch;
                                 }
                             }

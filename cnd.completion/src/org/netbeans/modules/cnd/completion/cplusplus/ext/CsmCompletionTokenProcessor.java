@@ -45,7 +45,7 @@ import java.util.ArrayList;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.netbeans.cnd.api.lexer.CppTokenProcessor;
+import org.netbeans.cnd.api.lexer.CndTokenProcessor;
 import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExpression.*;
 
 /**
@@ -55,7 +55,7 @@ import static org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionExp
 * @version 1.00
 */
 
-final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements TokenProcessor*/ {
+final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<CppTokenId>> {
 
     private static final int NO_EXP = -1;
 

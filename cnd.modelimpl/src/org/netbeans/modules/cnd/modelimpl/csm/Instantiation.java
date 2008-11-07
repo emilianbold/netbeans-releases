@@ -423,7 +423,7 @@ public /*abstract*/ class Instantiation<T> implements CsmOffsetableDeclaration<T
             return retType;
         }
 
-        public Collection getParameters() {
+        public Collection<CsmParameter> getParameters() {
             Collection<CsmParameter> res = new ArrayList<CsmParameter>();
             Collection<CsmParameter> parameters = ((CsmFunction)declaration).getParameters();
             for (CsmParameter param : parameters) {

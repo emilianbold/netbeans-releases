@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,30 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.cnd.api.lexer;
+package org.netbeans.modules.db.api.metadata;
 
-import org.netbeans.api.lexer.Token;
+import java.sql.Types;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.test.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
- * @author Vladimir Voskresensky
+ * @author David
  */
-public abstract class CppAbstractTokenProcessor implements CppTokenProcessor {
-    public void start(int startOffset, int firstTokenOffset) {}
+public class DBConnMetadataModelProviderTest extends DDLTestBase {
+    private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
+        public void run(Metadata md) {
+            assertNotNull(getTestTable(md));
+        }
+    };
 
-    public void end(int offset, int lastTokenOffset) {}
+    private static Table getTestTable(Metadata md) {
+        return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
+    }
 
-    public int getLastSeparatorOffset() {
-        return -1;
+    public DBConnMetadataModelProviderTest(String name) {
+        super(name);
+    }
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
 
     /**
-     *
-     * @param token
-     * @param tokenOffset
-     * @return true if token processor is interested in getting embedding of input token as well
+     * Test of get method, of class DBConnMetadataModelProvider.
      */
-    public abstract boolean token(Token<CppTokenId> token, int tokenOffset);
+    @Test
+    public void testGet() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(true);
+        createTestTable();
+
+        MetadataModel model = DBConnMetadataModelProvider.get(dbconn);
+        assertNotNull(model);
+        
+        model.runReadAction(CHECK_TABLE_EXISTS_ACTION);
+    }
 }

@@ -491,6 +491,9 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
                 case CPPTokenTypes.CSM_TYPE_BUILTIN:
                 case CPPTokenTypes.CSM_TYPE_COMPOUND:
                 case CPPTokenTypes.LITERAL_typename:
+                case CPPTokenTypes.LITERAL_struct:
+                case CPPTokenTypes.LITERAL_class:
+                case CPPTokenTypes.LITERAL_union:
                     return token;
                 default:
                     if( AstRenderer.isCVQualifier(type) ) {
