@@ -289,7 +289,7 @@ public class DwarfSourceTest extends TestCase {
     private String processLine(String line, boolean isScriptOutput) {
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new TreeMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros,null);
+        String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros,null);
         StringBuilder res = new StringBuilder();
         res.append("Macros:");
         for (Map.Entry<String, String> entry : userMacros.entrySet()) {
