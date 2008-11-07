@@ -100,7 +100,7 @@ public class JsCommentFormatterTest extends JsTestBase {
 
         List<String> tags = jsComment.getParams();
         List<String> expected = Arrays.asList("");
-
+        jsComment.toHtml();
         assertEquals(expected, tags);
     }
 
