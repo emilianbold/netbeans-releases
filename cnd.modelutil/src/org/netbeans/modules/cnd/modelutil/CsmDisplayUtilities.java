@@ -234,6 +234,7 @@ public class CsmDisplayUtilities {
         // NOI18N
         txt.append(fun.getName());
         txt.append('(');
+        @SuppressWarnings("unchecked")
         Iterator<CsmParameter> params = fun.getParameters().iterator();
         while(params.hasNext()) {
             CsmParameter param = params.next();
