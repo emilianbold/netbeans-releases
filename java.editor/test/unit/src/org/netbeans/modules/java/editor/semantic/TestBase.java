@@ -143,11 +143,12 @@ public abstract class TestBase extends NbTestCase {
         File testBuildTo = new File(wd, "test-build");
         
         testBuildTo.mkdirs();
-
-        SourceUtilsTestUtil.prepareTest(FileUtil.toFileObject(dataFolder), FileUtil.toFileObject(testBuildTo), cache);
+        
+        FileObject srcRoot = FileUtil.toFileObject(testSource.getParentFile());
+        SourceUtilsTestUtil.prepareTest(srcRoot,FileUtil.toFileObject(testBuildTo), cache);
         
         if (doCompileRecursively) {
-            SourceUtilsTestUtil.compileRecursively(FileUtil.toFileObject(dataFolder));
+            SourceUtilsTestUtil.compileRecursively(srcRoot);
         }
 
         final Document doc = getDocument(testSourceFO);

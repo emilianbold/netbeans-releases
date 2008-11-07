@@ -445,8 +445,9 @@ public class DetectorTest extends TestBase {
         
         testBuildTo.mkdirs();
 
-        SourceUtilsTestUtil.prepareTest(FileUtil.toFileObject(dataFolder), FileUtil.toFileObject(testBuildTo), cache);
-        SourceUtilsTestUtil.compileRecursively(FileUtil.toFileObject(dataFolder));
+        FileObject srcRoot = FileUtil.toFileObject(testSource.getParentFile());
+        SourceUtilsTestUtil.prepareTest(srcRoot, FileUtil.toFileObject(testBuildTo), cache);
+        SourceUtilsTestUtil.compileRecursively(srcRoot);
 
         final Document doc = getDocument(testSourceFO);
         
