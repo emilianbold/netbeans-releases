@@ -57,7 +57,7 @@ public class ClassViewUpdater extends Thread {
         
         private LinkedList<SmartChangeEvent> data = new LinkedList<SmartChangeEvent>();
         
-        private Object lock = new Object();
+        private final Object lock = new Object();
         
         public SmartChangeEvent get() throws InterruptedException {
             synchronized( lock ) {
@@ -173,7 +173,9 @@ public class ClassViewUpdater extends Thread {
                     }
                     break;
                 }
-                if (traceEvents) start = System.nanoTime();
+                if (traceEvents) {
+                    start = System.nanoTime();
+                }
                 if (isStoped) {
                     return;
                 }
