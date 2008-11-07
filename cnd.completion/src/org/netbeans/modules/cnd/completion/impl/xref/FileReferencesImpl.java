@@ -47,7 +47,7 @@ import java.util.List;
 import java.util.Set;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
-import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
+import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -172,7 +172,7 @@ public class FileReferencesImpl extends CsmFileReferences  {
         return tp.references;
     }
 
-    private static final class ReferencesProcessor extends CppAbstractTokenProcessor {
+    private static final class ReferencesProcessor extends CndAbstractTokenProcessor<Token<CppTokenId>> {
         /*package*/ final List<CsmReferenceContext> references = new ArrayList<CsmReferenceContext>();
         private final Collection<CsmOffsetable> deadBlocks;
         private final boolean needAfterDereferenceUsages;
