@@ -57,11 +57,11 @@ import org.openide.util.Exceptions;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
@@ -208,8 +208,7 @@ public class RunFocusedTest extends BaseAction {
             ActionProvider provider = project.getLookup().lookup(ActionProvider.class);
             if (provider instanceof ScriptDescProvider) { // Lookup ScriptDescProvider directly?
                 ScriptDescProvider descProvider = (ScriptDescProvider)provider;
-                OutputRecognizer[] extraRecognizers = new OutputRecognizer[] { new TestNotifier(true, true) };
-                desc = descProvider.getScriptDescriptor(pwd, target, targetPath, displayName, project.getLookup(), debug, extraRecognizers);
+                desc = descProvider.getScriptDescriptor(pwd, target, targetPath, displayName, project.getLookup(), debug, new TestNotifierLineConvertor(true, true));
                 
                 // Override args
                 desc. additionalArgs(additionalArgs.toArray(
@@ -224,7 +223,9 @@ public class RunFocusedTest extends BaseAction {
             desc.allowInput();
             desc.fileLocator(fileLocator);
             desc.addStandardRecognizers();
-            desc.addOutputRecognizer(new TestNotifier(true, true));
+            LineConvertor testConvertor = new TestNotifierLineConvertor(true, true);
+            desc.addOutConvertor(testConvertor);
+            desc.addErrConvertor(testConvertor);
         }
         new RubyExecution(desc, charsetName).run();
     }

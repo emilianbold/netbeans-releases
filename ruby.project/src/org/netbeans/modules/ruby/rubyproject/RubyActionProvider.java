@@ -61,8 +61,12 @@ import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.rubyproject.ui.customizer.RubyProjectProperties;
@@ -146,7 +150,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
 
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
-            OutputRecognizer[] extraRecognizers) {
+            LineConvertor... extraConvertors) {
     
         String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
@@ -201,12 +205,20 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RubyFileLocator(context, project));
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
+        LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
+        desc.addOutConvertor(LineConvertors.filePattern(locator,
+                RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                RubyLineConvertorFactory.EXT_RE
+                ,1,2));
+        desc.addErrConvertor(LineConvertors.filePattern(locator,
+                RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                RubyLineConvertorFactory.EXT_RE
+                ,1,2));
         desc.setEncoding(getSourceEncoding());
         
-        if (extraRecognizers != null) {
-            for (OutputRecognizer recognizer : extraRecognizers) {
-                desc.addOutputRecognizer(recognizer);
+        if (extraConvertors != null) {
+            for (LineConvertor extra : extraConvertors) {
+                desc.addOutConvertor(extra);
             }
         }
 
@@ -352,7 +364,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             if (mainClass != null) {
                 // TODO - compute mainclass
                 FileObject fileObject = null;
-                runRubyScript(fileObject, mainClass, displayName, context, COMMAND_DEBUG.equals(command), null);
+                runRubyScript(fileObject, mainClass, displayName, context, COMMAND_DEBUG.equals(command));
                 return;
             }
 
@@ -425,7 +437,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
                 }
             }
             runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                    file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), null);
+                    file.getNameExt(), context, COMMAND_DEBUG_SINGLE.equals(command), (LineConvertor) null);
             return;
         } else if (COMMAND_REBUILD.equals(command) || COMMAND_BUILD.equals(command) || COMMAND_CLEAN.equals(command)) {
             RakeRunner runner = new RakeRunner(project);
@@ -532,7 +544,7 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
                 testRunner.getInstance().runTest(file, isDebug);
             } else {
                 runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                        file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
+                        file.getNameExt(), context, isDebug, new TestNotifierLineConvertor(true, true));
             }
         }
 

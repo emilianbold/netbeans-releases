@@ -56,20 +56,22 @@ import org.netbeans.modules.ruby.rubyproject.rake.RakeSupport;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.extexecution.api.ExecutionService;
+import org.netbeans.modules.extexecution.api.print.LineConvertor;
+import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
-import org.netbeans.modules.ruby.rubyproject.TestNotifier;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
+import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseActionProvider;
 import org.netbeans.modules.ruby.rubyproject.RubyFileLocator;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectUtil;
 import org.netbeans.modules.ruby.rubyproject.SharedRubyProjectProperties;
+import org.netbeans.modules.ruby.rubyproject.TestNotifierLineConvertor;
 import org.netbeans.modules.ruby.rubyproject.UpdateHelper;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
@@ -235,7 +237,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                 testRunner.getInstance().runTest(file, isDebug);
             } else {
                 runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(),
-                        file.getNameExt(), context, isDebug, new OutputRecognizer[]{new TestNotifier(true, true)});
+                        file.getNameExt(), context, isDebug, new TestNotifierLineConvertor(true, true));
             }
             return;
 
@@ -378,14 +380,14 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
                     testRunner.getInstance().runTest(file, COMMAND_DEBUG_SINGLE.equals(command));
                 } else {
                     runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand,
-                            new OutputRecognizer[]{new TestNotifier(true, true)});
+                            new TestNotifierLineConvertor(true, true));
                 }
                 return;
             }
             
             if (path.length() == 0) {
                 // No corresponding URL - some other file we should just try to execute
-                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand, null);
+                runRubyScript(file, FileUtil.toFile(file).getAbsolutePath(), file.getNameExt(), context, debugSingleCommand);
                 return;
             }
 
@@ -494,7 +496,7 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
     
     public RubyExecutionDescriptor getScriptDescriptor(File pwd, FileObject fileObject, String target,
             String displayName, final Lookup context, final boolean debug,
-            OutputRecognizer[] extraRecognizers) {
+            LineConvertor... extraConvertors) {
         String rubyOptions = SharedRubyProjectProperties.getRubyOptions(project);
 
         String includePath = RubyProjectUtil.getLoadPath(project);
@@ -549,10 +551,18 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         desc.fileLocator(new RailsFileLocator(context, project));
         desc.addStandardRecognizers();
         desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
-        
-        if (extraRecognizers != null) {
-            for (OutputRecognizer recognizer : extraRecognizers) {
-                desc.addOutputRecognizer(recognizer);
+        LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
+        desc.addOutConvertor(LineConvertors.filePattern(locator,
+                RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                RubyLineConvertorFactory.EXT_RE
+                ,1,2));
+        desc.addErrConvertor(LineConvertors.filePattern(locator,
+                RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                RubyLineConvertorFactory.EXT_RE
+                ,1,2));
+        if (extraConvertors != null) {
+            for (LineConvertor extra : extraConvertors) {
+                desc.addOutConvertor(extra);
             }
         }
 
