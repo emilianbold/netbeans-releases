@@ -50,6 +50,8 @@ import org.xml.sax.SAXException;
  * Tests for REST samples. Simply said - user must be able to only create
  * and run the particular sample, no additional steps should be needed.
  *
+ * Duration of this test suite: aprox. 4min
+ *
  * @author lukas
  */
 public class RestSamplesTest extends RestTestBase {

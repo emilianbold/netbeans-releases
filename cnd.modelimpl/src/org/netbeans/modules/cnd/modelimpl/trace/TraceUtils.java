@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.modelimpl.trace;
 
 import antlr.Token;
 import antlr.collections.AST;
+import java.util.Collection;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPParser;
 
@@ -69,12 +70,12 @@ public class TraceUtils {
         }
     }
 
-    public static final String getMacroString(APTPreprocHandler preprocHandler, String[] logMacros) {
+    public static final String getMacroString(APTPreprocHandler preprocHandler, Collection<String> logMacros) {
         StringBuilder sb = new StringBuilder();
-        if (logMacros != null && logMacros.length > 0) {
-            for (int i = 0; i < logMacros.length; i++) {
-                sb.append(String.format(" #defined(%s)=%b",  //NOI18N
-                        logMacros[i], preprocHandler.getMacroMap().isDefined(logMacros[i])));
+        if (logMacros != null) {
+            for (String macro : logMacros) {
+                sb.append(String.format(" #defined(%s)=%b", //NOI18N
+                        macro, preprocHandler.getMacroMap().isDefined(macro)));
             }
         }        
         return sb.toString();

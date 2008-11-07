@@ -93,8 +93,8 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
                 .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
         if (autodeploy) {
             descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-                public InputProcessor newInputProcessor() {
-                    return InputProcessors.bridge(CreateWarFileAction.this);
+                public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                    return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(CreateWarFileAction.this));
                 }
             });
         }
