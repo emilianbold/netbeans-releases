@@ -267,34 +267,43 @@ public final class Source {
     }
 
     private Document _getDocument(boolean forceOpen) {
+        Document doc;
         synchronized (this) {
-            if (document == null) {
-                EditorCookie ec = null;
+            doc = document;
+        }
 
-                try {
-                    DataObject dataObject = DataObject.find(fileObject);
-                    ec = dataObject.getLookup().lookup(EditorCookie.class);
-                } catch (DataObjectNotFoundException ex) {
-                    LOG.log(Level.WARNING, null, ex);
-                }
+        if (doc == null) {
+            EditorCookie ec = null;
 
-                if (ec != null) {
-                    document = ec.getDocument();
-                    if (document == null && forceOpen) {
+            try {
+                DataObject dataObject = DataObject.find(fileObject);
+                ec = dataObject.getLookup().lookup(EditorCookie.class);
+            } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
+
+            if (ec != null) {
+                doc = ec.getDocument();
+                if (doc == null && forceOpen) {
+                    try {
                         try {
-                            try {
-                                document = ec.openDocument();
-                            } catch (UserQuestionException uqe) {
-                                uqe.confirmed();
-                                document = ec.openDocument();
-                            }
-                        } catch (IOException ioe) {
-                            LOG.log(Level.WARNING, null, ioe);
+                            doc = ec.openDocument();
+                        } catch (UserQuestionException uqe) {
+                            uqe.confirmed();
+                            doc = ec.openDocument();
                         }
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, null, ioe);
                     }
                 }
             }
-            
+        }
+
+        synchronized (this) {
+            if (document == null) {
+                document = doc;
+            }
+
             return document;
         }
     }
