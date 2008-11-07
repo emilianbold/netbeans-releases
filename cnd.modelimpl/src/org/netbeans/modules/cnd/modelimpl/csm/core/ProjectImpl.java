@@ -54,7 +54,6 @@ import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -114,11 +113,7 @@ public final class ProjectImpl extends ProjectBase {
             synchronized( editedFiles ) {
                 editedFiles.add(impl);
             }
-            if (TraceFlags.USE_AST_CACHE) {
-                CacheManager.getInstance().invalidate(impl);
-            } else {
-                APTDriver.getInstance().invalidateAPT(buf);
-            }
+            APTDriver.getInstance().invalidateAPT(buf);
             schedule(buf, impl);
             buf.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent e) {
@@ -197,11 +192,7 @@ public final class ProjectImpl extends ProjectBase {
             removeNativeFileItem(impl.getUID());
             impl.dispose();
             removeFile(new File(impl.getAbsolutePath()));
-            if (TraceFlags.USE_AST_CACHE) {
-                CacheManager.getInstance().invalidate(impl);
-            } else {
-                APTDriver.getInstance().invalidateAPT(impl.getBuffer());
-            }
+            APTDriver.getInstance().invalidateAPT(impl.getBuffer());
             ParserQueue.instance().remove(impl);
         }
         return impl;

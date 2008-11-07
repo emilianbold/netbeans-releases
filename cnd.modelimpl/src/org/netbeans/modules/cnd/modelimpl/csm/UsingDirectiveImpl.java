@@ -150,6 +150,7 @@ public class UsingDirectiveImpl extends OffsetableDeclarationBase<CsmUsingDirect
         UIDObjectFactory.getDefaultFactory().writeUID(this.referencedNamespaceUID, output);
     }
     
+    @SuppressWarnings("unchecked")
     public UsingDirectiveImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());

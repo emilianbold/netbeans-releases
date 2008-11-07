@@ -53,7 +53,6 @@ package org.netbeans.modules.cnd.modelimpl.impl.services;
 
 import java.util.Map;
 import org.netbeans.modules.cnd.api.model.CsmClass;
-import org.netbeans.modules.cnd.api.model.CsmInstantiation;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;

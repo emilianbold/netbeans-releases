@@ -80,6 +80,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
     private /*final*/ CsmObject containerRef;// can be set in onDispose or contstructor only
     private /*final*/ CsmUID<CsmIdentifiable> containerUID;
 
+    @SuppressWarnings("unchecked")
     public TypedefImpl(AST ast, CsmFile file, CsmObject container, CsmType type, String name) {
 
         super(ast, file);
@@ -257,6 +258,7 @@ public class TypedefImpl extends OffsetableDeclarationBase<CsmTypedef> implement
         }
     }
 
+    @SuppressWarnings("unchecked")
     public TypedefImpl(DataInput input) throws IOException {
         super(input);
         this.name = QualifiedNameCache.getManager().getString(input.readUTF());

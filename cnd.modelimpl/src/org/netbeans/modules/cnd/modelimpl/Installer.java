@@ -53,7 +53,7 @@ public class Installer extends ModuleInstall {
     
     @Override
     public void restored() {
-	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.restored");
+	if( TraceFlags.TRACE_MODEL_STATE ) {System.err.println("=== Installer.restored");}
 	ModelSupport.instance().startup();
 //	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.restored");
 //	CsmModel model = CsmModelAccessor.getModel();
@@ -65,7 +65,7 @@ public class Installer extends ModuleInstall {
 
     @Override
     public void close() {
-	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");
+	if( TraceFlags.TRACE_MODEL_STATE ) {System.err.println("=== Installer.close");}
 	ModelSupport.instance().shutdown();
 //        super.close();
 //	if( TraceFlags.TRACE_MODEL_STATE ) System.err.println("=== Installer.close");

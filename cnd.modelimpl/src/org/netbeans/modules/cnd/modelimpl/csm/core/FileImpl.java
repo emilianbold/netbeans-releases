@@ -68,9 +68,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.apt.support.APTLanguageFilter;
 import org.netbeans.modules.cnd.apt.support.APTLanguageSupport;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.cache.FileCache;
-import org.netbeans.modules.cnd.modelimpl.cache.impl.FileCacheImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.*;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
@@ -456,11 +453,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
                 synchronized (tokStreamLock) {
                     ref = null;
                 }
-                if (TraceFlags.USE_AST_CACHE) {
-                    CacheManager.getInstance().invalidate(this);
-                } else {
-                    APTDriver.getInstance().invalidateAPT(this.getBuffer());
-                }
+                APTDriver.getInstance().invalidateAPT(this.getBuffer());
             }
         }
     }
@@ -626,14 +619,10 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
     private TokenStream createFullTokenStream() {
         APTPreprocHandler preprocHandler = getPreprocHandler();
         APTFile apt = null;
-        if (TraceFlags.USE_AST_CACHE) {
-            apt = CacheManager.getInstance().findAPT(this);
-        } else {
-            try {
-                apt = APTDriver.getInstance().findAPT(fileBuffer);
-            } catch (IOException ex) {
-                DiagnosticExceptoins.register(ex);
-            }
+        try {
+            apt = APTDriver.getInstance().findAPT(fileBuffer);
+        } catch (IOException ex) {
+            DiagnosticExceptoins.register(ex);
         }
         if (apt == null) {
             return null;
@@ -834,21 +823,13 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         AST ast = null;
         APTFile aptLight = null;
         APTFile aptFull = null;
-        if (TraceFlags.USE_AST_CACHE) {
-            FileCache cacheWithAST = CacheManager.getInstance().findCacheWithAST(this, preprocHandler);
-            assert (cacheWithAST != null);
-            ast = cacheWithAST.getAST(preprocHandler);
-            aptLight = cacheWithAST.getAPTLight();
-            aptFull = cacheWithAST.getAPT();
-        } else {
-            try {
-                aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
-            } catch (FileNotFoundException ex) {
-                APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
-                DiagnosticExceptoins.register(ex);
-            } catch (IOException ex) {
-                DiagnosticExceptoins.register(ex);
-            }
+        try {
+            aptFull = APTDriver.getInstance().findAPT(this.getBuffer());
+        } catch (FileNotFoundException ex) {
+            APTUtils.LOG.log(Level.WARNING, "FileImpl: file {0} not found", new Object[]{getBuffer().getFile().getAbsolutePath()});// NOI18N
+            DiagnosticExceptoins.register(ex);
+        } catch (IOException ex) {
+            DiagnosticExceptoins.register(ex);
         }
         if (ast != null) {
             if (TraceFlags.TRACE_CACHE) {
@@ -924,18 +905,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             }
             errorCount = parser.getErrorCount();
             ast = parser.getAST();
-            // save all in cache
-            if (state != State.MODIFIED) {
-                if (TraceFlags.USE_AST_CACHE) {
-                    if (getBuffer().isFileBased() && !TraceFlags.CACHE_SKIP_SAVE) {
-                        CacheManager.getInstance().saveCache(this, new FileCacheImpl(aptLight, aptFull, ast));
-                    } else {
-                        if (TraceFlags.TRACE_CACHE) {
-                            System.err.println("CACHE: not save cache for document based file " + getAbsolutePath());
-                        }
-                    }
-                }
-            } else {
+            if (state == State.MODIFIED) {
                 ast = null;
                 if (TraceFlags.TRACE_CACHE) {
                     System.err.println("CACHE: not save cache for file modified during parsing" + getAbsolutePath());

@@ -190,10 +190,10 @@ public final class Unresolved implements Disposable {
             return UNRESOLVED; // NOI18N
         }
         public List<CsmInclude> getIncludes() {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmInclude>emptyList();
         }
         public List<CsmOffsetableDeclaration> getDeclarations() {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmOffsetableDeclaration>emptyList();
         }
         public String getAbsolutePath() {
             return "$unresolved file$"; // NOI18N
@@ -207,7 +207,7 @@ public final class Unresolved implements Disposable {
             return true;
         }
         public List<CsmMacro> getMacros() {
-            return Collections.EMPTY_LIST;
+            return Collections.<CsmMacro>emptyList();
         }
 
         public Iterator<CsmMacro> getMacros(CsmFilter filter) {
@@ -263,9 +263,10 @@ public final class Unresolved implements Disposable {
     }    
     
     public CsmClass getDummyForUnresolved(CharSequence[] nameTokens) {
-	return getDummyForUnresolved(getName(nameTokens));
+        return getDummyForUnresolved(getName(nameTokens));
     }
     
+    @SuppressWarnings("unchecked")
     public CsmClass getDummyForUnresolved(String name) {
         Reference<UnresolvedClass> ref = dummiesForUnresolved.get(name);
         UnresolvedClass cls = ref == null ? null : ref.get();
@@ -278,7 +279,7 @@ public final class Unresolved implements Disposable {
     }
     
     public CsmNamespace getUnresolvedNamespace() {
-	return unresolvedNamespace;
+        return unresolvedNamespace;
     }
     
     public CsmFile getUnresolvedFile() {

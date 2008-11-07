@@ -110,6 +110,7 @@ public class LabelResolverImpl extends CsmLabelResolver {
                     break;
                 case SWITCH:
                     processInnerStatements(((CsmSwitchStatement) statement).getBody(), res);
+                    break;
                 case CASE:
                 case BREAK:
                 case DEFAULT:

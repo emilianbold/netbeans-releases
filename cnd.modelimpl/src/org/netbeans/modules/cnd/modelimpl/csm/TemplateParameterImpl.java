@@ -119,6 +119,7 @@ public class TemplateParameterImpl extends OffsetableDeclarationBase implements 
         PersistentUtils.writeType(defaultValue, output);
     }
     
+    @SuppressWarnings("unchecked")
     public TemplateParameterImpl(DataInput input) throws IOException {
         super(input);
         this.name = NameCache.getManager().getString(input.readUTF());

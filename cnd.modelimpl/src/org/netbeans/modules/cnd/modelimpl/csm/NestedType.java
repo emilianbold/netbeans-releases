@@ -107,8 +107,8 @@ public class NestedType extends TypeImpl {
         return classifier;
     }
 
-    private List getFullQName() {
-        List res = new ArrayList();
+    private List<CharSequence> getFullQName() {
+        List<CharSequence> res = new ArrayList<CharSequence>();
         if (parentType instanceof NestedType) {
             res.addAll(((NestedType)parentType).getFullQName());
         } else if (parentType instanceof TypeImpl) {

@@ -112,6 +112,7 @@ public class FunctionDDImpl<T> extends FunctionImpl<T> implements CsmFunctionDef
         return this;
     }
 
+    @Override
     public boolean isPureDefinition() {
         return false;
     }

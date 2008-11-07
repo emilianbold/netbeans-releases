@@ -196,6 +196,7 @@ public class FunctionDefinitionImpl<T> extends FunctionImplEx<T> implements CsmF
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }
     
+    @SuppressWarnings("unchecked")
     public FunctionDefinitionImpl(DataInput input) throws IOException {
         super(input);
         this.body = PersistentUtils.readCompoundStatement(input);
