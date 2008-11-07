@@ -149,14 +149,18 @@ In the editor, this searches text, but in the Explorer it searches files, and so
 <p>
 To make this possible, <code>FindAction</code> is a public API; modules providing implementations
 affect its behavior by setting its <i>action delegate</i> into <a
-href="@JDK@/javax/swing/ActionMap.html">.
+href="@JDK@/javax/swing/ActionMap.html"><code>ActionMap</code></a>.
 <p>
 The typical usage pattern for these is along the lines of:
-<pre>ActionMap actionMap = topComponent.getActionMap();
-CallbackSystemAction a = (CallbackSystemAction)SystemAction.get(SomeAction.class);
-actionMap.put (<a href="@org-openide-util@/org/openide/util/actions/CallbackSystemAction.html#getActionMapKey()">a.getActionMapKey()</a>, new MyAction())</pre>
+<pre>
+ActionMap actionMap = topComponent.getActionMap();
+CallbackSystemAction a = SystemAction.get(SomeAction.class);
+actionMap.put(<a href="@org-openide-util@/org/openide/util/actions/CallbackSystemAction.html#getActionMapKey()">a.getActionMapKey()</a>, new MyAction());
+</pre>
 or directly
-<pre>actionMap.put("the-key", new MyAction());</pre>
+<pre>
+actionMap.put("the-key", new MyAction());
+</pre>
 if the key has been made publicly known and the action is not accessible.
 
 <h3><a name="intro-sense">Context-sensitive actions</a></h3>
@@ -389,43 +393,10 @@ created by that loader, e.g.:
         &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"text"</span>&gt;
             &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"x-my-file-type"</span>&gt;
                 &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Actions"</span>&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-OpenAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-OpenAction.instance/org-openide-actions-FileSystemAction.instance"</span>
-                        <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-FileSystemAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-FileSystemAction.instance/sep-1.instance"</span><span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"sep-1.instance"</span>&gt;
-                        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="string">"javax.swing.JSeparator"</span>/&gt;
+                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-OpenAction.instance"</span>&gt;
+                        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"position"</span> <span class="variable-name">intvalue</span>=<span class="string">"100"</span>/&gt;
                     &lt;/<span class="function-name">file</span>&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"sep-1.instance/org-openide-actions-CutAction.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-CutAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-CutAction.instance/org-openide-actions-CopyAction.instance"</span>
-                        <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-CopyAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-CopyAction.instance/sep-2.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"sep-2.instance"</span>&gt;
-                        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="string">"javax.swing.JSeparator"</span>/&gt;
-                    &lt;/<span class="function-name">file</span>&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"sep-2.instance/org-openide-actions-DeleteAction.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-DeleteAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-DeleteAction.instance/org-openide-actions-RenameAction.instance"</span>
-                        <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-RenameAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-RenameAction.instance/sep-3.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"sep-3.instance"</span>&gt;
-                        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="string">"javax.swing.JSeparator"</span>/&gt;
-                    &lt;/<span class="function-name">file</span>&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"sep-3.instance/org-openide-actions-SaveAsTemplateAction.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-SaveAsTemplateAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-SaveAsTemplateAction.instance/sep-4.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"sep-4.instance"</span>&gt;
-                        &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceClass"</span> <span class="variable-name">stringvalue</span>=<span class="string">"javax.swing.JSeparator"</span>/&gt;
-                    &lt;/<span class="function-name">file</span>&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"sep-4.instance/org-openide-actions-ToolsAction.instance"</span> <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-ToolsAction.instance"</span>/&gt;
-                    &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-ToolsAction.instance/org-openide-actions-PropertiesAction.instance"</span>
-                        <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-                    &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"org-openide-actions-PropertiesAction.instance"</span>/&gt;
+                    <span class="comment">&lt;!-- etc. --&gt;</span>
                 &lt;/<span class="function-name">folder</span>&gt;
             &lt;/<span class="function-name">folder</span>&gt;
         &lt;/<span class="function-name">folder</span>&gt;
@@ -478,22 +449,9 @@ Typical installation of an action into a menu looks like this:
 &lt;<span class="function-name">filesystem</span>&gt;
     &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Menu"</span>&gt;
         &lt;<span class="function-name">folder</span> <span class="variable-name">name</span>=<span class="string">"Build"</span>&gt;
-            <span class="comment">&lt;!-- After Set Arguments... --&gt;</span>
-            &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=
-<span class="string">"org-netbeans-core-actions-SetArgumentsAction.instance/com-me-MyAction.instance"</span>
-                  <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"com-me-MyAction.instance"</span>/&gt;
-            <span class="comment">&lt;!-- ...and before Execute, with an intervening separator. --&gt;</span>
-            &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=
-<span class="string">"com-me-MyAction.instance/sep-after-my-action.instance"</span>
-                  <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
-            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"sep-after-my-action.instance"</span>&gt;
-                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"instanceClass"</span>
-                      <span class="variable-name">stringvalue</span>=<span class="string">"javax.swing.JSeparator"</span>/&gt;
+            &lt;<span class="function-name">file</span> <span class="variable-name">name</span>=<span class="string">"com-me-MyAction.instance"</span>&gt;
+                &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=<span class="string">"position"</span> <span class="variable-name">intvalue</span>=<span class="string">"100"</span>/&gt;
             &lt;/<span class="function-name">file</span>&gt;
-            &lt;<span class="function-name">attr</span> <span class="variable-name">name</span>=
-<span class="string">"sep-after-my-action.instance/org-openide-actions-ExecuteAction.instance"</span>
-                  <span class="variable-name">boolvalue</span>=<span class="string">"true"</span>/&gt;
         &lt;/<span class="function-name">folder</span>&gt;
     &lt;/<span class="function-name">folder</span>&gt;
 &lt;/<span class="function-name">filesystem</span>&gt;
