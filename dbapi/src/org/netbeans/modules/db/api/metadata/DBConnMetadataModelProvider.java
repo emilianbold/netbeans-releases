@@ -133,7 +133,7 @@ public class DBConnMetadataModelProvider {
             try {
                 get(dbconn).runReadAction(new Action<Metadata>() {
                     public void run(Metadata md) {
-                        md.refreshTable(tableName);
+                        md.getDefaultSchema().getTable(tableName).refresh();
                     }
                 });
             } catch (MetadataModelException mde) {

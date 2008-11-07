@@ -128,9 +128,7 @@ public class JDBCMetadataDerbyTest extends MetadataTestBase {
         Statement stmt = conn.createStatement();
         stmt.executeUpdate("ALTER TABLE FOO ADD NEW_COLUMN VARCHAR(16)");
         stmt.close();
-        metadata.refreshTable("BAR");
-        assertNames(Arrays.asList("ID", "FOO_NAME"), fooTable.getColumns());
-        metadata.refreshTable("FOO");
+        fooTable.refresh();
         assertNames(Arrays.asList("ID", "FOO_NAME", "NEW_COLUMN"), fooTable.getColumns());
     }
 }
