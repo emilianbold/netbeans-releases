@@ -89,6 +89,6 @@ final class ConfigurationsChildren extends ChildFactory<ProjectConfiguration> {
     }
 
     void update() {
-        refresh (true);
+        refresh (false);
     }
 }

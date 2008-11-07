@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.navigation.includeview;
 
-import org.netbeans.modules.cnd.navigation.classhierarchy.*;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;

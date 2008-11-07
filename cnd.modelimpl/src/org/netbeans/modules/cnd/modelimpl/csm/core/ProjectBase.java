@@ -68,7 +68,6 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -1136,7 +1135,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     clean = true;
                 } else {  // comparisonResult == SAME
                     if (TraceFlags.SMART_HEADERS_PARSE) {
-                        comparisonResult = fillStatesToKeep(pcState, new ArrayList(statesToKeep), statesToKeep);
+                        comparisonResult = fillStatesToKeep(pcState, new ArrayList<FileContainer.StatePair>(statesToKeep), statesToKeep);
                         switch (comparisonResult) {
                             case BETTER:
                                 clean = true;
@@ -2179,11 +2178,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
     public APTFile getAPTLight(CsmFile csmFile) throws IOException {
         APTFile aptLight = null;
-        if (TraceFlags.USE_AST_CACHE) {
-            aptLight = CacheManager.getInstance().findAPTLight(csmFile);
-        } else {
-            aptLight = APTDriver.getInstance().findAPTLight(((FileImpl)csmFile).getBuffer());
-        }
+        aptLight = APTDriver.getInstance().findAPTLight(((FileImpl)csmFile).getBuffer());
         return aptLight;
     }
 

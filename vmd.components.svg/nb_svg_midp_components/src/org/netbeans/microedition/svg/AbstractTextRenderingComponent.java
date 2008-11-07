@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,38 +38,51 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.microedition.svg;
 
-package org.netbeans.modules.cnd.loaders;
+import org.w3c.dom.svg.SVGLocatableElement;
 
-import java.awt.Image;
-import java.beans.*;
-import java.text.MessageFormat;
-import java.util.ResourceBundle;
 
-import org.openide.ErrorManager;
-import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
-
-/** Description of {@link MakefileDataLoader}.
+/**
+ * @author ads
  *
  */
-public class MakefileDataLoaderBeanInfo extends SimpleBeanInfo {
+public abstract class AbstractTextRenderingComponent extends SVGComponent {
 
-    public BeanInfo[] getAdditionalBeanInfo() {
-	try {
-	    // I.e. MultiDataLoader.class or UniFileLoader.class.
-	    return new BeanInfo[] {
-		Introspector.getBeanInfo(
-			MakefileDataLoader.class.getSuperclass()) };
-	} catch (IntrospectionException ie) {
-	    ErrorManager.getDefault().notify(ie);
-	    return null;
-	}
+    public AbstractTextRenderingComponent( SVGForm form, String elemId ) {
+        super(form, elemId);
+    }
+    
+    public AbstractTextRenderingComponent( SVGForm form, 
+            SVGLocatableElement element) 
+    {
+        super(form, element);
+    }
+    
+    protected void initRenderer( SVGLocatableElement element ){
+        if ( myRenderer == null ){
+            myRenderer = new TextRenderer( form , getHiddenTextElement());
+        }
+        getRenderer().initEmpiricalLetterWidth(element);
     }
 
-    public Image getIcon(int type) {
-	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/MakefileDataIcon.gif");   // NOI18N
+    protected abstract SVGLocatableElement getHiddenTextElement();
+    
+    protected String truncateToShownText( String text , float boundWidth ) {
+        return getRenderer().truncateToShownText(text, boundWidth);
     }
-
+    
+    protected float getTextWidth(String text) {
+        return getRenderer().getTextWidth(text);
+    }
+    
+    protected boolean isEmpiricInitialized(){
+        return getRenderer().isEmpiricInitialized();
+    }
+    
+    private TextRenderer getRenderer(){
+        return myRenderer;
+    }
+    
+    private TextRenderer myRenderer;
 }

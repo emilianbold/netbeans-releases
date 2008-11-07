@@ -259,8 +259,9 @@ public final class SelectProviderPanel extends JPanel implements CsmProgressList
                 false
                 );
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         String path = fileChooser.getSelectedFile().getPath();
         //path = FilePathAdaptor.normalize(path);
         rootFolder.setText(path);

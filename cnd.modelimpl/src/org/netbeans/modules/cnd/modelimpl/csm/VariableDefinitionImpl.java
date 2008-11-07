@@ -247,7 +247,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         }
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
-            List/*<String>*/ l = new ArrayList/*<String>*/();
+            List<String> l = new ArrayList<String>();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
@@ -255,7 +255,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
                     }
                 }
             }
-            return (String[]) l.toArray(new String[l.size()]);
+            return  l.toArray(new String[l.size()]);
         }
         return null;
     }
@@ -299,6 +299,7 @@ public final class VariableDefinitionImpl extends VariableImpl<CsmVariableDefini
         UIDObjectFactory.getDefaultFactory().writeUID(this.declarationUID, output);
     }  
     
+    @SuppressWarnings("unchecked")
     public VariableDefinitionImpl(DataInput input) throws IOException {
         super(input);
         this.qualifiedName = PersistentUtils.readUTF(input);

@@ -62,7 +62,6 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
-import org.netbeans.modules.cnd.editor.cplusplus.CCTokenContext;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -216,10 +215,6 @@ public class CsmUtilities {
         } else {
             return PRIVATE_LEVEL;
         }
-    }
-
-    public static boolean isPrimitiveClassName(String s) {
-        return CCTokenContext.isTypeOrVoid(s);
     }
 
     public static boolean isPrimitiveClass(CsmClassifier c) {

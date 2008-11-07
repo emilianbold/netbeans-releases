@@ -105,6 +105,10 @@ public class ClassPathUtils {
         return classPath.findResource(fileName) != null;
     }
 
+    public static void resetFormClassLoader(Project p) {
+        loaders.remove(p);
+    }
+
     private static FormClassLoader getFormClassLoader(FileObject fileInProject) {
         Project p = FileOwnerQuery.getOwner(fileInProject);
         FormClassLoader fcl = loaders.get(p);

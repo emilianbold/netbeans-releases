@@ -491,7 +491,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
     }
 
     public void removeShortcut (ShortcutAction action, String shortcut) {
-        Set<String> s = new HashSet<String> (Arrays.asList (getShortcuts (action)));
+        Set<String> s = new LinkedHashSet<String> (Arrays.asList (getShortcuts (action)));
         s.remove (shortcut);
         setShortcuts(action, s);
     }
@@ -612,7 +612,7 @@ public class KeymapViewModel extends DefaultTableModel implements ShortcutsFinde
         Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
         for (Map.Entry<ShortcutAction, Set<String>> entry: emacs.entrySet()) {
             ShortcutAction action = entry.getKey();
-            Set<String> shortcuts = new HashSet<String> ();
+            Set<String> shortcuts = new LinkedHashSet<String> ();
             for (String emacsShortcut: entry.getValue()) {
                 KeyStroke[] keyStroke = Utilities.stringToKeys (emacsShortcut);
                 shortcuts.add (Utils.getKeyStrokesAsText (keyStroke, " "));
