@@ -190,7 +190,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     private boolean validateRememberPassword() {
         if (getPassword().length() > 0) {
-            setWarning(NbBundle.getMessage(FtpConfiguration.class, "MSG_PasswordRememberDangerous"));
+            setWarning(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PasswordRememberDangerous"));
             return false;
         }
         return true;
@@ -198,7 +198,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     private boolean validateHost() {
         if (getHostName().trim().length() == 0) {
-            setError(NbBundle.getMessage(FtpConfiguration.class, "MSG_NoHostName"));
+            setError(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_NoHostName"));
             return false;
         }
         return true;
@@ -209,10 +209,10 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         try {
             int port = Integer.parseInt(getPort());
             if (port < MINIMUM_PORT || port > MAXIMUM_PORT) { // see InetSocketAddress
-                err = NbBundle.getMessage(FtpConfiguration.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
+                err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
             }
         } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(FtpConfiguration.class, "MSG_PortNotNumeric");
+            err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PortNotNumeric");
         }
         setError(err);
         return err == null;
@@ -223,7 +223,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
             return true;
         }
         if (getUserName().trim().length() == 0) {
-            setError(NbBundle.getMessage(FtpConfiguration.class, "MSG_NoUserName"));
+            setError(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_NoUserName"));
             return false;
         }
         return true;
@@ -243,10 +243,10 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         try {
             int timeout = Integer.parseInt(getTimeout());
             if (timeout < 0) {
-                err = NbBundle.getMessage(FtpConfiguration.class, "MSG_TimeoutNotPositive");
+                err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_TimeoutNotPositive");
             }
         } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(FtpConfiguration.class, "MSG_TimeoutNotNumeric");
+            err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_TimeoutNotNumeric");
         }
         setError(err);
         return err == null;
