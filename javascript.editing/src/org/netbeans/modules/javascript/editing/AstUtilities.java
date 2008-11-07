@@ -153,9 +153,9 @@ public final class AstUtilities {
             //     foo: function() {
             //     }
             // Here the function offset points to the beginning of "function", not "foo".
-            int rowStart = Utilities.getRowStart(doc, lexOffset);
+            int rowStart = Utilities.getRowStart(doc, Math.min(lexOffset, doc.getLength()));
             if (rowStart > 0) {
-                lexOffset = Utilities.getRowEnd(doc, rowStart-1);
+                lexOffset = Utilities.getRowEnd(doc, Math.min(rowStart-1, doc.getLength()));
             }
         } catch (BadLocationException ble) {
             Exceptions.printStackTrace(ble);
