@@ -93,12 +93,12 @@ public class JaxWsClientCreator implements ClientCreator {
         }
         FileObject localWsdlFolder = jaxWsSupport.getLocalWsdlFolder(true);
         
-        boolean hasConfigFolder = false;
-        File configFile = new File (FileUtil.toFile(project.getProjectDirectory()),"src/jaxws"); //NOI18N
-        if (configFile.exists()) {
-            hasConfigFolder = true;
+        boolean hasSrcFolder = false;
+        File srcFile = new File (FileUtil.toFile(project.getProjectDirectory()),"src"); //NOI18N
+        if (srcFile.exists()) {
+            hasSrcFolder = true;
         } else {
-            hasConfigFolder = configFile.mkdirs();
+            hasSrcFolder = srcFile.mkdirs();
         }
         
         if (localWsdlFolder != null) {
@@ -106,7 +106,7 @@ public class JaxWsClientCreator implements ClientCreator {
             try {
                 wsdlFo = WSUtils.retrieveResource(
                         localWsdlFolder,
-                        (hasConfigFolder ? new URI(MavenJAXWSSupportIml.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
+                        (hasSrcFolder ? new URI(MavenJAXWSSupportIml.CATALOG_PATH) : new URI("jax-ws-catalog.xml")), //NOI18N
                         new URI(wsdlUrl));
             } catch (URISyntaxException ex) {
                 //ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ex);
@@ -137,16 +137,22 @@ public class JaxWsClientCreator implements ClientCreator {
                     if (mavenHandle != null) {
                         Plugin jaxWsPlugin = MavenModelUtils.getJaxWSPlugin(mavenHandle);
                         if (jaxWsPlugin == null) {
-                            // adding plugin
+                            // add jax-ws plugin
                             jaxWsPlugin = MavenModelUtils.addJaxWSPlugin(mavenHandle);
-                        }
+                        }                       
                         if (jaxWsPlugin != null) {
                             // writing wsdlFile to plugin
-                            MavenModelUtils.addWsdlFile(mavenHandle, relativePath);
+                            MavenModelUtils.addWsdlFile(mavenHandle, jaxWsPlugin, relativePath);
                         }
-                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
                         
-                    }
+                        Plugin warPlugin = MavenModelUtils.getWarPlugin(mavenHandle);
+                        
+                        if (warPlugin == null) {
+                            warPlugin = MavenModelUtils.addWarlugin(mavenHandle);
+                        }
+                        
+                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                                          }
                     
                 } catch (Exception ex) {
                     ex.printStackTrace();
