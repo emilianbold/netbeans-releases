@@ -46,7 +46,6 @@ import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  *
