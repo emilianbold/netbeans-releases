@@ -67,6 +67,8 @@ import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.form.actions.EditContainerAction;
 import org.netbeans.modules.form.actions.EditFormAction;
 import org.netbeans.modules.form.assistant.AssistantModel;
@@ -294,6 +296,15 @@ public class FormEditor {
     private void loadFormData() throws PersistenceException {
         if (formLoaded)
             return; // form already loaded
+
+        // Issue 151166 - hack
+        Project p = FileOwnerQuery.getOwner(formDataObject.getFormFile());
+        FileObject projectDirectory = p.getProjectDirectory();
+        FileObject nbprojectFolder = projectDirectory.getFileObject("nbproject", null); // NOI18N
+        if ((nbprojectFolder == null) && (projectDirectory.getFileObject("pom", "xml") != null)) { // NOI18N
+            // Maven project
+            ClassPathUtils.resetFormClassLoader(p);
+        }
 
         resetPersistenceErrorLog(); // clear log of errors
 
