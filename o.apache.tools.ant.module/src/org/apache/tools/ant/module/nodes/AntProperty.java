@@ -67,11 +67,11 @@ class AntProperty extends Node.Property<String> {
 
     @Override
     public String getValue() {
-        Element el = getElement();
-        if (el == null) { // #9675
+        Element _el = getElement();
+        if (_el == null) { // #9675
             return NbBundle.getMessage(AntProperty.class, "LBL_property_invalid_no_element");
         }
-        return el.getAttribute(name);
+        return _el.getAttribute(name);
     }
     
     @Override

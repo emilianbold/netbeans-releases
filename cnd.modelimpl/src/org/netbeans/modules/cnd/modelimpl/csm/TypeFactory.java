@@ -190,6 +190,13 @@ public class TypeFactory {
         
         ///// INIT CLASSFIER stuff
         AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
+        if( typeStart != null) {
+            if (typeStart.getType() == CPPTokenTypes.LITERAL_struct ||
+                    typeStart.getType() == CPPTokenTypes.LITERAL_class ||
+                    typeStart.getType() == CPPTokenTypes.LITERAL_union) {
+                typeStart = typeStart.getNextSibling();
+            }            
+        }
         if( typeStart == null)
             /*(tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
             tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&

@@ -47,21 +47,6 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.db.metadata.model</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.db</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.25</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.dbapi</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>
-                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -72,6 +57,7 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.db.sql.editor</friend>
+                <friend>org.netbeans.modules.dbapi</friend>
                 <package>org.netbeans.modules.db.metadata.model.api</package>
                 <package>org.netbeans.modules.db.metadata.model.spi</package>
             </friend-packages>

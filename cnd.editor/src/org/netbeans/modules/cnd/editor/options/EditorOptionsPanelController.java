@@ -68,34 +68,34 @@ public class EditorOptionsPanelController extends OptionsPanelController
 
     
     public EditorOptionsPanelController(CodeStyle.Language language){
-        if (TRACE) System.out.println("EditorOptionsPanelController.ctor()"); // NOI18N
+        if (TRACE) {System.out.println("EditorOptionsPanelController.ctor()");} // NOI18N
         this.language = language;
         this.panel = new EditorPropertySheet(this, language);
     }
     
     public void update() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.update()"); // NOI18N
+        if (TRACE) {System.out.println("EditorOptionsPanelController.update()");} // NOI18N
         changed = false;
 	panel.load();
     }
     
     public void applyChanges() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.applyChanges()"); // NOI18N
+        if (TRACE) {System.out.println("EditorOptionsPanelController.applyChanges()");} // NOI18N
 	panel.store();
     }
     
     public void cancel() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.cancel()"); // NOI18N
+        if (TRACE) {System.out.println("EditorOptionsPanelController.cancel()");} // NOI18N
 	panel.cancel();
     }
     
     public boolean isValid() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.isValid()"); // NOI18N
+        if (TRACE) {System.out.println("EditorOptionsPanelController.isValid()");} // NOI18N
         return true;
     }
     
     public boolean isChanged() {
-        if (TRACE) System.out.println("EditorOptionsPanelController.isChanged()"); // NOI18N
+        if (TRACE) {System.out.println("EditorOptionsPanelController.isChanged()");} // NOI18N
 	return changed;
     }
 

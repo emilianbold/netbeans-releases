@@ -42,7 +42,6 @@
 package org.apache.tools.ant.module.nodes;
 
 import java.awt.BorderLayout;
-import java.beans.PropertyVetoException;
 import java.util.Collection;
 import javax.swing.ActionMap;
 import javax.swing.JComponent;
@@ -53,7 +52,6 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.ListView;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
@@ -109,25 +107,9 @@ public final class AntNavigatorPanel implements NavigatorPanel {
                 public ExplorerManager getExplorerManager() {
                     return manager;
                 }
-                // Make sure list gets focus, with first node initially selected:
                 @Override
                 public boolean requestFocusInWindow() {
-                    boolean b = view.requestFocusInWindow();
-                    Children.MUTEX.postReadRequest(new Runnable() {
-                        public void run() {
-                            if (manager.getSelectedNodes().length == 0) {
-                                Node[] children = manager.getRootContext().getChildren().getNodes(true);
-                                if (children.length > 0) {
-                                    try {
-                                        manager.setSelectedNodes(new Node[] {children[0]});
-                                    } catch (PropertyVetoException e) {
-                                        // #146284 - happens sometimes; why? Ignore...
-                                    }
-                                }
-                            }
-                        }
-                    });
-                    return b;
+                    return view.requestFocusInWindow();
                 }
                 public Lookup getLookup() {
                     return lookup;

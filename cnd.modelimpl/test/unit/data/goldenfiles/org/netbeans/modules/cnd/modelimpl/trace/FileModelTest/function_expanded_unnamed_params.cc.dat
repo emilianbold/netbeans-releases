@@ -20,7 +20,7 @@ FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$
          [2:31/47-2:64/80]  TYPE: *char TEXT=char*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: int TEXT=int  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
+    RETURNS *$unresolved$::ifnet TEXT=ifnet*  [2:8/24-2:14/30]
 FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_variable(char*,char**,int)
@@ -40,7 +40,7 @@ FUNCTION get_unit [2:1/17-2:65/81] FunctionImpl SCOPE: $Global$
          [2:31/47-2:64/80]  TYPE: *char TEXT=char*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: int TEXT=int  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
          [2:31/47-2:64/80]  TYPE: *$unresolved$::ipf_stack_t TEXT=ipf_stack_t*  [2:31/47-2:64/80]  INIT: null  SCOPE: get_unit 
-    RETURNS int TEXT=int  [1:1/0-1:1/0]
+    RETURNS *$unresolved$::ifnet TEXT=ifnet*  [2:8/24-2:14/30]
 FUNCTION get_variable [3:1/82-3:55/136] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
     SIGNATURE get_variable(char*,char**,int)

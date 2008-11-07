@@ -102,7 +102,7 @@ public class AntProjectDataObject extends MultiDataObject implements PropertyCha
         String prop = ev.getPropertyName ();
         if (prop == null || prop.equals (DataObject.PROP_PRIMARY_FILE)) { // #11979
             // XXX this might be better handled by overriding FileEntry.rename/move:
-            ((AntProjectSupport) getCookie (AntProjectSupport.class)).setFileObject (getPrimaryFile ());
+            getCookie(AntProjectSupport.class).setFileObject(getPrimaryFile());
         }
     }
 

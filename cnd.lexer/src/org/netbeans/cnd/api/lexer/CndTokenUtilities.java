@@ -79,7 +79,7 @@ public class CndTokenUtilities {
      * @param startOffset
      * @param lastOffset
      */
-    public static void processTokens(CppTokenProcessor tp, Document doc, int startOffset, int lastOffset) {
+    public static void processTokens(CndTokenProcessor<Token<CppTokenId>> tp, Document doc, int startOffset, int lastOffset) {
         TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, 0);
         if (cppTokenSequence == null) {
             return;
@@ -196,13 +196,13 @@ public class CndTokenUtilities {
         return offsetToken;
     }
 
-    private static boolean processTokensImpl(CppTokenProcessor tp, TokenSequence<CppTokenId> cppTokenSequence, int startOffset, int lastOffset) {
+    private static boolean processTokensImpl(CndTokenProcessor<Token<CppTokenId>> tp, TokenSequence<CppTokenId> cppTokenSequence, int startOffset, int lastOffset) {
         boolean processedToken = false;
         while (cppTokenSequence.moveNext()) {
             if (cppTokenSequence.offset() >= lastOffset) {
                 break;
             }
-            Token<CppTokenId> token = (Token<CppTokenId>) cppTokenSequence.token();
+            Token<CppTokenId> token = cppTokenSequence.token();
             if (tp.token(token, cppTokenSequence.offset())) {
                 // process embedding
                 @SuppressWarnings("unchecked")
