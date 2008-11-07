@@ -278,9 +278,9 @@ public class OutputWindowOutputStream extends OutputStream {
                         if (! l.isDeleted()) {
                             attachAsNeeded(l, ed);
                             if (col1 == -1) {
-                                l.show(Line.SHOW_GOTO);
+                                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
                             } else {
-                                l.show(Line.SHOW_GOTO, col1);
+                                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS, col1);
                             }
                         }
                     }
@@ -320,9 +320,9 @@ public class OutputWindowOutputStream extends OutputStream {
                         if (! l.isDeleted()) {
                             attachAsNeeded(l, ed);
                             if (col1 == -1) {
-                                l.show(Line.SHOW_TRY_SHOW);
+                                l.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE);
                             } else {
-                                l.show(Line.SHOW_TRY_SHOW, col1);
+                                l.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE, col1);
                             }
                         }
                     }
