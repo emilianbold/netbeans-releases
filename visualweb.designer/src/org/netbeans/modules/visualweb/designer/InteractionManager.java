@@ -713,12 +713,17 @@ public class InteractionManager {
     int updateDropState(Point p, boolean committed, Transferable transferable) {
         DesignerPane pane = webform.getPane();
 //        CssBox box = webform.getMapper().findBox(p.x, p.y);
-        CssBox box = ModelViewMapper.findBox(pane.getPageBox(), p.x, p.y);
+        PageBox pageBox = pane.getPageBox();
+        if (pageBox == null) {
+            // XXX #152692 Possible NPE.
+            return DndHandler.DROP_DENIED;
+        }
+        CssBox box = ModelViewMapper.findBox(pageBox, p.x, p.y);
         CssBox insertBox = findInsertBox(box);
 
 //        if ((insertBox == pane.getPageBox()) && webform.getDocument().isGridMode()) {
 //        if ((insertBox == pane.getPageBox()) && webform.isGridModeDocument()) {
-        if ((insertBox == pane.getPageBox()) && webform.isGridMode()) {
+        if ((insertBox == pageBox) && webform.isGridMode()) {
             insertBox = null;
         }
 
