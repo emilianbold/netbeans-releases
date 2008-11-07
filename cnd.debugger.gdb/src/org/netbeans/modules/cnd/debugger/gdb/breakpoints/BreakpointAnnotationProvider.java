@@ -83,21 +83,13 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationProvider implements AnnotationProvider, DebuggerManagerListener {
 
-    private Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations;
-    private Set<FileObject> annotatedFiles;
+    private final Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations = new HashMap<GdbBreakpoint, Annotation[]>();
+    private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
 
     public void annotate(Line.Set set, Lookup lookup) {
         FileObject fo = (FileObject) lookup.lookup(FileObject.class);
         if (fo == null) {
             return;
-        }
-        boolean attachManagerListener = false;
-        synchronized (this) {
-            if (breakpointToAnnotations == null) {
-                breakpointToAnnotations = new HashMap<GdbBreakpoint, Annotation[]>();
-                annotatedFiles = new WeakSet<FileObject>();
-                attachManagerListener = true;
-            }
         }
         synchronized (breakpointToAnnotations) {
             if (annotatedFiles.contains(fo)) {
@@ -121,11 +113,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             annotatedFiles.add(fo);
         }
-        if (attachManagerListener) {
-            DebuggerManager.getDebuggerManager().addDebuggerListener(
-                    WeakListeners.create(DebuggerManagerListener.class,
-                     this, DebuggerManager.getDebuggerManager()));
-        }
+        DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
+                 this, DebuggerManager.getDebuggerManager()));
     }
 
     public void breakpointAdded(Breakpoint breakpoint) {
