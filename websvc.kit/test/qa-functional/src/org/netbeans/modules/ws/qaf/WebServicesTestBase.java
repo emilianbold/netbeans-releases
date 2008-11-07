@@ -290,7 +290,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         }
         GlassFishV2ServerNode gf = GlassFishV2ServerNode.invoke();
         gf.refresh();
-        gf.expand();
+        if (gf.isCollapsed()) {
+            gf.expand();
+        }
         assertTrue("Server is not running", 0 < gf.getChildren().length);
     }
 

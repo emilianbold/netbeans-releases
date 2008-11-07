@@ -43,6 +43,8 @@ package org.netbeans.modules.ws.qaf;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import junit.framework.Test;
 import org.netbeans.api.project.Project;
 import org.netbeans.jellytools.Bundle;
@@ -92,7 +94,6 @@ import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 
 /**
  *  Basic validation suite for web services support in the IDE
@@ -105,6 +106,8 @@ public class WsValidation extends WebServicesTestBase {
 
     protected static final String WEB_SERVICES_NODE_NAME = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.nodes.Bundle", "LBL_WebServices");
     private static final String WEB_SERVICE_CLIENTS_NODE_NAME = Bundle.getStringTrimmed("org.netbeans.modules.websvc.core.jaxws.nodes.Bundle", "LBL_ServiceReferences");
+    private static final Logger LOG = Logger.getLogger(WsValidation.class.getName());
+
     private static int foId = 0;
 
     protected enum HandlerType {
@@ -799,12 +802,17 @@ public class WsValidation extends WebServicesTestBase {
         try {
             Thread.sleep(1500);
         } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            //ignore
         }
         JemmyProperties.setCurrentTimeout("ComponentOperator.WaitStateTimeout", 600000); //NOI18N
         oto.waitText("(total time: "); //NOI18N
         dumpOutput();
         assertTrue(oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException ex) {
+            //ignore
+        }
     }
 
     protected void waitForTextInEditor(final EditorOperator eo, final String text) {
@@ -909,7 +917,7 @@ public class WsValidation extends WebServicesTestBase {
             try {
                 waitForWsImport("wsimport-service"); //NOI18N
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.WARNING, null, ex);
                 fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
             }
         } else {
@@ -930,7 +938,7 @@ public class WsValidation extends WebServicesTestBase {
             try {
                 waitForWsImport("wsimport-client"); //NOI18N
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                LOG.log(Level.WARNING, null, ex);
                 fail("refreshing wsdl failed, see the log for stacktrace"); //NOI18N
             }
         }

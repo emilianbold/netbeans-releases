@@ -59,6 +59,12 @@ public class JavaSEWsValidation extends WsValidation {
     }
 
     @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        assertServerRunning();
+    }
+
+    @Override
     protected ProjectType getProjectType() {
         return ProjectType.JAVASE_APPLICATION;
     }
