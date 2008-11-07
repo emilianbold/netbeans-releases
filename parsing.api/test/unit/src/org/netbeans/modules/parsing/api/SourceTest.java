@@ -41,10 +41,17 @@ package org.netbeans.modules.parsing.api;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.nio.charset.Charset;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.DefaultStyledDocument;
+import javax.swing.text.Document;
 import org.netbeans.junit.NbTestCase;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -57,8 +64,6 @@ public class SourceTest extends NbTestCase {
     }
 
     public void testCreateSnapshotEOLConversions() throws IOException {
-        assertTrue("No UTF-8 available", Charset.isSupported("UTF-8"));
-
         String documentContent = "0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n";
 
         // test CRLF conversion
@@ -82,10 +87,117 @@ public class SourceTest extends NbTestCase {
         }
     }
 
+    public void testSourceForFileObject() throws IOException {
+        FileObject file = createFileObject("plain.txt", "Hey dude!", "\n");
+        Source source = Source.create(file);
+        assertNotNull("No Source for " + file, source);
+
+        Source s1 = Source.create(file);
+        assertSame("Expecting the same Source for the same file", source, s1);
+    }
+
+    public void testSourceForFileObjectGCed() throws IOException {
+        FileObject file = createFileObject("plain.txt", "Hey dude!", "\n");
+        Source source = Source.create(file);
+        assertNotNull("No Source for " + file, source);
+
+        Reference<Source> sourceRef = new WeakReference<Source>(source);
+        Reference<FileObject> fileRef = new WeakReference<FileObject>(file);
+
+        source = null;
+        assertGC("Source can't be GCed", sourceRef);
+
+        file = null;
+        assertGC("File can't be GCed", fileRef);
+    }
+
+    public void testSourceForFilelessDocument() {
+        Document doc = createDocument("text/plain", "");
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+
+        Source s1 = Source.create(doc);
+        assertSame("Expecting the same Source for the same document", source, s1);
+    }
+
+    public void testSourceForFilelessDocumentGCed() {
+        Document doc = createDocument("text/plain", "");
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+
+        Reference<Source> sourceRef = new WeakReference<Source>(source);
+        Reference<Document> docRef = new WeakReference<Document>(doc);
+
+        source = null;
+        assertGC("Source can't be GCed", sourceRef);
+        
+        doc = null;
+        assertGC("Document can't be GCed", docRef);
+    }
+
+
+    public void testSourceForDocument() throws IOException {
+        FileObject file = createFileObject("plain.txt", getName(), "\n");
+        Document doc = openDocument(file);
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+
+        Source s1 = Source.create(doc);
+        assertSame("Expecting the same Source for the same document", source, s1);
+    }
+
+    public void testSourceForDocumentGCed() throws IOException {
+        FileObject file = createFileObject("plain.txt", getName(), "\n");
+        Document doc = openDocument(file);
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+
+        Reference<Source> sourceRef = new WeakReference<Source>(source);
+        Reference<Document> docRef = new WeakReference<Document>(doc);
+        Reference<FileObject> fileRef = new WeakReference<FileObject>(file);
+
+        source = null;
+        assertGC("Source can't be GCed", sourceRef);
+
+        doc = null;
+        assertGC("Document can't be GCed", docRef);
+
+        file = null;
+        assertGC("FileObject can't be GCed", fileRef);
+    }
+
+    public void testSnapshotContents() throws IOException {
+        String documentContent = "Apples\nPears\nPlums\nAppricots\nOranges\nBananas\nPeaches\n"; //NOI18N
+        FileObject file = createFileObject("plain.txt", documentContent, "\r\n");
+        Source source = Source.create(file);
+        assertNotNull("No Source for " + file, source);
+
+        Snapshot snapshot = source.createSnapshot();
+        assertNotNull("No snapshot", snapshot);
+        assertEquals("Wrong snapshot contents", documentContent, snapshot.getText().toString());
+
+        String documentContent2 = "Potatos\nTomatos\nOnion\nGarlic\nCucumber\nBeetroot\nEggplant\n"; //NOI18N
+        writeToFileObject(file, documentContent2, "\r\n");
+
+        // the old snapshot is still the same
+        assertEquals("Original snapshot modified", documentContent, snapshot.getText().toString());
+
+        // new snapshot should contain the new text
+        Snapshot snapshot2 = source.createSnapshot();
+        assertNotNull("No snapshot", snapshot2);
+        assertEquals("New snapshot has wrong contents", documentContent2, snapshot2.getText().toString());
+    }
+    
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject f = workDir.createData(name);
+        writeToFileObject(f, documentContent, eol);
+        
+        return f;
+    }
 
+    private void writeToFileObject(FileObject f, String documentContent, String eol) throws IOException {
+        assertTrue("No UTF-8 available", Charset.isSupported("UTF-8"));
         OutputStream os = f.getOutputStream();
         try {
             byte [] eolBytes = eol.getBytes("UTF-8");
@@ -100,8 +212,26 @@ public class SourceTest extends NbTestCase {
         } finally {
             os.close();
         }
-
-        return f;
     }
 
+    private Document createDocument(String mimeType, String contents) {
+        Document doc = new DefaultStyledDocument();
+        doc.putProperty("mimeType", mimeType);
+        try {
+            doc.insertString(0, contents, null);
+            return doc;
+        } catch (BadLocationException ble) {
+            throw new IllegalStateException(ble);
+        }
+    }
+
+    private Document openDocument(FileObject f) {
+        try {
+            DataObject dataObject = DataObject.find(f);
+            EditorCookie ec = dataObject.getLookup().lookup(EditorCookie.class);
+            return ec.openDocument();
+        } catch (IOException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
 }

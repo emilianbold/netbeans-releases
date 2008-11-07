@@ -98,21 +98,19 @@ public final class Source {
         }
 
         synchronized (Source.class) {
-            Reference<Source> ref = instances.get(fileObject);
-            Source result = null;
-            if (ref != null) {
-                result = ref.get();
-            }
-            if (result == null) {
-                result = new Source (
+            Reference<Source> sourceRef = instances.get(fileObject);
+            Source source = sourceRef == null ? null : sourceRef.get();
+            
+            if (source == null) {
+                source = new Source (
                     fileObject.getMIMEType (),
                     null, 
                     fileObject
                 );
-                ref = new WeakReference<Source>(result);
-                instances.put(fileObject, ref);
+                instances.put(fileObject, new WeakReference<Source>(source));
             }
-            return result;
+
+            return source;
         }
     }
     
@@ -129,7 +127,8 @@ public final class Source {
         Parameters.notNull("document", document); //NOI18N
 
         synchronized (Source.class) {
-            Source source = (Source) document.getProperty(Source.class);
+            Reference<Source> sourceRef = (Reference<Source>) document.getProperty(Source.class);
+            Source source = sourceRef == null ? null : sourceRef.get();
 
             if (source == null) {
                 FileObject fileObject = NbEditorUtilities.getFileObject(document);
@@ -140,7 +139,7 @@ public final class Source {
                     String mimeType = NbEditorUtilities.getMimeType(document);
                     source = new Source(mimeType, document, null);
                 }
-                document.putProperty(Source.class, source);
+                document.putProperty(Source.class, new WeakReference<Source>(source));
             }
 
             return source;
