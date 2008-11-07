@@ -92,10 +92,12 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
     @Override
     public Object addAction() {
         String seed = null;
-        if (FileChooser.getCurrectChooserFile()  != null)
+        if (FileChooser.getCurrectChooserFile() != null) {
             seed = FileChooser.getCurrectChooserFile().getPath();
-        if (seed == null)
+        }
+        if (seed == null) {
             seed = System.getProperty("user.home"); // NOI18N
+        }
         FileFilter[] filters;
         if (Utilities.isWindows()){
             filters = new FileFilter[] {PeExecutableFileFilter.getInstance(),
@@ -119,8 +121,9 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
                 seed,
                 false);
         int ret = fileChooser.showOpenDialog(this);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return null;
+        }
         String itemPath = fileChooser.getSelectedFile().getPath();
         itemPath = FilePathAdaptor.normalize(itemPath);
         return itemPath;
@@ -166,8 +169,9 @@ public class AdditionalLibrariesListPanel extends ListEditorPanel {
         InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
         notifyDescriptor.setInputText(s);
         DialogDisplayer.getDefault().notify(notifyDescriptor);
-        if (notifyDescriptor.getValue()  != NotifyDescriptor.OK_OPTION)
+        if (notifyDescriptor.getValue() != NotifyDescriptor.OK_OPTION) {
             return;
+        }
         String newS = notifyDescriptor.getInputText();
         Vector vector = getListData();
         Object[] arr = getListData().toArray();

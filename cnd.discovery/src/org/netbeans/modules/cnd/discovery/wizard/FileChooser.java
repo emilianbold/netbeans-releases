@@ -50,80 +50,82 @@ public class FileChooser extends JFileChooser {
     private static File currectChooserFile = null;
     public FileChooser(String titleText, String buttonText, int mode, boolean multiSelection,
             FileFilter[] filters, String feed, boolean useParent) {
-	super();
-	setFileHidingEnabled(false);
-	setFileSelectionMode(mode);
-        setMultiSelectionEnabled(multiSelection);
-	setDialogTitle(titleText); // NOI18N
-	setApproveButtonText(buttonText); // NOI18N
+        super();
+        setFileHidingEnabled(false);
+        setFileSelectionMode(mode);
+            setMultiSelectionEnabled(multiSelection);
+        setDialogTitle(titleText); // NOI18N
+        setApproveButtonText(buttonText); // NOI18N
 
-	if (filters != null) {
-	    for (int i = 0; i < filters.length; i++) {
-		addChoosableFileFilter(filters[i]);
-	    }
-	    setFileFilter(filters[0]);
-	}
+        if (filters != null) {
+            for (int i = 0; i < filters.length; i++) {
+                addChoosableFileFilter(filters[i]);
+            }
+            setFileFilter(filters[0]);
+        }
 
-	String feedFilePath = feed;
-	File feedFilePathFile = null;
+        String feedFilePath = feed;
+        File feedFilePathFile = null;
 
-	if (feedFilePath != null && feedFilePath.length() > 0) {
-	    feedFilePathFile = new File(feedFilePath);
-	    //try {
-            //	feedFilePathFile = feedFilePathFile.getCanonicalFile();
-	    //}
-	    //catch (IOException e) {
-	    //}
-	}
+        if (feedFilePath != null && feedFilePath.length() > 0) {
+            feedFilePathFile = new File(feedFilePath);
+            //try {
+                //	feedFilePathFile = feedFilePathFile.getCanonicalFile();
+            //}
+            //catch (IOException e) {
+            //}
+        }
 
-	if (feedFilePathFile != null && feedFilePathFile.exists()) {
-	    currectChooserFile = feedFilePathFile;
-	}
+        if (feedFilePathFile != null && feedFilePathFile.exists()) {
+            currectChooserFile = feedFilePathFile;
+        }
 
-        if (currectChooserFile == null && feedFilePathFile == null)
+        if (currectChooserFile == null && feedFilePathFile == null) {
             feedFilePathFile = new File(System.getProperty("user.home")); // NOI18N
+        }
         
-	if (currectChooserFile == null && feedFilePathFile.getParentFile().exists()) {
-	    currectChooserFile = feedFilePathFile.getParentFile();
-	    useParent = false;
-	}
-	    
+        if (currectChooserFile == null && feedFilePathFile.getParentFile().exists()) {
+            currectChooserFile = feedFilePathFile.getParentFile();
+            useParent = false;
+        }
 
-	// Set currect directory
-	if (currectChooserFile != null) {
-	    if (useParent) {
-		if (currectChooserFile != null && currectChooserFile.exists()) {
-		    setSelectedFile(currectChooserFile);
-		}
-	    }
-	    else {
-		if (currectChooserFile != null && currectChooserFile.exists()) {
-		    setCurrentDirectory(currectChooserFile);
-		}
-	    }
-	}
-	else {
-	    String sd = System.getProperty("spro.pwd"); // NOI18N
-	    if (sd != null) {
-		File sdFile = new File(sd);
-		if (sdFile.exists()) {
-		    setCurrentDirectory(sdFile);
-		}
-	    }
-	}
+
+        // Set currect directory
+        if (currectChooserFile != null) {
+            if (useParent) {
+                if (currectChooserFile != null && currectChooserFile.exists()) {
+                    setSelectedFile(currectChooserFile);
+                }
+            }
+            else {
+                if (currectChooserFile != null && currectChooserFile.exists()) {
+                    setCurrentDirectory(currectChooserFile);
+                }
+            }
+        }
+        else {
+            String sd = System.getProperty("spro.pwd"); // NOI18N
+            if (sd != null) {
+                File sdFile = new File(sd);
+                if (sdFile.exists()) {
+                    setCurrentDirectory(sdFile);
+                }
+            }
+        }
     }
 
     @Override
     public int showOpenDialog(Component parent) {
-	int ret = super.showOpenDialog(parent);
-	if (ret != CANCEL_OPTION) {
-	    if (getSelectedFile().exists())
-		currectChooserFile = getSelectedFile();
-	}
-	return ret;
+        int ret = super.showOpenDialog(parent);
+        if (ret != CANCEL_OPTION) {
+            if (getSelectedFile().exists()) {
+                currectChooserFile = getSelectedFile();
+            }
+        }
+        return ret;
     }
 
     public static File getCurrectChooserFile() {
-	return currectChooserFile;
+    	return currectChooserFile;
     }
 }
