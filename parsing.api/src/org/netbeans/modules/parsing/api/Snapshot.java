@@ -217,7 +217,10 @@ public final class Snapshot {
                 currentToOriginal [mid + 1] [0] > offset
             )
                 if (currentToOriginal [mid] [1] < 0)
-                    return currentToOriginal [mid] [1];
+                    if (offset == cmp && mid > 0)
+                        return offset - currentToOriginal [mid - 1] [0] + currentToOriginal [mid - 1] [1];
+                    else
+                        return currentToOriginal [mid] [1];
                 else
                     return offset - currentToOriginal [mid] [0] + currentToOriginal [mid] [1];
             else
@@ -253,7 +256,10 @@ public final class Snapshot {
                 originalToCurrent [mid + 1] [0] > originalOffset
             )
                 if (originalToCurrent [mid] [1] < 0)
-                    return originalToCurrent [mid] [1];
+                    if (originalOffset == cmp && mid > 0)
+                        return originalOffset - originalToCurrent [mid - 1] [0] + originalToCurrent [mid - 1] [1];
+                    else
+                        return originalToCurrent [mid] [1];
                 else
                     return originalOffset - originalToCurrent [mid] [0] + originalToCurrent [mid] [1];
             else

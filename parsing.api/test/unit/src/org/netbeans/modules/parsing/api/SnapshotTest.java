@@ -115,8 +115,8 @@ public class SnapshotTest extends NbTestCase {
         assertEquals ("stovaci fi1234567890rem se bud", languageJednaSnapshot.getText ().toString ());
         assertEquals (10, languageJednaSnapshot.getOriginalOffset (0));
         assertEquals (12, languageJednaSnapshot.getOriginalOffset (2));
-        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (10));
-        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (12));
+        assertEquals (20, languageJednaSnapshot.getOriginalOffset (10));
+        assertEquals (-1, languageJednaSnapshot.getOriginalOffset (11));
         assertEquals (30, languageJednaSnapshot.getOriginalOffset (20));
         assertEquals (33, languageJednaSnapshot.getOriginalOffset (23));
         assertEquals (40, languageJednaSnapshot.getOriginalOffset (30));
@@ -129,11 +129,13 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (5));
         assertEquals (0, languageJednaSnapshot.getEmbeddedOffset (10));
         assertEquals (5, languageJednaSnapshot.getEmbeddedOffset (15));
-        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (20));
+        assertEquals (10, languageJednaSnapshot.getEmbeddedOffset (20));
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (21));
         assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (25));
         assertEquals (20, languageJednaSnapshot.getEmbeddedOffset (30));
         assertEquals (25, languageJednaSnapshot.getEmbeddedOffset (35));
-        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (40));
+        assertEquals (30, languageJednaSnapshot.getEmbeddedOffset (40));
+        assertEquals (-1, languageJednaSnapshot.getEmbeddedOffset (41));
 //        try {
 //            languageJednaSnapshot.getEmbeddedOffset (50);
 //            assert (false);
@@ -144,7 +146,7 @@ public class SnapshotTest extends NbTestCase {
         assertEquals ("ci fi1234567890rem s", petaSnapshot.getText ().toString ());
         assertEquals (15, petaSnapshot.getOriginalOffset (0));
         assertEquals (18, petaSnapshot.getOriginalOffset (3));
-        assertEquals (-1, petaSnapshot.getOriginalOffset (5));
+        assertEquals (20, petaSnapshot.getOriginalOffset (5));
         assertEquals (-1, petaSnapshot.getOriginalOffset (6));
         assertEquals (-1, petaSnapshot.getOriginalOffset (10));
         assertEquals (30, petaSnapshot.getOriginalOffset (15));
@@ -159,9 +161,11 @@ public class SnapshotTest extends NbTestCase {
         assertEquals (-1, petaSnapshot.getEmbeddedOffset (10));
         assertEquals (0, petaSnapshot.getEmbeddedOffset (15));
         assertEquals (4, petaSnapshot.getEmbeddedOffset (19));
-        assertEquals (-1, petaSnapshot.getEmbeddedOffset (20));
+        assertEquals (5, petaSnapshot.getEmbeddedOffset (20));
+        assertEquals (-1, petaSnapshot.getEmbeddedOffset (21));
         assertEquals (15, petaSnapshot.getEmbeddedOffset (30));
-        assertEquals (-1, petaSnapshot.getEmbeddedOffset (35));
+        assertEquals (20, petaSnapshot.getEmbeddedOffset (35));
+        assertEquals (-1, petaSnapshot.getEmbeddedOffset (36));
         
         Embedding fullSpanEmbedding = originalSnapshot.create (0, originalSnapshot.getText().length(), "peta");
         Snapshot fullSpanSnapshot = fullSpanEmbedding.getSnapshot ();
