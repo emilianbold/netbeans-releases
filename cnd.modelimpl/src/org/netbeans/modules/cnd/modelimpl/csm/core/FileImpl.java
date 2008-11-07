@@ -1069,6 +1069,15 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
+    public boolean hasDeclarations() {
+        try {
+            declarationsLock.readLock().lock();
+            return !declarations.isEmpty();
+        } finally {
+            declarationsLock.readLock().unlock();
+        }
+    }
+    
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         if (!SKIP_UNNECESSARY_FAKE_FIXES) {
             fixFakeRegistrations();
