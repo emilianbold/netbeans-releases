@@ -45,7 +45,7 @@ import java.awt.Image;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.classview.resources.I18n;
 import org.openide.nodes.Children;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 
 class LoadingNode extends BaseNode {
@@ -63,6 +63,6 @@ class LoadingNode extends BaseNode {
 
     @Override
     public Image getIcon(int param) {
-        return Utilities.loadImage("org/netbeans/modules/cnd/classview/resources/waitNode.gif"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/cnd/classview/resources/waitNode.gif"); // NOI18N
     }
 }

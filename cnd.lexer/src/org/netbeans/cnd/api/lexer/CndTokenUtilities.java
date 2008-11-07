@@ -202,7 +202,7 @@ public class CndTokenUtilities {
             if (cppTokenSequence.offset() >= lastOffset) {
                 break;
             }
-            Token<CppTokenId> token = (Token<CppTokenId>) cppTokenSequence.token();
+            Token<CppTokenId> token = cppTokenSequence.token();
             if (tp.token(token, cppTokenSequence.offset())) {
                 // process embedding
                 @SuppressWarnings("unchecked")

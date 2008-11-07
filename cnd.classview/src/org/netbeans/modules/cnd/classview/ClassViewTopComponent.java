@@ -59,8 +59,8 @@ import org.netbeans.modules.cnd.api.model.CsmModelStateListener;
 import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.openide.ErrorManager;
 import org.openide.util.HelpCtx;
+import org.openide.util.ImageUtilities;
 import org.openide.util.NbPreferences;
-import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -153,7 +153,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
             setLayout(new BorderLayout());
             setToolTipText(I18n.getMessage("ClassViewTitle")); // NOI18N
             setName(I18n.getMessage("ClassViewTooltip")); // NOI18N
-            setIcon(Utilities.loadImage(ICON_PATH));
+            setIcon(ImageUtilities.loadImage(ICON_PATH));
         }
         view.startup();
         addRemoveModelListeners(true);
