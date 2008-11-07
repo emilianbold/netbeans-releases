@@ -135,6 +135,7 @@ public class OpenProjectListTest extends NbTestCase {
         OpenProjectList.getDefault().close(new Project[] {project1, project2}, false);
     }
 
+    @RandomlyFails // NB-Core-Build #1691
     public void testOpen () throws Exception {
         assertTrue ("No project is open.", OpenProjectList.getDefault ().getOpenProjects ().length == 0);
         CharSequence log = Log.enable("org.netbeans.ui", Level.FINE);

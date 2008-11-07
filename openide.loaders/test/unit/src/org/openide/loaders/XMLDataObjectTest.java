@@ -56,6 +56,7 @@ import java.util.TreeSet;
 import java.util.logging.Level;
 import junit.framework.Assert;
 import org.netbeans.junit.Log;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.*;
 import org.openide.nodes.Node;
 import org.openide.util.RequestProcessor;
@@ -206,7 +207,8 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
 
         CountingSecurityManager.assertMembers(0);
     }
-    
+
+    @RandomlyFails // NB-Core-Build #1691
     public void testToolbarsAreBrokenAsTheLookupIsClearedTooOftenIssue41360 () throws Exception {
         FileLock lck;
         DataObject obj;
