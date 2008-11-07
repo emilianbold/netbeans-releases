@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
@@ -630,11 +629,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         UniqueNameCache.getManager().dispose();
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
-        if (TraceFlags.USE_AST_CACHE) {
-            CacheManager.getInstance().close();
-        } else {
-            APTDriver.getInstance().close();
-        }   
+        APTDriver.getInstance().close();
         UIDManager.instance().dispose();
         APTIncludeUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();

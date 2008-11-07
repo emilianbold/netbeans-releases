@@ -46,12 +46,10 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import javax.swing.text.BadLocationException;
-import javax.swing.event.DocumentEvent;
 import javax.swing.text.JTextComponent;
+import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.TokenItem;
 import org.netbeans.editor.Utilities;
@@ -72,7 +70,6 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 * @version 1.00
 * implemented after JavaSyntaxSupport
 */
-@Deprecated
 abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     // Internal C++ declaration token processor states
@@ -135,13 +132,6 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
 
     abstract protected CsmFinder getFinder();
     abstract protected FileReferencesContext getFileReferencesContext();
-
-    @Override
-    protected void documentModified(DocumentEvent evt) {
-        super.documentModified(evt);
-        //classFieldMaps.clear();
-        //fileVariableMaps.clear();
-    }
 
     protected void setJava15(boolean java15) {
         this.java15 = java15;
@@ -363,9 +353,8 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
         }
 
         // The following part
-        TokenID cls1Kwd = CCTokenContext.getKeyword(typ1.getClassifier().getName().toString());
-        TokenID cls2Kwd = CCTokenContext.getKeyword(typ2.getClassifier().getName().toString());
-        if (cls1Kwd == null && cls2Kwd == null) { // non-primitive classes
+        if (!CndLexerUtilities.isType(typ1.getClassifier().getName().toString())
+                && !!CndLexerUtilities.isType(typ2.getClassifier().getName().toString())) { // non-primitive classes
             if (isAssignable(typ1, typ2)) {
                 return typ1;
             } else if (isAssignable(typ2, typ1)) {
@@ -505,133 +494,7 @@ abstract public class CsmSyntaxSupport extends CCSyntaxSupport {
     // overriden functions to resolve expressions
     /////////////////////////////////////////////////
 
-    /** Map holding the [position, class-fields-map] pairs */
-    //private HashMap classFieldMaps = new HashMap();
-
-    /** Map holding the [position, class-fields-map] pairs */
-    //private HashMap fileVariableMaps = new HashMap();
-
-    /** Find the type of the variable. The default behavior is to first
-    * search for the local variable declaration and then possibly for
-    * the global declaration and if the declaration position is found
-    * to get the first word on that position.
-    * @return it returns Object to enable the custom implementations
-    *   to return the appropriate instances.
-    */
-    @Deprecated
-    @Override
-    public Object findType(String varName, int varPos) {
-        CsmType type = null;
-        Map varMap = getLocalVariableMap(varPos); // first try local vars
-        if (varMap != null) {
-            type = (CsmType) varMap.get(varName);
-        }
-
-        // then try class fields
-        if (type == null) {
-            varMap = getClassFieldMap(varPos); // try class fields
-            if (varMap != null) {
-                type = (CsmType) varMap.get(varName);
-            }
-        }
-
-        // then try file local vars
-        if (type == null) {
-            varMap = getFileVariableMap(varPos); // try file local vars
-            if (varMap != null) {
-                type = (CsmType) varMap.get(varName);
-            }
-        }
-
-        // at the end - globals
-        if (type == null) {
-            varMap = getGlobalVariableMap(varPos); // try global vars
-            if (varMap != null) {
-                type = (CsmType) varMap.get(varName);
-            }
-        }
-
-        return type;
-    }
-
-    @Deprecated
-    public Map getClassFieldMap(int offset) {
-        return Collections.EMPTY_MAP;
-        //Integer posI = new Integer(offset);
-        //Map varMap = (Map)classFieldMaps.get(posI);
-        //if (varMap == null) {
-        //    varMap = buildClassFieldMap(offset);
-        //    classFieldMaps.put(posI, varMap);
-        //}
-        //return varMap;
-    }
-
-    @Deprecated
-    public Map getFileVariableMap(int offset) {
-        return Collections.EMPTY_MAP;
-        //Integer posI = new Integer(offset);
-        //Map varMap = (Map)fileVariableMaps.get(posI);
-        //if (varMap == null) {
-        //    varMap = buildFileVariableMap(offset);
-        //    fileVariableMaps.put(posI, varMap);
-        //}
-        //return varMap;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    //                  build variable maps
-    ///////////////////////////////////////////////////////////////////////////
-
-    @Deprecated
-    @Override
-    protected Map buildLocalVariableMap(int offset) {
-        return Collections.EMPTY_MAP;
-        //int methodStartPos = getMethodStartPosition(offset);
-        //if (methodStartPos >= 0 && methodStartPos < offset) {
-        //    List res  = CompletionUtilities.findFunctionLocalVariables(getDocument(), offset, null);
-        //    return list2Map(res);
-        //}
-        //return null;
-    }
-
-    @Deprecated
-    @Override
-    protected Map buildGlobalVariableMap(int offset) {
-        return Collections.EMPTY_MAP;
-        //List res = CompletionUtilities.findGlobalVariables(getDocument(), offset);
-        //return list2Map(res);
-    }
-
-    @Deprecated
-    protected Map buildClassFieldMap(int offset) {
-        return Collections.EMPTY_MAP;
-        //List res = CompletionUtilities.findClassFields(getDocument(), offset);
-        //return list2Map(res);
-    }
-
-    @Deprecated
-    protected Map buildFileVariableMap(int offset) {
-        return Collections.EMPTY_MAP;
-        //List res = CompletionUtilities.findFileVariables(getDocument(), offset);
-        //return list2Map(res);
-    }
-
     // utitlies
-
-//    private Map/*<var-name, CsmType>*/ list2Map(List/*<CsmVariable>*/ vars) {
-//        if (vars == null || vars.size() == 0) {
-//            return null;
-//        }
-//        Map res = new StringMap();
-//        for (Iterator it = vars.iterator(); it.hasNext();) {
-//            Object elem = it.next();
-//            if (elem instanceof CsmVariable) {
-//                CsmVariable var = (CsmVariable) elem;
-//                res.put(var.getName().toString(), var.getType());
-//            }
-//        }
-//        return res;
-//    }
 
     @Override
     protected boolean isAbbrevDisabled(int offset) {

@@ -553,6 +553,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
         private volatile int modCount;
         private volatile boolean pendingReparse = false; // "transient"
         
+        @SuppressWarnings("unchecked")
         private MyFile (final DataInput input) throws IOException {
             fileNew = UIDObjectFactory.getDefaultFactory().readUID(input);
             canonical = input.readUTF();
@@ -595,6 +596,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                     output.writeInt(1);
                     writeStatePair(output, (StatePair) data);
                 } else {
+                    @SuppressWarnings("unchecked")
                     Collection<StatePair> pairs = (Collection<StatePair>)data;
                     output.writeInt(pairs.size());
                     for (StatePair pair : pairs) {
@@ -670,6 +672,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
                 state = APTHandlersSupport.createCleanPreprocState(state);
             }
             if ((data instanceof Collection)) {
+                @SuppressWarnings("unchecked")
                 Collection<StatePair> states = (Collection<StatePair>) data;
                 // check how many good old states are there
                 // and pick a valid one to check that we aren't replacing better state by worse one 
@@ -841,13 +844,14 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             modCount = (modCount == Integer.MAX_VALUE) ? 0 : modCount+1;
         }
 
+        @SuppressWarnings("unchecked")
         public synchronized void invalidateStates() {
             incrementModCount();
             if (data != null) {
                 if (data instanceof StatePair) {
                     data = createInvalidState((StatePair) data);
                 } else {
-                    Collection<StatePair> newData = new ArrayList();
+                    Collection<StatePair> newData = new ArrayList<StatePair>();
                     for (StatePair pair : (Collection<StatePair>) data) {
                         newData.add(createInvalidState(pair));
                     }
@@ -868,6 +872,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             }
         }
             
+        @SuppressWarnings("unchecked")
         public synchronized Collection<StatePair> getStates() {
             if (data == null) {
                 return Collections.singleton(new StatePair(null, null));
@@ -884,6 +889,7 @@ class FileContainer extends ProjectComponent implements Persistent, SelfPersiste
             } else if(data instanceof StatePair) {
                 return Collections.singleton(((StatePair) data).state);
             } else {
+                @SuppressWarnings("unchecked")
                 Collection<StatePair> pairs = (Collection<StatePair>) data;
                 Collection<APTPreprocHandler.State> result = new ArrayList<State>(pairs.size());
                 for (StatePair pair : pairs) {

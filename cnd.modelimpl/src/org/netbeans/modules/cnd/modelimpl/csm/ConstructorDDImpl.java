@@ -72,7 +72,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
         return NoType.instance();
     }
     
-    public List getInitializerList() {
+    public List<CsmExpression> getInitializerList() {
         if(initializers != null) {
             return initializers;
         } else {
@@ -95,8 +95,8 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     }
         
     @Override
-    public Collection getScopeElements() {
-        Collection c = super.getScopeElements();
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> c = super.getScopeElements();
         c.addAll(getInitializerList());
         return c;
     }

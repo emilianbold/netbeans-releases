@@ -109,11 +109,17 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         converterPackageComboBox = new javax.swing.JComboBox();
 
         setName("null");
+        setPreferredSize(new java.awt.Dimension(519, 301));
 
         projectLabel.setLabelFor(projectTextField);
         org.openide.awt.Mnemonics.setLocalizedText(projectLabel, org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_Project")); // NOI18N
 
         projectTextField.setEditable(false);
+        projectTextField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                projectTextFieldActionPerformed(evt);
+            }
+        });
 
         locationLabel.setLabelFor(locationComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "LBL_SrcLocation")); // NOI18N
@@ -148,45 +154,44 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .addContainerGap()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(projectLabel)
-                        .add(48, 48, 48)
-                        .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 422, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(converterPackageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .add(resourcePackageLabel)
-                            .add(locationLabel))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                            .add(converterPackageLabel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 130, Short.MAX_VALUE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
+                    .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(locationComboBox, 0, 369, Short.MAX_VALUE)
-                            .add(resourcePackageComboBox, 0, 369, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, converterPackageComboBox, 0, 369, Short.MAX_VALUE))
-                        .addContainerGap())))
+                            .add(projectLabel)
+                            .add(locationLabel))
+                        .add(79, 79, 79)))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, locationComboBox, 0, 397, Short.MAX_VALUE)
+                    .add(layout.createSequentialGroup()
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(projectTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 397, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, resourcePackageComboBox, 0, 397, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, converterPackageComboBox, 0, 397, Short.MAX_VALUE)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(projectLabel))
-                .add(32, 32, 32)
+                    .add(projectLabel)
+                    .add(projectTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(locationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(locationLabel))
-                .add(32, 32, 32)
+                    .add(locationLabel)
+                    .add(locationComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(resourcePackageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(resourcePackageLabel))
-                .add(40, 40, 40)
+                    .add(resourcePackageLabel)
+                    .add(resourcePackageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(converterPackageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                    .add(converterPackageLabel))
-                .addContainerGap(69, Short.MAX_VALUE))
+                    .add(converterPackageLabel)
+                    .add(converterPackageComboBox, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
         );
 
         projectLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(EntityResourcesSetupPanelVisual.class, "Project")); // NOI18N
@@ -218,6 +223,11 @@ public class EntityResourcesSetupPanelVisual extends javax.swing.JPanel implemen
     private void converterPackageComboBoxPropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_converterPackageComboBoxPropertyChange
         changeSupport.fireChange();
     }//GEN-LAST:event_converterPackageComboBoxPropertyChange
+
+    private void projectTextFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectTextFieldActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_projectTextFieldActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox converterPackageComboBox;
     private javax.swing.JLabel converterPackageLabel;

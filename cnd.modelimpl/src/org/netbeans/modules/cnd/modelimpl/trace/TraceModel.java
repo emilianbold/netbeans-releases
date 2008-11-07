@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -151,11 +150,7 @@ public class TraceModel extends TraceModelBase {
 
     public static void main(String[] args) {
 	new TraceModel().test(args);
-	if (TraceFlags.USE_AST_CACHE) {
-	    CacheManager.getInstance().close();
-	} else {
-	    APTDriver.getInstance().close();
-	}
+    APTDriver.getInstance().close();
 	//System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
 	

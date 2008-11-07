@@ -534,6 +534,7 @@ public class ChildrenKeysTest extends NbTestCase {
         l.assertNoEvents("No next events");
     }
 
+    @RandomlyFails // OOME from ChildrenFilterAsKeysTest in NB-Core-Build #1687, and anyway uses sleep a lot
     public void testSlowRemoveNotify () throws Throwable {
         class K extends Keys {
             int addNotify;
