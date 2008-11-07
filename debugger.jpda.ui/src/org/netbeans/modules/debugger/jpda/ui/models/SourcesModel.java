@@ -46,6 +46,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
 import java.util.*;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -67,6 +68,9 @@ import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -497,15 +501,12 @@ NodeActionsProvider {
                         if (file.isDirectory()) {
                             return true;
                         }
-                        String name = file.getName();
-                        int dotIndex = name.lastIndexOf('.');
-                        if (dotIndex > 0) {
-                            String ext = name.substring(dotIndex + 1);
-                            if ("zip".equalsIgnoreCase(ext) || "jar".equalsIgnoreCase(ext)) { // NOI18N
-                                return true;
-                            }
+                        try {
+                            return FileUtil.isArchiveFile(file.toURL());
+                        } catch (MalformedURLException ex) {
+                            Exceptions.printStackTrace(ex);
+                            return false;
                         }
-                        return false;
                     }
 
                 });
@@ -516,6 +517,9 @@ NodeActionsProvider {
             if (state == JFileChooser.APPROVE_OPTION) {
                 File zipOrDir = newSourceFileChooser.getSelectedFile();
                 try {
+                    if (!zipOrDir.isDirectory() && !FileUtil.isArchiveFile(zipOrDir.toURL())) {
+                        return ;
+                    }
                     String d = zipOrDir.getCanonicalPath();
                     synchronized (SourcesModel.this) {
                         additionalSourceRoots.add(d);
