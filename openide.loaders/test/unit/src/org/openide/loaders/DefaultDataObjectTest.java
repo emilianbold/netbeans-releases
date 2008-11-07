@@ -106,7 +106,8 @@ public class DefaultDataObjectTest extends NbTestCase {
         assertEquals("The right class", obj.getClass(), DefaultDataObject.class);
 
         assertFalse("Designed to run outside of AWT", SwingUtilities.isEventDispatchThread());
-        
+
+        JspLoader.nodeListener = null;
     }
 
     @Override
