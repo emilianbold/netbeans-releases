@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.db.api.metadata;
 
-import java.sql.Types;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -56,7 +55,7 @@ import org.netbeans.modules.db.test.DDLTestBase;
  *
  * @author David
  */
-public class DBConnMetadataModelProviderTest extends DDLTestBase {
+public class DBConnMetadataModelManagerTest extends DDLTestBase {
     private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
         public void run(Metadata md) {
             assertNotNull(getTestTable(md));
@@ -67,7 +66,7 @@ public class DBConnMetadataModelProviderTest extends DDLTestBase {
         return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
     }
 
-    public DBConnMetadataModelProviderTest(String name) {
+    public DBConnMetadataModelManagerTest(String name) {
         super(name);
     }
 
@@ -80,14 +79,14 @@ public class DBConnMetadataModelProviderTest extends DDLTestBase {
     }
 
     /**
-     * Test of get method, of class DBConnMetadataModelProvider.
+     * Test of get method, of class DBConnMetadataModelManager.
      */
     @Test
     public void testGet() throws Exception {
         DatabaseConnection dbconn = getDatabaseConnection(true);
         createTestTable();
 
-        MetadataModel model = DBConnMetadataModelProvider.get(dbconn);
+        MetadataModel model = DBConnMetadataModelManager.get(dbconn);
         assertNotNull(model);
         
         model.runReadAction(CHECK_TABLE_EXISTS_ACTION);

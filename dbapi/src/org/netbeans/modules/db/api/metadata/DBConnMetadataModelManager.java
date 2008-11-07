@@ -59,10 +59,10 @@ import org.openide.util.Mutex;
  *
  * @author Andrei Badea
  */
-public class DBConnMetadataModelProvider {
-    private static final Logger LOGGER = Logger.getLogger(DBConnMetadataModelProvider.class.getName());
+public class DBConnMetadataModelManager {
+    private static final Logger LOGGER = Logger.getLogger(DBConnMetadataModelManager.class.getName());
 
-    private DBConnMetadataModelProvider() {}
+    private DBConnMetadataModelManager() {}
 
     public static MetadataModel get(final DatabaseConnection dbconn) {
         return MetadataModels.get(checkAndGetConnection(dbconn), dbconn.getSchema());
