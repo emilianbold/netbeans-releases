@@ -1834,6 +1834,10 @@ public class InteractionManager {
             int y = p.y;
             SelectionManager sm = webform.getSelection();
             PageBox pageBox = pane.getPageBox();
+            if (pageBox == null) {
+                // XXX #152693 Possible NPE.
+                return;
+            }
             int maxWidth = pageBox.getWidth();
             int maxHeight = pageBox.getHeight();
             int resize = sm.getSelectionHandleDir(x, y, maxWidth, maxHeight);
