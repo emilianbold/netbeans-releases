@@ -41,7 +41,6 @@
 package org.netbeans.microedition.svg;
 
 import org.w3c.dom.svg.SVGLocatableElement;
-import org.w3c.dom.svg.SVGRect;
 
 
 /**
@@ -59,70 +58,31 @@ public abstract class AbstractTextRenderingComponent extends SVGComponent {
     {
         super(form, element);
     }
+    
+    protected void initRenderer( SVGLocatableElement element ){
+        if ( myRenderer == null ){
+            myRenderer = new TextRenderer( form , getHiddenTextElement());
+        }
+        getRenderer().initEmpiricalLetterWidth(element);
+    }
 
     protected abstract SVGLocatableElement getHiddenTextElement();
     
-    protected void initEmpiricalLetterWidth( SVGLocatableElement element ) {
-        if ( myLetterWidth != 0 ){
-            return;
-        }
-        String text = element.getTrait( TRAIT_TEXT );
-        if ( text != null && text.length() != 0 && element.getBBox() != null){
-            myLetterWidth = element.getBBox().getWidth()/text.length();
-        }
-    }
-    
     protected String truncateToShownText( String text , float boundWidth ) {
-        int count = (int)(boundWidth/myLetterWidth);
-        String result = text;
-        result = text.substring( 0 , Math.min( text.length(), count + 1));
-
-        float width = getTextWidth(result);
-        boolean isShort = true;
-        while ( width > boundWidth) {
-            result = result.substring(0, result.length() - 1);
-            width = getTextWidth(result);
-            isShort = false;
-        }
-        
-        String tmpText = result;
-        while ( isShort && width <= boundWidth && count <= text.length() ){
-            result = tmpText;
-            tmpText = text.substring( 0, count );
-            count ++;
-            width = getTextWidth(tmpText);
-        }
-        if ( count == text.length() ){
-            result = tmpText;
-        }
-        return result;
+        return getRenderer().truncateToShownText(text, boundWidth);
     }
     
     protected float getTextWidth(String text) {
-        if ( text.endsWith(" ")) {
-            return doGetTextWidth( text + "i") - doGetTextWidth("i");
-        } else {
-            return doGetTextWidth(text);
-        }
+        return getRenderer().getTextWidth(text);
     }
     
     protected boolean isEmpiricInitialized(){
-        return myLetterWidth == 0;
+        return getRenderer().isEmpiricInitialized();
     }
     
-    private float doGetTextWidth(String text) {
-        float width = 0;
-        if (text.length() > 0) {
-            setTraitSafely( getHiddenTextElement() , TRAIT_TEXT, text);
-            SVGRect bBox = getHiddenTextElement().getBBox();
-            if ( bBox != null) {
-                width = bBox.getWidth();
-            } else {
-                //System.out.println("Error: Null BBox #1");
-            }
-        }
-        return width;
+    private TextRenderer getRenderer(){
+        return myRenderer;
     }
     
-    private       float               myLetterWidth;
+    private TextRenderer myRenderer;
 }

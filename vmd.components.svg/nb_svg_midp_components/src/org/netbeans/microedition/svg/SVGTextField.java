@@ -221,7 +221,6 @@ public class SVGTextField extends AbstractTextRenderingComponent {
                     getElement(), 
                 TYPE , CARETELEM );
         }
-        initEmpiricalLetterWidth( myTextElement );
     }
     
     private void verify() {
@@ -266,9 +265,10 @@ public class SVGTextField extends AbstractTextRenderingComponent {
         }
         );
         
+        initRenderer( myTextElement );
         if ( isEmpiricInitialized() ){
             setTraitSafely( myHiddenTextElement , TRAIT_TEXT, TEXT);
-            initEmpiricalLetterWidth( myHiddenTextElement);
+            initRenderer(myHiddenTextElement);
         }
     }
     
