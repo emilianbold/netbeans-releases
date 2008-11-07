@@ -464,6 +464,11 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
                     ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).setText(targetPackage);
                 }
             }
+        } else {
+            String targetPackage = (String) settings.getProperty(WizardProperties.TARGET_PACKAGE);
+            if (targetPackage != null) {
+                ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).setText(targetPackage);
+            }
         }
 
         String value = (String) settings.getProperty(WizardProperties.RESOURCE_URI);
@@ -490,9 +495,16 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
         settings.putProperty(WizardProperties.RESOURCE_URI, uriTextField.getText());
         settings.putProperty(WizardProperties.MIME_TYPES, new MimeType[]{(MimeType) medaTypeComboBox.getSelectedItem()});
         settings.putProperty(WizardProperties.REPRESENTATION_TYPES, new String[]{contentClassTextField.getText()});
+        settings.putProperty(WizardProperties.SOURCE_GROUP, getLocationValue());
 
         try {
-            Templates.setTargetFolder(settings, SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), true));
+            FileObject packageFO = SourceGroupSupport.getFolderForPackage(getLocationValue(), getPackage(), false);
+
+            if (packageFO != null) {
+                Templates.setTargetFolder(settings, packageFO);
+            } else {
+                settings.putProperty(WizardProperties.TARGET_PACKAGE, getPackage());
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }

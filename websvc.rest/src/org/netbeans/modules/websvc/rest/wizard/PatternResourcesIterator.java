@@ -48,11 +48,13 @@ import java.util.Set;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.codegen.Constants.MimeType;
 import org.netbeans.modules.websvc.rest.codegen.GenericResourceGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.GenericResourceBean;
+import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.PatternResourcesSetupPanel.Pattern;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -79,7 +81,15 @@ public class PatternResourcesIterator implements WizardDescriptor.InstantiatingI
         try {
             Project project = Templates.getProject(wizard);
             RestUtils.ensureRestDevelopmentReady(project);
-            final FileObject targetFolder = Templates.getTargetFolder(wizard);
+            FileObject tmpTargetFolder = Templates.getTargetFolder(wizard);
+
+            if (tmpTargetFolder == null) {
+                String targetPackage = (String) wizard.getProperty(WizardProperties.TARGET_PACKAGE);
+                SourceGroup sourceGroup = (SourceGroup) wizard.getProperty(WizardProperties.SOURCE_GROUP);
+                tmpTargetFolder = SourceGroupSupport.getFolderForPackage(sourceGroup, targetPackage, true);
+            }
+
+            final FileObject targetFolder = tmpTargetFolder;
             final GenericResourceBean[] resourceBeans = getResourceBeans(wizard);
             final ProgressDialog dialog = new ProgressDialog(NbBundle.getMessage(
                     PatternResourcesIterator.class, "LBL_RestServicesFromPatternsProgress"));
