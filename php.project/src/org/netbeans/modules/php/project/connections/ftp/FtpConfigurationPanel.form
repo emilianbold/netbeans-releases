@@ -17,41 +17,36 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="separator" alignment="0" pref="376" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="connectionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Component id="typeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="hostLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="userLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="passwordLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="initialDirectoryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="25" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="typeComboBox" alignment="0" pref="251" max="32767" attributes="0"/>
-                          <Component id="connectionTextField" alignment="0" pref="251" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="userTextField" alignment="0" pref="100" max="32767" attributes="2"/>
-                                  <Component id="hostTextField" alignment="0" pref="100" max="32767" attributes="2"/>
-                                  <Component id="passwordTextField" alignment="0" pref="100" max="32767" attributes="0"/>
-                                  <Component id="initialDirectoryTextField" alignment="0" pref="100" max="32767" attributes="2"/>
+                                  <Component id="userTextField" alignment="0" pref="200" max="32767" attributes="2"/>
+                                  <Component id="hostTextField" alignment="0" pref="200" max="32767" attributes="2"/>
+                                  <Component id="passwordTextField" alignment="0" pref="200" max="32767" attributes="0"/>
+                                  <Component id="initialDirectoryTextField" alignment="0" pref="200" max="32767" attributes="2"/>
                               </Group>
                               <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Group type="103" groupAlignment="1" attributes="0">
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="portLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="portTextField" pref="99" max="32767" attributes="0"/>
+                                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                                      <Component id="portTextField" pref="128" max="32767" attributes="0"/>
                                   </Group>
                                   <Component id="anonymousCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Group type="102" alignment="0" attributes="1">
                                       <Component id="timeoutLabel" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="timeoutTextField" max="32767" attributes="0"/>
+                                      <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
+                                      <Component id="timeoutTextField" pref="76" max="32767" attributes="0"/>
                                   </Group>
                               </Group>
                           </Group>
@@ -61,26 +56,13 @@
                   <Component id="warningLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="passiveModeCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="connectionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="connectionTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="typeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="typeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace type="separate" min="-2" max="-2" attributes="0"/>
-              <Component id="separator" min="-2" pref="10" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="hostLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="portLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -100,7 +82,7 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="passwordLabelInfo" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="initialDirectoryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="timeoutLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -109,7 +91,7 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="passiveModeCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace pref="38" max="32767" attributes="0"/>
+              <EmptySpace pref="14" max="32767" attributes="0"/>
               <Component id="warningLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -117,27 +99,6 @@
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="connectionLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/connections/ftp/Bundle.properties" key="FtpConfigurationPanel.connectionLabel.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JTextField" name="connectionTextField">
-      <Properties>
-        <Property name="enabled" type="boolean" value="false"/>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JLabel" name="typeLabel">
-      <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/project/connections/ftp/Bundle.properties" key="FtpConfigurationPanel.typeLabel.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-    </Component>
-    <Component class="javax.swing.JComboBox" name="typeComboBox">
-    </Component>
     <Component class="javax.swing.JLabel" name="hostLabel">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -146,6 +107,11 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="hostTextField">
+      <Properties>
+        <Property name="minimumSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+          <Dimension value="[150, 19]"/>
+        </Property>
+      </Properties>
     </Component>
     <Component class="javax.swing.JLabel" name="portLabel">
       <Properties>
@@ -215,8 +181,6 @@
           <ResourceString bundle="org/netbeans/modules/php/project/connections/ftp/Bundle.properties" key="FtpConfigurationPanel.passiveModeCheckBox.text_1" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
-    </Component>
-    <Component class="javax.swing.JSeparator" name="separator">
     </Component>
     <Component class="javax.swing.JLabel" name="warningLabel">
       <Properties>

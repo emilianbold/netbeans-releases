@@ -151,6 +151,17 @@ public final class RemoteConnections {
         return null;
     }
 
+    /** can be null */
+    public String getConfigurationType(ConfigManager.Configuration cfg) {
+        for (RemoteConnectionProvider provider : getConnectionProviders()) {
+            RemoteConfiguration remoteConfiguration = provider.getRemoteConfiguration(cfg);
+            if (remoteConfiguration != null) {
+                return provider.getDisplayName();
+            }
+        }
+        return null;
+    }
+
     /**
      * Get the ordered list of existing (already defined) {@link RemoteConfiguration remote configurations}.
      * The list is ordered according to configuration's display name (locale-sensitive string comparison).

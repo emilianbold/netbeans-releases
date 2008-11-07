@@ -287,8 +287,13 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private void switchConfigurationPanel() {
         configurationPanel.removeChangeListener(this);
 
+        String name = null;
+        String type = null;
         Configuration configuration = (Configuration) configList.getSelectedValue();
         if (configuration != null) {
+            type = remoteConnections.getConfigurationType(configuration);
+            name = configuration.getDisplayName();
+
             configurationPanel = remoteConnections.getConfigurationPanel(configuration);
             assert configurationPanel != null : "Panel must be provided for configuration " + configuration.getName();
             readActiveConfig(configuration);
@@ -300,6 +305,14 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         configurationPanel.addChangeListener(this);
 
         resetFields();
+
+        if (configuration != null) {
+            assert name != null : "Name must be found for config " + configuration.getDisplayName();
+            assert type != null : "Type must be found for config " + configuration.getDisplayName();
+
+            nameTextField.setText(name);
+            typeTextField.setText(type);
+        }
         configurationPanelHolder.add(configurationPanel.getComponent(), BorderLayout.NORTH);
         configurationPanelHolder.validate();
     }
@@ -336,6 +349,9 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     }
 
     private void resetFields() {
+        nameTextField.setText(null);
+        typeTextField.setText(null);
+
         configurationPanelHolder.removeAll();
         configurationPanelHolder.validate();
         configurationPanelHolder.repaint();
@@ -475,6 +491,11 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         removeButton = new javax.swing.JButton();
         configurationPanelHolder = new javax.swing.JPanel();
         errorLabel = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
+        typeLabel = new javax.swing.JLabel();
+        typeTextField = new javax.swing.JTextField();
+        separator = new javax.swing.JSeparator();
 
         setFocusTraversalPolicy(null);
 
@@ -491,6 +512,16 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "error"); // NOI18N
 
+        nameLabel.setLabelFor(nameTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Name")); // NOI18N
+
+        nameTextField.setEnabled(false);
+
+        typeLabel.setLabelFor(typeTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
+
+        typeTextField.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -505,8 +536,17 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                     .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 180, Short.MAX_VALUE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, errorLabel)
-                    .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE))
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, separator, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 432, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(nameLabel)
+                            .add(typeLabel))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(typeTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 382, Short.MAX_VALUE))))
                 .addContainerGap())
         );
 
@@ -516,9 +556,20 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(nameLabel)
+                            .add(nameTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                            .add(typeLabel)
+                            .add(typeTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(18, 18, 18)
+                        .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                        .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)
@@ -549,7 +600,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private javax.swing.JScrollPane configScrollPane;
     private javax.swing.JPanel configurationPanelHolder;
     private javax.swing.JLabel errorLabel;
+    private javax.swing.JLabel nameLabel;
+    private javax.swing.JTextField nameTextField;
     private javax.swing.JButton removeButton;
+    private javax.swing.JSeparator separator;
+    private javax.swing.JLabel typeLabel;
+    private javax.swing.JTextField typeTextField;
     // End of variables declaration//GEN-END:variables
 
     public void stateChanged(ChangeEvent e) {

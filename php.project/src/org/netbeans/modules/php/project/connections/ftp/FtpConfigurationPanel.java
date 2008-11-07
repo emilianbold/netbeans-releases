@@ -49,11 +49,9 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
@@ -62,7 +60,6 @@ import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
-import org.netbeans.modules.php.project.connections.RemoteConnections;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.ui.customizer.RunAsValidator;
 import org.openide.awt.Mnemonics;
@@ -73,7 +70,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Mysik
  */
 public class FtpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
-    private static final long serialVersionUID = 62342637920559730L;
+    private static final long serialVersionUID = 6234263856159730L;
 
     private static final int MINIMUM_PORT = 0;
     private static final int MAXIMUM_PORT = 65535;
@@ -87,9 +84,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         warningLabel.setText(" "); // NOI18N
 
         setEnabledLoginCredentials();
-        for (String connectionType : RemoteConnections.get().getRemoteConnectionTypes()) {
-            typeComboBox.addItem(connectionType);
-        }
 
         // listeners
         registerListeners();
@@ -114,7 +108,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     }
 
     public void setEnabledFields(boolean enabled) {
-        typeComboBox.setEnabled(enabled);
         hostTextField.setEnabled(enabled);
         portTextField.setEnabled(enabled);
         userTextField.setEnabled(enabled);
@@ -174,7 +167,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     private void registerListeners() {
         DocumentListener documentListener = new DefaultDocumentListener();
         ActionListener actionListener = new DefaultActionListener();
-        typeComboBox.addActionListener(actionListener);
         hostTextField.getDocument().addDocumentListener(documentListener);
         portTextField.getDocument().addDocumentListener(documentListener);
         userTextField.getDocument().addDocumentListener(documentListener);
@@ -270,10 +262,14 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     private void initComponents() {
 
 
-        connectionLabel = new JLabel();
-        connectionTextField = new JTextField();
-        typeLabel = new JLabel();
-        typeComboBox = new JComboBox();
+
+
+
+
+
+
+
+
         hostLabel = new JLabel();
         hostTextField = new JTextField();
         portLabel = new JLabel();
@@ -288,24 +284,10 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
         passiveModeCheckBox = new JCheckBox();
-        separator = new JSeparator();
         warningLabel = new JLabel();
         passwordLabelInfo = new JLabel();
-
-        Mnemonics.setLocalizedText(connectionLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.connectionLabel.text_1")); // NOI18N
-        connectionTextField.setEnabled(false);
-
-
-
-
-
-
-
-
-
-
-        Mnemonics.setLocalizedText(typeLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.typeLabel.text_1")); // NOI18N
-        Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.hostLabel.text_1"));
+        Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.hostLabel.text_1")); // NOI18N
+        hostTextField.setMinimumSize(new Dimension(150, 19));
         Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.portLabel.text_1"));
         portTextField.setMinimumSize(new Dimension(20, 19));
         Mnemonics.setLocalizedText(userLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.userLabel.text_1"));
@@ -324,57 +306,41 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
+                .add(0, 0, 0)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(separator, GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(connectionLabel)
-                            .add(typeLabel)
                             .add(hostLabel)
                             .add(userLabel)
                             .add(passwordLabel)
                             .add(initialDirectoryLabel))
-                        .addPreferredGap(LayoutStyle.RELATED)
+                        .add(25, 25, 25)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(typeComboBox, 0, 251, Short.MAX_VALUE)
-                            .add(connectionTextField, GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
                             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                                    .add(userTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                                    .add(hostTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                                    .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
-                                    .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))
+                                    .add(userTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                                    .add(hostTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                                    .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
+                                    .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
                                 .addPreferredGap(LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(GroupLayout.TRAILING, false)
+                                .add(layout.createParallelGroup(GroupLayout.TRAILING)
                                     .add(GroupLayout.LEADING, layout.createSequentialGroup()
                                         .add(portLabel)
                                         .addPreferredGap(LayoutStyle.RELATED)
-                                        .add(portTextField, GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
+                                        .add(portTextField, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
                                     .add(GroupLayout.LEADING, anonymousCheckBox)
                                     .add(GroupLayout.LEADING, layout.createSequentialGroup()
                                         .add(timeoutLabel)
                                         .addPreferredGap(LayoutStyle.UNRELATED)
-                                        .add(timeoutTextField, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                                        .add(timeoutTextField, GroupLayout.DEFAULT_SIZE, 76, Short.MAX_VALUE))))
                             .add(passwordLabelInfo)))
                     .add(warningLabel)
-                    .add(passiveModeCheckBox))
-                .addContainerGap())
+                    .add(passiveModeCheckBox)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(connectionLabel)
-                    .add(connectionTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(GroupLayout.BASELINE)
-                    .add(typeLabel)
-                    .add(typeComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
-                .add(18, 18, 18)
-                .add(separator, GroupLayout.PREFERRED_SIZE, 10, GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(LayoutStyle.RELATED)
+                .add(0, 0, 0)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(hostLabel)
                     .add(portLabel)
@@ -399,7 +365,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
                     .add(timeoutTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(passiveModeCheckBox)
-                .addPreferredGap(LayoutStyle.RELATED, 38, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.RELATED, 14, Short.MAX_VALUE)
                 .add(warningLabel)
                 .addContainerGap())
         );
@@ -408,8 +374,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox anonymousCheckBox;
-    private JLabel connectionLabel;
-    private JTextField connectionTextField;
     private JLabel hostLabel;
     private JTextField hostTextField;
     private JLabel initialDirectoryLabel;
@@ -420,31 +384,12 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     private JPasswordField passwordTextField;
     private JLabel portLabel;
     private JTextField portTextField;
-    private JSeparator separator;
     private JLabel timeoutLabel;
     private JTextField timeoutTextField;
-    private JComboBox typeComboBox;
-    private JLabel typeLabel;
     private JLabel userLabel;
     private JTextField userTextField;
     private JLabel warningLabel;
     // End of variables declaration//GEN-END:variables
-
-    public String getConnectionName() {
-        return connectionTextField.getText();
-    }
-
-    public void setConnectionName(String connectionName) {
-        connectionTextField.setText(connectionName);
-    }
-
-    public String getType() {
-        return (String) typeComboBox.getSelectedItem();
-    }
-
-    public void setType(String connectionType) {
-        typeComboBox.setSelectedItem(connectionType);
-    }
 
     public String getHostName() {
         return hostTextField.getText();
@@ -512,8 +457,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     }
 
     public void read(Configuration cfg) {
-        setConnectionName(cfg.getDisplayName());
-        setType(cfg.getValue(FtpConnectionProvider.TYPE));
         setHostName(cfg.getValue(FtpConnectionProvider.HOST));
         setPort(cfg.getValue(FtpConnectionProvider.PORT));
         setUserName(cfg.getValue(FtpConnectionProvider.USER));
@@ -525,8 +468,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     }
 
     public void store(Configuration cfg) {
-        cfg.putValue(FtpConnectionProvider.TYPE, getType());
-        cfg.putValue(FtpConnectionProvider.HOST, getHostName());
         cfg.putValue(FtpConnectionProvider.PORT, getPort());
         cfg.putValue(FtpConnectionProvider.USER, getUserName());
         cfg.putValue(FtpConnectionProvider.PASSWORD, getPassword(), true);
