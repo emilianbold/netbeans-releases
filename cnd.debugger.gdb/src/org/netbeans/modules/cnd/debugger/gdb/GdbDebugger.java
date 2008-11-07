@@ -1727,7 +1727,7 @@ public class GdbDebugger implements PropertyChangeListener {
             }
         } else {
             for (String line : info.split("\\\\n")) { // NOI18N
-                if (line.charAt(0) == '0') {
+                if (line.length() > 0 && line.charAt(0) == '0') {
                     String[] s = line.split("\\s+", 4); // NOI18N
                     shtab.put(s[3], new ShareInfo(s[3], s[0]));
                 }
