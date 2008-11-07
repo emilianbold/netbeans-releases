@@ -44,6 +44,7 @@ import java.awt.Component;
 import java.awt.BorderLayout;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeEvent;
+import java.security.KeyManagementException;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.JPanel;
@@ -57,8 +58,20 @@ import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.List;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -258,6 +271,7 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                 return;
             }
             String invalidMsg = null;
+            HttpURLConnection con = null;
             try {
                 invalid(null);
 
@@ -275,13 +289,16 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                     }
                 }else if(uriSch.equals("http") || uriSch.equals("https")) {
                     URL url = new URL(urlStr);
-                    HttpURLConnection con = (HttpURLConnection) url.openConnection();
+                    con = (HttpURLConnection) url.openConnection();
                     // Note: valid repository returns con.getContentLength() = -1
                     // so no way to reliably test if this url exists, without using hg
                     if (con != null){
                         String userInfo = uri.getUserInfo();
                         boolean bNoUserAndOrPasswordInURL = userInfo == null;
                         // If username or username:password is in the URL the con.getResponseCode() returns -1 and this check would fail
+                        if(uriSch.equals("https")) {
+                            setupHttpsConnection(con);
+                        }
                         if (bNoUserAndOrPasswordInURL && con.getResponseCode() != HttpURLConnection.HTTP_OK){
                             invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                     "MSG_Progress_Clone_CannotAccess_Err");
@@ -291,18 +308,20 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                             Mercurial.LOG.log(Level.FINE, 
                                 "RepositoryStepProgressSupport.perform(): UserInfo - {0}", new Object[]{userInfo}); // NOI18N
                         }
-                        con.disconnect();
                     }
                  }
             } catch (java.lang.IllegalArgumentException ex) {
+                 Mercurial.LOG.log(Level.INFO, ex.getMessage(), ex);
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                   "MSG_Progress_Clone_InvalidURL_Err");
                  return;
             } catch (IOException ex) {
+                 Mercurial.LOG.log(Level.INFO, ex.getMessage(), ex);
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                   "MSG_Progress_Clone_CannotAccess_Err");
                 return;
             } catch (URISyntaxException ex) {
+                 Mercurial.LOG.log(Level.INFO, ex.getMessage(), ex);
                  invalidMsg = NbBundle.getMessage(CloneRepositoryWizardPanel.class,
                                   "MSG_Progress_Clone_InvalidURL_Err");
                 return;
@@ -316,6 +335,9 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
                 Mercurial.LOG.log(Level.INFO, invalidMsg, re);
                 return;
             } finally {
+                if(con != null) {
+                    con.disconnect();
+                }
                 if(isCanceled()) {
                     valid(org.openide.util.NbBundle.getMessage(CloneRepositoryWizardPanel.class, "CTL_Repository_Canceled")); // NOI18N
                 } else if(invalidMsg == null) {
@@ -330,9 +352,38 @@ public class CloneRepositoryWizardPanel implements WizardDescriptor.Asynchronous
         public void setEditable(boolean editable) {
             repository.setEditable(editable);
         }
+
+        private void setupHttpsConnection(HttpURLConnection con) {
+            X509TrustManager tm = new X509TrustManager() {
+                 public void checkClientTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                     // do nothing
+                 }
+                 public void checkServerTrusted(X509Certificate[] chain, String authType) throws CertificateException {
+                     // do nothing
+                 }
+                 public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                 }
+            };
+            HostnameVerifier hnv = new HostnameVerifier() {
+                 public boolean verify(String hostname, SSLSession session) {
+                    return true;
+                 }
+            };
+            try {
+                SSLContext context = SSLContext.getInstance("SSLv3");
+                TrustManager[] trustManagerArray = { tm };
+                context.init(null, trustManagerArray, null);
+                HttpsURLConnection c = (HttpsURLConnection) con;
+                c.setSSLSocketFactory(context.getSocketFactory());
+                c.setHostnameVerifier(hnv);
+            } catch (KeyManagementException ex) {
+                 Mercurial.LOG.log(Level.INFO, ex.getMessage(), ex);
+            } catch (NoSuchAlgorithmException ex) {
+                 Mercurial.LOG.log(Level.INFO, ex.getMessage(), ex);
+            }
+        }
     };
-
-
 
 }
 

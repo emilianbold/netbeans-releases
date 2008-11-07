@@ -152,5 +152,8 @@ public final class TokenHierarchyEvent extends java.util.EventObject {
         return info.removedLength();
     }
     
+    public String toString() {
+        return "THEvent IHC=" + System.identityHashCode(this) + "; " + info;
+    }
 
 }

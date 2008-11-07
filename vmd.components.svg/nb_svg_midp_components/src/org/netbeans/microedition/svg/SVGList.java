@@ -119,7 +119,8 @@ public class SVGList extends SVGComponent implements DataListener {
         if ( myHiddenText != null ){
             float height = myHiddenText.getFloatTrait( SVGTextField.TRAIT_FONT_SIZE );
             myCount = (int)(myBounds.getBBox().getHeight()/height);
-            setRenderer( new SVGDefaultListCellRenderer( height ));
+            setRenderer( new SVGDefaultListCellRenderer( height , form, 
+                    myHiddenText ));
         }
         
         //setTraitSafely( hiddenText, TRAIT_VISIBILITY, TR_VALUE_HIDDEN);
@@ -192,6 +193,10 @@ public class SVGList extends SVGComponent implements DataListener {
         else if ( source == getModel() ){
             renderList();
         }
+    }
+    
+    SVGLocatableElement getBoundsElement(){
+        return myBounds;
     }
     
     SVGLocatableElement getHiddenText(){
