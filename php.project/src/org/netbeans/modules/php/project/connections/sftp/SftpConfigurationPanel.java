@@ -37,12 +37,11 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.project.connections.ftp;
+package org.netbeans.modules.php.project.connections.sftp;
 
+import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import javax.swing.JCheckBox;
+import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
@@ -63,8 +62,8 @@ import org.openide.util.NbBundle;
 /**
  * @author Tomas Mysik
  */
-public class FtpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
-    private static final long serialVersionUID = 6234263856159730L;
+public class SftpConfigurationPanel extends JPanel implements RemoteConfigurationPanel {
+    private static final long serialVersionUID = 62874685129730L;
 
     private static final int MINIMUM_PORT = 0;
     private static final int MAXIMUM_PORT = 65535;
@@ -72,12 +71,10 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private String error = null;
 
-    public FtpConfigurationPanel() {
+    public SftpConfigurationPanel() {
         initComponents();
 
         warningLabel.setText(" "); // NOI18N
-
-        setEnabledLoginCredentials();
 
         // listeners
         registerListeners();
@@ -106,10 +103,12 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         portTextField.setEnabled(enabled);
         userTextField.setEnabled(enabled);
         passwordTextField.setEnabled(enabled);
-        anonymousCheckBox.setEnabled(enabled);
+        knownHostsFileTextField.setEnabled(enabled);
+        knownHostsFileBrowseButton.setEnabled(enabled);
+        identityFileTextField.setEnabled(enabled);
+        identityFileBrowseButton.setEnabled(enabled);
         initialDirectoryTextField.setEnabled(enabled);
         timeoutTextField.setEnabled(enabled);
-        passiveModeCheckBox.setEnabled(enabled);
     }
 
     public boolean isValidConfiguration() {
@@ -131,6 +130,8 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
             return false;
         }
 
+        // XXX known hosts + private key
+
         if (!validateInitialDirectory()) {
             return false;
         }
@@ -149,33 +150,16 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         this.error = error;
     }
 
-    void setEnabledLoginCredentials() {
-        setEnabledLoginCredentials(!anonymousCheckBox.isSelected());
-    }
-
-    private void setEnabledLoginCredentials(boolean enabled) {
-        userTextField.setEnabled(enabled);
-        passwordTextField.setEnabled(enabled);
-    }
-
     private void registerListeners() {
         DocumentListener documentListener = new DefaultDocumentListener();
-        ActionListener actionListener = new DefaultActionListener();
         hostTextField.getDocument().addDocumentListener(documentListener);
         portTextField.getDocument().addDocumentListener(documentListener);
         userTextField.getDocument().addDocumentListener(documentListener);
         passwordTextField.getDocument().addDocumentListener(documentListener);
-        anonymousCheckBox.addActionListener(actionListener);
+        knownHostsFileTextField.getDocument().addDocumentListener(documentListener);
+        identityFileTextField.getDocument().addDocumentListener(documentListener);
         initialDirectoryTextField.getDocument().addDocumentListener(documentListener);
         timeoutTextField.getDocument().addDocumentListener(documentListener);
-        passiveModeCheckBox.addActionListener(actionListener);
-
-        // internals
-        anonymousCheckBox.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                setEnabledLoginCredentials();
-            }
-        });
     }
 
     void fireChange() {
@@ -184,7 +168,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     private boolean validateRememberPassword() {
         if (getPassword().length() > 0) {
-            setWarning(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PasswordRememberDangerous"));
+            setWarning(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_PasswordRememberDangerous"));
             return false;
         }
         return true;
@@ -192,7 +176,7 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
     private boolean validateHost() {
         if (getHostName().trim().length() == 0) {
-            setError(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_NoHostName"));
+            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_NoHostName"));
             return false;
         }
         return true;
@@ -203,21 +187,18 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         try {
             int port = Integer.parseInt(getPort());
             if (port < MINIMUM_PORT || port > MAXIMUM_PORT) { // see InetSocketAddress
-                err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
+                err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_PortInvalid", String.valueOf(MINIMUM_PORT), String.valueOf(MAXIMUM_PORT));
             }
         } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_PortNotNumeric");
+            err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_PortNotNumeric");
         }
         setError(err);
         return err == null;
     }
 
     private boolean validateUser() {
-        if (isAnonymousLogin()) {
-            return true;
-        }
         if (getUserName().trim().length() == 0) {
-            setError(NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_NoUserName"));
+            setError(NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_NoUserName"));
             return false;
         }
         return true;
@@ -237,10 +218,10 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         try {
             int timeout = Integer.parseInt(getTimeout());
             if (timeout < 0) {
-                err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_TimeoutNotPositive");
+                err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_TimeoutNotPositive");
             }
         } catch (NumberFormatException nfe) {
-            err = NbBundle.getMessage(FtpConfigurationPanel.class, "MSG_TimeoutNotNumeric");
+            err = NbBundle.getMessage(SftpConfigurationPanel.class, "MSG_TimeoutNotNumeric");
         }
         setError(err);
         return err == null;
@@ -258,80 +239,100 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
 
 
-
-
-
-
-
-
         hostLabel = new JLabel();
         hostTextField = new JTextField();
         portLabel = new JLabel();
         portTextField = new JTextField();
         userLabel = new JLabel();
         userTextField = new JTextField();
-        anonymousCheckBox = new JCheckBox();
+        identityFileLabel = new JLabel();
+        identityFileTextField = new JTextField();
+        identityFileBrowseButton = new JButton();
         passwordLabel = new JLabel();
         passwordTextField = new JPasswordField();
+        passwordLabelInfo = new JLabel();
         initialDirectoryLabel = new JLabel();
         initialDirectoryTextField = new JTextField();
         timeoutLabel = new JLabel();
         timeoutTextField = new JTextField();
-        passiveModeCheckBox = new JCheckBox();
+        knownHostsFileLabel = new JLabel();
+        knownHostsFileTextField = new JTextField();
+        knownHostsFileBrowseButton = new JButton();
         warningLabel = new JLabel();
-        passwordLabelInfo = new JLabel();
-        Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.hostLabel.text_1")); // NOI18N
+        Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.hostLabel.text")); // NOI18N
         hostTextField.setMinimumSize(new Dimension(150, 19));
-        Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.portLabel.text_1"));
-        portTextField.setMinimumSize(new Dimension(20, 19));
-        Mnemonics.setLocalizedText(userLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.userLabel.text_1"));
-        Mnemonics.setLocalizedText(anonymousCheckBox, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.anonymousCheckBox.text_1"));
-        Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabel.text_1"));
-        Mnemonics.setLocalizedText(initialDirectoryLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.initialDirectoryLabel.text_1"));
-        Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.timeoutLabel.text_1"));
-        timeoutTextField.setMinimumSize(new Dimension(20, 19));
-        Mnemonics.setLocalizedText(passiveModeCheckBox, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passiveModeCheckBox.text_1"));
-        Mnemonics.setLocalizedText(warningLabel, "warning");
-        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(FtpConfigurationPanel.class, "FtpConfigurationPanel.passwordLabelInfo.text_1"));
+        Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.portLabel.text"));
+        Mnemonics.setLocalizedText(userLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.userLabel.text"));
+        identityFileLabel.setLabelFor(identityFileTextField);
+
+
+
+
+        Mnemonics.setLocalizedText(identityFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileLabel.text")); // NOI18N
+        identityFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileTextField.text")); // NOI18N
+        Mnemonics.setLocalizedText(identityFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.identityFileBrowseButton.text"));
+        Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabel.text"));
+        Mnemonics.setLocalizedText(passwordLabelInfo, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.passwordLabelInfo.text"));
         passwordLabelInfo.setEnabled(false);
 
+
+        Mnemonics.setLocalizedText(initialDirectoryLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.initialDirectoryLabel.text"));
+        Mnemonics.setLocalizedText(timeoutLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.timeoutLabel.text"));
+        timeoutTextField.setMinimumSize(new Dimension(20, 19));
+
+        knownHostsFileLabel.setLabelFor(knownHostsFileTextField);
+
+
+
+
+        Mnemonics.setLocalizedText(knownHostsFileLabel, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileLabel.text"));
+        knownHostsFileTextField.setText(NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileTextField.text")); // NOI18N
+        Mnemonics.setLocalizedText(knownHostsFileBrowseButton, NbBundle.getMessage(SftpConfigurationPanel.class, "SftpConfigurationPanel.knownHostsFileBrowseButton.text"));
+        Mnemonics.setLocalizedText(warningLabel, "warning");
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
+            .add(warningLabel)
             .add(layout.createSequentialGroup()
-                .add(0, 0, 0)
                 .add(layout.createParallelGroup(GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
+                    .add(hostLabel)
+                    .add(userLabel)
+                    .add(passwordLabel)
+                    .add(initialDirectoryLabel)
+                    .add(timeoutLabel)
+                    .add(identityFileLabel)
+                    .add(knownHostsFileLabel))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.LEADING)
+                    .add(passwordLabelInfo)
+                    .add(GroupLayout.TRAILING, layout.createSequentialGroup()
+                        .add(layout.createParallelGroup(GroupLayout.TRAILING)
+                            .add(GroupLayout.LEADING, identityFileTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, userTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, hostTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, passwordTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(GroupLayout.LEADING, timeoutTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                            .add(knownHostsFileTextField, GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE))
+                        .addPreferredGap(LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(hostLabel)
-                            .add(userLabel)
-                            .add(passwordLabel)
-                            .add(initialDirectoryLabel)
-                            .add(timeoutLabel))
-                        .add(25, 25, 25)
-                        .add(layout.createParallelGroup(GroupLayout.LEADING)
-                            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(layout.createParallelGroup(GroupLayout.LEADING)
-                                    .add(userTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                    .add(hostTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                    .add(passwordTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                    .add(initialDirectoryTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE)
-                                    .add(timeoutTextField, GroupLayout.DEFAULT_SIZE, 200, Short.MAX_VALUE))
-                                .addPreferredGap(LayoutStyle.RELATED)
-                                .add(layout.createParallelGroup(GroupLayout.TRAILING)
-                                    .add(GroupLayout.LEADING, layout.createSequentialGroup()
-                                        .add(portLabel)
-                                        .addPreferredGap(LayoutStyle.RELATED)
-                                        .add(portTextField, GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE))
-                                    .add(GroupLayout.LEADING, anonymousCheckBox)))
-                            .add(passwordLabelInfo)))
-                    .add(warningLabel)
-                    .add(passiveModeCheckBox)))
+                            .add(layout.createParallelGroup(GroupLayout.LEADING, false)
+                                .add(layout.createSequentialGroup()
+                                    .add(portLabel)
+                                    .addPreferredGap(LayoutStyle.RELATED)
+                                    .add(portTextField))
+                                .add(identityFileBrowseButton))
+                            .add(knownHostsFileBrowseButton))
+                        .add(0, 0, 0)))
+                .add(0, 0, 0))
         );
+
+        layout.linkSize(new Component[] {identityFileBrowseButton, knownHostsFileBrowseButton}, GroupLayout.HORIZONTAL);
+
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(GroupLayout.TRAILING, layout.createSequentialGroup()
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(hostLabel)
                     .add(portLabel)
@@ -340,8 +341,12 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(userLabel)
-                    .add(anonymousCheckBox)
                     .add(userTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(identityFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(identityFileLabel)
+                    .add(identityFileBrowseButton))
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(GroupLayout.BASELINE)
                     .add(passwordLabel)
@@ -357,7 +362,10 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
                     .add(timeoutTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .add(timeoutLabel))
                 .addPreferredGap(LayoutStyle.RELATED)
-                .add(passiveModeCheckBox)
+                .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                    .add(knownHostsFileTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .add(knownHostsFileBrowseButton)
+                    .add(knownHostsFileLabel))
                 .addPreferredGap(LayoutStyle.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .add(warningLabel)
                 .addContainerGap())
@@ -366,12 +374,16 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JCheckBox anonymousCheckBox;
     private JLabel hostLabel;
     private JTextField hostTextField;
+    private JButton identityFileBrowseButton;
+    private JLabel identityFileLabel;
+    private JTextField identityFileTextField;
     private JLabel initialDirectoryLabel;
     private JTextField initialDirectoryTextField;
-    private JCheckBox passiveModeCheckBox;
+    private JButton knownHostsFileBrowseButton;
+    private JLabel knownHostsFileLabel;
+    private JTextField knownHostsFileTextField;
     private JLabel passwordLabel;
     private JLabel passwordLabelInfo;
     private JPasswordField passwordTextField;
@@ -416,13 +428,20 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         passwordTextField.setText(password);
     }
 
-    public boolean isAnonymousLogin() {
-        return anonymousCheckBox.isSelected();
+    public String getKnownHostsFile() {
+        return knownHostsFileTextField.getText();
     }
 
-    public void setAnonymousLogin(boolean anonymousLogin) {
-        anonymousCheckBox.setSelected(anonymousLogin);
-        setEnabledLoginCredentials();
+    public void setKnownHostsFile(String knownHostsFile) {
+        knownHostsFileTextField.setText(knownHostsFile);
+    }
+
+    public String getIdentityFile() {
+        return identityFileTextField.getText();
+    }
+
+    public void setIdentityFile(String identityFile) {
+        identityFileTextField.setText(identityFile);
     }
 
     public String getInitialDirectory() {
@@ -441,34 +460,26 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         timeoutTextField.setText(timeout);
     }
 
-    public boolean isPassiveMode() {
-        return passiveModeCheckBox.isSelected();
-    }
-
-    public void setPassiveMode(boolean passiveMode) {
-        passiveModeCheckBox.setSelected(passiveMode);
-    }
-
     public void read(Configuration cfg) {
-        setHostName(cfg.getValue(FtpConnectionProvider.HOST));
-        setPort(cfg.getValue(FtpConnectionProvider.PORT));
-        setUserName(cfg.getValue(FtpConnectionProvider.USER));
-        setPassword(cfg.getValue(FtpConnectionProvider.PASSWORD, true));
-        setAnonymousLogin(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.ANONYMOUS_LOGIN)));
-        setInitialDirectory(cfg.getValue(FtpConnectionProvider.INITIAL_DIRECTORY));
-        setTimeout(cfg.getValue(FtpConnectionProvider.TIMEOUT));
-        setPassiveMode(Boolean.valueOf(cfg.getValue(FtpConnectionProvider.PASSIVE_MODE)));
+        setHostName(cfg.getValue(SftpConnectionProvider.HOST));
+        setPort(cfg.getValue(SftpConnectionProvider.PORT));
+        setUserName(cfg.getValue(SftpConnectionProvider.USER));
+        setPassword(cfg.getValue(SftpConnectionProvider.PASSWORD, true));
+        setKnownHostsFile(cfg.getValue(SftpConnectionProvider.KNOWN_HOSTS_FILE));
+        setIdentityFile(cfg.getValue(SftpConnectionProvider.IDENTITY_FILE));
+        setInitialDirectory(cfg.getValue(SftpConnectionProvider.INITIAL_DIRECTORY));
+        setTimeout(cfg.getValue(SftpConnectionProvider.TIMEOUT));
     }
 
     public void store(Configuration cfg) {
-        cfg.putValue(FtpConnectionProvider.HOST, getHostName());
-        cfg.putValue(FtpConnectionProvider.PORT, getPort());
-        cfg.putValue(FtpConnectionProvider.USER, getUserName());
-        cfg.putValue(FtpConnectionProvider.PASSWORD, getPassword(), true);
-        cfg.putValue(FtpConnectionProvider.ANONYMOUS_LOGIN, String.valueOf(isAnonymousLogin()));
-        cfg.putValue(FtpConnectionProvider.INITIAL_DIRECTORY, getInitialDirectory());
-        cfg.putValue(FtpConnectionProvider.TIMEOUT, getTimeout());
-        cfg.putValue(FtpConnectionProvider.PASSIVE_MODE, String.valueOf(isPassiveMode()));
+        cfg.putValue(SftpConnectionProvider.HOST, getHostName());
+        cfg.putValue(SftpConnectionProvider.PORT, getPort());
+        cfg.putValue(SftpConnectionProvider.USER, getUserName());
+        cfg.putValue(SftpConnectionProvider.PASSWORD, getPassword(), true);
+        cfg.putValue(SftpConnectionProvider.KNOWN_HOSTS_FILE, getKnownHostsFile());
+        cfg.putValue(SftpConnectionProvider.IDENTITY_FILE, getIdentityFile());
+        cfg.putValue(SftpConnectionProvider.INITIAL_DIRECTORY, getInitialDirectory());
+        cfg.putValue(SftpConnectionProvider.TIMEOUT, getTimeout());
     }
 
     private final class DefaultDocumentListener implements DocumentListener {
@@ -482,12 +493,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
             processUpdate();
         }
         private void processUpdate() {
-            fireChange();
-        }
-    }
-
-    private final class DefaultActionListener implements ActionListener {
-        public void actionPerformed(ActionEvent e) {
             fireChange();
         }
     }

@@ -262,6 +262,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         if (select) {
             configList.setSelectedValue(configuration, true);
             switchConfigurationPanel();
+            descriptor.setValid(false);
         }
     }
 
@@ -540,7 +541,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 264, Short.MAX_VALUE)
+                    .add(configScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 319, Short.MAX_VALUE)
                     .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                             .add(nameLabel)
@@ -552,7 +553,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
                         .add(18, 18, 18)
                         .add(separator, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 10, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)))
+                        .add(configurationPanelHolder, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 241, Short.MAX_VALUE)))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(addButton)

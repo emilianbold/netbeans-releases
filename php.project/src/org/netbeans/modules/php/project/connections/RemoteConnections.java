@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.connections;
 
 import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -55,6 +56,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.modules.php.project.connections.spi.RemoteConnectionProvider;
 import org.netbeans.modules.php.project.connections.ftp.FtpConnectionProvider;
+import org.netbeans.modules.php.project.connections.sftp.SftpConnectionProvider;
 import org.netbeans.modules.php.project.connections.spi.RemoteConfigurationPanel;
 import org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel;
 import org.openide.util.NbBundle;
@@ -117,8 +119,7 @@ public final class RemoteConnections {
     }
 
     List<RemoteConnectionProvider> getConnectionProviders() {
-        // XXX
-        return Collections.<RemoteConnectionProvider>singletonList(FtpConnectionProvider.get());
+        return Arrays.<RemoteConnectionProvider>asList(FtpConnectionProvider.get(), SftpConnectionProvider.get());
     }
 
     public List<String> getRemoteConnectionTypes() {
