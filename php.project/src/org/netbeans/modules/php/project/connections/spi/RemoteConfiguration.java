@@ -110,7 +110,7 @@ public abstract class RemoteConfiguration {
         if (name != other.name && (name == null || !name.equals(other.name))) {
             return false;
         }
-        return false;
+        return true;
     }
 
     @Override
