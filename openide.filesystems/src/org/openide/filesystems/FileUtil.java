@@ -533,15 +533,9 @@ public final class FileUtil extends Object {
     * @return the data file for given name
     * @exception IOException if the creation fails
     */
-    public static FileObject createData(FileObject folder, String name)
-    throws IOException {
-        if (folder == null) {
-            throw new IllegalArgumentException("Null folder"); // NOI18N
-        }
-
-        if (name == null) {
-            throw new IllegalArgumentException("Null name"); // NOI18N
-        }
+    public static FileObject createData(FileObject folder, String name) throws IOException {
+        Parameters.notNull("folder", folder);  //NOI18N
+        Parameters.notNull("name", name);  //NOI18N
 
         String foldername;
         String dataname;
@@ -1209,13 +1203,8 @@ public final class FileUtil extends Object {
      * @since 3.16
      */
     public static boolean isParentOf(FileObject folder, FileObject fo) {
-        if (folder == null) {
-            throw new IllegalArgumentException("Tried to pass null folder arg"); // NOI18N
-        }
-
-        if (fo == null) {
-            throw new IllegalArgumentException("Tried to pass null fo arg"); // NOI18N
-        }
+        Parameters.notNull("folder", folder);  //NOI18N
+        Parameters.notNull("fileObject", fo);  //NOI18N
 
         if (folder.isData()) {
             return false;
@@ -1576,9 +1565,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static boolean isArchiveFile(FileObject fo) {
-        if (fo == null) {
-            throw new IllegalArgumentException("Cannot pass null to FileUtil.isArchiveFile"); // NOI18N
-        }
+        Parameters.notNull("fileObject", fo);  //NOI18N
 
         if (!fo.isValid()) {
             return false;
@@ -1646,9 +1633,7 @@ public final class FileUtil extends Object {
      * @since 4.48
      */
     public static boolean isArchiveFile(URL url) {
-        if (url == null) {
-            throw new NullPointerException("Cannot pass null URL to FileUtil.isArchiveFile"); // NOI18N
-        }
+        Parameters.notNull("url", url);  //NOI18N
 
         if ("jar".equals(url.getProtocol())) { //NOI18N
 
