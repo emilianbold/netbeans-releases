@@ -101,6 +101,8 @@ public class ButtonCellEditor extends DefaultCellEditor {
             //there is a conflicting action, show err dialog
             Object overrride = overrride(conflictingAction.getDisplayName());
             if (overrride.equals(DialogDescriptor.YES_OPTION)) {
+                model.removeShortcut(conflictingAction, s);
+                getComponent().requestFocus();
                 //proceed with override
                 } else if (overrride.equals(DialogDescriptor.NO_OPTION)) {
                 JComponent comp = (JComponent) getComponent();
