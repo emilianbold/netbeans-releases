@@ -74,17 +74,20 @@ public class MavenModelUtils {
         }
         return null;
     }
-        
-    public static Plugin addJaxWSPlugin(ModelHandle handle) {
+    
+    public static Plugin getWarPlugin(ModelHandle handle) {
         @SuppressWarnings("unchecked")
         List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
         for (Plugin plg : plugins) {
-            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plg.getKey())) { //NOI18N
+            if ("org.apache.maven.plugins:maven-war-plugin".equalsIgnoreCase(plg.getKey())) { //NOI18N
                 //TODO CHECK THE ACTUAL PARAMETER VALUES..
                 return plg;
             }
         }
-
+        return null;
+    }
+        
+    public static Plugin addJaxWSPlugin(ModelHandle handle) {
         Plugin plugin = new Plugin();
         plugin.setGroupId("org.codehaus.mojo"); //NOI18N
         plugin.setArtifactId("jaxws-maven-plugin"); //NOI18N
@@ -124,9 +127,9 @@ public class MavenModelUtils {
         }
 
         Xpp3Dom destDir = conf.getChild("sourceDestDir"); //NOI18N
-        if (destDir  == null) {
-            destDir  = new Xpp3Dom("sourceDestDir"); //NOI18N
-            destDir .setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
+        if (destDir == null) {
+            destDir = new Xpp3Dom("sourceDestDir"); //NOI18N
+            destDir.setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
             conf.addChild(destDir );
         }
 
@@ -154,50 +157,103 @@ public class MavenModelUtils {
         handle.markAsModified(handle.getPOMModel());
         return plugin; 
     }
-    
-    public static void addWsdlFile(ModelHandle handle, String wsdlPath) {       
-        @SuppressWarnings("unchecked")
-        List<Plugin> plugins = handle.getPOMModel().getBuild().getPlugins();
-        for (Plugin plugin : plugins) {
-            if ("org.codehaus.mojo:jaxws-maven-plugin".equalsIgnoreCase(plugin.getKey())) { //NOI18N
-                //TODO CHECK THE ACTUAL PARAMETER VALUES..
-                Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
+        
+    public static Plugin addWarlugin(ModelHandle handle) {
 
-                if (conf == null) {
-                    conf = new Xpp3Dom("configuration"); //NOI18N
-                    plugin.setConfiguration(conf);
-                    
-                    Xpp3Dom destDir = new Xpp3Dom("sourceDestDir"); //NOI18N
-                    destDir.setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
-                    conf.addChild(destDir);
-                    
-                    Xpp3Dom xnocompile = new Xpp3Dom("xnocompile"); //NOI18N
-                    xnocompile.setValue("true"); //NOI18N
-                    conf.addChild(xnocompile);
-                    
-                    Xpp3Dom verbose = new Xpp3Dom("verbose"); //NOI18N
-                    verbose.setValue("true"); //NOI18N
-                    conf.addChild(verbose);
-                    
-                    Xpp3Dom catalog = new Xpp3Dom("catalog"); //NOI18N
-                    catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
-                    conf.addChild(catalog);
-                }
-                
-                Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
-                if (wsdlFiles == null) {
-                    wsdlFiles = new Xpp3Dom("wsdlFiles"); //NOI18N
-                    conf.addChild(wsdlFiles);
-                }
-                
-                Xpp3Dom wsdlFile = new Xpp3Dom("wsdlFile"); //NOI18N
-                wsdlFile.setValue(wsdlPath);
-                wsdlFiles.addChild(wsdlFile);
+        Plugin plugin = new Plugin();
+        plugin.setGroupId("org.apache.maven.plugins"); //NOI18N
+        plugin.setArtifactId("maven-war-plugin"); //NOI18N
+        plugin.setVersion("2.0.2"); //NOI18N
+        Plugin old = null;
 
-                handle.markAsModified(handle.getPOMModel());
-                
-            }
+        Build bld = handle.getPOMModel().getBuild();
+        if (bld != null) {
+            old = (Plugin) bld.getPluginsAsMap().get(plugin.getKey());
+        } else {
+            handle.getPOMModel().setBuild(new Build());
         }
+        if (old != null) {
+            plugin = old;
+        } else {
+            handle.getPOMModel().getBuild().addPlugin(plugin);
+        }
+
+        Xpp3Dom conf = (Xpp3Dom) plugin.getConfiguration();
+        if (conf == null) {
+            conf = new Xpp3Dom("configuration"); //NOI18N
+            plugin.setConfiguration(conf);
+        }
+
+        Xpp3Dom webResources = conf.getChild("webResources"); //NOI18N
+        if (webResources  == null) {
+            webResources  = new Xpp3Dom("webResources"); //NOI18N
+            conf.addChild(webResources);
+        }
+
+        Xpp3Dom resource = webResources.getChild("resource"); //NOI18N
+        if (resource == null) {
+            resource = new Xpp3Dom("resource"); //NOI18N
+            webResources.addChild(resource);
+            
+            Xpp3Dom directory = new Xpp3Dom("directory"); //NOI18N
+            directory.setValue("src"); //NOI18N
+            resource.addChild(directory);
+            
+            Xpp3Dom targetPath = new Xpp3Dom("targetPath"); //NOI18N
+            targetPath.setValue("WEB-INF"); //NOI18N
+            resource.addChild(targetPath);
+            
+            Xpp3Dom includes = new Xpp3Dom("includes"); //NOI18N
+            resource.addChild(includes);
+
+            Xpp3Dom include = new Xpp3Dom("include"); //NOI18N
+            include.setValue("jax-ws-catalog.xml"); //NOI18N
+            includes.addChild(include);
+            
+            include = new Xpp3Dom("include"); //NOI18N
+            include.setValue("wsdl/**"); //NOI18N
+            includes.addChild(include);           
+        }
+    
+        handle.markAsModified(handle.getPOMModel());
+        return plugin; 
+    }
+    
+    public static void addWsdlFile(ModelHandle handle, Plugin jaxWsPlugin, String wsdlPath) {
+        
+        Xpp3Dom conf = (Xpp3Dom) jaxWsPlugin.getConfiguration();
+        if (conf == null) {
+            conf = new Xpp3Dom("configuration"); //NOI18N
+            jaxWsPlugin.setConfiguration(conf);
+
+            Xpp3Dom destDir = new Xpp3Dom("sourceDestDir"); //NOI18N
+            destDir.setValue("${project.build.directory}/generated-sources/jaxws-wsimport"); //NOI18N
+            conf.addChild(destDir);
+
+            Xpp3Dom xnocompile = new Xpp3Dom("xnocompile"); //NOI18N
+            xnocompile.setValue("true"); //NOI18N
+            conf.addChild(xnocompile);
+
+            Xpp3Dom verbose = new Xpp3Dom("verbose"); //NOI18N
+            verbose.setValue("true"); //NOI18N
+            conf.addChild(verbose);
+
+            Xpp3Dom catalog = new Xpp3Dom("catalog"); //NOI18N
+            catalog.setValue("${basedir}/"+MavenJAXWSSupportIml.CATALOG_PATH); //NOI18N
+            conf.addChild(catalog);
+        }
+
+        Xpp3Dom wsdlFiles = conf.getChild("wsdlFiles"); //NOI18N
+        if (wsdlFiles == null) {
+            wsdlFiles = new Xpp3Dom("wsdlFiles"); //NOI18N
+            conf.addChild(wsdlFiles);
+        }
+
+        Xpp3Dom wsdlFile = new Xpp3Dom("wsdlFile"); //NOI18N
+        wsdlFile.setValue(wsdlPath);
+        wsdlFiles.addChild(wsdlFile);
+
+        handle.markAsModified(handle.getPOMModel());
     }
     
     public static void removeWsdlFile(ModelHandle handle, String wsdlPath) {       

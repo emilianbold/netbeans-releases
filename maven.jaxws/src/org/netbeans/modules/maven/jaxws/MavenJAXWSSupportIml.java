@@ -66,7 +66,7 @@ import org.openide.filesystems.FileUtil;
 public class MavenJAXWSSupportIml implements JAXWSLightSupportImpl {
     Project prj;
     private List<JaxWsService> services = new LinkedList<JaxWsService>();
-    public static final String CATALOG_PATH = "src/jaxws/jax-ws-catalog.xml"; //NOI18N
+    public static final String CATALOG_PATH = "src/jax-ws-catalog.xml"; //NOI18N
     
     MavenJAXWSSupportIml(Project prj) {
         this.prj = prj;

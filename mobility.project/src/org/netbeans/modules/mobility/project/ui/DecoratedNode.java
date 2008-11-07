@@ -43,6 +43,7 @@ import java.awt.Image;
 import java.io.CharConversionException;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -76,6 +77,19 @@ class DecoratedNode extends AbstractNode {
         if (icon != null) {
             setIconBaseWithExtension(icon);
         }
+    }
+
+    protected boolean isAlive() {
+        Node parent = this;
+        while (parent != null) {
+            parent = parent.getParentNode();
+            if (parent != null && parent instanceof J2MEProjectRootNode) {
+                if (parent.getParentNode() != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @Override

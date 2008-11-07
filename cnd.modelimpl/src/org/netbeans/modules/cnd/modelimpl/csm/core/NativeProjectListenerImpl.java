@@ -45,16 +45,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectItemsListener;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -233,12 +228,6 @@ class NativeProjectListenerImpl implements NativeProjectItemsListener {
     }
     
     protected void onProjectItemChanged(final NativeFileItem item) {
-        // invalidate cache for this file
-        if (TraceFlags.USE_AST_CACHE) {
-            CacheManager.getInstance().invalidate(item.getFile().getAbsolutePath());
-        } else {
-            // do not need to invalidate APT, it is preprocessor neutral
-        }
         try {
             final ProjectBase project = getProject(item, false);
             if( project != null ) {

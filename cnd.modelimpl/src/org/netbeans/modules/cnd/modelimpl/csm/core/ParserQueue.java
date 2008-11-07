@@ -41,7 +41,6 @@
 
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import java.io.File;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.modules.cnd.api.model.CsmProject;
@@ -99,7 +98,7 @@ public final class ParserQueue {
             if (ppStates.size() == 1) {
                 this.ppState = ppStates.iterator().next();
             } else {
-                this.ppState = new ArrayList(ppStates);
+                this.ppState = new ArrayList<APTPreprocHandler.State>(ppStates);
             }
             
             this.position = position;
@@ -110,6 +109,7 @@ public final class ParserQueue {
             return file;
         }
 
+        @SuppressWarnings("unchecked")
         public Collection<APTPreprocHandler.State> getPreprocStates() {
             Object state = ppState;
             if (state instanceof APTPreprocHandler.State || state == null) {
@@ -152,6 +152,7 @@ public final class ParserQueue {
             return retValue.toString();
         }
 
+        @SuppressWarnings("unchecked")
         private synchronized void addStates(Collection<APTPreprocHandler.State> ppStates) {
             if (this.ppState instanceof APTPreprocHandler.State) {
                 APTPreprocHandler.State oldState = (APTPreprocHandler.State) ppState;
@@ -178,7 +179,7 @@ public final class ParserQueue {
                         " as " + tracePreprocStates(ppStates) + " with current " + tracePreprocStates(getPreprocStates())); // NOI18N
             }
             // we don't need check here - all logic is in ProjectBase.onFileIncluded            
-            this.ppState = new ArrayList(ppStates);
+            this.ppState = new ArrayList<APTPreprocHandler.State>(ppStates);
         }
 
         public int compareTo(Entry that) {
@@ -264,10 +265,10 @@ public final class ParserQueue {
 
     private static final class ProjectData {
 
-        public Set/*<FileImpl>*/ filesInQueue = new HashSet/*<FileImpl>*/();
+        public Set<FileImpl> filesInQueue = new HashSet<FileImpl>();
 
         // there are no more simultaneously parsing files than threads, so LinkedList suites even better
-        public Collection/*<FileImpl>*/ filesBeingParsed = new LinkedList/*<FileImpl>*/();
+        public Collection<FileImpl> filesBeingParsed = new LinkedList<FileImpl>();
 
         public boolean notifyListeners;
 
@@ -350,9 +351,11 @@ public final class ParserQueue {
             Utils.LOG.severe("Adding a file with an emty preprocessor state set"); //NOI18N
         }
         assert state != null;
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);
+        if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: add " + file.getAbsolutePath() + " as " + position);}
         synchronized ( lock ) {
-            if( state == State.OFF  ) return;
+            if( state == State.OFF  ) {
+                return;
+            }
             switch (fileAction) {
                 case MARK_MORE_PARSE:
                     file.markMoreParseNeeded();
@@ -365,13 +368,13 @@ public final class ParserQueue {
                     break;
             }
             if (!needEnqueue(file)) {
-                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: do not add parsing or parsed " + file.getAbsolutePath());
+                if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: do not add parsing or parsed " + file.getAbsolutePath());}
                 return;
             }
             if (queue.isEmpty()) {
                 serial = 0;
             }
-            Set/*<FileImpl>*/ files = getProjectFiles(file.getProjectImpl(true));
+            Set<FileImpl> files = getProjectFiles(file.getProjectImpl(true));
             Entry entry = null;
             boolean addEntry = false;
             if( files.contains(file) ) {
@@ -392,7 +395,7 @@ public final class ParserQueue {
                     }
                 }
             } else {
-		assert (findEntry(file) == null) : "The queue should not contain the file " + traceState4File(file, files); // NOI18N
+                assert (findEntry(file) == null) : "The queue should not contain the file " + traceState4File(file, files); // NOI18N
                 files.add(file);
             }
             if (entry == null) {
@@ -401,7 +404,7 @@ public final class ParserQueue {
             }
             if (addEntry) {
                 queue.add(entry);
-                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: added entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));
+                if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: added entry " + entry.toString(TraceFlags.TRACE_PARSER_QUEUE_DETAILS));}
             }
             lock.notifyAll();
         }
@@ -409,24 +412,24 @@ public final class ParserQueue {
     }
 
     public void waitReady() throws InterruptedException {
-	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waitReady() ...");
+	if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waitReady() ...");}
         synchronized ( lock ) {
             while( queue.isEmpty() && state != State.OFF ) {
                 lock.wait();
             }
         }
-	if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waiting finished");
+	if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waiting finished");}
     }
 
     public void suspend() {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: suspending");
+        if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: suspending");}
         synchronized (suspendLock) {
             state = State.SUSPENDED;
         }
     }
 
     public void resume() {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: resuming");
+        if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: resuming");}
         synchronized (suspendLock) {
             state = State.ON;
             suspendLock.notifyAll();
@@ -437,7 +440,7 @@ public final class ParserQueue {
 
         synchronized (suspendLock) {
             while( state == State.SUSPENDED ) {
-                if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: waiting for resume");
+                if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: waiting for resume");}
                 suspendLock.wait();
             }
         }
@@ -521,7 +524,7 @@ public final class ParserQueue {
     }
 
     public void shutdown() {
-        if( TraceFlags.TRACE_PARSER_QUEUE ) System.err.println("ParserQueue: clearing");
+        if( TraceFlags.TRACE_PARSER_QUEUE ) {System.err.println("ParserQueue: clearing");}
 	Collection<ProjectBase> copiedProjects = null;
         synchronized ( lock ) {
             state = State.OFF;
@@ -600,7 +603,7 @@ public final class ParserQueue {
         }
     }
 
-    private Set/*<FileImpl>*/ getProjectFiles(ProjectBase project) {
+    private Set<FileImpl> getProjectFiles(ProjectBase project) {
         return getProjectData(project, true).filesInQueue;
     }
 
@@ -667,7 +670,7 @@ public final class ParserQueue {
         }
         ProgressSupport.instance().fireFileParsingFinished(file);
         if( lastFileInProject ) {
-            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Last file in project " + project.getName());
+            if (TraceFlags.TRACE_CLOSE_PROJECT) {System.err.println("Last file in project " + project.getName());}
             project.onParseFinish();
             if( data.notifyListeners ) {
                 ProgressSupport.instance().fireProjectParsingFinished(project);
@@ -693,9 +696,9 @@ public final class ParserQueue {
     }
 
     /*package*/ void waitEmpty(ProjectBase project) {
-        if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Waiting Empty Project " + project.getName());
+        if (TraceFlags.TRACE_CLOSE_PROJECT) {System.err.println("Waiting Empty Project " + project.getName());}
         while (hasFiles(project, null, false)) {
-            if (TraceFlags.TRACE_CLOSE_PROJECT) System.err.println("Waiting Empty Project 2 " + project.getName());
+            if (TraceFlags.TRACE_CLOSE_PROJECT) {System.err.println("Waiting Empty Project 2 " + project.getName());}
             Object prjWaitEmptyLock;
             synchronized (projectLocks) {
                 prjWaitEmptyLock = projectLocks.get(project);
