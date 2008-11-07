@@ -117,12 +117,14 @@ public class RemoteClient implements Cancellable {
         // base remote directory
         StringBuilder baseDir = new StringBuilder(configuration.getInitialDirectory());
         if (additionalInitialSubdirectory != null && additionalInitialSubdirectory.length() > 0) {
+            if (!additionalInitialSubdirectory.startsWith(TransferFile.SEPARATOR)) {
+                throw new IllegalArgumentException("additionalInitialSubdirectory must start with " + TransferFile.SEPARATOR);
+            }
             baseDir.append(additionalInitialSubdirectory);
         }
         baseRemoteDirectory = baseDir.toString().replaceAll(TransferFile.SEPARATOR + "{2,}", TransferFile.SEPARATOR); // NOI18N
 
         assert baseRemoteDirectory.startsWith(TransferFile.SEPARATOR) : "base directory must start with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
-        assert !baseRemoteDirectory.endsWith(TransferFile.SEPARATOR) : "base directory cannot end with " + TransferFile.SEPARATOR + ": " + baseRemoteDirectory;
 
         if (LOGGER.isLoggable(Level.FINE)) {
             LOGGER.log(Level.FINE, "Remote client created with configuration: " + configuration + " and base remote directory: " + baseRemoteDirectory);
@@ -136,7 +138,7 @@ public class RemoteClient implements Cancellable {
                 break;
             }
         }
-        assert client != null : "unable to create remote client for configuration: " + configuration;
+        assert client != null : "no suitable remote client for configuration: " + configuration;
         this.remoteClient = client;
     }
 
