@@ -485,7 +485,7 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 this.sqlHistoryList = model.getSQLHistoryList();
                 this.currentSQLHistoryList = model.getSQLHistoryList();
             } catch (SQLHistoryException ex) {
-                LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"), ex);
+                LOGGER.log(Level.INFO, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"), ex);
                 sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve();
                 setCurrentSQLHistoryList(sqlHistoryList);
             }
