@@ -47,6 +47,8 @@ import java.awt.Rectangle;
 import java.awt.Shape;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.DocumentEvent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -144,9 +146,9 @@ import org.netbeans.lib.editor.util.swing.ElementUtilities;
 public class GapBoxView extends View
 implements ViewLayoutState.Parent, ViewLayoutState,
 EstimatedSpanView {
-    
-    private static final boolean debugRebuild
-        = Boolean.getBoolean("netbeans.debug.editor.view.rebuild"); // NOI18N
+
+    // -J-Dorg.netbeans.lib.editor.view.GapBoxView.level=FINE
+    private static final Logger LOG = Logger.getLogger(GapBoxView.class.getName());
     
     /**
      * Bit value in <code>statusBits</code> determining
@@ -588,15 +590,19 @@ EstimatedSpanView {
             int viewCount = getViewCount();
             int endIndex = Math.min(index + count, viewCount);
             int endOffset = (endIndex == viewCount) ? -1 : getView(endIndex).getStartOffset();
-
-            if (debugRebuild) {
-                /*DEBUG*/System.err.println("GapBoxView.rebuild(): index=" + index // NOI18N
-                    + ", count=" + count // NOI18N
-                    + ", so=" + startOffset + ", eo=" + endOffset // NOI18N
+            boolean loggable = LOG.isLoggable(Level.FINE);
+            long tm = 0;
+            if (loggable) {
+                tm = System.currentTimeMillis();
+            }
+            reloadChildren(index, count, startOffset, endOffset);
+            if (loggable) {
+                LOG.fine("GapBoxView.rebuild(): " + (System.currentTimeMillis() - tm) + // NOI18N
+                    "ms; index=" + index + // NOI18N
+                    ", count=" + count + // NOI18N
+                    ", <" + startOffset + ", " + endOffset + ">\n" // NOI18N
                 );
             }
-
-            reloadChildren(index, count, startOffset, endOffset);
         }
     }
     
@@ -1883,8 +1889,8 @@ EstimatedSpanView {
                     }
                     endOffset = getView(index + removeLength).getEndOffset();
                     removeLength++;
-                    if (debugRebuild) {
-                        /*DEBUG*/System.err.println(
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine(
                             "GapBoxView.customReloadChildren(): Increased removeLength to "  // NOI18N
                             + removeLength + ", eo=" + endOffset // NOI18N
                         );
