@@ -1,11 +1,17 @@
 package org.netbeans.test.xml.schema.general.dtd;
 
+import java.util.Calendar;
+
 public class data
 {
+  private static String sDay = ( ( Calendar.getInstance( ).get( Calendar.DAY_OF_MONTH ) < 10 ) ? "0" : "" ) + Calendar.getInstance( ).get( Calendar.DAY_OF_MONTH );
+  private static String sMonth = ( ( ( Calendar.getInstance( ).get( Calendar.MONTH ) + 1 ) < 10 ) ? "0" : "" ) + ( Calendar.getInstance( ).get( Calendar.MONTH ) + 1 );
+  private static String sYear = ( ( Calendar.getInstance( ).get( Calendar.YEAR ) < 10 ) ? "0" : "" ) + Calendar.getInstance( ).get( Calendar.YEAR );
+
   public static String sIdealDocumentation = "<!DOCTYPEhtmlPUBLIC\"-//W3C//DTDXHTML1.0Strict//EN\"\"http://www.w3."
 + "org/TR/xhtml1/DTD/xhtml1-strict.dtd\"><html><head><title>DTDGrammarDocumentation<"
 + "/title><metahttp-equiv=\"Content-Type\"content=\"text/xhtml;charset=UTF-8\"/></head>"
-+ "<!--Generatedon30.10.2008byNetBeansXMLmodule.--><body><hr/><h2>ElementIndex</h2>"
++ "<!--Generatedon" + sDay + "." + sMonth + "." + sYear + "byNetBeansXMLmodule.--><body><hr/><h2>ElementIndex</h2>"
 + "<ul><li><tt><ahref=\"#ns0:USPrice\">ns0:USPrice</a></tt></li><li><tt><ahref=\"#ns0:"
 + "billTo\">ns0:billTo</a></tt></li><li><tt><ahref=\"#ns0:city\">ns0:city</a></tt></li"
 + "><li><tt><ahref=\"#ns0:comment\">ns0:comment</a></tt></li><li><tt><ahref=\"#ns0:ite"

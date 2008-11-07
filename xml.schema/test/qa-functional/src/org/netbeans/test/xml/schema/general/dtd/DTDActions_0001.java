@@ -283,11 +283,12 @@ public class DTDActions_0001 extends DTDActions {
       sBackServer.close( );
 
       sContent = sContent.replaceAll( "[ \t\r\n]", "" );
-      //System.out.println( ">>>" + sContent + "<<<" );
 
       // Check result
       if( !sContent.equals( data.sIdealDocumentation ) )
       {
+        System.out.println( ">>1>" + data.sIdealDocumentation + "<<<" );
+        System.out.println( ">>2>" + sContent + "<<<" );
         fail( "Invalid documentation created." );
         // ToDo
       }
