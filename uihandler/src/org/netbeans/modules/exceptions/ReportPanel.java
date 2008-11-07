@@ -298,9 +298,15 @@ public class ReportPanel extends javax.swing.JPanel {
         public String getPasswd(){
             char[] passwd = jPasswordField1.getPassword();
             if (passwd.length > PasswdEncryption.MAX_ENCRYPTION_LENGHT){
-                passwd = Arrays.copyOf(passwd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
+                passwd = copyOf(passwd, PasswdEncryption.MAX_ENCRYPTION_LENGHT);
             }
             return new String(passwd);
+        }
+
+        public static char[] copyOf(char[] original, int newLength) {
+            char[] copy = new char[newLength];
+            System.arraycopy(original, 0, copy, 0, Math.min(original.length, newLength));
+            return copy;
         }
 
         public String getSummary() {
