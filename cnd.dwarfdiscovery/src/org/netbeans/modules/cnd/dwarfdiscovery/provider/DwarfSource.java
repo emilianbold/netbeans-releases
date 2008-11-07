@@ -110,7 +110,7 @@ public class DwarfSource implements SourceFileProperties{
             fullName = fullName.replace('/', '\\');
         }
         fullName = PathCache.getString(fullName);
-        if (FULL_TRACE) System.out.println("Compilation unit full name:"+fullName); // NOI18N
+        if (FULL_TRACE) {System.out.println("Compilation unit full name:"+fullName);} // NOI18N
     }
 
     private void initCompilerSettings(CompilerSettings compilerSettings, boolean isCPP){
@@ -124,7 +124,7 @@ public class DwarfSource implements SourceFileProperties{
            //    }
            //}
            if (Utilities.isWindows()) {
-               if (FULL_TRACE) System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor()); // NOI18N
+               if (FULL_TRACE) {System.out.println("CompileFlavor:"+compilerSettings.getCompileFlavor());} // NOI18N
                if ("Cygwin".equals(compilerSettings.getCompileFlavor())) { // NOI18N
                    //cygwinPath = compilerSettings.getCompileDirectory();
                    for(String path:list){
@@ -132,7 +132,7 @@ public class DwarfSource implements SourceFileProperties{
                        if (i > 0) {
                            if (cygwinPath == null) {
                                cygwinPath = "" + Character.toUpperCase(path.charAt(0)) + CYGWIN_PATH; // NOI18N
-                               if (FULL_TRACE) System.out.println("Detect cygwinPath:"+cygwinPath); // NOI18N
+                               if (FULL_TRACE) {System.out.println("Detect cygwinPath:"+cygwinPath);} // NOI18N
                                break;
                            }
                        }
@@ -195,14 +195,14 @@ public class DwarfSource implements SourceFileProperties{
         }
         if (Utilities.isWindows()) {
             //replace /cygdrive/<something> prefix with <something>:/ prefix:
-            if (FULL_TRACE) System.out.println("Try to fix win name:"+fileName); // NOI18N
+            if (FULL_TRACE) {System.out.println("Try to fix win name:"+fileName);} // NOI18N
             if (fileName.startsWith(CYG_DRIVE_UNIX)) {
                 fileName = fileName.substring(CYG_DRIVE_UNIX.length()); // NOI18N
                 fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                 fileName = fileName.replace('\\', '/');
                 if (cygwinPath == null) {
                     cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH;
-                    if (FULL_TRACE) System.out.println("Set cygwinPath:"+cygwinPath); // NOI18N
+                    if (FULL_TRACE) {System.out.println("Set cygwinPath:"+cygwinPath);} // NOI18N
                 }
             } else {
                 int i = fileName.indexOf(CYG_DRIVE_WIN);
@@ -210,14 +210,14 @@ public class DwarfSource implements SourceFileProperties{
                     //replace D:\cygdrive\c\<something> prefix with <something>:\ prefix:
                     if (cygwinPath == null) {
                         cygwinPath = "" + Character.toUpperCase(fileName.charAt(0)) + CYGWIN_PATH; // NOI18N
-                        if (FULL_TRACE) System.out.println("Set cygwinPath:"+cygwinPath); // NOI18N
+                        if (FULL_TRACE) {System.out.println("Set cygwinPath:"+cygwinPath);} // NOI18N
                     }
                     fileName = fileName.substring(i+CYG_DRIVE_UNIX.length());
                     fileName = "" + Character.toUpperCase(fileName.charAt(0)) + ':' + fileName.substring(1); // NOI18N
                     fileName = fileName.replace('\\', '/');
                 }
             }
-            if (FULL_TRACE) System.out.println("\t"+fileName); // NOI18N
+            if (FULL_TRACE) {System.out.println("\t"+fileName);} // NOI18N
         } else if (Utilities.isUnix()) {
             if (fileName.startsWith("/net/")){ // NOI18N
                 try {
@@ -337,7 +337,7 @@ public class DwarfSource implements SourceFileProperties{
 
     private void gatherLine(String line) {
         // /set/c++/bin/5.9/intel-S2/prod/bin/CC -c -g -DHELLO=75 -Idist  main.cc -Qoption ccfe -prefix -Qoption ccfe .XAKABILBpivFlIc.
-        if (FULL_TRACE) System.out.println("Process command line "+line); // NOI18N
+        if (FULL_TRACE) {System.out.println("Process command line "+line);} // NOI18N
         Iterator<String> st = DiscoveryUtils.scanCommandLine(line).iterator();
         while(st.hasNext()){
             String option = st.next();
@@ -426,7 +426,7 @@ public class DwarfSource implements SourceFileProperties{
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
                 addUserIncludePath(PathCache.getString(path));
-                if (FULL_TRACE) System.out.println("\tuser:"+path); // NOI18N
+                if (FULL_TRACE) {System.out.println("\tuser:"+path);} // NOI18N
             }
         } else {
             if (path.startsWith("/usr")) { // NOI18N
@@ -436,12 +436,12 @@ public class DwarfSource implements SourceFileProperties{
                 if (!systemIncludes.contains(path)) {
                     systemIncludes.add(path);
                 }
-                if (FULL_TRACE) System.out.println("\tsystem:"+path); // NOI18N
+                if (FULL_TRACE) {System.out.println("\tsystem:"+path);} // NOI18N
             } else {
                 path = fixCygwinPath(path);
                 path = normalizePath(path);
                 addUserIncludePath(PathCache.getString(path));
-                if (FULL_TRACE) System.out.println("\tuser:"+path); // NOI18N
+                if (FULL_TRACE) {System.out.println("\tuser:"+path);} // NOI18N
             }
         }
     }
@@ -461,7 +461,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         DwarfStatementList dwarfTable = cu.getStatementList();
         if (dwarfTable == null) {
-            if (FULL_TRACE) System.out.println("Include paths not found"); // NOI18N
+            if (FULL_TRACE) {System.out.println("Include paths not found");} // NOI18N
             return;
         }
         for (Iterator<String> it = dwarfTable.getIncludeDirectories().iterator(); it.hasNext();) {
@@ -474,7 +474,7 @@ public class DwarfSource implements SourceFileProperties{
         ArrayList<String> dwarfIncludedFiles = dwarfTable.getFilePaths();
         for(String path : dwarfIncludedFiles){
             String includeFullName = path;
-            if (FULL_TRACE) System.out.println("Included file original:"+path); // NOI18N
+            if (FULL_TRACE) {System.out.println("Included file original:"+path);} // NOI18N
             if (path.startsWith("./")) { // NOI18N
                 includeFullName = compilePath+path.substring(1);
             } else if (path.startsWith("../")) { // NOI18N
@@ -500,9 +500,9 @@ public class DwarfSource implements SourceFileProperties{
                 }
             }
             includedFiles.add(PathCache.getString(includeFullName));
-            if (FULL_TRACE) System.out.println("Included file:"+includeFullName); // NOI18N
+            if (FULL_TRACE) {System.out.println("Included file:"+includeFullName);} // NOI18N
         }
-        if (FULL_TRACE) System.out.println("Include paths:"+userIncludes); // NOI18N
+        if (FULL_TRACE) {System.out.println("Include paths:"+userIncludes);} // NOI18N
     }
 
     private void cutFolderPrefix(String path, final DwarfStatementList dwarfTable) {
@@ -515,9 +515,9 @@ public class DwarfSource implements SourceFileProperties{
             String relativeDir = path.substring(0,n);
             String dir = "/"+relativeDir; // NOI18N
             ArrayList<String> paths = dwarfTable.getPathsForFile(name);
-            if (FULL_TRACE) System.out.println("Try to find new include paths for:"+name+" in folder "+dir); // NOI18N
+            if (FULL_TRACE) {System.out.println("Try to find new include paths for:"+name+" in folder "+dir);} // NOI18N
             for(String dwarfPath : paths){
-                if (FULL_TRACE) System.out.println("    candidate:"+dwarfPath); // NOI18N
+                if (FULL_TRACE) {System.out.println("    candidate:"+dwarfPath);} // NOI18N
                 if (dwarfPath.endsWith(dir)){
                     String found = dwarfPath.substring(0,dwarfPath.length()-dir.length());
                     found = fixCygwinPath(found);
@@ -530,12 +530,12 @@ public class DwarfSource implements SourceFileProperties{
                                 system = systemIncludes.contains(found);
                             }
                             if (!system){
-                               if (FULL_TRACE) System.out.println("    Find new include path:"+found); // NOI18N
+                               if (FULL_TRACE) {System.out.println("    Find new include path:"+found);} // NOI18N
                                 addUserIncludePath(PathCache.getString(found));
                             }
                         } else {
                             if (!dwarfPath.startsWith("/usr")){ // NOI18N
-                                if (FULL_TRACE) System.out.println("    Find new include path:"+found); // NOI18N
+                                if (FULL_TRACE) {System.out.println("    Find new include path:"+found);} // NOI18N
                                 addUserIncludePath(PathCache.getString(found));
                             }
                         }
@@ -544,7 +544,7 @@ public class DwarfSource implements SourceFileProperties{
                 } else if (dwarfPath.equals(relativeDir)){
                     String found = "."; // NOI18N
                     if (!userIncludes.contains(found)) {
-                        if (FULL_TRACE) System.out.println("    Find new include path:"+found); // NOI18N
+                        if (FULL_TRACE) {System.out.println("    Find new include path:"+found);} // NOI18N
                         addUserIncludePath(PathCache.getString(found));
                     }
                     break;
@@ -579,7 +579,7 @@ public class DwarfSource implements SourceFileProperties{
         }
         DwarfMacinfoTable dwarfTable = cu.getMacrosTable();
         if (dwarfTable == null) {
-            if (FULL_TRACE) System.out.println("Macros not found"); // NOI18N
+            if (FULL_TRACE) {System.out.println("Macros not found");} // NOI18N
             return;
         }
         ArrayList<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
@@ -603,7 +603,7 @@ public class DwarfSource implements SourceFileProperties{
             }
             userMacros.put(macro,value);
         }
-        if (FULL_TRACE) System.out.println("Macros:"+userMacros); // NOI18N
+        if (FULL_TRACE) {System.out.println("Macros:"+userMacros);} // NOI18N
     }
 
     private boolean equalValues(String sysValue, String value) {
@@ -692,12 +692,12 @@ public class DwarfSource implements SourceFileProperties{
                             if (c == '"') {
                                 if (line.indexOf('"',1)>0){
                                     res.add(line.substring(1,line.indexOf('"',1)));
-                                    if (FULL_TRACE) System.out.println("find in source:"+line.substring(1,line.indexOf('"',1))); // NOI18N
+                                    if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('"',1)));} // NOI18N
                                 }
                             } else if (c == '<'){
                                 if (line.indexOf('>')>0){
                                     res.add(line.substring(1,line.indexOf('>')));
-                                    if (FULL_TRACE) System.out.println("find in source:"+line.substring(1,line.indexOf('>'))); // NOI18N
+                                    if (FULL_TRACE) {System.out.println("find in source:"+line.substring(1,line.indexOf('>')));} // NOI18N
                                 }
                             }
                         }
@@ -708,7 +708,7 @@ public class DwarfSource implements SourceFileProperties{
                 ex.printStackTrace();
             }
         } else {
-            if (FULL_TRACE) System.out.println("Cannot grep file:"+fileName); // NOI18N
+            if (FULL_TRACE) {System.out.println("Cannot grep file:"+fileName);} // NOI18N
         }
         grepBase.put(fileName,res);
         return res;
