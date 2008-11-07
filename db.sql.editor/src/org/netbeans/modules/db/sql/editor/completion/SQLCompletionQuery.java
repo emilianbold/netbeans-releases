@@ -63,7 +63,7 @@ import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.netbeans.modules.db.api.metadata.DBConnMetadataModelProvider;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.FromClause;
@@ -107,7 +107,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     protected void query(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
         final SQLCompletionEnv newEnv = SQLCompletionEnv.create(doc, caretOffset);
         try {
-            MetadataModels.get(dbconn).runReadAction(new Action<Metadata>() {
+            DBConnMetadataModelProvider.get(dbconn).runReadAction(new Action<Metadata>() {
                 public void run(Metadata metadata) {
                     Connection conn = dbconn.getJDBCConnection();
                     if (conn == null) {

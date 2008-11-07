@@ -37,38 +37,59 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.spi;
+package org.netbeans.modules.db.api.metadata;
 
-import java.util.Collection;
-import org.netbeans.modules.db.metadata.model.MetadataAccessor;
-import org.netbeans.modules.db.metadata.model.api.Catalog;
+import java.sql.Types;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
-import org.netbeans.modules.db.metadata.model.api.Schema;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.test.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
- * @author Andrei Badea
+ * @author David
  */
-public abstract class MetadataImplementation {
-
-    private Metadata metadata;
-
-    public final Metadata getMetadata() {
-        if (metadata == null) {
-            metadata = MetadataAccessor.getDefault().createMetadata(this);
+public class DBConnMetadataModelProviderTest extends DDLTestBase {
+    private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
+        public void run(Metadata md) {
+            assertNotNull(getTestTable(md));
         }
-        return metadata;
+    };
+
+    private static Table getTestTable(Metadata md) {
+        return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
     }
 
-    public abstract Catalog getDefaultCatalog();
+    public DBConnMetadataModelProviderTest(String name) {
+        super(name);
+    }
 
-    public abstract Collection<Catalog> getCatalogs();
+    @BeforeClass
+    public static void setUpClass() throws Exception {
+    }
 
-    public abstract Catalog getCatalog(String name);
+    @AfterClass
+    public static void tearDownClass() throws Exception {
+    }
 
-    public abstract Schema getDefaultSchema();
+    /**
+     * Test of get method, of class DBConnMetadataModelProvider.
+     */
+    @Test
+    public void testGet() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(true);
+        createTestTable();
 
-    public abstract void refresh();
-
-    public abstract void refreshTable(String tablename);
+        MetadataModel model = DBConnMetadataModelProvider.get(dbconn);
+        assertNotNull(model);
+        
+        model.runReadAction(CHECK_TABLE_EXISTS_ACTION);
+    }
 }
