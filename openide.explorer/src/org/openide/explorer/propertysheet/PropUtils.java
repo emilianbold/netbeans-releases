@@ -524,7 +524,7 @@ final class PropUtils {
         if (o instanceof Exception) {
             if( o instanceof InvocationTargetException )
                 o = ((InvocationTargetException)o).getTargetException();
-            processThrowable((Exception) o, title, newValue);
+            processThrowable((Throwable) o, title, newValue);
         }
 
         boolean result = (o instanceof Boolean) ? ((Boolean) o).booleanValue() : false;
