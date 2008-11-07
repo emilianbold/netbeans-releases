@@ -338,6 +338,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     private void resetFields() {
         configurationPanelHolder.removeAll();
         configurationPanelHolder.validate();
+        configurationPanelHolder.repaint();
         setError(null);
     }
 
