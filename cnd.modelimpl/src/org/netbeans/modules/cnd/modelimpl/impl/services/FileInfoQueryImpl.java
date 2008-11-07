@@ -165,7 +165,7 @@ public class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
     
     private static List<CsmOffsetable> intersection(Collection<CsmOffsetable> first, Collection<CsmOffsetable> second) {
-        List<CsmOffsetable> result = new ArrayList(Math.max(first.size(), second.size()));
+        List<CsmOffsetable> result = new ArrayList<CsmOffsetable>(Math.max(first.size(), second.size()));
         for (CsmOffsetable o1 : first) {
             for (CsmOffsetable o2 : second) {
                 if (o1 != null) { //paranoia

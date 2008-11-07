@@ -96,8 +96,8 @@ public final class ConstructorDefinitionImpl extends FunctionDefinitionImpl impl
 
     
     @Override
-    public Collection getScopeElements() {
-        Collection c = super.getScopeElements();
+    public Collection<CsmScopeElement> getScopeElements() {
+        Collection<CsmScopeElement> c = super.getScopeElements();
         c.addAll(getInitializerList());
         return c;
     }

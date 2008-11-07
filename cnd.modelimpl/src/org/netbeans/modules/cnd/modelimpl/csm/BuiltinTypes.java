@@ -123,7 +123,7 @@ public class BuiltinTypes {
         }
     }
     
-    private static Map<CharSequence, CsmBuiltIn> types = new HashMap();
+    private static Map<CharSequence, CsmBuiltIn> types = new HashMap<CharSequence, CsmBuiltIn>();
     
     public static CsmBuiltIn getBuiltIn(AST ast) {
         assert ast.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN;
@@ -140,7 +140,7 @@ public class BuiltinTypes {
     
     public static CsmBuiltIn getBuiltIn(CharSequence text) {
         text = QualifiedNameCache.getManager().getString(text);
-        CsmBuiltIn builtIn = (CsmBuiltIn) types.get(text);
+        CsmBuiltIn builtIn = types.get(text);
         if( builtIn == null ) {
             builtIn = new BuiltinImpl(text);
             types.put(text, builtIn);

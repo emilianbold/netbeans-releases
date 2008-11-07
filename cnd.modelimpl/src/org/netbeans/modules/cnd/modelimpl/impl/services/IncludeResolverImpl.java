@@ -75,7 +75,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 public class IncludeResolverImpl extends CsmIncludeResolver {
 
     public IncludeResolverImpl() {
-        standardHeaders = new HashSet();
+        standardHeaders = new HashSet<String>();
         
         // C++ headers
         standardHeaders.add("algorithm"); // NOI18N
@@ -278,12 +278,12 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
             CsmFile file = ((CsmOffsetable) item).getContainingFile();
              if (!file.equals(currentFile)) {
                 if (file.isHeaderFile()) {
-                    HashSet<CsmFile> scannedfiles = new HashSet();
+                    HashSet<CsmFile> scannedfiles = new HashSet<CsmFile>();
                     if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), file, scannedfiles)) {
                         return true;
                     }
                 } else if (file.isSourceFile() && CsmKindUtilities.isGlobalVariable(item)) {
-                    HashSet<CsmProject> scannedprojects = new HashSet();
+                    HashSet<CsmProject> scannedprojects = new HashSet<CsmProject>();
                     if (isVariableVisible(currentFile, file.getProject(), (CsmVariable) item, scannedprojects)) {
                         return true;
                     }
@@ -320,7 +320,7 @@ public class IncludeResolverImpl extends CsmIncludeResolver {
     // Says is at least one of variable declarations visible in current file
     private boolean isVariableDeclarationsVisible(CsmFile currentFile, Collection<CsmOffsetableDeclaration> decls) {
         for (CsmOffsetableDeclaration decl : decls) {
-            HashSet<CsmFile> scannedFiles = new HashSet();
+            HashSet<CsmFile> scannedFiles = new HashSet<CsmFile>();
             if(decl.getContainingFile().equals(currentFile)) {
                 return true;
             } else if (isFileVisibleInIncludeFiles(currentFile.getIncludes(), decl.getContainingFile(), scannedFiles)) {
