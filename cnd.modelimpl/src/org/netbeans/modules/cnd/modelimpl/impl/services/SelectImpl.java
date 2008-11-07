@@ -250,6 +250,14 @@ public class SelectImpl extends CsmSelect {
         return cls.getMembers().iterator();
     }
 
+    @Override
+    public boolean hasDeclarations(CsmFile file) {
+        if (file instanceof FileImpl) {
+            return ((FileImpl)file).hasDeclarations();
+        }
+        return file.getDeclarations().isEmpty();
+    }
+
     private static interface Filter extends CsmFilter, UIDFilter {
     }
     

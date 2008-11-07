@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import java.io.DataInput;
-import org.netbeans.modules.cnd.modelimpl.parser.FakeAST;
 
 import antlr.collections.AST;
 import java.io.DataOutput;
@@ -86,41 +85,41 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
 
     @Override
     public StringBuilder decorateText(CharSequence classifierText, CsmType decorator, boolean canonical, CharSequence variableNameToInsert) {
-	StringBuilder sb = new StringBuilder();
-	if( decorator.isConst() ) {
-	    sb.append("const "); // NOI18N
-	}
-	sb.append(classifierText);
-	for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
-	    sb.append('*');
-	}
-	if( decorator.isReference() ) {
-	    sb.append('&');
-	}
-	for( int i = 0; i < decorator.getArrayDepth(); i++ ) {
-	    sb.append(canonical ? "*" : "[]"); // NOI18N
-	}
-	
-	sb.append('(');
-	for (int i = 0; i < functionPointerDepth; i++) {
-	    sb.append('*');
-	    if( variableNameToInsert != null ) {
-		sb.append(variableNameToInsert);
-	    }
-	}
-	sb.append(')');
-	
-	sb.append('(');
-        for( Iterator iter = getParameters().iterator(); iter.hasNext(); ) {
+        StringBuilder sb = new StringBuilder();
+        if (decorator.isConst()) {
+            sb.append("const "); // NOI18N
+        }
+        sb.append(classifierText);
+        for (int i = 0; i < decorator.getPointerDepth(); i++) {
+            sb.append('*');
+        }
+        if (decorator.isReference()) {
+            sb.append('&');
+        }
+        for (int i = 0; i < decorator.getArrayDepth(); i++) {
+            sb.append(canonical ? "*" : "[]"); // NOI18N
+        }
+
+        sb.append('(');
+        for (int i = 0; i < functionPointerDepth; i++) {
+            sb.append('*');
+            if (variableNameToInsert != null) {
+                sb.append(variableNameToInsert);
+            }
+        }
+        sb.append(')');
+
+        sb.append('(');
+        for (Iterator iter = getParameters().iterator(); iter.hasNext();) {
             CsmParameter param = (CsmParameter) iter.next();
             sb.append(param.getDisplayText());
             if (iter.hasNext()) {
                 sb.append(',');
             }
         }
-	sb.append(')');
-	
-	return sb;
+        sb.append(')');
+
+        return sb;
     }
 
     @Override
@@ -229,20 +228,6 @@ public class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointerType {
         }
     }
     
-    // copy-pasted from TypeImpl. The difference us in one check: ast.getType() != CPPTokenTypes.STAR
-    // it's so small that parametherising isn't better
-    private static void addText(StringBuilder sb, AST ast) {
-        if( ! (ast instanceof FakeAST) ) {
-            if( sb.length() > 0 && ast.getType() != CPPTokenTypes.STAR ) {
-                sb.append(' ');
-            }
-            sb.append(ast.getText());
-        }
-        for( AST token = ast.getFirstChild(); token != null; token = token.getNextSibling() ) {
-            addText(sb,  token);
-        }
-    }
-
     @Override
     public void dispose() {
         super.dispose();

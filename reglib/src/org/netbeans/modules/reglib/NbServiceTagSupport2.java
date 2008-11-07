@@ -128,6 +128,41 @@ public class NbServiceTagSupport2 {
         }
         return st;
     }
+
+    /**
+     * First look in registration data if JavaFX Production Suite service tag exists.
+     * If not then create new service tag.
+     *
+     * @param source client who creates service tag eg.: "NetBeans IDE 6.0.1 Installer"
+     * or "NetBeans IDE 6.0.1"
+     * @param javaVersion IDE will provides java version on which IDE is running ie. value of system
+     * property java.version. Installer will provide java version selected to run IDE
+     * @param rootDir location of registration.xml it will be $rootDir/servicetag
+     * @return service tag instance for JavaFX Production Suite
+     * @throws java.io.IOException
+     */
+    public static ServiceTag createJavaFXProductionSuiteServiceTag (String source, String javaVersion, String rootDir) throws IOException {
+        LOG.log(Level.FINE,"Creating JavaFX Production Suite service tag");
+
+        ServiceTag st = getJavaFXProductionSuiteServiceTag(rootDir);
+        // New service tag entry if not created
+        if (st == null) {
+            LOG.log(Level.FINE,"Creating new service tag");
+            st = newJavaFXProductionSuiteServiceTag(source, javaVersion, rootDir);
+            // Add the service tag to the registration data in NB
+            getRegistrationData(rootDir).addServiceTag(st);
+            writeRegistrationXml(rootDir);
+        }
+
+        // Install a system service tag if supported
+        if (Registry.isSupported()) {
+            LOG.log(Level.FINE,"Add service tag to system registry");
+            installSystemServiceTag(st,rootDir);
+        } else {
+            LOG.log(Level.FINE,"Cannot add service tag to system registry as ST infrastructure is not found");
+        }
+        return st;
+    }
     
     /**
      * Write the registration data to $rootDir/servicetag/registration.xml file
@@ -198,7 +233,6 @@ public class NbServiceTagSupport2 {
         return registration;
     }
 
-
     /**
      * Create new service tag instance for JavaFX SDK Standalone
      * @param svcTagSource
@@ -232,6 +266,38 @@ public class NbServiceTagSupport2 {
     }
 
     /**
+     * Create new service tag instance for JavaFX Production Suite
+     * @param svcTagSource
+     * @return
+     * @throws java.io.IOException
+     */
+    private static ServiceTag newJavaFXProductionSuiteServiceTag
+    (String svcTagSource, String javaVersion, String rootDir) throws IOException {
+        // Determine the product URN and name
+        String productURN, productName, productVersion, parentURN, parentName;
+
+        productURN = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsuite.urn");
+        productName = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsuite.name");
+
+        productVersion = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsuite.version");
+
+        parentURN = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsuite.parent.urn");
+        parentName = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsuite.parent.name");
+
+        return ServiceTag.newInstance(ServiceTag.generateInstanceURN(),
+                                      productName,
+                                      productVersion,
+                                      productURN,
+                                      parentName,
+                                      parentURN,
+                                      getNbProductDefinedId(javaVersion, productVersion, rootDir),
+                                      "Sun Microsystems",
+                                      System.getProperty("os.arch"),
+                                      getZoneName(),
+                                      svcTagSource);
+    }
+
+    /**
      * Return the JavaFX SDK Standalone service tag from local registration data.
      * Return null if service tag is not found.
      *
@@ -239,6 +305,24 @@ public class NbServiceTagSupport2 {
      */
     private static ServiceTag getJavaFXSdkServiceTag (String rootDir) throws IOException {
         String productURN = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsdk.urn");
+        RegistrationData regData = getRegistrationData(rootDir);
+        Collection<ServiceTag> svcTags = regData.getServiceTags();
+        for (ServiceTag st : svcTags) {
+            if (productURN.equals(st.getProductURN())) {
+                return st;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the JavaFX Production Suite service tag from local registration data.
+     * Return null if service tag is not found.
+     *
+     * @return a service tag for
+     */
+    private static ServiceTag getJavaFXProductionSuiteServiceTag (String rootDir) throws IOException {
+        String productURN = NbBundle.getMessage(NbServiceTagSupport2.class,"servicetag.javafxsuite.urn");
         RegistrationData regData = getRegistrationData(rootDir);
         Collection<ServiceTag> svcTags = regData.getServiceTags();
         for (ServiceTag st : svcTags) {
@@ -380,6 +464,27 @@ public class NbServiceTagSupport2 {
         generateRegisterHtml(parent,product,productNames,rootDir);
 
         return f;
+    }
+    
+    /**
+     * Delete registration files and servicetag dir if it is empty
+     */
+    public static void deleteRegistrationFiles (String rootDir) {
+        File parent = new File(rootDir + File.separator + ST_DIR);
+
+        File f = new File(parent, ST_FILE);
+        if (f.exists()) {
+            f.delete();
+        }
+
+        f = new File(parent, REG_FILE);
+        if (f.exists()) {
+            f.delete();
+        }
+
+        if (parent.isDirectory() && (parent.listFiles().length == 0)) {
+            parent.delete();
+        }
     }
     
     // Remove the offline registration pages 

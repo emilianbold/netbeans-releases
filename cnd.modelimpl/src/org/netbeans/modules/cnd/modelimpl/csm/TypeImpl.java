@@ -450,46 +450,42 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
 
     private CsmClassifier initClassifier(AST node) {
         AST tokType = AstRenderer.getFirstSiblingSkipQualifiers(node);
-        if( tokType == null ||
-            (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
-            tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&
-            tokType.getType() != CPPTokenTypes.CSM_QUALIFIED_ID ) {
+        if (tokType == null ||
+                (tokType.getType() != CPPTokenTypes.CSM_TYPE_BUILTIN &&
+                tokType.getType() != CPPTokenTypes.CSM_TYPE_COMPOUND) &&
+                tokType.getType() != CPPTokenTypes.CSM_QUALIFIED_ID) {
             return null;
         }
 
-        if( tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN ) {
+        if (tokType.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN) {
             return BuiltinTypes.getBuiltIn(tokType);
-        }
-        else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
+        } else { // tokType.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
             try {
                 CsmAST tokFirstId = (CsmAST) tokType.getFirstChild();
-		if( tokFirstId == null ) {
-		    // this is unnormal; but we should be able to work even on incorrect AST
-		    return null;
-		}
+                if (tokFirstId == null) {
+                    // this is unnormal; but we should be able to work even on incorrect AST
+                    return null;
+                }
 
                 //Resolver resolver = ResolverFactory.createResolver(getContainingFile(), firstOffset);
                 // gather name components into string array
                 // for example, for std::vector new String[] { "std", "vector" }
 
                 //TODO: we have AstRenderer.getNameTokens, it is better to use it here
-                List l = new ArrayList();
-		int templateDepth = 0;
-                for( AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling() ) {
-                    if( templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID ) {
+                List<String> l = new ArrayList<String>();
+                int templateDepth = 0;
+                for (AST namePart = tokFirstId; namePart != null; namePart = namePart.getNextSibling()) {
+                    if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.ID) {
                         l.add(namePart.getText());
-                    }
-		    else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
-			// the beginning of template parameters
-			templateDepth++;
-		    }
-		    else if( namePart.getType() == CPPTokenTypes.GREATERTHAN ) {
-			// the beginning of template parameters
-			templateDepth--;
-		    }
-                    else {
+                    } else if (namePart.getType() == CPPTokenTypes.LESSTHAN) {
+                        // the beginning of template parameters
+                        templateDepth++;
+                    } else if (namePart.getType() == CPPTokenTypes.GREATERTHAN) {
+                        // the beginning of template parameters
+                        templateDepth--;
+                    } else {
                         //assert namePart.getType() == CPPTokenTypes.SCOPE;
-                        if( templateDepth == 0) {
+                        if (templateDepth == 0) {
                             if (namePart.getType() != CPPTokenTypes.SCOPE) {
                                 if (TraceFlags.DEBUG) {
                                     StringBuilder tokenText = new StringBuilder();
@@ -504,30 +500,28 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
                             }
                         } else {
                             // TODO: maybe we need to filter out some more tokens
-                            if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
-                                    || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
+                            if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND) {
                                 instantiationParams.add(AstRenderer.renderType(namePart, getContainingFile()));
                             }
                         }
                     }
                 }
-                qname = (String[]) l.toArray(new String[l.size()]);
-                /*CsmObject o = resolver.resolve(qname);
-                if( CsmKindUtilities.isClassifier(o) ) {
-                    result = (CsmClassifier) o;
-                }
-//		else if( CsmKindUtilities.isTypedef(o) ) {
-//		    CsmTypedef td = (CsmTypedef) o;
-//		    CsmType type = td.getType();
-//		    if( type != null ) {
-//			result = type.getClassifier();
-//		    }
-//		}
-                if( result == null ) {
-                    result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), offset);
-                }*/
+                qname = l.toArray(new String[l.size()]);
+            /*CsmObject o = resolver.resolve(qname);
+            if( CsmKindUtilities.isClassifier(o) ) {
+            result = (CsmClassifier) o;
             }
-            catch( Exception e ) {
+            //		else if( CsmKindUtilities.isTypedef(o) ) {
+            //		    CsmTypedef td = (CsmTypedef) o;
+            //		    CsmType type = td.getType();
+            //		    if( type != null ) {
+            //			result = type.getClassifier();
+            //		    }
+            //		}
+            if( result == null ) {
+            result = ((ProjectBase) getContainingFile().getProject()).getDummyForUnresolved(qname, getContainingFile(), offset);
+            }*/
+            } catch (Exception e) {
                 DiagnosticExceptoins.register(e);
             }
         }
@@ -599,6 +593,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeClassifierP
         UIDObjectFactory.getDefaultFactory().writeUID(classifierUID, output);
     }
 
+    @SuppressWarnings("unchecked")
     public TypeImpl(DataInput input) throws IOException {
         super(input);
         this.pointerDepth = (byte) input.readInt();
