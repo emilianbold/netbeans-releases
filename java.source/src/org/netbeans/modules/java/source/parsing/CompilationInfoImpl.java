@@ -64,7 +64,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.source.JavaFileFilterQuery;
 import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -88,7 +87,6 @@ public final class CompilationInfoImpl {
     final JavaFileObject jfo;    
     //@NotThreadSafe    //accessed under parser lock
     private Snapshot snapshot;
-    private SchedulerEvent event;
     private final JavacParser parser;
     private final boolean isClassFile;
     boolean needsRestart;
@@ -109,8 +107,7 @@ public final class CompilationInfoImpl {
                          final FileObject root,
                          final JavacTaskImpl javacTask,
                          final Snapshot snapshot, 
-                         final boolean clone,
-                         final SchedulerEvent event) throws IOException {
+                         final boolean clone) throws IOException {
         assert parser != null;
         this.parser = parser;
         this.cpInfo = parser.getClasspathInfo();
@@ -118,7 +115,6 @@ public final class CompilationInfoImpl {
         this.file = file;
         this.root = root;
         this.snapshot = snapshot;
-        this.event = event;
         assert file == null || (root != null && snapshot != null);
         this.jfo = file != null ? JavacParser.jfoProvider.createJavaFileObject(file, root, JavaFileFilterQuery.getFilter(file), snapshot.getText()) : null;
         this.javacTask = javacTask;
@@ -174,10 +170,6 @@ public final class CompilationInfoImpl {
         return this.snapshot;
     }
     
-    public SchedulerEvent getEvent () {
-        return this.event;
-    }
-        
     /**
      * Returns the current phase of the {@link JavaSource}.
      * @return {@link JavaSource.Phase} the state which was reached by the {@link JavaSource}.

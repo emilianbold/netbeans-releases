@@ -42,6 +42,7 @@ package org.netbeans.modules.java.source.parsing;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
@@ -51,10 +52,10 @@ public class JavacParserResult extends Parser.Result {
     
     private final CompilationInfo info;
 
-    public JavacParserResult (final CompilationInfo info) {
+    public JavacParserResult (final CompilationInfo info, SchedulerEvent event) {
         super (
             JavaSourceAccessor.getINSTANCE ().getCompilationInfoImpl (info).getSnapshot (),
-            JavaSourceAccessor.getINSTANCE ().getCompilationInfoImpl (info).getEvent ()
+            event
         );
         assert info != null;
         this.info = info;
