@@ -140,10 +140,6 @@ public abstract class RemoteConfiguration {
             super(name, displayName);
         }
 
-        public Empty(final ConfigManager.Configuration cfg) {
-            super(cfg.getName(), cfg.getDisplayName());
-        }
-
         @Override
         public String getUrl(String directory) {
             return ""; // NOI18N
