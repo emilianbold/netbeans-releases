@@ -103,6 +103,7 @@ import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -180,12 +181,18 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             String ident = Utilities.getIdentifier(Utilities.getDocument(target), caret);
             
             if (ident == null) {
-                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenamePerformer.class, "WARN_CannotPerformHere"));
                 return;
             }
             
             DataObject od = (DataObject) target.getDocument().getProperty(Document.StreamDescriptionProperty);
-            JavaSource js = JavaSource.forFileObject(od.getPrimaryFile());
+            JavaSource js = od != null ? JavaSource.forFileObject(od.getPrimaryFile()) : null;
+
+            if (js == null) {
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenamePerformer.class, "WARN_CannotPerformHere"));
+                return ;
+            }
+            
             final boolean[] wasResolved = new boolean[1];
             @SuppressWarnings("unchecked")
             final Set<Token>[] changePoints = new Set[1];
@@ -207,7 +214,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
                     doFullRename(od.getCookie(EditorCookie.class), od.getNodeDelegate());
                 }
             } else {
-                Utilities.setStatusBoldText(target, "Cannot perform instant rename here.");
+                Utilities.setStatusBoldText(target, NbBundle.getMessage(InstantRenamePerformer.class, "WARN_CannotPerformHere"));
             }
         } catch (BadLocationException e) {
             Exceptions.printStackTrace(e);
