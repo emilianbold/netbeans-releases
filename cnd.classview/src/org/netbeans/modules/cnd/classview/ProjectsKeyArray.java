@@ -61,7 +61,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     private java.util.Map<CsmProject,SortedName> myProjects;
     private ChildrenUpdater childrenUpdater;
     private static Comparator<java.util.Map.Entry<CsmProject, SortedName>> COMARATOR = new ProjectComparator();
-    private Object lock = new String("ProjectsKeyArray lock");// NOI18N
+    private final Object lock = new Object();
     
     public ProjectsKeyArray(ChildrenUpdater childrenUpdater){
         this.childrenUpdater = childrenUpdater;
@@ -223,7 +223,7 @@ public class ProjectsKeyArray extends Children.Keys<CsmProject> {
     
     @Override
     protected void addNotify() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesP: addNotify()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesP: addNotify()");} // NOI18N
         resetProjects();
         super.addNotify();
     }

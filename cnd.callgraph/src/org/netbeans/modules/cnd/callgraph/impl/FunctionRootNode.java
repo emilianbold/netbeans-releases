@@ -45,7 +45,6 @@ import javax.swing.Action;
 import org.netbeans.modules.cnd.callgraph.api.Function;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
  *

@@ -147,7 +147,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     @Override
     protected void componentOpened() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentOpened()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: componentOpened()");} // NOI18N
         if (view == null) {
             view = new ClassView();
             setLayout(new BorderLayout());
@@ -179,7 +179,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
     
     @Override
     protected void componentClosed() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentClosed()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: componentClosed()");} // NOI18N
         if (!isAutoMode) {
             Preferences ps = NbPreferences.forModule(ClassViewTopComponent.class);
             ps.putBoolean(ClassViewTopComponent.OPENED_PREFERENCE, true); // NOI18N
@@ -196,7 +196,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
 
     @Override
     protected void componentActivated() {
-        if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: componentActivated()"); // NOI18N
+        if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: componentActivated()");} // NOI18N
         super.componentActivated();
         view.requestFocus();
     }
@@ -223,7 +223,7 @@ public class ClassViewTopComponent extends TopComponent implements CsmModelListe
                 break;
             case CLOSING:
                 modelOn = false;
-                if( Diagnostic.DEBUG ) Diagnostic.trace("ClassesTC: model switched off"); // NOI18N
+                if( Diagnostic.DEBUG ) {Diagnostic.trace("ClassesTC: model switched off");} // NOI18N
                 break;
         }
     }
