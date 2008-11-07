@@ -56,7 +56,6 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
-import org.netbeans.modules.php.project.connections.spi.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.netbeans.modules.php.project.connections.ui.PasswordPanel;
 import org.openide.DialogDescriptor;
@@ -77,10 +76,9 @@ public class FtpClient implements RemoteClient {
     private final FTPClient ftpClient;
 
 
-    public FtpClient(RemoteConfiguration configuration, InputOutput io) {
+    public FtpClient(FtpConfiguration configuration, InputOutput io) {
         assert configuration != null;
-        assert configuration instanceof FtpConfiguration : "FTP configuration needed but the type was " + configuration.getClass().getName();
-        this.configuration = (FtpConfiguration) configuration;
+        this.configuration = configuration;
         this.io = io;
 
         LOGGER.log(Level.FINE, "FTP client creating");

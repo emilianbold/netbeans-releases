@@ -121,7 +121,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
 
     public RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io) {
         if (remoteConfiguration instanceof FtpConfiguration) {
-            return new FtpClient(remoteConfiguration, io);
+            return new FtpClient((FtpConfiguration) remoteConfiguration, io);
         }
         return null;
     }
