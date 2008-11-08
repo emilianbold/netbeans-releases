@@ -17,6 +17,7 @@
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_generateFQN" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
     <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
@@ -40,22 +41,21 @@
               </Group>
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="classTextField" alignment="1" pref="405" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="1" pref="405" max="32767" attributes="0"/>
+                  <Component id="classTextField" alignment="1" pref="417" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="1" pref="417" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="contentClassTextField" pref="319" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="selectClassButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
-                  <Component id="uriTextField" alignment="1" pref="405" max="32767" attributes="0"/>
-                  <Component id="locationComboBox" alignment="1" pref="405" max="32767" attributes="1"/>
-                  <Component id="packageComboBox" alignment="1" pref="405" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="405" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="1" pref="417" max="32767" attributes="0"/>
+                  <Component id="locationComboBox" alignment="1" pref="417" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="1" pref="417" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="417" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator2" alignment="0" pref="537" max="32767" attributes="0"/>
+          <Component id="jSeparator2" alignment="0" pref="560" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
