@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.maven.pom;
 
 import hidden.org.codehaus.plexus.util.IOUtil;
@@ -66,6 +65,9 @@ import org.netbeans.modules.maven.model.profile.Profile;
 import org.netbeans.modules.maven.model.profile.ProfilesModel;
 import org.netbeans.modules.maven.model.profile.ProfilesModelFactory;
 import org.netbeans.modules.maven.model.profile.ProfilesRoot;
+import org.netbeans.modules.maven.model.settings.Settings;
+import org.netbeans.modules.maven.model.settings.SettingsModel;
+import org.netbeans.modules.maven.model.settings.SettingsModelFactory;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,63 +85,63 @@ public class NewEmptyJUnitTest extends TestCase {
     // TODO add test methods here.
     // The methods must be annotated with annotation @Test. For example:
     //
-     public void testModel() throws Exception {
+    public void testModel() throws Exception {
         ModelSource source = createModelSource("sample.pom");
         try {
 
-        POMModel model = POMModelFactory.getDefault().getModel(source);
-        assertNotNull(model.getRootComponent());
-        Project prj = model.getProject();
-        assertNotNull(prj);
-        Parent parent = prj.getPomParent();
-        assertNotNull(parent);
-        assertNotNull(parent.getGroupId());
-        assertEquals("org.codehaus.mojo", parent.getGroupId());
-        
-
-        List<MailingList> lists = prj.getMailingLists();
-        assertEquals(3, lists.size());
-        for (MailingList lst : lists) {
-            assertNotNull(lst);
-        }
+            POMModel model = POMModelFactory.getDefault().getModel(source);
+            assertNotNull(model.getRootComponent());
+            Project prj = model.getProject();
+            assertNotNull(prj);
+            Parent parent = prj.getPomParent();
+            assertNotNull(parent);
+            assertNotNull(parent.getGroupId());
+            assertEquals("org.codehaus.mojo", parent.getGroupId());
 
 
-        Properties props = prj.getProperties();
-        assertNotNull(props);
-        String val1 = props.getProperty("prop1");
-        assertEquals("foo", val1);
-        String val2 = props.getProperty("prop2");
-        assertEquals("bar", val2);
+            List<MailingList> lists = prj.getMailingLists();
+            assertEquals(3, lists.size());
+            for (MailingList lst : lists) {
+                assertNotNull(lst);
+            }
 
-        Map<String, String> p = props.getProperties();
-        assertEquals(2, p.size());
-        assertEquals("foo", p.get("prop1"));
-        assertEquals("bar", p.get("prop2"));
 
-        List<Plugin> plugins = prj.getBuild().getPlugins();
-        assertNotNull(plugins);
-        assertEquals(4, plugins.size());
+            Properties props = prj.getProperties();
+            assertNotNull(props);
+            String val1 = props.getProperty("prop1");
+            assertEquals("foo", val1);
+            String val2 = props.getProperty("prop2");
+            assertEquals("bar", val2);
 
-        Plugin plug = plugins.get(1);
-        assertEquals("modello-maven-plugin", plug.getArtifactId());
-        Configuration config = plug.getConfiguration();
-        assertNotNull(config);
-        List<POMExtensibilityElement> lst = config.getConfigurationElements();
-        assertEquals(2, lst.size());
-        POMExtensibilityElement el = lst.get(1);
-        assertEquals("version", el.getQName().getLocalPart());
-        assertEquals("1.0.0", el.getElementText());
-        List<PluginExecution> execs = plug.getExecutions();
-        assertNotNull(execs);
-        PluginExecution ex = execs.get(0);
-        assertEquals("build", ex.getId());
-        String[] goals = new String[] {
-            "xpp3-reader",
-            "java",
-            "xdoc",
-            "xsd"
-        };
-        assertEquals(Arrays.asList(goals), ex.getGoals());
+            Map<String, String> p = props.getProperties();
+            assertEquals(2, p.size());
+            assertEquals("foo", p.get("prop1"));
+            assertEquals("bar", p.get("prop2"));
+
+            List<Plugin> plugins = prj.getBuild().getPlugins();
+            assertNotNull(plugins);
+            assertEquals(4, plugins.size());
+
+            Plugin plug = plugins.get(1);
+            assertEquals("modello-maven-plugin", plug.getArtifactId());
+            Configuration config = plug.getConfiguration();
+            assertNotNull(config);
+            List<POMExtensibilityElement> lst = config.getConfigurationElements();
+            assertEquals(2, lst.size());
+            POMExtensibilityElement el = lst.get(1);
+            assertEquals("version", el.getQName().getLocalPart());
+            assertEquals("1.0.0", el.getElementText());
+            List<PluginExecution> execs = plug.getExecutions();
+            assertNotNull(execs);
+            PluginExecution ex = execs.get(0);
+            assertEquals("build", ex.getId());
+            String[] goals = new String[]{
+                "xpp3-reader",
+                "java",
+                "xdoc",
+                "xsd"
+            };
+            assertEquals(Arrays.asList(goals), ex.getGoals());
 
 //        model.startTransaction();
 //        try {
@@ -154,40 +156,62 @@ public class NewEmptyJUnitTest extends TestCase {
             file.deleteOnExit();
         }
 
-     }
+    }
 
-
-     public void testProfiles() throws Exception {
-        ModelSource source = createModelSource("profiles.xml");
+    public void testSettings() throws Exception {
+        ModelSource source = createModelSource("settings.xml");
         try {
-        assertTrue(source.isEditable());
-        ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
-        assertNotNull(model.getRootComponent());
-        ProfilesRoot prj = model.getProfilesRoot();
-        assertNotNull(prj);
+            assertTrue(source.isEditable());
+            SettingsModel model = SettingsModelFactory.getDefault().getModel(source);
+            assertNotNull(model.getRootComponent());
+            Settings prj = model.getSettings();
+            assertNotNull(prj);
 
-        List<Profile> profiles = prj.getProfiles();
-        assertNotNull(profiles);
-        assertNotNull(prj.findProfileById("profile1"));
+            List<org.netbeans.modules.maven.model.settings.Profile> profiles = prj.getProfiles();
+            assertNotNull(profiles);
+            assertNotNull(prj.findProfileById("mkleint"));
 
-        List<String> actives = prj.getActiveProfiles();
-        assertNotNull(actives);
-        assertEquals("profile1", actives.get(0));
+            List<String> actives = prj.getActiveProfiles();
+            assertNotNull(actives);
+            assertEquals("mkleint", actives.get(0));
         } finally {
             File file = source.getLookup().lookup(File.class);
             file.deleteOnExit();
         }
-     }
 
-     public void testMissingProfiles() throws Exception {
-         String dir = System.getProperty("java.io.tmpdir");
+    }
+
+    public void testProfiles() throws Exception {
+        ModelSource source = createModelSource("profiles.xml");
+        try {
+            assertTrue(source.isEditable());
+            ProfilesModel model = ProfilesModelFactory.getDefault().getModel(source);
+            assertNotNull(model.getRootComponent());
+            ProfilesRoot prj = model.getProfilesRoot();
+            assertNotNull(prj);
+
+            List<Profile> profiles = prj.getProfiles();
+            assertNotNull(profiles);
+            assertNotNull(prj.findProfileById("profile1"));
+
+            List<String> actives = prj.getActiveProfiles();
+            assertNotNull(actives);
+            assertEquals("profile1", actives.get(0));
+        } finally {
+            File file = source.getLookup().lookup(File.class);
+            file.deleteOnExit();
+        }
+    }
+
+    public void testMissingProfiles() throws Exception {
+        String dir = System.getProperty("java.io.tmpdir");
         File sourceFile = new File(dir, "foo.bar");
         try {
             assertFalse(sourceFile.exists());
-        String PROFILES_SKELETON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-    "<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-    "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +
-       "</profilesXml>";
+            String PROFILES_SKELETON = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+                    "<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+                    "  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +
+                    "</profilesXml>";
 
             ModelSource source = Utilities.createModelSourceForMissingFile(sourceFile, true,
                     PROFILES_SKELETON, "text/xml");
@@ -201,7 +225,7 @@ public class NewEmptyJUnitTest extends TestCase {
         } finally {
             sourceFile.deleteOnExit();
         }
-     }
+    }
 
     private ModelSource createModelSource(String templateName) throws FileNotFoundException, IOException, URISyntaxException {
         URL url = getClass().getClassLoader().getResource(templateName);
@@ -217,5 +241,4 @@ public class NewEmptyJUnitTest extends TestCase {
         assertTrue(source.isEditable());
         return source;
     }
-
 }

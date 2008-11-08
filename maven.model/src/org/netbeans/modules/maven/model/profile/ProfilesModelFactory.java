@@ -41,7 +41,6 @@ package org.netbeans.modules.maven.model.profile;
 import javax.swing.text.Document;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.AbstractModelFactory;
-import org.netbeans.modules.maven.model.pom.impl.POMModelImpl;
 import org.netbeans.modules.maven.model.profile.impl.ProfilesModelImpl;
 import org.openide.util.Lookup;
 

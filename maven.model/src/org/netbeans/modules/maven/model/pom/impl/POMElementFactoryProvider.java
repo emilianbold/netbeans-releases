@@ -46,12 +46,14 @@ import org.netbeans.modules.maven.model.pom.spi.ElementFactory;
 import org.netbeans.modules.maven.model.pom.spi.POMExtensibilityElementBase;
 import org.netbeans.modules.maven.model.pom.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Element;
 
 /**
  *
  * @author mkleint
  */
+@ServiceProvider(service=ElementFactory.class)
 public class POMElementFactoryProvider implements ElementFactory {
 
     private POMQNames ns = new POMQNames(true);

@@ -61,6 +61,7 @@ import org.netbeans.modules.maven.model.profile.spi.ElementFactory;
 import org.netbeans.modules.maven.model.profile.spi.ProfilesExtensibilityElementBase;
 import org.netbeans.modules.maven.model.profile.visitor.DefaultVisitor;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.openide.util.lookup.ServiceProvider;
 import org.w3c.dom.Element;
 
 
@@ -68,6 +69,7 @@ import org.w3c.dom.Element;
  *
  * @author mkleint
  */
+@ServiceProvider(service=ElementFactory.class)
 public class ProfilesElementFactoryProvider implements ElementFactory {
 
     private ProfilesQNames ns = new ProfilesQNames(true);
