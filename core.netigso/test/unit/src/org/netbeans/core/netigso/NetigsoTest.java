@@ -59,13 +59,10 @@ import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 import org.netbeans.Events;
-import org.netbeans.InvalidException;
 import org.netbeans.JarClassLoader;
 import org.netbeans.Module;
-import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.test.MockLookup;
 
 /**
  * Basic tests to verify the basic interaction between NetBeans module
@@ -74,11 +71,6 @@ import org.openide.util.test.MockLookup;
  * @author Jaroslav Tulach
  */
 public class NetigsoTest extends SetupHid {
-
-    static {
-        MockLookup.setInstances(new MyModuleFactory());
-    }
-
     public NetigsoTest(String name) {
         super(name);
     }
@@ -101,16 +93,7 @@ public class NetigsoTest extends SetupHid {
         return createTestJAR(data, jars, name, srcdir, classpath);
     }
 
-    public static int numberOfStandard = 0;
-    public static int numberOfFixed = 0;
-    public static boolean testingParentClassloaders = false;
-    public static boolean testingDummyModule = false;
-    
     public void testFactoryCreatesOurModules() throws Exception {
-        // clear the counters before the test!
-        numberOfStandard = 0;
-        numberOfFixed = 0;
-        
         FakeModuleInstaller installer = new FakeModuleInstaller();
         FakeEvents ev = new FakeEvents();
         ModuleManager mgr = new ModuleManager(installer, ev);
@@ -122,16 +105,17 @@ public class NetigsoTest extends SetupHid {
 
             File j1 = changeManifest(new File(jars, "simple-module.jar"), mf);
             File j2 = new File(jars, "depends-on-simple-module.jar");
-            File j3 = new File(jars, "dep-on-two-modules.jar");
             Module m1 = mgr.create(j1, null, false, false, false);
             Module m2 = mgr.create(j2, null, false, false, false);
-            Module m3 = mgr.create(j3, null, false, false, false);
-            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2, m3)));
+            mgr.enable(new HashSet<Module>(Arrays.asList(m1, m2)));
+
+            Class<?> clazz = m2.getClassLoader().loadClass("org.bar.SomethingElse");
+            Class<?> sprclass = m2.getClassLoader().loadClass("org.foo.Something");
+
+            assertEquals("Correct parent is used", sprclass, clazz.getSuperclass());
         } finally {
             mgr.mutexPrivileged().exitWriteAccess();
         }
-        assertEquals("Number of standard modules created by our factory ", 1, numberOfStandard);
-        assertEquals("Number of fixed modules created by our factory ", 2, numberOfFixed);
     }
 
     
@@ -158,48 +142,6 @@ public class NetigsoTest extends SetupHid {
 
         return f;
     }
-    
-    private static final class MyModuleFactory extends ModuleFactory {
-        public @Override Module create(File jar, Object history, boolean reloadable, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws IOException {
-            if (testingDummyModule || testingParentClassloaders) {
-                return new DummyModule(mgr, ev, history, reloadable, autoload, eager);
-            }
-            numberOfStandard++;
-            try {
-                return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
-            } catch (InvalidException ex) {
-                Manifest mani = ex.getManifest();
-                if (mani != null) {
-                    String name = mani.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
-                    if (name == null) {
-                        fail("Shall have OSGi manifest: ");
-                    }
-                    fail("Success OSGi!: " + name);
-                    return null;
-                }
-                throw ex;
-            }
-        }
-        
-        public @Override Module createFixed(Manifest mani, Object history, ClassLoader loader, boolean autoload, boolean eager, ModuleManager mgr, Events ev) throws InvalidException {
-            numberOfFixed++;
-            return super.createFixed(mani, history, loader, autoload, eager, mgr, ev);
-        }
-        
-        public @Override boolean removeBaseClassLoader() {
-            if (testingParentClassloaders) {
-                return true;
-            }
-            return super.removeBaseClassLoader();
-        }
-        public @Override ClassLoader getClasspathDelegateClassLoader(ModuleManager mgr, ClassLoader del) {
-            if (testingParentClassloaders) {
-                return new NoOpClassLoader();
-            }
-            return del;
-        }
-    }
-    
     private static final class DummyModule extends Module {
         private final Manifest manifest;
         public DummyModule(ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {

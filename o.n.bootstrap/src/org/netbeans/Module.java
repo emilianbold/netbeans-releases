@@ -234,10 +234,8 @@ public abstract class Module extends ModuleInfo {
     public Set<Dependency> getDependencies() {
         return new HashSet<Dependency>(Arrays.asList(dependenciesA));
     }
-    // Faster to loop over:
-    // @since JST-PENDING called from NbInstaller
     public final Dependency[]  getDependenciesArray() {
-        return dependenciesA;
+        return dependenciesA == null ? new Dependency[0] : dependenciesA;
     }
     
     public SpecificationVersion getSpecificationVersion() {

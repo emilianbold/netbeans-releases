@@ -41,16 +41,39 @@ package org.netbeans.core.netigso;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.jar.Manifest;
+import org.apache.felix.framework.Felix;
+import org.apache.felix.framework.cache.BundleCache;
+import org.apache.felix.framework.util.FelixConstants;
 import org.netbeans.Events;
+import org.netbeans.InvalidException;
 import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 
 /**
  *
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
+@ServiceProvider(service=ModuleFactory.class)
 public class NetigsoModuleFactory extends ModuleFactory {
+    private static NetigsoActivator activator;
+    private static Felix felix;
 
     @Override
     public Module create(
@@ -58,7 +81,200 @@ public class NetigsoModuleFactory extends ModuleFactory {
         boolean reloadable, boolean autoload, boolean eager,
         ModuleManager mgr, Events ev
     ) throws IOException {
-        return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
+        try {
+            return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
+        } catch (InvalidException ex) {
+            Manifest mani = ex.getManifest();
+            if (mani != null) {
+                String name = mani.getMainAttributes().getValue("Bundle-SymbolicName"); // NOI18N
+                if (name == null) {
+                    throw ex;
+                }
+                return new BundleModule(jar, mgr, ev, history, reloadable, autoload, eager);
+            }
+            throw ex;
+        }
     }
 
+    private synchronized static Felix getContainer() throws BundleException {
+        if (activator == null) {
+            Map<String,String> configMap = new HashMap<String, String>();
+            // Configure the Felix instance to be embedded.
+            configMap.put(FelixConstants.EMBEDDED_EXECUTION_PROP, "true");
+            // Add core OSGi packages to be exported from the class path
+            // via the system bundle.
+            configMap.put(Constants.FRAMEWORK_SYSTEMPACKAGES,
+                "org.osgi.framework; version=1.3.0," +
+                "org.osgi.service.packageadmin; version=1.2.0," +
+                "org.osgi.service.startlevel; version=1.0.0," +
+                "org.osgi.service.url; version=1.0.0");
+            // Explicitly specify the directory to use for caching bundles.
+            String ud = System.getProperty("netbeans.user");
+            if (ud == null) {
+                throw new IllegalStateException();
+            }
+            configMap.put(BundleCache.CACHE_PROFILE_DIR_PROP, ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix");
+            activator = new NetigsoActivator();
+            List activators = new ArrayList();
+            activators.add(activator);
+            felix = new Felix(configMap, activators);
+            felix.start();
+        }
+        return felix;
+    }
+
+    private static final class BundleModule extends Module {
+        final Bundle bundle;
+        private BundleLoader loader;
+
+        public BundleModule(File jar, ModuleManager mgr, Events ev, Object history, boolean reloadable, boolean autoload, boolean eager) throws IOException {
+            super(mgr, ev, history, reloadable, autoload, eager);
+            try {
+                BundleContext bc = getContainer().getBundleContext();
+                bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
+            } catch (BundleException ex) {
+                throw new IOException(ex);
+            }
+        }
+
+        @Override
+        public String[] getProvides() {
+            return new String[0];
+        }
+
+        @Override
+        public String getCodeName() {
+            return bundle.getSymbolicName();
+        }
+
+        @Override
+        public String getCodeNameBase() {
+            return bundle.getSymbolicName();
+        }
+
+        @Override
+        public int getCodeNameRelease() {
+            String version = (String)bundle.getHeaders().get("Bundle-Version"); // NOI18N
+            if (version == null) {
+                return -1;
+            }
+            return Integer.parseInt(version.split("\\.")[0]);
+        }
+
+
+
+        @Override
+        protected void parseManifest() throws InvalidException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public List<File> getAllJars() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void setReloadable(boolean r) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public void reload() throws IOException {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        protected void classLoaderUp(Set<Module> parents) throws IOException {
+            if (bundle.getState() != Bundle.INSTALLED) {
+                return;
+            }
+            try {
+                bundle.start();
+            } catch (BundleException ex) {
+                throw new IOException(ex);
+            }
+            loader = new BundleLoader(bundle);
+            assert bundle.getState() == Bundle.ACTIVE;
+        }
+
+        @Override
+        protected void classLoaderDown() {
+            assert bundle.getState() == Bundle.ACTIVE;
+            try {
+                bundle.stop();
+            } catch (BundleException ex) {
+                throw new IllegalStateException(ex);
+            }
+            loader = null;
+        }
+
+        @Override
+        public ClassLoader getClassLoader() throws IllegalArgumentException {
+            return loader;
+        }
+
+        @Override
+        protected void cleanup() {
+        }
+
+        @Override
+        protected void destroy() {
+        }
+
+        @Override
+        public boolean isFixed() {
+            return false;
+        }
+
+        @Override
+        public Manifest getManifest() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public Object getLocalizedAttribute(String attr) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+    } // end of BundleModule
+
+    private static final class BundleLoader extends ClassLoader {
+        private final Bundle bundle;
+
+        public BundleLoader(Bundle bundle) {
+            this.bundle = bundle;
+        }
+
+        @Override
+        public URL getResource(String name) {
+            return bundle.getResource(name);
+        }
+
+        @Override
+        public InputStream getResourceAsStream(String name) {
+            try {
+                return bundle.getResource(name).openStream();
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+
+        @Override
+        public Enumeration<URL> getResources(String name) throws IOException {
+            return bundle.getResources(name);
+        }
+
+        @Override
+        public Class<?> loadClass(String name) throws ClassNotFoundException {
+            return bundle.loadClass(name);
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            return bundle.loadClass(name);
+        }
+
+
+    }
 }
