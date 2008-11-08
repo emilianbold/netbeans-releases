@@ -85,6 +85,14 @@ import org.openide.util.lookup.InstanceContent;
 public class Utilities {
     private static final Logger logger = Logger.getLogger(Utilities.class.getName());
 
+    /**
+     * 
+     * @param file
+     * @param editable
+     * @param skeleton current content of the document
+     * @param mimeType
+     * @return
+     */
     public static ModelSource createModelSourceForMissingFile(File file, boolean editable, String skeleton, String mimeType) {
         try {
             BaseDocument doc = new BaseDocument(false, mimeType);
@@ -235,19 +243,27 @@ public class Utilities {
         if (model.isIntransaction()) {
             model.endTransaction();
         }
+        model.sync();
         DataObject dobj = model.getModelSource().getLookup().lookup(DataObject.class);
         if (dobj == null) {
             final Document doc = model.getModelSource().getLookup().lookup(Document.class);
             final File file = model.getModelSource().getLookup().lookup(File.class);
             File parent = file.getParentFile();
-            parent.mkdirs();
-            FileUtil.refreshFor(parent);
-            final FileObject parentFo = FileUtil.toFileObject(parent);
-            if (parentFo != null) {
+            FileObject parentFo = FileUtil.toFileObject(parent);
+            if (parentFo == null) {
+                parent.mkdirs();
+                FileUtil.refreshFor(parent);
+                parentFo = FileUtil.toFileObject(parent);
+            }
+            final FileObject fParentFo = parentFo;
+            if (fParentFo != null) {
                 FileSystem fs = parentFo.getFileSystem();
                 fs.runAtomicAction(new FileSystem.AtomicAction() {
                     public void run() throws IOException {
-                        FileObject fo = parentFo.createData(file.getName());
+                        FileObject fo = fParentFo.getFileObject(file.getName());
+                        if (fo == null) {
+                            fo = fParentFo.createData(file.getName());
+                        }
                         OutputStream out = null;
                         try {
                             String text = doc.getText(0, doc.getLength());
