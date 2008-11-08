@@ -115,6 +115,7 @@
                 <package>org.netbeans.modules.maven.model</package>
                 <package>org.netbeans.modules.maven.model.pom</package>
                 <package>org.netbeans.modules.maven.model.profile</package>
+                <package>org.netbeans.modules.maven.model.settings</package>
             </public-packages>
         </data>
     </configuration>
