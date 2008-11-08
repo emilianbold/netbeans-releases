@@ -81,6 +81,35 @@ public class NewEmptyJUnitTest extends TestCase {
     public NewEmptyJUnitTest() {
     }
 
+    public void testModelWrite() throws Exception {
+        ModelSource source = createModelSource("sample.pom");
+        try {
+            POMModel model = POMModelFactory.getDefault().getModel(source);
+            assertNotNull(model.getRootComponent());
+            Project prj = model.getProject();
+
+            Parent parent = prj.getPomParent();
+            assertNotNull(parent);
+            assertNotNull(parent.getGroupId());
+            assertEquals("org.codehaus.mojo", parent.getGroupId());
+
+            model.startTransaction();
+            parent.setGroupId("foo.bar");
+            model.endTransaction();
+            assertEquals("foo.bar", parent.getGroupId());
+
+            //this test fails here.. cannot rollback single property changes..
+            model.startTransaction();
+            parent.setGroupId("bar.foo");
+            model.rollbackTransaction();
+            
+            assertEquals("foo.bar", parent.getGroupId());
+
+        } finally {
+            File file = source.getLookup().lookup(File.class);
+            file.deleteOnExit();
+        }
+    }
 
     // TODO add test methods here.
     // The methods must be annotated with annotation @Test. For example:
