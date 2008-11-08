@@ -45,7 +45,17 @@ made subject to such option by the copyright holder.
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.core.netigso</code-name-base>
-            <module-dependencies/>
+            <module-dependencies>
+                <dependency>
+                    <code-name-base>org.netbeans.bootstrap</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>2.14</specification-version>
+                    </run-dependency>
+                </dependency>
+            </module-dependencies>
             <test-dependencies>
                 <test-type>
                     <name>unit</name>
@@ -64,6 +74,10 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <public-packages/>
+            <class-path-extension>
+                <runtime-relative-path>ext/felix.jar</runtime-relative-path>
+                <binary-origin>external/felix.jar</binary-origin>
+            </class-path-extension>
         </data>
     </configuration>
 </project>
