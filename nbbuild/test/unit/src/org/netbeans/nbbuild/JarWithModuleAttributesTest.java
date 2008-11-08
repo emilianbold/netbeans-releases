@@ -159,13 +159,20 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         assertEquals("Java", arr[0].trim());
 
         assertVersionAtLeast("1.3", arr[1]);
+        boolean fail;
         try {
             assertVersionAtLeast("1.4", arr[1]);
+            fail = true;
         } catch (AssertionFailedError ex) {
-            // ok
-            return;
+            fail = false;
         }
-        fail("Version shall not be 1.4 or higher, as it is specified in manifest to be 1.3: " + arr[1]);
+        if (fail) {
+            fail("Version shall not be 1.4 or higher, as it is specified in manifest to be 1.3: " + arr[1]);
+        }
+
+
+        String bundleV = file.getManifest().getMainAttributes().getValue("Bundle-Version");
+        assertEquals("Correct version of the module", "1.9", bundleV);
     }
 
     public void testIgnoreWeirdJavacTarget() throws Exception {
@@ -206,6 +213,55 @@ public class JarWithModuleAttributesTest extends NbTestCase {
         JarFile file = new JarFile(jar);
         String value = file.getManifest().getMainAttributes().getValue("OpenIDE-Module-Java-Dependencies");
         assertNull("Attribute not created:\n" + PublicPackagesInProjectizedXMLTest.readFile(extracted), value);
+    }
+
+    public void testExportPackage() throws Exception {
+        File output = new File(getWorkDir(), "output");
+        java.io.File manifest = PublicPackagesInProjectizedXMLTest.extractString (
+"OpenIDE-Module: org.netbeans.modules.sendopts\n" +
+"OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/sendopts/Bundle.properties\n" +
+"OpenIDE-Module-Specification-Version: 1.9\n" +
+"OpenIDE-Module-Layer: org/netbeans/modules/sendopts/layer.xml\n" +
+"OpenIDE-Module-Module-Dependencies:" +
+"  com.othercom.anothermodule > 2.1.3,\n" +
+"  org.netbeans.modules.applet/1 > 1.0\n\n\n"
+        );
+        File jar = new File(getWorkDir(), "x.jar");
+
+        java.io.File f = PublicPackagesInProjectizedXMLTest.extractString (
+            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
+            "<project name=\"Test Arch\" basedir=\".\" default=\"all\" >" +
+            "  <taskdef name=\"njar\" classname=\"org.netbeans.nbbuild.JarWithModuleAttributes\" classpath=\"${nb_all}/nbbuild/nbantext.jar\"/>" +
+            "<target name=\"all\" >" +
+            "  <mkdir dir='" + output + "' />" +
+            "  <property name='public.packages' value='org.netbeans.api.sendopts.*'/>" +
+            "  <property name='buildnumber' value='BLDprivateTESTBuild'/>" +
+            "  <property name='code.name.base.slashes' value='org/netbeans/modules/sendopts'/>" +
+            "  <njar manifest='" + manifest + "'   destfile='" + jar + "'>" +
+            "  </njar>" +
+            "  <unzip src='" + jar + "' dest='" + output + "'/>" +
+            "</target>" +
+            "</project>"
+        );
+
+
+        PublicPackagesInProjectizedXMLTest.execute (f, new String[] { "-verbose" });
+
+        assertTrue ("JAR created", jar.isFile());
+
+        File extracted = new File(new File(output, "META-INF"), "MANIFEST.MF");
+        assertTrue("Manifest extracted", extracted.isFile());
+
+        JarFile file = new JarFile(jar);
+        String value = file.getManifest().getMainAttributes().getValue("Export-Package");
+        assertEquals("org.netbeans.api.sendopts", value);
+
+        String req = file.getManifest().getMainAttributes().getValue("Require-Bundle");
+        if (req.indexOf("com.othercom.anothermodule;version=\"[2.1.3, 3)\"") == -1) {
+            fail("Wrong dependency on com.othercom.anothermodule:\n" + req);
+        }
+
+        
     }
     
     private final File createNewJarFile () throws IOException {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,62 +31,34 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans;
+package org.netbeans.core.netigso;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.jar.Manifest;
+import org.netbeans.Events;
+import org.netbeans.Module;
+import org.netbeans.ModuleFactory;
+import org.netbeans.ModuleManager;
 
-/** Exception thrown indicating that a module's contents are ill-formed.
- * This could be a parse error in the manifest, or an inability to load
- * certain resources from the classloader.
- * ErrorManager should be used where needed to attach related exceptions
- * or user-friendly annotations.
- * @author Jesse Glick
+/**
+ *
+ * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
-public final class InvalidException extends IOException {
+public class NetigsoModuleFactory extends ModuleFactory {
 
-    private final Module m;
-    private final Manifest man;
-
-    public InvalidException(String detailMessage) {
-        super(detailMessage);
-        m = null;
-        man = null;
-    }
-    
-    public InvalidException(Module m, String detailMessage) {
-        super(m + ": " + detailMessage); // NOI18N
-        this.m = m;
-        this.man = null;
+    @Override
+    public Module create(
+        File jar, Object history,
+        boolean reloadable, boolean autoload, boolean eager,
+        ModuleManager mgr, Events ev
+    ) throws IOException {
+        return super.create(jar, history, reloadable, autoload, eager, mgr, ev);
     }
 
-    InvalidException(String msg, Manifest manifest) {
-        super(msg);
-        this.m = null;
-        this.man = manifest;
-    }
-    
-    /** Affected module. May be null if this is hard to determine
-     * (for example a problem which would make the module ill-formed,
-     * during creation or reloading).
-     */
-    public Module getModule() {
-        return m;
-    }
-
-    /** The manifest that caused this exception. Can be null, if the
-     * manifest cannot be obtained.
-     * @return manifest that contains error
-     */
-    public Manifest getManifest() {
-        if (man != null) {
-            return man;
-        }
-        if (m != null) {
-            return m.getManifest();
-        }
-        return null;
-    }
 }

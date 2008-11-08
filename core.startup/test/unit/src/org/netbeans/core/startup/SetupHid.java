@@ -160,7 +160,7 @@ public abstract class SetupHid extends NbTestCase {
         return text.toString();
     }
 
-    protected static class FakeModuleInstaller extends ModuleInstaller {
+    public static class FakeModuleInstaller extends ModuleInstaller {
         // For examining results of what happened:
         public final List<String> actions = new ArrayList<String>();
         public final List<Object> args = new ArrayList<Object>();
@@ -204,7 +204,7 @@ public abstract class SetupHid extends NbTestCase {
         }
     }
 
-    protected static final class FakeEvents extends org.netbeans.Events {
+    public static final class FakeEvents extends org.netbeans.Events {
         protected void logged(String message, Object[] args) {
             // do nothing
             // XXX is it better to test events or the installer??

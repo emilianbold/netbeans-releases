@@ -48,8 +48,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.SortedMap;
 import java.util.TreeMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.apache.tools.ant.BuildException;
@@ -242,6 +240,53 @@ public class JarWithModuleAttributes extends Jar {
                 added.addConfiguredAttribute(new Manifest.Attribute(key, newRequires));
             }
             addConfiguredManifest(added);
+            
+            // bundle properties
+            added.addConfiguredAttribute(new Manifest.Attribute("Bundle-ManifestVersion", "2")); // NOI18N
+            added.addConfiguredAttribute(new Manifest.Attribute("Bundle-SymbolicName", added.getMainSection().getAttributeValue("OpenIDE-Module"))); // NOI18N
+            added.addConfiguredAttribute(new Manifest.Attribute("Bundle-Version", added.getMainSection().getAttributeValue("OpenIDE-Module-Specification-Version"))); // NOI18N
+            {
+                String exp = added.getMainSection().getAttributeValue("OpenIDE-Module-Public-Packages");
+                if (exp != null && !exp.equals("-")) {
+                    added.addConfiguredAttribute(new Manifest.Attribute("Export-Package", exp.replaceAll("\\.\\*", ""))); // NOI18N
+                }
+            }
+            {
+
+                String depends = added.getMainSection().getAttributeValue("OpenIDE-Module-Module-Dependencies");
+                if (depends != null) {
+                    StringBuilder sb = new StringBuilder();
+                    String sep = "";
+                    for (String one : depends.split(",")) {
+                        int great = one.indexOf('>');
+                        sb.append(sep);
+                        sep = ",";
+                        if (great == -1) {
+                            int equals = one.indexOf('=');
+                            if (equals == -1) {
+                                sb.append(one);
+                            } else {
+                                sb.append(one.substring(0, equals));
+                            }
+                        } else {
+                            String version = one.substring(great + 1).trim();
+                            int dot = version.indexOf('.');
+                            int nextMajor;
+                            if (dot == -1) {
+                                nextMajor = Integer.parseInt(version) + 1;
+                            } else {
+                                nextMajor = Integer.parseInt(version.substring(0, dot)) + 1;
+                            }
+                            sb.append(one.substring(0, great).trim()).append(";version=\"[").append(version).
+                               append(", ").append(nextMajor).
+                               append(")\"");
+                        }
+                    }
+
+                    added.addConfiguredAttribute(new Manifest.Attribute("Require-Bundle", sb.toString())); // NOI18N
+                }
+            }
+
         } catch (Exception e) {
             throw new BuildException(e, getLocation());
         }
