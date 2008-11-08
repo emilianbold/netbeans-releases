@@ -109,16 +109,10 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
     public static boolean areSameQName(ProfilesQName q, Element e) {
         return q.getQName().equals(AbstractDocumentComponent.getQName(e));
     }
-/* 
-    private boolean isForeignElement() {
-        return !context.getModel().getProfilesQNames().NS_URI.equals(AbstractDocumentComponent.getQName(element).getNamespaceURI());
-    }
 
-    private void createExtensibilityElement(SCAComponent context) {
-        assert isForeignElement();
-        created = new ProfilesExtensibilityElementImpl(context.getModel(), element);
+    private void createExtensibilityElement(ProfilesComponent context) {
+        created = new ProfilesExtensibilityElementBase(context.getModel(), element);
     }
-*/
     @Override
     public void visit(ProfilesRoot context) {
 
@@ -147,7 +141,7 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
@@ -163,12 +157,12 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(RepositoryPolicy context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
@@ -194,13 +188,13 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
     @Override
     public void visit(StringList context) {
-        created = new ProfilesExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
 
@@ -226,27 +220,27 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationProperty context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationOS context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationFile context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationCustom context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
@@ -269,13 +263,13 @@ class ProfilesComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Properties context) {
-        created = new ProfilesExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
 
     @Override
     public void visit(ProfilesExtensibilityElement context) {
-        created = new ProfilesExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 }
     

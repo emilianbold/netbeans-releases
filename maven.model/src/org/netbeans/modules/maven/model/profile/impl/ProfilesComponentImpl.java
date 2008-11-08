@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.model.profile.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.profile.ProfilesComponent;
@@ -145,15 +146,47 @@ public abstract class ProfilesComponentImpl extends AbstractDocumentComponent<Pr
         return ret;
     }
 
+    /**
+     * overrides the parent method as that one cannot be rollbacked.
+     * see testModelWrite() test.
+     * @param qname
+     * @return
+     */
     @Override
     public String getChildElementText(QName qname) {
-        return super.getChildElementText(qname);
+        List<ProfilesExtensibilityElement> els = getChildren(ProfilesExtensibilityElement.class);
+        for (ProfilesExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                return el.getElementText();
+            }
+        }
+        return null;
     }
 
 
+    /**
+     * overrides the parent method as that one cannot be rollbacked.
+     * see testModelWrite() test.
+     * @param qname
+     * @return
+     */
     @Override
     public void setChildElementText(String propertyName, String text, QName qname) {
-        super.setChildElementText(propertyName, text, qname);
+        List<ProfilesExtensibilityElement> els = getChildren(ProfilesExtensibilityElement.class);
+        for (ProfilesExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                if (text != null) {
+                    el.setElementText(text);
+                } else {
+                    removeChild(qname.getLocalPart(), el);
+                }
+                return;
+            }
+        }
+        if (text != null) {
+            ProfilesExtensibilityElement el = getModel().getFactory().createProfilesExtensibilityElement(qname);
+            addAfter(qname.getLocalPart(), el, Collections.EMPTY_LIST);
+        }
     }
 
     protected final Collection<Class<? extends ProfilesComponent>> getClassesBefore(Class<? extends ProfilesComponent>[] ordering, Class current) {

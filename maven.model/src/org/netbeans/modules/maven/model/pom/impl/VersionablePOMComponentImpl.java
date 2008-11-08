@@ -38,6 +38,9 @@
  */
 package org.netbeans.modules.maven.model.pom.impl;
 
+import java.util.Collections;
+import java.util.List;
+import javax.xml.namespace.QName;
 import org.w3c.dom.Element;
 import org.netbeans.modules.maven.model.pom.*;	
 

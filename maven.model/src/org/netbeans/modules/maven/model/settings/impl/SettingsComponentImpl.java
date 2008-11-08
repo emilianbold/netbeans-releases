@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.model.settings.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.settings.SettingsComponent;
@@ -145,15 +146,47 @@ public abstract class SettingsComponentImpl extends AbstractDocumentComponent<Se
         return ret;
     }
 
+    /**
+     * overrides the parent method as that one cannot be rollbacked.
+     * see testModelWrite() test.
+     * @param qname
+     * @return
+     */
     @Override
     public String getChildElementText(QName qname) {
-        return super.getChildElementText(qname);
+        List<SettingsExtensibilityElement> els = getChildren(SettingsExtensibilityElement.class);
+        for (SettingsExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                return el.getElementText();
+            }
+        }
+        return null;
     }
 
 
+    /**
+     * overrides the parent method as that one cannot be rollbacked.
+     * see testModelWrite() test.
+     * @param qname
+     * @return
+     */
     @Override
     public void setChildElementText(String propertyName, String text, QName qname) {
-        super.setChildElementText(propertyName, text, qname);
+        List<SettingsExtensibilityElement> els = getChildren(SettingsExtensibilityElement.class);
+        for (SettingsExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                if (text != null) {
+                    el.setElementText(text);
+                } else {
+                    removeChild(qname.getLocalPart(), el);
+                }
+                return;
+            }
+        }
+        if (text != null) {
+            SettingsExtensibilityElement el = getModel().getFactory().createSettingsExtensibilityElement(qname);
+            addAfter(qname.getLocalPart(), el, Collections.EMPTY_LIST);
+        }
     }
 
     protected final Collection<Class<? extends SettingsComponent>> getClassesBefore(Class<? extends SettingsComponent>[] ordering, Class current) {

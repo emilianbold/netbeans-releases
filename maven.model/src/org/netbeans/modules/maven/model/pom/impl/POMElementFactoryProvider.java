@@ -93,16 +93,11 @@ class POMComponentCreateVisitor extends DefaultVisitor {
     public static boolean areSameQName(POMQName q, Element e) {
         return q.getQName().equals(AbstractDocumentComponent.getQName(e));
     }
-/* 
-    private boolean isForeignElement() {
-        return !context.getModel().getPOMQNames().NS_URI.equals(AbstractDocumentComponent.getQName(element).getNamespaceURI());
+
+    private void createExtensibilityElement(POMComponent context) {
+        created = new POMExtensibilityElementBase(context.getModel(), element);
     }
 
-    private void createExtensibilityElement(SCAComponent context) {
-        assert isForeignElement();
-        created = new POMExtensibilityElementImpl(context.getModel(), element);
-    }
-*/
     @Override
     public void visit(Project context) {
         if (isElementQName(context.getModel().getPOMQNames().PARENT)) {
@@ -205,17 +200,17 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Parent context) {
-        //createExtensibilityElement(context);
+        created = new POMExtensibilityElementBase(context.getModel(), element);
     }
 
     @Override
     public void visit(Organization context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -235,37 +230,37 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Site context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(DeploymentRepository context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Prerequisites context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Contributor context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Scm context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(IssueManagement context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -275,12 +270,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Notifier context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -295,12 +290,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(RepositoryPolicy context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
@@ -356,7 +351,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -381,7 +376,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -406,12 +401,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(StringList context) {
-        created = new POMExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -421,12 +416,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Exclusion context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -440,12 +435,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Resource context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -455,7 +450,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -465,7 +460,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -479,12 +474,12 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ReportSet context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -509,27 +504,27 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationProperty context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationOS context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationFile context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationCustom context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -539,7 +534,7 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -571,27 +566,27 @@ class POMComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Extension context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(License context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(MailingList context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Developer context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -656,18 +651,18 @@ class POMComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Configuration context) {
-        created = new POMExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Properties context) {
-        created = new POMExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
 
     @Override
     public void visit(POMExtensibilityElement context) {
-        created = new POMExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 }
     

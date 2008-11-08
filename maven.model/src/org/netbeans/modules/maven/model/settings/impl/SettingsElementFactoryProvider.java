@@ -113,16 +113,11 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
     public static boolean areSameQName(SettingsQName q, Element e) {
         return q.getQName().equals(AbstractDocumentComponent.getQName(e));
     }
-/* 
-    private boolean isForeignElement() {
-        return !context.getModel().getSettingsQNames().NS_URI.equals(AbstractDocumentComponent.getQName(element).getNamespaceURI());
+
+    private void createExtensibilityElement(SettingsComponent context) {
+        created = new SettingsExtensibilityElementBase(context.getModel(), element);
     }
 
-    private void createExtensibilityElement(SCAComponent context) {
-        assert isForeignElement();
-        created = new SettingsExtensibilityElementImpl(context.getModel(), element);
-    }
-*/
     @Override
     public void visit(Settings context) {
 
@@ -170,22 +165,22 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
             created = new StringListImpl(context.getModel(), element, context.getModel().getSettingsQNames().PLUGINGROUP);
             return;
         }
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(Configuration context) {
-        created = new SettingsExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
     @Override
-    public void visit(Mirror target) {
-        //createExtensibilityElement(context);
+    public void visit(Mirror context) {
+        createExtensibilityElement(context);
     }
 
     @Override
-    public void visit(Proxy target) {
-        //createExtensibilityElement(context);
+    public void visit(Proxy context) {
+        createExtensibilityElement(context);
     }
 
     @Override
@@ -194,6 +189,7 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
             created = new ConfigurationImpl(context.getModel(), element);
             return;
         }
+        createExtensibilityElement(context);
 
     }
 
@@ -210,12 +206,12 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(RepositoryPolicy context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
@@ -241,13 +237,13 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
     @Override
     public void visit(StringList context) {
-        created = new SettingsExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
 
@@ -273,27 +269,27 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
             return;
         }
 
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationProperty context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationOS context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationFile context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
     @Override
     public void visit(ActivationCustom context) {
-        //createExtensibilityElement(context);
+        createExtensibilityElement(context);
     }
 
 
@@ -328,13 +324,13 @@ class SettingsComponentCreateVisitor extends DefaultVisitor {
 
     @Override
     public void visit(Properties context) {
-        created = new SettingsExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 
 
     @Override
     public void visit(SettingsExtensibilityElement context) {
-        created = new SettingsExtensibilityElementBase(context.getModel(), element);
+        createExtensibilityElement(context);
     }
 }
     

@@ -40,6 +40,7 @@ package org.netbeans.modules.maven.model.pom.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.POMComponent;
@@ -145,15 +146,47 @@ public abstract class POMComponentImpl extends AbstractDocumentComponent<POMComp
         return ret;
     }
 
+    /**
+     * overrides the parent method as that one cannot be rollbacked.
+     * see testModelWrite() test.
+     * @param qname
+     * @return
+     */
     @Override
     public String getChildElementText(QName qname) {
-        return super.getChildElementText(qname);
+        List<POMExtensibilityElement> els = getChildren(POMExtensibilityElement.class);
+        for (POMExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                return el.getElementText();
+            }
+        }
+        return null;
     }
 
 
+    /**
+     * overrides the parent method as that one cannot be rollbacked.
+     * see testModelWrite() test.
+     * @param qname
+     * @return
+     */
     @Override
     public void setChildElementText(String propertyName, String text, QName qname) {
-        super.setChildElementText(propertyName, text, qname);
+        List<POMExtensibilityElement> els = getChildren(POMExtensibilityElement.class);
+        for (POMExtensibilityElement el : els) {
+            if (el.getQName().equals(qname)) {
+                if (text != null) {
+                    el.setElementText(text);
+                } else {
+                    removeChild(qname.getLocalPart(), el);
+                }
+                return;
+            }
+        }
+        if (text != null) {
+            POMExtensibilityElement el = getModel().getFactory().createPOMExtensibilityElement(qname);
+            addAfter(qname.getLocalPart(), el, Collections.EMPTY_LIST);
+        }
     }
 
     protected final Collection<Class<? extends POMComponent>> getClassesBefore(Class<? extends POMComponent>[] ordering, Class current) {
