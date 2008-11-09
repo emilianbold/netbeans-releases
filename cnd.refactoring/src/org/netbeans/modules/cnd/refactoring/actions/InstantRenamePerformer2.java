@@ -99,64 +99,63 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
     private Document doc;
     private JTextComponent target;
     private int span;
-    
     private AttributeSet attribs = null;
     private AttributeSet attribsLeft = null;
     private AttributeSet attribsRight = null;
     private AttributeSet attribsMiddle = null;
     private AttributeSet attribsAll = null;
-    
+
     /** Creates a new instance of InstantRenamePerformer */
-    private InstantRenamePerformer2(JTextComponent target,  Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
-	this.target = target;
-	this.doc = target.getDocument();
-	
-	MutablePositionRegion mainRegion = null;
-	List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
-        
-	for (CsmReference h : highlights) {
-	    Position start = NbDocument.createPosition(doc, h.getStartOffset(), Bias.Backward);
-	    Position end = NbDocument.createPosition(doc, h.getEndOffset(), Bias.Forward);
-	    MutablePositionRegion current = new MutablePositionRegion(start, end);
-	    
-	    if (isIn(current, caretOffset)) {
-		mainRegion = current;
-	    } else {
-		regions.add(current);
-	    }
-	    
-	}
-	
-	if (mainRegion == null) {
-	    throw new IllegalArgumentException("No highlight contains the caret."); // NOI18N
-	}
-	
-	regions.add(0, mainRegion);
-	
-	this.region = new SyncDocumentRegion(doc, regions);
-	
+    private InstantRenamePerformer2(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+        this.target = target;
+        this.doc = target.getDocument();
+
+        MutablePositionRegion mainRegion = null;
+        List<MutablePositionRegion> regions = new ArrayList<MutablePositionRegion>();
+
+        for (CsmReference h : highlights) {
+            Position start = NbDocument.createPosition(doc, h.getStartOffset(), Bias.Backward);
+            Position end = NbDocument.createPosition(doc, h.getEndOffset(), Bias.Forward);
+            MutablePositionRegion current = new MutablePositionRegion(start, end);
+
+            if (isIn(current, caretOffset)) {
+                mainRegion = current;
+            } else {
+                regions.add(current);
+            }
+
+        }
+
+        if (mainRegion == null) {
+            throw new IllegalArgumentException("No highlight contains the caret."); // NOI18N
+        }
+
+        regions.add(0, mainRegion);
+
+        this.region = new SyncDocumentRegion(doc, regions);
+
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).addPostModificationDocumentListener(this);
         }
-        
-	target.addKeyListener(this);
-	
-	target.putClientProperty(InstantRenamePerformer2.class, this);
-	
+
+        target.addKeyListener(this);
+
+        target.putClientProperty(InstantRenamePerformer2.class, this);
+
         requestRepaint();
-        
+
         target.select(mainRegion.getStartOffset(), mainRegion.getEndOffset());
-        
+
         span = region.getFirstRegionLength();
     }
-    
+
     private static String getString(String key) {
         return NbBundle.getMessage(InstantRenamePerformer2.class, key);
     }
-    
+
     public static void invokeInstantRename(JTextComponent target) {
         try {
-            final int caret = target.getCaretPosition();   
+            final int caret = target.getCaretPosition();
             Document doc = target.getDocument();
             DataObject dobj = NbEditorUtilities.getDataObject(doc);
             CsmFile file = CsmUtilities.getCsmFile(dobj, false);
@@ -169,7 +168,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
                 Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
                 return;
             }
-            
+
             if (allowInstantRename(ref)) {
                 Collection<CsmReference> changePoints = computeChangePoints(ref);
                 //String ident = ref.getText();
@@ -181,7 +180,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
             Exceptions.printStackTrace(e);
         }
     }
-    
+
     private static boolean allowInstantRename(CsmReference ref) {
         CsmReferenceResolver.Scope scope = CsmReferenceResolver.getDefault().fastCheckScope(ref);
         if (scope == CsmReferenceResolver.Scope.LOCAL) {
@@ -190,13 +189,13 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
             return false;
         }
     }
-    
+
     private static void doFullRename(DataObject dobj, JTextComponent target) {
         EditorCookie ec = dobj.getCookie(EditorCookie.class);
         Node n = dobj.getNodeDelegate();
         if (n == null) {
-             Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
-             return;
+            Utilities.setStatusBoldText(target, getString("no-instant-rename")); // NOI18N
+            return;
         }
         InstanceContent ic = new InstanceContent();
         if (ec != null) {
@@ -204,15 +203,15 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
         }
         ic.add(n);
         Lookup actionContext = new AbstractLookup(ic);
-        
+
         Action a = RefactoringActionsFactory.renameAction().createContextAwareInstance(actionContext);
         a.actionPerformed(RefactoringActionsFactory.DEFAULT_EVENT);
     }
-    
+
     private static void doInstantRename(Collection<CsmReference> changePoints, JTextComponent target, int caret) throws BadLocationException {
         performInstantRename(target, changePoints, caret);
     }
-    
+
     static Collection<CsmReference> computeChangePoints(CsmReference ref) {
         CsmObject resolved = ref.getReferencedObject();
         if (resolved == null) {
@@ -222,7 +221,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
         Collection<CsmReference> out = CsmReferenceRepository.getDefault().getReferences(resolved, file, CsmReferenceKind.ALL, null);
         return out;
     }
-    
+
     public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
         if (instance != null) {
             return;
@@ -231,34 +230,35 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
     }
 
     private boolean isIn(MutablePositionRegion region, int caretOffset) {
-	return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
+        return region.getStartOffset() <= caretOffset && caretOffset <= region.getEndOffset();
     }
-    
     private boolean inSync;
-    
+
     public synchronized void insertUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
-        
+        if (inSync) {
+            return;
+        }
+
         //check for modifications outside the first region:
         if (e.getOffset() < region.getFirstRegionStartOffset() || (e.getOffset() + e.getLength()) > region.getFirstRegionEndOffset()) {
             release();
             return;
         }
-        
-	inSync = true;
-	region.sync(0);
+
+        inSync = true;
+        region.sync(0);
         span = region.getFirstRegionLength();
 //        getHighlightsBag(doc).setHighlights(bag);
-	inSync = false;
-	
+        inSync = false;
+
         requestRepaint();
     }
 
     public synchronized void removeUpdate(DocumentEvent e) {
-	if (inSync)
-	    return ;
-        
+        if (inSync) {
+            return;
+        }
+
         if (e.getLength() == 1) {
             if ((e.getOffset() < region.getFirstRegionStartOffset() || e.getOffset() > region.getFirstRegionEndOffset())) {
                 release();
@@ -279,10 +279,10 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
 //                } else {
 //                    release();
 //                }
-                
+
                 return;
             }
-            
+
             if (e.getOffset() == region.getFirstRegionEndOffset() && region.getFirstRegionLength() > 0 && region.getFirstRegionLength() == span) {
 //                if (LOG.isLoggable(Level.FINE)) {
 //                    LOG.fine("e.getOffset()=" + e.getOffset());
@@ -290,13 +290,13 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
 //                    LOG.fine("region.getFirstRegionEndOffset()=" + region.getFirstRegionEndOffset());
 //                    LOG.fine("span= " + span);
 //                }
-            //XXX: moves the caret anyway:
+                //XXX: moves the caret anyway:
 //                JavaDeleteCharAction jdca = (JavaDeleteCharAction) target.getClientProperty(JavaDeleteCharAction.class);
 //
 //                if (jdca != null && jdca.getNextChar()) {
 //                    undo();
 //                } else {
-                    release();
+                release();
 //                }
 
                 return;
@@ -304,27 +304,27 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
         } else {
             //selection/multiple characters removed:
             int removeSpan = e.getLength() + region.getFirstRegionLength();
-            
+
             if (span < removeSpan) {
                 release();
                 return;
             }
         }
-        
+
         //#89997: do not sync the regions for the "remove" part of replace selection,
         //as the consequent insert may use incorrect offset, and the regions will be synced
         //after the insert anyway.
         if (doc.getProperty(BaseKit.DOC_REPLACE_SELECTION_PROPERTY) != null) {
-            return ;
+            return;
         }
-        
-	inSync = true;
-	region.sync(0);
+
+        inSync = true;
+        region.sync(0);
         span = region.getFirstRegionLength();
 //        getHighlightsBag(doc).setHighlights(bag);
-	inSync = false;
-        
-	requestRepaint();
+        inSync = false;
+
+        requestRepaint();
     }
 
     public void changedUpdate(DocumentEvent e) {
@@ -337,29 +337,28 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
     }
 
     public void keyPressed(KeyEvent e) {
-	if (   (e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) 
-            || (e.getKeyCode() == KeyEvent.VK_ENTER  && e.getModifiers() == 0)) {
-	    release();
-	    e.consume();
-	}
+        if ((e.getKeyCode() == KeyEvent.VK_ESCAPE && e.getModifiers() == 0) || (e.getKeyCode() == KeyEvent.VK_ENTER && e.getModifiers() == 0)) {
+            release();
+            e.consume();
+        }
     }
 
     public void keyReleased(KeyEvent e) {
     }
 
     private void release() {
-	target.putClientProperty(InstantRenamePerformer2.class, null);
+        target.putClientProperty(InstantRenamePerformer2.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).removePostModificationDocumentListener(this);
         }
-	target.removeKeyListener(this);
+        target.removeKeyListener(this);
 //        getHighlightsBag(doc).clear();
-	target = null;
+        target = null;
         attribs = null;
-	region = null;
+        region = null;
         requestRepaint();
-	doc = null;
-    instance = null;
+        doc = null;
+        instance = null;
     }
 
     private void requestRepaint() {
@@ -374,30 +373,26 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
                 Color background = (Color) attribs.getAttribute(StyleConstants.Background);
                 attribsLeft = AttributesUtilities.createImmutable(
                         StyleConstants.Background, background,
-                        EditorStyleConstants.LeftBorderLineColor, foreground, 
-                        EditorStyleConstants.TopBorderLineColor, foreground, 
-                        EditorStyleConstants.BottomBorderLineColor, foreground
-                );
+                        EditorStyleConstants.LeftBorderLineColor, foreground,
+                        EditorStyleConstants.TopBorderLineColor, foreground,
+                        EditorStyleConstants.BottomBorderLineColor, foreground);
                 attribsRight = AttributesUtilities.createImmutable(
                         StyleConstants.Background, background,
-                        EditorStyleConstants.RightBorderLineColor, foreground, 
-                        EditorStyleConstants.TopBorderLineColor, foreground, 
-                        EditorStyleConstants.BottomBorderLineColor, foreground
-                );
+                        EditorStyleConstants.RightBorderLineColor, foreground,
+                        EditorStyleConstants.TopBorderLineColor, foreground,
+                        EditorStyleConstants.BottomBorderLineColor, foreground);
                 attribsMiddle = AttributesUtilities.createImmutable(
                         StyleConstants.Background, background,
-                        EditorStyleConstants.TopBorderLineColor, foreground, 
-                        EditorStyleConstants.BottomBorderLineColor, foreground
-                );
+                        EditorStyleConstants.TopBorderLineColor, foreground,
+                        EditorStyleConstants.BottomBorderLineColor, foreground);
                 attribsAll = AttributesUtilities.createImmutable(
                         StyleConstants.Background, background,
-                        EditorStyleConstants.LeftBorderLineColor, foreground, 
+                        EditorStyleConstants.LeftBorderLineColor, foreground,
                         EditorStyleConstants.RightBorderLineColor, foreground,
-                        EditorStyleConstants.TopBorderLineColor, foreground, 
-                        EditorStyleConstants.BottomBorderLineColor, foreground
-                );
+                        EditorStyleConstants.TopBorderLineColor, foreground,
+                        EditorStyleConstants.BottomBorderLineColor, foreground);
             }
-            
+
             OffsetsBag nue = new OffsetsBag(doc);
             int startOffset = region.getFirstRegionStartOffset();
             int endOffset = region.getFirstRegionEndOffset();
@@ -416,16 +411,15 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
             bag.setHighlights(nue);
         }
     }
-    
     private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.red);
     private static InstantRenamePerformer2 instance = null;
-    
+
     private static AttributeSet getSyncedTextBlocksHighlight() {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
         AttributeSet as = fcs != null ? fcs.getFontColors("synchronized-text-blocks-ext") : null; //NOI18N
         return as == null ? defaultSyncedTextBlocksHighlight : as;
     }
-    
+
     public static OffsetsBag getHighlightsBag(Document doc) {
         OffsetsBag bag = (OffsetsBag) doc.getProperty(InstantRenamePerformer2.class);
         if (bag == null) {
@@ -433,5 +427,4 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
         }
         return bag;
     }
-    
 }
