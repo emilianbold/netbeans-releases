@@ -223,8 +223,11 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
         return out;
     }
     
-    public static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
-	new InstantRenamePerformer2(target, highlights, caretOffset);
+    public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+        if (instance != null) {
+            return;
+        }
+        instance = new InstantRenamePerformer2(target, highlights, caretOffset);
     }
 
     private boolean isIn(MutablePositionRegion region, int caretOffset) {
@@ -356,6 +359,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
 	region = null;
         requestRepaint();
 	doc = null;
+    instance = null;
     }
 
     private void requestRepaint() {
@@ -414,6 +418,7 @@ public class InstantRenamePerformer2 implements DocumentListener, KeyListener {
     }
     
     private static final AttributeSet defaultSyncedTextBlocksHighlight = AttributesUtilities.createImmutable(StyleConstants.Foreground, Color.red);
+    private static InstantRenamePerformer2 instance = null;
     
     private static AttributeSet getSyncedTextBlocksHighlight() {
         FontColorSettings fcs = MimeLookup.getLookup(MimePath.EMPTY).lookup(FontColorSettings.class);
