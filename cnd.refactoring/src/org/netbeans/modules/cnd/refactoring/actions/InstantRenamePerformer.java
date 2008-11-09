@@ -226,8 +226,11 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         return out;
     }
     
-    public static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
-	new InstantRenamePerformer(target, highlights, caretOffset);
+    public synchronized static void performInstantRename(JTextComponent target, Collection<CsmReference> highlights, int caretOffset) throws BadLocationException {
+        if (instance != null) {
+            return;
+        }
+        instance = new InstantRenamePerformer(target, highlights, caretOffset);
     }
 
     private boolean isIn(MutablePositionRegion region, int caretOffset) {
@@ -294,8 +297,10 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 	region = null;
 	doc = null;
 	target = null;
+    instance=null;
     }
 
+    private static InstantRenamePerformer instance = null;
     private static final AttributeSet COLORING = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(138, 191, 236));
     
     public static PositionsBag getHighlightsBag(Document doc) {
