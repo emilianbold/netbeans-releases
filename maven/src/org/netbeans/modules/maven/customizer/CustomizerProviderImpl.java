@@ -291,6 +291,11 @@ public class CustomizerProviderImpl implements CustomizerProvider {
             if (handle.getPOMModel().isIntransaction()) {
                 handle.getPOMModel().rollbackTransaction();
             }
+            assert !handle.getPOMModel().isIntransaction();
+            if (handle.getProfileModel().isIntransaction()) {
+                handle.getProfileModel().rollbackTransaction();
+            }
+            assert !handle.getProfileModel().isIntransaction();
         }
         
         @Override
