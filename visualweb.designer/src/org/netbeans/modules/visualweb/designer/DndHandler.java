@@ -52,6 +52,7 @@ import org.netbeans.modules.visualweb.api.designer.DomProvider.DomPosition;
 import org.netbeans.modules.visualweb.css2.ModelViewMapper;
 import org.netbeans.modules.visualweb.css2.CssBox;
 
+import org.netbeans.modules.visualweb.css2.PageBox;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.NbBundle;
 
@@ -433,7 +434,9 @@ public class DndHandler /*extends TransferHandler*/ {
         int documentPosOffset = computedDocumentPos.getOffset();
 
 //        CssBox box = computeDroppeeCssBox(canvasPos);
-        CssBox box = canvasPos == null ? null : ModelViewMapper.findBox(webform.getPane().getPageBox(), canvasPos.x, canvasPos.y);
+        // XXX #149583 Possible NPE.
+        PageBox pageBox = webform.getPane().getPageBox();
+        CssBox box = canvasPos == null || pageBox == null ? null : ModelViewMapper.findBox(pageBox, canvasPos.x, canvasPos.y);
         Element droppeeElement = box == null ? null : box.getElement();
 //        DesignBean droppeeBean = box == null ? null : getDroppee(box);
         Element dropeeComponentRootElement = box == null ? null : getDropeeComponent(box);

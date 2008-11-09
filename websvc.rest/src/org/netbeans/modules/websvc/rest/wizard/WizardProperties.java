@@ -52,6 +52,8 @@ public class WizardProperties {
     public static final String PERSISTENCE_UNIT = "PersistenceUnit";        //NOI18N
     public static final String ENTITY_RESOURCE_MODEL = "EntityResourceModel";       //NOI18N
     public static final String TARGET_SRC_ROOT = "targetSourceRoot"; //NOI18N
+    public static final String TARGET_PACKAGE = "targetPackage";    //NOI18N
+    public static final String SOURCE_GROUP = "sourceGroup";    //NOI18N
     
     public static final String RESOURCE_NAME = "ResourceName"; //NOI18N
     public static final String RESOURCE_CLASS = "ResourceClass"; //NOI18N
