@@ -192,7 +192,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     active = c;
                 }
             }
-            
+            if (active == null) { //#152706
+                active = configs.get(0); //default if current not found..
+            }
         } else {
             configs.add(ModelHandle.createDefaultConfiguration());
             active = configs.get(0);
