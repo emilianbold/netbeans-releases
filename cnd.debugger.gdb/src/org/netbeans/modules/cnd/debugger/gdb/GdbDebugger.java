@@ -1366,11 +1366,11 @@ public class GdbDebugger implements PropertyChangeListener {
                 if (platform == PlatformTypes.PLATFORM_MACOSX) {
                     switch (signal) {
                         case 2:
-                            signalName = "TRAP";
-                            break; // NOI18N
+                            signalName = "TRAP"; // NOI18N
+                            break;
                         case 15:
-                            signalName = "TERM";
-                            break; // NOI18N
+                            signalName = "TERM"; // NOI18N
+                            break;
                         default:
                             assert false : "No textual value for MacOS signal " + signal + ", please add it to kill command in GdbDebugger.";// NOI18N
                     }

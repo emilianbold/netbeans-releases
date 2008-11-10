@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.cnd.api.lexer;
 
 import javax.swing.text.Document;
@@ -88,9 +87,9 @@ public class CndTokenUtilities {
             return;
         }
         int shift = cppTokenSequence.move(startOffset);
-        if (tp.getLastSeparatorOffset() >=0 && 
-            tp.getLastSeparatorOffset() > startOffset && 
-            tp.getLastSeparatorOffset() < lastOffset) {
+        if (tp.getLastSeparatorOffset() >= 0 &&
+                tp.getLastSeparatorOffset() > startOffset &&
+                tp.getLastSeparatorOffset() < lastOffset) {
             shift = cppTokenSequence.move(tp.getLastSeparatorOffset());
         }
         tp.start(startOffset, startOffset - shift);
@@ -108,7 +107,7 @@ public class CndTokenUtilities {
      * @return
      */
     public static Token<CppTokenId> shiftToNonWhiteBwd(Document doc, int offset) {
-        Token<CppTokenId> out = getOffsetTokenImpl(doc, offset, true, false);
+        Token<CppTokenId> out = getTokenImpl(doc, offset, true, false, true);
         boolean firstTime = true;
         while (out != null &&
                 (out.id() == CppTokenId.WHITESPACE ||
@@ -118,7 +117,7 @@ public class CndTokenUtilities {
             if (tokOffset == 0) {
                 break;
             }
-            out = getOffsetTokenImpl(doc, tokOffset-1, true, false);
+            out = getTokenImpl(doc, tokOffset - 1, true, false, true);
         }
         return out;
     }
@@ -131,18 +130,8 @@ public class CndTokenUtilities {
      * @return returns ofssetable token, but if offset is in the beginning of whitespace
      * or comment token, then it returns previous token
      */
-    public static Token<CppTokenId> getOffsetTokenCheckPrev(Document doc, int offset) {
-        return getOffsetTokenImpl(doc, offset, true, true);
-    }
-
-    /**
-     * method should be called under document read lock
-     * @param doc
-     * @param offset
-     * @return
-     */
-    public static Token<CppTokenId> getOffsetToken(Document doc, int offset) {
-        return getOffsetToken(doc, offset, false);
+    public static Token<CppTokenId> getTokenCheckPrev(Document doc, int offset, boolean createOffsetableToken) {
+        return getTokenImpl(doc, offset, true, true, createOffsetableToken);
     }
 
     /**
@@ -152,26 +141,26 @@ public class CndTokenUtilities {
      * @param tokenizePP
      * @return
      */
-    public static Token<CppTokenId> getOffsetToken(Document doc, int offset, boolean tokenizePP) {
-        return getOffsetTokenImpl(doc, offset, tokenizePP, false);
+    public static Token<CppTokenId> getToken(Document doc, int offset, boolean tokenizePP, boolean offsetable) {
+        return getTokenImpl(doc, offset, tokenizePP, false, offsetable);
     }
 
-    private static Token<CppTokenId> getOffsetTokenImpl(Document doc, int offset, boolean tokenizePP, boolean checkPrevious) {
+    private static Token<CppTokenId> getTokenImpl(Document doc, int offset, boolean tokenizePP, boolean checkPrevious, boolean offsetable) {
         TokenSequence<CppTokenId> cppTokenSequence = CndLexerUtilities.getCppTokenSequence(doc, offset);
         if (cppTokenSequence == null) {
             return null;
         }
-        Token<CppTokenId> offsetToken = getOffsetTokenImpl(cppTokenSequence, offset, checkPrevious);
+        Token<CppTokenId> offsetToken = getTokenImpl(cppTokenSequence, offset, checkPrevious, offsetable);
         if (tokenizePP && offsetToken != null && offsetToken.id() == CppTokenId.PREPROCESSOR_DIRECTIVE) {
             @SuppressWarnings("unchecked")
             TokenSequence<CppTokenId> embedded = (TokenSequence<CppTokenId>) cppTokenSequence.embedded();
             assert embedded != null : "no embedding for preprocessor directive " + offsetToken;
-            offsetToken = getOffsetTokenImpl(embedded, offset, checkPrevious);
+            offsetToken = getTokenImpl(embedded, offset, checkPrevious, offsetable);
         }
         return offsetToken;
     }
 
-    private static Token<CppTokenId> getOffsetTokenImpl(TokenSequence<CppTokenId> cppTokenSequence, int offset, boolean checkPrevious) {
+    private static Token<CppTokenId> getTokenImpl(TokenSequence<CppTokenId> cppTokenSequence, int offset, boolean checkPrevious, boolean offsetable) {
         if (cppTokenSequence == null) {
             return null;
         }
@@ -179,19 +168,19 @@ public class CndTokenUtilities {
         Token<CppTokenId> offsetToken = null;
         boolean checkPrev = false;
         if (cppTokenSequence.moveNext()) {
-            offsetToken = cppTokenSequence.offsetToken();
+            offsetToken = offsetable ? cppTokenSequence.offsetToken() : cppTokenSequence.token();
             if (checkPrevious && (shift == 0)) {
                 String category = offsetToken.id().primaryCategory();
                 if (CppTokenId.WHITESPACE_CATEGORY.equals(category) ||
-                    CppTokenId.COMMENT_CATEGORY.equals(category) ||
-                    CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
-                    CppTokenId.OPERATOR_CATEGORY.equals(category)) {
+                        CppTokenId.COMMENT_CATEGORY.equals(category) ||
+                        CppTokenId.SEPARATOR_CATEGORY.equals(category) ||
+                        CppTokenId.OPERATOR_CATEGORY.equals(category)) {
                     checkPrev = true;
                 }
             }
         }
         if (checkPrev && cppTokenSequence.movePrevious()) {
-            offsetToken = cppTokenSequence.offsetToken();
+            offsetToken = offsetable ? cppTokenSequence.offsetToken() : cppTokenSequence.token();
         }
         return offsetToken;
     }
@@ -219,6 +208,4 @@ public class CndTokenUtilities {
         }
         return processedToken;
     }
-
-
 }

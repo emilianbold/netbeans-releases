@@ -721,7 +721,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
     }
 
     /**
-     * @return null if everthing is OK or errors in String
+     * @return null if everything is OK or errors in String
      */
     public String getFastDebuggerProblemsInHTML() {
         assert getGemManager() != null : "has gemManager when asking whether Fast Debugger is installed";
@@ -799,7 +799,7 @@ public final class RubyPlatform implements Comparable<RubyPlatform> {
             public void run() {
                 // TODO: ideally this would be e.g. '< 0.3' but then running external
                 // process has problems with the '<'. See issue 142240.
-                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.0");
+                getGemManager().installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.4.1");
             }
         };
         if (!EventQueue.isDispatchThread()) {

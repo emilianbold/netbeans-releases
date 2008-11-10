@@ -40,48 +40,45 @@
  */
 package org.netbeans.performance.j2se.refactoring;
 
-import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Handler;
 import java.util.logging.Level;
-import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.NbPerformanceTest;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.lookup.Lookups;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.io.FileOutputStream;
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.IOException;
+import javax.lang.model.element.TypeElement;
+import junit.framework.Assert;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
+import org.openide.util.Lookup;
+import static org.netbeans.performance.j2se.Utilities.*;
 
 /**
  *
  * @author Jiri Prox
  */
-public class MoveClassPerfTest extends RefactoringTestCase implements NbPerformanceTest {
+public class MoveClassPerfTest extends RefPerfTestCase {
 
-    private final MyHandler handler;
-    private List<PerformanceData> data = new ArrayList<PerformanceData>();
-    private static int size=0;
+    private static int size = 0;
+
+    static {
+        MoveClassPerfTest.class.getClassLoader().setDefaultAssertionStatus(true);
+        System.setProperty("org.openide.util.Lookup", TestLkp.class.getName());
+        Assert.assertEquals(TestLkp.class, Lookup.getDefault().getClass());
+    }
 
     public MoveClassPerfTest(String name) {
         super(name);
-        handler = new MyHandler();
-        handler.setLevel(Level.FINE);
     }
 
     public static NbTestSuite suite() {
@@ -99,10 +96,24 @@ public class MoveClassPerfTest extends RefactoringTestCase implements NbPerforma
         timer.setLevel(Level.FINE);
         timer.addHandler(handler);
 
-        FileObject test = getFileInProject("jEdit41", "/src/org/gjt/sp/jedit/jEdit.java");
-        FileObject target = getFileInProject("jEdit41","src/org" );
+        FileObject test = getProjectDir().getFileObject("/src/org/gjt/sp/jedit/jEdit.java");
+        FileObject target = getProjectDir().getFileObject("/src/org/");
         final URL targetURL = target.getURL();
-        final MoveRefactoring moveRefactoring = new MoveRefactoring(Lookups.fixed(test));
+        ClasspathInfo cpi = ClasspathInfo.create(getBoot(), getCompile(), getSource());
+
+        final JavaSource src = JavaSource.create(cpi, test);
+        final ElementHandle[] handle = new ElementHandle[1];
+        src.runUserActionTask(new Task<CompilationController>() {
+
+            public void run(CompilationController controller) throws Exception {
+                controller.toPhase(JavaSource.Phase.RESOLVED);
+                TypeElement e = controller.getElements().getTypeElement("org.gjt.sp.jedit.jEdit");
+                handle[0] = ElementHandle.create(e);
+            }
+        }, false);
+
+        final MoveRefactoring moveRefactoring = new MoveRefactoring(Lookups.fixed(handle[0]));
+
         perform(moveRefactoring,new ParameterSetter() {
             public void setParameters() {                
                 moveRefactoring.setTarget(Lookups.singleton(targetURL));
@@ -177,36 +188,4 @@ public class MoveClassPerfTest extends RefactoringTestCase implements NbPerforma
 
     }
     
-    public PerformanceData[] getPerformanceData() {
-        return data.toArray(new PerformanceData[0]);
-    }
-
-    private static class MyHandler extends Handler {
-
-        private Map<String, Long> map = new HashMap<String, Long>();
-
-        @Override
-        public void publish(LogRecord record) {
-            Long data;
-
-            for (Object o : record.getParameters()) {
-                if (o instanceof Long) {
-                    data = (Long) o;
-                    map.put(record.getMessage(), data);
-                }
-            }
-        }
-
-        public Long get(String key) {
-            return map.get(key);
-        }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() throws SecurityException {
-        }
-    }
 }

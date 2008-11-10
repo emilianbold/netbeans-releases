@@ -122,7 +122,7 @@ public class Issue141855 extends cc
     CompletionJListOperator jCompl = GetCompletion( );
     List list = jCompl.getCompletionItems( );
     // Magic CC number for complete list
-    if( COMPLETE_CC_LIST_SIZE != list.size( ) )
+    if( COMPLETE_CC_LIST_SIZE > list.size( ) )
       fail( "Invalid CC list size: " + list.size( ) + ", expected: " + COMPLETE_CC_LIST_SIZE );
 
     jCompl.hideAll( );

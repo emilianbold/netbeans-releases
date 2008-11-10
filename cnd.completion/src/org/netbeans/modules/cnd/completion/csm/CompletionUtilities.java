@@ -176,8 +176,8 @@ public class CompletionUtilities {
     }
     
     private static List<CsmObject> getAssociatedObjects(List items, boolean wantFuncsOnly) {
-        List<CsmObject> out = new ArrayList();
-        List<CsmObject> funcs = new ArrayList();
+        List<CsmObject> out = new ArrayList<CsmObject>();
+        List<CsmObject> funcs = new ArrayList<CsmObject>();
         
         for (Object item : items) {
             if (item instanceof CsmResultItem){
