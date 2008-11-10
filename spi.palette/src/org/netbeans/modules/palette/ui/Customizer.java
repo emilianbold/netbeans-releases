@@ -142,11 +142,13 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
         updateButtons();
     }
 
+    @Override
     public void addNotify() {
         super.addNotify();
         ExplorerUtils.activateActions(explorerManager, true);
     }
 
+    @Override
     public void removeNotify() {
         ExplorerUtils.activateActions(explorerManager, false);
         super.removeNotify();
@@ -461,6 +463,7 @@ public class Customizer extends JPanel implements ExplorerManager.Provider,
                 CheckRenderer check = new CheckRenderer( (DefaultSettings)settings );
                 tree.setCellRenderer( check );
             }
+            tree.setEditable(false);
         }
     }
 }
