@@ -213,7 +213,7 @@ public class JavaSourceTest extends NbTestCase {
         suite.addTest(new JavaSourceTest("testRescheduleDoesNotStore"));
 //        suite.addTest(new JavaSourceTest("testNestedActions"));                           failing due to missing shared flag
 //        suite.addTest(new JavaSourceTest("testCouplingErrors"));                          failing even in main
-//        suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));                runWhenScanFinished not yet implemented
+        suite.addTest(new JavaSourceTest("testRunWhenScanFinished"));                
         suite.addTest(new JavaSourceTest("testNested2"));
         suite.addTest(new JavaSourceTest("testIndexCancel"));                            
         suite.addTest(new JavaSourceTest("testRegisterSameTask"));
@@ -1147,7 +1147,8 @@ public class JavaSourceTest extends NbTestCase {
         Thread.sleep (1000); //RU task already finished, but we want to wait until JS working thread is waiting on task to dispatch
         final ClassPath bootPath = createBootPath();
         final ClassPath compilePath = createCompilePath();
-        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,null);
+        final ClassPath srcPath = createSourcePath();
+        final ClasspathInfo cpInfo = ClasspathInfo.create(bootPath,compilePath,srcPath);
         final JavaSource js = JavaSource.create(cpInfo,testFile1);
 
         class T implements Task<CompilationController> {
