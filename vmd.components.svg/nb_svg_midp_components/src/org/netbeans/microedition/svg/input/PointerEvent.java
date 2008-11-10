@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,20 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.microedition.svg.input;
 
-package org.netbeans.modules.cnd.loaders;
+import org.netbeans.microedition.svg.SVGComponent;
 
-import java.awt.Image;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
 
 /**
+ * @author ads
  *
- * @author Alexander Simon
  */
-public class AsmDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
+public class PointerEvent {
 
-    public Image getIcon(int type) {
-	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/AsmIcon.gif");   // NOI18N
+    public PointerEvent( SVGComponent component, int x, int y, int clickCount )
+    {
+        this( component , x , y, clickCount , System.currentTimeMillis() );
     }
+    
+    public PointerEvent( SVGComponent component, int x, int y, int clickCount ,
+            long when )
+    {
+        myX = x;
+        myY = y;
+        myClickCount = clickCount;
+        myWhen = when;
+        myComponent = component;
+    }
+
+    public PointerEvent( SVGComponent component, int x, int y ) {
+        this( component , x , y , 1);
+    }
+
+    public int getX() {
+        return myX;
+    }
+
+    public int getY() {
+        return myY;
+    }
+
+    public int getClickCount() {
+        return myClickCount;
+    }
+
+    public long getWhen() {
+        return myWhen;
+    }
+
+    public SVGComponent getComponent() {
+        return myComponent;
+    }
+
+    private int myX;
+    private int myY;
+    private int myClickCount;
+    private long myWhen;
+    private SVGComponent myComponent;
 }

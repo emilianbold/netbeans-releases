@@ -1554,6 +1554,16 @@ public class HgCommand {
             revStr = "0:" + to;
         }
 
+        if(revStr == null) {
+            if(to == null) {
+                to = "tip";
+            }
+            if(from == null) {
+                from = "0";
+            }
+            revStr = from + ":" + to;
+        }
+
         return revStr;
     }
     /**

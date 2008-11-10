@@ -47,20 +47,15 @@ import org.netbeans.api.lexer.Token;
  *
  * @author Vladimir Voskresensky
  */
-public abstract class CppAbstractTokenProcessor implements CppTokenProcessor {
-    public void start(int startOffset, int firstTokenOffset) {}
-
-    public void end(int offset, int lastTokenOffset) {}
-
-    public int getLastSeparatorOffset() {
-        return -1;
-    }
+public interface CndTokenProcessor<T extends Token> {
+    void start(int startOffset, int firstTokenOffset);
+    void end(int offset, int lastTokenOffset);
+    int getLastSeparatorOffset();
 
     /**
      *
-     * @param token
-     * @param tokenOffset
+     * @param token current token
      * @return true if token processor is interested in getting embedding of input token as well
      */
-    public abstract boolean token(Token<CppTokenId> token, int tokenOffset);
+    boolean token(T token, int tokenOffset);
 }
