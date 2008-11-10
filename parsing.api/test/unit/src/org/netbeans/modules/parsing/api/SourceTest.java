@@ -187,7 +187,41 @@ public class SourceTest extends NbTestCase {
         assertNotNull("No snapshot", snapshot2);
         assertEquals("New snapshot has wrong contents", documentContent2, snapshot2.getText().toString());
     }
-    
+
+    public void testConsistencySourceForFileObject() throws IOException {
+        FileObject file = createFileObject("empty.txt", "", "\n");
+        Source source = Source.create(file);
+        assertNotNull("No Source for " + file, source);
+        assertSame("Wrong FileObject", file, source.getFileObject());
+        assertSame("Inconsistent Source.create(FileObject)", source, Source.create(file));
+        
+        Document doc = openDocument(file);
+        assertNotNull("Can't open document for " + file, doc);
+        assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
+        assertSame("Wrong document", doc, source.getDocument());
+    }
+
+    public void testConsistencySourceForDocument() throws IOException {
+        FileObject file = createFileObject("empty.txt", "", "\n");
+        Document doc = openDocument(file);
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        assertSame("Wrong document", doc, source.getDocument());
+        assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
+
+        assertSame("Inconsistent Source.create(FileObject)", source, Source.create(file));
+        assertSame("Wrong FileObject", file, source.getFileObject());
+    }
+
+    public void testConsistencySourceForFilelessDocument() {
+        Document doc = createDocument("text/plain", "");
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        assertSame("Wrong document", doc, source.getDocument());
+        assertSame("Inconsistent Source.create(Document)", source, Source.create(doc));
+        assertNull("Source for fileless document should not have FileObject", source.getFileObject());
+    }
+
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject f = workDir.createData(name);

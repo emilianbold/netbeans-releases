@@ -73,8 +73,20 @@ import org.openide.util.UserQuestionException;
 
 
 /**
- * Source represents one file or document. There is always at most one Source
- * for one FileObject.
+ * The <code>Source</code> represents one file or document.
+ *
+ * <p>An instance of <code>Source</code>
+ * can either be obtained for a <code>FileObject</code> or <code>Document</code>. If
+ * a particular <code>FileObject</code> and a <code>Document</code> are tied together
+ * in the way that the <code>Document</code> was loaded from the <code>FileObject</code>
+ * using either of them will get the same <code>Source</code> instance.
+ *
+ * <p class="nonnormative">Please note that the infrastructure does not keep
+ * <code>Source</code> instances forever and they can and will be garbage collected
+ * if nobody refrences them. This also means that two successive <code>Source.create</code>
+ * calls for the same file or document will return two different <code>Source</code>
+ * instances if the first instance is garbage collected prior the second call.
+ *
  * 
  * @author Jan Jancura
  * @author Tomas Zezula
@@ -82,11 +94,14 @@ import org.openide.util.UserQuestionException;
 public final class Source {
     
     /**
-     * Creates Source for given file.
+     * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
+     * passed to this method has to be a valid data file. There is no <code>Source</code>
+     * representation for a folder.
      * 
-     * @param fileObject    A file object.
-     * @return              Source for given file or null when the given 
-     *                      file doesn't exist.
+     * @param fileObject The file to get <code>Source</code> for.
+     *
+     * @return The <code>Source</code> for the given file or <code>null</code>
+     *   if the file doesn't exist.
      */
     // XXX: this should really be called 'get'
     public static Source create (
@@ -115,10 +130,34 @@ public final class Source {
     }
     
     /**
-     * Creates source for given document.
+     * Gets a <code>Source</code> instance for a <code>Document</code>. This method
+     * is consistent with {@link #create(org.openide.filesystems.FileObject)} in the way
+     * that they both will return the same <code>Source</code> instance for
+     * documents loaded from files. For example the following asserts will never fail
+     * (providing that relevant method calls return non-null).
      * 
-     * @param document      A document.
-     * @return              source for given document.
+     * <pre>
+     * // #1
+     * Source source = Source.create(file);
+     * assert(source == Source.create(source.getFileObject()));
+     * assert(source == Source.create(source.getDocument()));
+     *
+     * // #2
+     * Source source = Source.create(document);
+     * assert(source == Source.create(source.getDocument()));
+     * assert(source == Source.create(source.getFileObject()));
+     * </pre>
+     *
+     * <p class="nonnormative">Please note that you can get <code>Source</code> instance for any arbitrary
+     * document no matter if it was loaded from a file or not. However, the editor
+     * infrastructure generally does not support creation of fileless documents that
+     * are later saved and re-bound to a <code>FileObject</code>. If you wish to do
+     * something like that you will have to create a new <code>Document</code> instance
+     * loaded from the <code>FileObject</code> and use it instead of the original one.
+     *
+     * @param document The <code>Document</code> to get <code>Source</code> for.
+     *
+     * @return The <code>Source</code> for the given document; never <code>null</code>.
      */
     // XXX: this should really be called 'get'
     public static Source create (
@@ -127,6 +166,7 @@ public final class Source {
         Parameters.notNull("document", document); //NOI18N
 
         synchronized (Source.class) {
+            @SuppressWarnings("unchecked")
             Reference<Source> sourceRef = (Reference<Source>) document.getProperty(Source.class);
             Source source = sourceRef == null ? null : sourceRef.get();
 
@@ -142,25 +182,34 @@ public final class Source {
                 document.putProperty(Source.class, new WeakReference<Source>(source));
             }
 
+            assert source != null : "No Source for " + document; //NOI18N
             return source;
         }
     }
 
     /**
-     * Returns source mime type.
+     * Gets this <code>Source</code>'s mime type. It's the mime type of the <code>Document</code>
+     * represented by this sourece. If the document has not yet been loaded it's
+     * the mime type of the <code>FileObject</code>.
      * 
-     * @return              this source mime type.
+     * @return The mime type.
      */
     public String getMimeType() {
         return mimeType;
     }
     
     /**
-     * Returns <code>Document</code> this source has been created from or 
-     * <code>null</code>.
+     * Gets the <code>Document</code> represented by this source. This method
+     * returns either the document, wich was used to obtain this <code>Source</code>
+     * instance in {@link #create(javax.swing.text.Document)} or the document that
+     * has been loaded from the <code>FileObject</code> used in {@link #create(org.openide.filesystems.FileObject)}.
+     *
+     * <p>Please note that this method can return <code>null</code> in case that
+     * this <code>Source</code> was created for a file and there has not been yet
+     * a document loaded from this file.
      * 
-     * @return              <code>Document</code> this source has been created 
-     *                      from or <code>null</code>
+     * @return The <code>Document</code> represented by this <code>Source</code>
+     *   or <code>null</code> if no document has been loaded yet.
      */
     // XXX: maybe we should add 'boolean forceOpen' parameter and call
     // editorCookie.openDocument() if neccessary
@@ -169,20 +218,30 @@ public final class Source {
     }
     
     /**
-     * Returns <code>FileObject</code> this source has been created from 
-     * or <code>null</code>.
-     * 
-     * @return              <code>FileObject</code> this source has been 
-     *                      created from or <code>null</code>
+     * Gets the <code>FileObject</code> represented by this source. This method
+     * returns either the file, wich was used to obtain this <code>Source</code>
+     * instance in {@link #create(org.openide.filesystems.FileObject)} or the file that
+     * the document represented by this <code>Source</code> was loaded from.
+     *
+     * <p>Please note that this method can return <code>null</code> in case that
+     * this <code>Source</code> was created for a fileless document (ie. <code>Document</code>
+     * instance that was not loaded from a file).
+     *
+     * @return The <code>FileObject</code> or <code>null</code> if this <code>Source</code>
+     *   was created for a fileless document.
      */
     public FileObject getFileObject () {
         return fileObject;
     }
 
     /**
-     * Creates snapshot of current content of this source.
+     * Creates a new <code>Snapshot</code> of the contents of this <code>Source</code>.
+     * A snapshot is an immutable static copy of the contents represented by this
+     * <code>Source</code>. The snapshot is created from the document, if it exists.
+     * If the document has not been loaded yet the snapshot will be created from the
+     * file.
      * 
-     * @return              snapshot of current content of this source
+     * @return The <code>Snapshot</code> of the current content of this source.
      */
     public Snapshot createSnapshot () {
         final String [] text = new String [] { "" }; //NOI18N
