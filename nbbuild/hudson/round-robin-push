@@ -51,9 +51,9 @@ testmodule() {
     fi
 }
 
-ant clean || exit 2
-ant build || exit 2
-ant commit-validation || echo commit-validation >$RESULT
+ant clean $ANT_PARAM || exit 2
+ant build $ANT_PARAM || exit 2
+ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
 
 testmodule openide.util
 
