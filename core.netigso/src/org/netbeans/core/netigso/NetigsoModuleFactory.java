@@ -60,8 +60,10 @@ import org.netbeans.Module;
 import org.netbeans.ModuleFactory;
 import org.netbeans.ModuleManager;
 import org.openide.util.Exceptions;
+import org.openide.util.NbCollections;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
@@ -115,7 +117,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
             }
             configMap.put(BundleCache.CACHE_PROFILE_DIR_PROP, ud + File.separator + "var" + File.separator + "cache" + File.separator + "felix");
             activator = new NetigsoActivator();
-            List activators = new ArrayList();
+            List<BundleActivator> activators = new ArrayList<BundleActivator>();
             activators.add(activator);
             felix = new Felix(configMap, activators);
             felix.start();
@@ -262,7 +264,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
 
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
-            return bundle.getResources(name);
+            return NbCollections.checkedEnumerationByFilter(bundle.getResources(name), URL.class, false);
         }
 
         @Override
