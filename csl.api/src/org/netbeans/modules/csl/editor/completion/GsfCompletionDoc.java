@@ -73,10 +73,9 @@ public class GsfCompletionDoc implements CompletionDocumentation {
     private Language language;
     private ParserResult controller;
 
-    private GsfCompletionDoc(final ParserResult controller, final ElementHandle elementHandle,
-        URL url) {
+    private GsfCompletionDoc(final ParserResult controller, final ElementHandle elementHandle, URL url) {
         this.controller = controller;
-        this.language = controller.getLanguage();
+        this.language = LanguageRegistry.getInstance().getLanguageByMimeType(controller.getSnapshot().getMimeType());
         if (elementHandle != null && elementHandle.getMimeType() != null) {
             Language embeddedLanguage = LanguageRegistry.getInstance().getLanguageByMimeType(elementHandle.getMimeType());
             if (embeddedLanguage != null && embeddedLanguage.getParser() != null) {
@@ -93,7 +92,7 @@ public class GsfCompletionDoc implements CompletionDocumentation {
                 new AbstractAction() {
                         public void actionPerformed(ActionEvent evt) {
                             Completion.get().hideAll();
-                            UiUtils.open(controller.getSource(), elementHandle);
+                            UiUtils.open(controller.getSnapshot().getSource(), elementHandle);
                         }
                     };
             if (url != null) {

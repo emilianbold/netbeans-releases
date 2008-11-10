@@ -49,8 +49,8 @@ import java.io.Writer;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.SwingUtilities;
+import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.openide.util.NbBundle;
@@ -60,6 +60,7 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -72,11 +73,11 @@ import org.openide.text.NbDocument;
  */
 final class PreviewHintFix implements EnhancedFix {
 
-    private CompilationInfo info;
+    private ParserResult info;
     private PreviewableFix fix;
     private final String sortText;
 
-    PreviewHintFix(CompilationInfo info, PreviewableFix fix, String sortText) {
+    PreviewHintFix(ParserResult info, PreviewableFix fix, String sortText) {
         this.info = info;
         this.fix = fix;
         this.sortText = sortText;
@@ -91,7 +92,7 @@ final class PreviewHintFix implements EnhancedFix {
     public ChangeInfo implement() throws Exception {
         EditList edits = fix.getEditList();
 
-        BaseDocument oldDoc = (BaseDocument) info.getDocument();
+        Document oldDoc = info.getSnapshot().getSource().getDocument();
         //OffsetRange range = edits.getRange();
         OffsetRange range = new OffsetRange(0, oldDoc.getLength());
         String oldSource = oldDoc.getText(range.getStart(), range.getEnd());
@@ -191,7 +192,7 @@ final class PreviewHintFix implements EnhancedFix {
 
         @Override
         public String getMIMEType() {
-            return info.getFileObject().getMIMEType();
+            return info.getSnapshot().getMimeType();
         }
 
         @Override

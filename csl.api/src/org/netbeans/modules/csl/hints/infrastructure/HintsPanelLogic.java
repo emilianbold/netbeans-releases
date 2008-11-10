@@ -50,9 +50,11 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -72,14 +74,15 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Rule;
 
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
-import org.netbeans.napi.gsfret.source.CompilationController;
-import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -90,6 +93,8 @@ import org.openide.util.Exceptions;
  */
 class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener {
 
+    private static final Logger LOG = Logger.getLogger(HintsPanelLogic.class.getName());
+    
     private Map<UserConfigurableRule,ModifiedPreferences> changes;
     
     private static Map<HintSeverity,Integer> severity2index;
@@ -170,23 +175,20 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
         if (pane != null) {
             Document doc = pane.getDocument();
-            Source source = Source.forDocument(doc);
+            Source source = Source.create(doc);
             if (source != null) {
                 try {
-                    source.runUserActionTask(new CancellableTask<CompilationController>() {
-                        public void cancel() {
+                    ParserManager.parse(Collections.singleton(source), new UserTask() {
+                        public @Override void run(ResultIterator resultIterator) throws Exception {
+// XXX: parsingapi
+//                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+//                                return;
+//                            }
+                            GsfHintsManager.refreshHints(resultIterator);
                         }
-
-                        public void run(CompilationController controller) throws Exception {
-                            if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                                return;
-                            }
-
-                            GsfHintsManager.refreshHints(controller);
-                        }
-                    }, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    });
+                } catch (ParseException ex) {
+                    LOG.log(Level.WARNING, null, ex);
                 }
             }
         }

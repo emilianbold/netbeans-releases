@@ -41,6 +41,7 @@
 package org.netbeans.modules.csl.editor.semantic;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -51,12 +52,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.Document;
+import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.spi.TaskScheduler;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.ColoringAttributes.Coloring;
@@ -65,8 +66,10 @@ import org.netbeans.modules.csl.api.annotations.NonNull;
 import org.netbeans.modules.csl.hints.infrastructure.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.openide.ErrorManager;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -81,21 +84,22 @@ import org.openide.util.NbBundle;
  */
 public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     
-    private FileObject file;
+    //private FileObject file;
+    private final Snapshot snapshot;
     static Coloring MO = ColoringAttributes.add(ColoringAttributes.empty(), ColoringAttributes.MARK_OCCURRENCES);
     
     /** Creates a new instance of SemanticHighlighter */
-    MarkOccurrencesHighlighter(FileObject file) {
-        this.file = file;
+    MarkOccurrencesHighlighter(Snapshot snapshot) {
+        this.snapshot = snapshot;
     }
     
     public static final Color ES_COLOR = new Color( 175, 172, 102 ); // new Color(244, 164, 113);
     
     public Document getDocument() {
-        return DataLoadersBridge.getDefault().getDocument(file);
+        return snapshot.getSource().getDocument();
     }
     
-    public void run(ParserResult info, Snapshot snapshot) {
+    public void run(ParserResult info) {
         resume();
         
         Document doc = getDocument();
@@ -106,8 +110,9 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         }
         
         long start = System.currentTimeMillis();
-        
-        int caretPosition = MarkOccurrencesHighlighterFactory.getLastPosition(file);
+
+        // XXX:
+        int caretPosition = getCaretOffset(info.getSnapshot().getSource().getFileObject());
         
         if (isCancelled())
             return;
@@ -154,7 +159,7 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
     }
     
     @NonNull
-    Pair<List<OffsetRange>,Language> processImpl(CompilationInfo info,/* node,*/ Document doc, int caretPosition) {
+    Pair<List<OffsetRange>, Language> processImpl(ParserResult info,/* node,*/ Document doc, int caretPosition) {
         List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument)doc, caretPosition);
         Language language = null;
         for (Language l : list) {
@@ -189,17 +194,19 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
             }
         }
         
-        return new Pair(Collections.emptyList(), info.getLanguage());
+        return new Pair<List<OffsetRange>, Language>(
+            Collections.<OffsetRange>emptyList(),
+            LanguageRegistry.getInstance().getLanguageByMimeType(info.getSnapshot().getMimeType()));
     }
 
     @Override
     public int getPriority() {
-        return 100;
+        return Integer.MAX_VALUE;
     }
 
     @Override
-    public Class<? extends TaskScheduler> getSchedulerClass () {
-        return TaskScheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
+    public Class<? extends Scheduler> getSchedulerClass () {
+        return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
     
     private boolean canceled;
@@ -243,5 +250,19 @@ public class MarkOccurrencesHighlighter extends ParserResultTask<ParserResult> {
         }
         
         return bag;
+    }
+
+    private static int getCaretOffset(FileObject file) {
+        try {
+            EditorCookie ec = DataLoadersBridge.getDefault().getCookie(file, EditorCookie.class);
+            JTextComponent [] panes = ec.getOpenedPanes();
+            if (panes.length > 0) {
+                return panes[0].getCaretPosition();
+            }
+        } catch (IOException ioe) {
+            // ignore
+        }
+
+        return -1;
     }
 }

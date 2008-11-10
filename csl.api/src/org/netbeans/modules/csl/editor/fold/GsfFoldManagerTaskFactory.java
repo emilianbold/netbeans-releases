@@ -40,11 +40,11 @@
  */
 package org.netbeans.modules.csl.editor.fold;
 
-import org.netbeans.modules.csl.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source.Priority;
-import org.netbeans.napi.gsfret.source.support.EditorAwareSourceTaskFactory;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,15 +56,21 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
-public class GsfFoldManagerTaskFactory extends EditorAwareSourceTaskFactory {
+public class GsfFoldManagerTaskFactory extends TaskFactory {
 
     /** Creates a new instance of GsfFoldManagerTaskFactory */
     public GsfFoldManagerTaskFactory() {
-        super(Phase.PARSED, Priority.NORMAL);
+        super();
     }
 
-    public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return GsfFoldManager.JavaElementFoldTask.getTask(file);
+    @Override
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        FileObject file = snapshot.getSource().getFileObject();
+        if (file != null) {
+            return Collections.singleton(GsfFoldManager.JavaElementFoldTask.getTask(file));
+        } else {
+            return Collections.<SchedulerTask>emptySet();
+        }
     }
     
 }

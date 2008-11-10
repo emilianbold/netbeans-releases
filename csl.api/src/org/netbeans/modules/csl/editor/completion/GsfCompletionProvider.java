@@ -65,7 +65,6 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.NameKind;
@@ -74,11 +73,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Phase;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.Language;
@@ -282,7 +279,7 @@ public class GsfCompletionProvider implements CompletionProvider {
         }
 
         @Override
-        protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
+        protected void query(CompletionResultSet resultSet, Document doc, final int caretOffset) {
             try {
                 this.caretOffset = caretOffset;
                 if (queryType == TOOLTIP_QUERY_TYPE || queryType == DOCUMENTATION_QUERY_TYPE || isJavaContext(component, caretOffset)) {
@@ -697,7 +694,7 @@ public class GsfCompletionProvider implements CompletionProvider {
             // Look at the parse tree, and find the corresponding end node
             // offset...
             
-            CodeCompletionHandler completer = getCompletable(controller, offset);
+            CodeCompletionHandler completer = getCompletable(doc, offset);
             try {
                 // TODO: use the completion helper to get the contxt
                 if (completer != null) {
@@ -732,11 +729,11 @@ public class GsfCompletionProvider implements CompletionProvider {
         private class Env {
             private int offset;
             private String prefix;
-            private CompilationController controller;
+            private ParserResult controller;
             private CodeCompletionHandler completable;
             private boolean autoCompleting;
 
-            private Env(int offset, String prefix, CompilationController controller, CodeCompletionHandler completable) {
+            private Env(int offset, String prefix, ParserResult controller, CodeCompletionHandler completable) {
                 this.offset = offset;
                 this.prefix = prefix;
                 this.controller = controller;
@@ -759,7 +756,7 @@ public class GsfCompletionProvider implements CompletionProvider {
                 this.autoCompleting = autoCompleting;
             }
 
-            public CompilationController getController() {
+            public ParserResult getController() {
                 return controller;
             }
             

@@ -43,11 +43,12 @@ package org.netbeans.modules.csl.editor.hyperlink;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -59,17 +60,21 @@ import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.DeclarationFinder.AlternativeLocation;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.CancellableTask;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source;
 import org.netbeans.napi.gsfret.source.UiUtils;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.editor.completion.GsfCompletionProvider;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.napi.gsfret.source.SourceUtils;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
@@ -82,6 +87,8 @@ import org.openide.util.NbBundle;
  *
  */
 public class GoToSupport {
+    private static final Logger LOG = Logger.getLogger(GoToSupport.class.getName());
+    
     /** Jump straight to declarations */
     static final boolean IM_FEELING_LUCKY = Boolean.getBoolean("gsf.im_feeling_lucky");
     
@@ -109,103 +116,92 @@ public class GoToSupport {
             return null;
         }
 
+        final FileObject fo = getFileObject(doc);
+        if (fo == null) {
+            return null;
+        }
+
+        Source js = Source.create(fo);
+        if (js == null) {
+            return null;
+        }
+        final String[] result = new String[] { null };
+
         try {
-            final FileObject fo = getFileObject(doc);
+            ParserManager.parse(Collections.singleton(js), new UserTask() {
+                public void run(ResultIterator controller) throws Exception {
 
-            if (fo == null) {
-                return null;
-            }
-
-            Source js = Source.forFileObject(fo);
-            if (js == null) {
-                return null;
-            }
-            final String[] result = new String[1];
-
-            js.runUserActionTask(new CancellableTask<CompilationController>() {
-                    public void cancel() {
+                    Parser.Result embeddedResult = controller.getParserResult(offset);
+                    if (!(embeddedResult instanceof ParserResult)) {
+                        return;
                     }
 
-                    public void run(CompilationController controller)
-                        throws Exception {
-                        if (controller.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
-                            return;
-                        }
+                    ParserResult info = (ParserResult) embeddedResult;
+                    if (info.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
 
-                        List<Language> list = LanguageRegistry.getInstance().getEmbeddedLanguages((BaseDocument) doc,offset);
-                        Language language = null;
-                        for (Language l : list) {
-                            if (l.getDeclarationFinder() != null) {
-                                language = l;
-                                break;
-                            }
-                        }
-                        
-                        if (language != null) {
-                            DeclarationFinder finder = language.getDeclarationFinder();
+                    Language language = LanguageRegistry.getInstance().getLanguageByMimeType(info.getSnapshot().getMimeType());
+                    if (language == null) {
+                        return;
+                    }
 
-                            if (finder != null) {
-                                // Isn't this a waste of time? Unused
-                                getIdentifierSpan(doc, offset);
+                    DeclarationFinder finder = language.getDeclarationFinder();
+                    if (finder == null) {
+                        return;
+                    }
 
-                                DeclarationLocation location =
-                                    finder.findDeclaration(controller, offset);
+                    // Isn't this a waste of time? Unused
+                    getIdentifierSpan(doc, offset);
 
-                                if (tooltip) {
-                                    CodeCompletionHandler completer = language.getCompletionProvider();
-                                    if (location != DeclarationLocation.NONE && completer != null) {
-                                        ElementHandle element = location.getElement();
-                                        if (element != null) {
-                                            String documentation = completer.document(controller, element);
-                                            if (documentation != null) {
-                                                result[0] = "<html><body>" + documentation; // NOI18N
-                                            }
-                                        }
-                                    }
-                                    
-                                    return;
-                                } else if (location != DeclarationLocation.NONE && location != null) {
-                                    URL url = location.getUrl();
-                                    String invalid = location.getInvalidMessage();
-                                    if (url != null) {
-                                        HtmlBrowser.URLDisplayer.getDefault().showURL(url);
-                                    } else if (invalid != null) {
-                                        // TODO - show in the editor as an error instead?
-                                        StatusDisplayer.getDefault().setStatusText(invalid);
-                                        Toolkit.getDefaultToolkit().beep();
-                                        return;
-                                    } else {
-                                        
-                                        if (!IM_FEELING_LUCKY && location.getAlternativeLocations().size() > 0 &&
-                                                !PopupUtil.isPopupShowing()) {
-                                            // Many alternatives - pop up a dialog and make the user choose
-                                            if (chooseAlternatives(doc, offset, location.getAlternativeLocations())) {
-                                                return;
-                                            }
-                                        }
-                                        
-                                        UiUtils.open(location.getFileObject(), location.getOffset());
+                    DeclarationLocation location = finder.findDeclaration(info, offset);
 
-                                        String desc = "Description not yet implemented";
-                                        result[0] = "<html><body>" + desc;
-                                    }
-
-                                    return;
+                    if (tooltip) {
+                        CodeCompletionHandler completer = language.getCompletionProvider();
+                        if (location != DeclarationLocation.NONE && completer != null) {
+                            ElementHandle element = location.getElement();
+                            if (element != null) {
+                                String documentation = completer.document(info, element);
+                                if (documentation != null) {
+                                    result[0] = "<html><body>" + documentation; // NOI18N
                                 }
                             }
                         }
 
+                    } else if (location != DeclarationLocation.NONE && location != null) {
+                        URL url = location.getUrl();
+                        String invalid = location.getInvalidMessage();
+                        if (url != null) {
+                            HtmlBrowser.URLDisplayer.getDefault().showURL(url);
+                        } else if (invalid != null) {
+                            // TODO - show in the editor as an error instead?
+                            StatusDisplayer.getDefault().setStatusText(invalid);
+                            Toolkit.getDefaultToolkit().beep();
+                        } else {
+                            if (!IM_FEELING_LUCKY && location.getAlternativeLocations().size() > 0 &&
+                                    !PopupUtil.isPopupShowing()) {
+                                // Many alternatives - pop up a dialog and make the user choose
+                                if (chooseAlternatives(doc, offset, location.getAlternativeLocations())) {
+                                    return;
+                                }
+                            }
+
+                            UiUtils.open(location.getFileObject(), location.getOffset());
+
+                            String desc = "Description not yet implemented";
+                            result[0] = "<html><body>" + desc;
+                        }
+
+                    } else {
                         Toolkit.getDefaultToolkit().beep();
-                        result[0] = null;
-
-                        return;
                     }
-                }, true);
-
-            return result[0];
-        } catch (IOException ioe) {
-            throw new IllegalStateException(ioe);
+                }
+            });
+        } catch (ParseException pe) {
+            LOG.log(Level.WARNING, null, pe);
         }
+        
+        return result[0];
     }
 
     /** TODO - MOVE TO UTILITTY LIBRARY */

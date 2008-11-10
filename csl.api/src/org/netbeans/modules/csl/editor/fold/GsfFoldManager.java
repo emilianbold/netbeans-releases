@@ -42,6 +42,7 @@ package org.netbeans.modules.csl.editor.fold;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.List;
@@ -50,6 +51,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -68,7 +70,7 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.csl.editor.semantic.ScanningCancellableTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.fold.FoldHierarchyTransaction;
 import org.netbeans.spi.editor.fold.FoldManager;
 import org.netbeans.spi.editor.fold.FoldOperation;
@@ -77,6 +79,8 @@ import org.openide.filesystems.FileObject;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
 import org.netbeans.modules.csl.api.DataLoadersBridge;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -268,18 +272,24 @@ public class GsfFoldManager implements FoldManager {
         return prefs.getBoolean(settingName, false);
     }
     
-    static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
+    static final class JavaElementFoldTask extends ParserResultTask<ParserResult> {
+
+        private final AtomicBoolean cancelled = new AtomicBoolean(false);
         
+        public JavaElementFoldTask() {
+            super();
+        }
+
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
         private static Map<FileObject, JavaElementFoldTask> file2Task = new WeakHashMap<FileObject, JavaElementFoldTask>();
-        
+
         static JavaElementFoldTask getTask(FileObject file) {
             JavaElementFoldTask task = file2Task.get(file);
-            
+
             if (task == null) {
                 file2Task.put(file, task = new JavaElementFoldTask());
             }
-            
+
             return task;
         }
         
@@ -289,8 +299,8 @@ public class GsfFoldManager implements FoldManager {
             this.manager = new WeakReference<GsfFoldManager>(manager);
         }
         
-        public void run(final CompilationInfo info) {
-            resume();
+        public void run(final ParserResult info) {
+            cancelled.set(false);
             
             GsfFoldManager fm;
             
@@ -308,16 +318,17 @@ public class GsfFoldManager implements FoldManager {
             
             long startTime = System.currentTimeMillis();
 
-            // Don't update folds, if there is an invalid result
-            // It should be solved per lenguages, but then there has to be remembered
-            // lates folds and transformed to the new possition.
-            if (info.hasInvalidResults()) {
-                return;
-            }
+// XXX: parsingapi
+//            // Don't update folds, if there is an invalid result
+//            // It should be solved per lenguages, but then there has to be remembered
+//            // lates folds and transformed to the new possition.
+//            if (info.hasInvalidResults()) {
+//                return;
+//            }
 
             TreeSet<FoldInfo> folds = new TreeSet<FoldInfo>();
             boolean success = gsfFoldScan(fm, info, folds);
-            if (!success || isCancelled()) {
+            if (!success || cancelled.get()) {
                 return;
             }
             
@@ -326,7 +337,7 @@ public class GsfFoldManager implements FoldManager {
             long endTime = System.currentTimeMillis();
             
             Logger.getLogger("TIMER").log(Level.FINE, "Folds - 1", //NOI18N
-                    new Object[] {info.getFileObject(), endTime - startTime});
+                    new Object[] {info.getSnapshot().getSource().getFileObject(), endTime - startTime});
         }
         
         /**
@@ -334,13 +345,11 @@ public class GsfFoldManager implements FoldManager {
          * 
          * @return true If folds were found, false if cancelled
          */
-        private boolean gsfFoldScan(GsfFoldManager manager, CompilationInfo info, TreeSet<FoldInfo> folds) {
-            BaseDocument doc = (BaseDocument)info.getDocument();
-            if (doc == null) {
-                return false;
-            }
+        private boolean gsfFoldScan(GsfFoldManager manager, ParserResult info, TreeSet<FoldInfo> folds) {
+            Document doc   = manager.operation.getHierarchy().getComponent().getDocument();
             
-            Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+//            Set<String> mimeTypes = info.getEmbeddedMimeTypes();
+            Set<String> mimeTypes = Collections.singleton(info.getSnapshot().getMimeType());
             for (String mimeType : mimeTypes) {
                 Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
                 if (language != null) {
@@ -348,19 +357,20 @@ public class GsfFoldManager implements FoldManager {
                 }
             }
 
-            if (isCancelled()) {
+            if (cancelled.get()) {
                 return false;
             }
 
             //check for initial fold:
-            boolean success = checkInitialFold(manager, info, folds);
+            boolean success = checkInitialFold(manager, folds);
             
             return success;
         }
 
-        private boolean checkInitialFold(GsfFoldManager manager, CompilationInfo info, TreeSet<FoldInfo> folds) {
+        private boolean checkInitialFold(GsfFoldManager manager, TreeSet<FoldInfo> folds) {
             try {
-                TokenHierarchy<?> th = info.getTokenHierarchy();
+                Document doc   = manager.operation.getHierarchy().getComponent().getDocument();
+                TokenHierarchy<?> th = TokenHierarchy.get(doc);
                 if (th == null) {
                     return false;
                 }
@@ -371,7 +381,6 @@ public class GsfFoldManager implements FoldManager {
                     
                     String category = token.id().primaryCategory();
                     if ("comment".equals(category)) { // NOI18N
-                        Document doc   = manager.operation.getHierarchy().getComponent().getDocument();
                         int startOffset = ts.offset();
                         int endOffset =  startOffset + token.length();
                         boolean collapsed = manager.getSetting(CODE_FOLDING_COLLAPSE_INITIAL_COMMENT); //foldInitialCommentsPreset;
@@ -422,16 +431,15 @@ public class GsfFoldManager implements FoldManager {
             return true;
         }
         
-        private void scan(GsfFoldManager manager, CompilationInfo info, TreeSet<FoldInfo> folds, BaseDocument doc, Language language) {
+        private void scan(GsfFoldManager manager, ParserResult info, TreeSet<FoldInfo> folds, Document doc, Language language) {
             addTree(manager, folds, info, doc, language);
         }
         
-        private void addTree(GsfFoldManager manager, TreeSet<FoldInfo> result, CompilationInfo info,
-           BaseDocument doc, Language language) {
+        private void addTree(GsfFoldManager manager, TreeSet<FoldInfo> result, ParserResult info, Document doc, Language language) {
             StructureScanner scanner = language.getStructure();
             if (scanner != null) {
                 Map<String,List<OffsetRange>> folds = scanner.folds(info);
-                if (isCancelled()) {
+                if (cancelled.get()) {
                     return;
                 }
                 List<OffsetRange> ranges = folds.get("codeblocks"); //NOI18N
@@ -465,8 +473,7 @@ public class GsfFoldManager implements FoldManager {
             }
         }
         
-        private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, BaseDocument doc,
-                boolean collapseByDefault, FoldTemplate template) {
+        private void addFold(OffsetRange range, TreeSet<FoldInfo> folds, Document doc, boolean collapseByDefault, FoldTemplate template) {
             if (range != OffsetRange.NONE) {
                 int start = range.getStart();
                 int end = range.getEnd();
@@ -478,6 +485,21 @@ public class GsfFoldManager implements FoldManager {
                     }
                 }
             }
+        }
+
+        @Override
+        public int getPriority() {
+            return Integer.MAX_VALUE;
+        }
+
+        @Override
+        public Class<? extends Scheduler> getSchedulerClass() {
+            return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
+        }
+
+        @Override
+        public void cancel() {
+            cancelled.set(true);
         }
 
     }

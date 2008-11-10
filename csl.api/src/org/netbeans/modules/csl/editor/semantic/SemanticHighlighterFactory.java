@@ -40,12 +40,11 @@
  */
 package org.netbeans.modules.csl.editor.semantic;
 
-import org.netbeans.modules.csl.api.CancellableTask;
-import org.netbeans.napi.gsfret.source.CompilationInfo;
-import org.netbeans.modules.csl.api.Phase;
-import org.netbeans.napi.gsfret.source.Source.Priority;
-import org.netbeans.napi.gsfret.source.support.EditorAwareSourceTaskFactory;
-import org.openide.filesystems.FileObject;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.TaskFactory;
 
 /**
  * This file is originally from Retouche, the Java Support 
@@ -56,15 +55,17 @@ import org.openide.filesystems.FileObject;
  *
  * @author Jan Lahoda
  */
-public class SemanticHighlighterFactory extends EditorAwareSourceTaskFactory {
+public class SemanticHighlighterFactory extends TaskFactory {
     
     /** Creates a new instance of SemanticHighlighterFactory */
     public SemanticHighlighterFactory() {
-        super(Phase.RESOLVED, Priority.BELOW_NORMAL);
+        super(); // Phase.RESOLVED, Priority.BELOW_NORMAL
     }
 
-    public CancellableTask<CompilationInfo> createTask(FileObject file) {
-        return new SemanticHighlighter(file);
+    @Override
+    public Collection<? extends SchedulerTask> create(Snapshot snapshot) {
+        return Collections.singleton(new SemanticHighlighter(snapshot));
     }
+
 
 }

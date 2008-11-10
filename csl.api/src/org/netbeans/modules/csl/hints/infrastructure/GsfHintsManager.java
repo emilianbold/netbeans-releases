@@ -41,7 +41,6 @@ package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -59,14 +58,11 @@ import javax.swing.tree.TreeModel;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
-import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.PreviewableFix;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.CompilationInfo;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.ParserResult;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.Rule.ErrorRule;
@@ -74,7 +70,10 @@ import org.netbeans.modules.csl.api.Rule.SelectionRule;
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.napi.gsfret.source.CompilationController;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.HintsController;
@@ -470,8 +469,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         return null;
     }
     
-    public final ErrorDescription createDescription(Hint desc, RuleContext context, 
-            boolean allowDisableEmpty) {
+    public final ErrorDescription createDescription(Hint desc, RuleContext context, boolean allowDisableEmpty) {
         Rule rule = desc.getRule();
         HintSeverity severity;
         if (rule instanceof UserConfigurableRule) {
@@ -481,7 +479,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         }
         OffsetRange range = desc.getRange();
         List<org.netbeans.spi.editor.hints.Fix> fixList;
-        CompilationInfo info = context.compilationInfo;
+        ParserResult info = context.compilationInfo;
         
         if (desc.getFixes() != null && desc.getFixes().size() > 0) {
             fixList = new ArrayList<org.netbeans.spi.editor.hints.Fix>(desc.getFixes().size());
@@ -519,7 +517,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     
     public final void refreshHints(RuleContext context) {
         List<ErrorDescription> result = getHints(this, context);
-        HintsController.setErrors(context.compilationInfo.getFileObject(),
+        HintsController.setErrors(context.compilationInfo.getSnapshot().getSource().getFileObject(),
                 context.caretOffset == -1 ? HintsTask.class.getName() : SuggestionsTask.class.getName(), result);
     }
     
@@ -555,30 +553,48 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
     }
 
 
-    static final void refreshHints(CompilationController controller) {
-        List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        Set<String> mimeTypes = controller.getEmbeddedMimeTypes();
-        for (String mime : mimeTypes) {
-            Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mime);
-            if (language == null) {
-                continue;
-            }
-
-            HintsProvider provider = language.getHintsProvider();
-            if (provider == null) {
-                continue;
-            }
-
-            GsfHintsManager hintsManager = language.getHintsManager();
-            RuleContext context = hintsManager.createRuleContext(controller, language, -1, -1, -1);
-            List<ErrorDescription> hints = getHints(hintsManager, context);
-            result.addAll(hints);
-        }
-        HintsController.setErrors(controller.getFileObject(),
-                HintsTask.class.getName(), result);
+    static final void refreshHints(ResultIterator controller) {
+        List<ErrorDescription> allHints = new ArrayList<ErrorDescription>();
+        collectHints(controller, allHints);
+        HintsController.setErrors(controller.getSnapshot().getSource().getFileObject(), HintsTask.class.getName(), allHints);
     }
 
-    
+    private static void collectHints(ResultIterator controller, List<ErrorDescription> allHints) {
+        String mimeType = controller.getSnapshot().getMimeType();
+        Language language = LanguageRegistry.getInstance().getLanguageByMimeType(mimeType);
+        if (language == null) {
+            return;
+        }
+
+        HintsProvider provider = language.getHintsProvider();
+        if (provider == null) {
+            return;
+        }
+
+        ParserResult parserResult = null;
+        try {
+            Parser.Result pr = controller.getParserResult();
+            if (pr instanceof ParserResult) {
+                parserResult = (ParserResult) pr;
+            }
+        } catch (ParseException e) {
+            LOG.log(Level.WARNING, null, e);
+        }
+
+        if (parserResult == null) {
+            return;
+        }
+        
+        GsfHintsManager hintsManager = language.getHintsManager();
+        RuleContext context = hintsManager.createRuleContext(parserResult, language, -1, -1, -1);
+        List<ErrorDescription> hints = getHints(hintsManager, context);
+        allHints.addAll(hints);
+
+        for(Embedding e : controller.getEmbeddings()) {
+            collectHints(controller.getResultIterator(e), allHints);
+        }
+    }
+
     public RuleContext createRuleContext (ParserResult parserResult, Language language, int caretOffset, int selectionStart, int selectionEnd) {
         RuleContext context = provider.createRuleContext();
         context.manager = this;
@@ -586,18 +602,18 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         context.caretOffset = caretOffset;
         context.selectionStart = selectionStart;
         context.selectionEnd = selectionEnd;
-        context.doc = (BaseDocument)info.getDocument();
+        context.doc = (BaseDocument) parserResult.getSnapshot().getSource().getDocument();
         if (context.doc == null) {
             // Document closed
             return null;
         }
         
-        
-        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(language.getMimeType());  
-        context.parserResults = embeddedResults != null ? embeddedResults : Collections.EMPTY_LIST;
-        if (context.parserResults.size() > 0) {
-            context.parserResult = embeddedResults.iterator().next();
-        }
+// XXX: parsingapi
+//        Collection<? extends ParserResult> embeddedResults = info.getEmbeddedResults(language.getMimeType());
+//        context.parserResults = embeddedResults != null ? embeddedResults : Collections.EMPTY_LIST;
+//        if (context.parserResults.size() > 0) {
+//            context.parserResult = embeddedResults.iterator().next();
+//        }
 
         return context;
     }
