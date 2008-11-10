@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.cplusplus;
 
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -64,7 +63,6 @@ import org.openide.util.NbBundle;
 public class CCGoToDeclarationAction extends GotoDeclarationAction {
 
     static final long serialVersionUID = 1L;
-
     private static CCGoToDeclarationAction instance;
 
     public CCGoToDeclarationAction() {
@@ -148,7 +146,7 @@ public class CCGoToDeclarationAction extends GotoDeclarationAction {
             BaseDocument doc = (BaseDocument) target.getDocument();
             int offset = target.getSelectionStart();
             // don't need to lock document because we are in EQ
-            Token<CppTokenId> token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+            Token<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset, false);
             if (token != null) {
                 if (CsmIncludeHyperlinkProvider.isSupportedToken(token)) {
                     retValue = NbBundle.getBundle(CCGoToDeclarationAction.class).getString("goto-included-file");
