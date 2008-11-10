@@ -142,8 +142,8 @@ public final class Snapshot {
             getText ().subSequence (offset, offset + length),
             source,
             mimeType,
-            (int[][]) newCurrentToOriginal.toArray (new int [newCurrentToOriginal.size ()][]),
-            (int[][]) newOriginalToCurrent.toArray (new int [newOriginalToCurrent.size ()][])
+            newCurrentToOriginal.toArray (new int [newCurrentToOriginal.size ()][]),
+            newOriginalToCurrent.toArray (new int [newOriginalToCurrent.size ()][])
         );
         return new Embedding (
             snapshot, 

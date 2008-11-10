@@ -45,16 +45,16 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.nio.CharBuffer;
 import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 
+import javax.swing.text.EditorKit;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
@@ -67,195 +67,243 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.Parameters;
+import org.openide.util.UserQuestionException;
 
 
 /**
- * Source represents one file or document. There is always at most one Source
- * for one FileObject.
+ * The <code>Source</code> represents one file or document.
+ *
+ * <p>An instance of <code>Source</code>
+ * can either be obtained for a <code>FileObject</code> or <code>Document</code>. If
+ * a particular <code>FileObject</code> and a <code>Document</code> are tied together
+ * in the way that the <code>Document</code> was loaded from the <code>FileObject</code>
+ * using either of them will get the same <code>Source</code> instance.
+ *
+ * <p class="nonnormative">Please note that the infrastructure does not keep
+ * <code>Source</code> instances forever and they can and will be garbage collected
+ * if nobody refrences them. This also means that two successive <code>Source.create</code>
+ * calls for the same file or document will return two different <code>Source</code>
+ * instances if the first instance is garbage collected prior the second call.
+ *
  * 
  * @author Jan Jancura
  * @author Tomas Zezula
  */
 public final class Source {
     
-    private static Map<FileObject,Reference<Source>> 
-                            instances = new WeakHashMap<FileObject,Reference<Source>>();
-    
-    private String          mimeType;
-    private Document        document;
-    private FileObject      fileObject;
-    
-   
-    Source (
-        String              mimeType, 
-        Document            document,
-        FileObject          fileObject
-    ) {
-        this.mimeType =     mimeType;
-        this.document =     document;
-        this.fileObject =   fileObject;
-    }
-    
     /**
-     * Creates Source for given file.
+     * Gets a <code>Source</code> instance for a file. The <code>FileObject</code>
+     * passed to this method has to be a valid data file. There is no <code>Source</code>
+     * representation for a folder.
      * 
-     * @param fileObject    A file object.
-     * @return              Source for given file or null when the given 
-     *                      file doesn't exist.
+     * @param fileObject The file to get <code>Source</code> for.
+     *
+     * @return The <code>Source</code> for the given file or <code>null</code>
+     *   if the file doesn't exist.
      */
+    // XXX: this should really be called 'get'
     public static Source create (
         FileObject          fileObject
     ) {
-        Parameters.notNull("fileObject", fileObject);
+        Parameters.notNull("fileObject", fileObject); //NOI18N
         if (!fileObject.isValid() || !fileObject.isData()) {
             return null;
         }
+
         synchronized (Source.class) {
-            Reference<Source> ref = instances.get(fileObject);
-            Source result = null;
-            if (ref != null) {
-                result = ref.get();
-            }
-            if (result == null) {
-                result = new Source (
+            Reference<Source> sourceRef = instances.get(fileObject);
+            Source source = sourceRef == null ? null : sourceRef.get();
+            
+            if (source == null) {
+                source = new Source (
                     fileObject.getMIMEType (),
                     null, 
                     fileObject
                 );
-                ref = new WeakReference<Source>(result);
-                instances.put(fileObject, ref);
+                instances.put(fileObject, new WeakReference<Source>(source));
             }
-            return result;
+
+            return source;
         }
-        
     }
     
     /**
-     * Creates source for given document.
+     * Gets a <code>Source</code> instance for a <code>Document</code>. This method
+     * is consistent with {@link #create(org.openide.filesystems.FileObject)} in the way
+     * that they both will return the same <code>Source</code> instance for
+     * documents loaded from files. For example the following asserts will never fail
+     * (providing that relevant method calls return non-null).
      * 
-     * @param document      A document.
-     * @return              source for given document.
+     * <pre>
+     * // #1
+     * Source source = Source.create(file);
+     * assert(source == Source.create(source.getFileObject()));
+     * assert(source == Source.create(source.getDocument()));
+     *
+     * // #2
+     * Source source = Source.create(document);
+     * assert(source == Source.create(source.getDocument()));
+     * assert(source == Source.create(source.getFileObject()));
+     * </pre>
+     *
+     * <p class="nonnormative">Please note that you can get <code>Source</code> instance for any arbitrary
+     * document no matter if it was loaded from a file or not. However, the editor
+     * infrastructure generally does not support creation of fileless documents that
+     * are later saved and re-bound to a <code>FileObject</code>. If you wish to do
+     * something like that you will have to create a new <code>Document</code> instance
+     * loaded from the <code>FileObject</code> and use it instead of the original one.
+     *
+     * @param document The <code>Document</code> to get <code>Source</code> for.
+     *
+     * @return The <code>Source</code> for the given document; never <code>null</code>.
      */
+    // XXX: this should really be called 'get'
     public static Source create (
         Document            document
     ) {
-        final FileObject fileObject = NbEditorUtilities.getFileObject (document);
-        if (fileObject == null) {
-            return null;
+        Parameters.notNull("document", document); //NOI18N
+
+        synchronized (Source.class) {
+            @SuppressWarnings("unchecked")
+            Reference<Source> sourceRef = (Reference<Source>) document.getProperty(Source.class);
+            Source source = sourceRef == null ? null : sourceRef.get();
+
+            if (source == null) {
+                FileObject fileObject = NbEditorUtilities.getFileObject(document);
+                if (fileObject != null) {
+                    source = Source.create(fileObject);
+                } else {
+                    // file-less document
+                    String mimeType = NbEditorUtilities.getMimeType(document);
+                    source = new Source(mimeType, document, null);
+                }
+                document.putProperty(Source.class, new WeakReference<Source>(source));
+            }
+
+            assert source != null : "No Source for " + document; //NOI18N
+            return source;
         }
-        return Source.create (fileObject);
     }
 
     /**
-     * Returns source mime type.
+     * Gets this <code>Source</code>'s mime type. It's the mime type of the <code>Document</code>
+     * represented by this sourece. If the document has not yet been loaded it's
+     * the mime type of the <code>FileObject</code>.
      * 
-     * @return              this source mime type.
+     * @return The mime type.
      */
-    public String getMimeType (
-    ) {
+    public String getMimeType() {
         return mimeType;
     }
     
     /**
-     * Returns <code>Document</code> this source has been created from or 
-     * <code>null</code>.
+     * Gets the <code>Document</code> represented by this source. This method
+     * returns either the document, wich was used to obtain this <code>Source</code>
+     * instance in {@link #create(javax.swing.text.Document)} or the document that
+     * has been loaded from the <code>FileObject</code> used in {@link #create(org.openide.filesystems.FileObject)}.
+     *
+     * <p>Please note that this method can return <code>null</code> in case that
+     * this <code>Source</code> was created for a file and there has not been yet
+     * a document loaded from this file.
      * 
-     * @return              <code>Document</code> this source has been created 
-     *                      from or <code>null</code>
+     * @return The <code>Document</code> represented by this <code>Source</code>
+     *   or <code>null</code> if no document has been loaded yet.
      */
+    // XXX: maybe we should add 'boolean forceOpen' parameter and call
+    // editorCookie.openDocument() if neccessary
     public Document getDocument () {
-        if (document != null)
-            return document;
-        try {
-            DataObject dataObject = DataObject.find (fileObject);
-            EditorCookie editorCookie = dataObject.getLookup().lookup (EditorCookie.class);
-            if (editorCookie == null) return null;
-            return editorCookie.getDocument ();
-        } catch (DataObjectNotFoundException ex) {
-            //Handled below
-        }
-        return null;
+        return _getDocument(false);
     }
     
     /**
-     * Returns <code>FileObject</code> this source has been created from 
-     * or <code>null</code>.
-     * 
-     * @return              <code>FileObject</code> this source has been 
-     *                      created from or <code>null</code>
+     * Gets the <code>FileObject</code> represented by this source. This method
+     * returns either the file, wich was used to obtain this <code>Source</code>
+     * instance in {@link #create(org.openide.filesystems.FileObject)} or the file that
+     * the document represented by this <code>Source</code> was loaded from.
+     *
+     * <p>Please note that this method can return <code>null</code> in case that
+     * this <code>Source</code> was created for a fileless document (ie. <code>Document</code>
+     * instance that was not loaded from a file).
+     *
+     * @return The <code>FileObject</code> or <code>null</code> if this <code>Source</code>
+     *   was created for a fileless document.
      */
     public FileObject getFileObject () {
         return fileObject;
     }
 
     /**
-     * Creates snapshot of current content of this source.
+     * Creates a new <code>Snapshot</code> of the contents of this <code>Source</code>.
+     * A snapshot is an immutable static copy of the contents represented by this
+     * <code>Source</code>. The snapshot is created from the document, if it exists.
+     * If the document has not been loaded yet the snapshot will be created from the
+     * file.
      * 
-     * @return              snapshot of current content of this source
+     * @return The <code>Snapshot</code> of the current content of this source.
      */
     public Snapshot createSnapshot () {
-        Logger.getLogger(Source.class.getName()).finest("createSource");    //NOI18N
-        Document document = getDocument ();
-        if (document != null) {
+        final String [] text = new String [] { "" }; //NOI18N
+        Document doc = _getDocument(false);
+        if (doc == null) {
+            EditorKit kit = CloneableEditorSupport.getEditorKit(mimeType);
+            Document customDoc = kit.createDefaultDocument();
             try {
-                if (document instanceof AbstractDocument)
-                    ((AbstractDocument) document).readLock ();
-                String text = null;
+                InputStream is = fileObject.getInputStream();
                 try {
-                    text = document.getText (0, document.getLength ());
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(is, FileEncodingQuery.getEncoding(fileObject)));
+                    try {
+                        kit.read(reader, customDoc, 0);
+                        doc = customDoc;
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, null, ble);
+                    } finally {
+                        reader.close();
+                    }
                 } finally {
-                    if (document instanceof AbstractDocument)
-                        ((AbstractDocument) document).readUnlock ();
+                    is.close();
                 }
-                return new Snapshot (
-                    text, this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
-                );
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace (ex);
-                return new Snapshot (
-                    "", this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
-                );
+            } catch (IOException ioe) {
+                LOG.log(Level.WARNING, null, ioe);
             }
         }
-        FileObject fileObject = getFileObject ();
-        try {
-            final InputStream inputStream = fileObject.getInputStream ();
-            try {
-                BufferedReader bufferedReader = new BufferedReader (new InputStreamReader (inputStream, FileEncodingQuery.getEncoding (fileObject)));
-                CharBuffer charBuffer = CharBuffer.allocate (4096);
-                StringBuilder sb = new StringBuilder ();
-                int i = bufferedReader.read (charBuffer);
-                while (i > 0) {
-                    charBuffer.flip();
-                    sb.append (charBuffer);
-                    charBuffer.clear();
-                    i = bufferedReader.read (charBuffer);
+        if (doc != null) {
+            final Document d = doc;
+            d.render(new Runnable() {
+                public void run() {
+                    try {
+                        text[0] = d.getText(0, d.getLength());
+                    } catch (BadLocationException ble) {
+                        LOG.log(Level.WARNING, null, ble);
+                    }
                 }
-                return new Snapshot (
-                    sb.toString (), this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
-                );
-            } finally {
-                inputStream.close ();
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace (ex);
-            return new Snapshot (
-                "", this, mimeType, new int[][] {new int[] {0, 0}}, new int[][] {new int[] {0, 0}}
-            );
+            });
         }
+
+        return new Snapshot(
+            text[0], this, mimeType, new int[][]{new int[]{0, 0}}, new int[][]{new int[]{0, 0}}
+        );
     }
     
-    
-    // accessor ................................................................
-    
+
+    // ------------------------------------------------------------------------
+    // private implementation
+    // ------------------------------------------------------------------------
+
+    private static final Logger LOG = Logger.getLogger(Source.class.getName());
+    private static final Map<FileObject, Reference<Source>> instances = new WeakHashMap<FileObject, Reference<Source>>();
+
     static {
         SourceAccessor.setINSTANCE(new MySourceAccessor());
     }
         
-    private final Set<SourceFlags>
-                            flags = EnumSet.noneOf(SourceFlags.class);
+    private final String mimeType;
+    private final FileObject fileObject;
+    private Document document;
+
+    private final Set<SourceFlags> flags = EnumSet.noneOf(SourceFlags.class);
+    
     private int taskCount;
     private volatile Parser cachedParser;
     private SchedulerEvent  schedulerEvent;
@@ -263,8 +311,65 @@ public final class Source {
     private SourceCache     cache;
     //GuardedBy(this)
     private volatile long eventId;
-    
-    
+    //Changes handling
+    private final EventSupport support = new EventSupport (this);
+
+    private Source (
+        String              mimeType,
+        Document            document,
+        FileObject          fileObject
+    ) {
+        this.mimeType =     mimeType;
+        this.document =     document;
+        this.fileObject =   fileObject;
+    }
+
+    private Document _getDocument(boolean forceOpen) {
+        Document doc;
+        synchronized (this) {
+            doc = document;
+        }
+
+        if (doc == null) {
+            EditorCookie ec = null;
+
+            try {
+                DataObject dataObject = DataObject.find(fileObject);
+                ec = dataObject.getLookup().lookup(EditorCookie.class);
+            } catch (DataObjectNotFoundException ex) {
+                LOG.log(Level.WARNING, null, ex);
+            }
+
+            if (ec != null) {
+                doc = ec.getDocument();
+                if (doc == null && forceOpen) {
+                    try {
+                        try {
+                            doc = ec.openDocument();
+                        } catch (UserQuestionException uqe) {
+                            uqe.confirmed();
+                            doc = ec.openDocument();
+                        }
+                    } catch (IOException ioe) {
+                        LOG.log(Level.WARNING, null, ioe);
+                    }
+                }
+            }
+        }
+
+        synchronized (this) {
+            if (document == null) {
+                document = doc;
+            }
+
+            return document;
+        }
+    }
+
+    private void assignListeners () {
+        support.init();
+    }
+
     private static class MySourceAccessor extends SourceAccessor {
         
         @Override
@@ -421,12 +526,5 @@ public final class Source {
                 return --source.taskCount;
             }
         }
-    }
-    
-    //Changes handling                
-    private final EventSupport support = new EventSupport (this);
-    
-    private void assignListeners () {
-        support.init();
-    }        
+    } // End of MySourceAccessor class
 }
