@@ -85,8 +85,8 @@ public class FtpClient implements RemoteClient {
         ftpClient = new FTPClient();
         if (io != null) {
             ftpClient.addProtocolCommandListener(new PrintCommandListener(io));
+            LOGGER.log(Level.FINE, "Protocol command listener added");
         }
-        LOGGER.log(Level.FINE, "Protocol command listener added");
     }
 
     public void connect() throws RemoteException {
