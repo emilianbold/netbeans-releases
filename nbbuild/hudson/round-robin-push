@@ -44,7 +44,7 @@ export RESULT
 rm $RESULT
 
 testmodule() {
-    if ant -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
+    if ant $ANT_PARAM -f $1/build.xml test-unit -Dtest-unit-sys-prop.ignore.random.failures=true; then
         echo Test OK: $1
     else
         echo $1 >>$RESULT
