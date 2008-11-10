@@ -70,9 +70,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.apache.tools.ant.module.AntSettings;
-import org.openide.ErrorManager;
+import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.util.ChangeSupport;
@@ -94,7 +96,7 @@ import org.xml.sax.SAXException;
  */
 public final class AntBridge {
     
-    private static final ErrorManager err = ErrorManager.getDefault().getInstance(AntBridge.class.getName());
+    private static final Logger LOG = Logger.getLogger(AntBridge.class.getName());
     
     private AntBridge() {}
 
@@ -129,15 +131,15 @@ public final class AntBridge {
             if (AntSettings.PROP_ANT_HOME.equals(prop) ||
                     AntSettings.PROP_EXTRA_CLASSPATH.equals(prop) ||
                     AntSettings.PROP_AUTOMATIC_EXTRA_CLASSPATH.equals(prop)) {
-                err.log("AntBridge got settings change in " + prop);
+                LOG.log(Level.FINE, "AntBridge got settings change in {0}", prop);
                 fireChange();
             } else if (ModuleInfo.PROP_ENABLED.equals(prop)) {
-                err.log("AntBridge got module enablement change on " + ev.getSource());
+                LOG.log(Level.FINE, "AntBridge got module enablement change on {0}", ev.getSource());
                 fireChange();
             }
         }
         public void resultChanged(LookupEvent ev) {
-            err.log("AntModule got ModuleInfo change");
+            LOG.fine("AntModule got ModuleInfo change");
             synchronized (this) {
                 if (modules != null) {
                     for (ModuleInfo module : modules) {
@@ -273,10 +275,10 @@ public final class AntBridge {
     }
     
     private static AntInstance createAntInstance() {
-        err.log("AntBridge.createAntInstance - loading Ant installation...");
+        LOG.fine("AntBridge.createAntInstance - loading Ant installation...");
         try {
             List<File> mainClassPath = createMainClassPath();
-            err.log("mainClassPath=" + mainClassPath);
+            LOG.log(Level.FINE, "mainClassPath={0}", mainClassPath);
             ClassLoader main = createMainClassLoader(mainClassPath);
             ClassLoader bridgeLoader = createBridgeClassLoader(main);
             // Ensures that the loader is functional, and that it is at least 1.5.x
@@ -348,78 +350,58 @@ public final class AntBridge {
     private static String originalJavaClassPath = System.getProperty("java.class.path"); // NOI18N
     /**
      * Get the equivalent of java.class.path for the main Ant loader.
-     * Includes everything in the main class loader,
-     * plus the regular system class path (for tools.jar etc.).
+     * Includes everything in the main class loader.
      */
     public static String getMainClassPath() {
-        return getAntInstance().mainClassPath + File.pathSeparatorChar + originalJavaClassPath;
+        return getAntInstance().mainClassPath;
     }
     
     private static List<File> createMainClassPath() throws Exception {
         // Use LinkedHashSet to automatically suppress duplicates.
         Collection<File> cp = new LinkedHashSet<File>();
+        addJARs(cp, new File(new File(System.getProperty("java.home")).getParentFile(), "lib"));
         File antHome = AntSettings.getAntHome();
         if (antHome != null) {
             File libdir = new File(antHome, "lib"); // NOI18N
             if (!libdir.isDirectory()) {
                 throw new IOException("No such Ant library dir: " + libdir); // NOI18N
             }
-            err.log("Creating main class loader from " + libdir);
+            LOG.log(Level.FINE, "Creating main class loader from {0}", libdir);
             // First look for ${ant.home}/patches/*.jar, to support e.g. patching #47708:
-            File[] patches = new File(libdir.getParentFile(), "patches").listFiles(new JarFilter()); // NOI18N
-            if (patches != null) {
-                cp.addAll(Arrays.asList(patches));
-            }
+            addJARs(cp, new File(libdir.getParentFile(), "patches")); // NOI18N
             // Now continue with regular classpath.
-            File[] libs = libdir.listFiles(new JarFilter());
-            if (libs == null) {
-                throw new IOException("Listing: " + libdir); // NOI18N
-            }
-            cp.addAll(Arrays.asList(libs));
-        } else {
-            // Classpath mode. Try to add in tools.jar if we can find it somewhere.
-            File toolsJar = new File(new File(new File(System.getProperty("java.home")).getParentFile(), "lib"), "tools.jar");
-            if (toolsJar.isFile()) {
-                cp.add(toolsJar);
-            }
+            addJARs(cp, libdir);
         }
-        File[] standardExtensions = new File(new File(System.getProperty("user.home"), ".ant"), "lib").listFiles(new JarFilter());
-        if (standardExtensions != null) {
-            cp.addAll(Arrays.asList(standardExtensions));
-        }
+        addJARs(cp, new File(new File(System.getProperty("user.home"), ".ant"), "lib"));
         cp.addAll(AntSettings.getExtraClasspath());
         cp.addAll(AntSettings.getAutomaticExtraClasspath());
-        // XXX note that systemClassLoader will include boot.jar, and perhaps anything else
-        // in lib/ext/*.jar, like rmi-ext.jar. Would be nicer to exclude everything NB-specific.
-        // However the simplest way - to use the parent loader (JRE ext loader) - does not work
-        // well because Ant assumes that tools.jar is in its classpath (for <javac> etc.).
-        // Manually readding the JDK JARs would be possible, but then they would not be shared
-        // with the versions used inside NB, which may cause inefficiencies or more memory usage.
-        // On the other hand, if ant.jar is in ${java.class.path} (e.g. from a unit test), we
-        // have to explicitly mask it out. What a mess...
-        //org.openide.DialogDisplayer.getDefault().notify(new org.openide.NotifyDescriptor.Message("cp=" + cp));
         return new ArrayList<File>(cp);
+    }
+    private static void addJARs(Collection<File> cp, File dir) {
+        File[] libs = dir.listFiles(new JarFilter());
+        if (libs != null) {
+            cp.addAll(Arrays.asList(libs));
+        }
     }
     
     private static ClassLoader createMainClassLoader(List<File> mainClassPath) throws Exception {
         URL[] cp = new URL[mainClassPath.size()];
-        Iterator<File> it = mainClassPath.iterator();
         int i = 0;
-        while (it.hasNext()) {
-            cp[i++] = it.next().toURI().toURL();
+        for (File entry : mainClassPath) {
+            cp[i++] = FileUtil.urlForArchiveOrDir(entry);
         }
         if (AntSettings.getAntHome() != null) {
-            ClassLoader parent = Lookup.class.getClassLoader();
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+            ClassLoader parent = ClassLoader.getSystemClassLoader()/* #152620 */.getParent();
+            if (LOG.isLoggable(Level.FINE)) {
                 List<URL> parentURLs;
                 if (parent instanceof URLClassLoader) {
                     parentURLs = Arrays.asList(((URLClassLoader) parent).getURLs());
                 } else {
                     parentURLs = null;
                 }
-                err.log("AntBridge.createMainClassLoader: cp=" + Arrays.asList(cp) + " parent.urls=" + parentURLs);
+                LOG.fine("AntBridge.createMainClassLoader: cp=" + Arrays.asList(cp) + " parent.urls=" + parentURLs);
             }
-            return new MaskedClassLoader(cp, parent);
+            return new MainClassLoader(cp, parent);
         } else {
             // Run-in-classpath mode.
             ClassLoader existing = AntBridge.class.getClassLoader();
@@ -437,7 +419,7 @@ public final class AntBridge {
                     return existing;
                 } catch (Exception e) {
                     // Problem. Don't do it, I guess.
-                    err.notify(ErrorManager.WARNING, e);
+                    LOG.log(Level.WARNING, null, e);
                 }
             }
             // Probably won't work as desired, but just in case:
@@ -523,14 +505,14 @@ public final class AntBridge {
                 } else if (def.getNodeName().equals("typedef")) { // NOI18N
                     type = true;
                 } else {
-                    err.log(ErrorManager.WARNING, "Warning: unrecognized definition " + def + " in " + antlib);
+                    LOG.warning("Warning: unrecognized definition " + def + " in " + antlib);
                     continue;
                 }
                 String name = def.getAttribute("name"); // NOI18N
                 if (name == null) {
                     // Not a hard error since there might be e.g. <taskdef resource="..."/> here
                     // which we do not parse but which is permitted in antlib by Ant.
-                    err.log(ErrorManager.WARNING, "Warning: skipping definition " + def + " with no 'name' in " + antlib);
+                    LOG.warning("Warning: skipping definition " + def + " with no 'name' in " + antlib);
                     continue;
                 }
                 String classname = def.getAttribute("classname"); // NOI18N
@@ -562,7 +544,7 @@ public final class AntBridge {
             } catch (NoClassDefFoundError ncdfe) {
                 // Normal for e.g. tasks dumped there by disabled modules.
                 // Cf. #36702 for possible better solution.
-                err.log("AntBridge.loadDefs: skipping " + clazzname + ": " + ncdfe);
+                LOG.log(Level.FINE, "AntBridge.loadDefs: skipping {0}: {1}", new Object[] {clazzname, ncdfe});
             } catch (LinkageError e) {
                 // Not normal; if it is there it ought to be resolvable etc.
                 throw (IOException) new IOException("Could not load class " + clazzname + ": " + e).initCause(e); // NOI18N
@@ -598,9 +580,7 @@ public final class AntBridge {
         @Override
         public URL getResource(String name) {
             URL u = super.getResource(name);
-            if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                err.log("APURLCL.gR: " + name + " -> " + u + " [" + this + "]");
-            }
+            LOG.log(Level.FINER, "APURLCL.gR: {0} -> {1} [{2}]", new Object[] {name, u, this});
             return u;
         }
         
@@ -608,90 +588,41 @@ public final class AntBridge {
         public Enumeration<URL> findResources(String name) throws IOException {
             try {
                 Enumeration<URL> us = super.findResources(name);
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
+                if (LOG.isLoggable(Level.FINER)) {
                     // Make a copy so it can be logged:
                     List<URL> resources = Collections.list(us);
                     us = Collections.enumeration(resources);
-                    err.log("APURLCL.fRs: " + name + " -> " + resources + " [" + this + "]");
+                    LOG.finer("APURLCL.fRs: " + name + " -> " + resources + " [" + this + "]");
                 }
                 return us;
             } catch (IOException e) {
-                if (err.isLoggable(ErrorManager.INFORMATIONAL)) {
-                    err.notify(ErrorManager.INFORMATIONAL, e);
-                }
+                LOG.log(Level.FINE, null, e);
                 throw e;
             }
         }
 
-        /*
-        public Class loadClass(String name) throws ClassNotFoundException {
-            try {
-                Class c = super.loadClass(name);
-                java.security.CodeSource s = c.getProtectionDomain().getCodeSource();
-                System.err.println("ACL.lC: " + name + " from " + (s != null ? s.getLocation() : null) + " [" + this + "]");
-                return c;
-            } catch (ClassNotFoundException e) {
-                System.err.println("ACL.lC: CNFE on " + name + " [" + this + "]");
-                throw e;
-            }
-        }
-         */
-        
     }
     
-    private static boolean masked(String clazz) {
-        return clazz.startsWith("org.apache.tools.") ||
-                clazz.startsWith("org.netbeans.") ||
-                clazz.startsWith("org.openide.") ||
-                clazz.startsWith("org.openidex."); // NOI18N
-    }
-
     /**
      * Special class loader that refuses to load Ant or NetBeans classes from its parent.
      * Necessary in order to be able to load the intended Ant distro from a unit test.
      */
-    private static final class MaskedClassLoader extends AllPermissionURLClassLoader {
+    private static final class MainClassLoader extends AllPermissionURLClassLoader {
         
-        public MaskedClassLoader(URL[] urls, ClassLoader parent) {
+        public MainClassLoader(URL[] urls, ClassLoader parent) {
             super(urls, parent);
         }
-        
-        @Override
-        protected synchronized Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            if (masked(name)) {
-                Class c = findLoadedClass(name);
-                // Careful with that parent loader Eugene!
-                if (c == null) {
-                    try {
-                        c = findClass(name);
-                    } catch (ClassNotFoundException cnfe) {
-                        if (name.equals("org.apache.tools.ant.Location")) {
-                            StringBuilder b = new StringBuilder("#143648: unable to find Location");
-                            for (URL root : getURLs()) {
-                                b.append("\n" + root + " -> ");
-                                try {
-                                    URL resource = new URL(root, "org/apache/tools/ant/Location.class");
-                                    resource.openStream().close();
-                                    b.append(resource);
-                                } catch (IOException ioe) {
-                                    b.append(ioe);
-                                }
-                            }
-                            throw new ClassNotFoundException(b.toString(), cnfe);
-                        } else {
-                            throw cnfe;
-                        }
-                    }
-                }
-                if (resolve) {
-                    resolveClass(c);
-                }
-                return c;
-            } else {
-                return super.loadClass(name, resolve);
-            }
-        }
 
+        @Override
+        protected Class<?> findClass(String name) throws ClassNotFoundException {
+            if (name.startsWith("com.sun.jdi.")) { // NOI18N
+                // Must be loaded from regular AppClassLoader; otherwise get CCE during debugging
+                // since org-netbeans-api-debugger-jpda.jar would be loading a different copy.
+                throw new ClassNotFoundException("Will not load JDI separately from tools.jar: " + name);
+            }
+            return super.findClass(name);
+        }
+        
         @Override // #139048: work around JAXP #6723276
         public InputStream getResourceAsStream(String name) {
             if (name.equals("META-INF/services/javax.xml.stream.XMLInputFactory")) { // NOI18N
@@ -1065,7 +996,7 @@ public final class AntBridge {
     public static synchronized void fakeJavaClassPath() {
         if (fakingJavaClassPath++ == 0) {
             String cp = getMainClassPath();
-            err.log("Faking java.class.path=" + cp);
+            LOG.log(Level.FINE, "Faking java.class.path={0}", cp);
             System.setProperty("java.class.path", cp); // NOI18N
         }
     }
@@ -1075,7 +1006,7 @@ public final class AntBridge {
      */
     public static synchronized void unfakeJavaClassPath() {
         if (--fakingJavaClassPath == 0) {
-            err.log("Restoring java.class.path=" + originalJavaClassPath);
+            LOG.log(Level.FINE, "Restoring java.class.path={0}", originalJavaClassPath);
             System.setProperty("java.class.path", originalJavaClassPath); // NOI18N
         }
     }
