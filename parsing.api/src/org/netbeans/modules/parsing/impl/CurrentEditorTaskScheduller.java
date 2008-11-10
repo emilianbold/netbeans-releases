@@ -83,6 +83,10 @@ public abstract class CurrentEditorTaskScheduller extends Scheduler {
                 }
                 setEditor (currentEditor);
             }
+            else if (evt.getPropertyName().equals(EditorRegistry.LAST_FOCUSED_REMOVED_PROPERTY)) {
+                currentEditor = null;
+                setEditor(null);
+            }
         }
     }
 }
