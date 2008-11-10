@@ -135,7 +135,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
                 BundleContext bc = getContainer().getBundleContext();
                 bundle = bc.installBundle(jar.toURI().toURL().toExternalForm());
             } catch (BundleException ex) {
-                throw new IOException(ex);
+                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
             }
         }
 
@@ -193,7 +193,7 @@ public class NetigsoModuleFactory extends ModuleFactory {
             try {
                 bundle.start();
             } catch (BundleException ex) {
-                throw new IOException(ex);
+                throw (IOException)new IOException(ex.getMessage()).initCause(ex);
             }
             loader = new BundleLoader(bundle);
             assert bundle.getState() == Bundle.ACTIVE;
