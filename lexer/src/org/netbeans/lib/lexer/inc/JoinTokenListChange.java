@@ -47,6 +47,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.EmbeddedJoinInfo;
 import org.netbeans.lib.lexer.EmbeddedTokenList;
 import org.netbeans.lib.lexer.JoinLexerInputOperation;
+import org.netbeans.lib.lexer.TokenOrEmbedding;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
 import org.netbeans.lib.lexer.token.PartToken;
@@ -70,7 +71,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
     private RelexTokenListChange<T> lastRelexChange;
     
     private JoinLexerInputOperation<T> joinLexerInputOperation;
-    
+
     public JoinTokenListChange(MutableJoinTokenList<T> tokenList) {
         super(tokenList);
     }
@@ -141,6 +142,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         }
         lastRelexChange.addToken(token, lookahead, state);
         addedEndOffset = lastRelexChange.addedEndOffset;
+        tokenChangeInfo().updateAddedTokenCount(+1);
     }
 
     private void addRelexChange() {
@@ -199,6 +201,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             
         }
         addedEndOffset = lastRelexChange.addedEndOffset;
+        tokenChangeInfo().updateAddedTokenCount(-1);
         return lastRemovedToken;
     }
     
@@ -282,10 +285,12 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         } else {
             joinTokenIndex = 0;
         }
+        // Find index at which it's necessary to grab tokens from removed ETLs (no relex changes for them).
+        boolean collectRemovedETLs = (tokenListListUpdate.isTokenListsMod() && tokenListListUpdate.removedTokenListCount > 0);
+        RemovedTokensCollector removedTokensCollector = new RemovedTokensCollector();
         // Now process each relex change and update join token count etc.
-        int relexChangesSizeM1 = relexChanges.size() - 1;
         int i;
-        for (i = 0; i <= relexChangesSizeM1; i++) {
+        for (i = 0; i < relexChanges.size(); i++) {
             RelexTokenListChange<T> change = relexChanges.get(i);
             //assert (change.laState().size() == change.addedTokenOrEmbeddingsCount());
             EmbeddedTokenList<T> etl = (EmbeddedTokenList<T>) change.tokenList();
@@ -297,14 +302,27 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             // Set new joinTokenLastPartShift before calling etl.joinTokenCount()
             // Only set LPS for non-last change and in case the removal was till end
             // of ETL.
-            if (i < relexChangesSizeM1 || change.index() + change.removedTokenCount() == etl.tokenCountCurrent()) {
+            if (i < relexChanges.size() - 1 || change.index() + change.removedTokenCount() == etl.tokenCountCurrent()) {
                 etl.joinInfo.setJoinTokenLastPartShift(change.joinTokenLastPartShift);
             }
             // Replace tokens in the individual ETL
             etl.replaceTokens(change, eventInfo, (etl == charModTokenList));
             // Fix join token count
             joinTokenIndex += etl.joinTokenCount();
+            // Possibly grab the removed tokens from removed ETLs (so that they are present in a TokenChange)
+            if (collectRemovedETLs && i == tokenListListUpdate.modTokenListIndex - relexTokenListIndex) {
+                removedTokensCollector.collectRemovedTokenLists();
+                collectRemovedETLs = false;
+            }
+            // Grab removed tokens from relex change (so that removed tokens are present in a TokenChange)
+            removedTokensCollector.collectRelexChange(change);
         }
+        // Cover case when there are no relex changes at all
+        // or when removed token lists are right above the relex changes
+        if (collectRemovedETLs) {
+            removedTokensCollector.collectRemovedTokenLists();
+        }
+        removedTokensCollector.finish();
         
         // Now fix the total join token count
         i += relexTokenListIndex;
@@ -315,7 +333,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         jtl.base().updateJoinTokenCount(joinTokenCountDiff);
         
         // Possibly mark this change as bound change
-        if (relexChangesSizeM1 == 0 && !tokenListListUpdate.isTokenListsMod()) { // Only change inside single ETL
+        if (relexChanges.size() == 1 && !tokenListListUpdate.isTokenListsMod()) { // Only change inside single ETL
             if (relexChanges.get(0).isBoundsChange()) {
                 markBoundsChange(); // Joined change treated as bounds change too
             }
@@ -323,7 +341,8 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
         
         // The jtl cannot be used without jtl.resetActiveAfterUpdate() since it may cache
         //   an obsolete ETL as activeTokenList
-//        jtl.resetActiveAfterUpdate();
+        // This may show up to clients since JTL instance will be present in TokenChange.currentTokenSequence().
+        jtl.resetActiveAfterUpdate();
 //        assert (jtl.checkConsistency() == null) : jtl.checkConsistency();
     }
 
@@ -354,7 +373,7 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
 
     @Override
     public String toString() {
-        return super.toString() + ", tokenListListUpdate: " + tokenListListUpdate + // NOI18N
+        return super.toString() + "\nTLLUpdate: " + tokenListListUpdate + // NOI18N
                 ", relexTLInd=" + relexTokenListIndex + // NOI18N
                 ", relexChgs.size()=" + relexChanges.size();
     }
@@ -386,6 +405,75 @@ final class JoinTokenListChange<T extends TokenId> extends TokenListChange<T> {
             return super.toString() + ", lps=" + joinTokenLastPartShift;
         }
         
+    }
+
+    private final class RemovedTokensCollector {
+
+        @SuppressWarnings("unchecked")
+        TokenOrEmbedding<T>[] removedTokensOrEs = new TokenOrEmbedding[removedTokenCount()];
+
+        int removedTokensIndex;
+
+        AbstractToken<T> lastBranchToken;
+
+        void collectRelexChange(RelexTokenListChange<T> relexChange) {
+            RemovedTokenList<T> rtl = relexChange.tokenChangeInfo().removedTokenList();
+            if (rtl.tokenCount() > 0) {
+                TokenOrEmbedding<T> tokenOrE = rtl.tokenOrEmbedding(0);
+                if (tokenOrE.token().getClass() == PartToken.class) {
+                    if (((PartToken)tokenOrE.token()).joinToken() != lastBranchToken) {
+                        removedTokensOrEs[removedTokensIndex++] = tokenOrE;
+                    }
+                } else {
+                    removedTokensOrEs[removedTokensIndex++] = tokenOrE;
+                }
+                // Copy the rest
+                int tokenCountM1 = rtl.tokenCount() - 1;
+                System.arraycopy(rtl.tokenOrEmbeddings(), 1, removedTokensOrEs,
+                        removedTokensIndex, tokenCountM1);
+                removedTokensIndex += tokenCountM1;
+                // Set last branch token
+                lastBranchToken = rtl.tokenOrEmbedding(tokenCountM1).token();
+                lastBranchToken = (lastBranchToken.getClass() == PartToken.class)
+                        ? ((PartToken<T>)lastBranchToken).joinToken()
+                        : null;
+            }
+      }
+
+      void collectRemovedTokenLists() {
+            EmbeddedTokenList<T>[] removedTokenLists = tokenListListUpdate.removedTokenLists();
+            for (int j = 0; j < removedTokenLists.length; j++) {
+                EmbeddedTokenList<T> removedEtl = removedTokenLists[j];
+                int tokenCountM1 = removedEtl.tokenCountCurrent() - 1;
+                if (tokenCountM1 >= 0) { // at least one token in removed ETL
+                    TokenOrEmbedding<T> tokenOrE = removedEtl.tokenOrEmbedding(0);
+                    if (tokenOrE.token().getClass() == PartToken.class) {
+                        if (((PartToken) tokenOrE.token()).joinToken() != lastBranchToken) {
+                            removedTokensOrEs[removedTokensIndex++] = tokenOrE;
+                        }
+                    } else {
+                        removedTokensOrEs[removedTokensIndex++] = tokenOrE;
+                    }
+                    // Copy the rest
+                    removedEtl.copyElements(1, tokenCountM1 + 1, removedTokensOrEs, removedTokensIndex);
+                    removedTokensIndex += tokenCountM1;
+                    // Set last branch token
+                    lastBranchToken = removedEtl.tokenOrEmbedding(tokenCountM1).token();
+                    lastBranchToken = (lastBranchToken.getClass() == PartToken.class)
+                            ? ((PartToken<T>) lastBranchToken).joinToken()
+                            : null;
+                }
+            }
+        }
+
+      void finish() {
+          if (removedTokensIndex != removedTokensOrEs.length) {
+              throw new IndexOutOfBoundsException("Invalid removedTokensIndex=" + removedTokensIndex + // NOI18N
+                      " != removedTokens.length=" + removedTokensOrEs.length); // NOI18N
+          }
+          setRemovedTokens(removedTokensOrEs);
+      }
+
     }
 
 }

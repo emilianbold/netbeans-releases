@@ -44,8 +44,9 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import javax.swing.Icon;
 
 public abstract class ConfigurationDescriptor {
-    private Configurations confs;
+    private Configurations confs = new Configurations();
     int version = -1;
+    private State state = State.READING;
 
     public ConfigurationDescriptor() {
     }
@@ -81,6 +82,13 @@ public abstract class ConfigurationDescriptor {
         this.version = version;
     }
 
+    public void setState(State state){
+        this.state = state;
+    }
+    public State getState(){
+        return state;
+    }
+
     public abstract Icon getIcon();
 
     public abstract String getBaseDir();
@@ -97,6 +105,7 @@ public abstract class ConfigurationDescriptor {
 	// projectType is already cloned
 	clone.setConfs(confs.cloneConfs());
         clone.setVersion(getVersion());
+        clone.setState(this.getState());
     }
 
     public abstract boolean save();
@@ -104,4 +113,9 @@ public abstract class ConfigurationDescriptor {
     public abstract boolean getModified();
     public abstract void setModified();
     public abstract void closed();
-            }
+    public enum State {
+        READING,
+        READY,
+        BROKEN
+    }
+}

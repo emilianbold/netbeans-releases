@@ -70,6 +70,7 @@ import org.openide.util.Lookup;
  *
  * @author Martin.Schovanek@sun.com
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.HtmlBrowser.URLDisplayer.class, supersedes="org.netbeans.core.NbTopManager$NbURLDisplayer")
 public final class TestURLDisplayer extends HtmlBrowser.URLDisplayer {
     private static TestURLDisplayer instance;
     private boolean isURLValid = false;

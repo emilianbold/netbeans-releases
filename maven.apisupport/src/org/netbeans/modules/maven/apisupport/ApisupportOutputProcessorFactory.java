@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
  *
  * @author Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.api.output.OutputProcessorFactory.class)
 public class ApisupportOutputProcessorFactory implements OutputProcessorFactory {
     
     /** Creates a new instance of DefaultOutputProcessor */

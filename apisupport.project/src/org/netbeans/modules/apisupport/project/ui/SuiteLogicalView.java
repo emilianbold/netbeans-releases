@@ -155,12 +155,17 @@ public final class SuiteLogicalView implements LogicalViewProvider {
             return getIcon(type); // the same in the meantime
         }
         
-        public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(ProjectInformation.PROP_NAME)) {
-                fireNameChange(null, getName());
-            } else if (evt.getPropertyName().equals(ProjectInformation.PROP_DISPLAY_NAME)) {
-                fireDisplayNameChange(null, getDisplayName());
-            }
+        public void propertyChange(final PropertyChangeEvent evt) {
+            ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
+
+                public void run() {
+                    if (evt.getPropertyName().equals(ProjectInformation.PROP_NAME)) {
+                        fireNameChange(null, getName());
+                    } else if (evt.getPropertyName().equals(ProjectInformation.PROP_DISPLAY_NAME)) {
+                        fireDisplayNameChange(null, getDisplayName());
+                    }
+                }
+            });
         }
         
         public boolean canRename() {

@@ -113,7 +113,7 @@ public class PHPIndex {
         return new PHPIndex(index);
     }
 
-    public Collection<IndexedElement> getAll(PHPParseResult context, String prefix, NameKind nameKind) {
+    public Collection<IndexedElement> getAllTopLevel(PHPParseResult context, String prefix, NameKind nameKind) {
         final Set<SearchResult> result = new HashSet<SearchResult>();
         final Collection<IndexedElement> elements = new ArrayList<IndexedElement>();
         Collection<IndexedFunction> functions = new ArrayList<IndexedFunction>();
@@ -121,7 +121,8 @@ public class PHPIndex {
         Collection<IndexedClass> classes = new ArrayList<IndexedClass>();
         Collection<IndexedVariable> vars = new ArrayList<IndexedVariable>();
 
-        search(PHPIndexer.FIELD_BASE, prefix.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_ALL);
+        // search through the top leve elements
+        search(PHPIndexer.FIELD_TOP_LEVEL, prefix.toLowerCase(), NameKind.PREFIX, result, ALL_SCOPE, TERMS_ALL);
 
         findFunctions(result, nameKind, prefix, functions);
         findConstants(result, nameKind, prefix, constants);
@@ -144,7 +145,7 @@ public class PHPIndex {
                 for (String signature : signatures) {
                     Signature sig = Signature.get(signature);
                     String className = sig.string(1);
-                    if (kind == NameKind.PREFIX) {
+                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
                         //case sensitive
                         if (!className.toLowerCase().startsWith(name.toLowerCase())) {
                             continue;
@@ -177,7 +178,7 @@ public class PHPIndex {
                     Signature sig = Signature.get(signature);
                     //sig.string(0) is the case insensitive search key
                     String constName = sig.string(1);
-                    if (kind == NameKind.PREFIX) {
+                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
                         //case sensitive
                         if (!constName.startsWith(name)) {
                             continue;
@@ -203,7 +204,7 @@ public class PHPIndex {
                     Signature sig = Signature.get(signature);
                     //sig.string(0) is the case insensitive search key
                     String funcName = sig.string(1);
-                    if (kind == NameKind.PREFIX) {
+                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
                         //case sensitive - TODO does it make sense?
                         if (!funcName.startsWith(name)) {
                             continue;
@@ -240,7 +241,7 @@ public class PHPIndex {
                     Signature sig = Signature.get(signature);
                     //sig.string(0) is the case insensitive search key
                     String constName = sig.string(1);
-                    if (kind == NameKind.PREFIX) {
+                    if (kind == NameKind.PREFIX || kind == NameKind.CASE_INSENSITIVE_PREFIX) {
                         //case sensitive
                         if (!constName.startsWith(name)) {
                             continue;

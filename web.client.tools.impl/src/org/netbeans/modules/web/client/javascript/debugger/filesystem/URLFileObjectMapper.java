@@ -47,6 +47,7 @@ import org.openide.filesystems.URLMapper;
  *
  * @author quynguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.URLMapper.class, position=65535)
 public class URLFileObjectMapper extends URLMapper {
 
     @Override

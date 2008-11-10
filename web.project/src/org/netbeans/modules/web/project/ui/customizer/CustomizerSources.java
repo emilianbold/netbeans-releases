@@ -70,6 +70,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.api.queries.CollocationQuery;
+import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
@@ -106,23 +107,27 @@ public class CustomizerSources extends javax.swing.JPanel implements HelpCtx.Pro
         jTextFieldWebPages.setDocument(uiProperties.WEB_DOCBASE_DIR_MODEL);
         webInfTextField.setDocument(uiProperties.WEBINF_DIR_MODEL);
         
-        WebSourceRootsUi.EditMediator emSR = WebSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emSR = SourceRootsUi.registerEditMediator(
                 (WebProject)uiProperties.getProject(),
                 ((WebProject)uiProperties.getProject()).getSourceRoots(),
                 sourceRoots,
                 addSourceRoot,
                 removeSourceRoot,
                 upSourceRoot,
-                downSourceRoot);
+                downSourceRoot,
+                null,
+                true);
         
-        WebSourceRootsUi.EditMediator emTSR = WebSourceRootsUi.registerEditMediator(
+        SourceRootsUi.EditMediator emTSR = SourceRootsUi.registerEditMediator(
                 (WebProject)uiProperties.getProject(),
                 ((WebProject)uiProperties.getProject()).getTestSourceRoots(),
                 testRoots,
                 addTestRoot,
                 removeTestRoot,
                 upTestRoot,
-                downTestRoot);
+                downTestRoot,
+                null,
+                true);
         
         emSR.setRelatedEditMediator( emTSR );
         emTSR.setRelatedEditMediator( emSR );

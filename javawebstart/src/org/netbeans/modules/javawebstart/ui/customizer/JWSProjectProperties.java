@@ -89,6 +89,7 @@ import org.netbeans.spi.project.support.ant.ui.StoreGroup;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -161,7 +162,9 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     public static final String CONFIG_TARGET_DEBUG = "jws-debug";
 
     private DescType selectedDescType = null;
-    
+
+    boolean isJnlpImplPreviousVersion = false;
+
     // Models 
     JToggleButton.ToggleButtonModel enabledModel;
     JToggleButton.ToggleButtonModel allowOfflineModel;
@@ -210,7 +213,18 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             
             extResProperties = readProperties(evaluator, JNLP_EXT_RES_PREFIX, extResSuffixes);
             appletParamsProperties = readProperties(evaluator, JNLP_APPLET_PARAMS_PREFIX, appletParamsSuffixes);
-            
+
+            // check if the jnlp-impl.xml script is of previous version -> should be upgraded
+            FileObject jnlpImlpFO = j2seProject.getProjectDirectory().getFileObject("nbproject/jnlp-impl.xml");
+            if (jnlpImlpFO != null) {
+                try {
+                    String crc = JWSCompositeCategoryProvider.computeCrc32(jnlpImlpFO.getInputStream());
+                    isJnlpImplPreviousVersion = JWSCompositeCategoryProvider.isJnlpImplPreviousVer(crc);
+                } catch (IOException ex) {
+                    // nothing to do really
+                }
+            }
+
         } 
         
     }

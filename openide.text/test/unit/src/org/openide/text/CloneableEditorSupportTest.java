@@ -49,6 +49,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Date;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.EditorKit;
@@ -59,6 +60,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 
@@ -76,6 +78,24 @@ implements CloneableEditorSupport.Env {
     private CloneableEditorSupport support;
     /** the content of lookup of support */
     private InstanceContent ic;
+    /** Delay in miliseconds to simulate delay between closing stream and file modification time. */
+    private long delay = 0L;
+
+    public void testSaveAfterLoadOfFileThatWasModifiedInFuture() throws Exception {
+        content = "Ahoj\nMyDoc";
+        // simulate the the just opened file has modification time in future
+        // intentionally extremly big to make it work even in debugger
+        date = new Date(System.currentTimeMillis() + 86400000);
+        
+        javax.swing.text.Document doc = support.openDocument ();
+        assertNotNull (doc);
+
+        doc.remove(0, doc.getLength());
+
+        support.saveDocument();
+
+        assertEquals("Saved ok and empty", "", content);
+    }
 
     public void testDocCanBeGCdWhenNotModifiedButOpened() throws Exception {
         content = "Ahoj\nMyDoc";
@@ -182,7 +202,7 @@ implements CloneableEditorSupport.Env {
     
     public static Test suite() {
         TestSuite suite = new NbTestSuite(CloneableEditorSupportTest.class);
-        
+
         return suite;
     }
     
@@ -301,7 +321,41 @@ implements CloneableEditorSupport.Env {
         // There shouldn't be any EK registered and we should get the default one
         assertEquals("Wrong default EditorKit", "org.openide.text.CloneableEditorSupport$PlainEditorKit", kit.getClass().getName());
     }
-    
+
+    /** Tests that UserQuestionException is thrown when saving externally modified document. */
+    public void testSaveExternallyModified() throws Exception {
+        content = "Ahoj\nMyDoc";
+        support.openDocument();
+        modified = true;
+        // simulate external modification
+        date = new Date(System.currentTimeMillis() + 100);
+        try {
+            support.saveDocument();
+            fail("UserQuestionException should be thrown because of external modification.");
+        } catch (UserQuestionException e) {
+            // OK, exception expected.
+        }
+    }
+
+    /** Tests that UserQuestionException is NOT thrown when document is not externally
+     * modified but there is some delay between closing stream and setting file modification time.
+     * See issue 149069.
+     */
+    public void testSaveNotExternallyModified() throws Exception {
+        content = "Ahoj\nMyDoc";
+        support.openDocument();
+        modified = true;
+        // intentionally extremly big to make it work even in debugger
+        delay = 86400000;
+        support.saveDocument();
+        modified = true;
+        try {
+            support.saveDocument();
+        } catch (UserQuestionException e) {
+            fail("UserQuestionException should NOT be thrown (see #149069).");
+        }
+    }
+
     private void compareStreamWithString(InputStream is, String s) throws Exception{
         int i;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -370,6 +424,7 @@ implements CloneableEditorSupport.Env {
             public void close() throws java.io.IOException {
                 super.close ();
                 content = new String (toByteArray ());
+                date = new Date(System.currentTimeMillis() + delay);
             }
         }
         

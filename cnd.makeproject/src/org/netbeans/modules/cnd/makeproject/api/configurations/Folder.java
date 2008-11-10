@@ -315,7 +315,6 @@ public class Folder {
     public FolderConfiguration getFolderConfiguration(Configuration configuration) {
         FolderConfiguration folderConfiguration = null;
         if (isProjectFiles()) {
-            String id = getId();
             folderConfiguration = (FolderConfiguration)configuration.getAuxObject(getId());
             if (folderConfiguration == null) {
                 CCompilerConfiguration parentCCompilerConfiguration;

@@ -43,6 +43,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -96,6 +99,10 @@ public class BaseSampleProvider implements SampleProvider {
                 throw new DatabaseException(getMessage("MSG_SampleNotSupported", sampleName));
         }
 
+        if (! checkInnodbSupport(dbconn.getJDBCConnection())) {
+            throw new DatabaseException(getMessage("MSG_NoSampleWithoutInnoDB")); // NOI8N
+        }
+
         String sql = getSqlText(sampleName);
 
         SQLExecutor.execute(dbconn, sql);
@@ -103,6 +110,22 @@ public class BaseSampleProvider implements SampleProvider {
 
     public boolean supportsSample(String name) {
         return SAMPLES.contains(name);
+    }
+    private boolean checkInnodbSupport(Connection conn) throws DatabaseException {
+        try {
+            ResultSet rs = conn.createStatement().executeQuery("SHOW STORAGE ENGINES"); // NOI18N
+
+            while (rs.next()) {
+                if ("INNODB".equals(rs.getString(1).toUpperCase()) &&
+                    ("YES".equals(rs.getString(2).toUpperCase()) || "DEFAULT".equals(rs.getString(2).toUpperCase()))) { // NOI18N
+                    return true;
+                }
+            }
+
+            return false;
+        } catch (SQLException sqle) {
+            throw new DatabaseException(sqle);
+        }
     }
 
     public List<String> getSampleNames() {

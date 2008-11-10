@@ -62,7 +62,7 @@ public class FileUpdateInfo {
     private final File file;    
     private final int action;
     
-    private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])  (.+)$");
+    private static final Pattern pattern = Pattern.compile("^([ADUCG ])([ADUCG ])([B ])(.+)$");
 
     FileUpdateInfo(File file, int action) {
         this.file   = file;
@@ -79,7 +79,7 @@ public class FileUpdateInfo {
     
     public static FileUpdateInfo[] createFromLogMsg(String log) {
         Matcher m = pattern.matcher(log);
-        if(!m.matches()) { 
+        if(!m.matches()) {
             return null;
         }
                         

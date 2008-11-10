@@ -244,7 +244,7 @@ final class DataModel extends BasicWizardIterator.BasicDataModel {
             Map<String,Object> attrs = new HashMap<String,Object>();
             attrs.put("instanceCreate", "methodvalue:org.openide.awt.Actions.alwaysEnabled"); // NOI18N
             attrs.put("delegate", "newvalue:" + getPackageName() + '.' + className); // NOI18N
-            attrs.put("noIconInMenu", "false"); // NOI18N
+            attrs.put("noIconInMenu", Boolean.FALSE); // NOI18N
             if (relativeIconPath != null) {
                 attrs.put("iconBase", relativeIconPath); // NOI18N
             }

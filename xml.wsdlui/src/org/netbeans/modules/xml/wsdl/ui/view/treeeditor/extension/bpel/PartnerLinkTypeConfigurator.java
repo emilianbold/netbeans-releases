@@ -53,6 +53,7 @@ import org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator.class)
 public class PartnerLinkTypeConfigurator extends
         ExtensibilityElementConfigurator {
 

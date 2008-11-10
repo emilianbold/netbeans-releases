@@ -175,7 +175,7 @@ public final class DBMetaDataFactory {
             rs = dbmeta.getImportedKeys(setToNullIfEmpty(table.getCatalog()), setToNullIfEmpty(table.getSchema()), table.getName());
             fkList = DBForeignKey.createForeignKeyColumnMap(table, rs);
         } catch (SQLException e) {
-            LOGGER.log(Level.WARNING, e.getMessage(), e);
+            return null;
         } finally {
             DataViewUtils.closeResources(rs);
         }
@@ -336,7 +336,7 @@ public final class DBMetaDataFactory {
     private void checkForeignKeys(DBTable newTable) {
         // get the foreing keys
         Map<String, DBForeignKey> foreignKeys = getForeignKeys(newTable);
-        if (foreignKeys != null) {
+        if (foreignKeys != null && foreignKeys.size() != 0) {
             newTable.setForeignKeyMap(foreignKeys);
 
             // create a hash set of the keys

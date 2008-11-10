@@ -46,11 +46,11 @@ import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.groovy.editor.AstPath;
-import org.netbeans.modules.groovy.editor.AstUtilities;
-import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.parser.SourceUtils;
+import org.netbeans.modules.groovy.editor.api.AstPath;
+import org.netbeans.modules.groovy.editor.api.AstUtilities;
+import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.GroovyRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.Utils;
 import org.netbeans.modules.gsf.api.CancellableTask;
@@ -70,6 +70,7 @@ import org.openide.windows.TopComponent;
  *
  * @author martin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider.class, position=100)
 public class GroovyRefactoringActionsProvider extends ActionsImplementationProvider {
 
     private static boolean isFindUsages;

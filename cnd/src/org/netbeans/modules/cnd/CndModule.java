@@ -42,12 +42,10 @@
 package org.netbeans.modules.cnd;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.editor.Settings;
-import org.netbeans.modules.cnd.editor.shell.ShellKit;
-import org.netbeans.modules.cnd.editor.shell.ShellSettingsInitializer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.ErrorManager;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.InstalledFileLocator;
@@ -58,17 +56,10 @@ public class CndModule extends ModuleInstall {
     // Used in other CND sources...
     public static final ErrorManager err = ErrorManager.getDefault().getInstance("org.netbeans.modules.cnd"); // NOI18N
 
+    private static final Logger log = Logger.getLogger("cnd.execution.logger"); // NOI18N
+
     /** Module is being opened (NetBeans startup, or enable-toggled) */
     @Override public void restored() {
-
-	// Settings for editor kits
-	Settings.addInitializer(new ShellSettingsInitializer(ShellKit.class));
-	
-//	PrintSettings ps = (PrintSettings) PrintSettings.findObject(PrintSettings.class, true);
-//	ps.addOption ((SystemOption) SystemOption.findObject(FPrintOptions.class, true));
-//	ps.addOption ((SystemOption) SystemOption.findObject(CCPrintOptions.class, true));
-//	ps.addOption ((SystemOption) SystemOption.findObject(MakefilePrintOptions.class, true));
-//	ps.addOption ((SystemOption) SystemOption.findObject(ShellPrintOptions.class, true));
         
         if (Utilities.isUnix()) {
             // TODO: why not set permissions for bin/* ?
@@ -109,14 +100,29 @@ public class CndModule extends ModuleInstall {
         if (files.isEmpty()) {
             return;
         }
-        List<String> commands = new ArrayList<String>();
-        commands.add("/bin/chmod"); // NOI18N
-        commands.add("755"); // NOI18N
-        commands.addAll(files);
-        ProcessBuilder pb = new ProcessBuilder(commands);
-        try {
-            pb.start();
-        } catch (IOException ex) {
+        
+        // Find chmod
+        File chmod = new File("/bin/chmod"); // NOI18N
+
+        if (!chmod.isFile()) {
+            chmod = new File("/usr/bin/chmod"); // NOI18N
+        }
+        
+        if (chmod.isFile()) {
+            List<String> commands = new ArrayList<String>();
+            commands.add(chmod.getAbsolutePath());
+            commands.add("755"); // NOI18N
+            commands.addAll(files);
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            try {
+                Process process = pb.start();
+                // We need to wait for the process completion
+                if (process.waitFor() != 0) {
+                    log.log(Level.INFO, "chmod failed: " + commands); // NOI18N
+                }
+            } catch (Exception ex) {
+                log.log(Level.INFO, "chmod failed: " + commands, ex); // NOI18N
+            }
         }
     }
 }

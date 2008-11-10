@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.php.project.ui.actions;
 
+import org.netbeans.modules.php.project.ui.actions.support.Displayable;
+import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -83,7 +85,7 @@ public class DownloadCommand extends FtpCommand implements Displayable {
 
     private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
-        assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
+        assert selectedFiles.length > 0 : "At least one node must be selected for Download action";
 
         FileObject[] sources = Utils.getSourceObjects(getProject());
 

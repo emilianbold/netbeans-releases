@@ -45,7 +45,6 @@ import java.awt.Toolkit;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -118,7 +117,7 @@ public final class Hyperlink implements OutputListener {
         }
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
             if (ed != null && /* not true e.g. for *_ja.properties */file == dob.getPrimaryFile()) {
                 if (line1 == -1) {
                     // OK, just open it.
@@ -137,11 +136,7 @@ public final class Hyperlink implements OutputListener {
                     try {
                         Line line = updateLines(ed);
                         if (!line.isDeleted()) {
-                            if (col1 == -1) {
-                                line.show(Line.SHOW_REUSE);
-                            } else {
-                                line.show(Line.SHOW_REUSE, col1 - 1);
-                            }
+                            line.show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS, col1 == -1 ? -1 : col1 - 1);
                         }
                     } catch (IndexOutOfBoundsException ioobe) {
                         // Probably harmless. Bogus line number.
@@ -251,7 +246,7 @@ public final class Hyperlink implements OutputListener {
         }
         try {
             DataObject dob = DataObject.find(file);
-            EditorCookie ed = dob.getCookie(EditorCookie.class);
+            EditorCookie ed = dob.getLookup().lookup(EditorCookie.class);
             if (ed != null) {
                 if (ed.getDocument() == null) {
                     // The document is not opened, don't bother with it.
@@ -263,11 +258,7 @@ public final class Hyperlink implements OutputListener {
                 if (line1 != -1) {
                     Line line = updateLines(ed);
                     if (!line.isDeleted()) {
-                        if (col1 == -1) {
-                            line.show(Line.SHOW_TRY_SHOW);
-                        } else {
-                            line.show(Line.SHOW_TRY_SHOW, col1 - 1);
-                        }
+                        line.show(Line.ShowOpenType.NONE, Line.ShowVisibilityType.NONE, col1 == -1 ? -1 : col1 - 1);
                     }
                 }
             }

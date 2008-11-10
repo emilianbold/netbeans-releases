@@ -39,6 +39,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.schema.completion.spi.CompletionModelProvider.class)
 public class BpelCompletionModelProvider extends CompletionModelProvider {
 
     private static final String PROCESS = "process";            // NOI18N

@@ -52,7 +52,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import javax.swing.JButton;
-import junit.framework.*;
 import java.util.Locale;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -96,7 +95,7 @@ public class InstallerReadPageTest extends NbTestCase {
         installer.restored();
         
         Locale.setDefault(new Locale("te", "ST"));
-        
+        Installer.dontWaitForUserInputInTests();
         DD.d = null;
         MockServices.setServices(DD.class);
     }

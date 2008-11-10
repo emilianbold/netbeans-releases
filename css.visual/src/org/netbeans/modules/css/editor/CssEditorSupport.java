@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.css.editor;
 
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -109,11 +108,11 @@ public class CssEditorSupport {
         public void propertyChange(final PropertyChangeEvent evt) {
             //detach myself from the source so next UI changes are not propagated to the 
             //document until the parser finishes. Then new listener will be added
-            if(selected != null) {
+            if(selected != null && !aggregated_events) {
                 d("css style data listener - detachinf from rule content.");
                 selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
             }
-            
+
             //remove caret listener, new one will be added one the written test is parsed
             if (caretListenerRegistered) {
                 editorPane.removeCaretListener(CARET_LISTENER);
@@ -339,6 +338,7 @@ public class CssEditorSupport {
         if (!caretListenerRegistered) {
             d("added caret listener: " + tc.getName());
             editorPane.addCaretListener(CARET_LISTENER);
+            caretListenerRegistered = true;
         }
 
         //attach css model listener
@@ -449,10 +449,6 @@ public class CssEditorSupport {
             }
             selected = selectedRule;
 
-            //listen on changes possibly made by the stylebuilder and update the document accordingly
-            selectedRule.ruleContent().addPropertyChangeListener(CSS_STYLE_DATA_LISTENER);
-            d("added property change listener to the new rule: " + selected);
-            
             //TODO make activation of the selected rule consistent for StyleBuilder and CSSPreview,
             //now one uses direct call to TC, second property change listening on this class
 
@@ -468,6 +464,10 @@ public class CssEditorSupport {
             sbTC.setContent(content);
             sbTC.setPanelMode(StyleBuilderTopComponent.MODEL_OK);
             d("stylebuilder UI updated");
+
+            //listen on changes possibly made by the stylebuilder and update the document accordingly
+            selectedRule.ruleContent().addPropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+            d("added property change listener to the new rule: " + selected);
             
             firePreviewableActivated(content);
         }
@@ -496,7 +496,28 @@ public class CssEditorSupport {
             LOGGER.log(Level.INFO, s);
         }
     }
-    
+
+
+    // >>> #149518 hack
+    private boolean aggregated_events = false;
+    //called from EDT
+    public void firstAggregatedEventWillFire() {
+        aggregated_events = true;
+        d("firstAggregatedEventWillFire");
+    }
+
+    //called from EDT
+    public void lastAggregatedEventFired() {
+        aggregated_events = false;
+        //remove the listener here since normally for single event the detaching
+        //is done in the event handler
+        if(selected != null) {
+            d("lastAggregatedEventFired: css style data listener - detaching from rule content.");
+            selected.ruleContent().removePropertyChangeListener(CSS_STYLE_DATA_LISTENER);
+        }
+    }
+    //<<< eof hack
+
     private class PaneAwareRunnable implements Runnable {
 
         private JEditorPane editor = null;

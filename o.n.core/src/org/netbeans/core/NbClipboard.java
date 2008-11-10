@@ -66,6 +66,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.datatransfer.ExClipboard;
 
+@org.openide.util.lookup.ServiceProviders({@org.openide.util.lookup.ServiceProvider(service=java.awt.datatransfer.Clipboard.class), @org.openide.util.lookup.ServiceProvider(service=org.openide.util.datatransfer.ExClipboard.class)})
 public final class NbClipboard extends ExClipboard
 implements LookupListener, Runnable, FlavorListener, AWTEventListener
 {

@@ -52,6 +52,7 @@ import org.openide.filesystems.FileObject;
  * org.netbeans.modules.j2ee.jpa.verification.JPAProblemFinder
  * @author Tomasz.Slota@Sun.COM
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.api.java.source.JavaSourceTaskFactory.class)
 public class JPAProblemFinderFactory extends EditorAwareJavaSourceTaskFactory {
     private FileObject file = null;
     

@@ -122,7 +122,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     
     /*package-local*/ static String findBuildResult(Project project) {
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp==null){
+        if (pdp == null || !pdp.gotDescriptor()){
             return null;
         }
         MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
@@ -156,7 +156,7 @@ public final class DiscoveryWizardAction extends NodeAction {
     /*package-local*/ static String findSourceRoot(Project project) {
         String base = getProjectDirectoryPath(project);
         ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp!=null){
+        if (pdp != null && pdp.gotDescriptor()){
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();
             Folder folder = make.getLogicalFolders();
             Vector sources = folder.getFolders();
@@ -223,7 +223,7 @@ public final class DiscoveryWizardAction extends NodeAction {
                 return null;
             }
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
-            if( pdp == null ) {
+            if( pdp == null || !pdp.gotDescriptor()) {
                 return null;
             }
             MakeConfigurationDescriptor make = (MakeConfigurationDescriptor)pdp.getConfigurationDescriptor();

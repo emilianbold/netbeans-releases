@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.modules.ruby.debugger.breakpoints.RubyBreakpointManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -60,7 +62,9 @@ import org.rubyforge.debugcommons.RubyDebugEvent;
 import org.rubyforge.debugcommons.RubyDebuggerException;
 
 public final class RubyDebuggerActionProvider extends ActionsProviderSupport implements RubyDebugEventListener {
-    
+
+    public static final Logger LOGGER = Logger.getLogger(RubyDebuggerActionProvider.class.getName());
+
     private static final Set<Object> ACTIONS;
     
     static {
@@ -108,24 +112,24 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     
     @Override
     public void doAction(final Object action) {
-        Util.finer("Performing \"" + action + '"');
+        LOGGER.finer("Performing \"" + action + '"');
         if (action == ActionsManager.ACTION_KILL) {
             finish(true);
             return;
         }
         if (frontEndSemaphore.getQueueLength() > 10) {
-            Util.info("Too much pending events (> 10). Action \"" + action + "\" is rejected."); // NOI18N
+            LOGGER.info("Too much pending events (> 10). Action \"" + action + "\" is rejected."); // NOI18N
             return;
         }
         try {
             frontEndSemaphore.acquire();
         } catch (InterruptedException e) {
-            Util.severe(e);
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return;
         }
         synchronized (terminated) {
             if (terminated) {
-                Util.info("Flushing cached actions: " + action + ", process is terminated.");
+                LOGGER.info("Flushing cached actions: " + action + ", process is terminated.");
                 frontEndSemaphore.release();
                 return; // ignore cached actions
             }
@@ -166,12 +170,12 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
         try {
             backEndSemaphore.acquire();
         } catch (InterruptedException e) {
-            Util.severe(e);
+            LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
             return;
         }
         synchronized (terminated) {
             if (terminated) {
-                Util.info("Flushing pending event: " + event + ", process is terminated."); // NOI18N
+                LOGGER.info("Flushing pending event: " + event + ", process is terminated."); // NOI18N
                 backEndSemaphore.release();
                 return;
             }
@@ -206,7 +210,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
                     backEndSemaphore.release();
                     return;
                 } catch (RubyDebuggerException e) {
-                    Util.severe(e);
+                    LOGGER.log(Level.SEVERE, e.getLocalizedMessage(), e);
                 }
             }
         } else {
@@ -221,9 +225,9 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
      */
     private void finish(boolean terminate) {
         synchronized (terminated) {
-            Util.finer("Finishing session: " + rubySession.getName());
+            LOGGER.finer("Finishing session: " + rubySession.getName());
             if (terminated) {
-                Util.warning("Finish is not supposed to be called when a process is already terminated");
+                LOGGER.warning("Finish is not supposed to be called when a process is already terminated");
                 return;
             }
             terminated = true;

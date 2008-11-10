@@ -209,8 +209,8 @@ public enum ATTR {
     private static final HashMap<Integer, ATTR> hashmap = new HashMap<Integer, ATTR>();
     
     static {
-        for (ATTR elem : ATTR.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (ATTR elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
@@ -219,7 +219,7 @@ public enum ATTR {
     }
     
     public static ATTR get(int val) {
-        ATTR attr = hashmap.get(new Integer(val));
+        ATTR attr = hashmap.get(val);
         return (attr != null) ? attr : DW_AT_unknown;
     }
     

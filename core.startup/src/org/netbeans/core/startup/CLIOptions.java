@@ -53,6 +53,7 @@ import org.openide.util.NbBundle;
  * Handler for core options.
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
 public class CLIOptions extends CLIHandler {
 
     /** directory for modules */

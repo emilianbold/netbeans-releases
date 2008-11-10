@@ -53,6 +53,7 @@ import java.util.List;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterDeserializer.class)
 public class MidpAddImportPresenterDeserializer extends PresenterDeserializer {
 
     static final String PROPERTY_NODE = "MidpAddImport"; // NOI18N

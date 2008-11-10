@@ -60,34 +60,6 @@ public abstract class RemoteTestBase extends BaseTestCase {
         super(testName);
     }
     
-    protected String getKey() throws Exception {
-        return getUserName() + "@" + getHostName();
-    }
-    
-    protected String getUserName() {
-        String userName = System.getProperty("cnd.remote.user.name");
-        if( userName == null ) {
-            userName = System.getenv("CND_REMOTE_USER_NAME");
-        }
-        if( userName == null ) {
-            userName = System.getProperty("user.name");
-        }
-        assertNotNull(userName);
-        return userName;
-    }
-
-    protected String getHostName() throws Exception {
-        String hostName = System.getProperty("cnd.remote.host.name");
-        if( hostName == null ) {
-            hostName = System.getenv("CND_REMOTE_HOST_NAME");
-        }
-        if( hostName == null ) {
-            hostName = "eaglet-sr";
-        }
-        assertNotNull(hostName);
-        return hostName;
-    }
-
     public static class FakeCompilerSet extends CompilerSet {
 
         private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());

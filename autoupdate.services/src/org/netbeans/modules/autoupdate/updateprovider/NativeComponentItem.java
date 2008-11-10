@@ -42,7 +42,6 @@
 package org.netbeans.modules.autoupdate.updateprovider;
 
 import org.netbeans.modules.autoupdate.services.*;
-import org.netbeans.modules.autoupdate.updateprovider.UpdateItemImpl;
 import java.util.Set;
 import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.CustomUninstaller;
@@ -110,7 +109,7 @@ public class NativeComponentItem extends UpdateItemImpl {
     }
     
     public int getDownloadSize () {
-        return Integer.parseInt (downloadSize);
+        return isInstalled ? 0 : Integer.parseInt (downloadSize);
     }
     
     public UpdateItemDeploymentImpl getUpdateItemDeploymentImpl () {
@@ -134,5 +133,9 @@ public class NativeComponentItem extends UpdateItemImpl {
     @Override
     public void setUpdateLicenseImpl (UpdateLicenseImpl licenseImpl) {
         this.licenseImpl = licenseImpl;
+    }
+
+    public boolean isInstalled () {
+        return isInstalled;
     }
 }

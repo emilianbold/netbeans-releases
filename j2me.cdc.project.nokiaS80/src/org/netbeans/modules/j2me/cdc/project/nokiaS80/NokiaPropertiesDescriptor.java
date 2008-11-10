@@ -51,6 +51,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
  *
  * @author Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=50)
 public class NokiaPropertiesDescriptor implements ProjectPropertiesDescriptor {
     
     public static final String NOKIA_APP_ICON = "nokiaS80.application.icon"; //NOI18N

@@ -143,6 +143,7 @@ public class ActionInvocationTest extends LogTestCase {
 
     /** Our own dialog displayer.
      */
+    @org.openide.util.lookup.ServiceProvider(service=org.openide.DialogDisplayer.class, supersedes="org.netbeans.core.windows.services.DialogDisplayerImpl")
     public static final class DD extends org.openide.DialogDisplayer {
         public static Object[] options;
         public static RefactoringUI rui;

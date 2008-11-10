@@ -41,6 +41,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.dd.api.web.ErrorPage;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.ddloaders.web.DDDataObject;
@@ -55,6 +57,9 @@ import org.openide.util.NbBundle;
  * Created on October 1, 2002, 3:52 PM
  */
 public class ErrorPagesTablePanel extends DefaultTablePanel {
+    
+    private static final Logger LOG = Logger.getLogger(ErrorPagesTablePanel.class.getName());
+    
     private ErrorPagesTableModel model;
     private WebApp webApp;
     private DDDataObject dObj;
@@ -138,7 +143,9 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                             String res = DDUtils.getResourcePath(groups,fo,'/',true);
                             dialogPanel.getTextComponents()[0].setText("/"+res);
                         }
-                    } catch (java.io.IOException ex) {}
+                    } catch (java.io.IOException ex) {
+                        LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+                    }
                 }
             });
             EditDialog dialog = new EditDialog(dialogPanel,NbBundle.getMessage(ErrorPagesTablePanel.class,"TTL_ErrorPage"),add) {
@@ -158,7 +165,9 @@ public class ErrorPagesTablePanel extends DefaultTablePanel {
                         Integer c = null;
                         try {
                             c = new Integer(code); 
-                        } catch (NumberFormatException ex) {}
+                        } catch (NumberFormatException ex) {
+                            LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+                        }
                         if (c==null) {
                             return NbBundle.getMessage(ErrorPagesTablePanel.class,"TXT_EP_wrongNumber",code);
                         } else {

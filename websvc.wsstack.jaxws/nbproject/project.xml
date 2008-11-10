@@ -82,8 +82,9 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
-                <friend>org.netbeans.modules.websvc.wsitconf</friend>
+                <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
+                <friend>org.netbeans.modules.websvc.wsitconf</friend>
                 <package>org.netbeans.modules.websvc.wsstack.jaxws</package>
             </friend-packages>
         </data>

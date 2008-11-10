@@ -76,6 +76,7 @@ import org.openide.util.Lookup;
  *
  * @author  Honza
  */
+@org.openide.util.lookup.ServiceProvider(service=org.apache.tools.ant.module.spi.AntLogger.class)
 public class DebuggerAntLogger extends AntLogger {
     
     

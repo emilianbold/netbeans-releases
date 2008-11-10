@@ -42,6 +42,7 @@ package org.netbeans.modules.maven.execute;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -53,7 +54,7 @@ public final class ModelRunConfig extends BeanRunConfig {
     private NetbeansActionMapping model;
     
     /** Creates a new instance of ModelRunConfig */
-    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName) {
+    public ModelRunConfig(Project proj, NetbeansActionMapping mod, String actionName, FileObject selectedFile) {
         model = mod;
         NbMavenProjectImpl nbprj = proj.getLookup().lookup(NbMavenProjectImpl.class);
         setProject(nbprj);
@@ -65,6 +66,7 @@ public final class ModelRunConfig extends BeanRunConfig {
         setRecursive(mod.isRecursive());
         setActivatedProfiles(mod.getActivatedProfiles());
         setActionName(actionName);
+        setFileObject(selectedFile);
     }
-    
+
 }

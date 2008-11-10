@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview.ui;
 
 
 import javax.swing.ButtonGroup;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JRadioButton;
 import javax.swing.JTextField;
@@ -60,12 +59,12 @@ import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
  * @author  ptliu
  */
 public class SecurityForm extends SectionNodeInnerPanel {
-    public static String USE_CALLER_ID = "useCallerID";  //NOI18N
-    public static String RUN_AS = "runAs";              //NOI18N
-    public static String NO_SECURITY_ID = "noSecurityID";   //NOI18N
-    public static String ALL_METHOD_PERMISSION = "allMethodPermission"; //NOI18N
-    public static String SET_ROLE_METHOD_PERMISSION = "setRoleMethodPermission";    //NOI18N
-    public static String NO_METHOD_PERMISSION = "noMethodPermission";   //NOI18N
+    public static final String USE_CALLER_ID = "useCallerID";  //NOI18N
+    public static final String RUN_AS = "runAs";              //NOI18N
+    public static final String NO_SECURITY_ID = "noSecurityID";   //NOI18N
+    public static final String ALL_METHOD_PERMISSION = "allMethodPermission"; //NOI18N
+    public static final String SET_ROLE_METHOD_PERMISSION = "setRoleMethodPermission";    //NOI18N
+    public static final String NO_METHOD_PERMISSION = "noMethodPermission";   //NOI18N
     /**
      * Creates new form SecurityForm
      */

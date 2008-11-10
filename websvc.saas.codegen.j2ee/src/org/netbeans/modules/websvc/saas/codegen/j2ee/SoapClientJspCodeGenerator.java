@@ -55,6 +55,7 @@ import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
  *
  * @author ayubskhan
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class SoapClientJspCodeGenerator extends SoapClientServletCodeGenerator {
 
     public SoapClientJspCodeGenerator() {

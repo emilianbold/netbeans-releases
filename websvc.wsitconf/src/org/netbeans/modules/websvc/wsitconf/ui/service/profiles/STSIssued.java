@@ -69,7 +69,6 @@ public class STSIssued extends ProfileBaseForm {
         inSync = true;
         fillLayoutCombo(layoutCombo);
         fillAlgoSuiteCombo(algoSuiteCombo);
-        fillKeySize(keySizeCombo);
 
         tokenTypeCombo.removeAllItems();
         tokenTypeCombo.addItem(ComboConstants.ISSUED_TOKENTYPE_SAML10);
@@ -79,7 +78,7 @@ public class STSIssued extends ProfileBaseForm {
         keyTypeCombo.removeAllItems();
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_SYMMETRIC);
         keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_PUBLIC);
-        keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_NOPROOF);
+        //keyTypeCombo.addItem(ComboConstants.ISSUED_KEYTYPE_NOPROOF); //see 149113
        
         inSync = false;
         
@@ -118,6 +117,8 @@ public class STSIssued extends ProfileBaseForm {
 
         setCombo(tokenTypeCombo, SecurityTokensModelHelper.getIssuedTokenType(token));
         setCombo(keyTypeCombo, SecurityTokensModelHelper.getIssuedKeyType(token));
+
+        fillKeySize(keySizeCombo, ComboConstants.ISSUED_KEYTYPE_PUBLIC.equals(keyTypeCombo.getSelectedItem()));
         setCombo(keySizeCombo, SecurityTokensModelHelper.getIssuedKeySize(token));
         
         issuerAddressField.setText(SecurityTokensModelHelper.getIssuedIssuerAddress(token));
@@ -173,11 +174,33 @@ public class STSIssued extends ProfileBaseForm {
         WSDLComponent tokenKind = SecurityTokensModelHelper.getTokenElement(secBinding, ProtectionToken.class);
         WSDLComponent token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
 
-        if (source.equals(tokenTypeCombo) || source.equals(keyTypeCombo) || source.equals(keySizeCombo)) {
-            stmh.setIssuedTokenRSTAttributes(token, 
-                    (String)tokenTypeCombo.getSelectedItem(), 
-                    (String)keyTypeCombo.getSelectedItem(), 
-                    (String)keySizeCombo.getSelectedItem());
+        if (source.equals(tokenTypeCombo) || source.equals(keyTypeCombo)) {
+            fillKeySize(keySizeCombo, ComboConstants.ISSUED_KEYTYPE_PUBLIC.equals(keyTypeCombo.getSelectedItem()));
+            if (ComboConstants.NONE.equals(keySizeCombo.getSelectedItem())) {
+                stmh.setIssuedTokenRSTAttributes(token,
+                        (String)tokenTypeCombo.getSelectedItem(),
+                        (String)keyTypeCombo.getSelectedItem(),
+                        null);
+            } else {
+                stmh.setIssuedTokenRSTAttributes(token,
+                        (String)tokenTypeCombo.getSelectedItem(),
+                        (String)keyTypeCombo.getSelectedItem(),
+                        (String)keySizeCombo.getSelectedItem());
+            }
+        }
+
+        if (source.equals(keySizeCombo)) {
+            if (ComboConstants.NONE.equals(keySizeCombo.getSelectedItem())) {
+                stmh.setIssuedTokenRSTAttributes(token,
+                        (String)tokenTypeCombo.getSelectedItem(),
+                        (String)keyTypeCombo.getSelectedItem(),
+                        null);
+            } else {
+                stmh.setIssuedTokenRSTAttributes(token,
+                        (String)tokenTypeCombo.getSelectedItem(),
+                        (String)keyTypeCombo.getSelectedItem(),
+                        (String)keySizeCombo.getSelectedItem());
+            }
         }
 
         if (source.equals(issuerAddressField) || source.equals(issuerMetadataField)) {

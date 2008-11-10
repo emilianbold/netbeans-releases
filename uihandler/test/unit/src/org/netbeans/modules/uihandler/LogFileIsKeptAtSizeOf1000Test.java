@@ -131,7 +131,7 @@ public class LogFileIsKeptAtSizeOf1000Test extends NbTestCase {
             for (int i = 0; i < 1500; i++) {
                 Logger.getLogger("org.netbeans.ui.anything").log(r);
             }
-            assertEquals("full buffer", 1000, Installer.getLogsSize());
+            assertEquals("full buffer", 1000, InstallerTest.getLogsSize());
 
             File logs = new File(new File(getWorkDir(), "var"), "log");
             assertEquals("Two log files: " + Arrays.asList(logs.list()), 2, logs.list().length);
@@ -177,10 +177,6 @@ public class LogFileIsKeptAtSizeOf1000Test extends NbTestCase {
                 waitForGestures();
 
                 assertNull("No dialogs at close", DD.d);
-
-                installer.restored();
-
-                waitForGestures();
             }
 
             assertNull("No dialog shown at begining", DD.d);

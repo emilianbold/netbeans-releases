@@ -85,6 +85,7 @@ public class GameAccessController implements AccessController {
 	public void notifyComponentsCreated(Collection<DesignComponent> createdComponents) {
 	}
 	
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.AccessControllerFactory.class)
     public static class Factory implements AccessControllerFactory {
         public AccessController createAccessController(DesignDocument document) {
             return new GameAccessController (document);

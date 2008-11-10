@@ -75,11 +75,19 @@ class Util {
             LOG.log(Level.INFO,"Interrupted:",e);
             return e.getMessage();
         } finally {
-            if (r != null) {
-                r.close();
+            IOException exc = null;
+            try {
+                if (r != null) {
+                    r.close();
+                }
+            } catch (IOException ex) {
+                exc = ex;
             }
             if (err != null) {
                 err.close();
+            }
+            if (exc != null) {
+                throw exc;
             }
         }
     }

@@ -53,7 +53,6 @@ import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.utils.APTCommentsFilter;
 import org.netbeans.modules.cnd.apt.utils.APTTraceUtils;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import java.io.*;
 import java.util.*;
 import java.util.List;
@@ -151,11 +150,7 @@ public class TraceModel extends TraceModelBase {
 
     public static void main(String[] args) {
 	new TraceModel().test(args);
-	if (TraceFlags.USE_AST_CACHE) {
-	    CacheManager.getInstance().close();
-	} else {
-	    APTDriver.getInstance().close();
-	}
+    APTDriver.getInstance().close();
 	//System.out.println("" + org.netbeans.modules.cnd.apt.utils.APTIncludeUtils.getHitRate());
     }
 	
@@ -734,11 +729,11 @@ public class TraceModel extends TraceModelBase {
 	return wasWait;
     }
 
-    private void sleep(int timeout, String message) {
-	System.err.printf("Sleeping: %s\n", message);
-	sleep(timeout);
-	System.err.printf("Awoke (%s)\n", message);
-    }
+//    private void sleep(int timeout, String message) {
+//	System.err.printf("Sleeping: %s\n", message);
+//	sleep(timeout);
+//	System.err.printf("Awoke (%s)\n", message);
+//    }
     
     private void sleep(int timeout) {
 	try {
@@ -776,10 +771,10 @@ public class TraceModel extends TraceModelBase {
 	return map;
     }
 
-    private APTPreprocHandler getPreprocHandler(File file) {
-	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
-	return preprocHandler;
-    }
+//    private APTPreprocHandler getPreprocHandler(File file) {
+//	APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(file), getIncludeHandler(file), !file.getPath().endsWith(".h")); // NOI18N
+//	return preprocHandler;
+//    }
 
     private APTMacroMap getSysMap(File file) {
 	APTMacroMap map = sysAPTData.getMacroMap("TraceModelSysMacros", getSysMacros()); // NOI18N
@@ -1268,9 +1263,9 @@ public class TraceModel extends TraceModelBase {
 	frame.setVisible(true);
     }
 
-    private boolean isDummyUnresolved(CsmDeclaration decl) {
-	return decl == null || decl instanceof Unresolved.UnresolvedClass;
-    }
+//    private boolean isDummyUnresolved(CsmDeclaration decl) {
+//	return decl == null || decl instanceof Unresolved.UnresolvedClass;
+//    }
 
     public static void dumpAst(AST ast) {
 	ASTVisitor visitor = new ASTVisitor() {

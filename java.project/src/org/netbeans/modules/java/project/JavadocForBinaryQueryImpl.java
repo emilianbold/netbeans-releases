@@ -54,6 +54,7 @@ import org.openide.ErrorManager;
  * Delegates {@link JavadocForBinaryQueryImplementation} to the project which
  * owns the binary file.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=100)
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
     
     private static final ErrorManager ERR = ErrorManager.getDefault().getInstance(JavadocForBinaryQueryImpl.class.getName());

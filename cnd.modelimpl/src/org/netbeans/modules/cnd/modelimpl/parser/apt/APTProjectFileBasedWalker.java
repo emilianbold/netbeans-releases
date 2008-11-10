@@ -63,14 +63,14 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class APTProjectFileBasedWalker extends APTAbstractWalker {
     private final FileImpl file;
-    private final ProjectBase startProject;
+//    private final ProjectBase startProject;
     private int mode;
     
     public APTProjectFileBasedWalker(ProjectBase startProject, APTFile apt, FileImpl file, APTPreprocHandler preprocHandler) {
         super(apt, preprocHandler);
         this.mode = ProjectBase.GATHERING_MACROS;
         this.file = file;
-        this.startProject = startProject;
+//        this.startProject = startProject;
         assert startProject != null : "null start project for " + file.getAbsolutePath();
     }
     

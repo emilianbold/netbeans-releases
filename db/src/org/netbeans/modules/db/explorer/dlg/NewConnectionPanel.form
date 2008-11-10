@@ -42,36 +42,36 @@
                           </Group>
                           <Group type="103" alignment="0" groupAlignment="0" max="-2" attributes="0">
                               <Component id="additionalPropsLabel" alignment="1" max="32767" attributes="1"/>
-                              <Component id="showUrlCheckBox" alignment="0" pref="125" max="32767" attributes="1"/>
                               <Component id="directUrlLabel" alignment="0" max="32767" attributes="1"/>
+                              <Component id="showUrlCheckBox" alignment="1" min="-2" pref="132" max="-2" attributes="1"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="directUrlScroll" pref="539" max="32767" attributes="0"/>
-                          <Component id="urlField" alignment="0" pref="539" max="32767" attributes="1"/>
-                          <Component id="additionalPropsField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="urlField" alignment="0" pref="532" max="32767" attributes="1"/>
+                          <Component id="additionalPropsField" alignment="1" pref="532" max="32767" attributes="1"/>
                           <Group type="102" attributes="0">
                               <Component id="fieldInputCheckBox" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="directInputCheckBox" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="templateComboBox" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="hostField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="portField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="databaseField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="sidField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="serviceField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="tnsField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="dsnField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="serverNameField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="instanceField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="userField" alignment="1" pref="539" max="32767" attributes="1"/>
-                          <Component id="passwordField" alignment="1" pref="539" max="32767" attributes="1"/>
+                          <Component id="templateComboBox" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="hostField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="portField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="databaseField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="sidField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="serviceField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="tnsField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="dsnField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="serverNameField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="instanceField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="userField" alignment="1" pref="532" max="32767" attributes="1"/>
+                          <Component id="passwordField" alignment="1" pref="532" max="32767" attributes="1"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="passwordCheckBox" pref="400" max="32767" attributes="0"/>
+                              <Component id="passwordCheckBox" pref="393" max="32767" attributes="0"/>
                               <EmptySpace min="-2" pref="139" max="-2" attributes="0"/>
                           </Group>
+                          <Component id="directUrlScroll" alignment="1" pref="532" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <Component id="errorInfoPanel" alignment="0" pref="674" max="32767" attributes="0"/>
@@ -158,13 +158,13 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="showUrlCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="showUrlCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Component id="directUrlLabel" min="-2" max="-2" attributes="0"/>
                   <Component id="directUrlScroll" min="-2" pref="84" max="-2" attributes="0"/>
-                  <Component id="directUrlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel1" min="-2" max="-2" attributes="0"/>

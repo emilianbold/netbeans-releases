@@ -52,9 +52,9 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.ui.FoldersListSettings;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.netbeans.spi.java.project.support.ui.SharableLibrariesUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -159,16 +159,16 @@ public class NewJ2SEProjectWizardIterator implements WizardDescriptor.ProgressIn
             String buildScriptName = (String) wiz.getProperty("buildScriptName");//NOI18N
             AntProjectHelper h = J2SEProjectGenerator.createProject(dirF, name, sourceFolders, testFolders, MANIFEST_FILE, librariesDefinition, buildScriptName);
             EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            String includes = (String) wiz.getProperty(J2SEProjectProperties.INCLUDES);
+            String includes = (String) wiz.getProperty(ProjectProperties.INCLUDES);
             if (includes == null) {
                 includes = "**"; // NOI18N
             }
-            ep.setProperty(J2SEProjectProperties.INCLUDES, includes);
-            String excludes = (String) wiz.getProperty(J2SEProjectProperties.EXCLUDES);
+            ep.setProperty(ProjectProperties.INCLUDES, includes);
+            String excludes = (String) wiz.getProperty(ProjectProperties.EXCLUDES);
             if (excludes == null) {
                 excludes = ""; // NOI18N
             }
-            ep.setProperty(J2SEProjectProperties.EXCLUDES, excludes);
+            ep.setProperty(ProjectProperties.EXCLUDES, excludes);
             h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             handle.progress (2);
             for (File f : sourceFolders) {

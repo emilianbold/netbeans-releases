@@ -38,8 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-
 package org.netbeans.modules.cnd.completion.cplusplus.hyperlink;
 
 import java.util.Collection;
@@ -73,6 +71,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
  * @author Jan Lahoda, Vladimir Voskresensky
  */
 public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
+
     public CsmHyperlinkProvider() {
     }
 
@@ -105,7 +104,7 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         return postJump(item, "goto_source_source_not_found", "cannot-open-csm-element"); //NOI18N
     }
 
-    /*package*/ CsmObject findTargetObject(final Document doc, final Token jumpToken, final int offset, boolean toOffsetable) {
+    /*package*/ CsmObject findTargetObject(final Document doc, final Token<CppTokenId> jumpToken, final int offset, boolean toOffsetable) {
         CsmObject item = null;
         assert jumpToken != null;
         CsmFile file = CsmUtilities.getCsmFile(doc, true);
@@ -120,60 +119,58 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
     private CsmOffsetable toJumpObject(CsmObject csmObject, CsmFile csmFile, int offset) {
         CsmOffsetable item = null;
         if (CsmKindUtilities.isOffsetable(csmObject)) {
-            item = (CsmOffsetable)csmObject;
+            item = (CsmOffsetable) csmObject;
             if (CsmKindUtilities.isFunctionDeclaration(csmObject)) {
                 // check if we are in function definition name => go to declaration
                 // else it is more useful to jump to definition of function
-                CsmFunctionDefinition definition = ((CsmFunction)csmObject).getDefinition();
+                CsmFunctionDefinition definition = ((CsmFunction) csmObject).getDefinition();
                 if (definition != null) {
                     if (csmFile.equals(definition.getContainingFile()) &&
                             (definition.getStartOffset() <= offset &&
-                            offset <= definition.getBody().getStartOffset())
-                            ) {
+                            offset <= definition.getBody().getStartOffset())) {
                         // it is ok to jump to declaration
                         if (definition.getDeclaration() != null) {
                             item = definition.getDeclaration();
                         } else if (csmObject.equals(definition)) {
-                            item = (CsmOffsetable)csmObject;
+                            item = (CsmOffsetable) csmObject;
                         }
                     } else {
                         // it's better to jump to definition
                         item = definition;
                     }
                 } else {
-                    CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction)csmObject);
-                    if (ref != null){
+                    CsmReference ref = CsmFunctionDefinitionResolver.getDefault().getFunctionDefinition((CsmFunction) csmObject);
+                    if (ref != null) {
                         item = ref;
                     }
                 }
-            }else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
-                CsmFunctionDefinition definition = (CsmFunctionDefinition)csmObject;
+            } else if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
+                CsmFunctionDefinition definition = (CsmFunctionDefinition) csmObject;
                 if (csmFile.equals(definition.getContainingFile()) &&
                         (definition.getStartOffset() <= offset &&
-                        offset <= definition.getBody().getStartOffset())
-                        ) {
+                        offset <= definition.getBody().getStartOffset())) {
                     // it is ok to jump to declaration
                     if (definition.getDeclaration() != null) {
                         item = definition.getDeclaration();
                     } else if (csmObject.equals(definition)) {
-                        item = (CsmOffsetable)csmObject;
+                        item = (CsmOffsetable) csmObject;
                     }
                 }
             } else if (CsmKindUtilities.isVariableDeclaration(csmObject)) {
                 // check if we are in variable definition name => go to declaration
-                CsmVariableDefinition definition = ((CsmVariable)csmObject).getDefinition();
+                CsmVariableDefinition definition = ((CsmVariable) csmObject).getDefinition();
                 if (definition != null) {
                     item = definition;
                     if (csmFile.equals(definition.getContainingFile()) &&
                             (definition.getStartOffset() <= offset &&
                             offset <= definition.getEndOffset())) {
-                        item = (CsmVariable)csmObject;
+                        item = (CsmVariable) csmObject;
                     }
                 }
             }
         } else if (CsmKindUtilities.isNamespace(csmObject)) {
             // get all definitions of namespace, but prefer the definition in this file
-            CsmNamespace nmsp = (CsmNamespace)csmObject;
+            CsmNamespace nmsp = (CsmNamespace) csmObject;
             Collection<CsmNamespaceDefinition> defs = nmsp.getDefinitions();
             CsmNamespaceDefinition bestDef = null;
             for (CsmNamespaceDefinition def : defs) {
@@ -192,10 +189,10 @@ public final class CsmHyperlinkProvider extends CsmAbstractHyperlinkProvider {
         }
         return item;
     }
-    
-    protected String getTooltipText(Document doc, Token token, int offset) {
+
+    protected String getTooltipText(Document doc, Token<CppTokenId> token, int offset) {
         CsmObject item = findTargetObject(doc, token, offset, false);
         CharSequence msg = item == null ? null : CsmDisplayUtilities.getTooltipText(item);
         return msg == null ? null : msg.toString();
-    }    
+    }
 }

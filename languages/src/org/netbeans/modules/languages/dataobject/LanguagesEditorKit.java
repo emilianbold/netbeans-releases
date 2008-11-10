@@ -297,6 +297,7 @@ public class LanguagesEditorKit extends NbEditorKit {
         }
     } // End of LanguagesDocument class
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
     public static final class EditorSettings extends StorageFilter<String, TypedValue> {
         public EditorSettings() {
             super("Preferences"); //NOI18N

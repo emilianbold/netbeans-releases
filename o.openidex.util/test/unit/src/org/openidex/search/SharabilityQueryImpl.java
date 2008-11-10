@@ -39,6 +39,7 @@ import static org.netbeans.api.queries.SharabilityQuery.SHARABLE;
  *
  * @author  MarianPetras
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.SharabilityQueryImplementation.class)
 public class SharabilityQueryImpl implements SharabilityQueryImplementation {
 
     private static final String SHARABLE_SUFFIX = "_sharable";

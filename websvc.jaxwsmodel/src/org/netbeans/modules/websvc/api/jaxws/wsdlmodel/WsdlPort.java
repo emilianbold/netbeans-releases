@@ -46,7 +46,6 @@ import com.sun.tools.ws.processor.model.Port;
 import com.sun.tools.ws.wsdl.document.soap.SOAPStyle;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
 import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 
 /**
@@ -67,7 +66,7 @@ public class WsdlPort implements WSPort {
         return port;
     }
     
-    public List<WSOperation> getOperations() {
+    public List<WsdlOperation> getOperations() {
         List wsdlOperations = new ArrayList();
         if (port==null) return wsdlOperations;
         List<Operation> operations = port.getOperations();

@@ -75,6 +75,7 @@ import org.openide.actions.OpenAction;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -260,7 +261,7 @@ public class FolderNodeFactory implements NodeFactory {
     }
     
     
-    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter, DataFilter.FileBased {
         
         private final ChangeSupport cs = new ChangeSupport(this);
         private final FileObject root;
@@ -295,6 +296,10 @@ public class FolderNodeFactory implements NodeFactory {
                         
         public void removeChangeListener( ChangeListener listener ) {
             cs.removeChangeListener(listener);
+        }
+
+        public boolean acceptFileObject(FileObject fo) {
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
         
     }

@@ -63,6 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author Andrei Badea
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.spi.sql.editor.SQLEditorProvider.class)
 public class SQLEditorProviderImpl implements SQLEditorProvider {
     
     // TODO: should ensure that the number of the generated temporary file

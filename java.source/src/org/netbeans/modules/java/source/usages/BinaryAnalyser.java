@@ -71,6 +71,9 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.util.ElementFilter;
+import javax.tools.Diagnostic;
+import javax.tools.DiagnosticListener;
+import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.classfile.Access;
 import org.netbeans.modules.classfile.CPClassInfo;
@@ -623,10 +626,17 @@ public class BinaryAnalyser implements LowMemoryListener {
             //The param names will be created on deamand
             final ZipEntry oe = archiveFile.getEntry(FileObjects.convertPackage2Folder(Object.class.getName())+'.'+FileObjects.CLASS);   //NOI18N
             if (oe != null) {
+                class DevNullDiagnosticListener implements DiagnosticListener<JavaFileObject> {
+                    public void report(Diagnostic<? extends JavaFileObject> diagnostic) {
+                        if (LOGGER.isLoggable(Level.FINE)) {
+                            LOGGER.log(Level.FINE, "Diagnostic reported during prebuilding args: {0}", diagnostic.toString()); //NOI18N
+                        }
+                    }
+                };
                 ClasspathInfo cpInfo = ClasspathInfo.create(ClassPathSupport.createClassPath(new URL[]{archiveUrl}),
                     ClassPathSupport.createClassPath(new URL[0]),
                     ClassPathSupport.createClassPath(new URL[0]));
-                final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);            
+                final JavacTaskImpl jt = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, new DevNullDiagnosticListener(), null);
                 TreeLoader.preRegister(jt.getContext(), cpInfo);
                 TypeElement jc = jt.getElements().getTypeElement(javax.swing.JComponent.class.getName());
                 if (jc != null) {

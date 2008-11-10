@@ -300,25 +300,23 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, JaxWsRe
             
             Project project = FileOwnerQuery.getOwner(srcRoot);
             // remove also client xml artifacs from WEB-INF[META-INF]/wsdl
-            if (client.getWsdlUrl().startsWith("file:")) { //NOI18N
-                if (project.getLookup().lookup(J2eeModuleProvider.class)!=null) {
-                    FileObject webInfClientFolder = findWsdlFolderForClient(support, clientName);
-                    if (webInfClientFolder!=null) {
-                        FileObject webInfClientRootFolder = webInfClientFolder.getParent();
-                        FileLock lock=null;
+            if (project.getLookup().lookup(J2eeModuleProvider.class)!=null) {
+                FileObject webInfClientFolder = findWsdlFolderForClient(support, clientName);
+                if (webInfClientFolder!=null) {
+                    FileObject webInfClientRootFolder = webInfClientFolder.getParent();
+                    FileLock lock=null;
+                    try {
+                        lock = webInfClientFolder.lock();
+                        webInfClientFolder.delete(lock);
+                    } finally {
+                        if (lock!=null) lock.releaseLock();
+                    }
+                    if (webInfClientRootFolder.getChildren().length==0) {
                         try {
-                            lock = webInfClientFolder.lock();
-                            webInfClientFolder.delete(lock);
+                            lock = webInfClientRootFolder.lock();
+                            webInfClientRootFolder.delete(lock);
                         } finally {
                             if (lock!=null) lock.releaseLock();
-                        }
-                        if (webInfClientRootFolder.getChildren().length==0) {
-                            try {
-                                lock = webInfClientRootFolder.lock();
-                                webInfClientRootFolder.delete(lock);
-                            } finally {
-                                if (lock!=null) lock.releaseLock();
-                            }
                         }
                     }
                 }

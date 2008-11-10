@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.*;
@@ -49,9 +48,10 @@ import javax.swing.*;
 /**
  *
  * @author  Dusan Balek
+ * @author  Vladimir Voskresensky
  */
 public class MethodParamsTipPaintComponent extends JToolTip {
-    
+
     private int drawX;
     private int drawY;
     private int drawHeight;
@@ -60,16 +60,16 @@ public class MethodParamsTipPaintComponent extends JToolTip {
     private int fontHeight;
     private int ascent;
     private FontMetrics fontMetrics;
-
-    private List/*<List<String>>*/ params;
+    private List<List<String>> params;
     private int idx;
 
-    public MethodParamsTipPaintComponent(List params, int idx){
+    public MethodParamsTipPaintComponent(List<List<String>> params, int idx) {
         super();
         this.params = params;
         this.idx = idx;
     }
-    
+
+    @Override
     public void paintComponent(Graphics g) {
         // clear background
         g.setColor(getBackground());
@@ -99,12 +99,13 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         drawWidth = drawX;
         int i = 0;
         for (Iterator it = params.iterator(); it.hasNext(); i = 0) {
-            for (Iterator itt = ((List)it.next()).iterator(); itt.hasNext(); i++) {
+            for (Iterator itt = ((List) it.next()).iterator(); itt.hasNext(); i++) {
                 String s = (String) itt.next();
                 drawString(g, s, i == idx ? getDrawFont().deriveFont(Font.BOLD) : null);
             }
-            if (drawWidth < drawX)
+            if (drawWidth < drawX) {
                 drawWidth = drawX;
+            }
             drawY += drawHeight;
             drawX = startX;
         }
@@ -120,15 +121,20 @@ public class MethodParamsTipPaintComponent extends JToolTip {
     }
 
     protected int getWidth(String s, Font font) {
-        if (font == null) return fontMetrics.stringWidth(s);
+        if (font == null) {
+            return fontMetrics.stringWidth(s);
+        }
         return getFontMetrics(font).stringWidth(s);
     }
 
     protected int getHeight(String s, Font font) {
-        if (font == null) return fontMetrics.stringWidth(s);
+        if (font == null) {
+            return fontMetrics.stringWidth(s);
+        }
         return getFontMetrics(font).stringWidth(s);
     }
 
+    @Override
     public void setFont(Font font) {
         super.setFont(font);
         fontMetrics = this.getFontMetrics(font);
@@ -137,10 +143,11 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         drawFont = font;
     }
 
-    protected Font getDrawFont(){
+    protected Font getDrawFont() {
         return drawFont;
     }
 
+    @Override
     public Dimension getPreferredSize() {
         draw(null);
         Insets i = getInsets();
@@ -149,5 +156,4 @@ public class MethodParamsTipPaintComponent extends JToolTip {
         }
         return new Dimension(drawWidth, drawHeight * params.size());
     }
-
 }

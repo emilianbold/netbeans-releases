@@ -47,6 +47,7 @@ import org.netbeans.modules.refactoring.javascript.spi.ui.JsActionsImplementatio
  *
  * @author Jan Becicka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.javascript.spi.ui.JsActionsImplementationProvider.class, position=100)
 public class JsRefactoringActionsProvider extends JsActionsImplementationProvider{
     
     public JsRefactoringActionsProvider() {

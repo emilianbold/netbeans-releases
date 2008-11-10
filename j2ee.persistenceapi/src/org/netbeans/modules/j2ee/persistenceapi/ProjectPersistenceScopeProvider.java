@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Andrei Badea
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.persistence.spi.PersistenceScopeProvider.class)
 public class ProjectPersistenceScopeProvider implements PersistenceScopeProvider {
 
     public PersistenceScope findPersistenceScope(FileObject fo) {

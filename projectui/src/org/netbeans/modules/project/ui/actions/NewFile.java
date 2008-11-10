@@ -68,10 +68,10 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter.Popup;
 
@@ -79,7 +79,7 @@ import org.openide.util.actions.Presenter.Popup;
  */
 public class NewFile extends ProjectAction implements PropertyChangeListener, Popup {
 
-    private static final Icon ICON = new ImageIcon( Utilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N
+    private static final Icon ICON = new ImageIcon( ImageUtilities.loadImage( "org/netbeans/modules/project/ui/resources/newFile.png" ) ); //NOI18N
     private static final String _NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Name" );
     private static final String _SHORT_DESCRIPTION = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_Tooltip" );
     private static final String POPUP_NAME = NbBundle.getMessage( NewFile.class, "LBL_NewFileAction_PopupName" );

@@ -110,9 +110,9 @@ public final class ToolchainManager {
                     }
                 }
             }
-            if (TRACE) System.out.println("Declared vendors:"); // NOI18N
+            if (TRACE) {System.out.println("Declared vendors:");} // NOI18N
             for(CompilerVendor v : vendors.values()){
-                if (TRACE) System.out.println(v.toString());
+                if (TRACE) {System.out.println(v.toString());}
                 descriptors.add(new ToolchainDescriptorImpl(v));
             }
         } catch (Throwable e){
@@ -253,34 +253,36 @@ public final class ToolchainManager {
         return true;
     }
     
-    boolean isMyFolder(String path, ToolchainDescriptor d, int platform){
-        boolean res = isMyFolderImpl(path, d, platform);
-        if (TRACE && res) System.out.println("Path ["+path+"] belongs to tool chain "+d.getName()); // NOI18N
+    boolean isMyFolder(String path, ToolchainDescriptor d, int platform, boolean known){
+        boolean res = isMyFolderImpl(path, d, platform, known);
+        if (TRACE && res) {System.out.println("Path ["+path+"] belongs to tool chain "+d.getName());} // NOI18N
         return res;
     }
     
-    private boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform){
+    private boolean isMyFolderImpl(String path, ToolchainDescriptor d, int platform, boolean known){
         CompilerDescriptor c = d.getC();
         if (c == null || c.getNames().length == 0) {
             return false;
         }
         Pattern pattern = null;
-        if (c.getPathPattern() != null) {
-            if (platform == PlatformTypes.PLATFORM_WINDOWS) {
-                pattern = Pattern.compile(c.getPathPattern(), Pattern.CASE_INSENSITIVE);
-            } else {
-                pattern = Pattern.compile(c.getPathPattern());
-            }
-        }
-        if (pattern != null) {
-            if (!pattern.matcher(path).find()){
-                String f = c.getExistFolder();
-                if (f == null) {
-                    return false;
+        if (!known) {
+            if (c.getPathPattern() != null) {
+                if (platform == PlatformTypes.PLATFORM_WINDOWS) {
+                    pattern = Pattern.compile(c.getPathPattern(), Pattern.CASE_INSENSITIVE);
+                } else {
+                    pattern = Pattern.compile(c.getPathPattern());
                 }
-                File folder = new File(path+"/"+f); // NOI18N
-                if (!folder.exists() || !folder.isDirectory()) {
-                    return false;
+            }
+            if (pattern != null) {
+                if (!pattern.matcher(path).find()){
+                    String f = c.getExistFolder();
+                    if (f == null) {
+                        return false;
+                    }
+                    File folder = new File(path+"/"+f); // NOI18N
+                    if (!folder.exists() || !folder.isDirectory()) {
+                        return false;
+                    }
                 }
             }
         }
@@ -301,8 +303,8 @@ public final class ToolchainManager {
         pattern = Pattern.compile(c.getVersionPattern());
         String s = getCommandOutput(path, path+"/"+c.getNames()[0]+" "+flag, true); // NOI18N
         boolean res = pattern.matcher(s).find();
-        if (TRACE && !res) System.out.println("No match for pattern ["+c.getVersionPattern()+"]:" ); // NOI18N
-        if (TRACE && !res) System.out.println("Run "+path+"/"+c.getNames()[0]+" "+flag+"\n"+s); // NOI18N
+        if (TRACE && !res) {System.out.println("No match for pattern ["+c.getVersionPattern()+"]:" );} // NOI18N
+        if (TRACE && !res) {System.out.println("Run "+path+"/"+c.getNames()[0]+" "+flag+"\n"+s);} // NOI18N
         return res;
     }
 
@@ -361,22 +363,22 @@ public final class ToolchainManager {
         pb.redirectErrorStream(true);
         String base = null;
         try {
-            if (TRACE) System.out.println("Read registry "+key); // NOI18N
+            if (TRACE) {System.out.println("Read registry "+key);} // NOI18N
             Process process = pb.start();
             BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
             Pattern p = Pattern.compile(pattern);
             String line;
             while ((line = br.readLine()) != null) {
                 line = line.trim();
-                if (TRACE) System.out.println("\t"+line); // NOI18N
+                if (TRACE) {System.out.println("\t"+line);} // NOI18N
                 Matcher m = p.matcher(line);
                 if (m.find() && m.groupCount() == 1) {
                     base = m.group(1).trim();
-                    if (TRACE) System.out.println("\tFound "+base); // NOI18N
+                    if (TRACE) {System.out.println("\tFound "+base);} // NOI18N
                 }
             }
         } catch (Exception ex) {
-            if (TRACE) ex.printStackTrace();
+            if (TRACE) {ex.printStackTrace();}
         }
         return base;
     }
@@ -407,14 +409,14 @@ public final class ToolchainManager {
                     buf.append('\n'); // NOI18N
                 }
             } catch (IOException ex) {
-                if (TRACE) ex.printStackTrace();
+                if (TRACE) {ex.printStackTrace();}
             }
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException ex) {
-                if (TRACE) ex.printStackTrace();
+                if (TRACE) {ex.printStackTrace();}
             }
             is = process.getErrorStream();
             reader = new BufferedReader(new InputStreamReader(is));
@@ -425,17 +427,17 @@ public final class ToolchainManager {
                     buf.append('\n'); // NOI18N
                 }
             } catch (IOException ex) {
-                if (TRACE) ex.printStackTrace();
+                if (TRACE) {ex.printStackTrace();}
             }
             try {
                 if (is != null) {
                     is.close();
                 }
             } catch (IOException ex) {
-                if (TRACE) ex.printStackTrace();
+                if (TRACE) {ex.printStackTrace();}
             }
         } catch (IOException ex) {
-            if (TRACE) ex.printStackTrace();
+            if (TRACE) {ex.printStackTrace();}
         }
         return buf.toString();
     }
@@ -1197,10 +1199,10 @@ public final class ToolchainManager {
             buf.append("\tWarning Level "+c.warningLevel+"\n"); // NOI18N
             buf.append("\tArchitecture "+c.architecture+"\n"); // NOI18N
             buf.append("\tStrip ["+c.strip+"]\n"); // NOI18N
-            if (c.multithreading.isValid()) buf.append("\tMultithreading ["+c.multithreading+"]\n"); // NOI18N
-            if (c.standard.isValid()) buf.append("\tStandard ["+c.standard+"]\n"); // NOI18N
-            if (c.languageExtension.isValid()) buf.append("\tLanguage ["+c.languageExtension+"]\n"); // NOI18N
-            if (c.library.isValid()) buf.append("\tLibrary ["+c.library+"]\n"); // NOI18N
+            if (c.multithreading.isValid()) {buf.append("\tMultithreading ["+c.multithreading+"]\n");} // NOI18N
+            if (c.standard.isValid()) {buf.append("\tStandard ["+c.standard+"]\n");} // NOI18N
+            if (c.languageExtension.isValid()) {buf.append("\tLanguage ["+c.languageExtension+"]\n");} // NOI18N
+            if (c.library.isValid()) {buf.append("\tLibrary ["+c.library+"]\n");} // NOI18N
             buf.append("C++ compiler ["+cpp.name+"] Recognize path ["+cpp.pathPattern+ // NOI18N
                        "] Version ["+cpp.versionFlags+";"+cpp.versionPattern+"]\n"); // NOI18N
             buf.append("\tInclude flags ["+cpp.includeFlags+"] parser ["+cpp.includeOutputParser+ // NOI18N
@@ -1211,10 +1213,10 @@ public final class ToolchainManager {
             buf.append("\tArchitecture "+cpp.architecture+"\n"); // NOI18N
             buf.append("\tStrip ["+cpp.strip+"]\n"); // NOI18N
             buf.append("\tDependency generation flags ["+cpp.dependencyGenerationFlags+"]\n"); // NOI18N
-            if (cpp.multithreading.isValid()) buf.append("\tMultithreading "+cpp.multithreading+"\n"); // NOI18N
-            if (cpp.standard.isValid()) buf.append("\tStandard "+cpp.standard+"\n"); // NOI18N
-            if (cpp.languageExtension.isValid()) buf.append("\tLanguage "+cpp.languageExtension+"\n"); // NOI18N
-            if (cpp.library.isValid()) buf.append("\tLibrary "+cpp.library+"\n"); // NOI18N
+            if (cpp.multithreading.isValid()) {buf.append("\tMultithreading "+cpp.multithreading+"\n");} // NOI18N
+            if (cpp.standard.isValid()) {buf.append("\tStandard "+cpp.standard+"\n");} // NOI18N
+            if (cpp.languageExtension.isValid()) {buf.append("\tLanguage "+cpp.languageExtension+"\n");} // NOI18N
+            if (cpp.library.isValid()) {buf.append("\tLibrary "+cpp.library+"\n");} // NOI18N
             if (fortran.isValid()) {
             buf.append("Fortran compiler ["+fortran.name+"] Recognize path ["+fortran.pathPattern+ // NOI18N
                        "] Version ["+fortran.versionFlags+";"+fortran.versionPattern+"]\n"); // NOI18N
@@ -1572,11 +1574,11 @@ public final class ToolchainManager {
                                 version = Integer.parseInt(versionStr);
                             } catch (NumberFormatException ex) {
                                 // skip
-                                if (TRACE) System.out.println("Incorrect version information:" + xmlns); // NOI18N
+                                if (TRACE) {System.out.println("Incorrect version information:" + xmlns);} // NOI18N
                             }
                         }
                     } else {
-                        if (TRACE) System.out.println("Incorrect version information:" + xmlns); // NOI18N
+                        if (TRACE) {System.out.println("Incorrect version information:" + xmlns);} // NOI18N
                     }
                 }
             } else if (path.endsWith(".toolchain")) { // NOI18N
@@ -1739,52 +1741,52 @@ public final class ToolchainManager {
                 DevelopmentMode d = c.developmentMode;
                 if (path.endsWith(".fast_build")) { // NOI18N
                     d.fast_build = flags;
-                    if (isDefault) d.default_selection = 0;
+                    if (isDefault) {d.default_selection = 0;}
                 } else if (path.endsWith(".debug")) { // NOI18N
                     d.debug = flags;
-                    if (isDefault) d.default_selection = 1;
+                    if (isDefault) {d.default_selection = 1;}
                 } else if (path.endsWith(".performance_debug")) { // NOI18N
                     d.performance_debug = flags;
-                    if (isDefault) d.default_selection = 2;
+                    if (isDefault) {d.default_selection = 2;}
                 } else if (path.endsWith(".test_coverage")) { // NOI18N
                     d.test_coverage = flags;
-                    if (isDefault) d.default_selection = 3;
+                    if (isDefault) {d.default_selection = 3;}
                 } else if (path.endsWith(".diagnosable_release")) { // NOI18N
                     d.diagnosable_release = flags;
-                    if (isDefault) d.default_selection = 4;
+                    if (isDefault) {d.default_selection = 4;}
                 } else if (path.endsWith(".release")) { // NOI18N
                     d.release = flags;
-                    if (isDefault) d.default_selection = 5;
+                    if (isDefault) {d.default_selection = 5;}
                 } else if (path.endsWith(".performance_release")) { // NOI18N
                     d.performance_release = flags;
-                    if (isDefault) d.default_selection = 6;
+                    if (isDefault) {d.default_selection = 6;}
                 }
             } else if (path.indexOf(".warning_level.")>0) { // NOI18N
                 WarningLevel w = c.warningLevel;
                 if (path.endsWith(".no_warnings")) { // NOI18N
                     w.no_warnings = flags;
-                    if (isDefault) w.default_selection = 0;
+                    if (isDefault) {w.default_selection = 0;}
                 } else if (path.endsWith(".default")) { // NOI18N
                     w.default_level = flags;
-                    if (isDefault) w.default_selection = 1;
+                    if (isDefault) {w.default_selection = 1;}
                 } else if (path.endsWith(".more_warnings")) { // NOI18N
                     w.more_warnings = flags;
-                    if (isDefault) w.default_selection = 2;
+                    if (isDefault) {w.default_selection = 2;}
                 } else if (path.endsWith(".warning2error")) { // NOI18N
                     w.warning2error = flags;
-                    if (isDefault) w.default_selection = 3;
+                    if (isDefault) {w.default_selection = 3;}
                 }
             } else if (path.indexOf(".architecture.")>0) { // NOI18N
                 Architecture a = c.architecture;
                 if (path.endsWith(".default")) { // NOI18N
                     a.default_architecture = flags;
-                    if (isDefault) a.default_selection = 0;
+                    if (isDefault) {a.default_selection = 0;}
                 } else if (path.endsWith(".bits_32")) { // NOI18N
                     a.bits_32 = flags;
-                    if (isDefault) a.default_selection = 1;
+                    if (isDefault) {a.default_selection = 1;}
                 } else if (path.endsWith(".bits_64")) { // NOI18N
                     a.bits_64 = flags;
-                    if (isDefault) a.default_selection = 2;
+                    if (isDefault) {a.default_selection = 2;}
                 }
             } else if (path.endsWith(".strip")) { // NOI18N
                 c.strip = flags;
@@ -1798,61 +1800,61 @@ public final class ToolchainManager {
                 MultiThreading m = c.multithreading;
                 if (path.endsWith(".none")) { // NOI18N
                     m.none = flags;
-                    if (isDefault) m.default_selection = 0;
+                    if (isDefault) {m.default_selection = 0;}
                 } else if (path.endsWith(".safe")) { // NOI18N
                     m.safe = flags;
-                    if (isDefault) m.default_selection = 1;
+                    if (isDefault) {m.default_selection = 1;}
                 } else if (path.endsWith(".automatic")) { // NOI18N
                     m.automatic = flags;
-                    if (isDefault) m.default_selection = 2;
+                    if (isDefault) {m.default_selection = 2;}
                 } else if (path.endsWith(".open_mp")) { // NOI18N
                     m.open_mp = flags;
-                    if (isDefault) m.default_selection = 3;
+                    if (isDefault) {m.default_selection = 3;}
                 }
             } else if (path.indexOf(".standard.")>0) { // NOI18N
                 Standard s = c.standard;
                 if (path.endsWith(".old")) { // NOI18N
                     s.old = flags;
-                    if (isDefault) s.default_selection = 0;
+                    if (isDefault) {s.default_selection = 0;}
                 } else if (path.endsWith(".legacy")) { // NOI18N
                     s.legacy = flags;
-                    if (isDefault) s.default_selection = 1;
+                    if (isDefault) {s.default_selection = 1;}
                 } else if (path.endsWith(".default")) { // NOI18N
                     s.default_standard = flags;
-                    if (isDefault) s.default_selection = 2;
+                    if (isDefault) {s.default_selection = 2;}
                 } else if (path.endsWith(".modern")) { // NOI18N
                     s.modern = flags;
-                    if (isDefault) s.default_selection = 3;
+                    if (isDefault) {s.default_selection = 3;}
                 }
             } else if (path.indexOf(".language_extension.")>0) { // NOI18N
                 LanguageExtension e = c.languageExtension;
                 if (path.endsWith(".none")) { // NOI18N
                     e.none = flags;
-                    if (isDefault) e.default_selection = 0;
+                    if (isDefault) {e.default_selection = 0;}
                 } else if (path.endsWith(".default")) { // NOI18N
                     e.default_extension = flags;
-                    if (isDefault) e.default_selection = 1;
+                    if (isDefault) {e.default_selection = 1;}
                 } else if (path.endsWith(".all")) { // NOI18N
                     e.all = flags;
-                    if (isDefault) e.default_selection = 2;
+                    if (isDefault) {e.default_selection = 2;}
                 }
             } else if (path.indexOf(".library.")>0) { // NOI18N
                 Library l = c.library;
                 if (path.endsWith(".none")) { // NOI18N
                     l.none = flags;
-                    if (isDefault) l.default_selection = 0;
+                    if (isDefault) {l.default_selection = 0;}
                 } else if (path.endsWith(".runtime")) { // NOI18N
                     l.runtime = flags;
-                    if (isDefault) l.default_selection = 1;
+                    if (isDefault) {l.default_selection = 1;}
                 } else if (path.endsWith(".classic")) { // NOI18N
                     l.classic = flags;
-                    if (isDefault) l.default_selection = 2;
+                    if (isDefault) {l.default_selection = 2;}
                 } else if (path.endsWith(".binary_standard")) { // NOI18N
                     l.binary_standard = flags;
-                    if (isDefault) l.default_selection = 3;
+                    if (isDefault) {l.default_selection = 3;}
                 } else if (path.endsWith(".conforming_standard")) { // NOI18N
                     l.conforming_standard = flags;
-                    if (isDefault) l.default_selection = 4;
+                    if (isDefault) {l.default_selection = 4;}
                 }
             }
         }

@@ -43,6 +43,7 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.spi.java.project.runner.JavaRunnerImplementation;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -65,7 +66,7 @@ import org.openide.util.Parameters;
  * <tr><td>{@link #PROP_PLATFORM_JAVA}     </td> <td> java tool which should be used for execution, will be autodetected from platform property if missing </td> <td> {@link String} or {@link FileObject} or {@link java.io.File}</td></tr>
  * <tr><td>{@link #PROP_PLATFORM}          </td> <td> java platform on which the class should be executed, default if missing, not needed if platform.java is set </td> <td> {@link JavaPlatform}</td></tr>
  * <tr><td>{@link #PROP_PROJECT_NAME}      </td> <td> name of the current project, will be autodetected from execute.file if missing </td> <td> {@link String}</td></tr>
- * <tr><td>{@link #PROP_RUN_JVMARGS}  </td> <td> JVM arguments </td> <td> {@link Iterable} of {@link String}s</td></tr>
+ * <tr><td>{@link #PROP_RUN_JVMARGS}       </td> <td> JVM arguments </td> <td> {@link Iterable} of {@link String}s</td></tr>
  * <tr><td>{@link #PROP_APPLICATION_ARGS}  </td> <td> application arguments </td> <td> {@link Iterable} of {@link String}s</td></tr>
  * </table>
  * 
@@ -77,97 +78,141 @@ import org.openide.util.Parameters;
 public final class JavaRunner {
 
     /**
-     * "Test" run the given file. Classfiles produced by the Java infrastructure will be
-     * executed.
+     * <p>"Test" run the given file. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     *
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_CLASSNAME}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR}, {@link #PROP_RUN_JVMARGS}
+     * and {@link #PROP_APPLICATION_ARGS}.</p>
      *
      * @since 1.22
      */
     public static final String QUICK_RUN = "run";
 
     /**
-     * "Test" run the given file in the debugging mode. Classfiles produced by the Java infrastructure will be
-     * executed.
+     * <p>"Test" run the given file in the debugging mode. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     *
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_CLASSNAME}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR}, {@link #PROP_RUN_JVMARGS}
+     * and {@link #PROP_APPLICATION_ARGS}.</p>
+     *
+     * <p>Property <code>stopclassname</code> can be set to a classname to support starting debugger using
+     * the Step Into command.</p>
      *
      * @since 1.22
      */
     public static final String QUICK_DEBUG = "debug";
 
     /**
-     * "Test" run the given test. Classfiles produced by the Java infrastructure will be
-     * executed.
+     * <p>"Test" run the given test. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
      *
-     * <strong>application.args</strong> property is not supported.
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_CLASSNAME}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR} and {@link #PROP_RUN_JVMARGS}.</p>
+     *
+     * <p><strong>application.args</strong> property is not supported.</p>
      *
      * @since 1.22
      */
     public static final String QUICK_TEST = "junit";
 
     /**
-     * "Test" run the given test in the debugging mode. Classfiles produced by the Java infrastructure will be
-     * executed.
+     * <p>"Test" run the given test in the debugging mode. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
      *
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_CLASSNAME}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR} and {@link #PROP_RUN_JVMARGS}.</p>
+     * 
      * <strong>application.args</strong> property is not supported.
      *
      * @since 1.22
      */
     public static final String QUICK_TEST_DEBUG = "junit-debug";
 
-    /**
+    /** <p>"Test" run the given applet. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     * 
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_EXECUTE_FILE}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR} and {@link #PROP_RUN_JVMARGS},
+     * <code>applet.url</code>.</p>
+     * 
      * @since 1.22
      */
     public static final String QUICK_RUN_APPLET = "run-applet";
     
-    /**
+    /** <p>"Test" run the given applet in debugging mode. Classfiles produced by the Java infrastructure will be
+     * executed.</p>
+     * 
+     * <p>These properties are should be set in the properties, or inferable: {@link #PROP_EXECUTE_CLASSPATH},
+     * {@link #PROP_EXECUTE_FILE}, {@link #PROP_PLATFORM_JAVA}, {@link #PROP_WORK_DIR} and {@link #PROP_RUN_JVMARGS},
+     * <code>applet.url</code>.</p>
+     * 
      * @since 1.22
      */
     public static final String QUICK_DEBUG_APPLET = "debug-applet";
     
-    /**
+    /** Clean classfiles produced by the Java infrastructure.
+     * 
      * @since 1.22
      */
     public static final String QUICK_CLEAN = "clean";
 
-    /**
+    /** File to execute. Should be either {@link String} (absolute path) or {@link FileObject}.
+     *
      * @since 1.22
      */
     public static final String PROP_EXECUTE_FILE = "execute.file";
 
-    /**
+    /** Working directory for execution. Should be either {@link String} (absolute path) or {@link FileObject} or {@link java.io.File}.
+     *
      * @since 1.22
      */
     public static final String PROP_WORK_DIR = "work.dir";
 
-    /**
+    /** JVM arguments to be used for the execution. Should be an {@link Iterable} of {@link String}s.
+     * 
      * @since 1.22
      */
     public static final String PROP_RUN_JVMARGS = "run.jvmargs";
 
-    /**
+    /** The name of the class to execute. Should be {@link String} - fully qualified binary name.
+     *  Will be autodetected from {@link #PROP_EXECUTE_FILE} if missing.
+     * 
      * @since 1.22
      */
     public static final String PROP_CLASSNAME = "classname";
 
-    /**
+    /** Execute classpath to use for execution of the class. Should be {@link ClassPath}.
+     *  Will be autodetected from {@link #PROP_EXECUTE_FILE} if missing.
+     *
      * @since 1.22
      */
     public static final String PROP_EXECUTE_CLASSPATH = "execute.classpath";
 
-    /**
+    /** Java tool to use for execution. Should be {@link String} (absolute path) or {@link FileObject} or {@link java.io.File}.
+     *  Will be autodetected from {@link #PROP_PLATFORM} if missing.
+     *
      * @since 1.22
      */
     public static final String PROP_PLATFORM_JAVA = "platform.java";
 
-    /**
+    /** Java platform to use for execution. Should be {@link JavaPlatform}.
+     *  Will be used to autodetect {@link #PROP_PLATFORM_JAVA}.
+     * 
      * @since 1.22
      */
     public static final String PROP_PLATFORM = "platform";
 
-    /**
+    /** Project name to use for Output Window caption. Should be {@link String}.
+     *  Will be autodetected from {@link #PROP_EXECUTE_FILE} if missing.
+     * 
      * @since 1.22
      */
     public static final String PROP_PROJECT_NAME = "project.name";
 
-    /**
+    /** Application arguments to be used for the execution. Should be an {@link Iterable} of {@link String}s.
+     *
      * @since 1.22
      */
     public static final String PROP_APPLICATION_ARGS = "application.args";

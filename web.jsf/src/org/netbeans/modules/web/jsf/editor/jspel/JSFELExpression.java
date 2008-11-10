@@ -58,9 +58,11 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.core.syntax.JspSyntaxSupport;
 import org.netbeans.modules.web.core.syntax.completion.ELExpression;
@@ -69,7 +71,9 @@ import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -289,7 +293,17 @@ public class JSFELExpression extends ELExpression{
                     String propertyName = getExpressionSuffix(method);
 
                     if (propertyName != null && propertyName.equals(suffix)){
-                        success = UiUtils.open(parameter.getClasspathInfo(), method);
+                        ElementHandle el = ElementHandle.create(method);
+                        FileObject fo = SourceUtils.getFile(el, parameter.getClasspathInfo());
+
+                        // Not a regular Java data object (may be a multi-view data object), open it first
+                        DataObject od = DataObject.find(fo);
+                        if (!"org.netbeans.modules.java.JavaDataObject".equals(od.getClass().getName())) { // NOI18N
+                            OpenCookie oc = od.getCookie(org.openide.cookies.OpenCookie.class);
+                            oc.open();
+                        }
+                      
+                        success = ElementOpen.open(fo, el);
                         break;
                     }
                 }

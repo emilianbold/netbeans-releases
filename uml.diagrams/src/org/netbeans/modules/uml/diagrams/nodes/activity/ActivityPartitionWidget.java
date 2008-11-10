@@ -53,7 +53,6 @@ import org.netbeans.api.visual.border.BorderFactory;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
-import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.Widget;
@@ -254,7 +253,7 @@ public class ActivityPartitionWidget extends CompositeNodeWidget
         {
             nameWidget.propertyChange(event);
             getScene().validate();
-            setPreferredBounds(getBounds().union(calculateMinimumBounds()));
+//            setPreferredBounds(getBounds().union(calculateMinimumBounds()));
             revalidate();
         }
     }

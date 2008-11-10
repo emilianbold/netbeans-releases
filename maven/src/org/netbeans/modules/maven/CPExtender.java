@@ -231,6 +231,9 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
                     if (scope != null) {
                         dep.setScope(scope);
                     }
+                    if (result.length == 6) {
+                        dep.setClassifier(result[5]);
+                    }
                     //set repository
                     org.apache.maven.model.Repository reposit = PluginPropertyUtils.checkModelRepository(
                             project.getOriginalMavenProject(), model, result[1], true);
@@ -253,6 +256,7 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
      *          [2] groupId
      *          [3] artifactId
      *          [4] version
+     *          [5] classifier (optional, not part of path, but url's ref)
      */ 
     
     static String[] checkLibrary(URL pom, URL[] knownRepos) {
@@ -264,7 +268,13 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
             def = true;
         }
         if (match.matches()) {
-            String[] toRet = new String[5];
+            String[] toRet;
+            if (pom.getRef() != null) {
+                toRet = new String[6];
+                toRet[5] = pom.getRef();
+            } else {
+                toRet = new String[5];
+            }
             toRet[0] = def ? "default" : "legacy"; //NOI18N
             toRet[1] = pom.getProtocol() + "://" + pom.getHost() + (pom.getPort() != -1 ? (":" + pom.getPort()) : ""); //NOI18N
             toRet[2] = match.group(1);
@@ -326,12 +336,17 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
             ClassPath.EXECUTE
         };
     }
-    
+
     public boolean addLibraries(Library[] libraries, SourceGroup grp, String type) throws IOException {
         FileObject pom = project.getProjectDirectory().getFileObject(POM_XML); //NOI18N
         Model model = WriterUtils.loadModel(pom);
         boolean added = libraries.length > 0;
         String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null; //NOI18N
+        //figure if we deal with test or regular sources.
+        String name = grp.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
         for (Library library : libraries) {
             added = added && addLibrary(library, model, scope);
         }
@@ -358,6 +373,11 @@ public @SuppressWarnings("Deprecation") class CPExtender extends ProjectClassPat
         Model model = WriterUtils.loadModel(pom);
         boolean added = urls.length > 0;
         String scope = ClassPath.EXECUTE.equals(type) ? "runtime" : null;//NOI18N
+        //figure if we deal with test or regular sources.
+        String name = grp.getName();
+        if (MavenSourcesImpl.NAME_TESTSOURCE.equals(name)) {
+            scope = "test"; //NOI18N
+        }
         for (URL url : urls) {
             URL fileUrl = FileUtil.getArchiveFile(url);
             if (fileUrl != null) {

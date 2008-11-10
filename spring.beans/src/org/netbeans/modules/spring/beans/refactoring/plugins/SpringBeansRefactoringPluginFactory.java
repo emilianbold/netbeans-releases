@@ -51,6 +51,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 /**
  * @author John Baker
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class SpringBeansRefactoringPluginFactory implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

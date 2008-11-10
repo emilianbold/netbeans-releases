@@ -81,6 +81,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class RestClientPojoCodeGenerator extends SaasClientCodeGenerator {
 
     private JavaSource targetSource;

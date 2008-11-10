@@ -43,6 +43,7 @@ package org.netbeans.modules.html.editor.gsf;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
+import org.netbeans.modules.gsf.api.KeystrokeHandler;
 import org.netbeans.modules.gsf.api.Parser;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.gsf.api.StructureScanner;
@@ -111,5 +112,9 @@ public class HtmlLanguage extends DefaultLanguageConfig {
     @Override
     public CodeCompletionHandler getCompletionHandler() {
         return new HtmlGsfCompletionHandler();
+    }
+
+    public KeystrokeHandler getKeystrokeHandler() {
+        return new HtmlKeystrokeHandler();
     }
 }

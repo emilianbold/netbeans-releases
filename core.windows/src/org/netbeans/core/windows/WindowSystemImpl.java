@@ -53,6 +53,7 @@ import org.netbeans.core.windows.services.DialogDisplayerImpl;
  *
  * @author  Peter Zavadsky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.NbTopManager.WindowSystem.class)
 public class WindowSystemImpl implements NbTopManager.WindowSystem {
 
     /** Creates a new instance of WindowSystemImpl */

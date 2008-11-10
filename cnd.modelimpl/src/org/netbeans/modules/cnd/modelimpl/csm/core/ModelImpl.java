@@ -55,7 +55,6 @@ import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
-import org.netbeans.modules.cnd.modelimpl.cache.CacheManager;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.memory.LowMemoryEvent;
@@ -79,36 +78,37 @@ import org.openide.util.RequestProcessor;
  * CsmModel implementation
  * @author Vladimir Kvashin
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmModel.class)
 public class ModelImpl implements CsmModel, LowMemoryListener {
 
     public ModelImpl() {
 	startup();
     }
     
-    private void initThreasholds() {
-	String value, propertyName;
-	propertyName = "cnd.model.memory.warning.threashold"; // NOI18N
-	value = System.getProperty(propertyName);
-	if( value != null ) {
-	    try {
-		warningThreshold = Double.parseDouble(value);
-	    }
-	    catch(NumberFormatException e) {
-		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value); // NOI18N
-		DiagnosticExceptoins.register(e);
-	    }
-	}
-//	propertyName = "cnd.model.memory.fatal.threashold";
+//    private void initThreasholds() {
+//	String value, propertyName;
+//	propertyName = "cnd.model.memory.warning.threashold"; // NOI18N
 //	value = System.getProperty(propertyName);
 //	if( value != null ) {
 //	    try {
-//		fatalThreshold = Double.parseDouble(value);
+//		warningThreshold = Double.parseDouble(value);
 //	    }
 //	    catch(NumberFormatException e) {
-//		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value);
+//		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value); // NOI18N
+//		DiagnosticExceptoins.register(e);
 //	    }
 //	}
-    }
+////	propertyName = "cnd.model.memory.fatal.threashold";
+////	value = System.getProperty(propertyName);
+////	if( value != null ) {
+////	    try {
+////		fatalThreshold = Double.parseDouble(value);
+////	    }
+////	    catch(NumberFormatException e) {
+////		Utils.LOG.severe("Incorrect format for property " + propertyName + ": " + value);
+////	    }
+////	}
+//    }
     
     public CsmProject findProject(Object id) {
         ProjectBase prj = null;
@@ -629,11 +629,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         UniqueNameCache.getManager().dispose();
         FileNameCache.getManager().dispose();
         ProjectNameCache.getManager().dispose();
-        if (TraceFlags.USE_AST_CACHE) {
-            CacheManager.getInstance().close();
-        } else {
-            APTDriver.getInstance().close();
-        }   
+        APTDriver.getInstance().close();
         UIDManager.instance().dispose();
         APTIncludeUtils.clearFileExistenceCache();
         APTSystemStorage.getDefault().dispose();

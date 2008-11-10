@@ -72,6 +72,7 @@ import org.openide.util.Utilities;
  *
  * @author marcow
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.visualweb.project.jsf.services.DesignTimeDataSourceService.class)
 public class DesignTimeDataSourceServiceImpl implements DesignTimeDataSourceService {
     static private final String DATASOURCE_PREFIX = "java:comp/env/"; // NOI18N
     static private final String NON_DEFAULT_DATASOURCE_PREFIX = "java:/"; // NOI18N

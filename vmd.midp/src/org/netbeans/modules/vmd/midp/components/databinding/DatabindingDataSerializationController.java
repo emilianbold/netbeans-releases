@@ -54,6 +54,7 @@ import org.netbeans.modules.vmd.midp.components.categories.DatabindingCategoryCD
  *
  * @author karolharezlak
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.serialization.DocumentSerializationController.class)
 public class DatabindingDataSerializationController extends DocumentSerializationController{
 
     @Override

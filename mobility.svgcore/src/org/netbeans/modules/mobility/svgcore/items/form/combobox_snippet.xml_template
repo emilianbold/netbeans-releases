@@ -66,8 +66,12 @@
 			<rect id="%%COMPONENT_ID%%_list_selection" x="5" y="0" stroke="black" 
                                  stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
 		</g>
+        <g  id="%%COMPONENT_ID%%_list_current_selection" visibility="inherit">
+			<!-- Metadata information. Please don't edit. -->
+			<text display="none">type=current_selection</text>
+	    </g>
 		<g  id="%%COMPONENT_ID%%_list_content" visibility="inherit">
 			<!-- Metadata information. Please don't edit. -->
 			<text display="none">type=content</text>
-	       	</g>
+	    </g>
 </g>

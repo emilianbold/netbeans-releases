@@ -15,8 +15,8 @@ abs(x)
 
 /**CC
 has|
-Element hasAttributeNS ( namespace , String loc 
-hasAttributeNS(namespace, localName)
+Node hasChildNodes () : void
+hasChildNodes()
 */
 
 

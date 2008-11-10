@@ -61,16 +61,18 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
+import org.openide.loaders.ChangeableDataFilter;
+import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataShadow;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Index;
 import org.openide.nodes.Node;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.datatransfer.PasteType;
 
 /**
@@ -287,43 +289,71 @@ final class Favorites extends FilterNode implements Index {
         }
     }
 
-    private static class Chldrn extends FilterNode.Children 
-    implements ChangeListener, Runnable {
+
+
+    static class VisQ 
+    implements DataFilter.FileBased, ChangeableDataFilter, ChangeListener {
+        public static final VisQ DEFAULT = new VisQ();
+
         private ChangeListener weak;
-        private boolean hideHidden;
-        /** Creates new Chldrn. */
-        public Chldrn (Node node, boolean hideHidden) {
-            super (node);
-            this.hideHidden = hideHidden;
-            
+        private ChangeSupport support = new ChangeSupport(this);
+
+        VisQ() {
             weak = org.openide.util.WeakListeners.change(this, VisibilityQuery.getDefault());
             VisibilityQuery.getDefault().addChangeListener(weak);
         }
         
+        public boolean acceptFileObject(FileObject fo) {
+            return VisibilityQuery.getDefault().isVisible(fo);
+        }
+
+        public boolean acceptDataObject(DataObject obj) {
+            return VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile());
+        }
+
+        public void addChangeListener(ChangeListener listener) {
+            support.addChangeListener(listener);
+        }
+
+        public void removeChangeListener(ChangeListener listener) {
+            support.removeChangeListener(listener);
+        }
+
+        public void stateChanged(ChangeEvent e) {
+            support.fireChange();
+        }
+    } // end of VisQ
+    
+    private static class Chldrn extends FilterNode.Children {
+        private boolean hideHidden;
+        /** Creates new Chldrn. */
+        public Chldrn(Node node, boolean hideHidden) {
+            super (node);
+            this.hideHidden = hideHidden;
+        }
+        
         @Override
         protected Node[] createNodes(Node node) {
+            org.openide.nodes.Children ch = Children.LEAF;
+            DataObject obj = node.getLookup().lookup(DataObject.class);
             if (hideHidden) {
-                DataObject obj = node.getCookie(DataObject.class);
                 if (obj != null && !VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile())) {
                     return null;
                 }
             }
-            
-            return new Node[] { new ProjectFilterNode (
-                node,
-                (node.isLeaf ()) ? org.openide.nodes.Children.LEAF : new Chldrn (node, true)
-            )};
-        }
 
-        public void stateChanged(ChangeEvent e) {
-            MUTEX.postWriteRequest(this);
-        }
-        
-        public void run() {
-            Node[] arr = original.getChildren().getNodes();
-            for (int i = 0; i < arr.length; i++) {
-                refreshKey(arr[i]);
+            DataFolder folder = node.getLookup().lookup(DataFolder.class);
+            if (folder != null) {
+                ch = new Chldrn(new FilterNode(node, folder.createNodeChildren(new VisQ())), true);
+            } else {
+                if (node.isLeaf()) {
+                    ch = org.openide.nodes.Children.LEAF;
+                } else {
+                    ch = new Chldrn(node, true);
+                }
             }
+            
+            return new Node[] { new ProjectFilterNode (node, ch) };
         }
     } // end of Chldrn
 

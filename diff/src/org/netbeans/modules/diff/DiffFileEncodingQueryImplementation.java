@@ -55,6 +55,7 @@ import java.util.logging.Level;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class)
 public class DiffFileEncodingQueryImplementation extends FileEncodingQueryImplementation {
 
     public Charset getEncoding(FileObject file) {

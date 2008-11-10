@@ -89,7 +89,7 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
         if (pname.equals(GdbDebugger.PROP_STATE)) {
-            if (evt.getNewValue() == GdbDebugger.STATE_LOADING) {
+            if (evt.getNewValue() == GdbDebugger.State.LOADING) {
                 int count = createBreakpointImpls();
                 DebuggerManager.getDebuggerManager().addDebuggerListener(DebuggerManager.PROP_BREAKPOINTS, this);
                 if (count == 0) { // no breakpoints

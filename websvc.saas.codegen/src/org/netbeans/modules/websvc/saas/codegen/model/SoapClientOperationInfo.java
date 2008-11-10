@@ -161,9 +161,9 @@ public class SoapClientOperationInfo {
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public List<WSParameter> getOutputParameters() {
         ArrayList<WSParameter> params = new ArrayList<WSParameter>();
-        for (Object p : getOperation().getParameters()) {
-            if (((WSParameter) p).isHolder()) {
-                params.add((WSParameter) p);
+        for (WSParameter p : getOperation().getParameters()) {
+            if (p.isHolder()) {
+                params.add(p);
             }
         }
         return params;
@@ -187,9 +187,9 @@ public class SoapClientOperationInfo {
     public String getOutputType() {
         String outputType = getOperation().getReturnTypeName();
         if (Constants.VOID.equals(outputType)) {
-            for (Object p : getOperation().getParameters()) {
-                if (((WSParameter) p).isHolder()) {
-                    outputType = getParamType((WSParameter) p);
+            for (WSParameter p : getOperation().getParameters()) {
+                if (p.isHolder()) {
+                    outputType = getParamType(p);
                     break;
                 }
             }
@@ -200,9 +200,9 @@ public class SoapClientOperationInfo {
     //TODO maybe parse SEI class (using Retouche) for @WebParam.Mode annotation
     public String[] getInputParameterNames() {
         ArrayList<String> names = new ArrayList<String>();
-        for (Object p : getOperation().getParameters()) {
-            if (!((WSParameter) p).isHolder()) {
-                names.add(((WSParameter) p).getName());
+        for (WSParameter p : getOperation().getParameters()) {
+            if (!p.isHolder()) {
+                names.add(p.getName());
             }
         }
 
@@ -213,8 +213,8 @@ public class SoapClientOperationInfo {
     public Class[] getInputParameterTypes() {
         ArrayList<Class> types = new ArrayList<Class>();
 
-        for (Object p : getOperation().getParameters()) {
-            if (!((WSParameter) p).isHolder()) {
+        for (WSParameter p : getOperation().getParameters()) {
+            if (!p.isHolder()) {
                 int repeatCount = 0;
                 Class type = null;
 
@@ -223,7 +223,7 @@ public class SoapClientOperationInfo {
                 synchronized (this) {
                     try {
                         while (repeatCount < 60) {
-                            type = getType(project, ((WSParameter) p).getTypeName());
+                            type = getType(project, p.getTypeName());
 
                             if (type != null) {
                                 break;

@@ -389,7 +389,7 @@ public final class CsmInheritanceUtilities {
 
     public static CsmClass getCsmClass(CsmInheritance inh) {
         CsmClassifier classifier = inh.getClassifier();
-        classifier = CsmBaseUtilities.getOriginalClassifier(classifier);
+        classifier = CsmBaseUtilities.getOriginalClassifier(classifier, inh.getContainingFile());
         if (CsmKindUtilities.isClass(classifier)) {
             return (CsmClass)classifier;
         }

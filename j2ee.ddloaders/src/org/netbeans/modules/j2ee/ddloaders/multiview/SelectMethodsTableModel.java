@@ -43,7 +43,6 @@ package org.netbeans.modules.j2ee.ddloaders.multiview;
 
 import org.netbeans.modules.j2ee.dd.api.ejb.Query;
 
-import javax.swing.*;
 import javax.swing.table.TableCellEditor;
 
 /**
@@ -56,32 +55,17 @@ public class SelectMethodsTableModel extends QueryMethodsTableModel {
     Utils.getBundleMessage("LBL_Query"),
     Utils.getBundleMessage("LBL_Description")};
     protected static final int[] COLUMN_WIDTHS = new int[]{200, 100, 200, 100};
-//    private JComboBox returnMethodComboBox = new JComboBox(FieldCustomizer.COMMON_TYPES);
-//    private TableCellEditor returnMethodEditor = new DefaultCellEditor(returnMethodComboBox);
     
     public SelectMethodsTableModel(EntityHelper.Queries queries) {
         super(COLUMN_NAMES, COLUMN_WIDTHS, queries);
     }
     
     public int addRow() {
-//        queries.addSelectMethod();
         return getRowCount() - 1;
     }
     
     
     public boolean editRow(int row) {
-        QueryMethodHelper helper = getQueryMethodHelper(row);
-//        QueryCustomizer customizer = new QueryCustomizer();
-//        Method method = helper.getPrototypeMethod();
-//        if (method == null || method.getTypeName() == null){
-//            return false;
-//        }
-//        method.setType(JMIUtils.resolveType(method.getTypeName().getName()));
-//        Query aQuery = (Query) helper.query.clone();
-//        boolean result = customizer.showSelectCustomizer(method, aQuery);
-//        if (result) {
-//            helper.updateSelectMethod(method, aQuery);
-//        }
         return true;
     }
     
@@ -108,21 +92,20 @@ public class SelectMethodsTableModel extends QueryMethodsTableModel {
         return null;
     }
     
+    @Override
     public void setValueAt(Object value, int rowIndex, int columnIndex) {
         Query query = (Query) queries.getSelecMethod(rowIndex).clone();
         if (columnIndex == 3) {
             query.setDescription((String) value);
         }
-        QueryMethodHelper helper = getQueryMethodHelper(rowIndex);
-//        Method method = helper.getPrototypeMethod();
-//        helper.updateSelectMethod(method, query);
     }
     
+    @Override
     public TableCellEditor getCellEditor(int columnIndex) {
-//        return columnIndex == 1 ? returnMethodEditor : super.getCellEditor(columnIndex);
         return null;
     }
     
+    @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
         if (columnIndex == 3) {
             return true;

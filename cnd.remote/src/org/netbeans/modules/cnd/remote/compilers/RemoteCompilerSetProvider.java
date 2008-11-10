@@ -54,6 +54,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author gordonp
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.compilers.CompilerSetProvider.class)
 public class RemoteCompilerSetProvider implements CompilerSetProvider {
     
     private CompilerSetScriptManager manager;

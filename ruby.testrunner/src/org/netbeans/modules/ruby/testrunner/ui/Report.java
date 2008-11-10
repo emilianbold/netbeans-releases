@@ -46,7 +46,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.ruby.RubyUtils;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.rubyproject.spi.TestRunner.TestType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -79,19 +82,25 @@ final class Report {
     int detectedPassedTests;
     private Collection<Testcase> tests;
     private final FileLocator fileLocator;
+    private final Project project;
     
     /**
      */
-    Report(String suiteClassName, FileLocator fileLocator) {
+    Report(String suiteClassName, Project project) {
         this.suiteClassName = suiteClassName;
-        this.fileLocator = fileLocator;
+        this.project = project;
+        this.fileLocator = project.getLookup().lookup(FileLocator.class);
         this.tests = new ArrayList<Testcase>(10);
     }
 
     public FileLocator getFileLocator() {
         return fileLocator;
     }
-    
+
+    Project getProject() {
+        return project;
+    }
+
     /**
      */
     void reportTest(Testcase test) {
@@ -168,11 +177,39 @@ final class Report {
     /**
      */
     static final class Testcase {
+
+        private final TestType type;
+
         String className;
         String name;
         int timeMillis;
         Trouble trouble;
         private Status status;
+        /**
+         * The location, i.e. the file and line number of this test case. 
+         */
+        private String location;
+
+        public Testcase(TestType type) {
+            this.type = type;
+        }
+
+        TestType getType() {
+            return type;
+        }
+
+        void setLocation(String location) {
+            this.location = location;
+        }
+
+        /**
+         * Gets the location, i.e. the path to the file and line number of the test case.
+         * May be null if such info is not available.
+         * @return
+         */
+        String getLocation() {
+            return location;
+        }
         
         void setStatus(Status status) {
             this.status = status;
@@ -186,6 +223,34 @@ final class Report {
                 return Status.PASSED;
             }
             return trouble.isError() ? Status.ERROR : Status.FAILED;
+        }
+        /**
+         * Gets the line from the stack trace representing the last line in the test class.
+         * If that can't be resolved
+         * then returns the second line of the stack trace (the
+         * first line represents the error message) or <code>null</code> if there
+         * was no (usable) stack trace attached.
+         *
+         * @return
+         */
+        String getTestCaseLineFromStackTrace() {
+            if (trouble == null) {
+                return null;
+            }
+            String[] stacktrace = trouble.stackTrace;
+            if (stacktrace == null || stacktrace.length <= 1) {
+                return null;
+            }
+            if (stacktrace.length > 2) {
+                String underscoreName = RubyUtils.camelToUnderlinedName(className);
+                for (int i = 0; i < stacktrace.length; i++) {
+                    if (stacktrace[i].contains(underscoreName) && stacktrace[i].contains(name)) {
+                        return stacktrace[i];
+                    }
+                }
+            }
+            return stacktrace[1];
+
         }
     }
     
@@ -226,7 +291,7 @@ final class Report {
         boolean isFakeError() {
             return error && isComparisonFailure();
         }
-        
+
     }
     
 }

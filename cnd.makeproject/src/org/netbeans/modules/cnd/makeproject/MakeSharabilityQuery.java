@@ -38,12 +38,10 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.makeproject;
 
 import java.io.File;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.openide.util.Mutex;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.api.queries.SharabilityQuery;
@@ -52,18 +50,18 @@ import org.netbeans.api.queries.SharabilityQuery;
  * SharabilityQueryImplementation for j2seproject with multiple sources
  */
 public class MakeSharabilityQuery implements SharabilityQueryImplementation {
+
     private File baseDirFile;
     private String baseDir;
     private int baseDirLength;
     private boolean privateShared;
 
-    MakeSharabilityQuery (File baseDirFile) {
+    MakeSharabilityQuery(File baseDirFile) {
         this.baseDirFile = baseDirFile;
         this.baseDir = baseDirFile.getPath();
-	this.baseDirLength = this.baseDir.length();
+        this.baseDirLength = this.baseDir.length();
         privateShared = false;
     }
-
 
     /**
      * Check whether a file or directory should be shared.
@@ -74,48 +72,63 @@ public class MakeSharabilityQuery implements SharabilityQueryImplementation {
      * @return one of {@link org.netbeans.api.queries.SharabilityQuery}'s constants
      */
     public int getSharability(final File file) {
-        Integer ret = (Integer) ProjectManager.mutex().readAccess( new Mutex.Action() {
+        Integer ret = (Integer) ProjectManager.mutex().readAccess(new Mutex.Action() {
+
             public Object run() {
                 synchronized (MakeSharabilityQuery.this) {
-		    boolean sub = file.getPath().startsWith(baseDir);
-		    if (!sub)
-			return new Integer(SharabilityQuery.UNKNOWN);
-		    if (file.getPath().equals(baseDir))
-			return new Integer(SharabilityQuery.MIXED);
-		    if (file.getPath().length() <= baseDirLength + 1)
-			return new Integer(SharabilityQuery.UNKNOWN);
-		    String subString = file.getPath().substring(baseDirLength + 1);
-		    if (subString.equals("nbproject")) // NOI18N
-			return new Integer(SharabilityQuery.MIXED);
-		    else if (subString.equals("Makefile")) // NOI18N
-			return new Integer(SharabilityQuery.SHARABLE);
-		    else if (subString.equals("nbproject" + File.separator + "configurations.xml")) // NOI18N
-			return new Integer(SharabilityQuery.SHARABLE);
-		    else if (subString.equals("nbproject" + File.separator + "private")) // NOI18N
-			return new Integer(privateShared ? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // see IZ 121796, IZ 109580 and IZ 109573
-		    else if (subString.equals("nbproject" + File.separator + "project.properties")) // NOI18N
-			return new Integer(SharabilityQuery.SHARABLE);
-		    else if (subString.equals("nbproject" + File.separator + "project.xml")) // NOI18N
-			return new Integer(SharabilityQuery.SHARABLE);
-		    else if (subString.startsWith("nbproject" + File.separator + "Makefile-")) // NOI18N
-			return new Integer(SharabilityQuery.SHARABLE);
-		    else if (subString.startsWith("nbproject" + File.separator + "Package-")) // NOI18N
-			return new Integer(SharabilityQuery.SHARABLE);
-		    else if (subString.equals("build")) // NOI18N
-			return new Integer(SharabilityQuery.NOT_SHARABLE);
-		    else if (subString.equals("dist")) // NOI18N
-			return new Integer(SharabilityQuery.NOT_SHARABLE);
-                    return new Integer(SharabilityQuery.UNKNOWN);
+                    boolean sub = file.getPath().startsWith(baseDir);
+                    if (!sub) {
+                        return Integer.valueOf(SharabilityQuery.UNKNOWN);
+                    }
+                    if (file.getPath().equals(baseDir)) {
+                        return Integer.valueOf(SharabilityQuery.MIXED);
+                    }
+                    if (file.getPath().length() <= baseDirLength + 1) {
+                        return Integer.valueOf(SharabilityQuery.UNKNOWN);
+                    }
+                    String subString = file.getPath().substring(baseDirLength + 1);
+                    if (subString.equals("nbproject")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.MIXED);
+                    } else if (subString.equals("Makefile")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.equals("nbproject" + File.separator + "configurations.xml")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.equals("nbproject" + File.separator + "private")) // NOI18N
+                    {
+                        return Integer.valueOf(privateShared ? SharabilityQuery.SHARABLE : SharabilityQuery.NOT_SHARABLE); // see IZ 121796, IZ 109580 and IZ 109573
+                    } else if (subString.equals("nbproject" + File.separator + "project.properties")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.equals("nbproject" + File.separator + "project.xml")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.startsWith("nbproject" + File.separator + "Makefile-")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.startsWith("nbproject" + File.separator + "Package-")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.SHARABLE);
+                    } else if (subString.equals("build")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
+                    } else if (subString.equals("dist")) // NOI18N
+                    {
+                        return Integer.valueOf(SharabilityQuery.NOT_SHARABLE);
+                    }
+                    return Integer.valueOf(SharabilityQuery.UNKNOWN);
                 }
             }
         });
         return ret.intValue();
     }
-    
+
     public void setPrivateShared(boolean privateShared) {
         this.privateShared = privateShared;
     }
-    
+
     public boolean getPrivateShared() {
         return privateShared;
     }

@@ -47,6 +47,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author jdeva
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=0)
 public class URLFileObjectFileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
     @Override

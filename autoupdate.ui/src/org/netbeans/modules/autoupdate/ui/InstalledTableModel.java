@@ -66,6 +66,7 @@ public class InstalledTableModel extends UnitCategoryTableModel {
     private OperationContainer<OperationSupport> enableContainer = Containers.forEnable();
     private OperationContainer<OperationSupport> disableContainer = Containers.forDisable();
     private OperationContainer<OperationSupport> uninstallContainer = Containers.forUninstall();
+    private OperationContainer<OperationSupport> containerCustom = Containers.forCustomUninstall ();
     
     private final Logger err = Logger.getLogger ("org.netbeans.modules.autoupdate.ui.InstalledTableModel");
     

@@ -41,6 +41,7 @@ import org.netbeans.spi.project.support.ant.AntProjectHelper;
  * Factory for EJB Module projects
  * @author Chris Webster
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public class SQLproProjectType implements AntBasedProjectType {
     public static final String TYPE = "org.netbeans.modules.sql.project";
     public static final String PROJECT_CONFIGURATION_NAME = "data";

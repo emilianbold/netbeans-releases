@@ -113,7 +113,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
         }
         int cnt = qid.getNumberOfChildren();
         if( cnt >= 1 ) {
-            List/*<String>*/ l = new ArrayList/*<String>*/();
+            List<String> l = new ArrayList<String>();
             for( AST token = qid.getFirstChild(); token != null; token = token.getNextSibling() ) {
                 if( token.getType() == CPPTokenTypes.ID ) {
                     if( token.getNextSibling() != null ) {
@@ -121,7 +121,7 @@ public class FunctionImplEx<T>  extends FunctionImpl<T> {
                     }
                 }
             }
-            return (String[]) l.toArray(new String[l.size()]);
+            return l.toArray(new String[l.size()]);
         }
         return null;
     }

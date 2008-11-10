@@ -62,6 +62,7 @@ import org.openide.util.Utilities;
  * 
  * @author  Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.autoupdate.AutoupdateClusterCreator.class)
 public final class NetBeansClusterCreator extends AutoupdateClusterCreator {
     protected File findCluster(String clusterName) {
         File[] parent = new File[1];

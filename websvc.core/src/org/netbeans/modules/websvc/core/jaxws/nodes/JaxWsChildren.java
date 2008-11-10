@@ -111,8 +111,6 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Binding;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
 import org.openide.NotifyDescriptor;
 import org.xml.sax.SAXException;
 
@@ -237,11 +235,11 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
     
     private void updateKeys() {
         if (isFromWsdl()) {
-            List<WSOperation> keys = new ArrayList<WSOperation>();
+            List<WsdlOperation> keys = new ArrayList<WsdlOperation>();
             if (wsdlModel!=null) {
                 WsdlService wsdlService = wsdlModel.getServiceByName(service.getServiceName());
                 if (wsdlService!=null) {
-                    WSPort wsdlPort = wsdlService.getPortByName(service.getPortName());
+                    WsdlPort wsdlPort = wsdlService.getPortByName(service.getPortName());
                     if (wsdlPort!=null)
                         keys =  wsdlPort.getOperations();
                 }

@@ -59,6 +59,7 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.impl.Valida
 
 public class ProprietarySecurityPolicyFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class KeyStoreFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -70,6 +71,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class KerberosConfigFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -81,6 +83,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ValidatorConfigurationFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -92,6 +95,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ValidatorFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -103,6 +107,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TimestampFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -114,6 +119,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TrustStoreFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -125,6 +131,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class CallbackHandlerFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -136,6 +143,7 @@ public class ProprietarySecurityPolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class CallbackHandlerConfigurationFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

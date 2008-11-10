@@ -52,6 +52,7 @@ import org.openide.util.lookup.ProxyLookup;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.openide.util.NamedServicesProvider.class, position=200, supersedes="org.netbeans.modules.openide.filesystems.RecognizeInstanceFiles")
 public final class RecognizeInstanceObjects extends NamedServicesProvider {
     private static final Logger LOG = Logger.getLogger(RecognizeInstanceObjects.class.getName());
     

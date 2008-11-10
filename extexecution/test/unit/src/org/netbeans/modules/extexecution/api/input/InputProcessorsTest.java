@@ -156,6 +156,37 @@ public class InputProcessorsTest extends NbTestCase {
         assertClosedConditions(processor);
     }
 
+    public void testPrintingCloseOrdering() throws IOException {
+        final TestInputWriter writer = new TestInputWriter(new PrintWriter(System.out));
+        final InputProcessor delegate = InputProcessors.printing(writer, false);
+
+        InputProcessor processor = new InputProcessor() {
+
+            public void processInput(char[] chars) throws IOException {
+                delegate.processInput(chars);
+            }
+
+            public void reset() throws IOException {
+                delegate.reset();
+            }
+
+            public void close() throws IOException {
+                delegate.processInput("closing mark".toCharArray());
+                delegate.close();
+            }
+        };
+
+
+        processor.processInput("first".toCharArray());
+        assertEquals("first", writer.getPrintedRaw());
+        processor.processInput("second\n".toCharArray());
+        assertEquals("firstsecond\n", writer.getPrintedRaw());
+
+        processor.close();
+        assertEquals("firstsecond\nclosing mark", writer.getPrintedRaw());
+        assertClosedConditions(processor);
+    }
+
     private static <T> void assertEquals(List<T> expected, List<T> value) {
         assertEquals(expected.size(), value.size());
         for (int i = 0; i < expected.size(); i++) {

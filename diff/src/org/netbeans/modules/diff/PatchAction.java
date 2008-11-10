@@ -199,8 +199,10 @@ public class PatchAction extends NodeAction {
                     NotifyDescriptor.YES_NO_OPTION));
             if (NotifyDescriptor.YES_OPTION.equals(notifyResult)) {
                 showDiffs(appliedFiles, binaries, backups);
+                removeBackups(appliedFiles, backups, true);
+            } else {
+                removeBackups(appliedFiles, backups, false);
             }
-            removeBackups(appliedFiles, backups);
         } else {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(NbBundle.getMessage(PatchAction.class, "MSG_WrongPatch")));
         }
@@ -276,7 +278,7 @@ public class PatchAction extends NodeAction {
      * @param files a list of files, to which the patch was successfully applied
      * @param backups a map of a form original file -> backup file
      */
-    private static void removeBackups(List<FileObject> files, Map<FileObject, FileObject> backups) {
+    private void removeBackups(List<FileObject> files, Map<FileObject, FileObject> backups, boolean onExit) {
         StringBuffer filenames=new StringBuffer(), 
                      exceptions=new StringBuffer();
         for (int i = 0; i < files.size(); i++) {
@@ -286,25 +288,33 @@ public class PatchAction extends NodeAction {
             // delete files that become empty and they have a backup file
             if (targetFileObject != null && targetFileObject.getSize() == 0) {
                 if (backup != null && backup.isValid() && backup.getSize() > 0) {
-                    try {
-                        targetFileObject.delete();
-                    } catch (IOException e) {
-                        ErrorManager err = ErrorManager.getDefault();
-                        err.annotate(e, "Patch can not delete file, skipping...");
-                        err.notify(ErrorManager.INFORMATIONAL, e);
+                    if (onExit) {
+                        deleteOnExit(targetFileObject);
+                    } else {
+                        try {
+                            targetFileObject.delete();
+                        } catch (IOException e) {
+                            ErrorManager err = ErrorManager.getDefault();
+                            err.annotate(e, "Patch can not delete file, skipping...");
+                            err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
                     }
                 }
             }
 
             if (backup != null && backup.isValid()) {
-                try {
-                    backup.delete();
-                }
-                catch (IOException ex) {
-                    filenames.append(FileUtil.getFileDisplayName(backup));
-                    filenames.append('\n');
-                    exceptions.append(ex.getLocalizedMessage());
-                    exceptions.append('\n');
+                if (onExit) {
+                    deleteOnExit(backup);
+                } else {
+                    try {
+                        backup.delete();
+                    }
+                    catch (IOException ex) {
+                        filenames.append(FileUtil.getFileDisplayName(backup));
+                        filenames.append('\n');
+                        exceptions.append(ex.getLocalizedMessage());
+                        exceptions.append('\n');
+                    }
                 }
             }
         }
@@ -314,7 +324,14 @@ public class PatchAction extends NodeAction {
                     NbBundle.getMessage(PatchAction.class, 
                         "EXC_CannotRemoveBackup", filenames, exceptions)));
     }
-   
+    
+    private void deleteOnExit(FileObject fo) {
+        File file = FileUtil.toFile(fo);
+        if (file != null) {
+            file.deleteOnExit();
+        }
+    }
+    
     public HelpCtx getHelpCtx() {
         return new HelpCtx(PatchAction.class);
     }

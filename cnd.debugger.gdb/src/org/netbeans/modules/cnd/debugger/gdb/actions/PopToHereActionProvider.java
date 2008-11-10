@@ -96,6 +96,7 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
      *        done.
      * @since 1.5
      */
+    @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {
@@ -107,10 +108,10 @@ public class PopToHereActionProvider extends GdbDebuggerActionProvider {
             }
         });
     }    
-    protected void checkEnabled(String debuggerState) {
+    protected void checkEnabled(GdbDebugger.State debuggerState) {
         Iterator i = getActions().iterator();
         while (i.hasNext()) {
-            setEnabled(i.next(), debuggerState == getDebugger().STATE_STOPPED &&
+            setEnabled(i.next(), debuggerState == GdbDebugger.State.STOPPED &&
                     getDebugger().getStackDepth() > 1);
         }
     }

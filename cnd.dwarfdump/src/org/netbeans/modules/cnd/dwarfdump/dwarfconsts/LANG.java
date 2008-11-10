@@ -48,19 +48,19 @@ import java.util.HashMap;
  * @author ak119685
  */
 public enum LANG {
-    DW_LANG_C89(0x0001),
-    DW_LANG_C(0x0002),
-    DW_LANG_Ada83(0x0003),
-    DW_LANG_C_plus_plus(0x0004),
-    DW_LANG_Cobol74(0x0005),
-    DW_LANG_Cobol85(0x0006),
-    DW_LANG_Fortran77(0x0007),
-    DW_LANG_Fortran90(0x0008),
-    DW_LANG_Pascal83(0x0009),
-    DW_LANG_Modula2(0x000a),
-    DW_LANG_C99(0x000c),
-    DW_LANG_lo_user(0x8000),
-    DW_LANG_hi_user(0xffff);
+    DW_LANG_C89(0x0001, "C 89"), // NOI18N
+    DW_LANG_C(0x0002, "C"), // NOI18N
+    DW_LANG_Ada83(0x0003, "Ada 83"), // NOI18N
+    DW_LANG_C_plus_plus(0x0004, "C++"), // NOI18N
+    DW_LANG_Cobol74(0x0005, "Cobol 74"), // NOI18N
+    DW_LANG_Cobol85(0x0006, "Cobol 85"), // NOI18N
+    DW_LANG_Fortran77(0x0007, "Fortran 77"), // NOI18N
+    DW_LANG_Fortran90(0x0008, "Fortran 90"), // NOI18N
+    DW_LANG_Pascal83(0x0009, "Pascal 83"), // NOI18N
+    DW_LANG_Modula2(0x000a, "Modula 2"), // NOI18N
+    DW_LANG_C99(0x000c, "C 99"), // NOI18N
+    DW_LANG_lo_user(0x8000, null), // NOI18N
+    DW_LANG_hi_user(0xffff, null); // NOI18N
     
 /* What about dwarf 3.0 ?
 See http://dwarf.freestandards.org/Dwarf3Std.php
@@ -77,20 +77,22 @@ Convenient definitions in http://www.arcknowledge.com/gmane.comp.compilers.llvm.
  */    
     
     private final int value;
+    private final String name;
     static private final HashMap<Integer, LANG> hashmap = new HashMap<Integer, LANG>();
     
     static {
-        for (LANG elem : LANG.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (LANG elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
-    LANG(int value) {
+    LANG(int value, String name) {
         this.value = value;
+        this.name = name;
     }
 
     public static LANG get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     public int value() {
@@ -99,20 +101,6 @@ Convenient definitions in http://www.arcknowledge.com/gmane.comp.compilers.llvm.
     
     @Override
     public String toString() {
-        switch(this) {
-            case DW_LANG_C89: return "C 89"; // NOI18N
-            case DW_LANG_C99: return "C 99"; // NOI18N
-            case DW_LANG_C: return "C"; // NOI18N
-            case DW_LANG_Ada83: return "Ada 83"; // NOI18N
-            case DW_LANG_C_plus_plus: return "C++";  // NOI18N
-            case DW_LANG_Cobol74: return "Cobol 74"; // NOI18N
-            case DW_LANG_Cobol85: return "Cobol 85"; // NOI18N
-            case DW_LANG_Fortran77: return "Fortran 77"; // NOI18N
-            case DW_LANG_Fortran90: return "Fortran 90"; // NOI18N
-            case DW_LANG_Pascal83: return "Fortran 83"; // NOI18N
-            case DW_LANG_Modula2: return "Modula 2"; // NOI18N
-            default:
-                return null;
-        }
+        return name;
     }
 }

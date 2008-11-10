@@ -2,6 +2,8 @@
 * Support js for __GENERIC_NAME__
 */
 
+var useWrap__GENERIC_NAME__ = true;
+
 function __GENERIC_NAME__(uri_) {
     this.__GENERIC_NAME__(uri_, false);
 }
@@ -26,6 +28,10 @@ __GETTER_SETTER_METHODS__
       if(c != -1) {
          var myObj = eval('(' +c+')');
          var __GENERIC_PATH_NAME__ = myObj.__GENERIC_PATH_NAME__;
+         if(__GENERIC_PATH_NAME__ == null || __GENERIC_PATH_NAME__ == undefined || __GENERIC_PATH_NAME__['@uri'] == undefined) {
+            __GENERIC_PATH_NAME__ = myObj;
+            useWrap__GENERIC_NAME__ = false;
+         }
          this.uri = __GENERIC_PATH_NAME__['@uri'];
 __FIELDS_INIT__
          this.initialized = true;
@@ -41,7 +47,10 @@ __FIELDS_INIT__
 
    flush : function() {
       var remote = new __GENERIC_NAME__Remote(this.uri);
-      return remote.putJson_('{'+this.toString()+'}');
+      if(useWrap__GENERIC_NAME__)
+         return remote.putJson_('{'+this.toString()+'}');
+      else
+         return remote.putJson_(this.toString());
    },
 
    delete_ : function() {
@@ -53,11 +62,13 @@ __FIELDS_INIT__
       if(!this.initialized)
          this.init();
       var myObj = 
-         '"__GENERIC_PATH_NAME__":'+
          '{'+
          '"@uri":"'+this.uri+'"'+
          __FIELDS_TOSTRING__
          '}';
+      if(useWrap__GENERIC_NAME__) {
+          myObj = '"__GENERIC_PATH_NAME__":'+myObj;
+      }
       return myObj;
    },
 

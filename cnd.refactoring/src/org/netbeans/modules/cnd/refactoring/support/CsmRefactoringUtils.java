@@ -104,7 +104,7 @@ public class CsmRefactoringUtils {
                 for (CsmProject csmProject : all) {
                     libs.addAll(csmProject.getLibraries());
                 }
-                out = new ArrayList(all);
+                out = new ArrayList<CsmProject>(all);
                 out.addAll(libs);
             }
         }
@@ -140,7 +140,7 @@ public class CsmRefactoringUtils {
         if (element != null) {
             if (CsmKindUtilities.isNamedElement(element)) {
                 text = ((CsmNamedElement) element).getName().toString();
-            } else if (CsmKindUtilities.isStatement((CsmObject)element)) {
+            } else if (CsmKindUtilities.isStatement(element)) {
                 text = ((CsmStatement)element).getText().toString();
             } else if (CsmKindUtilities.isOffsetable(element) ) {
                 text = ((CsmOffsetable)element).getText().toString();

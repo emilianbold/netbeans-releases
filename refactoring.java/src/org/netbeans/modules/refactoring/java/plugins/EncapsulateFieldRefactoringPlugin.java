@@ -379,7 +379,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
      */
     private static String stripPrefix(String identifierString){
         String stripped;
-        if(identifierString.startsWith(CLASS_FIELD_PREFIX)){
+        if(identifierString.startsWith(CLASS_FIELD_PREFIX) && identifierString.length() > 1){
             stripped = identifierString.substring(CLASS_FIELD_PREFIX.length());
         }
         else{

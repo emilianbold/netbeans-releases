@@ -183,7 +183,8 @@ public class CSSStructureScanner implements StructureScanner {
                     int so = AstUtils.documentPosition(node.startOffset(), source);
                     int eo = AstUtils.documentPosition(node.endOffset(), source);
                     try {
-                        if (Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
+                        //document is not locked so need to check current boundaries
+                        if (so >= 0 && eo < doc.getLength() && Utilities.getLineOffset(doc, so) < Utilities.getLineOffset(doc, eo)) {
                             //do not creare one line folds
                             //XXX this logic could possibly seat in the GSF folding impl.
                             foldRange.add(new OffsetRange(so, eo));

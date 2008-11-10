@@ -289,7 +289,11 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         
         FileObject fo = SourceUtils.getFile(el,info.getClasspathInfo());
         if (RetoucheUtils.isFromLibrary(el, info.getClasspathInfo())) { //NOI18N
-            preCheckProblem = createProblem(preCheckProblem, true, getCannotRefactor(fo));
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(
+                    ChangeParametersPlugin.class, "ERR_CannotRefactorLibraryClass",
+                    el.getEnclosingElement()
+                    ));
+            return preCheckProblem;
         }
         
         if (!RetoucheUtils.isElementInOpenProject(fo)) {
@@ -312,7 +316,4 @@ public class ChangeParametersPlugin extends JavaRefactoringPlugin {
         return preCheckProblem;
     }
     
-    private static final String getCannotRefactor(FileObject r) {
-        return new MessageFormat(NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_CannotRefactorFile")).format(new Object[] {r.getName()});
-    }
 }

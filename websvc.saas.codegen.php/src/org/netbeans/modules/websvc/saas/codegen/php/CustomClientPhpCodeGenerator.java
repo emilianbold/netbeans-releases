@@ -76,6 +76,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author nam
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.saas.codegen.spi.SaasClientCodeGenerationProvider.class)
 public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     private FileObject saasServiceFile = null;
@@ -176,7 +177,7 @@ public class CustomClientPhpCodeGenerator extends SaasClientCodeGenerator {
         
         finishProgressReporting();
 
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+        return new HashSet<FileObject>(Collections.<FileObject>emptyList());
     }
     
     @Override

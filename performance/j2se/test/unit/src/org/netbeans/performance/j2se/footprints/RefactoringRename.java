@@ -53,7 +53,6 @@ import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
 import org.netbeans.modules.performance.utilities.MemoryFootprintTestCase;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 /**
  * Measure Rename Class Memory footprint
@@ -162,7 +161,6 @@ public class RefactoringRename extends MemoryFootprintTestCase {
     
     @Override
     public void close(){
-        ProjectSupport.closeProject("jEdit");
     }
     
     public static void main(java.lang.String[] args) {

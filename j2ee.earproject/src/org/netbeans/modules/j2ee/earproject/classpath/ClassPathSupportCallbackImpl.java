@@ -45,8 +45,8 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Item;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.earproject.EarProjectType;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -60,7 +60,7 @@ import org.w3c.dom.Text;
  * Defines the various class paths for a web project.
  * @author Petr Hrebejk, Radko Najman, David Konecny
  */
-public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport.Callback {
+public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Callback {
 
     private AntProjectHelper helper;
     

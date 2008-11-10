@@ -46,6 +46,9 @@
  * InterpDtTerm.java 1.2 01/07/23
  * Input stream interpreter
  * Decodes incoming characters into cursor motion etc.
+ * 
+ * See
+ * http://h30097.www3.hp.com/docs/base_doc/DOCUMENTATION/V51_HTML/MAN/MAN5/0200____.HTM
  */
 
 package org.netbeans.lib.terminalemulator;
@@ -126,7 +129,7 @@ class InterpDtTerm extends InterpANSI {
 	static final class ACT_DONE_COLLECT2 implements Actor {
 	    public String action(AbstractInterp ai, char c) {
 		InterpDtTerm i = (InterpDtTerm) ai;
-		i.text = "";	// NOI18N
+		// OLD i.text = "";	// NOI18N
                 int semix = i.text.indexOf(';');
                 if (semix == -1)
                     return null;
@@ -150,6 +153,15 @@ class InterpDtTerm extends InterpANSI {
                     case 3:
                         ai.ops.op_cwd(p2);
                         break;
+
+                    case 10: {
+                        int semix2 = p2.indexOf(';');
+                        if (semix == -1)
+                            return null;
+                        String p3 = p2.substring(semix2+1);
+                        p2 = p2.substring(0, semix2);
+                        ai.ops.op_hyperlink(p2, p3);
+                    }
                 }
 		return null;
 	    }

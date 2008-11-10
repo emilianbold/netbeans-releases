@@ -76,4 +76,9 @@ public class AntiLoop {
             return set.contains(cls);
         }
     }
+
+    @Override
+    public String toString() {
+        return set.toString();
+    }
 }

@@ -49,6 +49,7 @@ import java.util.StringTokenizer;
 import java.util.Vector;
 import java.util.HashMap;
 
+//import org.apache.xpath.XPathAPI;
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Node;
@@ -64,6 +65,7 @@ import org.netbeans.modules.uml.core.generativeframework.ITemplateManager;
 import org.netbeans.modules.uml.core.generativeframework.IVariableExpander;
 import org.netbeans.modules.uml.core.generativeframework.IVariableFactory;
 import org.netbeans.modules.uml.core.generativeframework.VariableExpander;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.support.umlsupport.ProductRetriever;
 import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
@@ -78,38 +80,38 @@ import org.netbeans.modules.uml.core.support.umlsupport.XMLManip;
 
 public class PropertyElementManager implements IPropertyElementManager
 {
-   
+
    private Object m_PresentationElement = null;
    private Object m_ModelElement = null;
    private IPropertyDefinitionFactory m_PDFactory = null;
    private boolean m_CreateSubs = true;
    private String m_ElementFile = null;
    private IDataFormatter m_Formatter = null;
-   
+
    public PropertyElementManager()
    {
    }
-   
+
    public Object getPresentationElement()
    {
       return m_PresentationElement;
    }
-   
+
    public void setPresentationElement( Object value )
    {
       m_PresentationElement = value;
    }
-   
+
    public Object getModelElement()
    {
       return m_ModelElement;
    }
-   
+
    public void setModelElement( Object value )
    {
       m_ModelElement = value;
    }
-   
+
    /**
     * Begin the process to create a property element based on the property definition.
     *
@@ -133,17 +135,17 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return propEle;
    }
-   
+
    public IPropertyDefinitionFactory getPDFactory()
    {
       return m_PDFactory;
    }
-   
+
    public void setPDFactory( IPropertyDefinitionFactory value )
    {
       m_PDFactory = value;
    }
-   
+
    /**
     * Determines whether or not sub elements should be created
     */
@@ -151,12 +153,12 @@ public class PropertyElementManager implements IPropertyElementManager
    {
       return m_CreateSubs;
    }
-   
+
    public void setCreateSubs( boolean value )
    {
       m_CreateSubs = value;
    }
-   
+
    /**
     * Call the given "set" method from the property definition on the passed in IDispatch using the information
     * from the property element.
@@ -198,7 +200,7 @@ public class PropertyElementManager implements IPropertyElementManager
                   resol.whenValid(pDisp1);
                else
                   resol.whenInvalid(pDisp1);
-               Class clazz1 = pDisp1.getClass();               
+               Class clazz1 = pDisp1.getClass();
                Method getmethod = clazz1.getMethod(getMeth);
                Method setmethod = null;
                Method[] meths = clazz1.getMethods();
@@ -209,7 +211,7 @@ public class PropertyElementManager implements IPropertyElementManager
                   {
                      if (meths[i].getName().equals(setMeth))
                      {
-                        setmethod = meths[i];                        
+                        setmethod = meths[i];
                         break;
                      }
                      //ETSystem.out.println(meths[i].getName());
@@ -232,9 +234,9 @@ public class PropertyElementManager implements IPropertyElementManager
                         StringTokenizer tokenizer =
                         new StringTokenizer(validVals, "|");
                         String firstToken = tokenizer.nextToken();
-						
+
 						 if (validVals.startsWith("PSK") &&
-						
+
                         ((firstToken.equals("PSK_TRUE")
                         || firstToken.equals("PSK_FALSE"))))
                         {
@@ -271,19 +273,19 @@ public class PropertyElementManager implements IPropertyElementManager
                                  firstToken = tokenizer.nextToken();
                                  i++;
                               }
-                           }    
-                       
-                           if (!found) 
+                           }
+
+                           if (!found)
                            {
                                validVals = pDef.getValidValues();
                                if (validVals != null )
                                {
                                    tokenizer = new StringTokenizer(validVals, "|");
                                    int j = 0;
-                                   while(tokenizer.hasMoreTokens()) 
+                                   while(tokenizer.hasMoreTokens())
                                    {
                                        String token = tokenizer.nextToken();
-                                       if (token != null && token.equals(val)) 
+                                       if (token != null && token.equals(val))
                                        {
                                            i = j;
                                            break;
@@ -292,7 +294,7 @@ public class PropertyElementManager implements IPropertyElementManager
                                    }
                                }
                            }
-                           
+
                            String enumVals = pDef.getFromAttrMap("enumValues");
                            if (enumVals != null)
                            {
@@ -356,7 +358,7 @@ public class PropertyElementManager implements IPropertyElementManager
                      }
                      IPropertyElementManager manager = pEle.getPropertyElementManager();
                      manager.interpretElementValue(pEle);
-                     
+
                      pEle.setModified(false);
                   }
                }
@@ -368,7 +370,7 @@ public class PropertyElementManager implements IPropertyElementManager
 //         e.printStackTrace();
       }
    }
-   
+
    /**
     * @param pDef
     * @return
@@ -390,7 +392,7 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return retVal;
    }
-   
+
    /**
     * Call the given "create" method from the property definition on the passed-in IDispatch using the information
     * from the property element.
@@ -425,13 +427,13 @@ public class PropertyElementManager implements IPropertyElementManager
                      pDisp = pDisp2;
                   }
                }
-               
+
                if (pDisp != null)
                {
                   // before we actually do the set, we need to make sure that what we are setting
                   // the item to is valid
                   String str = new String();
-                  
+
                   Class clazz = pDisp.getClass();
                   Method[] meths = clazz.getMethods();
                   Method meth = null;
@@ -448,17 +450,17 @@ public class PropertyElementManager implements IPropertyElementManager
                         }
                      }
                   }
-                  
+
                   if (meth != null)
                   {
                      Class[] parms = meth.getParameterTypes();
-                     
+
                      Object[] args = buildParameters(parms, pEle);
-                     
+
                      Object retObj = meth.invoke(pDisp, args);
-                     
+
                      Class returnClass = meth.getReturnType();
-                     
+
                      // some of the create methods in Wolverine are a two step process
                      // we first create the IElement, then it needs to be added(inserted) into
                      // its proper parent (the second s
@@ -495,7 +497,7 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return pDisp;
    }
-   
+
    /**
     * Special processing after a create of an IDispatch to set the subelements up to point to that
     * newly created IDispatch
@@ -509,57 +511,25 @@ public class PropertyElementManager implements IPropertyElementManager
     */
    private void populateSubElementsAfterCreate(IPropertyElement pEle, Object obj)
    {
-       Class clazz = null;
-       if (obj != null)
+       pEle.setElement(obj);
+       Vector elems = pEle.getSubElements();
+       if (elems != null && !elems.isEmpty())
        {
-            clazz = obj.getClass();
+           for (int i = 0; i < elems.size(); i++)
+           {
+               Object elemObj = elems.get(i);
+               if (elemObj instanceof IPropertyElement)
+               {
+                   IPropertyElement ele = (IPropertyElement) elemObj;
+                   ele.setElement(obj);
+                   IPropertyDefinition def = ele.getPropertyDefinition();
+                   processCollectionWithSet(obj, def, ele);
+               }
+           }
+           pEle.setModified(false);
        }
-        
-      pEle.setElement(obj);
-      Vector elems = pEle.getSubElements();
-      if (elems != null && !elems.isEmpty())
-      {
-         for (int i=0; i<elems.size(); i++)
-         {
-            Object elemObj = elems.get(i);
-             if (elemObj instanceof IPropertyElement)
-             {
-                 IPropertyElement ele = (IPropertyElement) elemObj;
-                 ele.setElement(obj);
-                 
-                 if (clazz != null)
-                 {  
-                     IPropertyDefinition pDef = ele.getPropertyDefinition();
-                     // check if the property definition is marked as a collection
-                     long mult = pDef.getMultiplicity();
-                     if (mult <= 1)
-                     {
-                         String getMethStr = pDef.getGetMethod();
-                         try
-                         {
-                             java.lang.reflect.Method method =
-                                     clazz.getMethod(getMethStr, (Class[]) null);
-                             Object result = method.invoke(obj, (Object[]) null);
-                             processResult(result, pDef, ele);
-
-                         } catch (NoSuchMethodException ex)
-                         {
-                         // do nothing
-                         } catch (Exception e)
-                         {
-                             e.printStackTrace();
-                         }
-                     } else
-                     {
-                         processCollectionWithSet(obj, pDef, ele);
-                     }
-                 }
-             }
-         }
-         pEle.setModified(false);
-      }
    }
-   
+
    /**
     * Because a delete of an IElement has occurred, remove the corresponding property element from the
     * element structure
@@ -578,7 +548,7 @@ public class PropertyElementManager implements IPropertyElementManager
          delElem = pDeleteEle.getParent();
       else
          delElem = pDeleteEle;
-      
+
       if (delElem != null)
       {
          Vector<IPropertyElement> elems = delElem.getSubElements();
@@ -598,7 +568,7 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       }
    }
-   
+
    private Object[] buildParameters(Class[] parms, IPropertyElement elem)
    {
       Object[] args = null;
@@ -614,14 +584,14 @@ public class PropertyElementManager implements IPropertyElementManager
                {
                   Class parm = parms[i];
                   String clazzName = parm.getName();
-                  
+
                   //all our classes will start with packagename.I, so search for .I
                   int pos = clazzName.indexOf(".I");
                   if (pos >= 0)
                   {
                      //get the actual class name to be created
                      String newclassName = clazzName.substring(pos + 2);
-                     
+
                      //since we found a class as parameter, we need to create one.
                      FactoryRetriever ret = FactoryRetriever.instance();
                      Object obj = ret.createType(newclassName, null);
@@ -652,11 +622,11 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       } catch (Exception e)
       {
-         
+
       }
       return args;
    }
-   
+
    /**
     * Call the given "delete" method on the passed-in delete property element using the other property
     * element as the parameter to the "delete".
@@ -682,7 +652,7 @@ public class PropertyElementManager implements IPropertyElementManager
                String delMeth = pDef.getDeleteMethod();
                Object propEle = pDeleteEle.getElement();
                Class clazz = propEle.getClass();
-               
+
                //need to pass in the right set of parameters, otherwise the method will not be found.
                Method meth = null;//clazz.getMethod(delMeth, null);
                Method[] meths = clazz.getMethods();
@@ -699,7 +669,7 @@ public class PropertyElementManager implements IPropertyElementManager
                      }
                   }
                }
-               
+
                if (meth != null)
                {
                   Class[] parms = meth.getParameterTypes();
@@ -717,7 +687,7 @@ public class PropertyElementManager implements IPropertyElementManager
       } catch(Exception e)
       {}
    }
-   
+
    /**
     * Do the actual create of the property element.
     *
@@ -792,14 +762,14 @@ public class PropertyElementManager implements IPropertyElementManager
                   {
                      Object result = null;
                      IElement curE = null;
-                     java.lang.reflect.Method method = 
+                     java.lang.reflect.Method method =
                          clazz.getMethod(getStr, (Class[])null);
-                     
+
                      result = method.invoke(pDisp, (Object[])null);
-                     
+
                      //now since we have the result of the method invoke, we want to process it.
                      processResult(result, pDef, propEle);
-                     
+
                      // if what we are building is the name, store the result in the parent's name field too
                      if (pdName.equals("Name") && pEle != null)
                      {
@@ -845,7 +815,7 @@ public class PropertyElementManager implements IPropertyElementManager
       {}
       return propEle;
    }
-   
+
    /**
     * Method to determine how to handle the result of the invoke call
     *
@@ -893,7 +863,7 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       }
    }
-   
+
    /**
     * Special processing of a IDispatch returned by the invoke call
     *
@@ -923,7 +893,7 @@ public class PropertyElementManager implements IPropertyElementManager
             if (pDisp instanceof IElement)
             {
                IElement pModelElement = (IElement)pDisp;
-               
+
                // find if we need to process this kind by looking at the attr map - the definition
                // may have had some DispatchInvoke subdefinitions that were processed as attributes
                // on the definition
@@ -961,7 +931,7 @@ public class PropertyElementManager implements IPropertyElementManager
          e.printStackTrace();
       }
    }
-   
+
    /**
     * Special processing of a IDispatch returned by the invoke call that is a collection
     *
@@ -979,7 +949,7 @@ public class PropertyElementManager implements IPropertyElementManager
          // we are assuming that all collections have a count method on them
          Class clazz = pDisp.getClass();
          Method countMethod = clazz.getMethod("getCount", (Class[])null);
-         
+
          if (countMethod != null)
          {
             //invoke this count method
@@ -1001,7 +971,7 @@ public class PropertyElementManager implements IPropertyElementManager
                         Object[] itemCount = new Object[1];
                         itemCount[0] = new Integer(i);
                         Object itemResult = itemMethod.invoke(pDisp, itemCount);
-                        
+
                         if (itemResult != null)
                         {
                            Class itemClass = itemResult.getClass();
@@ -1018,7 +988,7 @@ public class PropertyElementManager implements IPropertyElementManager
                   }
                }
             }
-            
+
          }
          else
          {
@@ -1041,7 +1011,7 @@ public class PropertyElementManager implements IPropertyElementManager
          e.printStackTrace();
       }
    }
-   
+
    /**
     * Process any sub elements based on sub property definitions for collections that are represented
     * by strings.  This is a special case that is happening when the get method is called and the
@@ -1072,7 +1042,7 @@ public class PropertyElementManager implements IPropertyElementManager
          for (int i=0; i<count; i++)
          {
             IPropertyDefinition pDef = subDefs.elementAt(i);
-            
+
             // create the property element
             // passing in nothing, which will just create a dummy node with no subs
             // which is okay for this case
@@ -1080,14 +1050,14 @@ public class PropertyElementManager implements IPropertyElementManager
             if (pEle != null)
             {
                pEle.setValue(sValue);
-               
+
                // insert the newly created element as a child of the current element
                parentEle.addSubElement(pEle);
             }
          }
       }
    }
-   
+
    /**
     * Method used to figure out what to do with the passed-in IDispatch.  Based on the property
     * definition and element, may want to do a create, or just set data.
@@ -1144,7 +1114,7 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return 0;
    }
-   
+
    /**
     *	Special processing for property definitions that have been marked as collections but have a "set" method
     * eg. IMultiplicity
@@ -1197,7 +1167,7 @@ public class PropertyElementManager implements IPropertyElementManager
       } catch (Exception e)
       {}
    }
-   
+
    private void setDispatchOfAllSubElements(IPropertyElement pEle, Object obj)
    {
       try
@@ -1271,7 +1241,7 @@ public class PropertyElementManager implements IPropertyElementManager
       } catch (Exception e)
       {}
    }
-   
+
    /**
     * Rebuild the information for the passed-in property element.  This first removes all
     * sub elements, then rebuilds them.
@@ -1292,7 +1262,7 @@ public class PropertyElementManager implements IPropertyElementManager
          elems.clear();
          pEle.setSubElements(elems);
          processSubElements(pDisp, pDef, pEle);
-         
+
          IPropertyElement parent = pEle.getParent();
          if(parent != null)
          {
@@ -1302,11 +1272,11 @@ public class PropertyElementManager implements IPropertyElementManager
                  interpretElementValue(newElement);
                  pEle.setValue(newElement.getValue());
              }
-         } 
+         }
       }
       return 0;
    }
-   
+
    /**
     * Rebuild the information for the passed-in property element.  This first removes all
     * sub elements, then rebuilds only one sub element marked as a dummy node.
@@ -1328,7 +1298,7 @@ public class PropertyElementManager implements IPropertyElementManager
          Vector<IPropertyElement> elems = pEle.getSubElements();
          elems.clear();
          pEle.setSubElements(elems);
-         
+
          pEle.setName("dummy");
          pEle.setPropertyDefinition(pDef);
          Vector defs = pDef.getSubDefinitions();
@@ -1343,7 +1313,7 @@ public class PropertyElementManager implements IPropertyElementManager
                   subEle = buildElement(pDisp, pd, pEle);
                else
                   subEle = buildElement(m_ModelElement, pd, pEle);
-               
+
                if (subEle != null)
                   pEle.addSubElement(subEle);
             }
@@ -1351,17 +1321,17 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return 0;
    }
-   
+
    public String getElementFile()
    {
       return m_ElementFile;
    }
-   
+
    public void setElementFile( String value )
    {
       m_ElementFile = value;
    }
-   
+
    /**
     * Begin the process to create a property element based on the property definition using an already
     * defined file.
@@ -1381,15 +1351,15 @@ public class PropertyElementManager implements IPropertyElementManager
          //dbf.setNamespaceAware(true);
          //DocumentBuilder db = dbf.newDocumentBuilder();
          Document doc = XMLManip.getDOMDocument(m_ElementFile);//db.parse(new File(m_ElementFile));
-         
+
          // file has been loaded, now find all property elements with the same name as the passed
          // in property definition
          String pDefName = pDef.getName();
-         
+
          String pattern = "//PropertyElement[@name=\'";
          pattern += pDefName;
          pattern += "\']";
-         
+
          List list = XMLManip.selectNodeList(doc, pattern);
          if (list != null && list.size() > 0)
          {
@@ -1401,23 +1371,23 @@ public class PropertyElementManager implements IPropertyElementManager
                xmlElem.setName(pDefName);
                xmlElem.setPropertyDefinition(pDef);
                xmlElem.setPropertyElementManager(this);
-               
+
                // set its information
                setAttributesXML(node, pDef, xmlElem);
-               
+
                // process any sub elements
                processSubElementsUsingXMLFile(node, pDef, xmlElem);
                pEles[i] = xmlElem;
-               
+
             }
          }
       } catch (Exception e)
       {
-         
+
       }
       return pEles;
    }
-   
+
    /**
     * Process any sub elements based on sub property definitions in a predetermined file
     *
@@ -1486,7 +1456,7 @@ public class PropertyElementManager implements IPropertyElementManager
       } catch (Exception e)
       {}
    }
-   
+
    /**
     * Do the actual create of the property element based on a file
     *
@@ -1505,7 +1475,7 @@ public class PropertyElementManager implements IPropertyElementManager
       processSubElementsUsingXMLFile(node, pDef, elem);
       return elem;
    }
-   
+
    /**
     * Sets the information on the property element from the dom node in the given file
     *
@@ -1524,29 +1494,29 @@ public class PropertyElementManager implements IPropertyElementManager
          if (node instanceof org.dom4j.Element)
          {
             org.dom4j.Element ele = (org.dom4j.Element)node;
-            
+
             Attribute nameNode = ele.attribute("name");
             String name = "";
             if (nameNode != null)
                name = nameNode.getValue();
-            
+
             nameNode = ele.attribute("value");
             String value = "";
             if (nameNode != null)
                value = nameNode.getValue();
-            
+
             if (value.equals(""))
                value = pDef.getValidValues2();
-            
+
             elem.setName(name);
             elem.setValue(value);
             elem.setOrigValue(value);
             elem.setPropertyDefinition(pDef);
          }
-         
+
       }
    }
-   
+
    /**
     * Sometimes the information that is stored on the property element is not what
     * we want to display.  It may need to be interpreted, this is based on the information
@@ -1624,16 +1594,16 @@ public class PropertyElementManager implements IPropertyElementManager
             }
          }
          Vector<IPropertyElement> subElems = pEle.getSubElements();
-         if (subElems != null) 
+         if (subElems != null)
          {
-             for(IPropertyElement sub : subElems) 
+             for(IPropertyElement sub : subElems)
              {
                  interpretElementValue(sub);
              }
          }
       }
    }
-   
+
    /**
     * The property definition states that the information to be displayed by the property element
     * should be a value from an xpath query.  Need to figure out what the value is.
@@ -1693,7 +1663,7 @@ public class PropertyElementManager implements IPropertyElementManager
          //m_Formatter = ProductHelper
          m_Formatter = ProductRetriever.retrieveProduct().getDataFormatter();
       }
-      
+
       Object obj = pElem.getElement();
       if (obj != null)
       {
@@ -1706,7 +1676,7 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       }
    }
-   
+
    /**
     * The property definition states that the information to be displayed by the property element
     * may be something other than what is stored on the property editor.  For example, for visibility
@@ -1743,7 +1713,7 @@ public class PropertyElementManager implements IPropertyElementManager
       {
          //the number conversion error must have happenned.
          pElem.setValue(val);
-         pElem.setOrigValue(val); 
+         pElem.setOrigValue(val);
           /*
          String value = pElem.getTranslatedValue();
          pElem.setValue(value);
@@ -1751,7 +1721,7 @@ public class PropertyElementManager implements IPropertyElementManager
            */
       }
    }
-   
+
    /**
     * Call the given "insert" method from the property definition on the passed-in IDispatch using the information
     * from the property element.
@@ -1782,7 +1752,7 @@ public class PropertyElementManager implements IPropertyElementManager
                }
             }
          }
-         
+
          if (insMeth.length() > 0)
          {
             // if a IDispatch hasn't been passed in, we are going to try and figure one out
@@ -1811,7 +1781,7 @@ public class PropertyElementManager implements IPropertyElementManager
                      }
                   }
                }
-               
+
                if (meth != null)
                {
                   Class[] parms = meth.getParameterTypes();
@@ -1825,7 +1795,7 @@ public class PropertyElementManager implements IPropertyElementManager
       } catch (Exception e)
       {}
    }
-   
+
    /**
     * Method to navigate up the property element chain to retrieve the first model element in the chain
     *
@@ -1848,7 +1818,7 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return obj;
    }
-   
+
    /**
     * Method to navigate up the property element chain to retrieve the property element that represents
     * the one that should be inserted into (the one with an insert method)
@@ -1879,7 +1849,7 @@ public class PropertyElementManager implements IPropertyElementManager
       }
       return elem;
    }
-   
+
    /**
     * Builds and returns an empty element structure based on the passed-in definition.
     *
@@ -1897,7 +1867,7 @@ public class PropertyElementManager implements IPropertyElementManager
       processEmptySubElementsXML(pDef, propEle);
       return propEle;
    }
-   
+
    /**
     * Process any sub elements based on sub property definitions, creating them empty
     *
@@ -1925,7 +1895,7 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       }
    }
-   
+
    /**
     * Save the passed in property elements to the given file.
     *
@@ -1959,7 +1929,7 @@ public class PropertyElementManager implements IPropertyElementManager
          //save the document to xml file here.
       }
    }
-   
+
    private void saveSubElementsToXMLFile(Document doc, IPropertyElement ele)
    {
       Vector elems = ele.getSubElements();
@@ -1981,7 +1951,7 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       }
    }
-   
+
    /**
     * Get a DOM Document for the passed-in file.
     *
@@ -2014,17 +1984,17 @@ public class PropertyElementManager implements IPropertyElementManager
                   doc = XMLManip.getDOMDocument();//db.newDocument();
                   //put processing to create the doc with DTD declaration, propertyElem node etc.
                   //and save it.
-                  
+
                }
             }
          }
       } catch (Exception e)
       {
-         
+
       }
       return doc;
    }
-   
+
    /**
     * Process any sub elements based on sub property definitions
     *
@@ -2103,9 +2073,9 @@ public class PropertyElementManager implements IPropertyElementManager
                            else
                            {
                               // invoke the method on this class
-                              java.lang.reflect.Method method = 
+                              java.lang.reflect.Method method =
                                   clazz.getMethod(getMethod, (Class[])null);
-                              
+
                               retVal = method.invoke(actual, (Object[])null);
                            }
                         }
@@ -2118,7 +2088,7 @@ public class PropertyElementManager implements IPropertyElementManager
                      {
                         int i = 0;
                      }
-                     
+
                   }
                }
             }
@@ -2130,17 +2100,17 @@ public class PropertyElementManager implements IPropertyElementManager
    throws ClassNotFoundException, InstantiationException, IllegalAccessException
    {
       Object retVal = null;
-      
+
       ICoreProduct product = ProductRetriever.retrieveProduct();
       if(product != null)
       {
          Class clazz = Class.forName(objName);
          retVal = clazz.newInstance();
       }
-      
+
       return retVal;
    }
-   
+
    private void processMethodCall(IPropertyElement pEle, IPropertyDefinition pDef)
    {
        if(pEle != null)
@@ -2177,15 +2147,15 @@ public class PropertyElementManager implements IPropertyElementManager
                            }
                            catch(NoSuchMethodException e)
                            {
-                               
+
                            }
                            catch(IllegalAccessException ie)
                            {
-                               
+
                            }
                            catch(InvocationTargetException te)
                            {
-                               
+
                            }
                        }
                    }
@@ -2193,7 +2163,7 @@ public class PropertyElementManager implements IPropertyElementManager
            }
        }
    }
-   
+
    /**
     * The property definition states that the information to be displayed by the property element
     * should be a value from an expansion variable.  Need to figure out what the value is.
@@ -2265,5 +2235,5 @@ public class PropertyElementManager implements IPropertyElementManager
          }
       }
    }
-   
+
 }

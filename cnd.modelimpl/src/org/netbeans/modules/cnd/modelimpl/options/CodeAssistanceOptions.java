@@ -85,9 +85,9 @@ public class CodeAssistanceOptions {
     
     // options
     
-    public Boolean getCodeAssistanceEnabled() {
+    public boolean getCodeAssistanceEnabled() {
         String value = doLoad(CodeModelEnabled);
-        return !value.equals("") && value != null ? new Boolean(value) : Boolean.TRUE;
+        return str2bool(value);
     }
     
     public void setCodeAssistanceEnabled(Boolean enabled) {
@@ -96,14 +96,17 @@ public class CodeAssistanceOptions {
 
     public Boolean getParseOrphanEnabled() {
         String value = doLoad(ParseOrphanEnabled);
-        return !value.equals("") && value != null ? new Boolean(value) : Boolean.TRUE;
+        return str2bool(value);
     }
-    
+
     public void setParseOrphanEnabled(Boolean enabled) {
         doSave(ParseOrphanEnabled, enabled.toString());
     }
     
     // private methods
+    private boolean str2bool(String value) {
+        return (value == null) || (value.length() == 0) || Boolean.parseBoolean(value);
+    }
     
     private Element getConfigurationFragment() {
         Element data = aux.getConfigurationFragment(CodeAssistanceData, namespace, shared);

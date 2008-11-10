@@ -53,6 +53,7 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Adamek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.common.queries.spi.InjectionTargetQueryImplementation.class)
 public class EjbInjectionTargetQueryImplementation implements InjectionTargetQueryImplementation {
     
     public EjbInjectionTargetQueryImplementation() {

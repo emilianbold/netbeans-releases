@@ -58,6 +58,7 @@ import org.netbeans.core.startup.ManifestSection;
  * Holds list of all actions added by modules.
  * @author Jaroslav Tulach, Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.actions.ActionManager.class)
 public class ModuleActions extends ActionManager
 /*implements PropertyChangeListener*/ {
 

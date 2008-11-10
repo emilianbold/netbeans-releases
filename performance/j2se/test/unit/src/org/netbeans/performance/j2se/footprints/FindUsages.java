@@ -47,7 +47,6 @@ import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.TopComponentOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -122,7 +121,6 @@ public void testMeasureMemoryFootprint() {
     
     @Override
     public void close(){
-        ProjectSupport.closeProject("jEdit");
     }
     
     public static void main(java.lang.String[] args) {

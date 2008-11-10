@@ -76,6 +76,7 @@ import org.openide.util.Lookup;
  * 
  *  @author Tomas Pavek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class RefactoringPluginFactoryImpl implements RefactoringPluginFactory {
 
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

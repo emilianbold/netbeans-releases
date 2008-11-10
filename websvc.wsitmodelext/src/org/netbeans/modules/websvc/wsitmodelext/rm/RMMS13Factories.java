@@ -54,6 +54,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class RMMS13Factories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class InactivityTimeoutFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

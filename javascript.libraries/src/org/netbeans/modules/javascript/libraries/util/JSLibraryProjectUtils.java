@@ -730,8 +730,7 @@ public final class JSLibraryProjectUtils {
                     currentTotal++;
                 } else if (zipEntry.isDirectory()) {
                     File newFolder = new File(destination, mappedEntryName);
-                    newFolder.mkdirs();
-                    
+                    FileUtil.createFolder(newFolder);
                     handle.progress(++currentTotal);
                 } else {
                     File file = new File(destination, mappedEntryName);
@@ -754,7 +753,7 @@ public final class JSLibraryProjectUtils {
                     } else if (exists && option == OverwriteOption.SKIP) {
                         continue;
                     }
-                    
+                    FileUtil.createData(file); 
                     BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
                     InputStream input = zipFile.getInputStream(zipEntry);
                     

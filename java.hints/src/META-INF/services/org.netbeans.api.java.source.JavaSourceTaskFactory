@@ -1,5 +1,0 @@
-org.netbeans.modules.java.hints.infrastructure.ErrorHintsFactory
-org.netbeans.modules.java.hints.infrastructure.LazyHintComputationFactory
-org.netbeans.modules.java.hints.infrastructure.HintsTaskFactory
-org.netbeans.modules.java.hints.infrastructure.SuggestionsTaskFactory
-org.netbeans.modules.java.hints.introduce.IntroduceHintFactory

@@ -879,9 +879,21 @@
             <xsd:element name="template_body" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
-    <xsd:element name="auth_createToken_response" type="auth_token" />
+    <xsd:element name="auth_createToken_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="auth_getSession_response" type="session_info" />
-    <xsd:element name="auth_promoteSession_response" type="session_secret" />
+    <xsd:element name="auth_promoteSession_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="events_get_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -919,9 +931,34 @@
         </xsd:complexType>
     </xsd:element>
     <xsd:element name="events_getMembers_response" type="event_members" />
-    <xsd:element name="fbml_setRefHandle_response" type="xsd:boolean" />
-    <xsd:element name="fbml_refreshRefUrl_response" type="xsd:boolean" />
-    <xsd:element name="fbml_refreshImgSrc_response" type="xsd:boolean" />
+    <xsd:element name="fbml_uploadNativeStrings_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="fbml_setRefHandle_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="fbml_refreshRefUrl_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="fbml_refreshImgSrc_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="feed_deactivateTemplateBundleByID_response">
         <xsd:complexType>
             <xsd:simpleContent>
@@ -952,8 +989,27 @@
             </xsd:simpleContent>
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="feed_publishStoryToUser_response" type="xsd:boolean" />
-    <xsd:element name="feed_publishActionOfUser_response" type="xsd:boolean" />
+    <xsd:element name="feed_publishStoryToUser_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="feed_publishActionOfUser_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="feed_publishUserAction_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="friends_areFriends_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1003,7 +1059,13 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="data_setCookie_response" type="xsd:boolean" />
+    <xsd:element name="data_setCookie_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="permissions_checkGrantedApiAccess_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1020,8 +1082,20 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="permissions_grantApiAccess_response" type="xsd:boolean" />
-    <xsd:element name="permissions_revokeApiAccess_response" type="xsd:boolean" />
+    <xsd:element name="permissions_grantApiAccess_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="permissions_revokeApiAccess_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="marketplace_getCategories_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1054,11 +1128,35 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="marketplace_createListing_response" type="lid" />
-    <xsd:element name="marketplace_removeListing_response" type="xsd:boolean" />
+    <xsd:element name="marketplace_createListing_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:long"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="marketplace_removeListing_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="notifications_get_response" type="notifications" />
-    <xsd:element name="notifications_send_response" type="xsd:string" />
-    <xsd:element name="notifications_sendEmail_response" type="uid_list" />
+    <xsd:element name="notifications_send_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="notifications_sendEmail_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="photos_get_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1085,9 +1183,34 @@
     </xsd:element>
     <xsd:element name="photos_createAlbum_response" type="album" />
     <xsd:element name="photos_upload_response" type="photo" />
-    <xsd:element name="photos_addTag_response" type="xsd:boolean" />
-    <xsd:element name="profile_setFBML_response" type="xsd:string" />
-    <xsd:element name="profile_getFBML_response" type="xsd:string" />
+    <xsd:element name="photos_addTag_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="profile_setFBML_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="profile_getFBML_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="profile_setInfo_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="update_decodeIDs_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1104,8 +1227,34 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="users_isAppAdded_response" type="xsd:boolean" />
-    <xsd:element name="users_hasAppPermission_response" type="xsd:boolean" />
+    <xsd:element name="profile_setInfoOptions_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="profile_getInfoOptions_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="users_isAppAdded_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="users_hasAppPermission_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="users_isAppUser_response">
         <xsd:complexType>
             <xsd:simpleContent>
@@ -1113,8 +1262,20 @@
             </xsd:simpleContent>
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="users_getLoggedInUser_response" type="uid" />
-    <xsd:element name="users_setStatus_response" type="xsd:boolean" />
+    <xsd:element name="users_getLoggedInUser_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:long"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="users_setStatus_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="pages_getInfo_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1123,12 +1284,48 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="pages_isAdmin_response" type="xsd:boolean" />
-    <xsd:element name="pages_isFan_response" type="xsd:boolean" />
-    <xsd:element name="pages_isAppAdded_response" type="xsd:boolean" />
-    <xsd:element name="data_setUserPreference_response" type="xsd:boolean" />
-    <xsd:element name="data_setUserPreferences_response" type="xsd:boolean" />
-    <xsd:element name="data_getUserPreference_response" type="xsd:string" />
+    <xsd:element name="pages_isAdmin_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="pages_isFan_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="pages_isAppAdded_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_setUserPreference_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_setUserPreferences_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_getUserPreference_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="data_getUserPreferences_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1137,12 +1334,48 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="data_createObjectType_response" type="xsd:boolean" />
-    <xsd:element name="data_dropObjectType_response" type="xsd:boolean" />
-    <xsd:element name="data_renameObjectType_response" type="xsd:boolean" />
-    <xsd:element name="data_defineObjectProperty_response" type="xsd:boolean" />
-    <xsd:element name="data_undefineObjectProperty_response" type="xsd:boolean" />
-    <xsd:element name="data_renameObjectProperty_response" type="xsd:boolean" />
+    <xsd:element name="data_createObjectType_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_dropObjectType_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_renameObjectType_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_defineObjectProperty_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_undefineObjectProperty_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_renameObjectProperty_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="data_getObjectTypes_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1159,10 +1392,34 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="data_createObject_response" type="xsd:long" />
-    <xsd:element name="data_updateObject_response" type="xsd:boolean" />
-    <xsd:element name="data_deleteObject_response" type="xsd:boolean" />
-    <xsd:element name="data_deleteObjects_response" type="xsd:boolean" />
+    <xsd:element name="data_createObject_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:long"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_updateObject_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_deleteObject_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_deleteObjects_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
 
 <!--
 <xsd:element name="data_getObject_response" type="container" />
@@ -1176,16 +1433,76 @@
   </xsd:complexType>
 </xsd:element>
 -->
-    <xsd:element name="data_getObjectProperty_response" type="xsd:string" />
-    <xsd:element name="data_setObjectProperty_response" type="xsd:boolean" />
-    <xsd:element name="data_getHashValue_response" type="xsd:string" />
-    <xsd:element name="data_setHashValue_response" type="xsd:long" />
-    <xsd:element name="data_incHashValue_response" type="xsd:int" />
-    <xsd:element name="data_removeHashKey_response" type="xsd:boolean" />
-    <xsd:element name="data_removeHashKeys_response" type="xsd:boolean" />
-    <xsd:element name="data_defineAssociation_response" type="xsd:boolean" />
-    <xsd:element name="data_undefineAssociation_response" type="xsd:boolean" />
-    <xsd:element name="data_renameAssociation_response" type="xsd:boolean" />
+    <xsd:element name="data_getObjectProperty_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_setObjectProperty_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_getHashValue_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_setHashValue_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:long"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_incHashValue_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:int"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_removeHashKey_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_removeHashKeys_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_defineAssociation_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_undefineAssociation_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_renameAssociation_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="data_getAssociationDefinition_response" type="object_assoc_info" />
     <xsd:element name="data_getAssociationDefinitions_response">
         <xsd:complexType>
@@ -1195,11 +1512,41 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="data_setAssociation_response" type="xsd:boolean" />
-    <xsd:element name="data_setAssociations_response" type="xsd:boolean" />
-    <xsd:element name="data_removeAssociation_response" type="xsd:boolean" />
-    <xsd:element name="data_removeAssociations_response" type="xsd:boolean" />
-    <xsd:element name="data_removeAssociatedObjects_response" type="xsd:boolean" />
+    <xsd:element name="data_setAssociation_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_setAssociations_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_removeAssociation_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_removeAssociations_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="data_removeAssociatedObjects_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="data_getAssociatedObjects_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1208,7 +1555,13 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="data_getAssociatedObjectCount_response" type="xsd:int" />
+    <xsd:element name="data_getAssociatedObjectCount_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:int"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="data_getAssociatedObjectCounts_response">
         <xsd:complexType>
             <xsd:sequence minOccurs="0" maxOccurs="unbounded">
@@ -1225,9 +1578,27 @@
             <xsd:attribute name="list" type="xsd:boolean" />
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="admin_getAppProperties_response" type="xsd:string" />
-    <xsd:element name="admin_setAppProperties_response" type="xsd:boolean" />
-    <xsd:element name="admin_getAllocation_response" type="xsd:int" />
+    <xsd:element name="admin_getAppProperties_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:string"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="admin_setAppProperties_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:boolean"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
+    <xsd:element name="admin_getAllocation_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:int"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="application_getPublicInfo_response" type="app_info"></xsd:element>
     <xsd:element name="admin_getMetrics_response">
         <xsd:complexType>
@@ -1255,7 +1626,13 @@
     </xsd:element>
 
 <!-- Missing elements -->
-    <xsd:element name="feed_publishTemplatizedAction_response" type="xsd:int"/>
+    <xsd:element name="feed_publishTemplatizedAction_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:int"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     <xsd:element name="fql_query_response">
         <xsd:complexType>
             <xsd:sequence>
@@ -1306,7 +1683,13 @@
             <xsd:attribute name="list" type="xsd:boolean"/>
         </xsd:complexType>
     </xsd:element>
-    <xsd:element name="auth_expireSession_response" type="xsd:int" />
+    <xsd:element name="auth_expireSession_response">
+        <xsd:complexType>
+            <xsd:simpleContent>
+                <xsd:extension base="xsd:int"/>
+            </xsd:simpleContent>
+        </xsd:complexType>
+    </xsd:element>
     
     <xsd:complexType name="TemplateBundleType">
         <xsd:sequence>

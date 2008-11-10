@@ -45,7 +45,6 @@ import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ui.Constants;
 import org.netbeans.spi.viewmodel.TableModel;
 import org.netbeans.spi.viewmodel.TableModelFilter;
@@ -124,7 +123,7 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
         if (text == null) {
             return null;
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         sb.append("<html>"); // NOI18N
         if (bold) {
             sb.append("<b>"); // NOI18N
@@ -135,7 +134,7 @@ public class BoldVariablesTableModelFilterFirst implements TableModelFilter, Con
         if (color != null) {
             sb.append("<font color="); // NOI18N
             sb.append(Integer.toHexString ((color.getRGB () & 0xffffff)));
-            sb.append(">"); // NOI18N
+            sb.append('>'); // NOI18N
         }
         text = text.replaceAll("&", "&amp;"); // NOI18N
         text = text.replaceAll("<", "&lt;"); // NOI18N

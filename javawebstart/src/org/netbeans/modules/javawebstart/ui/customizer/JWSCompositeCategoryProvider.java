@@ -45,6 +45,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.Collection;
@@ -52,6 +53,8 @@ import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 import javax.swing.JComponent;
 
 import org.netbeans.api.project.Project;
@@ -63,12 +66,14 @@ import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.ErrorManager;
+import org.openide.cookies.CloseCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 
+import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -91,15 +96,17 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
     
     private static JWSProjectProperties jwsProps = null;
     
-    private static final String MASTER_NAME_APPLICATION = "master-application.jnlp";
-    private static final String MASTER_NAME_APPLET = "master-applet.jnlp";
-    private static final String MASTER_NAME_COMPONENT = "master-component.jnlp";
+    private static final String MASTER_NAME_APPLICATION = "master-application.jnlp"; // NOI18N
+    private static final String MASTER_NAME_APPLET = "master-applet.jnlp"; // NOI18N
+    private static final String MASTER_NAME_COMPONENT = "master-component.jnlp"; // NOI18N
     
-    private static final String PREVIEW_NAME_APPLICATION = "preview-application.html";
-    private static final String PREVIEW_NAME_APPLET = "preview-applet.html";
+    private static final String PREVIEW_NAME_APPLICATION = "preview-application.html"; // NOI18N
+    private static final String PREVIEW_NAME_APPLET = "preview-applet.html"; // NOI18N
     
-    private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks";
-    
+    private static final String JWS_ANT_TASKS_LIB_NAME = "JWSAntTasks"; // NOI18N
+
+    private static final String PREVIOUS_JNLP_IMPL_CRC32 = "3528ef9f"; // NOI18N
+
     public JWSCompositeCategoryProvider(String name) {
         catName = name;
     }
@@ -358,6 +365,18 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
         private void copyTemplate(Project proj) throws IOException {
             FileObject projDir = proj.getProjectDirectory();
             FileObject jnlpBuildFile = projDir.getFileObject("nbproject/jnlp-impl.xml"); // NOI18N
+            
+            if (jnlpBuildFile != null && isJnlpImplPreviousVer(computeCrc32(jnlpBuildFile.getInputStream()))) {
+                // try to close the file just in case the file is already opened in editor
+                DataObject dobj = DataObject.find(jnlpBuildFile);
+                CloseCookie closeCookie = dobj.getCookie(CloseCookie.class);
+                if (closeCookie != null) {
+                    closeCookie.close();
+                }
+                FileUtil.moveFile(jnlpBuildFile, projDir.getFileObject("nbproject"), "jnlp-impl_backup");
+                jnlpBuildFile = null;
+            }
+            
             if (jnlpBuildFile == null) {
                 FileSystem sfs = Repository.getDefault().getDefaultFileSystem();
                 FileObject templateFO = sfs.findResource("Templates/JWS/jnlp-impl.xml"); // NOI18N
@@ -464,6 +483,34 @@ public class JWSCompositeCategoryProvider implements ProjectCustomizer.Composite
             }
         }
         
+    }
+
+    static String computeCrc32(InputStream is) throws IOException {
+        Checksum crc = new CRC32();
+        int last = -1;
+        int curr;
+        while ((curr = is.read()) != -1) {
+            if (curr != '\n' && last == '\r') {
+                crc.update('\n');
+            }
+            if (curr != '\r') {
+                crc.update(curr);
+            }
+            last = curr;
+        }
+        if (last == '\r') {
+            crc.update('\n');
+        }
+        int val = (int)crc.getValue();
+        String hex = Integer.toHexString(val);
+        while (hex.length() < 8) {
+            hex = "0" + hex; // NOI18N
+        }
+        return hex;
+    }
+
+    static boolean isJnlpImplPreviousVer(String crc) {
+        return PREVIOUS_JNLP_IMPL_CRC32.equals(crc);
     }
     
 }

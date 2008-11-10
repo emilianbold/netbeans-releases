@@ -62,6 +62,7 @@ import java.util.logging.Level;
 /**
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.versioning.spi.VersioningSystem.class)
 public class SubversionVCS extends VersioningSystem implements VersioningListener, PreferenceChangeListener, PropertyChangeListener {
     
     private final Set<File> unversionedParents = Collections.synchronizedSet(new HashSet<File>(20));

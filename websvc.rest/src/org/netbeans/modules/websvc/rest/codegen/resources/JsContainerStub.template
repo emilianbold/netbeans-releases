@@ -2,6 +2,8 @@
 * Support js for __CONTAINER_NAME__
 */
 
+var useWrap__CONTAINER_NAME__ = true;
+
 function __CONTAINER_NAME__(uri_) {
     this.uri = uri_;
     this.items = new Array();
@@ -21,12 +23,12 @@ __CONTAINER_NAME__.prototype = {
    },
 
    addItem : function(item) {
-      this.items[this.items.length+1] = item;
+      this.items.push(item);
    },
 
    removeItem : function(item) {
       var status = item.delete_();
-      if(status != '-1')
+      if(status)
         this.init(); //re-read items
       return status;
    },
@@ -37,10 +39,11 @@ __CONTAINER_NAME__.prototype = {
       if(c != -1) {
          var myObj = eval('('+c+')');
          var __CONTAINER_PATH_NAME__ = myObj.__CONTAINER_PATH_NAME__;
-         if(__CONTAINER_PATH_NAME__ == null || __CONTAINER_PATH_NAME__ == undefined) {
-            rjsSupport.debug('__CONTAINER_PATH_NAME__ is undefined, so skipping init of __CONTAINER_NAME__');
-            return;
+         if(__CONTAINER_PATH_NAME__ == null || __CONTAINER_PATH_NAME__ == undefined || __CONTAINER_PATH_NAME__['@uri'] == undefined) {
+            __CONTAINER_PATH_NAME__ = myObj;
+            useWrap__CONTAINER_NAME__ = false;
          }
+         this.items = new Array();
          var refs = __CONTAINER_PATH_NAME__.__CONTAINER_ITEM_PATH_NAME__;
          if(refs != undefined) {
              if(refs.length == undefined) {
@@ -66,12 +69,18 @@ __CONTAINER_NAME__.prototype = {
 
    flush : function() {
       var remote = new __CONTAINER_NAME__Remote(this.uri);
-      remote.postJson_('{'+this.toString()+'}');
+      if(useWrap__CONTAINER_NAME__)
+         remote.postJson_('{'+this.toString()+'}');
+      else
+         return remote.postJson_(this.toString());
    },
 
    flush : function(__CONTAINER_ITEM_PATH_NAME__) {
       var remote = new __CONTAINER_NAME__Remote(this.uri);
-      return remote.postJson_('{'+__CONTAINER_ITEM_PATH_NAME__.toString()+'}');
+      if(useWrap__CONTAINER_NAME__)
+         return remote.postJson_('{'+__CONTAINER_ITEM_PATH_NAME__.toString()+'}');
+      else
+         return remote.postJson_(__CONTAINER_ITEM_PATH_NAME__.toString());
    },
 
    toString : function() {
@@ -92,10 +101,13 @@ __CONTAINER_NAME__.prototype = {
           s = s + ']';
       var myObj = '';
       if(s == '') {
-          myObj = '"__CONTAINER_PATH_NAME__":{"@uri":"'+this.getUri()+'"}';
+          myObj = '{"@uri":"'+this.getUri()+'"}';
       } else {
           myObj = 
-            '"__CONTAINER_PATH_NAME__":{'+'"@uri":"'+this.getUri()+'",'+'"__CONTAINER_ITEM_PATH_NAME__":'+s+''+'}';
+            '{'+'"@uri":"'+this.getUri()+'",'+'"__CONTAINER_ITEM_PATH_NAME__":'+s+''+'}';
+      }
+      if(useWrap__CONTAINER_NAME__) {
+          myObj = '"__CONTAINER_PATH_NAME__":'+myObj;
       }
       return myObj;
    }
@@ -103,7 +115,7 @@ __CONTAINER_NAME__.prototype = {
 }
 
 function __CONTAINER_NAME__Remote(uri_) {
-    this.uri = uri_+'?expandLevel=0';
+    this.uri = uri_+'?expandLevel=0&start=0&max=50';
 }
 
 __CONTAINER_NAME__Remote.prototype = {

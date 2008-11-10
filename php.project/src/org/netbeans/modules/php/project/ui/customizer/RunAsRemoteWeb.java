@@ -227,12 +227,8 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         String indexFile = indexFileTextField.getText();
         String args = argsTextField.getText();
 
-        String err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
-        if (err != null) {
-            validateCategory(err);
-            return;
-        }
-
+        // first validate remote fields because indexFile is "optional" (for run file e.g.)
+        //  [not ideal but better than it used to be i hope]
         RemoteConfiguration selected = (RemoteConfiguration) remoteConnectionComboBox.getSelectedItem();
         assert selected != null;
         if (selected == NO_REMOTE_CONFIGURATION) {
@@ -243,7 +239,13 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             return;
         }
 
-        err = RunAsValidator.validateUploadDirectory(uploadDirectoryTextField.getText(), true);
+        String err = RunAsValidator.validateUploadDirectory(uploadDirectoryTextField.getText(), true);
+        if (err != null) {
+            validateCategory(err);
+            return;
+        }
+
+        err = RunAsValidator.validateWebFields(url, FileUtil.toFile(getWebRoot()), indexFile, args);
         if (err != null) {
             validateCategory(err);
             return;

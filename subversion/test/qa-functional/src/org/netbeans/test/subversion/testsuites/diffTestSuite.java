@@ -69,7 +69,7 @@ public class diffTestSuite extends JellyTestCase {
         if (svnExistsChecker.check(false)) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
                     .addTest(DiffTest.class, "testDiffFile")
-                    .addTest(ExportDiffPatchTest.class, "invokeExportDiffPatch")
+//                    .addTest(ExportDiffPatchTest.class, "invokeExportDiffPatch")
                     .enableModules(".*").clusters(".*"));
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());

@@ -118,8 +118,11 @@ public class VectorConfiguration {
     public String getOption(String prependOption) {
 	StringBuilder option = new StringBuilder();
 	String[] values = getValueAsArray();
-	for (int i = 0; i < values.length; i++)
-	    option.append(prependOption + IpeUtils.escapeOddCharacters(values[i]) + " "); // NOI18N
+	for (int i = 0; i < values.length; i++) {
+        if (values[i].length() > 0) { // See IZ 151364
+            option.append(prependOption + IpeUtils.escapeOddCharacters(values[i]) + " "); // NOI18N
+        }
+    }
 	return option.toString();
     }
     

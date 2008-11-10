@@ -86,6 +86,7 @@ import javax.swing.SwingUtilities;
  * @author Tomas Hurka
  * @author Jiri Sedlacek
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler.class)
 public class J2EEProfilerSPI implements org.netbeans.modules.j2ee.deployment.profiler.spi.Profiler, ProgressObject,
                                         ProfilingStateListener {
     //~ Inner Classes ------------------------------------------------------------------------------------------------------------

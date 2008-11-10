@@ -43,7 +43,7 @@
         <mapID target="org.netbeans.modules.vmd.flow.FlowEditorView" url="mvd/mvd_about.html"/>
         <mapID target="org.netbeans.modules.vmd.screen.ScreenEditorView" url="mvd/mvd_about.html"/> 
         <mapID target="org.netbeans.modules.vmd.game.GameEditorView" url="games/games_about.html"/>
-    ID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
+<mapID target="org.netbeans.modules.vmd.game.dialog.RenameTiledLayerDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.RenameSpriteDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.NewSimpleTiledLayerDialog" url="games/games_about.html"/>
 <mapID target="org.netbeans.modules.vmd.game.dialog.DuplicateTiledLayerDialog" url="games/games_about.html"/>

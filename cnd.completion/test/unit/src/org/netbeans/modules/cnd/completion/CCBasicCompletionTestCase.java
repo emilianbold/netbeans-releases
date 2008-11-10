@@ -171,6 +171,10 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     public void testProtectedMethodByClassPrefix() throws Exception {
         super.performTest("file.h", 23, 9, "B::");
     }
+
+    public void testGlobalMethodByScopePrefix() throws Exception {
+        super.performTest("file.cc", 9, 26);
+    }
     ////////////////////////////////////////////////////////////////////////////
     // tests for incomplete or incorrect constructions
 

@@ -116,10 +116,13 @@ public class LayerIndex extends Task {
                         }
                         String cnb = modname.replaceFirst("/\\d+$", "");
                         String layer = mf.getMainAttributes().getValue("OpenIDE-Module-Layer");
-                        if (layer == null) {
-                            continue;
+                        if (layer != null) {
+                            parse(jf.getInputStream(jf.getEntry(layer)), files, labels, positions, cnb, jf);
                         }
-                        parse(jf.getInputStream(jf.getEntry(layer)), files, labels, positions, cnb, jf);
+                        ZipEntry generatedLayer = jf.getEntry("META-INF/generated-layer.xml");
+                        if (generatedLayer != null) {
+                            parse(jf.getInputStream(generatedLayer), files, labels, positions, cnb, jf);
+                        }
                     } finally {
                         jf.close();
                     }

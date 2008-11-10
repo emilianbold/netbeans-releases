@@ -63,6 +63,7 @@ import javax.faces.validator.Validator;
  *
  * @author gjmurphy
  */
+@org.openide.util.lookup.ServiceProvider(service=com.sun.rave.propertyeditors.resolver.PropertyEditorResolver.class)
 public final class PropertyEditorResolverImpl implements PropertyEditorResolver {
 
     private static final ResourceBundle bundle = ResourceBundle.getBundle(PropertyEditorResolverImpl.class.getName());

@@ -78,7 +78,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
     private final Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
     private final Set<Object> expandedNodes = new WeakSet<Object>();
     private final Set<Object> collapsedNodes = new WeakSet<Object>();
-    private final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
@@ -87,7 +87,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
 
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
-                debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
+                debugger.getState() == GdbDebugger.State.STOPPED) {
             fireTreeChanged();
         }
     }
@@ -353,11 +353,11 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
             if (m == null) {
                 return;
             }
-            if (m.debugger.getState().equals(GdbDebugger.STATE_EXITED)) {
+            if (m.debugger.getState() == GdbDebugger.State.EXITED) {
                 destroy();
                 return;
             }
-            if (m.debugger.getState().equals(GdbDebugger.STATE_RUNNING)) {
+            if (m.debugger.getState() == GdbDebugger.State.RUNNING) {
                 return;
             }
             

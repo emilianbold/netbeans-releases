@@ -54,6 +54,7 @@ import org.openide.util.lookup.InstanceContent;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.MimeDataProvider.class)
 public final class MemoryMimeDataProvider implements MimeDataProvider {
     
     private static final HashMap<String, Lkp> CACHE = new HashMap<String, Lkp>();

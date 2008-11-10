@@ -53,6 +53,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.mimelookup.Class2LayerFolder.class)
 public final class GlyphGutterActionsProvider extends ActionsList implements Class2LayerFolder<GlyphGutterActionsProvider>, InstanceProvider<GlyphGutterActionsProvider> {
 
     public static final String GLYPH_GUTTER_ACTIONS_FOLDER_NAME = "GlyphGutterActions"; //NOI18N

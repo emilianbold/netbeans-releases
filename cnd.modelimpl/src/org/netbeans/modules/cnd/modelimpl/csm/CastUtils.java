@@ -142,7 +142,7 @@ public class CastUtils {
 			    break begin;
 		    }
 		}
-		return (String[]) l.toArray(new String[l.size()]);
+		return  l.toArray(new String[l.size()]);
 	    }
 	}
 	return null;

@@ -485,14 +485,17 @@ final class DataViewTableSorter extends AbstractTableModel {
             this.tableCellRenderer = tableCellRenderer;
         }
 
-        public Component getTableCellRendererComponent(JTable table,
-                Object value,
-                boolean isSelected,
-                boolean hasFocus,
-                int row,
-                int column) {
-            Component c = tableCellRenderer.getTableCellRendererComponent(table,
-                    value, isSelected, hasFocus, row, column);
+        public Component getTableCellRendererComponent(JTable table, Object value, 
+                boolean isSelected, boolean hasFocus, int row, int column) {
+            Component c = null;
+            try {
+                c = tableCellRenderer.getTableCellRendererComponent(table,
+                        value, isSelected, hasFocus, row, column);
+            } catch (Exception e) {
+                c = DataViewTableSorter.this.getTableHeader().getDefaultRenderer()
+                        .getTableCellRendererComponent(table, value, hasFocus, hasFocus, row, row);
+            }
+
             if (c instanceof JLabel) {
                 JLabel l = (JLabel) c;
                 int modelColumn = table.convertColumnIndexToModel(column);

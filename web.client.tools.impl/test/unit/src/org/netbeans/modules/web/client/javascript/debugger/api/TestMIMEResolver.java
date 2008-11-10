@@ -47,6 +47,7 @@ import org.openide.filesystems.MIMEResolver;
  *
  * @author quynguyen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class)
 public class TestMIMEResolver extends MIMEResolver {
     public TestMIMEResolver() {
         super();

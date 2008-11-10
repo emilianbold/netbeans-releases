@@ -90,12 +90,9 @@ public class CallStackActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_EXACTLY_ONE
     );
         
-    private GdbDebugger    debugger;
-    private ContextProvider  lookupProvider;
-
+    private final GdbDebugger debugger;
 
     public CallStackActionsProvider(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
     }
     

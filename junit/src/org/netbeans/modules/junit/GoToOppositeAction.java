@@ -77,6 +77,7 @@ import org.openide.util.RequestProcessor;
  * @author  Marian Petras
  */
 @SuppressWarnings("serial")
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.gototest.TestLocator.class)
 public final class GoToOppositeAction implements TestLocator {
     
     public GoToOppositeAction() {

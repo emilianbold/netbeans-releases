@@ -50,6 +50,7 @@ import java.util.Collection;
  * @author David Kaspar
  */
 // HINT - after making change, update MidpCodeSupport too
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.EnumDescriptorFactory.class)
 public final class MidpEnumDescriptor implements EnumDescriptorFactory {
 
     static final MidpEnumDescriptor.AlertTypePD alertTypePD = new MidpEnumDescriptor.AlertTypePD ();

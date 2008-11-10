@@ -96,7 +96,6 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
-import org.openide.util.Utilities;
 
 /**
  * HQL editor top component.
@@ -542,6 +541,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                             continue;
                         }
                         if (methodReturnValue instanceof java.util.Collection) {
+                            oneRow.add(methodReturnValue.toString());
                             continue;
                         }
                         oneRow.add(methodReturnValue.toString());
@@ -623,7 +623,13 @@ public final class HQLEditorTopComponent extends TopComponent {
         jScrollPane4 = new javax.swing.JScrollPane();
         errorTextArea = new javax.swing.JTextArea();
         jScrollPane3 = new javax.swing.JScrollPane();
-        resultsTable = new javax.swing.JTable();
+        resultsTable = new javax.swing.JTable() {
+            public java.awt.Dimension getPreferredScrollableViewportSize()
+            {
+                java.awt.Dimension size = super.getPreferredScrollableViewportSize();
+                return new java.awt.Dimension(Math.min(getPreferredSize().width, size.width), size.height);
+            }
+        };
         jScrollPane2 = new javax.swing.JScrollPane();
         sqlEditorPane = new javax.swing.JTextPane();
 
@@ -692,7 +698,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel1.setLayout(spacerPanel1Layout);
         spacerPanel1Layout.setHorizontalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 202, Short.MAX_VALUE)
+            .add(0, 239, Short.MAX_VALUE)
         );
         spacerPanel1Layout.setVerticalGroup(
             spacerPanel1Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -705,7 +711,7 @@ public final class HQLEditorTopComponent extends TopComponent {
         spacerPanel2.setLayout(spacerPanel2Layout);
         spacerPanel2Layout.setHorizontalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 98, Short.MAX_VALUE)
+            .add(0, 136, Short.MAX_VALUE)
         );
         spacerPanel2Layout.setVerticalGroup(
             spacerPanel2Layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -787,6 +793,7 @@ public final class HQLEditorTopComponent extends TopComponent {
 
             }
         ));
+        resultsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
         jScrollPane3.setViewportView(resultsTable);
 
         resultsOrErrorPanel.add(jScrollPane3, "card3");
@@ -812,7 +819,7 @@ public final class HQLEditorTopComponent extends TopComponent {
             .add(containerPanelLayout.createSequentialGroup()
                 .add(toolBar2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 284, Short.MAX_VALUE))
+                .add(executionPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 286, Short.MAX_VALUE))
         );
 
         splitPane.setRightComponent(containerPanel);

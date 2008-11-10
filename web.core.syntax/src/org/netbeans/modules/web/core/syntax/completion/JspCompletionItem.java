@@ -703,6 +703,7 @@ public class JspCompletionItem implements CompletionItem {
             return super.getHelp();
         }
 
+        @Override
         public URL getHelpURL() {
             URL url = super.getHelpURL();
             if (url != null) {

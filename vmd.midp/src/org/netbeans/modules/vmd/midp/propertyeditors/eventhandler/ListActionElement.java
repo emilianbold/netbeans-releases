@@ -124,6 +124,7 @@ public class ListActionElement implements PropertyEditorEventHandlerElement, Cle
         return Collections.singleton(ListEventHandlerCD.TYPEID);
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.midp.propertyeditors.element.PropertyEditorElementFactory.class)
     public static class ListActionElementFactory implements PropertyEditorElementFactory {
         public PropertyEditorEventHandlerElement createElement() {
             return new ListActionElement();

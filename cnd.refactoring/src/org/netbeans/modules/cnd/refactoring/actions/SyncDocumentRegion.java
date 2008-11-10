@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.refactoring.actions;
 
 import java.util.ArrayList;
@@ -60,15 +59,12 @@ import org.openide.ErrorManager;
  * @author Miloslav Metelka
  */
 public final class SyncDocumentRegion {
-    
+
     private Document doc;
-    
     private List<? extends MutablePositionRegion> regions;
-    
     private List<? extends MutablePositionRegion> sortedRegions;
-    
     private boolean regionsSortPerformed;
-    
+
     /**
      * Construct synchronized document regions.
      *
@@ -89,11 +85,11 @@ public final class SyncDocumentRegion {
             Collections.sort(sortedRegions, PositionRegion.getComparator());
         }
     }
-    
+
     public int getRegionCount() {
         return regions.size();
     }
-    
+
     public MutablePositionRegion getRegion(int regionIndex) {
         return regions.get(regionIndex);
     }
@@ -101,15 +97,15 @@ public final class SyncDocumentRegion {
     public int getFirstRegionStartOffset() {
         return getRegion(0).getStartOffset();
     }
-    
+
     public int getFirstRegionEndOffset() {
         return getRegion(0).getEndOffset();
     }
-    
+
     public int getFirstRegionLength() {
         return getFirstRegionEndOffset() - getFirstRegionStartOffset();
     }
-    
+
     /**
      * Get region in a sorted list of the regions.
      *
@@ -117,7 +113,7 @@ public final class SyncDocumentRegion {
      * @return region in a sorted list of the regions.
      */
     public MutablePositionRegion getSortedRegion(int regionIndex) {
-         return sortedRegions.get(regionIndex);
+        return sortedRegions.get(regionIndex);
     }
 
     /**
@@ -135,13 +131,13 @@ public final class SyncDocumentRegion {
                 Position newStartPos = doc.createPosition(
                         firstRegion.getStartOffset() - moveStartDownLength);
                 firstRegion.setStartPosition(newStartPos);
-                
+
             } catch (BadLocationException e) {
                 ErrorManager.getDefault().notify(e);
             }
-            
+
         }
-        
+
         String firstRegionText = getFirstRegionText();
         if (firstRegionText != null) {
             int regionCount = getRegionCount();
@@ -167,7 +163,7 @@ public final class SyncDocumentRegion {
     private String getFirstRegionText() {
         return getRegionText(0);
     }
-    
+
     private String getRegionText(int regionIndex) {
         try {
             MutablePositionRegion region = getRegion(regionIndex);
@@ -179,5 +175,4 @@ public final class SyncDocumentRegion {
             return null;
         }
     }
-    
 }

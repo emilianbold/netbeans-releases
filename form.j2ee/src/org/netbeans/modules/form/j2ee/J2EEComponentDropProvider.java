@@ -55,6 +55,7 @@ import org.netbeans.modules.form.NewComponentDropProvider;
  *
  * @author Jan Stola
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.form.NewComponentDropProvider.class)
 public class J2EEComponentDropProvider implements NewComponentDropProvider {
     
     /**

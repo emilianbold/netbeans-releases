@@ -29,6 +29,7 @@ import org.netbeans.modules.xslt.model.spi.XslModelFactory;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xslt.model.spi.XslModelFactory.class)
 public class XslModelFactoryImpl extends AbstractModelFactory<XslModel> 
     implements XslModelFactory
 {

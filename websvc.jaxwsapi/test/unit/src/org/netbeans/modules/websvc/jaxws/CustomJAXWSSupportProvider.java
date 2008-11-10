@@ -59,6 +59,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Lukas Jungmann
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider.class)
 public class CustomJAXWSSupportProvider implements JAXWSSupportProvider {
     
    private Map<FileObject, JAXWSSupport> cache = new HashMap<FileObject, JAXWSSupport>();

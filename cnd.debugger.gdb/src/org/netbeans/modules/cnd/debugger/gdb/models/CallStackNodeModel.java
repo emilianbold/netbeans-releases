@@ -195,7 +195,7 @@ public class CallStackNodeModel implements NodeModel {
                         new Object[] { csfName, fileName, String.valueOf(ln) });
             }
 	}
-        return csfName.toString();
+        return csfName;
     }
             
     

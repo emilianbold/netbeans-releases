@@ -57,6 +57,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.InvokeOperationActionProvider.class)
 public class JaxRpcInvokeOperationProvider implements InvokeOperationActionProvider {
     
     

@@ -45,6 +45,7 @@ import org.netbeans.modules.vmd.api.io.DataEditorView;
 import org.netbeans.modules.vmd.api.io.DataEditorViewFactory;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.io.DataEditorViewFactory.class)
 public class GameEditorViewFactory implements DataEditorViewFactory {
 	
 	public DataEditorView createEditorView(DataObjectContext context) {

@@ -46,7 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.clientproject.test.TestUtil;
-import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
+import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.client.AppClientMetadata;
 import org.netbeans.modules.j2ee.dd.api.webservices.WebservicesMetadata;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
@@ -124,11 +124,11 @@ public class AppClientProviderTest extends NbTestCase {
     
     public void testNeedConfigurationFolder() {
         assertTrue("1.3 needs configuration folder",
-                AppClientProvider.needConfigurationFolder(ProjectProperties.J2EE_1_3));
+                AppClientProvider.needConfigurationFolder(J2EEProjectProperties.J2EE_1_3));
         assertTrue("1.4 needs configuration folder",
-                AppClientProvider.needConfigurationFolder(ProjectProperties.J2EE_1_4));
+                AppClientProvider.needConfigurationFolder(J2EEProjectProperties.J2EE_1_4));
         assertFalse("5.0 does not need configuration folder",
-                AppClientProvider.needConfigurationFolder(ProjectProperties.JAVA_EE_5));
+                AppClientProvider.needConfigurationFolder(J2EEProjectProperties.JAVA_EE_5));
         assertFalse("Anything else does not need configuration folder",
                 AppClientProvider.needConfigurationFolder("5.0"));
         assertFalse("Anything else does not need configuration folder",

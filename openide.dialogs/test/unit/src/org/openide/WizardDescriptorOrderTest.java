@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -41,10 +41,6 @@
 package org.openide;
 
 
-import org.netbeans.junit.*;
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
 
 import java.awt.Component;
@@ -86,6 +82,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
     boolean checkStoreOldeBeforeReadNew;
     boolean checkPCH2FinishOption;
 
+    @Override
     protected final void setUp () {
         panels = new TestPanel[] {new TestPanel (0), new TestPanel (1)};
         readSettingsCalls = new int[] {0, 0};
@@ -98,6 +95,11 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         checkStoreBeforeNext = false;
         checkStoreOldeBeforeReadNew = false;
         checkPCH2FinishOption = false;
+    }
+
+    @Override
+    protected final boolean runInEQ () {
+        return true;
     }
     
     public void testReadSettingsOnFirstPanel () throws Exception {
@@ -140,7 +142,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         
     }
     
-    private final class TestPanel implements WizardDescriptor.Panel {
+    private final class TestPanel implements WizardDescriptor.Panel<WizardDescriptor> {
         
         private final int x;
         
@@ -148,7 +150,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
             this.x = x;
         }
         
-        public void readSettings(Object settings) {
+        public void readSettings(WizardDescriptor settings) {
             readSettingsCalls[x]++;
             log ("readSettings of panel: " + x + " [time: " + System.currentTimeMillis () +
                     "] with PROP_VALUE: " + handleValue (wd.getValue ()));
@@ -156,7 +158,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         
         public void addChangeListener(ChangeListener l) {}
         
-        public void storeSettings(Object settings) {
+        public void storeSettings(WizardDescriptor settings) {
             if (checkStoreOldeBeforeReadNew && (x > 0)) {
                 assertTrue ("WD.P.storeSettings on the previous panel has been called before WD.P.readSettings on next panel.", readSettingsCalls[x - 1] > 0);
             }
@@ -179,7 +181,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         }
     }
     
-    private final class TestIterator implements WizardDescriptor.Iterator {
+    private final class TestIterator implements WizardDescriptor.Iterator<WizardDescriptor> {
         private final TestPanel panel1, panel2;
         private int which = 0;
         public TestIterator(TestPanel panel1, TestPanel panel2) {
@@ -189,7 +191,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
         public boolean hasNext () {
             return which == 0;
         }
-        public WizardDescriptor.Panel current() {
+        public WizardDescriptor.Panel<WizardDescriptor> current() {
             log ("current: " + name());
             TestPanel currentPanel = which == 0 ? panel1 : panel2;
             return currentPanel;
@@ -205,7 +207,7 @@ public class WizardDescriptorOrderTest extends NbTestCase {
             return which > 0;
         }
         public void previousPanel() {
-            which --;;
+            which --;
         }
         public String name() {
             return which == 0 ? "First Panel" : "Second Panel";

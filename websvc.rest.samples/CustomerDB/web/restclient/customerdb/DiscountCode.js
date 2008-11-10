@@ -43,6 +43,8 @@
 * Support js for DiscountCode
 */
 
+var useWrapDiscountCodes = true;
+
 function DiscountCode(uri_) {
     this.DiscountCode(uri_, false);
 }
@@ -98,6 +100,10 @@ DiscountCode.prototype = {
       if(c != -1) {
          var myObj = eval('(' +c+')');
          var discountCode = myObj.discountCode;
+         if(discountCode == null || discountCode == undefined || discountCode['@uri'] == undefined) {
+            discountCode = myObj;
+            useWrapDiscountCode = false;
+         }
          this.uri = discountCode['@uri'];
          this.discountCode = this.findValue(this.discountCode, discountCode['discountCode']);
          this.rate = this.findValue(this.rate, discountCode['rate']);
@@ -116,7 +122,10 @@ DiscountCode.prototype = {
 
    flush : function() {
       var remote = new DiscountCodeRemote(this.uri);
-      return remote.putJson_('{'+this.toString()+'}');
+      if(useWrapDiscountCode)
+         return remote.putJson_('{'+this.toString()+'}');
+      else
+         return remote.putJson_(this.toString());
    },
 
    delete_ : function() {
@@ -128,16 +137,16 @@ DiscountCode.prototype = {
       if(!this.initialized)
          this.init();
       var myObj = 
-         '"discountCode":'+
          '{'+
          '"@uri":"'+this.uri+'"'+
                   ', "discountCode":"'+this.discountCode+'"'+
          ', "rate":"'+this.rate+'"'+
-         ', "customers":{"@uri":"'+this.customers.getUri()+'"}'+
-         ', "customers":{"@uri":"'+this.customers.getUri()+'"}'+
-         ', "customers":{"@uri":"'+this.customers.getUri()+'"}'+
+         ', "customerCollection":{"@uri":"'+this.customers.getUri()+'"}'+
 
          '}';
+      if(useWrapDiscountCode) {
+          myObj = '"discountCode":'+myObj;
+      }
       return myObj;
    },
 

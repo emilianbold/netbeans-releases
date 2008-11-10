@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.*;
 import org.openide.nodes.Node;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.core.InvokeOperationActionProvider.class)
 public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvider {
 	public InvokeOperationCookie getInvokeOperationCookie(FileObject targetSource,Node node) {
         Project project = FileOwnerQuery.getOwner(targetSource);

@@ -59,21 +59,21 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Pavel Benes, suchys
+ * @author Pavel Benes, suchys, akorostelev
  */
-public class SaveAnimationAsImageAction extends CookieAction {
+public class SaveAnimationAsImageAction extends AbstractSaveAction {
     
     /** Creates a new instance of SaveAnimationAsImage */
     public SaveAnimationAsImageAction() {
     }
 
+    @Override
     protected void initialize() {
         super.initialize();
         // see org.openide.util.actions.SystemAction.iconResource() javadoc for more details
@@ -85,6 +85,7 @@ public class SaveAnimationAsImageAction extends CookieAction {
         dlg.setSize( dlg.getPreferredSize());
         
         dlg.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 int w = dlg.getWidth();
                 int h = dlg.getHeight();
@@ -103,6 +104,8 @@ public class SaveAnimationAsImageAction extends CookieAction {
     protected void performAction(Node[] n) {
         SVGDataObject doj = (SVGDataObject) n[0].getLookup().lookup(SVGDataObject.class);
         if (doj != null){   
+            int state = getAnimatorState(doj);
+            float time = stopAnimator(doj);
             try {
                 SVGAnimationRasterizerPanel panel = new SVGAnimationRasterizerPanel(doj);
                 DialogDescriptor            dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_AnimationExport"));
@@ -125,9 +128,10 @@ public class SaveAnimationAsImageAction extends CookieAction {
             } catch( Exception e) {
                 SceneManager.error("Animation export failed", e);
             }
+            resumeAnimatorState(doj, state, time);
         }
     }
-
+    
     public String getName() {
         return NbBundle.getMessage(SaveAnimationAsImageAction.class, "LBL_ExportAnimationAction"); //NOI18N
     }
@@ -146,7 +150,9 @@ public class SaveAnimationAsImageAction extends CookieAction {
         };
     }
 
+    @Override
     protected boolean asynchronous() {
         return false;
     }
+
 }

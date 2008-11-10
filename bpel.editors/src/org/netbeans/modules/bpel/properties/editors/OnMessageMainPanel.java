@@ -91,7 +91,7 @@ public class OnMessageMainPanel extends EditorLifeCycleAdapter {
         return true;
     }
     
-    public boolean applyNewValues() {
+    public boolean applyNewValues() throws Exception {
         mcc.applyNewValues();
         mec.applyNewValues();
         return true;

@@ -67,14 +67,21 @@ public class commitTestSuite extends JellyTestCase {
      * tests-qa-functional
      */
     public static Test suite() {
-        if (svnExistsChecker.check(false)) {
+        if (System.getProperty("os.name").toLowerCase().contains("windows")) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-                    .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
-                    .addTest(CommitUiTest.class, "testInvokeCloseCommit")
-                    .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
-                    .enableModules(".*").clusters(".*"));
+                        .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
+                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                        .enableModules(".*").clusters(".*"));
         } else {
-            return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+            if (svnExistsChecker.check(false)) {
+                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                        .addTest(CommitDataTest.class, "testCommitFile", "testCommitPackage", "testRecognizeMimeType")
+                        .addTest(CommitUiTest.class, "testInvokeCloseCommit")
+                        .addTest(IgnoreTest.class, "testIgnoreUnignoreFile", "testIgnoreUnignorePackage", "testIgnoreUnignoreFilePackage", "testFinalRemove")
+                        .enableModules(".*").clusters(".*"));
+            } else {
+                return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+            }
         }
     }
 }

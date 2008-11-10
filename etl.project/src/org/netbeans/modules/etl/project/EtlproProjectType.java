@@ -23,6 +23,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.project.support.ant.AntBasedProjectType.class)
 public class EtlproProjectType implements AntBasedProjectType {
     public static final String TYPE = "org.netbeans.modules.etl.project";
     public static final String PROJECT_CONFIGURATION_NAME = "data";

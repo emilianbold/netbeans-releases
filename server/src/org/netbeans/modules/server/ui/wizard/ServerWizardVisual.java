@@ -300,9 +300,14 @@ public class ServerWizardVisual extends javax.swing.JPanel {
 
 private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_serverListBoxValueChanged
        if (!evt.getValueIsAdjusting()) {
-           ServerWizardProvider server = ((WizardAdapter) serverListBox.getSelectedValue()).getServerInstanceWizard();
-           if (server != null) {
-               fillDisplayName(server);
+           WizardAdapter adapter = (WizardAdapter) serverListBox.getSelectedValue();
+           if (adapter != null) {
+               ServerWizardProvider server = adapter.getServerInstanceWizard();
+               if (server != null) {
+                   fillDisplayName(server);
+               }
+           } else {
+               fireChange();
            }
        }
 }//GEN-LAST:event_serverListBoxValueChanged

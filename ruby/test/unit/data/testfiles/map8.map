@@ -1,0 +1,12 @@
+
+attrs=|NODOC|
+class=dig
+class-ig=dig
+filename=ruby:lib/ruby/1.8/set.rb
+fqn=dig
+includes=TSort
+require=set
+requires=rbtree,tsort
+method=tsort_each_child(node,&block);|STATIC|NODOC|BLOCK|
+
+

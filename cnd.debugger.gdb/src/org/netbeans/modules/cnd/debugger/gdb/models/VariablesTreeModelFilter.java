@@ -185,10 +185,11 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
                                                            ModelEvent.NodeChanged.CHILDREN_MASK));
             }
         });
-        if (vf == null) 
+        if (vf == null) {
             ch = original.getChildren (parent, from, to);
-        else
+        } else {
             ch = vf.getChildren (original, (Variable) parent, from, to);
+        }
         return ch;
     }
     
@@ -372,10 +373,11 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object node
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (node, true, null);
-        if (vf == null) 
+        if (vf == null) {
             original.performDefaultAction (node);
-        else
+        } else {
             vf.performDefaultAction (original, (Variable) node);
+        }
     }
     
     
@@ -414,10 +416,11 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
         Object value
     ) throws UnknownTypeException {
         VariablesFilter vf = getFilter (row, false, null);
-        if (vf == null)
+        if (vf == null) {
             original.setValueAt (row, columnID, value);
-        else
+        } else {
             vf.setValueAt (original, (Variable) row, columnID, value);
+        }
     }
     
     
@@ -444,16 +447,18 @@ public class VariablesTreeModelFilter implements TreeModelFilter,
                 VariablesFilter f = (VariablesFilter) l.get (i);
                 String[] types = f.getSupportedAncestors ();
                 int j, jj = types.length;
-                for (j = 0; j < jj; j++)
+                for (j = 0; j < jj; j++) {
                     ancestorToFilter.put (types [j], f);
+                }
                 types = f.getSupportedTypes ();
                 jj = types.length;
-                for (j = 0; j < jj; j++)
+                for (j = 0; j < jj; j++) {
                     typeToFilter.put (types [j], f);
+                }
             }
         }
         
-        if (typeToFilter.size() == 0) return null; // Optimization for corner case
+        if (typeToFilter.isEmpty()) return null; // Optimization for corner case
         
         if (!(o instanceof Variable)) return null;
         

@@ -173,7 +173,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
         protected void addNotify() {
             super.addNotify();
             project.getHelper().addAntProjectListener(this);
-            refreshKeys(false);
+            refreshKeys();
         }
         
         protected void removeNotify() {
@@ -182,7 +182,7 @@ final class UnitTestLibrariesNode extends AbstractNode {
             super.removeNotify();
         }
         
-        private void refreshKeys(final boolean asynch) {
+        private void refreshKeys() {
             try {
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Object>() {
                     public Object run() throws Exception {
@@ -200,16 +200,11 @@ final class UnitTestLibrariesNode extends AbstractNode {
                             }
                             keys.addAll(deps);
                         }
-                        Runnable r = new Runnable() {
+                        ImportantFilesNodeFactory.getNodesSyncRP().post(new Runnable() {
                             public void run() {
                                 setKeys(Collections.unmodifiableList(keys));
                             }
-                        };
-                        if (asynch) {
-                            EventQueue.invokeLater(r);
-                        } else {
-                            r.run();
-                        }
+                        });
                         return null;
                     }
                 });
@@ -244,8 +239,8 @@ final class UnitTestLibrariesNode extends AbstractNode {
         public void configurationXmlChanged(AntProjectEvent ev) {
             // XXX this is a little strange but happens during project move. Bad ordering.
             // Probably bug in moving implementation (our or in general Project API).
+                refreshKeys();
             if (! project.isRunInAtomicAction() && project.getHelper().resolveFileObject(AntProjectHelper.PROJECT_XML_PATH) != null) {
-                refreshKeys(true);
             }
         }
         

@@ -217,8 +217,9 @@ public class HibernateConfigurationWizard implements WizardDescriptor.Instantiat
         this.wizard = wizard;
         project =
                 Templates.getProject(wizard);
+        String wizardTitle = NbBundle.getMessage(HibernateConfigurationWizard.class, "LBL_ConfWizardTitle"); // NOI18N   
         descriptor =
-                new HibernateConfigurationWizardDescriptor(project);
+                new HibernateConfigurationWizardDescriptor(project, wizardTitle);
         if (Templates.getTargetFolder(wizard) == null) {
             HibernateFileLocationProvider provider = project != null ? project.getLookup().lookup(HibernateFileLocationProvider.class) : null;
             FileObject location = provider != null ? provider.getSourceLocation() : null;

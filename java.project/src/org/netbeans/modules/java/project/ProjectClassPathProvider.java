@@ -51,6 +51,7 @@ import org.openide.filesystems.FileObject;
  * Supplies classpath information according to project file owner.
  * @author Jesse Glick
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.classpath.ClassPathProvider.class, position=100)
 public class ProjectClassPathProvider implements ClassPathProvider {
 
     /** Default constructor for lookup. */

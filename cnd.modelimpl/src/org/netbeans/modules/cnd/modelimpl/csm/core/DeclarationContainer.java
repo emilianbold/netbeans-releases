@@ -417,7 +417,7 @@ public class DeclarationContainer extends ProjectComponent implements Persistent
         if (decl1 != null && decl2 != null){
             CsmFile file1 = decl1.getContainingFile();
             CsmFile file2 = decl2.getContainingFile();
-            if (file1 != null && file1 != null) {
+            if (file1 != null && file2 != null) {
                 return file1.equals(file2);
             }
         }

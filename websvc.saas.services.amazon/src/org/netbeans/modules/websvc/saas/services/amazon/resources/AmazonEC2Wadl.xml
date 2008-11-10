@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
+ 
+ Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ 
+ The contents of this file are subject to the terms of either the GNU
+ General Public License Version 2 only ("GPL") or the Common
+ Development and Distribution License("CDDL") (collectively, the
+ "License"). You may not use this file except in compliance with the
+ License. You can obtain a copy of the License at
+ http://www.netbeans.org/cddl-gplv2.html
+ or nbbuild/licenses/CDDL-GPL-2-CP. See the License for the
+ specific language governing permissions and limitations under the
+ License.  When distributing the software, include this License Header
+ Notice in each file and include the License file at
+ nbbuild/licenses/CDDL-GPL-2-CP.  Sun designates this
+ particular file as subject to the "Classpath" exception as provided
+ by Sun in the GPL Version 2 section of the License file that
+ accompanied this code. If applicable, add the following below the
+ License Header, with the fields enclosed by brackets [] replaced by
+ your own identifying information:
+ "Portions Copyrighted [year] [name of copyright owner]"
+ 
+ Contributor(s):
+ 
+ The Original Software is NetBeans. The Initial Developer of the Original
+ Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ Microsystems, Inc. All Rights Reserved.
+ 
+ If you wish your version of this file to be governed by only the CDDL
+ or only the GPL Version 2, indicate your decision by adding
+ "[Contributor] elects to include this software in this distribution
+ under the [CDDL or GPL Version 2] license." If you do not indicate a
+ single choice of license, a recipient has the option to distribute
+ your version of this file under either the CDDL, the GPL Version 2 or
+ to extend the choice of license to its licensees as provided above.
+ However, if you add GPL Version 2 code and therefore, elected the GPL
+ Version 2 license, then the option applies only if the new code is
+ made subject to such option by the copyright holder.
+-->
+<application xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	     xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	     xsi:schemaLocation="http://research.sun.com/wadl/2006/10 
+                    https://wadl.dev.java.net/wadl20061109.xsd"
+	     xmlns="http://research.sun.com/wadl/2006/10"
+             xmlns:ec2="urn:amazonec2:amazonec2">
+    <grammars>
+        <include href="AmazonEC2.xsd"/>
+    </grammars>
+    <resources base="http://ec2.amazonaws.com">
+        <resource path="/">
+            <param fixed="2007-01-19" name="Version" required="true" style="query" type="xsd:string"/>
+            <param name="AWSAccessKeyId" required="true" style="query" type="xsd:string"/>
+            <param fixed="" name="Expires" required="true" style="query" type="xsd:string"/>
+            <param name="Signature" required="true" style="query" type="xsd:string"/>
+            <param fixed="1" name="SignatureVersion" required="true" style="query" type="xsd:string"/>
+            <method id="describeImages" name="GET">
+                <request>
+                    <param fixed="DescribeImages" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="ImageType" required="false" style="query" type="xsd:string"/>
+                    <param name="ImageId.1" required="false" style="query" type="xsd:string"/>
+                    <param name="ImageId.2" required="false" style="query" type="xsd:string"/>
+                    <param name="Owner.1" required="false" style="query" type="xsd:string"/>
+                    <param name="Owner.2" required="false" style="query" type="xsd:string"/>
+                    <param name="ExecutableBy.1" required="false" style="query" type="xsd:string"/>
+                    <param name="ExecutableBy.2" required="false" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:DescribeImagesResponse"/>
+                </response>
+            </method>
+            <method id="describeInstances" name="GET">
+                <request>
+                    <param fixed="DescribeInstances" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="InstanceId.1" required="true" style="query" type="xsd:string"/>
+                    <param name="InstanceId.2" required="false" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:DescribeInstancesResponse"/>
+                </response>
+            </method>
+            <method id="runInstances" name="GET">
+                <request>
+                    <param fixed="RunInstances" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="ImageId" required="true" style="query" type="xsd:string"/>
+                    <param name="MinCount" required="true" style="query" type="xsd:string"/>
+                    <param name="MaxCount" required="true" style="query" type="xsd:string"/>
+                    <param name="KeyName" required="false" style="query" type="xsd:string"/>
+                    <param name="SecurityGroup.1" required="false" style="query" type="xsd:string"/>
+                    <param name="SecurityGroup.2" required="false" style="query" type="xsd:string"/>
+                    <param name="UserData" required="false" style="query" type="xsd:string"/>
+                    <param name="InstanceType" required="false" style="query" type="xsd:string"/>
+                    <param name="Placement.AvailabilityZone" required="false" style="query" type="xsd:string"/>
+                    <param name="KernelId" required="false" style="query" type="xsd:string"/>
+                    <param name="RamdiskId" required="false" style="query" type="xsd:string"/>
+                    <param name="BlockDeviceMapping.1.VirtualName" required="false" style="query" type="xsd:string"/>
+                    <param name="BlockDeviceMapping.2.VirtualName" required="false" style="query" type="xsd:string"/>
+                    <param name="BlockDeviceMapping.1.DeviceName" required="false" style="query" type="xsd:string"/>
+                    <param name="BlockDeviceMapping.2.DeviceName" required="false" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:RunInstancesResponse"/>
+                </response>
+            </method>
+            <method id="terminateInstances" name="GET">
+                <request>
+                    <param fixed="TerminateInstances" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="InstanceId.1" required="true" style="query" type="xsd:string"/>
+                    <param name="InstanceId.2" required="false" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:TerminateInstancesResponse"/>
+                </response>
+            </method>
+            <method id="describeKeyPairs" name="GET">
+                <request>
+                    <param fixed="DescribeKeyPairs" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="KeyName.1" required="false" style="query" type="xsd:string"/>
+                    <param name="KeyName.2" required="false" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:DescribeKeyPairsResponse"/>
+                </response>
+            </method>
+            <method id="createKeyPair" name="GET">
+                <request>
+                    <param fixed="CreateKeyPair" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="KeyName" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:CreateKeyPairResponse"/>
+                </response>
+            </method>
+            <method id="deleteKeyPair" name="GET">
+                <request>
+                    <param fixed="DeleteKeyPair" name="Action" required="true" style="query" type="xsd:string"/>
+                    <param name="KeyName" required="true" style="query" type="xsd:string"/>
+                </request>
+                <response>
+                    <representation mediaType="text/xml" element="ec2:DeleteKeyPairResponse"/>
+                </response>
+            </method>
+        </resource>
+    </resources>
+</application>

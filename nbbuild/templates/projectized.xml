@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
     <import file="common.xml"/>
 
     <target name="common-init" depends="default.init"/>
-    <target name="init" depends="basic-init,files-init,build-init,-init-proxy"/>
+    <target name="init" depends="basic-init,files-init,build-init,-javac-init,-init-proxy"/>
     
     <condition property="proxy.host+port">
         <and>
@@ -145,10 +145,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
                 <equals arg1="${cluster.dir}" arg2="${cluster.dir.fallback}"/>
             </not>
         </condition>
-        <path id="cp">
-            <pathelement path="${module.classpath}"/>
-            <pathelement path="${cp.extra}"/>
-        </path>
         <property name="build.javahelp.dir" location="build/javahelp"/>
         <property name="javahelp.base" value="${code.name.base.slashes}/docs"/>
         <property name="javahelp.search" value="JavaHelpSearch"/>
@@ -161,6 +157,12 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="locjhindexer.locales" value="${locales}"/>
         <property name="locmakenbm.locales" value="${locales}"/>
         <property name="locmakenbm.brands" value="${brandings}"/>
+        <path id="javacimpl">
+            <fileset dir="${nb_all}/apisupport.harness/external">
+                <include name="*javac*.jar"/>
+            </fileset>
+        </path>
+        <taskdef name="custom-javac" classname="org.netbeans.nbbuild.CustomJavac" classpath="${nb_all}/nbbuild/nbantext.jar"/>
     </target>
 
     <!-- See: http://wiki.netbeans.org/wiki/view/DevFaqExternalLibrariesUpdated -->
@@ -458,7 +460,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <isset property="nbjdk.bootclasspath"/>
         </condition>
         <property name="bootclasspath.opt" value=""/>
-        <property name="cp.extra" value=""/>
         <property name="ecj.warn.opts" value="-warn:+uselessTypeCheck"/>
         <exec executable="sh">
             <arg value="-c"/>
@@ -580,7 +581,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
             <isset property="spec.version.base"/>
         </condition>
 
-        <property name="cp.extra" value=""/>
         <path id="sigtest.class.path.ref">
             <path path="${module.run.classpath}"/>
             <path path="${cp.extra}"/>
@@ -650,7 +650,6 @@ If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=
         <property name="report.file" location="${report.dir}/${code.name.base.dashes}.xml"/>
         <taskdef name="findbugs" classname="edu.umd.cs.findbugs.anttask.FindBugsTask" classpath="${findbugs.home}/lib/findbugs-ant.jar"/>
 
-        <property name="cp.extra" value=""/>
         <path id="findbugs.class.path.ref">
             <path path="${module.run.classpath}"/>
             <path path="${cp.extra}"/>

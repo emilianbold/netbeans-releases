@@ -83,6 +83,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tor Norbye
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.gototest.TestLocator.class)
 public class GotoTest implements TestLocator {
     
     private static final String FILE = "(.+)"; // NOI18N

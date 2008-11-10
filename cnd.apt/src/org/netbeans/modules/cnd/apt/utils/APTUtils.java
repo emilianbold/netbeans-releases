@@ -83,7 +83,7 @@ public class APTUtils {
         } else {
             try {
                 LOG.setLevel(Level.parse(level));
-            } catch (Exception e) {
+            } catch (IllegalArgumentException e) {
                 // skip
             }
         }
@@ -229,6 +229,18 @@ public class APTUtils {
     
     public static boolean isID(Token token) {
         return token != null && token.getType() == APTTokenTypes.ID;
+    }
+
+    public static boolean isInt(Token token) {
+        if (token != null) {
+            switch (token.getType()) {
+                case APTTokenTypes.DECIMALINT:
+                case APTTokenTypes.HEXADECIMALINT:
+                case APTTokenTypes.OCTALINT:
+                    return true;
+            }
+        }
+        return false;
     }
     
     public static boolean isEOF(Token token) {
@@ -415,7 +427,7 @@ public class APTUtils {
     }
     
     public static APTToken createAPTToken(Token token, int ttype) {
-        APTToken newToken = null;
+        APTToken newToken;
         if (APTTraceFlags.USE_APT_TEST_TOKEN) {
             newToken = new APTTestToken(token, ttype);
         } else {
@@ -429,7 +441,7 @@ public class APTUtils {
     }
     
     public static APTToken createAPTToken() {
-        APTToken newToken = null;
+        APTToken newToken;
         if (APTTraceFlags.USE_APT_TEST_TOKEN) {
             newToken = new APTTestToken();
         } else {

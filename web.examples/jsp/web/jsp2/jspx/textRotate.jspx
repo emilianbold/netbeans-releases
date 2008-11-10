@@ -28,8 +28,7 @@
       <c:forEach var="i" begin="1" end="24">
         <jsp:text><![CDATA[</g>]]></jsp:text>
       </c:forEach>
-      <text style="font-size:75;font-family:Serif;fill:white" 
-            text-anchor="middle">${name}</text>
+      <text style="font-size:75%;font-family:Serif;" text-anchor="middle">${name}</text>
     </g>
   </g>
 </svg>

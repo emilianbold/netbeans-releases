@@ -49,6 +49,7 @@ import org.openide.awt.StatusLineElementProvider;
  * component into the status bar.
  * @author  Milos Kleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=-13)
 public final class ProgressVisualizerProvider implements StatusLineElementProvider {
 
     public Component getStatusLineElement () {

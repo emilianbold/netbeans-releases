@@ -47,7 +47,6 @@ import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.modules.project.ui.test.ProjectSupport;
 
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -148,7 +147,6 @@ public class CreateNBProject extends PerformanceTestCase {
 */
     @Override
     public void close(){
-        ProjectSupport.closeProject(project_name);
     }
     
     /** Test could be executed internaly in IDE without XTest

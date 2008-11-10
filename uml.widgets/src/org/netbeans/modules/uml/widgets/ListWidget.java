@@ -66,24 +66,20 @@ public class ListWidget extends Widget
         label.setForeground((Color)null);
         label.setAlignment(LabelWidget.Alignment.CENTER);
         addChild(label);
-//        float fontSize = getFont().getSize() - 2;
-//        label.setFont(getFont().deriveFont(Font.ITALIC, fontSize));
+        //float fontSize = getFont().getSize() - 2;
+        //label.setFont(getFont().deriveFont(Font.ITALIC, fontSize));
         
         setBorder(BorderFactory.createEmptyBorder(4));
     }
 
-    protected void paintWidget () 
+    @Override
+    protected void notifyAdded()
     {
-        label.setFont(getFont().deriveFont(Font.ITALIC, getFont().getSize() - 2));
+        super.notifyAdded();
+        
+        float fontSize = getFont().getSize() - 2;
+        label.setFont(getFont().deriveFont(Font.ITALIC, fontSize));
     }
-//    @Override
-//    protected void notifyAdded()
-//    {
-//        super.notifyAdded();
-//        
-//        float fontSize = getFont().getSize() - 2;
-//        label.setFont(getFont().deriveFont(Font.ITALIC, fontSize));
-//    }
     
     public void setLabel(String label)
     {

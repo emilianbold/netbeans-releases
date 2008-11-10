@@ -557,9 +557,9 @@ public class J2SEActionProviderTest extends NbTestCase {
         boolean enabled;
 
         //First test actions when COS disabled
-        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.put(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE, cos ? "false":"true");
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);       
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        ep.put(J2SEProjectProperties.COMPILE_ON_SAVE, cos ? "true" : "false");
+        helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
 
         context = Lookups.fixed(someSource1);
         enabled = actionProvider.isActionEnabled(ActionProvider.COMMAND_COMPILE_SINGLE, context);

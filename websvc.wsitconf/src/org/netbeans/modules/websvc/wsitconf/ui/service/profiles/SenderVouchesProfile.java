@@ -83,6 +83,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Martin Grebac
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.websvc.wsitconf.spi.SecurityProfile.class)
 public class SenderVouchesProfile extends ProfileBase 
         implements SecureConversationFeature,ClientDefaultsFeature,ServiceDefaultsFeature {
     

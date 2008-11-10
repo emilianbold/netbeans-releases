@@ -80,23 +80,16 @@ import org.openide.util.WeakSet;
  *
  * @author Jan Jancura, Martin Entlicher
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.text.AnnotationProvider.class)
 public class BreakpointAnnotationProvider implements AnnotationProvider, DebuggerManagerListener {
 
-    private Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations;
-    private Set<FileObject> annotatedFiles;
+    private final Map<GdbBreakpoint, Annotation[]> breakpointToAnnotations = new HashMap<GdbBreakpoint, Annotation[]>();
+    private final Set<FileObject> annotatedFiles = new WeakSet<FileObject>();
 
     public void annotate(Line.Set set, Lookup lookup) {
         FileObject fo = (FileObject) lookup.lookup(FileObject.class);
         if (fo == null) {
             return;
-        }
-        boolean attachManagerListener = false;
-        synchronized (this) {
-            if (breakpointToAnnotations == null) {
-                breakpointToAnnotations = new HashMap<GdbBreakpoint, Annotation[]>();
-                annotatedFiles = new WeakSet<FileObject>();
-                attachManagerListener = true;
-            }
         }
         synchronized (breakpointToAnnotations) {
             if (annotatedFiles.contains(fo)) {
@@ -120,11 +113,8 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             }
             annotatedFiles.add(fo);
         }
-        if (attachManagerListener) {
-            DebuggerManager.getDebuggerManager().addDebuggerListener(
-                    WeakListeners.create(DebuggerManagerListener.class,
-                     this, DebuggerManager.getDebuggerManager()));
-        }
+        DebuggerManager.getDebuggerManager().addDebuggerListener(WeakListeners.create(DebuggerManagerListener.class,
+                 this, DebuggerManager.getDebuggerManager()));
     }
 
     public void breakpointAdded(Breakpoint breakpoint) {
@@ -302,12 +292,12 @@ public class BreakpointAnnotationProvider implements AnnotationProvider, Debugge
             } catch (IllegalArgumentException e) {
             }
         }
-        if (annotations.size() == 0) {
+        if (annotations.isEmpty()) {
             return ;
         }
         Object[] oldAnnotations = breakpointToAnnotations.get(b);
         if (oldAnnotations == null || oldAnnotations.length == 0) {
-            breakpointToAnnotations.put(b, annotations.toArray(new Annotation[0]));
+            breakpointToAnnotations.put(b, annotations.toArray(new Annotation[annotations.size()]));
         } else {
             Annotation[] newAnnotations = new Annotation[oldAnnotations.length + annotations.size()];
             System.arraycopy(oldAnnotations, 0, newAnnotations, 0, oldAnnotations.length);

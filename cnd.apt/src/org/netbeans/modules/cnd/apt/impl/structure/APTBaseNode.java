@@ -57,16 +57,13 @@ public abstract class APTBaseNode implements APT, Serializable {
     
     /** Creates a new instance of APTBaseNode */
     protected APTBaseNode() {
-    }
-    
-    public abstract int getType();
-    public abstract int getOffset();
-    public abstract int getEndOffset();
+    }    
     
     public void dispose() {
         // do nothing
     }
     
+    @Override
     public String toString() {
         return getText();
     }

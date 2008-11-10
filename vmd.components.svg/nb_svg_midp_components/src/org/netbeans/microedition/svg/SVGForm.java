@@ -27,6 +27,7 @@ import javax.microedition.m2g.SVGImage;
 
 import org.netbeans.microedition.svg.input.InputHandler;
 import org.netbeans.microedition.svg.input.NumPadInputHandler;
+import org.netbeans.microedition.svg.input.PointerEvent;
 
 /**
  *
@@ -51,7 +52,7 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         setFullScreenMode(true); // menu is usually full screen
     }
     
-    public void add(SVGComponent component ){
+    public synchronized void add(SVGComponent component ){
         components.addElement( component );
         if ( getFocusedField()==null && component.isFocusable() ){
             component.requestFocus();
@@ -83,11 +84,12 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     }
     
     public void setCaretVisible(boolean isVisible) {
-        if (focusedComponent instanceof SVGTextField  ) {
-            ((SVGTextField)focusedComponent).setCaretVisible(isVisible);
+        SVGComponent component = focusedComponent;
+        if (component instanceof SVGTextField  ) {
+            ((SVGTextField)component).setCaretVisible(isVisible);
         }
-        if ( focusedComponent instanceof SVGTextArea ){
-            ((SVGTextArea)focusedComponent).setCaretVisible(isVisible);
+        if ( component instanceof SVGTextArea ){
+            ((SVGTextArea)component).setCaretVisible(isVisible);
         }
     }
     
@@ -99,7 +101,7 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         return inputHandler;
     }
     
-    SVGLabel getLabelFor( SVGComponent component ){
+    synchronized SVGLabel getLabelFor( SVGComponent component ){
         Enumeration en = components.elements();
         while ( en.hasMoreElements() ){
             SVGComponent comp = (SVGComponent)en.nextElement();
@@ -115,60 +117,134 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
     }
     
     private class SvgFormEventListener implements SVGEventListener {
-        public void keyPressed(int keyCode) {
-            if ( focusedComponent != null) {
-                int index;
-                switch( keyCode) {
-                    case InputHandler.UP:
-                        SVGComponent next = null;
-                        index = components.indexOf(focusedComponent);
-                        while (next != focusedComponent) {
-                            if (--index < 0) {
-                                index = components.size() - 1;
+        
+        /**
+         * Value in milliseconds that is used for determination
+         * event with multiple click count.
+         * If two clicks on the same point was less then 
+         * <code>MILLIS_ON_CLICK</code> seconds then 
+         * there will be generated PointerEvent with incremented 
+         * click count.
+         * Otherwise there will be just separate PointerEvents with
+         * click count equals to 1. 
+         */
+        private int MILLIS_ON_CLICK = 300;
+        
+        public void keyPressed( int keyCode ) {
+            synchronized (SVGForm.this) {
+                if (focusedComponent != null) {
+                    int index;
+                    switch (keyCode) {
+                        case InputHandler.UP:
+                            SVGComponent next = null;
+                            index = components.indexOf(focusedComponent);
+                            while (next != focusedComponent) {
+                                if (--index < 0) {
+                                    index = components.size() - 1;
+                                }
+                                next = (SVGComponent) components
+                                        .elementAt(index);
+                                if (next.isFocusable()) {
+                                    requestFocus(next);
+                                    break;
+                                }
                             }
-                            next = (SVGComponent) components.elementAt(index);
-                            if (next.isFocusable()) {
-                                requestFocus(next);
-                                break;
+                            break;
+                        case InputHandler.DOWN:
+                            next = null;
+                            index = components.indexOf(focusedComponent);
+                            while (next != focusedComponent) {
+                                if (++index >= components.size()) {
+                                    index = 0;
+                                }
+                                next = (SVGComponent) components
+                                        .elementAt(index);
+                                if (next.isFocusable()) {
+                                    requestFocus(next);
+                                }
                             }
-                        }
-                        break;
-                    case InputHandler.DOWN:
-                        next = null;
-                        index = components.indexOf(focusedComponent);
-                        while (next != focusedComponent) {
-                            if (++index >= components.size()) {
-                                index = 0;
+                            break;
+                        default:
+                            InputHandler handler = focusedComponent
+                                    .getInputHandler();
+                            if (handler != null) {
+                                handler.handleKeyPress(focusedComponent,
+                                        keyCode);
                             }
-                            next = (SVGComponent) components.elementAt(index);
-                            if (next.isFocusable()) {
-                                requestFocus(next);
-                            }
-                        }
-                        break;
-                    default:
-                        InputHandler handler = focusedComponent.getInputHandler();
-                        if ( handler != null) {
-                            handler.handleKeyPress( focusedComponent, keyCode);
-                        }
-                        break;
+                            break;
+                    }
                 }
             }
         }
         
-        public void keyReleased(int keyCode) {
-            if ( focusedComponent != null) {
-                InputHandler handler = focusedComponent.getInputHandler();
-                if ( handler != null) {
-                    handler.handleKeyRelease( focusedComponent, keyCode);
+        public void keyReleased( int keyCode ) {
+            synchronized (SVGForm.this) {
+                if (focusedComponent != null) {
+                    InputHandler handler = focusedComponent.getInputHandler();
+                    if (handler != null) {
+                        handler.handleKeyRelease(focusedComponent, keyCode);
+                    }
                 }
             }
         }
         
         public void pointerPressed(int x, int y) {
+            long currentTime = System.currentTimeMillis();
+            if ( myLastEvent != null && x == myLastEvent.getX() 
+                    && y == myLastEvent.getY() && 
+                    ( currentTime - myLastEvent.getWhen()) <= MILLIS_ON_CLICK)
+            {
+                SVGComponent component = myLastEvent.getComponent();
+                component.getInputHandler().handlePointerPress( 
+                        new PointerEvent(component, x, y, 
+                                myLastEvent.getClickCount() +1));
+                return;
+            }
+            else {
+                myLastEvent = null;
+            }
+            synchronized(SVGForm.this){
+                Enumeration en = components.elements();
+                while ( en.hasMoreElements() ){
+                    SVGComponent next = (SVGComponent)en.nextElement();
+                    SVGRectangle rectangle = next.getBounds();
+                    if ( rectangle != null && rectangle.contains(x, y)){
+                        next.getInputHandler().handlePointerPress( 
+                                new PointerEvent(next, x, y));
+                        return;
+                    }
+                }
+            }
         }
         
         public void pointerReleased(int x, int y) {
+            long currentTime = System.currentTimeMillis();
+            if ( myLastEvent != null && x == myLastEvent.getX() 
+                    && y == myLastEvent.getY() && 
+                    ( currentTime - myLastEvent.getWhen()) <= MILLIS_ON_CLICK)
+            {
+                SVGComponent component = myLastEvent.getComponent();
+                myLastEvent = new PointerEvent(component, x, y, 
+                        myLastEvent.getClickCount() +1);
+                component.getInputHandler().handlePointerRelease( myLastEvent );
+                return;
+            }
+            else {
+                myLastEvent = null;
+            }
+            synchronized(SVGForm.this){
+                Enumeration en = components.elements();
+                while ( en.hasMoreElements() ){
+                    SVGComponent next = (SVGComponent)en.nextElement();
+                    SVGRectangle rectangle = next.getBounds();
+                    if ( rectangle != null && rectangle.contains(x, y)){
+                        myLastEvent = new PointerEvent(next, x, y);
+                        next.getInputHandler().handlePointerRelease( 
+                                myLastEvent);
+                        return;
+                    }
+                }
+            }
         }
         
         public void hideNotify() {
@@ -179,6 +255,8 @@ public class SVGForm extends SVGPlayer implements InputHandler.CaretVisibilityLi
         
         public void sizeChanged(int width, int height) {
         }
+        
+        private PointerEvent myLastEvent;
     }
 
 }

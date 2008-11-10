@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.termmodule
-OpenIDE-Module-Layer: org/netbeans/termmodule/layer.xml
-OpenIDE-Module-Localizing-Bundle: org/netbeans/termmodule/Bundle.properties
-OpenIDE-Module-Specification-Version: 1.0
-

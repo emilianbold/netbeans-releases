@@ -48,6 +48,7 @@ import org.openide.filesystems.MIMEResolver;
  * 
  * For some reason my declarative mime resolver (in my layer) doesn't kick in. Grrr.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class)
 public class JsTestMimeResolver extends MIMEResolver {
     /**
      * Extensions recognized as being JavaScript.

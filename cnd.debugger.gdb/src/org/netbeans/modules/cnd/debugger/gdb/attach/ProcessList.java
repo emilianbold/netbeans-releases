@@ -64,19 +64,17 @@ final class ProcessList implements Runnable {
     public final static int PTYPE_CYGWIN = 1;
     
     private int ptype = PTYPE_UNINITIALIZED;
-    private List<String> args;
-    private List<String> proclist;
-    private ProcessBuilder pb;
-    private BufferedReader reader;
+    private final List<String> proclist;
+    private final ProcessBuilder pb;
     private ProcessListReader plr;
 
     protected ProcessList(ProcessListReader plr) {
         this.plr = plr;
-        args = getProcessCommand();
+        List<String> args = getProcessCommand();
         pb = new ProcessBuilder(args);
         pb.redirectErrorStream(true);
         proclist = new ArrayList<String>();
-        if (args != null && args.size()>0) {
+        if (args != null && !args.isEmpty()) {
             RequestProcessor.getDefault().post(this);
         }
     }
@@ -85,7 +83,7 @@ final class ProcessList implements Runnable {
         String line;
         try {
             Process process = pb.start();
-            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             reader.readLine(); // read and ignore header line...
             while ((line = reader.readLine()) != null) {
                 proclist.add(line);

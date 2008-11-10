@@ -62,9 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import java.awt.*;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -124,7 +122,6 @@ public class ServiceNodeManager {
 
         private final Configuration cfg;
         private final MethodCheckedTreeBeanView tree;
-        private final Sources s;
         private ClassDataRegistry activeProfileRegistry, allRegistry;
         private ChangeListener ref1;
         private final HashMap<Object, Object> hookedListeners = new HashMap(); // FileObject or SourceGroup -> listener
@@ -134,17 +131,26 @@ public class ServiceNodeManager {
         public ProjectChildren(Configuration cfg, MethodCheckedTreeBeanView tree) {
             this.cfg = cfg;
             this.tree = tree;
-            this.s = ProjectUtils.getSources(Util.getServerProject(cfg));
-            run();
         }
 
+        private Sources getSources() {
+            return ProjectUtils.getSources(Util.getServerProject(cfg));
+        }
+
+        private volatile boolean running = false;
+        @Override
         protected void addNotify() {
-            ref1 = WeakListeners.change(this, s);
-            s.addChangeListener(ref1);
+            if (!running) {
+                run();
+            }
+            Sources sources = getSources();
+            ref1 = WeakListeners.change(this, sources);
+            sources.addChangeListener(ref1);
         }
 
+        @Override
         protected synchronized void removeNotify() {
-            s.removeChangeListener(ref1);
+            getSources().removeChangeListener(ref1);
             synchronized (hookedListeners) {
                 removeListeners();
             }
@@ -159,43 +165,52 @@ public class ServiceNodeManager {
             }
             hookedListeners.clear();
         }
+
+        private void enqueue() {
+            if (!running) {
+                refreshTask.schedule(200);
+            }
+        }
         
         public void propertyChange(PropertyChangeEvent evt) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void stateChanged(ChangeEvent e) {
-            refreshTask.schedule(200);
+            enqueue();
         }
         public void fileFolderCreated(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileDataCreated(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileChanged(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileDeleted(FileEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileRenamed(FileRenameEvent fe) {
-            refreshTask.schedule(200);
+            enqueue();
         }
 
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
             
         public void run() {
-            SourceGroup[] groups = s.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
+            running = true;
+            try {
+            Sources sources = getSources();
+            SourceGroup[] groups = sources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
             // Add all paths to the ClasspathInfo structure
             List<ClasspathInfo> classpaths = new ArrayList();
             HashMap<Object, Object> newHooks = new HashMap();
-            for (SourceGroup sg : s.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+            for (SourceGroup sg : sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
                 if (!sg.getName().equals("${test.src.dir}")) {
                     classpaths.add(ClasspathInfo.create(sg.getRootFolder())); //NOI18N
                     synchronized (hookedListeners) {
@@ -246,6 +261,9 @@ public class ServiceNodeManager {
             setKeys(packages);
             for (Node n : getNodes()) ((PackageChildren)n.getChildren()).notifyChange();
             tree.updateTreeNodeStates(null);
+            } finally {
+                running = false;
+            }
         }
         
         private void addFCListener(FileObject fo, HashMap<Object, Object> newHooks) {
@@ -277,7 +295,18 @@ public class ServiceNodeManager {
                 this.packageName = packageName;
                 notifyChange();
             }
-            
+
+            @Override
+            protected void addNotify() {
+                super.addNotify();
+                notifyChange();
+            }
+
+            @Override
+            protected void removeNotify() {
+                setKeys (Collections.EMPTY_LIST);
+            }
+
             public void notifyChange() {
                 ClassData cd[] = allRegistry.getBaseClassesForPackage(packageName).toArray(new ClassData[0]);
                 Arrays.sort(cd, new Comparator<ClassData>() {
@@ -324,7 +353,16 @@ public class ServiceNodeManager {
             public ClassChildren(ClassData classData) {
                 this.classData = classData;
                 this.fqn = classData.getFullyQualifiedName();
+            }
+
+            @Override
+            protected void addNotify() {
                 notifyChange();
+            }
+
+            @Override
+            protected void removeNotify() {
+                setKeys (Collections.EMPTY_SET);
             }
             
             public void notifyChange() {

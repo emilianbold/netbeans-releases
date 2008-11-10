@@ -64,15 +64,24 @@ public final class ProxyPreferences extends AbstractPreferences {
 
     @Override
     protected void putSpi(String key, String value) {
-        delegates[0].put(key, value);
+//        delegates[0].put(key, value);
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
     @Override
     protected String getSpi(String key) {
-        for(Preferences d : delegates) {
-            String value = d.get(key, null);
-            if (value != null) {
-                return value;
+        checkDelegates();
+        for(int i = 0; i < delegates.length; i++) {
+            if (delegates[i] != null) {
+                try {
+                    String value = delegates[i].get(key, null);
+                    if (value != null) {
+                        return value;
+                    }
+                } catch (Exception e) {
+                    // mark the delegate as invalid
+                    delegates[i] = null;
+                }
             }
         }
         return null;
@@ -91,38 +100,50 @@ public final class ProxyPreferences extends AbstractPreferences {
     @Override
     protected String[] keysSpi() throws BackingStoreException {
         Set<String> keys = new HashSet<String>();
-        for(Preferences d : delegates) {
-            keys.addAll(Arrays.asList(d.keys()));
+        checkDelegates();
+        for(int i = 0; i < delegates.length; i++) {
+            if (delegates[i] != null) {
+                try {
+                    keys.addAll(Arrays.asList(delegates[i].keys()));
+                } catch (Exception e) {
+                    // mark the delegate as invalid
+                    delegates[i] = null;
+                }
+            }
         }
         return keys.toArray(new String[ keys.size() ]);
     }
 
     @Override
     protected String[] childrenNamesSpi() throws BackingStoreException {
-        Set<String> names = new HashSet<String>();
-        for(Preferences d : delegates) {
-            names.addAll(Arrays.asList(d.childrenNames()));
-        }
-        return names.toArray(new String[ names.size() ]);
+//        Set<String> names = new HashSet<String>();
+//        for(Preferences d : delegates) {
+//            names.addAll(Arrays.asList(d.childrenNames()));
+//        }
+//        return names.toArray(new String[ names.size() ]);
+        return EMPTY;
     }
 
     @Override
     protected AbstractPreferences childSpi(String name) {
-        Preferences [] nueDelegates = new Preferences[delegates.length];
-        for(int i = 0; i < delegates.length; i++) {
-            nueDelegates[i] = delegates[i].node(name);
-        }
-        return new ProxyPreferences(name, this, nueDelegates);
+//        Preferences [] nueDelegates = new Preferences[delegates.length];
+//        for(int i = 0; i < delegates.length; i++) {
+//            nueDelegates[i] = delegates[i].node(name);
+//        }
+//        return new ProxyPreferences(name, this, nueDelegates);
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
     @Override
     protected void syncSpi() throws BackingStoreException {
-        delegates[0].sync();
+//        delegates[0].sync();
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
     @Override
     protected void flushSpi() throws BackingStoreException {
-        delegates[0].flush();
+//        delegates[0].flush();
+        throw new UnsupportedOperationException("Not supported yet."); //NOI18N
     }
 
     // -----------------------------------------------------------------------
@@ -130,19 +151,51 @@ public final class ProxyPreferences extends AbstractPreferences {
     // -----------------------------------------------------------------------
 
     private static final Logger LOG = Logger.getLogger(ProxyPreferences.class.getName());
+
+    private static final String [] EMPTY = new String[0];
     
     private final Preferences [] delegates;
+    private final Preferences [] roots;
+    private final String [] paths;
     private final PreferenceChangeListener [] prefTrackers;
 
     private ProxyPreferences(String name, ProxyPreferences parent, Preferences... delegates) {
         super(parent, name); //NOI18N
         assert delegates.length > 0 : "There must be at least one delegate"; //NOI18N
         this.delegates = delegates;
+        this.roots = new Preferences[delegates.length];
+        this.paths = new String[delegates.length];
         this.prefTrackers = new PreferenceChangeListener[delegates.length];
 
         for(int i = 0; i < delegates.length; i++) {
+            roots[i] = delegates[i].node("/"); //NOI18N
+            paths[i] = delegates[i].absolutePath();
             prefTrackers[i] = new PrefTracker(i);
             delegates[i].addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, prefTrackers[i], delegates[i]));
+        }
+    }
+
+    private void checkDelegates() {
+        for(int i = 0; i < delegates.length; i++) {
+            if (delegates[i] != null) {
+                try {
+                    if (delegates[i].nodeExists("")) { //NOI18N
+                        continue;
+                    }
+                } catch (BackingStoreException bse) {
+                    // ignore
+                }
+                delegates[i] = null;
+            }
+
+            assert delegates[i] == null;
+            try {
+                if (roots[i].nodeExists(paths[i])) {
+                    delegates[i] = roots[i].node(paths[i]);
+                }
+            } catch (BackingStoreException bse) {
+                // ignore
+            }
         }
     }
 
@@ -167,8 +220,9 @@ public final class ProxyPreferences extends AbstractPreferences {
         public void preferenceChange(PreferenceChangeEvent evt) {
             synchronized (ProxyPreferences.this.lock) {
                 if (evt.getKey() != null) {
-                    for(int i = delegates.length - 1; i > delegateIdx; i--) {
-                        if (delegates[i].get(evt.getKey(), null) != null) {
+                    checkDelegates();
+                    for(int i = 0; i < delegateIdx; i++) {
+                        if (delegates[i] != null && delegates[i].get(evt.getKey(), null) != null) {
                             // ignore
                             return;
                         }

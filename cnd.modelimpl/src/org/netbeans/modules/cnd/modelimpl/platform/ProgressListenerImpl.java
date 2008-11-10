@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
  *
  * @author vk155633
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.CsmProgressListener.class)
 public class ProgressListenerImpl implements CsmProgressListener {
     
     private Map/*<CsmProject, ParsingProgress>*/ handles = new HashMap();

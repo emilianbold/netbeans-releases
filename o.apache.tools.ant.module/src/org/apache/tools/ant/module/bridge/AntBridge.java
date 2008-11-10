@@ -662,7 +662,26 @@ public final class AntBridge {
                 Class c = findLoadedClass(name);
                 // Careful with that parent loader Eugene!
                 if (c == null) {
-                    c = findClass(name);
+                    try {
+                        c = findClass(name);
+                    } catch (ClassNotFoundException cnfe) {
+                        if (name.equals("org.apache.tools.ant.Location")) {
+                            StringBuilder b = new StringBuilder("#143648: unable to find Location");
+                            for (URL root : getURLs()) {
+                                b.append("\n" + root + " -> ");
+                                try {
+                                    URL resource = new URL(root, "org/apache/tools/ant/Location.class");
+                                    resource.openStream().close();
+                                    b.append(resource);
+                                } catch (IOException ioe) {
+                                    b.append(ioe);
+                                }
+                            }
+                            throw new ClassNotFoundException(b.toString(), cnfe);
+                        } else {
+                            throw cnfe;
+                        }
+                    }
                 }
                 if (resolve) {
                     resolveClass(c);

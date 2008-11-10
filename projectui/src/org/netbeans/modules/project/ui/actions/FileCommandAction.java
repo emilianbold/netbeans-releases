@@ -48,8 +48,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.Actions;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /** An action sensitive to selected node. Used for 1-off actions
  */
@@ -58,7 +58,7 @@ public final class FileCommandAction extends ProjectAction {
     private String presenterName;
         
     public FileCommandAction( String command, String namePattern, String iconResource, Lookup lookup ) {
-        this( command, namePattern, new ImageIcon( Utilities.loadImage( iconResource ) ), lookup );
+        this( command, namePattern, new ImageIcon( ImageUtilities.loadImage( iconResource ) ), lookup );
     }
     
     public FileCommandAction( String command, String namePattern, Icon icon, Lookup lookup ) {

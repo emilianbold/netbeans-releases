@@ -43,6 +43,7 @@ import java.util.Collection;
 import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.Schema;
 
 /**
  *
@@ -65,5 +66,9 @@ public abstract class MetadataImplementation {
 
     public abstract Catalog getCatalog(String name);
 
+    public abstract Schema getDefaultSchema();
+
     public abstract void refresh();
+
+    public abstract void refreshTable(String tablename);
 }

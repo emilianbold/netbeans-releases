@@ -58,6 +58,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class PolicyFactories {
             
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PolicyFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -73,6 +74,7 @@ public class PolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class AllFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -88,6 +90,7 @@ public class PolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class ExactlyOneFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -103,6 +106,7 @@ public class PolicyFactories {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PolicyReferenceFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

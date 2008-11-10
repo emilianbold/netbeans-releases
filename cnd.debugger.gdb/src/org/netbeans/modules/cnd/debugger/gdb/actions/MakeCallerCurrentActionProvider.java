@@ -59,12 +59,10 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
 */
 public class MakeCallerCurrentActionProvider extends ActionsProviderSupport implements PropertyChangeListener {
     
-    private ContextProvider lookupProvider;
     private GdbDebugger debugger;
     
     public MakeCallerCurrentActionProvider(ContextProvider lookupProvider) {
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
-        this.lookupProvider = lookupProvider;
         debugger.addPropertyChangeListener(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
     
@@ -79,8 +77,8 @@ public class MakeCallerCurrentActionProvider extends ActionsProviderSupport impl
 	}
     }
     
-    protected void checkEnabled(String debuggerState) {
-        if (GdbDebugger.STATE_STOPPED.equals(debuggerState)) {
+    protected void checkEnabled(GdbDebugger.State debuggerState) {
+        if (debuggerState == GdbDebugger.State.STOPPED) {
 	    int i = getCurrentCallStackFrameIndex(debugger);
 	    setEnabled(ActionsManager.ACTION_MAKE_CALLER_CURRENT, i < (debugger.getStackDepth() - 1));
         } else {

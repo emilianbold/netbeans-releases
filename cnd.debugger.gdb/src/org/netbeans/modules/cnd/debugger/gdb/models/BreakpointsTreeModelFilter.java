@@ -122,7 +122,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
                 if (mI != null) {
                     line = Math.max(line, mI.intValue());
                 }
-                mI = new Integer(line);
+                mI = Integer.valueOf(line);
                 maxLines.put(fn, mI);
             }
             if (--n == 0) {

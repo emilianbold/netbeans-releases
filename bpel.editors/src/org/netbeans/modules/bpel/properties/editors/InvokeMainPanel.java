@@ -85,7 +85,8 @@ public class InvokeMainPanel extends EditorLifeCycleAdapter {
         return true;
     }
     
-    public boolean applyNewValues() {
+    @Override
+    public boolean applyNewValues() throws Exception {
         mcc.applyNewValues();
         return true;
     }

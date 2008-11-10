@@ -433,7 +433,11 @@ public class FormEditorSupport extends DataEditorSupport implements EditorCookie
             public void run() {
                 FormDesigner formDesigner = getFormEditor(true).getFormDesigner();
                 if (formDesigner == null) {
-                    formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
+                    if (multiviewTC == null) {
+                        return; // Issue 150534
+                    } else {
+                        formDesigner = (FormDesigner)multiviewTC.getClientProperty("formDesigner"); // NOI18N
+                    }
                 }
                 if(formDesigner==null) {
                     // if formDesigner is null then it haven't been activated yet...

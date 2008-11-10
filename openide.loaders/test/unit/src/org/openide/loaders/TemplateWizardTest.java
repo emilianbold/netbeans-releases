@@ -188,6 +188,8 @@ public class TemplateWizardTest extends NbTestCase {
         }
     } // end of Loader
 
+    @RandomlyFails // NB-Core-Build #1639 (NPE in SunGraphics2D.addRenderingHints from HtmlLabelUI.calcPreferredSize);
+                   // NB-Core-Build #1644 (CCE: javax.swing.KeyStroke from TreeMap.compare in JTextField.<init>)
     public void testNextOnIterImpl () {
         doNextOnIterImpl (false);
     }
