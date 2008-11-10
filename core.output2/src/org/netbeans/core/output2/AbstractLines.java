@@ -207,7 +207,7 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     }
 
     private javax.swing.Timer timer = null;
-    private AtomicBoolean newEvent = new AtomicBoolean(false);
+    private final AtomicBoolean newEvent = new AtomicBoolean(false);
 
     public void actionPerformed(ActionEvent e) {
         newEvent.set(false);
