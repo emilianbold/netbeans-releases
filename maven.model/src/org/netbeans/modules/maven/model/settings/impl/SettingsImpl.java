@@ -196,75 +196,148 @@ public class SettingsImpl extends SettingsComponentImpl implements Settings {
     }
 
     public void removePluginGroup(String group) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        List<StringList> lists = getChildren(StringList.class);
+        for (StringList list : lists) {
+            if (getModel().getSettingsQNames().PLUGINGROUPS.getName().equals(list.getPeer().getNodeName())) {
+                list.removeListChild(group);
+                return;
+            }
+        }
     }
 
     public List<Proxy> getProxies() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Proxy> childs = getChild(ProxyImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
     public void addProxy(Proxy proxy) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Proxy> childs = getChild(ProxyImpl.List.class);
+        if (childs == null) {
+            setChild(ProxyImpl.List.class,
+                    getModel().getSettingsQNames().PROXIES.getName(),
+                    getModel().getFactory().create(this, getModel().getSettingsQNames().PROXIES.getQName()),
+                    getClassesBefore(ORDER, ProxyImpl.List.class));
+            childs = getChild(ProxyImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(proxy);
     }
 
     public void removeProxy(Proxy proxy) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Proxy> childs = getChild(ProxyImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(proxy);
+        }
     }
 
     public List<Server> getServers() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Server> childs = getChild(ServerImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
     public void addServer(Server server) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Server> childs = getChild(ServerImpl.List.class);
+        if (childs == null) {
+            setChild(ServerImpl.List.class,
+                    getModel().getSettingsQNames().SERVERS.getName(),
+                    getModel().getFactory().create(this, getModel().getSettingsQNames().SERVERS.getQName()),
+                    getClassesBefore(ORDER, ServerImpl.List.class));
+            childs = getChild(ServerImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(server);
     }
 
     public void removeServer(Server server) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Server> childs = getChild(ServerImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(server);
+        }
     }
 
     public List<Mirror> getMirrors() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Mirror> childs = getChild(MirrorImpl.List.class);
+        if (childs != null) {
+            return childs.getListChildren();
+        }
+        return null;
     }
 
     public void addMirror(Mirror mirror) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Mirror> childs = getChild(MirrorImpl.List.class);
+        if (childs == null) {
+            setChild(MirrorImpl.List.class,
+                    getModel().getSettingsQNames().MIRRORS.getName(),
+                    getModel().getFactory().create(this, getModel().getSettingsQNames().MIRRORS.getQName()),
+                    getClassesBefore(ORDER, MirrorImpl.List.class));
+            childs = getChild(MirrorImpl.List.class);
+            assert childs != null;
+        }
+        childs.addListChild(mirror);
     }
 
     public void removeMirror(Mirror mirror) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        ModelList<Mirror> childs = getChild(MirrorImpl.List.class);
+        if (childs != null) {
+            childs.removeListChild(mirror);
+        }
     }
 
     public String getLocalRepository() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return getChildElementText(getModel().getSettingsQNames().LOCALREPOSITORY.getQName());
     }
 
     public void setLocalRepository(String repo) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        setChildElementText(getModel().getSettingsQNames().LOCALREPOSITORY.getName(), repo,
+                getModel().getSettingsQNames().LOCALREPOSITORY.getQName());
     }
 
     public Boolean isInteractiveMode() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String str = getChildElementText(getModel().getSettingsQNames().INTERACTIVEMODE.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return null;
     }
 
     public void setInteractiveMode(Boolean interactive) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        setChildElementText(getModel().getSettingsQNames().INTERACTIVEMODE.getName(),
+                interactive == null ? null : interactive.toString(),
+                getModel().getSettingsQNames().INTERACTIVEMODE.getQName());
     }
 
     public Boolean isUsePluginRegistry() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String str = getChildElementText(getModel().getSettingsQNames().USEPLUGINREGISTRY.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return null;
     }
 
     public void setUsePluginRegistry(Boolean use) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        setChildElementText(getModel().getSettingsQNames().USEPLUGINREGISTRY.getName(),
+                use == null ? null : use.toString(),
+                getModel().getSettingsQNames().USEPLUGINREGISTRY.getQName());
     }
 
     public Boolean isOffline() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        String str = getChildElementText(getModel().getSettingsQNames().OFFLINE.getQName());
+        if (str != null) {
+            return Boolean.valueOf(str);
+        }
+        return null;
     }
 
     public void setOffline(Boolean offline) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        setChildElementText(getModel().getSettingsQNames().OFFLINE.getName(),
+                offline == null ? null : offline.toString(),
+                getModel().getSettingsQNames().OFFLINE.getQName());
     }
 
 }

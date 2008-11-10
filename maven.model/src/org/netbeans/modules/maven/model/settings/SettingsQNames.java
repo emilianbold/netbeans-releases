@@ -101,6 +101,11 @@ public final class SettingsQNames {
     public final SettingsQName PRIVATEKEY; //NOI18N
     public final SettingsQName PASSPHRASE; //NOI18N
 
+    public final SettingsQName OFFLINE; //NOI18N
+    public final SettingsQName INTERACTIVEMODE; //NOI18N
+    public final SettingsQName USEPLUGINREGISTRY; //NOI18N
+    public final SettingsQName LOCALREPOSITORY; //NOI18N
+
     private boolean ns;
 
     public SettingsQNames(boolean ns) {
@@ -156,6 +161,12 @@ public final class SettingsQNames {
 
         PASSPHRASE = new SettingsQName(SettingsQName.createQName("passphrase",ns), ns); //NOI18N
         PRIVATEKEY = new SettingsQName(SettingsQName.createQName("privateKey",ns), ns); //NOI18N
+
+        OFFLINE = new SettingsQName(SettingsQName.createQName("offline",ns), ns); //NOI18N
+        USEPLUGINREGISTRY = new SettingsQName(SettingsQName.createQName("usePluginRegistry",ns), ns); //NOI18N
+        LOCALREPOSITORY = new SettingsQName(SettingsQName.createQName("localRepository",ns), ns); //NOI18N
+        INTERACTIVEMODE = new SettingsQName(SettingsQName.createQName("interactiveMode",ns), ns); //NOI18N
+
     }
 
     public boolean isNSAware() {
@@ -205,6 +216,10 @@ public final class SettingsQNames {
             SERVERS.getQName(),
             PRIVATEKEY.getQName(),
             PASSPHRASE.getQName(),
+            OFFLINE.getQName(),
+            INTERACTIVEMODE.getQName(),
+            USEPLUGINREGISTRY.getQName(),
+            LOCALREPOSITORY.getQName(),
         };
         List<QName> list = Arrays.asList(names);
         return new HashSet<QName>(list);
