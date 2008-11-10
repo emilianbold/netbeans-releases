@@ -37,40 +37,45 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.php.editor;
 
-import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.ParserTestBase;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLCompletionEnvTest extends TestCase {
+public class PHPSQLCompletionTest extends ParserTestBase {
 
-    public SQLCompletionEnvTest(String testName) {
-        super(testName);
+    public PHPSQLCompletionTest(String name) {
+        super(name);
     }
 
-    public void testGetContext() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.insertString(0, "select a from b", null);
-        for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertNull(env.getContext());
-        }
-        for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.SELECT, env.getContext());
-        }
-        for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.FROM, env.getContext());
-        }
+    public void testFindStringOffset() {
+        assertEquals(8, findStringOffset("<? echo \"ab|cde\" ?>"));
+        assertEquals(8, findStringOffset("<? echo |\"abcde\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"${v|ar}\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"f|oo{$var}bar\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"foo{$v|ar}bar\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"foo{$var}b|ar\" ?>"));
+        assertEquals(16, findStringOffset("<? echo \"foo\" . \"${v|ar}\" ?>"));
+        assertEquals(17, findStringOffset("<? echo 42; echo \"foo{$var}b|ar\" ?>"));
+        // Does not work:
+        // assertEquals(8, findStringOffset("<? echo \"${foo}\" . \"${v|ar}\" ?>"));
+    }
+
+    private static int findStringOffset(String text) {
+        int caretOffset = text.indexOf('|');
+        text = text.replace("|", "");
+        TokenSequence<PHPTokenId> seq = PHPLexerUtils.seqForText(text, PHPTokenId.language());
+        return PHPSQLCompletion.findStringOffset(seq, caretOffset);
+    }
+
+    @Override
+    protected String getTestResult(String filename) throws Exception {
+        return null;
     }
 }

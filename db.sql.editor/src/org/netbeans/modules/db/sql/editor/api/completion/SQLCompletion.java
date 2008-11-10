@@ -37,40 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.db.sql.editor.api.completion;
 
-import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import org.netbeans.modules.db.sql.editor.completion.SQLCompletionQuery;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLCompletionEnvTest extends TestCase {
+public class SQLCompletion {
 
-    public SQLCompletionEnvTest(String testName) {
-        super(testName);
+    private final SQLCompletionContext initContext;
+    private final SQLCompletionQuery delegate;
+
+    public static SQLCompletion create(SQLCompletionContext initContext) {
+        return new SQLCompletion(initContext);
     }
 
-    public void testGetContext() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.insertString(0, "select a from b", null);
-        for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertNull(env.getContext());
-        }
-        for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.SELECT, env.getContext());
-        }
-        for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.FROM, env.getContext());
-        }
+    private SQLCompletion(SQLCompletionContext initContext) {
+        this.initContext = initContext;
+        delegate = new SQLCompletionQuery(initContext.getDatabaseConnection());
     }
+
+    public void query(SQLCompletionResultSet resultSet, SubstitutionHandler substitutionHandler) {
+        delegate.query(resultSet, initContext.getCharSequence().toString(), initContext.getOffset(), substitutionHandler);
+    }
+
+    // If needed, and when supported by SQLCompletionQuery,
+    // can add:
+    // public boolean canFilter(SQLCompletionContext context);
+    // public void filter(SQLCompletionResultSet resultSet, SubstitutionHandler handler)
 }

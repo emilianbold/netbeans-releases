@@ -37,40 +37,39 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.db.sql.editor.api.completion;
 
-import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import org.netbeans.api.db.explorer.DatabaseConnection;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLCompletionEnvTest extends TestCase {
+public class SQLCompletionContext {
 
-    public SQLCompletionEnvTest(String testName) {
-        super(testName);
+    private final DatabaseConnection dbconn;
+    private final CharSequence charSequence;
+    private final int offset;
+
+    public static SQLCompletionContext create(DatabaseConnection dbconn, CharSequence charSequence, int offset) {
+        return new SQLCompletionContext(dbconn, charSequence, offset);
     }
 
-    public void testGetContext() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.insertString(0, "select a from b", null);
-        for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertNull(env.getContext());
-        }
-        for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.SELECT, env.getContext());
-        }
-        for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.FROM, env.getContext());
-        }
+    private SQLCompletionContext(DatabaseConnection dbconn, CharSequence charSequence, int offset) {
+        this.dbconn = dbconn;
+        this.charSequence = charSequence;
+        this.offset = offset;
+    }
+
+    public DatabaseConnection getDatabaseConnection() {
+        return dbconn;
+    }
+
+    public CharSequence getCharSequence() {
+        return charSequence;
+    }
+
+    public int getOffset() {
+        return offset;
     }
 }
