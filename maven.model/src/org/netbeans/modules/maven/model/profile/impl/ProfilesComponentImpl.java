@@ -185,6 +185,7 @@ public abstract class ProfilesComponentImpl extends AbstractDocumentComponent<Pr
         }
         if (text != null) {
             ProfilesExtensibilityElement el = getModel().getFactory().createProfilesExtensibilityElement(qname);
+            el.setElementText(text);
             addAfter(qname.getLocalPart(), el, Collections.EMPTY_LIST);
         }
     }
