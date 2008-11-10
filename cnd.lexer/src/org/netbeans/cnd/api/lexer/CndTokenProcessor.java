@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,19 +39,23 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.cnd.api.lexer;
 
-import java.awt.Image;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.netbeans.api.lexer.Token;
 
 /**
  *
- * @author Alexander Simon
+ * @author Vladimir Voskresensky
  */
-public class FortranDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
+public interface CndTokenProcessor<T extends Token> {
+    void start(int startOffset, int firstTokenOffset);
+    void end(int offset, int lastTokenOffset);
+    int getLastSeparatorOffset();
 
-    public Image getIcon(int type) {
-	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/FortranSrcIcon.gif");   // NOI18N
-    }
+    /**
+     *
+     * @param token current token
+     * @return true if token processor is interested in getting embedding of input token as well
+     */
+    boolean token(T token, int tokenOffset);
 }

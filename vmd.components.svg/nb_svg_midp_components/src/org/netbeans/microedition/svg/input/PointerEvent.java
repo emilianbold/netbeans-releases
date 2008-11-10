@@ -38,29 +38,59 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
+package org.netbeans.microedition.svg.input;
 
-package org.netbeans.cnd.api.lexer;
+import org.netbeans.microedition.svg.SVGComponent;
 
-import org.netbeans.api.lexer.Token;
 
 /**
+ * @author ads
  *
- * @author Vladimir Voskresensky
  */
-public abstract class CppAbstractTokenProcessor implements CppTokenProcessor {
-    public void start(int startOffset, int firstTokenOffset) {}
+public class PointerEvent {
 
-    public void end(int offset, int lastTokenOffset) {}
-
-    public int getLastSeparatorOffset() {
-        return -1;
+    public PointerEvent( SVGComponent component, int x, int y, int clickCount )
+    {
+        this( component , x , y, clickCount , System.currentTimeMillis() );
+    }
+    
+    public PointerEvent( SVGComponent component, int x, int y, int clickCount ,
+            long when )
+    {
+        myX = x;
+        myY = y;
+        myClickCount = clickCount;
+        myWhen = when;
+        myComponent = component;
     }
 
-    /**
-     *
-     * @param token
-     * @param tokenOffset
-     * @return true if token processor is interested in getting embedding of input token as well
-     */
-    public abstract boolean token(Token<CppTokenId> token, int tokenOffset);
+    public PointerEvent( SVGComponent component, int x, int y ) {
+        this( component , x , y , 1);
+    }
+
+    public int getX() {
+        return myX;
+    }
+
+    public int getY() {
+        return myY;
+    }
+
+    public int getClickCount() {
+        return myClickCount;
+    }
+
+    public long getWhen() {
+        return myWhen;
+    }
+
+    public SVGComponent getComponent() {
+        return myComponent;
+    }
+
+    private int myX;
+    private int myY;
+    private int myClickCount;
+    private long myWhen;
+    private SVGComponent myComponent;
 }

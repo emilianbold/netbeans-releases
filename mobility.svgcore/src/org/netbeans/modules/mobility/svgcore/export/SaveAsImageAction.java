@@ -61,9 +61,9 @@ import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Pavel Benes, suchys
+ * @author Pavel Benes, suchys, akorostelev
  */
-public final class SaveAsImageAction extends CookieAction{
+public final class SaveAsImageAction extends AbstractSaveAction{
     
     /** Creates a new instance of SaveAsImage */
     public SaveAsImageAction() {
@@ -78,6 +78,8 @@ public final class SaveAsImageAction extends CookieAction{
     protected void performAction(Node[] n) {
         SVGDataObject doj = n[0].getLookup().lookup(SVGDataObject.class);
         if (doj != null){       
+            int state = getAnimatorState(doj);
+            float time = stopAnimator(doj);
             try {
                 SVGImageRasterizerPanel panel = new SVGImageRasterizerPanel(doj, null);
                 DialogDescriptor        dd    = new DialogDescriptor(panel, NbBundle.getMessage(SaveAnimationAsImageAction.class, "TITLE_ImageExport"));
@@ -94,6 +96,7 @@ public final class SaveAsImageAction extends CookieAction{
             } catch( Exception e) {
                 Exceptions.printStackTrace(e);
             }
+            resumeAnimatorState(doj, state, time);
         }
     }
 

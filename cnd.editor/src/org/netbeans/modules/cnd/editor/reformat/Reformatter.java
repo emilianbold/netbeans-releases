@@ -113,6 +113,7 @@ public class Reformatter implements ReformatTask {
     }
 
                 
+    @SuppressWarnings("unchecked")
     private void reformatImpl(TokenHierarchy hierarchy, int startOffset, int endOffset) throws BadLocationException {
         TokenSequence<?> ts = hierarchy.tokenSequence();
         ts.move(startOffset);

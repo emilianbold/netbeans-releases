@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,43 +31,51 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.php.editor;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import org.openide.ErrorManager;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.editor.lexer.PHPLexerUtils;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.parser.ParserTestBase;
 
 /**
  *
- * @author Alexander Simon
+ * @author Andrei Badea
  */
-public class CDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
+public class PHPSQLCompletionTest extends ParserTestBase {
 
-    @Override
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return new PropertyDescriptor[0];
+    public PHPSQLCompletionTest(String name) {
+        super(name);
+    }
+
+    public void testFindStringOffset() {
+        assertEquals(8, findStringOffset("<? echo \"ab|cde\" ?>"));
+        assertEquals(8, findStringOffset("<? echo |\"abcde\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"${v|ar}\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"f|oo{$var}bar\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"foo{$v|ar}bar\" ?>"));
+        assertEquals(8, findStringOffset("<? echo \"foo{$var}b|ar\" ?>"));
+        assertEquals(16, findStringOffset("<? echo \"foo\" . \"${v|ar}\" ?>"));
+        assertEquals(17, findStringOffset("<? echo 42; echo \"foo{$var}b|ar\" ?>"));
+        // Does not work:
+        // assertEquals(8, findStringOffset("<? echo \"${foo}\" . \"${v|ar}\" ?>"));
+    }
+
+    private static int findStringOffset(String text) {
+        int caretOffset = text.indexOf('|');
+        text = text.replace("|", "");
+        TokenSequence<PHPTokenId> seq = PHPLexerUtils.seqForText(text, PHPTokenId.language());
+        return PHPSQLCompletion.findStringOffset(seq, caretOffset);
     }
 
     @Override
-    public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
-        } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
-            return null;
-        }
-    }
-
-    @Override
-    public Image getIcon(int type) {
-	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CSrcIcon.gif");   // NOI18N
+    protected String getTestResult(String filename) throws Exception {
+        return null;
     }
 }

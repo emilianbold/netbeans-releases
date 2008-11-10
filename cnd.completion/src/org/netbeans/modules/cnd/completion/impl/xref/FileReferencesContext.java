@@ -225,6 +225,7 @@ public final class FileReferencesContext {
         fillFileLocalIncludeVariables(filter, csmFile, new HashSet<CsmFile>(), true);
     }
     
+    @SuppressWarnings("unchecked")
     private void fillFileLocalIncludeVariables(CsmFilter filter, CsmFile file, Set<CsmFile> antiLoop, boolean first) {
         if (antiLoop.contains(file)) {
             return;

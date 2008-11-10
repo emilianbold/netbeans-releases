@@ -95,22 +95,25 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     if (isStoped) {
                         break;
                     }
+                    String name = f.getItemPath();
+                    if (name == null) {
+                        continue;
+                    }
                     ProviderProperty p = getProperty(RESTRICT_SOURCE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (s.length() > 0 && f != null && !f.getItemPath().startsWith(s)){
+                        if (s.length() > 0 && !name.startsWith(s)){
                             continue;
                         }
                     }
                     p = getProperty(RESTRICT_COMPILE_ROOT);
                     if (p != null) {
                         String s = (String)p.getValue();
-                        if (s.length() > 0 && f != null && !f.getCompilePath().startsWith(s)){
+                        if (s.length() > 0 && f.getCompilePath() != null && !f.getCompilePath().startsWith(s)){
                             continue;
                         }
                     }
                     
-                    String name = f.getItemPath();
                     if (new File(name).exists()){
                         SourceFileProperties existed = map.get(name);
                         if (existed == null) {
@@ -122,7 +125,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                             }
                         }
                     } else {
-                        if (FULL_TRACE) System.out.println("Not Exist "+name); //NOI18N
+                        if (FULL_TRACE) {System.out.println("Not Exist "+name);} //NOI18N
                     }
                 }
                 if (progress != null) {
@@ -182,7 +185,7 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
         List<SourceFileProperties> list = new ArrayList<SourceFileProperties>();
         Dwarf dump = null;
         try{
-            if (FULL_TRACE) System.out.println("Process file "+objFileName);  // NOI18N
+            if (FULL_TRACE) {System.out.println("Process file "+objFileName);}  // NOI18N
             dump = new Dwarf(objFileName);
             List <CompilationUnit> units = dump.getCompilationUnits();
             if (units != null && units.size() > 0) {
@@ -191,12 +194,12 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                         break;
                     }
                     if (cu.getRoot() == null || cu.getSourceFileName() == null) {
-                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has broken name in file "+objFileName);  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) {System.out.println("Compilation unit has broken name in file "+objFileName);}  // NOI18N
                         continue;
                     }
                     String lang = cu.getSourceLanguage();
                     if (lang == null) {
-                        if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has unresolved language in file "+objFileName+ "for "+cu.getSourceFileName());  // NOI18N
+                        if (TRACE_READ_EXCEPTIONS) {System.out.println("Compilation unit has unresolved language in file "+objFileName+ "for "+cu.getSourceFileName());}  // NOI18N
                         continue;
                     }
                     DwarfSource source = null;
@@ -207,33 +210,33 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     } else if (LANG.DW_LANG_C_plus_plus.toString().equals(lang)) {
                         source = new DwarfSource(cu,true,getCommpilerSettings(), grepBase);
                     } else {
-                        if (FULL_TRACE) System.out.println("Unknown language: "+lang);  // NOI18N
+                        if (FULL_TRACE) {System.out.println("Unknown language: "+lang);}  // NOI18N
                         // Ignore other languages
                     }
                     if (source != null) {
                         String name = source.getItemPath();
                         SourceFileProperties old = map.get(name);
                         if (old != null && old.getUserInludePaths().size() > 0) {
-                            if (FULL_TRACE) System.out.println("Compilation unit already exist. Skip "+name);  // NOI18N
+                            if (FULL_TRACE) {System.out.println("Compilation unit already exist. Skip "+name);}  // NOI18N
                             // do not process processed item
                             continue;
                         }
                         source.process(cu);
                         if (source.getCompilePath() == null){
-                            if (TRACE_READ_EXCEPTIONS) System.out.println("Compilation unit has NULL compile path in file "+objFileName);  // NOI18N
+                            if (TRACE_READ_EXCEPTIONS) {System.out.println("Compilation unit has NULL compile path in file "+objFileName);}  // NOI18N
                             continue;
                         }
                         list.add(source);
                     }
                 }
             } else {
-                if (TRACE_READ_EXCEPTIONS) System.out.println("There are no compilation units in file "+objFileName);  // NOI18N
+                if (TRACE_READ_EXCEPTIONS) {System.out.println("There are no compilation units in file "+objFileName);}  // NOI18N
             }
         } catch (FileNotFoundException ex) {
             // Skip Exception
-            if (TRACE_READ_EXCEPTIONS) System.out.println("File not found "+objFileName+": "+ex.getMessage());  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {System.out.println("File not found "+objFileName+": "+ex.getMessage());}  // NOI18N
         } catch (WrongFileFormatException ex) {
-            if (TRACE_READ_EXCEPTIONS) System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());  // NOI18N
+            if (TRACE_READ_EXCEPTIONS) {System.out.println("Unsuported format of file "+objFileName+": "+ex.getMessage());}  // NOI18N
             // XXX: OpenSolaris trick not needed due to opening AnalyzeMakeLog to public
 //            ProviderProperty p = getProperty(RESTRICT_COMPILE_ROOT);
 //            String root = "";

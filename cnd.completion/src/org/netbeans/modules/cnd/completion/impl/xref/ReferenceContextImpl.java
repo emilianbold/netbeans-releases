@@ -36,7 +36,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.completion.impl.xref;
 
 import java.util.ArrayList;
@@ -65,6 +64,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
         this(parent, false);
     }
 
+    @SuppressWarnings("unchecked")
     public ReferenceContextImpl(CsmReferenceContext parent, boolean fullcopy) {
         if (fullcopy && parent != null) {
             this.parent = null;
@@ -76,7 +76,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
             }
         } else {
             this.parent = parent;
-            this.parentSize = parent == null? 0 : parent.size();
+            this.parentSize = parent == null ? 0 : parent.size();
             this.stack = new ArrayList();
         }
     }
@@ -93,7 +93,7 @@ public class ReferenceContextImpl implements CsmReferenceContext {
         if (0 <= i && i < parentSize - popCount) {
             return parent.getReference(i);
         } else {
-            return (CsmReference)stack.get(2 * (i - parentSize + popCount) + 1);
+            return (CsmReference) stack.get(2 * (i - parentSize + popCount) + 1);
         }
     }
 
@@ -105,11 +105,13 @@ public class ReferenceContextImpl implements CsmReferenceContext {
         if (0 <= i && i < parentSize - popCount) {
             return parent.getToken(i);
         } else {
-            return (CppTokenId)stack.get(2 * (i - parentSize + popCount));
+            return (CppTokenId) stack.get(2 * (i - parentSize + popCount));
         }
     }
 
-    /*package*/ void push(CppTokenId token, CsmReference ref) {
+    /*package*/
+    @SuppressWarnings("unchecked")
+    void push(CppTokenId token, CsmReference ref) {
         stack.add(token);
         stack.add(ref);
     }
@@ -138,10 +140,9 @@ public class ReferenceContextImpl implements CsmReferenceContext {
             buf.append(getToken(i));
             buf.append(','); // NOI18N
             CsmReference ref = getReference(i);
-            buf.append(ref == null? null : ref.getText());
+            buf.append(ref == null ? null : ref.getText());
             buf.append(')'); // NOI18N
         }
         return buf.toString();
     }
-
 }

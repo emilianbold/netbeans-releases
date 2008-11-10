@@ -220,7 +220,7 @@ public class DiscoveryProjectGenerator {
             if (!(relatives.contains(path) || used.contains(path) ||
                   relatives.contains(canonicalPath) || used.contains(canonicalPath))) {
                 // remove item;
-                if (DEBUG) System.out.println("Exclude Item "+path); // NOI18N
+                if (DEBUG) {System.out.println("Exclude Item "+path);} // NOI18N
                 projectBridge.setExclude(item,true);
             }
         }
@@ -366,7 +366,7 @@ public class DiscoveryProjectGenerator {
                         }
                         content.add(pair.fileConfiguration);
                     } else {
-                        if (DEBUG) System.err.println("Cannot find pair by path "+pair.fileConfiguration.getFilePath()); // NOI18N
+                        if (DEBUG) {System.err.println("Cannot find pair by path "+pair.fileConfiguration.getFilePath());} // NOI18N
                     }
                 }
             }
@@ -441,12 +441,12 @@ public class DiscoveryProjectGenerator {
                     item = projectBridge.createItem(file);
                     added.addItem(item);
                 } else {
-                    if (DEBUG) System.err.println("Orphan pair found by path "+file); // NOI18N
+                    if (DEBUG) {System.err.println("Orphan pair found by path "+file);} // NOI18N
                 }
                 pair.item = item;
                 setupFile(pair.fileConfiguration, pair.item, isCPP);
             } else {
-                if (DEBUG) System.err.println("Cannot find pair by path "+file); // NOI18N
+                if (DEBUG) {System.err.println("Cannot find pair by path "+file);} // NOI18N
             }
         }
     }

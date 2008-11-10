@@ -117,6 +117,9 @@ public class ForStatementImpl extends StatementBase implements CsmForStatement {
                             break;
                         case CPPTokenTypes.CSM_TYPE_BUILTIN:
                         case CPPTokenTypes.CSM_TYPE_COMPOUND:
+                        case CPPTokenTypes.LITERAL_struct:
+                        case CPPTokenTypes.LITERAL_class:
+                        case CPPTokenTypes.LITERAL_union:
                             //renderer.renderVariable(token, null, null);
                             init = new DeclarationStatementImpl(token, getContainingFile(), ForStatementImpl.this);
                             break;

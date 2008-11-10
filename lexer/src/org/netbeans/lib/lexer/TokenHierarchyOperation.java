@@ -85,6 +85,9 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
     // -J-Dorg.netbeans.spi.lexer.MutableTextInput.level=FINE
     private static final Logger LOG_LOCK = Logger.getLogger(MutableTextInput.class.getName()); // Logger for read/write-lock
 
+    // -J-Dorg.netbeans.api.lexer.TokenHierarchyEvent.level=FINE
+    private static final Logger LOG_EVENT = Logger.getLogger(TokenHierarchyEvent.class.getName()); // Logger for firing events
+
     /**
      * Input source of this token hierarchy.
      */
@@ -502,8 +505,22 @@ public final class TokenHierarchyOperation<I, T extends TokenId> { // "I" stands
         TokenHierarchyEvent evt = LexerApiPackageAccessor.get().createTokenChangeEvent(eventInfo);
         Object[] listeners = listenerList.getListenerList();
         int listenersLength = listeners.length;
+        boolean loggable = LOG_EVENT.isLoggable(Level.FINE);
+        long tm = 0;
+        if (loggable) {
+            LOG_EVENT.fine("Firing " + evt + " to " + listenersLength/2 + " listeners:\n");
+        }
         for (int i = 1; i < listenersLength; i += 2) {
+            if (loggable) {
+                tm = System.currentTimeMillis();
+            }
             ((TokenHierarchyListener)listeners[i]).tokenHierarchyChanged(evt);
+            if (loggable) {
+                LOG_EVENT.fine(String.valueOf(System.currentTimeMillis() - tm) + "ms: Fired to " + listeners[i] + "\n");
+            }
+        }
+        if (loggable) {
+            LOG_EVENT.fine("----- Finished firing of " + evt + "\n");
         }
     }
     

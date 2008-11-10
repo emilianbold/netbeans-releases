@@ -334,8 +334,9 @@ public class ProviderControl {
             Vector newList = libPanel.getListData();
             String includes = ""; // NOI18N
             for (int i = 0; i < newList.size(); i++) {
-                if (i > 0)
+                if (i > 0) {
                     includes += ";"; // NOI18N
+                }
                 includes += newList.elementAt(i);
             }
             field.setText(includes);
@@ -384,8 +385,9 @@ public class ProviderControl {
                 false
                 );
         int ret = fileChooser.showOpenDialog(panel);
-        if (ret == JFileChooser.CANCEL_OPTION)
+        if (ret == JFileChooser.CANCEL_OPTION) {
             return;
+        }
         String path = fileChooser.getSelectedFile().getPath();
         //path = FilePathAdaptor.normalize(path);
         field.setText(path);

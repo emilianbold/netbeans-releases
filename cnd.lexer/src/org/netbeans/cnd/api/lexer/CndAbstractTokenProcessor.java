@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -39,22 +39,28 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.cnd.modelimpl.cache;
+package org.netbeans.cnd.api.lexer;
 
-import antlr.collections.AST;
-
-import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.api.lexer.Token;
 
 /**
- * cache entry 
+ *
  * @author Vladimir Voskresensky
  */
-public interface FileCache {
-    public APTFile getAPT();
+public abstract class CndAbstractTokenProcessor<T extends Token> implements CndTokenProcessor<T> {
+    public void start(int startOffset, int firstTokenOffset) {}
 
-    public APTFile getAPTLight();
+    public void end(int offset, int lastTokenOffset) {}
 
-    public AST getAST(APTPreprocHandler preprocHandler);
-    
+    public int getLastSeparatorOffset() {
+        return -1;
+    }
+
+    /**
+     *
+     * @param token
+     * @param tokenOffset
+     * @return true if token processor is interested in getting embedding of input token as well
+     */
+    public abstract boolean token(T token, int tokenOffset);
 }

@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -37,43 +37,69 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
+ */   
 
-package org.netbeans.modules.cnd.loaders;
+package org.netbeans.modules.mobility.svgcore.export;
 
-import java.awt.Image;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
-import java.beans.PropertyDescriptor;
-import org.openide.ErrorManager;
-import org.openide.loaders.MultiFileLoader;
-import org.openide.util.ImageUtilities;
-import org.openide.util.Utilities;
+import org.netbeans.modules.mobility.svgcore.SVGDataObject;
+import org.netbeans.modules.mobility.svgcore.composer.PerseusController;
+import org.openide.util.actions.CookieAction;
 
 /**
  *
- * @author Alexander Simon
+ * @author akorostelev
  */
-public class CCDataLoaderBeanInfo extends CndAbstractDataLoaderBeanInfo {
+public abstract class AbstractSaveAction extends CookieAction{
 
-    @Override
-    public PropertyDescriptor[] getPropertyDescriptors() {
-        return new PropertyDescriptor[0];
+    protected void resumeAnimatorState(SVGDataObject doj, int state, float time){
+        // resume cached state only if it was running or paused
+        if (state == PerseusController.ANIMATION_RUNNING){
+            startAnimator(doj, time);
+        } else if (state == PerseusController.ANIMATION_PAUSED){
+            pauseAnimation(doj, time);
+        }
+    }
+    
+    protected int getAnimatorState(SVGDataObject doj){
+        PerseusController pc = getPerseusController(doj);
+        if (pc != null){
+            return pc.getAnimatorState();
+        }
+        return PerseusController.ANIMATION_NOT_RUNNING;
+    }
+    
+    protected float stopAnimator(SVGDataObject doj){
+        float stoppedTime = 0;
+        PerseusController pc = getPerseusController(doj);
+        if (pc != null){
+            stoppedTime = pc.getAnimatorTime();
+            pc.stopAnimator();
+        }
+        return stoppedTime;
     }
 
-    @Override
-    public BeanInfo[] getAdditionalBeanInfo () {
-        try {
-            return new BeanInfo[] { Introspector.getBeanInfo (MultiFileLoader.class) };
-        } catch (IntrospectionException ie) {
-            ErrorManager.getDefault().notify(ie);
-            return null;
+    private void startAnimator(SVGDataObject doj, float time){
+        assert doj != null;
+        PerseusController pc = doj.getSceneManager().getPerseusController();
+        if (pc != null){
+            pc.setAnimatorTime(time);
+            pc.startAnimator();
         }
     }
 
-    @Override
-    public Image getIcon(int type) {
-	return ImageUtilities.loadImage("org/netbeans/modules/cnd/loaders/CCSrcIcon.gif");   // NOI18N
+    private void pauseAnimation(SVGDataObject doj, float time){
+        assert doj != null;
+        PerseusController pc = doj.getSceneManager().getPerseusController();
+        if (pc != null){
+            pc.setAnimatorTime(time);
+            pc.startAnimator();
+            pc.pauseAnimator();
+        }
     }
+    
+    private PerseusController getPerseusController(SVGDataObject doj){
+        assert doj != null;
+        return doj.getSceneManager().getPerseusController();
+    }
+    
 }

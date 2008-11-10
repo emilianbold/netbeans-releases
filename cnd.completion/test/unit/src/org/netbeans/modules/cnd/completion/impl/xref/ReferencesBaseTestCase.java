@@ -44,7 +44,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
-import org.netbeans.cnd.api.lexer.CppAbstractTokenProcessor;
+import org.netbeans.cnd.api.lexer.CndAbstractTokenProcessor;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
@@ -95,7 +95,7 @@ public class ReferencesBaseTestCase extends ProjectBasedTestCase {
         return false;
     }
 
-    private final class MyTP extends CppAbstractTokenProcessor {
+    private final class MyTP extends CndAbstractTokenProcessor<Token<CppTokenId>> {
         final List<ReferenceImpl> references = new ArrayList<ReferenceImpl>();
         private final CsmFile csmFile;
         private final BaseDocument doc;
