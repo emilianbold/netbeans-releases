@@ -385,10 +385,9 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
     void validateActiveConfig() {
         boolean valid = isValidConfiguration();
         String error = getError();
-        setError(error);
-
         Configuration cfg = getSelectedConfiguration();
         cfg.setErrorMessage(error);
+        setError(error);
 
         if (!valid) {
             return;
@@ -443,6 +442,7 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
             validateActiveConfig();
         } else {
             resetFields();
+            checkAllConfigs();
         }
     }
 

@@ -60,7 +60,8 @@ public interface RemoteConnectionProvider {
     Set<String> getPropertyNames();
     /** put default values there */
     RemoteConfiguration createRemoteConfiguration(ConfigManager.Configuration configuration);
+    /** can throw exception if <code>configuration</code> contains invalid properties */
     RemoteConfiguration getRemoteConfiguration(ConfigManager.Configuration configuration);
     RemoteClient getRemoteClient(RemoteConfiguration remoteConfiguration, InputOutput io);
-    RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration remoteConfiguration);
+    RemoteConfigurationPanel getRemoteConfigurationPanel(ConfigManager.Configuration configuration);
 }

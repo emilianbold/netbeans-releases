@@ -155,8 +155,8 @@ public final class RemoteConnections {
     /** can be null */
     public String getConfigurationType(ConfigManager.Configuration cfg) {
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
-            RemoteConfiguration remoteConfiguration = provider.getRemoteConfiguration(cfg);
-            if (remoteConfiguration != null) {
+            RemoteConfigurationPanel remoteConfigurationPanel = provider.getRemoteConfigurationPanel(cfg);
+            if (remoteConfigurationPanel != null) {
                 return provider.getDisplayName();
             }
         }
