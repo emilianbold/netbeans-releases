@@ -38,8 +38,6 @@
  */
 package org.netbeans.performance.j2se.refactoring;
 
-import com.sun.source.tree.Scope;
-import com.sun.source.util.TreePath;
 import java.util.*;
 import java.util.logging.*;
 import java.util.concurrent.ExecutionException;
@@ -50,15 +48,11 @@ import org.netbeans.junit.NbTestSuite;
 import org.openide.filesystems.FileObject;
 
 import java.io.*;
-import java.net.*;
-import java.util.zip.*;
 import javax.lang.model.element.PackageElement;
 import junit.framework.Assert;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.*;
-import org.netbeans.api.project.*;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.source.usages.IndexUtil;
@@ -67,14 +61,11 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.RefactoringElement;
 import org.netbeans.modules.refactoring.api.RefactoringSession;
 import org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI;
-import org.netbeans.performance.j2se.Utilities;
+import static org.netbeans.performance.j2se.Utilities.*;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Test find usages functionality. Measure the the usages time.
@@ -85,7 +76,6 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
 
     private static final MyHandler handler;
     private static final List<PerformanceData> data;
-    
     private ClassPath boot;
     private ClassPath source;
     private ClassPath compile;
@@ -94,30 +84,11 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
 
     static {
         FindUsagesPerfTest.class.getClassLoader().setDefaultAssertionStatus(true);
-        System.setProperty("org.openide.util.Lookup", FindUsagesPerfTest.Lkp.class.getName());
-        Assert.assertEquals(FindUsagesPerfTest.Lkp.class, Lookup.getDefault().getClass());
+        System.setProperty("org.openide.util.Lookup", TestLkp.class.getName());
+        Assert.assertEquals(TestLkp.class, Lookup.getDefault().getClass());
         handler = new MyHandler();
         handler.setLevel(Level.FINE);
         data = new ArrayList<PerformanceData>();
-    }
-
-    public static class Lkp extends ProxyLookup {
-
-        private static Lkp DEFAULT;
-
-        public Lkp() {
-            Assert.assertNull(DEFAULT);
-            DEFAULT = this;
-            ClassLoader l = Lkp.class.getClassLoader();
-            this.setLookups(
-                    new Lookup[]{
-                        Lookups.metaInfServices(l),
-                        Lookups.singleton(l),});
-        }
-
-        public void setLookupsWrapper(Lookup... l) {
-            setLookups(l);
-        }
     }
 
     public FindUsagesPerfTest(String name) {
@@ -140,19 +111,30 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
         ClasspathInfo cpi = ClasspathInfo.create(boot, compile, source);
 
         final JavaSource src = JavaSource.create(cpi, testFile);
-        final TreePathHandle[] handle = new TreePathHandle[1];
+
+        // find usages of symbols collected below
+        final List<TreePathHandle> handle = new ArrayList<TreePathHandle>();
 
         src.runUserActionTask(new Task<CompilationController>() {
 
             public void run(CompilationController controller) throws Exception {
                 controller.toPhase(JavaSource.Phase.RESOLVED);
                 PackageElement pckg = controller.getElements().getPackageElement("org.gjt.sp.jedit");
-                for (Element element : pckg.getEnclosedElements()) {
-//                Element element = controller.getElements().getTypeElement("org.gjt.sp.jedit.jEdit");
-                    Scope scope = controller.getTrees().getScope(TreePath.getPath(controller.getCompilationUnit(), controller.getCompilationUnit().getTypeDecls().get(0)));
+                for (final Element element : pckg.getEnclosedElements()) {
+                    handle.add(TreePathHandle.create(element, controller));
+                }
+            }
+        }, false);
 
-                    handle[0] = TreePathHandle.create(element, controller);
-                    final WhereUsedQueryUI ui = new WhereUsedQueryUI(handle[0], controller);
+        // do find usages query
+        for (final TreePathHandle element : handle) {
+
+            src.runUserActionTask(new Task<CompilationController>() {
+
+                public void run(CompilationController controller) throws Exception {
+                    controller.toPhase(JavaSource.Phase.RESOLVED);
+
+                    final WhereUsedQueryUI ui = new WhereUsedQueryUI(element, controller);
                     ui.getPanel(null);
                     try {
                         ui.setParameters();
@@ -165,8 +147,8 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
                     rs.doRefactoring(false);
                     Collection<RefactoringElement> elems = rs.getRefactoringElements();
                     StringBuilder sb = new StringBuilder();
-                    sb.append("Symbol: '").append(element.getSimpleName()).append("'");
-                    sb.append('\n').append("Number of usages: ").append(elems.size());
+                    sb.append("Symbol: '").append(element.resolveElement(controller).getSimpleName()).append("'");
+                    sb.append('\n').append("Number of usages: ").append(elems.size()).append('\n');
                     try {
                         long prepare = handler.get("refactoring.prepare");
                         NbPerformanceTest.PerformanceData d = new NbPerformanceTest.PerformanceData();
@@ -179,18 +161,20 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
                         sb.append("Cannot collect usages: ").append(ex.getCause());
                     }
                     getLog().append(sb);
+                    System.err.println(sb);
 
                 }
-
-            }
-        }, true);
+            }, false);
+            System.gc(); System.gc();
+        }
     }
 
     public PerformanceData[] getPerformanceData() {
         return data.toArray(new PerformanceData[0]);
     }
 
-    /** sets the PrintWriters
+    /**
+     * Set-up the services and project
      */
     @Override
     protected void setUp() throws IOException, InterruptedException {
@@ -206,73 +190,52 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
         String work = getWorkDirPath();
         String zipPath = work + "/../../../../../../../../../nbextra/qa/projectized/jEdit41.zip";
         File zipFile = FileUtil.normalizeFile(new File(zipPath));
-        Utilities.unzip(zipFile, work);
-        projectDir = openProject("jEdit41");
+        unzip(zipFile, work);
+        projectDir = openProject("jEdit41", getWorkDir());
         File projectSourceRoot = new File(getWorkDirPath(), "jEdit41.src".replace('.', File.separatorChar));
         FileObject fo = FileUtil.toFileObject(projectSourceRoot);
 
         boot = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
-        source = createSourcePath();
+        source = createSourcePath(projectDir);
         compile = createEmptyPath();
 
         ClassLoader l = FindUsagesPerfTest.class.getClassLoader();
-        Lkp.DEFAULT.setLookupsWrapper(
+        TestLkp.setLookupsWrapper(
                 Lookups.singleton(new ClassPathProvider() {
 
-            public ClassPath findClassPath(FileObject file, String type) {
-                if (ClassPath.BOOT.equals(type)) {
-                    return boot;
-                }
+                    public ClassPath findClassPath(FileObject file, String type) {
+                        if (ClassPath.BOOT.equals(type)) {
+                            return boot;
+                        }
 
-                if (ClassPath.SOURCE.equals(type)) {
-                    return source;
-                }
+                        if (ClassPath.SOURCE.equals(type)) {
+                            return source;
+                        }
 
-                if (ClassPath.COMPILE.equals(type)) {
-                    return compile;
-                }
-                return null;
-            }
-        }),
+                        if (ClassPath.COMPILE.equals(type)) {
+                            return compile;
+                        }
+                        return null;
+                    }
+                }),
                 Lookups.metaInfServices(l),
                 Lookups.singleton(l));
 
         RepositoryUpdater.getDefault().scheduleCompilationAndWait(fo, fo).await();
     }
 
-    /** sets the PrintWriters
+    /**
+     * Clear work-dir
      */
     @Override
-    protected void tearDown() {
-    }
-
-    private FileObject openProject(String projectName) throws IOException {
-        File projectsDir = FileUtil.normalizeFile(getWorkDir());
-        FileObject projectsDirFO = FileUtil.toFileObject(projectsDir);
-        FileObject projdir = projectsDirFO.getFileObject(projectName);
-        Project p = ProjectManager.getDefault().findProject(projdir);
-        OpenProjects.getDefault().open(new Project[]{p}, false);
-        assertNotNull("Project is not opened", p);
-        return projdir;
+    protected void tearDown() throws IOException {
+        clearWorkDir();
     }
 
     public static NbTestSuite suite() throws InterruptedException {
         NbTestSuite suite = new NbTestSuite();
         suite.addTest(new FindUsagesPerfTest("testFindUsage"));
         return suite;
-    }
-
-    private ClassPath createEmptyPath() {
-        return ClassPathSupport.createClassPath(Collections.<PathResourceImplementation>emptyList());
-    }
-
-    private ClassPath createSourcePath() throws IOException {
-        final FileObject sourceRoot = projectDir.getFileObject("src");
-        File root = FileUtil.toFile(sourceRoot);
-        if (!root.exists()) {
-            root.mkdirs();
-        }
-        return ClassPathSupport.createClassPath(new URL[]{root.toURI().toURL()});
     }
 
     private static class MyHandler extends Handler {
@@ -305,5 +268,4 @@ public class FindUsagesPerfTest extends NbTestCase implements NbPerformanceTest 
         public void close() throws SecurityException {
         }
     }
-
 }
