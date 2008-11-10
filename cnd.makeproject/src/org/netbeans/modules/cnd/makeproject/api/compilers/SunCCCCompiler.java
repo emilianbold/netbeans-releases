@@ -52,8 +52,8 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 
 public abstract class SunCCCCompiler extends CCCCompiler {
-    protected PersistentList systemIncludeDirectoriesList = null;
-    protected PersistentList systemPreprocessorSymbolsList = null;
+    protected PersistentList<String> systemIncludeDirectoriesList = null;
+    protected PersistentList<String> systemPreprocessorSymbolsList = null;
     
     public SunCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
@@ -61,41 +61,43 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     
     
     @Override
-    public boolean setSystemIncludeDirectories(List values) {
+    public boolean setSystemIncludeDirectories(List<String> values) {
         assert values != null;
         if (values.equals(systemIncludeDirectoriesList)) {
             return false;
         }
-        systemIncludeDirectoriesList = new PersistentList(values);
+        systemIncludeDirectoriesList = new PersistentList<String>(values);
         normalizePaths(systemIncludeDirectoriesList);
         saveSystemIncludesAndDefines();
         return true;
     }
     
     @Override
-    public boolean setSystemPreprocessorSymbols(List values) {
+    public boolean setSystemPreprocessorSymbols(List<String> values) {
         assert values != null;
         if (values.equals(systemPreprocessorSymbolsList)) {
             return false;
         }
-        systemPreprocessorSymbolsList = new PersistentList(values);
+        systemPreprocessorSymbolsList = new PersistentList<String>(values);
         saveSystemIncludesAndDefines();
         return true;
     }
     
     @Override
-    public List getSystemPreprocessorSymbols() {
-        if (systemPreprocessorSymbolsList != null)
+    public List<String> getSystemPreprocessorSymbols() {
+        if (systemPreprocessorSymbolsList != null) {
             return systemPreprocessorSymbolsList;
+        }
         
         getSystemIncludesAndDefines();
         return systemPreprocessorSymbolsList;
     }
     
     @Override
-    public List getSystemIncludeDirectories() {
-        if (systemIncludeDirectoriesList != null)
+    public List<String> getSystemIncludeDirectories() {
+        if (systemIncludeDirectoriesList != null) {
             return systemIncludeDirectoriesList;
+        }
         
         getSystemIncludesAndDefines();
         return systemIncludeDirectoriesList;
@@ -104,10 +106,12 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     
     @Override
     public void saveSystemIncludesAndDefines() {
-        if (systemIncludeDirectoriesList != null)
+        if (systemIncludeDirectoriesList != null) {
             systemIncludeDirectoriesList.saveList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
-        if (systemPreprocessorSymbolsList != null)
+        }
+        if (systemPreprocessorSymbolsList != null) {
             systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
+        }
     }
     
     private void restoreSystemIncludesAndDefines() {
@@ -134,16 +138,17 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     protected abstract String getCompilerStderrCommand2();
     
     private void getFreshSystemIncludesAndDefines() {
-        systemIncludeDirectoriesList = new PersistentList();
-        systemPreprocessorSymbolsList = new PersistentList();
+        systemIncludeDirectoriesList = new PersistentList<String>();
+        systemPreprocessorSymbolsList = new PersistentList<String>();
         String path = getPath();
         if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
             path = getDefaultPath();
         }
         try {
             getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand(), false);
-            if (getCompilerStderrCommand2() != null)
+            if (getCompilerStderrCommand2() != null) {
                 getSystemIncludesAndDefines(IpeUtils.getDirName(path), path + getCompilerStderrCommand2(), false);
+            }
             systemIncludeDirectoriesList.addUnique(applyPathPrefix("/usr/include")); // NOI18N
 
             saveSystemIncludesAndDefines();

@@ -56,9 +56,7 @@ import org.openide.loaders.ExtensionList;
  *
  * @author Alexander Simon
  */
-/* XXX would need a public no-arg constructor
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
-*/
 public class CDataLoader extends CndAbstractDataLoaderExt {
     
     private static CDataLoader instance;
@@ -66,7 +64,7 @@ public class CDataLoader extends CndAbstractDataLoaderExt {
     /** Serial version number */
     static final long serialVersionUID = 6801389470714975685L;
 
-    protected CDataLoader() {
+    public CDataLoader() {
 	super("org.netbeans.modules.cnd.loaders.CDataObject"); // NOI18N
         instance = this;
         //createExtentions(cExtensions);

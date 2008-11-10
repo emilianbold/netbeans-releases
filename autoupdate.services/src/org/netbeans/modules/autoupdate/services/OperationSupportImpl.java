@@ -61,6 +61,8 @@ import org.netbeans.spi.autoupdate.CustomInstaller;
 import org.netbeans.spi.autoupdate.CustomUninstaller;
 import org.openide.LifecycleManager;
 import org.openide.modules.ModuleInfo;
+import org.openide.util.Mutex.ExceptionAction;
+import org.openide.util.MutexException;
 
 /**
  * @author Jiri Rechtacek, Radek Matous
@@ -130,7 +132,7 @@ public abstract class OperationSupportImpl {
                     UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
                     moduleInfos.addAll (impl.getModuleInfos ());
                 }
-                Set<Module> modules = new HashSet<Module>();
+                final Set<Module> modules = new HashSet<Module>();
                 for (ModuleInfo info : moduleInfos) {
                     Module m = Utilities.toModule (info);
                     if (Utilities.canEnable (m)) {
@@ -142,7 +144,20 @@ public abstract class OperationSupportImpl {
                     }
                 }
                 assert mm != null;
-                enable(mm, modules);
+                final ModuleManager fmm = mm;
+                try {
+                    fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
+                        public Boolean run () throws Exception {
+                            return enable(fmm, modules);
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exception x = ex.getException ();
+                    assert x instanceof OperationException : x + " is instanceof OperationException";
+                    if (x instanceof OperationException) {
+                        throw (OperationException) x;
+                    }
+                }
             } finally {
                 if (progress != null) {
                     progress.finish();
@@ -271,7 +286,7 @@ public abstract class OperationSupportImpl {
                     UpdateElementImpl impl = Trampoline.API.impl (operationInfo.getUpdateElement ());
                     moduleInfos.addAll (impl.getModuleInfos ());
                 }
-                Set<Module> modules = new HashSet<Module>();
+                final Set<Module> modules = new HashSet<Module>();
                 for (ModuleInfo info : moduleInfos) {
                     Module m = Utilities.toModule (info);
                     if (Utilities.canDisable (m)) {
@@ -283,7 +298,20 @@ public abstract class OperationSupportImpl {
                     }
                 }
                 assert mm != null;
-                mm.disable(modules);
+                final ModuleManager fmm = mm;
+                try {
+                    fmm.mutex ().writeAccess (new ExceptionAction<Boolean> () {
+                        public Boolean run () throws Exception {
+                            return disable(fmm, modules);
+                        }
+                    });
+                } catch (MutexException ex) {
+                    Exception x = ex.getException ();
+                    assert x instanceof OperationException : x + " is instanceof OperationException";
+                    if (x instanceof OperationException) {
+                        throw (OperationException) x;
+                    }
+                }
             } finally {
                 if (progress != null) {
                     progress.finish();
@@ -293,6 +321,17 @@ public abstract class OperationSupportImpl {
             return false;
         }
         
+        private static boolean disable (ModuleManager mm, Set<Module> toRun) throws OperationException {
+            boolean retval = false;
+            try {
+                mm.disable (toRun);
+                retval = true;
+            } catch(IllegalArgumentException ilae) {
+                throw new OperationException(OperationException.ERROR_TYPE.ENABLE, ilae);
+            }
+            return retval;
+        }
+
         public void doCancel () throws OperationException {
             assert false : "Not supported yet";
         }

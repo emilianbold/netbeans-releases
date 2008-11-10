@@ -41,6 +41,7 @@ package org.netbeans.modules.extexecution.api.print;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -68,6 +69,26 @@ public final class LineConvertors {
     }
 
     /**
+     * Returns the convertor that will delegate to passed converters.
+     * <p>
+     * On call to {@link LineConvertor#convert(java.lang.String)} converters
+     * are asked one by one for conversion in the same order they were
+     * passed to constructor. The first non <code>null</code> value
+     * is returned. If all coverters return <code>null</code> for particular
+     * line <code>null</code> is returned.
+     * <p>
+     * Returned convertor is <i>not thread safe</i>.
+     *
+     * @param convertors convertors that will be proxied; the same order
+     *            is used on {@link LineConvertor#convert(java.lang.String)}
+     *            invocation
+     * @return the convertor proxying passed convertors
+     */
+    public static LineConvertor proxy(LineConvertor... convertors) {
+        return new ProxyLineConvertor(convertors);
+    }
+
+    /**
      * Returns the convertor searching for lines matching the patterns,
      * considering matched lines as being files.
      * <p>
@@ -84,9 +105,8 @@ public final class LineConvertors {
      * will use value <code>1</code> as a line number.
      * <p>
      * When the line does not match the <code>linePattern</code> or
-     * received filename does not match <code>filePattern</code> the work is
-     * delegated to <code>chain</code> convertor. If this convertor is
-     * <code>null</code> the line containing just the original text is returned.
+     * received filename does not match <code>filePattern</code>
+     * <code>null</code> is returned.
      * <p>
      * Resulting converted line contains the original text and a listener
      * that consults the <code>fileLocator</code> (if any) when clicked
@@ -97,8 +117,6 @@ public final class LineConvertors {
      * <p>
      * Returned convertor is <i>not thread safe</i>.
      *
-     * @param chain the converter to which the line will be passed when it is
-     *             not recognized as file; may be <code>null</code>
      * @param fileLocator locator that is consulted for real file; used in
      *             listener for the converted line; may be <code>null</code>
      * @param linePattern pattern for matching the line
@@ -111,15 +129,15 @@ public final class LineConvertors {
      * @return the convertor searching for lines matching the patterns,
      *             considering matched lines as being files (names or paths)
      */
-    public static LineConvertor filePattern(LineConvertor chain, FileLocator fileLocator,
-            Pattern linePattern, Pattern filePattern, int fileGroup, int lineGroup) {
+    public static LineConvertor filePattern(FileLocator fileLocator, Pattern linePattern,
+            Pattern filePattern, int fileGroup, int lineGroup) {
 
         Parameters.notNull("linePattern", linePattern);
         if (fileGroup < 0) {
             throw new IllegalArgumentException("File goup must be non negative: " + fileGroup); // NOI18N
         }
 
-        return new FilePatternConvertor(chain, fileLocator, linePattern, filePattern, fileGroup, lineGroup);
+        return new FilePatternConvertor(fileLocator, linePattern, filePattern, fileGroup, lineGroup);
     }
 
     /**
@@ -130,18 +148,15 @@ public final class LineConvertors {
      * line and listener opening browser with recognized url on click.
      * <p>
      * If line is not recognized as <code>http</code> or <code>https</code>
-     * URL it is passed to the given chaining convertor. If chaining convertor
-     * does not exist only the line containing the original text is returned.
+     * URL <code>null</code> is returned.
      * <p>
      * Returned convertor is <i>not thread safe</i>.
      *
-     * @param chain the converter to which the line will be passed when it is
-     *             not recognized as URL; may be <code>null</code>
      * @return the convertor parsing the line and searching for
      *             <code>http</code> or <code>https</code> URL
      */
-    public static LineConvertor httpUrl(LineConvertor chain) {
-        return new HttpUrlConvertor(chain);
+    public static LineConvertor httpUrl() {
+        return new HttpUrlConvertor();
     }
 
     /**
@@ -163,16 +178,31 @@ public final class LineConvertors {
 
     }
 
-    private static List<ConvertedLine> chain(LineConvertor chain, String line) {
-        if (chain != null) {
-            return chain.convert(line);
+    private static class ProxyLineConvertor implements LineConvertor {
+
+        private final List<LineConvertor> convertors = new ArrayList<LineConvertor>();
+
+        public ProxyLineConvertor(LineConvertor... convertors) {
+            for (LineConvertor convertor : convertors) {
+                if (convertor != null) {
+                    this.convertors.add(convertor);
+                }
+            }
         }
-        return Collections.<ConvertedLine>singletonList(new SimpleConvertedLine(line));
+        public List<ConvertedLine> convert(String line) {
+            for (LineConvertor convertor : convertors) {
+                List<ConvertedLine> converted = convertor.convert(line);
+                if (converted != null) {
+                    return converted;
+                }
+            }
+
+            return null;
+        }
+
     }
 
     private static class FilePatternConvertor implements LineConvertor {
-
-        private final LineConvertor chain;
 
         private final FileLocator locator;
 
@@ -184,15 +214,14 @@ public final class LineConvertors {
 
         private final int lineGroup;
 
-        public FilePatternConvertor(LineConvertor chain, FileLocator locator,
-                Pattern linePattern, Pattern filePattern) {
-            this(chain, locator, linePattern, filePattern, 1, 2);
+        public FilePatternConvertor(FileLocator locator, Pattern linePattern,
+                Pattern filePattern) {
+            this(locator, linePattern, filePattern, 1, 2);
         }
 
-        public FilePatternConvertor(LineConvertor chain, FileLocator locator,
-                Pattern linePattern, Pattern filePattern, int fileGroup, int lineGroup) {
+        public FilePatternConvertor(FileLocator locator, Pattern linePattern,
+                Pattern filePattern, int fileGroup, int lineGroup) {
 
-            this.chain = chain;
             this.locator = locator;
             this.linePattern = linePattern;
             this.fileGroup = fileGroup;
@@ -204,7 +233,7 @@ public final class LineConvertors {
             // Don't try to match lines that are too long - the java.util.regex library
             // throws stack exceptions (101234)
             if (line.length() > 400) {
-                return chain(chain, line);
+                return null;
             }
 
             Matcher match = linePattern.matcher(line);
@@ -224,7 +253,7 @@ public final class LineConvertors {
                         file = file.substring(2);
                     }
                     if (filePattern != null && !filePattern.matcher(file).matches()) {
-                        return chain(chain, line);
+                        return null;
                     }
                 }
 
@@ -240,21 +269,19 @@ public final class LineConvertors {
                 }
 
                 return Collections.<ConvertedLine>singletonList(
-                        new SimpleConvertedLine(line, new FindFileListener(file, lineno, locator)));
+                        ConvertedLine.forText(line, new FindFileListener(file, lineno, locator)));
             }
 
-            return chain(chain, line);
+            return null;
         }
     }
 
     private static class HttpUrlConvertor implements LineConvertor {
 
-        private final LineConvertor chain;
-
         private final Pattern pattern = Pattern.compile(".*(((http)|(https))://\\S+)(\\s.*|$)"); // NOI18N
 
-        public HttpUrlConvertor(LineConvertor chain) {
-            this.chain = chain;
+        public HttpUrlConvertor() {
+            super();
         }
 
         public List<ConvertedLine> convert(String line) {
@@ -264,39 +291,15 @@ public final class LineConvertors {
                 try {
                     URL url = new URL(stringUrl);
                     return Collections.<ConvertedLine>singletonList(
-                            new SimpleConvertedLine(line, new UrlOutputListener(url)));
+                            ConvertedLine.forText(line, new UrlOutputListener(url)));
                 } catch (MalformedURLException ex) {
-                    // retur chain
+                    // return null
                 }
             }
 
-            return chain(chain, line);
+            return null;
         }
 
-    }
-
-    private static class SimpleConvertedLine implements ConvertedLine {
-
-        private final String text;
-
-        private final OutputListener listner;
-
-        public SimpleConvertedLine(String text) {
-            this(text, null);
-        }
-
-        public SimpleConvertedLine(String text, OutputListener listner) {
-            this.text = text;
-            this.listner = listner;
-        }
-
-        public OutputListener getListener() {
-            return listner;
-        }
-
-        public String getText() {
-            return text;
-        }
     }
 
     private static class UrlOutputListener implements OutputListener {

@@ -93,8 +93,8 @@ import org.openide.xml.XMLUtil;
  */
 class PlatformNode extends AbstractNode implements ChangeListener {
 
-    private static final String PLATFORM_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/platform.gif";    //NOI18N
-    private static final String ARCHIVE_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/jar.gif"; //NOI18N
+    private static final String PLATFORM_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/platform.gif";    //NOI18N
+    private static final String ARCHIVE_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/jar.gif"; //NOI18N
 
     private final PlatformProvider pp;
 

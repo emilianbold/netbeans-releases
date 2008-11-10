@@ -748,11 +748,9 @@ public class AstRenderer {
                                 break;
                             case CPPTokenTypes.LITERAL_enum:
                                 if (AstUtil.findSiblingOfType(curr, CPPTokenTypes.RCURLY) != null) {
-                                    if (scope instanceof CsmScope) {
-                                        ei = EnumImpl.create(curr, (CsmScope) scope, file, !isRenderingLocalContext());
-                                        if (scope instanceof MutableDeclarationsContainer) {
-                                            ((MutableDeclarationsContainer) scope).addDeclaration(ei);
-                                        }
+                                    ei = EnumImpl.create(curr, scope, file, !isRenderingLocalContext());
+                                    if (scope instanceof MutableDeclarationsContainer) {
+                                        ((MutableDeclarationsContainer) scope).addDeclaration(ei);
                                     }
                                     break;
                                 }
@@ -800,7 +798,7 @@ public class AstRenderer {
                                         results.add(typedef);
                                         if (classifier instanceof ClassEnumBase) {
                                             ((ClassEnumBase) classifier).addEnclosingTypedef(typedef);
-                                        } else if (ei instanceof ClassEnumBase) {
+                                        } else if (ei != null) {
                                             ((ClassEnumBase) ei).addEnclosingTypedef(typedef);
                                         }
                                     }

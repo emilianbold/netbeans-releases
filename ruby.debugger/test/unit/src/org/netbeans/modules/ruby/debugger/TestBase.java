@@ -45,6 +45,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
@@ -112,16 +114,7 @@ public abstract class TestBase extends RubyTestBase {
         MockServices.setServices(DialogDisplayerImpl.class, IFL.class);
         touch(getWorkDir(), "config/Services/org-netbeans-modules-debugger-Settings.properties");
         super.setUp();
-        File alternative = TestBase.getFile("ruby.executable", false);
-        if (alternative != null) {
-            platform = RubyPlatformManager.addPlatform(alternative);
-        } else {
-            platform = RubyPlatformManager.getDefaultPlatform();
-        }
-        assertTrue(platform + " has RubyGems installed", platform.hasRubyGemsInstalled());
-        assertTrue(platform + " has fast debugger installed", platform.hasFastDebuggerInstalled());
-        String problems = platform.getFastDebuggerProblemsInHTML();
-        assertNull("fast debugger installed: " + problems, problems);
+        platform = getTestConfiguredPlatform();
 
         doCleanUp();
         assertTrue("no breakpoints set", RubyBreakpointManager.getBreakpoints().length == 0);
@@ -165,7 +158,6 @@ public abstract class TestBase extends RubyTestBase {
         this.jvmArgs = jvmArgs;
     }
 
-
     protected Process startDebugging(final String[] rubyCode, final int... breakpoints) throws RubyDebuggerException, IOException, InterruptedException {
         File testF = createScript(rubyCode);
         FileObject testFO = FileUtil.toFileObject(testF);
@@ -196,15 +188,31 @@ public abstract class TestBase extends RubyTestBase {
             desc.jvmArguments(this.jvmArgs);
         }
         RubySession session = RubyDebugger.startDebugging(desc);
-        session.getProxy().startDebugging(RubyBreakpointManager.getBreakpoints());
-        Process process = session.getProxy().getDebugTarged().getProcess();
+        session.getProxy().attach(RubyBreakpointManager.getBreakpoints());
+        Process process = session.getProxy().getDebugTarget().getProcess();
         if (waitForSuspension) {
             waitForSuspension();
         }
         return process;
     }
 
-    private void waitForSuspension() throws InterruptedException {
+    /** Start debuggee process without attaching to it. */
+    protected Process startDebuggerProcess(
+            final File toTest,
+            final int port,
+            final RubyPlatform platform) throws IOException {
+        String rdebugIDE = Util.findRDebugExecutable(platform);
+        String versionToken = '_' + platform.getLatestAvailableValidRDebugIDEVersions() + '_';
+        List<String> args = Arrays.asList(platform.getInterpreter(), rdebugIDE, versionToken, "-p",
+                "" + port, "--xml-debug", "--", toTest.getAbsolutePath());
+        ProcessBuilder pb = new ProcessBuilder(args);
+        pb.directory(toTest.getParentFile());
+        LOGGER.fine("Running [basedir: " + toTest.getParentFile().getPath() +
+                "]: \"" + getProcessAsString(args) + "\"");
+        return pb.start();
+    }
+
+    protected void waitForSuspension() throws InterruptedException {
         RubySession session = Util.getCurrentSession();
         //        while (session.getFrames() == null || session.getFrames().length == 0) {
         while (!session.isSessionSuspended()) {
@@ -344,6 +352,30 @@ public abstract class TestBase extends RubyTestBase {
         File directory = resolveFile(property, mandatory);
         assertTrue(directory + " is directory", !mandatory || directory.isDirectory());
         return directory;
+    }
+
+    /** Just helper method for logging. */
+    private static String getProcessAsString(List<? extends String> process) {
+        StringBuilder sb = new StringBuilder();
+        for (String arg : process) {
+            sb.append(arg).append(' ');
+        }
+        return sb.toString().trim();
+    }
+
+    protected static RubyPlatform getTestConfiguredPlatform() throws IOException {
+        File alternative = TestBase.getFile("ruby.executable", false);
+        RubyPlatform platform;
+        if (alternative != null) {
+            platform = RubyPlatformManager.addPlatform(alternative);
+        } else {
+            platform = RubyPlatformManager.getDefaultPlatform();
+        }
+        assertTrue(platform + " has RubyGems installed", platform.hasRubyGemsInstalled());
+        assertTrue(platform + " has fast debugger installed", platform.hasFastDebuggerInstalled());
+        String problems = platform.getFastDebuggerProblemsInHTML();
+        assertNull("fast debugger installed: " + problems, problems);
+        return platform;
     }
 
     private static class TestHandler extends Handler {

@@ -85,8 +85,10 @@ public final class PtyProcess extends java.lang.Process {
      * {@inheritDoc}
      */
     public InputStream getInputStream() {
-        // OLD return process.getInputStream();
-        return pty.getInputStream();
+	if (pty == null)
+	    return process.getInputStream();	// Mode.RAW
+	else
+	    return pty.getInputStream();
     }
 
     /**
@@ -96,16 +98,20 @@ public final class PtyProcess extends java.lang.Process {
      * {@link java.lang.ProcessBuilder#redirectErrorStream}.
      */
     public InputStream getErrorStream() {
-        // OLD return process.getErrorStream();
-        throw new UnsupportedOperationException("No error stream");
+	if (pty == null)
+	    return process.getErrorStream();	// Mode.RAW
+	else
+	    throw new UnsupportedOperationException("No error stream");
     }
 
     /**
      * {@inheritDoc}
      */
     public OutputStream getOutputStream() {
-        // OLD return process.getOutputStream();
-        return pty.getOutputStream();
+	if (pty == null)
+	    return process.getOutputStream();
+	else
+	    return pty.getOutputStream();
     }
 
     /**

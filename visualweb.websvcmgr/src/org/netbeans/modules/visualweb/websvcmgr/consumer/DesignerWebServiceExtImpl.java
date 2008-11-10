@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -227,7 +227,7 @@ public class DesignerWebServiceExtImpl implements WebServiceManagerExt {
         data.setPortToProxyBeanNameMap(proxyBeanNames);
 
         int portsCreated = 0;
-        List<WSPort> ports = wsMetadataDesc.getModel().getPorts();
+        List<? extends WSPort> ports = wsMetadataDesc.getModel().getPorts();
         assert ports.size() > 0 : "ports.size = " + ports.size();
         for (WSPort port : ports) {
             // There will be one client wrapper class per web service port. All the classes (client wrapper class,

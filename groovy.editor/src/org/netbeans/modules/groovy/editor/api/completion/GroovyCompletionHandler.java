@@ -743,6 +743,14 @@ public class GroovyCompletionHandler implements CodeCompletionHandler {
         assert info != null;
 
         ASTNode root = AstUtilities.getRoot(info);
+
+        // If we don't get a valid root-node from a valid CompilationInfo,
+        // there's not much we can do. cf. # 150929
+
+        if (root == null) {
+            return null;
+        }
+
         BaseDocument doc = (BaseDocument) info.getDocument();
 
         return new AstPath(root, caretOffset, doc);

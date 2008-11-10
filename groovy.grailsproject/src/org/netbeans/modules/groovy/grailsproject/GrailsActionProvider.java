@@ -203,8 +203,8 @@ public class GrailsActionProvider implements ActionProvider {
 
         ExecutionDescriptor descriptor = RUN_DESCRIPTOR;
         descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
-            public InputProcessor newInputProcessor() {
-                return InputProcessors.bridge(new ServerURLProcessor(project, debug));
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(new ServerURLProcessor(project, debug)));
             }
         });
         descriptor = descriptor.postExecution(runnable);

@@ -47,6 +47,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.security.Permission;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -127,11 +128,9 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
     protected void tearDown () throws Exception {
         super.tearDown ();
         TestUtilHid.destroyLocalFileSystem (getName());
-        /*
         if (log.length() > 0) {
             fail("There should be no warnings:\n" + log);
         }
-         */
     }
     
     public void testGetStatusBehaviour () throws Exception {
@@ -242,6 +241,13 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
             assertNotNull (cookie);
             assertEquals ("No changes yet", 0, pcl.cnt);
             
+            assertNotNull("Data object in lkp", obj.getLookup().lookup(DataObject.class));
+            assertNotNull("Data object in lkp", obj.getLookup().lookup(FileObject.class));
+            assertNotNull("Data object in cookie", obj.getCookie(DataObject.class));
+            checkLookup(obj, 4);
+
+            pcl.cnt = 0;
+
             ostm = data.getOutputStream(lck);
             pw = new java.io.PrintWriter(new OutputStreamWriter(ostm, "UTF8")); //NOI18N
             pw.println("<?xml version='1.0'?>"); //NOI18N
@@ -293,6 +299,28 @@ public class XMLDataObjectTest extends org.netbeans.junit.NbTestCase {
         CountingSecurityManager.assertMembers(0);
     }
     
+    public void testCheckLookupContent() throws DataObjectNotFoundException {
+        DataObject obj = DataObject.find(data);
+        checkLookup(obj, 13);
+    }
+    
+    private static void checkLookup(DataObject obj, int expected) throws DataObjectNotFoundException {
+        Collection<? extends Object> all = obj.getLookup().lookupAll(Object.class);
+
+        int cnt = 0;
+        for (Object object : all) {
+            assertEquals("Is in lkp", object, obj.getLookup().lookup(object.getClass()));
+            Class c = object.getClass();
+            if (object instanceof EditorCookie) {
+                c = EditorCookie.class;
+            }
+            if (object instanceof Node.Cookie) {
+                assertEquals("Is in cookie: " + c.getSuperclass(), object, obj.getCookie(c));
+            }
+            cnt++;
+        }
+        assertEquals("There are some items:\n" + all, expected, cnt);
+    }
     
     public static final class Lkp extends org.openide.util.lookup.AbstractLookup 
     implements org.openide.loaders.Environment.Provider {

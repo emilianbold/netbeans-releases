@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,33 +38,30 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * NodeActions.java
- *
- * Created on 16 May 2006, 16:05
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.mobility.project.ui;
 
 import java.awt.Dialog;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
-import java.util.StringTokenizer;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.filechooser.FileFilter;
 import org.apache.tools.ant.module.api.support.ActionUtils;
@@ -97,47 +94,102 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
+import org.openide.util.actions.Presenter;
 
 /**
  *
- * @author Lukas Waldmann
+ * @author Lukas Waldmann, Tim Boudreau
  */
-
 class NodeActions {
 
-static abstract class ContextAction extends org.openide.util.actions.NodeAction //AbstractAction implements ContextAwareAction
-{
-    final private String name;
-    
-    //Called just for creation common static action representation
-    protected ContextAction(String n)
-    {
-        super();
-        name=n;
-    }
-    
-    protected boolean asynchronous()
-    {
-        return false;
-    }
+    static abstract class ContextAction extends AbstractAction implements ContextAwareAction {
+        protected ContextAction(String n) {
+            putValue(NAME, n);
+        }
 
-    protected boolean enable(Node[] activatedNodes)
-    {
-        return true;
-    }
+        @Override
+        public boolean isEnabled() {
+            Collection <? extends Node> nodes = Utilities.actionsGlobalContext().lookupAll(Node.class);
+            Node[] nds = (Node[]) nodes.toArray(new Node[nodes.size()]);
+            return enable (nds);
+        }
 
-    public String getName()
-    {
-        return name;
-    }
+        @Override
+        public void setEnabled(boolean newValue) {
+            throw new UnsupportedOperationException();
+        }
 
-    public HelpCtx getHelpCtx()
-    {
-        return null;
+        protected boolean enable(Node[] activatedNodes) {
+            return activatedNodes.length > 0;
+        }
+
+        public HelpCtx getHelpCtx() {
+            return HelpCtx.DEFAULT_HELP;
+        }
+
+        protected abstract void performAction(final Node[] activatedNodes);
+
+        public final void actionPerformed(ActionEvent e) {
+            new ActionStub (Utilities.actionsGlobalContext()).actionPerformed(e);
+        }
+
+        public final Action createContextAwareInstance(Lookup actionContext) {
+            return new ActionStub (actionContext);
+        }
+
+        private final class ActionStub implements Action, PropertyChangeListener {
+            private final Lookup context;
+            private PropertyChangeSupport supp = new PropertyChangeSupport(this);
+            ActionStub (Lookup context) {
+                this.context = context;
+
+            }
+
+            public Object getValue(String key) {
+                return ContextAction.this.getValue(key);
+            }
+
+            public void putValue(String key, Object value) {
+                throw new UnsupportedOperationException();
+            }
+
+            public void setEnabled(boolean b) {
+                ContextAction.this.setEnabled (b);
+            }
+
+            public boolean isEnabled() {
+                Collection <? extends Node> nodes = context.lookupAll(Node.class);
+                Node[] nds = (Node[]) nodes.toArray(new Node[nodes.size()]);
+                return enable (nds);
+            }
+
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+                supp.addPropertyChangeListener(listener);
+            }
+
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+                supp.removePropertyChangeListener(listener);
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                Collection <? extends Node> nodes = context.lookupAll(Node.class);
+                Node[] nds = (Node[]) nodes.toArray(new Node[nodes.size()]);
+                performAction (nds);
+            }
+
+            public void propertyChange(PropertyChangeEvent evt) {
+                supp.firePropertyChange(evt.getPropertyName(),
+                        evt.getOldValue(), evt.getNewValue());
+            }
+
+        }
     }
-}
 
 static abstract class NodeAction<T> extends ContextAction
 {   
@@ -165,6 +217,10 @@ static abstract class NodeAction<T> extends ContextAction
         }
 
         final List<VisualClassPathItem> list=(List)j2meProperties.get(propName);
+        if (list == null) {
+            throw new NullPointerException ("Could not get a list of properties " +
+                    "for " + propName);
+        }
         List<VisualClassPathItem> newList=new ArrayList<VisualClassPathItem>(list);
         newList=addItems (obj,newList, node);
         
@@ -288,17 +344,15 @@ static abstract class NodeAction<T> extends ContextAction
 
 static class AddLibraryAction extends NodeAction<Library>
 {
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Add_Library");
-    final static Action action = new AddLibraryAction();
-    
     private AddLibraryAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_CustLibs_Add_Library")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new AddLibraryAction();
     }
     
     protected Library[] getItems()
@@ -339,17 +393,16 @@ static class AddFolderAction extends NodeAction<File>
 {    
     private static File lastFile = null;
     
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Add_Folder");
-    final static Action action = new AddFolderAction();
     
     private AddFolderAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_CustLibs_Add_Folder")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new AddFolderAction();
     }
     
     protected File[] getItems()
@@ -392,27 +445,25 @@ static class AddFolderAction extends NodeAction<File>
 
 static class RemoveResourceAction extends NodeAction<Object>
 {
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Remove");
-    final static Action action = new RemoveResourceAction();
-    final static Object empty[]= new Object[] {};
     
     private RemoveResourceAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_CustLibs_Remove")); //NOI18N
         putValue (
             Action.ACCELERATOR_KEY,
-            KeyStroke.getKeyStroke ("DELETE")
+            KeyStroke.getKeyStroke ("DELETE") //NOI18N
         );
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new RemoveResourceAction();
     }
 
     protected Object[] getItems()
     {
-        return empty;
+        return new Object[0];
     }
     
     protected List<VisualClassPathItem> addItems(final Object[] items, final List<VisualClassPathItem> set, final Node node )
@@ -435,17 +486,15 @@ static class RemoveResourceAction extends NodeAction<Object>
 
 static class AddProjectAction extends NodeAction<ArtifactItem>
 {
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Add_Project");
-    final static Action action = new AddProjectAction();
-    
     private AddProjectAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_CustLibs_Add_Project")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new AddProjectAction();
     }
 
     protected ArtifactItem[] getItems() 
@@ -484,17 +533,16 @@ static class AddJarAction extends NodeAction<File>
 {
     private static File lastFile = null;
     
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_CustLibs_Add_Jar");
-    final static Action action = new AddJarAction();
     
     private AddJarAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_CustLibs_Add_Jar")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new AddJarAction();
     }
     
     private static class JarFileFilter extends FileFilter {
@@ -509,7 +557,8 @@ static class AddJarAction extends NodeAction<File>
         }
         
         public String getDescription() {
-            return NbBundle.getMessage( VisualClasspathSupport.class, "LBL_JarFileFilter"); //NOI18N
+            return NbBundle.getMessage( VisualClasspathSupport.class,
+                    "LBL_JarFileFilter"); //NOI18N
         }
     }
 
@@ -520,7 +569,8 @@ static class AddJarAction extends NodeAction<File>
         final JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode( JFileChooser.FILES_ONLY );
         chooser.setMultiSelectionEnabled( true );
-        chooser.setDialogTitle( NbBundle.getMessage( VisualClasspathSupport.class, "LBL_Classpath_AddJar" ) ); // NOI18N
+        chooser.setDialogTitle( NbBundle.getMessage( VisualClasspathSupport.class,
+                "LBL_Classpath_AddJar" ) ); //NOI18N
         chooser.setFileFilter(new JarFileFilter());
         chooser.setAcceptAllFileFilterUsed( false );
         if (defaultDir != null)
@@ -551,19 +601,89 @@ static class AddJarAction extends NodeAction<File>
     }
 }
 
+    static class SelectConfigurationAction extends AbstractAction implements ContextAwareAction, Presenter.Popup {
+
+        private final Lookup context;
+
+        private SelectConfigurationAction() {
+            this (Utilities.actionsGlobalContext());
+            putValue(NAME, NbBundle.getMessage(SelectConfigurationAction.class,
+                    "LBL_SelConfigurationAction")); //NOI18N
+        }
+
+        private SelectConfigurationAction (Lookup context) {
+            this.context = context;
+        }
+
+        public static Action getStaticInstance() {
+            return new SelectConfigurationAction();
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            throw new UnsupportedOperationException("Should never be called"); //NOI18N
+        }
+
+        public Action createContextAwareInstance(Lookup actionContext) {
+            return new SelectConfigurationAction (actionContext);
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return context.lookupItem(new Lookup.Template(J2MEProject.class)) != null;
+        }
+
+        public JMenuItem getPopupPresenter() {
+            J2MEProject project = context.lookup(J2MEProject.class);
+            assert project != null;
+            ProjectConfigurationsHelper helper = project.getConfigurationHelper();
+            JMenu result = new JMenu (NbBundle.getMessage(SelectConfigurationAction.class, "LBL_SelConfigurationAction")); //NOI18N
+            ProjectConfiguration active = helper.getActiveConfiguration();
+            for (ProjectConfiguration c : helper.getConfigurations()) {
+                OneConfigurationAction cfgAction = new OneConfigurationAction(c);
+                JMenuItem item = new JMenuItem (cfgAction);
+                if (active.equals(c)) {
+                    Font f = item.getFont();
+                    f = f.deriveFont(Font.BOLD);
+                    item.setFont (f);
+                }
+                result.add (item);
+            }
+            return result;
+        }
+
+        private final class OneConfigurationAction extends AbstractAction {
+            private final ProjectConfiguration config;
+
+            OneConfigurationAction(ProjectConfiguration config) {
+                putValue(NAME, config.getDisplayName());
+                this.config = config;
+            }
+
+            public void actionPerformed(ActionEvent e) {
+                J2MEProject project = context.lookup(J2MEProject.class);
+                assert project != null;
+                try {
+                    project.getConfigurationHelper().setActiveConfiguration(config);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
 static class SetConfigurationAction extends ContextAction
 {
-    final static String aName  = NbBundle.getMessage(SetConfigurationAction.class,"LBL_SACAction_SetConfiguration");
-    final static Action action = new SetConfigurationAction();
-    
     private SetConfigurationAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(SetConfigurationAction.class,
+                "LBL_SACAction_SetConfiguration")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new SetConfigurationAction();
     }
     
     protected boolean enable(final Node[] activatedNodes)
@@ -597,19 +717,18 @@ static class SetConfigurationAction extends ContextAction
 
 static class AddConfigurationAction extends ContextAction
 {
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"LBL_VCS_AddConfiguration");
-    final static Action action = new AddConfigurationAction();
-    
     private AddConfigurationAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "LBL_VCS_AddConfiguration")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new AddConfigurationAction();
     }
 
+    @Override
     protected boolean enable(final Node[] activatedNodes)
     {
         return activatedNodes.length == 1;
@@ -708,7 +827,7 @@ static abstract class AntAction extends ContextAction
                 todo.put(project,tobuild=new String());
             }                
             String conf=node.getLookup().lookup(ProjectConfiguration.class).getDisplayName();
-            String comma=(tobuild==null||tobuild.length()==0)?"":",";
+            String comma=(tobuild==null||tobuild.length()==0)?"":","; //NOI18N
             if (ProjectConfigurationsHelper.DEFAULT_CONFIGURATION_NAME.equals(conf))
                 tobuild=" "+comma+tobuild;
             else
@@ -722,12 +841,10 @@ static abstract class AntAction extends ContextAction
             {
                 for (Map.Entry<J2MEProject,String> entry : todo.entrySet())
                 {
-                    int tokens=new StringTokenizer(entry.getValue(),",").countTokens();
                     final String[] targetNames=new String[] {command};
                     final Properties props=new Properties();
                     props.put(DefaultPropertiesDescriptor.SELECTED_CONFIGURATIONS,
                               entry.getValue());
-                    
                     try 
                     {
                         ActionUtils.runTarget(entry.getKey().getProjectDirectory().getFileObject(GeneratedFilesHelper.BUILD_XML_PATH), 
@@ -745,51 +862,46 @@ static abstract class AntAction extends ContextAction
 
 static class BuildConfigurationAction extends AntAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_build-all");
-    final static Action action = new BuildConfigurationAction();
-    
     private BuildConfigurationAction()
     {
-        super(aName,"build-all");
+        super(NbBundle.getMessage(ContextAction.class,
+                "Title_CfgSelection_build-all"), //NOI18N
+                "build-all"); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new BuildConfigurationAction();
     }
     
 }
 
 static class CleanConfigurationAction extends AntAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_clean-all");
-    final static Action action = new CleanConfigurationAction();
-    
     private CleanConfigurationAction()
     {
-        super(aName,"clean-all");
+        super(NbBundle.getMessage(ContextAction.class,
+                "Title_CfgSelection_clean-all"),"clean-all"); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new CleanConfigurationAction();
     }
     
 }
 
 static class CleanAndBuildConfigurationAction extends AntAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_rebuild-all");
-    final static Action action = new CleanAndBuildConfigurationAction();
-    
     private CleanAndBuildConfigurationAction()
     {
-        super(aName,"rebuild-all");
+        super(NbBundle.getMessage(ContextAction.class,
+                "Title_CfgSelection_rebuild-all"), "rebuild-all"); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new CleanAndBuildConfigurationAction();
     }
     
 }
@@ -797,17 +909,15 @@ static class CleanAndBuildConfigurationAction extends AntAction
 
 static class DeployConfigurationAction extends AntAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"Title_CfgSelection_deploy-all");
-    final static Action action = new DeployConfigurationAction();
-    
     private DeployConfigurationAction()
     {
-        super(aName,"deploy-all");
+        super(NbBundle.getMessage(ContextAction.class,
+                "Title_CfgSelection_deploy-all"),"deploy-all"); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new DeployConfigurationAction();
     }
     
 }
@@ -849,33 +959,29 @@ static abstract class AntSingleAction extends ContextAction
 
 static class RunConfigurationAction extends AntSingleAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"LBL_RunConfigurationAction_Name");
-    final static Action action = new RunConfigurationAction();
-    
     private RunConfigurationAction()
     {
-        super(aName,"run");
+        super(NbBundle.getMessage(ContextAction.class,
+                "LBL_RunConfigurationAction_Name"), "run"); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new RunConfigurationAction();
     }
 }
 
 static class DebugConfigurationAction extends AntSingleAction
 {
-    final static String aName  = NbBundle.getMessage(ContextAction.class,"LBL_DebugConfigurationAction_Name");
-    final static Action action = new DebugConfigurationAction();
-    
     private DebugConfigurationAction()
     {
-        super(aName,"debug");
+        super(NbBundle.getMessage(ContextAction.class,
+                "LBL_DebugConfigurationAction_Name"), "debug"); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new DebugConfigurationAction();
     }
 }
 
@@ -883,17 +989,15 @@ static class DebugConfigurationAction extends AntSingleAction
 
 static class RemoveConfigurationAction extends ContextAction
 {
-    final static String aName  = NbBundle.getMessage(CustomizerLibraries.class,"ACSN_RemovePanel");
-    final static Action action = new RemoveConfigurationAction();
-    
     private RemoveConfigurationAction()
     {
-        super(aName);
+        super(NbBundle.getMessage(CustomizerLibraries.class,
+                "ACSN_RemovePanel")); //NOI18N
     }
     
     public static Action getStaticInstance()
     {
-        return action;
+        return new RemoveConfigurationAction();
     }
     
     protected void performAction(final Node[] activatedNodes)

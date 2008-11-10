@@ -62,7 +62,10 @@ public class Command extends Shell {
         String cmdName = st.nextToken();
         name = basename(cmdName);
 
-        add("-c");
+	if (OS.get() == OS.WINDOWS)
+	    add("/c");
+	else
+	    add("-c");
         add(command);
     }
 

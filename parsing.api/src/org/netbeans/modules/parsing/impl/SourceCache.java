@@ -184,7 +184,7 @@ public final class SourceCache {
                 }
             }
         }
-        return parser.getResult (task, null);
+        return parser.getResult (task, event);
     }
     
     public synchronized void invalidate () {

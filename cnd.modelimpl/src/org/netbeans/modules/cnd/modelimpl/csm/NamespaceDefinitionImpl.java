@@ -85,9 +85,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         assert namespaceUID != null;
         this.namespaceRef = null;
         
-        if( nsImpl instanceof NamespaceImpl ) {
-            nsImpl.addNamespaceDefinition(this);
-        }
+        nsImpl.addNamespaceDefinition(this);
     }
 
     public static NamespaceDefinitionImpl findNamespaceDefionition(MutableDeclarationsContainer container, AST ast) {

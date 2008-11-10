@@ -112,7 +112,8 @@ public final class MenuWarmUpTask implements Runnable {
     }
 
     /**
-     * After activation of window is refreshed filesystem   
+     * After activation of window is refreshed filesystem but only if switching
+     * from an external application.
      */ 
     private static class NbWindowsAdapter extends WindowAdapter implements Runnable{
         private static final RequestProcessor rp = new RequestProcessor ("Refresh-After-WindowActivated");//NOI18N        
@@ -121,28 +122,34 @@ public final class MenuWarmUpTask implements Runnable {
 
         @Override
         public void windowActivated(WindowEvent e) {
-            synchronized (rp) {
-                if (task != null) {
-                    task.cancel();
-                } else {
-                    task = rp.create(this);                    
+            // proceed only if switching from external application
+            if (e.getOppositeWindow() == null) {
+                synchronized (rp) {
+                    if (task != null) {
+                        task.cancel();
+                    } else {
+                        task = rp.create(this);
+                    }
+                    task.schedule(1500);
                 }
-                task.schedule(1500);
             }
         }
 
         @Override
         public void windowDeactivated(WindowEvent e) {
-            synchronized (rp) {
-                if (task != null) {
-                    task.cancel();
+            // proceed only if switching to external application
+            if (e.getOppositeWindow() == null) {
+                synchronized (rp) {
+                    if (task != null) {
+                        task.cancel();
+                    }
                 }
+                LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
+                r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
+                r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
+                r.setLoggerName(LOG.getName());
+                LOG.log(r);
             }
-            LogRecord r = new LogRecord(Level.FINE, "LOG_WINDOW_DEACTIVATED"); // NOI18N
-            r.setResourceBundleName("org.netbeans.core.ui.warmup.Bundle"); // NOI18N
-            r.setResourceBundle(NbBundle.getBundle(MenuWarmUpTask.class)); // NOI18N
-            r.setLoggerName(LOG.getName());
-            LOG.log(r);
         }
 
         public void run() {

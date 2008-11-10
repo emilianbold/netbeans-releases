@@ -82,11 +82,6 @@ public class FFJSDebugger extends JSAbstractExternalDebugger {
         }
         return result;
     }
-    
-    @Override
-    protected InputStream getInputStreamForURLImpl(String uri) {
-        return super.getInputStreamForURLImpl(uri, true);
-    }        
 
     public String getID() {
         if (ID == null) {

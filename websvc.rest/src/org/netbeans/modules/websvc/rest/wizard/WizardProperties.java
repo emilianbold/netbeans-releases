@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -51,6 +51,7 @@ public class WizardProperties {
     public static final String PERSISTENCE_UNIT_NAME = "PersistenceUnitName";       //NOI18N
     public static final String PERSISTENCE_UNIT = "PersistenceUnit";        //NOI18N
     public static final String ENTITY_RESOURCE_MODEL = "EntityResourceModel";       //NOI18N
+    public static final String TARGET_SRC_ROOT = "targetSourceRoot"; //NOI18N
     
     public static final String RESOURCE_NAME = "ResourceName"; //NOI18N
     public static final String RESOURCE_CLASS = "ResourceClass"; //NOI18N

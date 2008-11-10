@@ -442,7 +442,7 @@ abstract public class SaasClientCodeGenerator implements SaasClientCodeGeneratio
         } catch (BadLocationException ex) {}
     }
     
-    protected void updateVariableNamesForWS(List<WSParameter> params) {
+    protected void updateVariableNamesForWS(List<? extends WSParameter> params) {
         nFinder.addPattern(VAR_NAMES_RESULT_DECL, new Integer(0));
         try {
             String text = getTargetDocument().getText(0, getTargetDocument().getLength());

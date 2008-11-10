@@ -52,6 +52,7 @@ import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -98,7 +99,7 @@ public class SchedulerTaskTest extends NbTestCase {
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (3);
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (5);
                                 }
@@ -114,6 +115,7 @@ public class SchedulerTaskTest extends NbTestCase {
                         public void removeChangeListener (ChangeListener changeListener) {
                         }
     
+                    @Override
                         public String toString () {
                             return "FooParser";
                         }
@@ -142,6 +144,7 @@ public class SchedulerTaskTest extends NbTestCase {
                             public void cancel () {
                             }
     
+                            @Override
                             public String toString () {
                                 return "FooEmbeddingProvider " + getPriority ();
                             }
@@ -164,6 +167,7 @@ public class SchedulerTaskTest extends NbTestCase {
                             public void cancel () {
                             }
     
+                            @Override
                             public String toString () {
                                 return "FooParserResultTask " + getPriority ();
                             }
@@ -190,7 +194,7 @@ public class SchedulerTaskTest extends NbTestCase {
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (7);
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (9);
                                 }
@@ -206,6 +210,7 @@ public class SchedulerTaskTest extends NbTestCase {
                         public void removeChangeListener (ChangeListener changeListener) {
                         }
     
+                        @Override
                         public String toString () {
                             return "BooParser";
                         }
@@ -232,6 +237,7 @@ public class SchedulerTaskTest extends NbTestCase {
                             public void cancel () {
                             }
     
+                            @Override
                             public String toString () {
                                 return "BooParserResultTask " + getPriority ();
                             }
@@ -256,7 +262,6 @@ public class SchedulerTaskTest extends NbTestCase {
         MyScheduler.schedule2 (
             Collections.<Source>singleton (source), 
             new ASchedulerEvent ()
-        
         );
         assertEquals (null, counter.errorMessage (true));
         System.out.println("");
@@ -292,7 +297,7 @@ public class SchedulerTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -325,7 +330,7 @@ public class SchedulerTaskTest extends NbTestCase {
                             {s1.push (18);s1.push (1);}
                             
                             public List<Embedding> getEmbeddings (Snapshot snapshot) {
-                                 counter.check (s1.pop ());
+                                counter.check (s1.pop ());
                                 return Arrays.asList (new Embedding[] {
                                     snapshot.create (10, 10, "text/boo")
                                 });
@@ -406,7 +411,7 @@ public class SchedulerTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                     synchronized (LOCK) {
@@ -518,6 +523,200 @@ public class SchedulerTaskTest extends NbTestCase {
         assertEquals (null, counter.errorMessage (false));
         assertEquals (18, counter.count ());
         MyScheduler.schedule2 (Collections.singleton (source), new ASchedulerEvent ());
+        assertEquals (null, counter.errorMessage (true));
+        System.out.println("");
+    }
+    
+    public void testCaretScheduler () throws Exception {
+        
+        // 1) register tasks and parsers
+        MockServices.setServices (MockMimeLookup.class, MyScheduler.class);
+        final Counter counter = new Counter (9);
+        MockMimeLookup.setInstances (
+            MimePath.get ("text/foo"), 
+            new ParserFactory () {
+                public Parser createParser (Collection<Snapshot> snapshots2) {
+                    return new Parser () {
+                        
+                        private Snapshot last;
+
+                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                            counter.check (2);
+                            last = snapshot;
+                        }
+
+                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                            CursorMovedSchedulerEvent cevent = (CursorMovedSchedulerEvent) event;
+                            assertEquals (666, cevent.getCaretOffset ());
+                            counter.check (3);
+                            return new Result (last, event) {
+                                public void invalidate () {
+                                    counter.check (5);
+                                }
+                            };
+                        }
+
+                        public void cancel () {
+                        }
+
+                        public void addChangeListener (ChangeListener changeListener) {
+                        }
+
+                        public void removeChangeListener (ChangeListener changeListener) {
+                        }
+    
+                    @Override
+                        public String toString () {
+                            return "FooParser";
+                        }
+                    };
+                }
+            },
+            new TaskFactory () {
+                public Collection<SchedulerTask> create (Snapshot snapshot) {
+                    return Arrays.asList (new SchedulerTask[] {
+                        new EmbeddingProvider() {
+                            public List<Embedding> getEmbeddings (Snapshot snapshot) {
+                                counter.check (1);
+                                return Arrays.asList (new Embedding[] {
+                                    snapshot.create (10, 10, "text/boo")
+                                });
+                            }
+
+                            public int getPriority () {
+                                return 10;
+                            }
+
+                            public Class<? extends Scheduler> getSchedulerClass () {
+                                return MyScheduler.class;
+                            }
+
+                            public void cancel () {
+                            }
+    
+                            @Override
+                            public String toString () {
+                                return "FooEmbeddingProvider " + getPriority ();
+                            }
+                        },
+                        new ParserResultTask () {
+
+                            public void run (Result result) {
+                                counter.check ("text/foo", result.getSnapshot().getMimeType ());
+                                counter.check (4);
+                            }
+
+                            public int getPriority () {
+                                return 100;
+                            }
+
+                            public Class<? extends Scheduler> getSchedulerClass () {
+                                return MyScheduler.class;
+                            }
+
+                            public void cancel () {
+                            }
+    
+                            @Override
+                            public String toString () {
+                                return "FooParserResultTask " + getPriority ();
+                            }
+                        }
+                    
+                    });
+                }
+            }
+        
+        );
+        MockMimeLookup.setInstances (
+            MimePath.get ("text/boo"), 
+            new ParserFactory () {
+                public Parser createParser (Collection<Snapshot> snapshots2) {
+                    return new Parser () {
+                        
+                        private Snapshot last;
+
+                        public void parse (Snapshot snapshot, Task task, SchedulerEvent event) throws ParseException {
+                            counter.check ("text/boo", snapshot.getMimeType ());
+                            counter.check (6);
+                            last = snapshot;
+                        }
+
+                        public Result getResult (Task task, SchedulerEvent event) throws ParseException {
+                            CursorMovedSchedulerEvent cevent = (CursorMovedSchedulerEvent) event;
+                            assertEquals (666, cevent.getCaretOffset ());
+                            counter.check (7);
+                            return new Result (last, event) {
+                                public void invalidate () {
+                                    counter.check (9);
+                                }
+                            };
+                        }
+
+                        public void cancel () {
+                        }
+
+                        public void addChangeListener (ChangeListener changeListener) {
+                        }
+
+                        public void removeChangeListener (ChangeListener changeListener) {
+                        }
+    
+                        @Override
+                        public String toString () {
+                            return "BooParser";
+                        }
+                    };
+                }
+            },
+            new TaskFactory () {
+                public Collection<SchedulerTask> create (Snapshot snapshot) {
+                    return Arrays.asList (new SchedulerTask[] {
+                        new ParserResultTask () {
+
+                            public void run (Result result) {
+                                CursorMovedSchedulerEvent event = (CursorMovedSchedulerEvent) result.getEvent ();
+                                assertEquals (666, event.getCaretOffset ());
+                                counter.check (8);
+                            }
+
+                            public int getPriority () {
+                                return 150;
+                            }
+
+                            public Class<? extends Scheduler> getSchedulerClass () {
+                                return MyScheduler.class;
+                            }
+
+                            public void cancel () {
+                            }
+    
+                            @Override
+                            public String toString () {
+                                return "BooParserResultTask " + getPriority ();
+                            }
+                        }
+                    
+                    });
+                }
+            }
+        
+        );
+        
+        // 2) create source file
+        clearWorkDir ();
+        FileObject workDir = FileUtil.toFileObject (getWorkDir ());
+        FileObject testFile = FileUtil.createData (workDir, "bla.foo");
+        FileUtil.setMIMEType ("foo", "text/foo");
+        OutputStream outputStream = testFile.getOutputStream ();
+        OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+        writer.append ("Toto je testovaci file, na kterem se budou delat hnusne pokusy!!!");
+        writer.close ();
+        Source source = Source.create (testFile);
+        MyScheduler.schedule2 (
+            Collections.<Source>singleton (source), 
+            new CursorMovedSchedulerEvent (MyScheduler.class, 666) {}
+        );
         assertEquals (null, counter.errorMessage (true));
         System.out.println("");
     }

@@ -98,7 +98,7 @@ public class UniqueVariableNameFinder {
         }
     }
     
-    public void updateVariableDeclForWS(String text, List<WSParameter> params) throws BadLocationException {
+    public void updateVariableDeclForWS(String text, List<? extends WSParameter> params) throws BadLocationException {
         for (WSParameter p : params) {
             updateVariableDecl(text, getVariableDecl(p));
         }

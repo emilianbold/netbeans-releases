@@ -71,6 +71,11 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplateManager;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
@@ -689,11 +694,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            JavaSource js = JavaSource.forDocument(doc);
+            Source s = Source.create(doc);
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(final CompilationController controller) throws IOException {
+                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
                         controller.toPhase(Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
                         final TypeElement elem = type != null ? (TypeElement)type.asElement() : null;
@@ -849,8 +855,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         }
                     }
-                }, true);
-            } catch (IOException ioe) {                
+                });
+            } catch (ParseException pe) {
             }
         }
         
@@ -1308,11 +1314,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (isPrimitive) {
                     try {
                         final String[] ret = new String[1];
-                        JavaSource js = JavaSource.forDocument(c.getDocument());
-                        js.runUserActionTask(new Task<CompilationController>() {
-
-                            public void run(CompilationController controller) throws Exception {
-                                controller.toPhase(JavaSource.Phase.PARSED);
+                        Source s = Source.create(c.getDocument());
+                        ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                            @Override
+                            public void run(ResultIterator resultIterator) throws Exception {
+                                final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                                controller.toPhase(Phase.PARSED);
                                 TreePath tp = controller.getTreeUtilities().pathFor(c.getSelectionEnd());
                                 Tree tree = tp.getLeaf();
                                 if (tree.getKind() == Tree.Kind.IDENTIFIER || tree.getKind() == Tree.Kind.PRIMITIVE_TYPE) {
@@ -1326,9 +1333,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 if (tp.getLeaf().getKind() == Tree.Kind.EXPRESSION_STATEMENT || tp.getLeaf().getKind() == Tree.Kind.BLOCK)
                                     ret[0] = ";"; //NOI18N
                             }
-                        }, true);
+                        });
                         toAdd = ret[0];
-                    } catch (IOException ex) {
+                    } catch (ParseException ex) {
                     }
                 }
             }
@@ -1941,7 +1948,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     js.runModificationTask(new Task<WorkingCopy>() {
 
                         public void run(WorkingCopy copy) throws IOException {
-                            copy.toPhase(JavaSource.Phase.RESOLVED);
+                            copy.toPhase(Phase.RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(off);                            
                             while (path.getLeaf() != path.getCompilationUnit()) {
                                 Tree tree = path.getLeaf();
@@ -2138,7 +2145,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     js.runModificationTask(new Task<WorkingCopy>() {
 
                         public void run(WorkingCopy copy) throws IOException {
-                            copy.toPhase(JavaSource.Phase.RESOLVED);
+                            copy.toPhase(Phase.RESOLVED);
                             TreePath path = copy.getTreeUtilities().pathFor(off);                            
                             while (path.getLeaf() != path.getCompilationUnit()) {
                                 Tree tree = path.getLeaf();
@@ -2410,12 +2417,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            JavaSource js = JavaSource.forDocument(doc);
+            Source s = Source.create(doc);
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(final CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                        controller.toPhase(Phase.RESOLVED);
                         final DeclaredType type = typeHandle.resolve(controller);
                         // Update the text
                         doc.runAtomic (new Runnable () {
@@ -2436,8 +2444,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             }
                         });
                     }
-                }, true);
-            } catch (IOException ioe) {                
+                });
+            } catch (ParseException pe) {
             }
         }
     }
@@ -2721,12 +2729,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 }
             }
             final int finalLen = len;
-            JavaSource js = JavaSource.forDocument(doc);
+            Source s = Source.create(doc);
             try {
-                js.runUserActionTask(new Task<CompilationController>() {
-
-                    public void run(CompilationController controller) throws IOException {
-                        controller.toPhase(JavaSource.Phase.RESOLVED);
+                ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                        controller.toPhase(Phase.RESOLVED);
                         DeclaredType type = typeHandle.resolve(controller);
                         StringBuilder sb = new StringBuilder();
                         int cnt = 1;
@@ -2814,8 +2823,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             ctm.createTemporary(sb.toString()).insert(c);
                         }
                     }
-                }, true);
-            } catch (IOException ioe) {                
+                });
+            } catch (ParseException pe) {
             }
         }
 
@@ -2949,7 +2958,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 js.runModificationTask(new Task<WorkingCopy>() {
 
                     public void run(WorkingCopy copy) throws IOException {
-                        copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                        copy.toPhase(Phase.ELEMENTS_RESOLVED);
                         TreePath tp = copy.getTreeUtilities().pathFor(offset);
                         if (tp.getLeaf().getKind() == Tree.Kind.CLASS) {
                             TypeElement parent = parentHandle.resolve(copy);
@@ -3029,11 +3038,12 @@ public abstract class JavaCompletionItem implements CompletionItem {
         final int[] ret = new int[] {-2};
         final int offset = c.getSelectionEnd();
         try {
-            JavaSource js = JavaSource.forDocument(c.getDocument());
-            js.runUserActionTask(new Task<CompilationController>() {
-
-                public void run(CompilationController controller) throws Exception {
-                    controller.toPhase(JavaSource.Phase.PARSED);
+            Source s = Source.create(c.getDocument());
+            ParserManager.parse(Collections.singletonList(s), new UserTask() {
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    final CompilationController controller = CompilationController.get(resultIterator.getParserResult(offset));
+                    controller.toPhase(Phase.PARSED);
                     Tree t = null;
                     TreePath tp = controller.getTreeUtilities().pathFor(offset);
                     while (t == null && tp != null) {
@@ -3065,8 +3075,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                             ret[0] = -1;
                     }
                 }
-            }, true);
-        } catch (IOException ex) {
+            });
+        } catch (ParseException ex) {
         }
         return ret[0];
     }

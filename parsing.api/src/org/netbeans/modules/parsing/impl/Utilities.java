@@ -53,10 +53,16 @@ public class Utilities {
     
     private Utilities () {}
 
+    //Helpers for java reformatter, may be removed when new reformat api will be done
+    public static void acquireParserLock () {
+        TaskProcessor.acquireParserLock();
+    }
+
+    public static void releaseParserLock () {
+        TaskProcessor.releaseParserLock();
+    }
+
     //Helpers for asserts in java.source    
-    /**
-     * Temporary method until editor API (formating) will be fixed
-     */
     public static boolean holdsParserLock () {
         return TaskProcessor.holdsParserLock();
     }

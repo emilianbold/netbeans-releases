@@ -47,7 +47,9 @@ import java.util.EventObject;
  */
 public class SchedulerEvent extends EventObject {
 
-    protected SchedulerEvent (Object source) {
+    protected SchedulerEvent (
+        Object              source
+    ) {
         super (source);
     }
 }

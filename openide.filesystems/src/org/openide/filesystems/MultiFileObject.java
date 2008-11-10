@@ -990,7 +990,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
                 }
 
                 if (this.getFileObject(name) != null) {
-                    FSException.io("EXC_FolderAlreadyExist", name, fs.getDisplayName()); // NOI18N
+                    FSException.io("EXC_FolderAlreadyExist", name, fs.getDisplayName(), getPath()); // NOI18N
                 }
 
                 FileSystem simple = fs.createWritableOn(fullName);

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.java.source.parsing;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.swing.PositionRegion;
@@ -50,29 +52,29 @@ import org.openide.util.Exceptions;
  */
 public final class DocPositionRegion extends PositionRegion {
         
-    private final Document doc;
+    private final Reference<Document> doc;
         
     public DocPositionRegion (final Document doc, final int startPos, final int endPos) throws BadLocationException {
         super (doc,startPos,endPos);
         assert doc != null;
-        this.doc = doc;
+        this.doc = new WeakReference<Document>(doc);
     }
 
-    public Document getDocument () {
-        return this.doc;
-    }
 
     public String getText () {
         final String[] result = new String[1];
-        this.doc.render(new Runnable() {
-            public void run () {
-                try {
-                    result[0] = doc.getText(getStartOffset(), getLength());
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+        final Document doc = this.doc.get();
+        if (doc != null) {
+            doc.render(new Runnable() {
+                public void run () {
+                    try {
+                        result[0] = doc.getText(getStartOffset(), getLength());
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
-            }
-        });
+            });
+        }
         return result[0];
     }
 

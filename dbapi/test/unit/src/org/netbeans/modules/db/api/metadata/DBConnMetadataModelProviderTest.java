@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,56 +31,65 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-/*
- * J2MEProjectModuleInstallTest.java
- * JUnit based test
  *
- * Created on 06 February 2006, 18:55
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mobility.project;
 
-import java.io.IOException;
-import junit.framework.*;
-import org.netbeans.junit.NbTestCase;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
+package org.netbeans.modules.db.api.metadata;
+
+import java.sql.Types;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
+import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.metadata.model.api.Action;
+import org.netbeans.modules.db.metadata.model.api.Metadata;
+import org.netbeans.modules.db.metadata.model.api.MetadataModel;
+import org.netbeans.modules.db.metadata.model.api.Table;
+import org.netbeans.modules.db.test.DBTestBase;
+import org.netbeans.modules.db.test.DDLTestBase;
 
 /**
  *
- * @author lukas
+ * @author David
  */
-public class J2MEProjectModuleInstallTest extends NbTestCase {
-    
-    public J2MEProjectModuleInstallTest(String testName) {
-        super(testName);
+public class DBConnMetadataModelProviderTest extends DDLTestBase {
+    private static final Action<Metadata> CHECK_TABLE_EXISTS_ACTION = new Action<Metadata>() {
+        public void run(Metadata md) {
+            assertNotNull(getTestTable(md));
+        }
+    };
+
+    private static Table getTestTable(Metadata md) {
+        return md.getDefaultSchema().getTable(DBTestBase.getTestTableName());
     }
-    
-    protected void setUp() throws Exception {
+
+    public DBConnMetadataModelProviderTest(String name) {
+        super(name);
     }
-    
-    protected void tearDown() throws Exception {
+
+    @BeforeClass
+    public static void setUpClass() throws Exception {
     }
-    
-    public static Test suite() {
-        TestSuite suite = new TestSuite(J2MEProjectModuleInstallTest.class);
-        
-        return suite;
+
+    @AfterClass
+    public static void tearDownClass() throws Exception {
     }
-    
+
     /**
-     * Test of restored method, of class org.netbeans.modules.mobility.project.J2MEProjectModuleInstall.
+     * Test of get method, of class DBConnMetadataModelProvider.
      */
-    public void testRestored() throws IOException {
-        System.out.println("restored");
+    @Test
+    public void testGet() throws Exception {
+        DatabaseConnection dbconn = getDatabaseConnection(true);
+        createTestTable();
+
+        MetadataModel model = DBConnMetadataModelProvider.get(dbconn);
+        assertNotNull(model);
         
-        System.setProperty("netbeans.user","test/tiredTester");
-        J2MEProjectModuleInstall instance = new J2MEProjectModuleInstall();
-        
-        EditableProperties pr1=PropertyUtils.getGlobalProperties();
-        instance.restored();
-        EditableProperties pr2=PropertyUtils.getGlobalProperties();
-        assertEquals(pr1,pr2);
+        model.runReadAction(CHECK_TABLE_EXISTS_ACTION);
     }
 }

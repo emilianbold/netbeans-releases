@@ -110,8 +110,8 @@ public class GrailsPluginsManager {
         final PluginProcessor processor = new PluginProcessor();
         ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true);
         descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
-            public InputProcessor newInputProcessor() {
-                return InputProcessors.bridge(processor);
+            public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+                return InputProcessors.proxy(defaultProcessor, InputProcessors.bridge(processor));
             }
         });
 

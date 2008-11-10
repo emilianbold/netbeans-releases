@@ -51,8 +51,8 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModeler;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
+import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
@@ -60,9 +60,10 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
 
     JaxWsService client;
     WsdlModel wsdlModel;
-    FileObject srcRoot;
+    private JAXWSLightSupport jaxWsSupport;
 
-    public JaxWsClientChildren(JaxWsService client) {
+    public JaxWsClientChildren(JAXWSLightSupport jaxWsSupport, JaxWsService client) {
+        this.jaxWsSupport = jaxWsSupport;
         this.client = client;
     }
 
@@ -70,10 +71,7 @@ public class JaxWsClientChildren extends Children.Keys<WsdlService> {
     protected void addNotify() {
         final WsdlModeler wsdlModeler = ((JaxWsClientNode) getNode()).getWsdlModeler();
         if (wsdlModeler != null) {
-//            JAXWSClientSupport clientSupport = JAXWSClientSupport.getJaxWsClientSupport(srcRoot);
-//            if (clientSupport != null) {
-//                wsdlModeler.setCatalog(clientSupport.getCatalog());
-//            }
+            wsdlModeler.setCatalog(jaxWsSupport.getCatalog());
             wsdlModel = wsdlModeler.getWsdlModel();
             if (wsdlModel == null) {
                 wsdlModeler.generateWsdlModel(new WsdlModelListener() {

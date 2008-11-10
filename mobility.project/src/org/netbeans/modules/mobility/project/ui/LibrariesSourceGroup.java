@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,57 +38,84 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
-/*
- * SourcesViewProvider.java
- *
- * Created on 21 April 2006, 15:53
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-
 package org.netbeans.modules.mobility.project.ui;
 
-import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.project.ProjectUtils;
+import java.beans.PropertyChangeListener;
+import javax.swing.Icon;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
-import org.netbeans.modules.mobility.project.J2MEProject;
-import org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider.ChildLookup;
-import org.netbeans.spi.java.project.support.ui.PackageView;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
+import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.FilterNode;
-import org.openide.nodes.Node;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
-
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileUtil;
 /**
+ * Fake source group used to create a package view for misc resource nodes
  *
  * @author Lukas Waldmann
  */
-final class SourcesViewProvider extends ChildLookup {
-    public Node[] createNodes(final J2MEProject project) {
-        Node n = null;
-        final AntProjectHelper helper=project.getLookup().lookup(AntProjectHelper.class);
-        final FileObject root = helper.resolveFileObject (helper.getStandardPropertyEvaluator ().getProperty ("src.dir")); // NOI18N
-        DataObject dao = null;
+class LibrariesSourceGroup implements SourceGroup {
+
+    private final FileObject root;
+    private final String displayName;
+    private final Icon icon;
+    private final Icon openIcon;
+
+    LibrariesSourceGroup(FileObject root, String displayName, Icon icon, Icon openIcon) {
+        super();
+        assert root != null;
+        this.root = root;
+        this.displayName = displayName;
+        this.icon = icon;
+        this.openIcon = openIcon;
+    }
+
+    public FileObject getRootFolder() {
+        return this.root;
+    }
+
+    public String getName() {
         try {
-            dao = root == null ? null : DataObject.find (root);
-            final Sources src = ProjectUtils.getSources(project);
-            if (src != null) {
-                final SourceGroup sg[] = src.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-                if (sg != null && sg.length == 1)
-                    n = PackageView.createPackageView(sg[0]);
-            }
-        } catch (Exception e) {}
-        if (dao == null || n == null) {
-            setLookups(new Lookup[] {Lookups.singleton(project)});
-        } else {
-            setLookups(new Lookup[] {Lookups.fixed(new Object[] {project, dao}), n.getLookup()});
+            return root.getURL().toExternalForm();
+        } catch (FileStateInvalidException fsi) {
+            ErrorManager.getDefault().notify(fsi);
+            return root.toString();
         }
-        return new Node[] {n == null ? Node.EMPTY : new FilterNode(n)};
+    }
+
+    public String getDisplayName() {
+        return this.displayName;
+    }
+
+    public Icon getIcon(boolean opened) {
+        return opened ? openIcon : icon;
+    }
+
+    public boolean contains(FileObject file) throws IllegalArgumentException {
+        return root.equals(file) || FileUtil.isParentOf(root, file);
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        if (!(other instanceof LibrariesSourceGroup)) {
+            return false;
+        }
+        LibrariesSourceGroup osg = (LibrariesSourceGroup) other;
+        return displayName == null ? osg.displayName == null : 
+            displayName.equals(osg.displayName) && root == null ?
+                osg.root == null : root.equals(osg.root);
+    }
+
+    @Override
+    public int hashCode() {
+        return ((displayName == null ? 0 : 
+            displayName.hashCode()) << 16) |
+            ((root == null ? 0 : root.hashCode()) & 65535);
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        //do nothing
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        //do nothing
     }
 }

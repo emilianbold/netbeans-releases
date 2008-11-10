@@ -361,7 +361,7 @@ public abstract class CsmResultItem implements CompletionItem {
     
     // Normailizes include directive string
     private String normalizeInclude(String inc) {
-        inc.toLowerCase();
+        inc = inc.toLowerCase();
         inc = inc.replaceAll("[\\s\n]+", " "); // NOI18N
         inc = inc.replaceAll("[<>\"]", "\""); // NOI18N
         inc = inc.trim();

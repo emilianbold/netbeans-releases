@@ -140,7 +140,7 @@ public class RunUserActionTaskTest extends NbTestCase {
 
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (6);
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (8);
                                 }
@@ -221,7 +221,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             assertEquals (parser [0], this);
                             counter.check (s1.pop ());
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -342,7 +342,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }
@@ -470,7 +470,7 @@ public class RunUserActionTaskTest extends NbTestCase {
                         
                         public Result getResult (Task task, SchedulerEvent event) throws ParseException {
                             counter.check (s1.pop ());
-                            return new Result (last) {
+                            return new Result (last, event) {
                                 public void invalidate () {
                                     counter.check (s2.pop ());
                                 }

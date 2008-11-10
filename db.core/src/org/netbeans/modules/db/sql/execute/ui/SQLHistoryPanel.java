@@ -423,12 +423,13 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 }
             } else {
                 inputWarningLabel.setText(""); // NOI18N
-                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot);
-                List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
-                view.setCurrentSQLHistoryList(sqlHistoryList);
-                ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
-                view.updateConnectionUrl();
-                NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N               
+                if (SQLHistoryPersistenceManager.getInstance().updateSQLSaved(iLimit, historyRoot).size() > 0) {
+                    List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, historyRoot);
+                    view.setCurrentSQLHistoryList(sqlHistoryList);
+                    ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
+                    view.updateConnectionUrl();
+                    NbPreferences.forModule(SQLHistoryPanel.class).put("SQL_STATEMENTS_SAVED_FOR_HISTORY", Integer.toString(iLimit));  // NOI18N
+                }
             }
         } catch (ClassNotFoundException ex) {
             Exceptions.printStackTrace(ex);
@@ -447,9 +448,11 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
     
     private void handleSQLHistoryException() {
-        inputWarningLabel.setText(NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
         LOGGER.log(Level.WARNING, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"));
-        SQLHistoryPersistenceManager.getInstance().removeHistoryFile(historyRoot);
+        List<SQLHistory> sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve();
+        view.setCurrentSQLHistoryList(sqlHistoryList);
+        ((HistoryTableModel) sqlHistoryTable.getModel()).refreshTable(null, sqlHistoryList);
+        view.updateConnectionUrl();
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -482,7 +485,9 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
                 this.sqlHistoryList = model.getSQLHistoryList();
                 this.currentSQLHistoryList = model.getSQLHistoryList();
             } catch (SQLHistoryException ex) {
-                // ignore for now since this exception will be caught later
+                LOGGER.log(Level.INFO, NbBundle.getMessage(SQLHistoryPanel.class, "LBL_ErrorParsingSQLHistory"), ex);
+                sqlHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve();
+                setCurrentSQLHistoryList(sqlHistoryList);
             }
         }
 

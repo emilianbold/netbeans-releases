@@ -93,38 +93,45 @@
                 <os name="Linux" arch="amd64"/>
             </or>
         </condition>
+        <condition property="platform" value="windows-intel">
+            <or>
+                <os name="Windows XP" arch="x86"/>
+            </or>
+        </condition>
 
-        <fail message="Cannot determine platform for ${os.name}/${os.arch}"
+        <fail message="Cannot determine platform for '${os.name}'/'${os.arch}'"
               unless="platform" />
 
 
         <!-- List of "maintainers" -->
         <property file="maintainers.properties"/>
 
+	<!--
         <property environment="env"/>
+	-->
 
         <echo message="setup: maintainers=${maintainers}" />
-        <echo message="setup: user=${env.USER}" />
+        <echo message="setup: user=${user.name}" />
 
         <!-- what is our role ? -->
         <condition property="role"
                    value="maintainer"
                    else="builder">
             <matches string="${maintainers}"
-                      pattern="\b${env.USER}\b" />
+                      pattern="\b${user.name}\b" />
         </condition>
 
         <!-- are we a maintainer ? -->
         <condition property="maintainer">
             <matches string="${maintainers}"
-                      pattern="\b${env.USER}\b" />
+                      pattern="\b${user.name}\b" />
         </condition>
 
         <!-- are we a builder ? -->
         <condition property="builder">
             <not>
                 <matches string="${maintainers}"
-                          pattern="\b${env.USER}\b" />
+                          pattern="\b${user.name}\b" />
             </not>
         </condition>
 

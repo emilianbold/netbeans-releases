@@ -497,8 +497,9 @@ public final class FileUtil extends Object {
 
                 if (f == null) {
                     try {
+                        LOG.finest("createFolder - before create folder if not exists.");
                         f = folder.createFolder(name);
-                    } catch (SyncFailedException ex) {
+                    } catch (IOException ex) {  // SyncFailedException or IOException when folder already exists
                         // there might be unconsistency between the cache
                         // and the disk, that is why
                         folder.refresh();

@@ -212,9 +212,17 @@ public class SelectImpl extends CsmSelect {
     @Override
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFile file, CsmFilter filter) {
         if (file instanceof FileImpl){
-            return ((FileImpl)file).getDeclarations(filter);
+            return analyzeFileFilter((FileImpl)file,filter);
         }
         return file.getDeclarations().iterator();
+    }
+
+    private Iterator<CsmOffsetableDeclaration> analyzeFileFilter(FileImpl file, CsmFilter filter){
+        if (filter instanceof FilterBuilder.InnerOffsetFilterImpl) {
+            FilterBuilder.InnerOffsetFilterImpl implOffset = (FilterBuilder.InnerOffsetFilterImpl) filter;
+            return file.getDeclarations(implOffset.innerOffset);
+        }
+        return file.getDeclarations(filter);
     }
 
     @Override

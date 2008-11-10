@@ -50,6 +50,7 @@ import org.openide.filesystems.MIMEResolver;
  * Recognize certain hard-to-recognize types. Most types are recognized by the
  * declarative mime resolver.
  */
+/*@ServiceProvider(service=MIMEResolver.class)*/
 public class CndMIMEResolver extends MIMEResolver {
     
     public CndMIMEResolver() {

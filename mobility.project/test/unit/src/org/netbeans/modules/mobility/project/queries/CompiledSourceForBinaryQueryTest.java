@@ -56,11 +56,9 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.masterfs.MasterFileSystem;
 import org.netbeans.modules.mobility.project.J2MEProject;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.modules.mobility.project.TestUtil;
-import org.netbeans.modules.mobility.project.classpath.J2MEProjectClassPathExtenderTest;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileObject;
@@ -80,7 +78,6 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     {
         TestUtil.setLookup( new Object[] {            
         }, CompiledSourceForBinaryQueryTest.class.getClassLoader());
-        assertNotNull(MasterFileSystem.settingsFactory(null));
     }
     
     public CompiledSourceForBinaryQueryTest(String testName) {
@@ -122,6 +119,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
     /**
      * Test of findSourceRoots method, of class org.netbeans.modules.mobility.project.queries.CompiledSourceForBinaryQuery.
      */
+    /*
     public void testFindSourceRoots() throws Exception {
         System.out.println("findSourceRoots");
         URL projRoot=null;
@@ -162,6 +160,7 @@ public class CompiledSourceForBinaryQueryTest extends NbTestCase {
         aph.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
         //result.removeChangeListener(list);
     }
+     */
     
     public void testSourceLevelQueryImpl() throws Exception {
         J2MEProject p=(J2MEProject)ProjectManager.getDefault().findProject(projDir);

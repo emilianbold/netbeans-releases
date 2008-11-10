@@ -85,7 +85,7 @@ import org.openide.util.Lookup;
  */
 class ProjectNode extends AbstractNode {
 
-    private static final String PROJECT_ICON = "org/netbeans/modules/j2ee/common/project/ui/resources/projectDependencies.gif";    //NOI18N
+    private static final String PROJECT_ICON = "org/netbeans/modules/java/api/common/project/ui/resources/projectDependencies.gif";    //NOI18N
 
     private final AntArtifact antArtifact;
     private final URI artifactLocation;

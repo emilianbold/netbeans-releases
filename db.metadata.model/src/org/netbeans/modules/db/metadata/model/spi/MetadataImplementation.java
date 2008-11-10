@@ -69,4 +69,6 @@ public abstract class MetadataImplementation {
     public abstract Schema getDefaultSchema();
 
     public abstract void refresh();
+
+    public abstract void refreshTable(String tablename);
 }

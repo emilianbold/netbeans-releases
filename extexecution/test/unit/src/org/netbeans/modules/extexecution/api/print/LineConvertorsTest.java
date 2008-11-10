@@ -47,6 +47,7 @@ import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileObject;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputListener;
 
 /**
  *
@@ -58,38 +59,71 @@ public class LineConvertorsTest extends NbTestCase {
         super(name);
     }
 
+    public void testProxy() {
+        LineConvertor convertor1 = new LineConvertor() {
+            public List<ConvertedLine> convert(String line) {
+                if ("line1".equals(line)) {
+                    return Collections.<ConvertedLine>singletonList(
+                            ConvertedLine.forText("converted:" + line, null));
+                }
+                return null;
+            }
+        };
+        LineConvertor convertor2 = new LineConvertor() {
+            public List<ConvertedLine> convert(String line) {
+                if ("line2".equals(line)) {
+                    return Collections.<ConvertedLine>singletonList(
+                            ConvertedLine.forText("converted:" + line, null));
+                }
+                return null;
+            }
+        };
+
+        LineConvertor convertor = LineConvertors.proxy(convertor1, convertor2);
+        List<ConvertedLine> convertedLines1 = convertor.convert("line1");
+        List<ConvertedLine> convertedLines2 = convertor.convert("line2");
+
+        assertEquals(1, convertedLines1.size());
+        assertEquals(1, convertedLines2.size());
+
+        assertEquals("converted:line1", convertedLines1.get(0).getText());
+        assertEquals("converted:line2", convertedLines2.get(0).getText());
+
+        assertNull(convertor.convert("line3"));
+    }
+
     public void testFilePattern() {
         TestConvertor fallback = new TestConvertor();
-        LineConvertor convertor = LineConvertors.filePattern(fallback,
-                null, Pattern.compile("myline:\\s*(myfile\\w*\\.\\w{3})\\s.*"), null, 1, -1);
-        
+        LineConvertor convertor = LineConvertors.proxy(LineConvertors.filePattern(
+                null, Pattern.compile("myline:\\s*(myfile\\w*\\.\\w{3})\\s.*"), null, 1, -1), fallback);
+
         List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
         lines.addAll(convertor.convert("otherline: something.txt"));
         lines.addAll(convertor.convert("myline: myfile01.txt other stuff"));
         lines.addAll(convertor.convert("total mess"));
         lines.addAll(convertor.convert("myline: myfile02.txt other stuff"));
         lines.addAll(convertor.convert("otherline: http://www.netbeans.org"));
-        
+
         List<String> ignored = new ArrayList<String>();
         Collections.addAll(ignored, "otherline: something.txt", "total mess",
                 "otherline: http://www.netbeans.org");
         assertEquals(ignored, fallback.getLines());
-        
+
         assertEquals(2, lines.size());
         assertEquals("myline: myfile01.txt other stuff", lines.get(0).getText());
         assertEquals("myline: myfile02.txt other stuff", lines.get(1).getText());
 
         for (ConvertedLine line : lines) {
             assertNotNull(line.getListener());
-        }        
+        }
     }
 
     public void testFilePatternWithFilePattern() {
         TestConvertor fallback = new TestConvertor();
-        LineConvertor convertor = LineConvertors.filePattern(fallback,
+        LineConvertor convertor = LineConvertors.proxy(LineConvertors.filePattern(
                 null, Pattern.compile("myline:\\s*(myfile\\w*\\.\\w{3})\\s.*"),
-                Pattern.compile("myfile01\\.\\w{3}"), 1, -1);
-        
+                Pattern.compile("myfile01\\.\\w{3}"), 1, -1), fallback);
+
         List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
         lines.addAll(convertor.convert("otherline: something.txt"));
         lines.addAll(convertor.convert("myline: myfile01.txt other stuff"));
@@ -97,32 +131,32 @@ public class LineConvertorsTest extends NbTestCase {
         lines.addAll(convertor.convert("myline: myfile02.txt other stuff"));
         lines.addAll(convertor.convert("otherline: http://www.netbeans.org"));
         lines.addAll(convertor.convert("myline: myfile01.txt specific"));
-        
+
         List<String> ignored = new ArrayList<String>();
         Collections.addAll(ignored, "otherline: something.txt", "total mess",
                 "myline: myfile02.txt other stuff", "otherline: http://www.netbeans.org");
         assertEquals(ignored, fallback.getLines());
-        
+
         assertEquals(2, lines.size());
         assertEquals("myline: myfile01.txt other stuff", lines.get(0).getText());
         assertEquals("myline: myfile01.txt specific", lines.get(1).getText());
 
         for (ConvertedLine line : lines) {
             assertNotNull(line.getListener());
-        }        
+        }
     }
-    
+
     public void testFilePatternWithLocator() {
         TestConvertor fallback = new TestConvertor();
         TestFileLocator locator = new TestFileLocator();
 
-        LineConvertor convertor = LineConvertors.filePattern(fallback,
-                locator, Pattern.compile("myline:\\s*(myfile\\w*\\.\\w{3})\\s.*"), null, 1, -1);
-        
+        LineConvertor convertor = LineConvertors.proxy(LineConvertors.filePattern(
+                locator, Pattern.compile("myline:\\s*(myfile\\w*\\.\\w{3})\\s.*"), null, 1, -1), fallback);
+
         List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
         lines.addAll(convertor.convert("myline: myfile01.txt other stuff"));
         lines.addAll(convertor.convert("myline: myfile02.txt other stuff"));
-        
+
         assertEquals(2, lines.size());
         assertEquals("myline: myfile01.txt other stuff", lines.get(0).getText());
         assertEquals("myline: myfile02.txt other stuff", lines.get(1).getText());
@@ -135,15 +169,15 @@ public class LineConvertorsTest extends NbTestCase {
                 }
             });
         }
-        
+
         List<String> paths = new ArrayList<String>();
-        Collections.addAll(paths, "myfile01.txt", "myfile02.txt");        
+        Collections.addAll(paths, "myfile01.txt", "myfile02.txt");
         assertEquals(paths, locator.getPaths());
     }
 
     public void testHttpUrl() {
         TestConvertor fallback = new TestConvertor();
-        LineConvertor convertor = LineConvertors.httpUrl(fallback);
+        LineConvertor convertor = LineConvertors.proxy(LineConvertors.httpUrl(), fallback);
 
         List<ConvertedLine> lines = new ArrayList<ConvertedLine>();
         lines.addAll(convertor.convert("nourl1"));
@@ -185,9 +219,9 @@ public class LineConvertorsTest extends NbTestCase {
             return lines;
         }
     }
-    
+
     private static class TestFileLocator implements LineConvertors.FileLocator {
-        
+
         private final List<String> paths = new ArrayList<String>();
 
         public FileObject find(String filename) {
@@ -199,4 +233,5 @@ public class LineConvertorsTest extends NbTestCase {
             return paths;
         }
     }
+
 }

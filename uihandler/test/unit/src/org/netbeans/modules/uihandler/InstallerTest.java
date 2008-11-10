@@ -519,6 +519,12 @@ public class InstallerTest extends NbTestCase {
             }
         });
         interactive.actionPerformed(evt);
+        Installer.RP_SUBMIT.post(new Runnable() {
+
+            public void run() {
+                // just wait for processing
+            }
+        }).waitFinished();
         assertTrue(submittingTwiceStopped.get());
     }
 

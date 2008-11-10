@@ -54,38 +54,38 @@ import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
  * @author Radek Matous
  */
 public final class ChildrenSupport {
-    
+
     static final int NO_CHILDREN_CACHED = 0;
     static final int SOME_CHILDREN_CACHED = 1;
     static final int ALL_CHILDREN_CACHED = 2;
-    
+
     private Set notExistingChildren;
     private Set existingChildren;
     private int status = ChildrenSupport.NO_CHILDREN_CACHED;
-    
+
     public ChildrenSupport() {
     }
 
     public Set getCachedChildren() {
         return getExisting(false);
     }
-    
+
     public synchronized Set getChildren(final FileNaming folderName, final boolean rescan) {
         if (rescan || !isStatus(ChildrenSupport.ALL_CHILDREN_CACHED))  {
             rescanChildren(folderName);
             setStatus(ChildrenSupport.ALL_CHILDREN_CACHED);
         } /*else if (!isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
-           
+
         }*/
-        
+
         //assert status == ChildrenSupport.ALL_CHILDREN_CACHED;
         return getExisting(false);
     }
-    
+
     public boolean isCacheInitialized() {
         return !isStatus(ChildrenSupport.NO_CHILDREN_CACHED);
     }
-    
+
     public synchronized FileNaming getChild(final String childName, final FileNaming folderName, final boolean rescan) {
         FileNaming retval = null;
         if (rescan || isStatus(ChildrenSupport.NO_CHILDREN_CACHED)) {
@@ -101,32 +101,32 @@ public final class ChildrenSupport {
         setStatus(ChildrenSupport.SOME_CHILDREN_CACHED);
         return retval;
     }
-    
+
     /*public boolean existsldInCache(final FileNaming folder, final String childName) {
         return lookupChildInCache(folder, childName) != null;
     }*/
-    
+
     public synchronized void removeChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
-        assert childName.getParent().equals(folderName);        
+        assert childName.getParent().equals(folderName);
         getExisting().remove(childName);
         getNotExisting().add(childName);
     }
-    
+
     private synchronized void addChild(final FileNaming folderName, final FileNaming childName) {
         assert childName != null;
         assert childName.getParent().equals(folderName);
         getExisting().add(childName);
         getNotExisting().remove(childName);
     }
-    
-    
-    
+
+
+
     public synchronized Map refresh(final FileNaming folderName) {
         Map retVal = new HashMap();
         Set e = new HashSet(getExisting(false));
         Set nE = new HashSet(getNotExisting(false));
-        
+
         if (isStatus(ChildrenSupport.SOME_CHILDREN_CACHED)) {
             Set existingToCheck = new HashSet(e);
             for (Iterator itExisting = existingToCheck.iterator(); itExisting.hasNext();) {
@@ -134,9 +134,9 @@ public final class ChildrenSupport {
                 FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
                 if (fnRescanned == null) {
                     retVal.put(fnToCheck, ChildrenCache.REMOVED_CHILD);
-                } 
+                }
             }
-            
+
             Set notExistingToCheck = new HashSet(nE);
             for (Iterator itNotExisting = notExistingToCheck.iterator(); itNotExisting.hasNext();) {
                 FileNaming fnToCheck = (FileNaming) itNotExisting.next();
@@ -144,34 +144,34 @@ public final class ChildrenSupport {
                 FileNaming fnRescanned = rescanChild(folderName, fnToCheck.getName());
                 if (fnRescanned != null) {
                     retVal.put(fnToCheck, ChildrenCache.ADDED_CHILD);
-                } 
+                }
             }
         } else if (isStatus(ChildrenSupport.ALL_CHILDREN_CACHED)) {
             retVal = rescanChildren(folderName);
         }
         return retVal;
     }
-    
+
     public String toString() {
         return getExisting(false).toString();
     }
-    
+
     boolean isStatus(int status) {
         return this.status == status;
     }
-    
+
     private void setStatus(int status) {
         if (this.status < status) {
             this.status = status;
         }
     }
-    
-    
+
+
     private FileNaming rescanChild(final FileNaming folderName, final String childName) {
         final File folder = folderName.getFile();
         final File child = new File(folder, childName);
         final FileInfo fInfo = new FileInfo(child);
-        
+
         FileNaming retval = (fInfo.isConvertibleToFileObject()) ? NamingFactory.fromFile(folderName, child) : null;
         if (retval != null) {
             addChild(folderName, retval);
@@ -183,34 +183,36 @@ public final class ChildrenSupport {
 
                 public boolean isFile() {
                     return false;
-                }                
+                }
             };
-            
+
             removeChild(folderName,  fChild);
         }
-        
+
         return retval;
     }
-    
+
     private Map rescanChildren(final FileNaming folderName) {
         final Map retval = new HashMap();
         final Set newChildren = new LinkedHashSet();
-        
+
         final File folder = folderName.getFile();
         assert folderName.getFile().getAbsolutePath().equals(folderName.toString());
-        
-        final File[] childs = folder.listFiles();
-        //assert childs != null : folder.getAbsolutePath();
-        if (childs != null) {
-            for (int i = 0; i < childs.length; i++) {
-                final FileInfo fInfo = new FileInfo(childs[i],1);
+
+        final File[] children = folder.listFiles();
+        if (children != null) {
+            for (int i = 0; i < children.length; i++) {
+                final FileInfo fInfo = new FileInfo(children[i],1);
                 if (fInfo.isConvertibleToFileObject()) {
-                    FileNaming child = NamingFactory.fromFile(folderName, childs[i]);
+                    FileNaming child = NamingFactory.fromFile(folderName, children[i]);
                     newChildren.add(child);
                 }
             }
+        } else if (folder.exists()) { // #150009 - children == null -> folder does not exists, or an I/O error occurs
+            // folder.listFiles() failed with I/O exception - do not remove children
+            return retval;
         }
-        
+
         Set deleted = new HashSet(getExisting(false));
         deleted.removeAll(newChildren);
         for (Iterator itRem = deleted.iterator(); itRem.hasNext();) {
@@ -218,7 +220,7 @@ public final class ChildrenSupport {
             removeChild(folderName, fnRem);
             retval.put(fnRem, ChildrenCache.REMOVED_CHILD);
         }
-        
+
         Set added = new HashSet(newChildren);
         added.removeAll(getExisting(false));
         for (Iterator itAdd = added.iterator(); itAdd.hasNext();) {
@@ -226,17 +228,17 @@ public final class ChildrenSupport {
             addChild(folderName, fnAdd);
             retval.put(fnAdd, ChildrenCache.ADDED_CHILD);
         }
-        
+
         return retval;
     }
-    
+
     private FileNaming lookupChildInCache(final FileNaming folder, final String childName, boolean lookupExisting) {
         final File f = new File(folder.getFile(), childName);
         final Integer id = NamingFactory.createID(f);
-        
+
         class FakeNaming implements FileNaming {
             public FileNaming lastEqual;
-            
+
             public  String getName() {
                 return childName;
             }
@@ -246,11 +248,11 @@ public final class ChildrenSupport {
             public boolean isRoot() {
                 return false;
             }
-            
+
             public File getFile() {
                 return f;
             }
-            
+
             public Integer getId() {
                 return id;
             }
@@ -262,7 +264,7 @@ public final class ChildrenSupport {
                 // not implemented, as it will not be called
                 throw new IllegalStateException();
             }
-            
+
             public boolean equals(Object obj) {
                 if (hashCode() == obj.hashCode()) {
                     assert lastEqual == null : "Just one can be there"; // NOI18N
@@ -273,26 +275,26 @@ public final class ChildrenSupport {
                 }
                 return false;
             }
-            
+
             public int hashCode() {
                 return id.intValue();
             }
-            
+
             public Integer getId(boolean recompute) {
                 return id;
-                
+
             }
-            
+
             public boolean isFile() {
                 return this.getFile().isFile();
             }
-            
+
             public boolean isDirectory() {
                 return !isFile();
             }
         }
         FakeNaming fake = new FakeNaming();
-        
+
         final Set cache = (lookupExisting) ? getExisting(false) : getNotExisting(false);
         if (cache.contains(fake)) {
             assert fake.lastEqual != null : "If cache contains the object, we set lastEqual"; // NOI18N
@@ -301,22 +303,22 @@ public final class ChildrenSupport {
             return null;
         }
     }
-    
+
     private synchronized Set getExisting() {
         return getExisting(true);
     }
-    
+
     private synchronized Set getExisting(boolean init) {
         if (init && existingChildren == null) {
             existingChildren = new HashSet();
         }
         return existingChildren != null ? existingChildren : new HashSet();
     }
-    
+
     private synchronized Set getNotExisting() {
         return getNotExisting(true);
     }
-    
+
     private synchronized Set getNotExisting(boolean init) {
         if (init && notExistingChildren == null) {
             notExistingChildren = new HashSet();

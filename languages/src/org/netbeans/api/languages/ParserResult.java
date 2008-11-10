@@ -46,6 +46,7 @@ import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.languages.parser.SyntaxError;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.modules.parsing.spi.SchedulerEvent;
 
 /**
  *
@@ -56,12 +57,14 @@ public class ParserResult extends Parser.Result {
     
     public static ParserResult create (
         Snapshot            snapshot,
+        SchedulerEvent      event,
         Document            document,
         ASTNode             rootNode, 
         List<SyntaxError>   syntaxErrors
     ) {
         return new ParserResult (
             snapshot,
+            event,
             document, 
             rootNode, 
             syntaxErrors
@@ -82,11 +85,12 @@ public class ParserResult extends Parser.Result {
 
     private ParserResult (
         Snapshot            snapshot,
+        SchedulerEvent      event,
         Document            document,
         ASTNode             rootNode, 
         List<SyntaxError>   syntaxErrors
     ) {
-        super (snapshot);
+        super (snapshot, event);
         this.document =     document;
         this.rootNode =     rootNode;
         this.syntaxErrors = syntaxErrors;

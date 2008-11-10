@@ -824,6 +824,64 @@ abstract public class CsmCompletionQuery {
             return CsmCompletionQuery.this.isProjectBeeingParsed(openingSource);
         }
 
+        private ExprKind extractKind(CsmCompletionExpression exp, int i, int startIdx, boolean lastDot, boolean reset) {
+            ExprKind kind = ExprKind.NONE;
+            int tokCount = exp.getTokenCount();
+            if (i == startIdx) {
+                kind = ExprKind.NONE;
+            } else if (i - 1 < tokCount) {
+                switch (exp.getTokenID(i - 1)) {
+                    case ARROW:
+                        kind = ExprKind.ARROW;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case DOT:
+                        kind = ExprKind.DOT;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case SCOPE:
+                        kind = ExprKind.SCOPE;
+                        if (reset) {
+                            scopeAccessedClassifier = true;
+                        }
+                        break;
+                    default:
+                        System.err.println("unexpected token " + exp.getTokenID(i));
+                }
+            } else if (lastDot) {
+                switch (exp.getExpID()) {
+                    case CsmCompletionExpression.ARROW:
+                    case CsmCompletionExpression.ARROW_OPEN:
+                        kind = ExprKind.ARROW;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case CsmCompletionExpression.DOT:
+                    case CsmCompletionExpression.DOT_OPEN:
+                        kind = ExprKind.DOT;
+                        if (reset) {
+                            scopeAccessedClassifier = false;
+                        }
+                        break;
+                    case CsmCompletionExpression.SCOPE:
+                    case CsmCompletionExpression.SCOPE_OPEN:
+                        kind = ExprKind.SCOPE;
+                        if (reset) {
+                            scopeAccessedClassifier = true;
+                        }
+                        break;
+                    default:
+                        System.err.println("unexpected expression" + exp);
+                }
+            }
+            return kind;
+        }
+        
         private boolean resolveParams(CsmCompletionExpression exp, boolean lastDot, /*out*/ExprKind[] lastKind) {
             boolean ok = true;
             int parmCnt = exp.getParameterCount(); // Number of items in the dot exp
@@ -839,29 +897,11 @@ abstract public class CsmCompletionQuery {
                 }
             }
             ExprKind kind = ExprKind.NONE;
+            ExprKind nextKind = ExprKind.NONE;
             int lastInd = parmCnt - 1;
-            int tokShift = (tokCount < parmCnt) ? 1 : 0;
             for (int i = startIdx; i < parmCnt && ok; i++) { // resolve all items in exp
-                if (i == startIdx) {
-                    kind = ExprKind.NONE;
-                } else if (i - tokShift < tokCount) {
-                    switch (exp.getTokenID(i - tokShift)) {
-                        case ARROW:
-                            kind = ExprKind.ARROW;
-                            scopeAccessedClassifier = false;
-                            break;
-                        case DOT:
-                            kind = ExprKind.DOT;
-                            scopeAccessedClassifier = false;
-                            break;
-                        case SCOPE:
-                            kind = ExprKind.SCOPE;
-                            scopeAccessedClassifier = true;
-                            break;
-                        default:
-                            System.err.println("unexpected token " + exp.getTokenID(i));
-                    }
-                }
+                kind = extractKind(exp, i, startIdx, lastDot, true);
+                nextKind = extractKind(exp, i + 1, startIdx, lastDot, false);
                 /*resolve arrows*/
                 if ((kind == ExprKind.ARROW) && (i != startIdx) && (i < parmCnt || lastDot || findType)
                         && (lastType != null) && (lastType.getArrayDepth() == 0)) {
@@ -872,31 +912,13 @@ abstract public class CsmCompletionQuery {
                 }
                 ok = resolveItem(exp.getParameter(i), (i == startIdx),
                                  (!lastDot && i == lastInd),
-                                kind);
+                                kind, nextKind);
 
             }
-            if (lastDot) {
-                switch (exp.getExpID()) {
-                    case CsmCompletionExpression.ARROW:
-                    case CsmCompletionExpression.ARROW_OPEN:
-                        kind = ExprKind.ARROW;
-                        scopeAccessedClassifier = false;
-                        break;
-                    case CsmCompletionExpression.DOT:
-                    case CsmCompletionExpression.DOT_OPEN:
-                        kind = ExprKind.DOT;
-                        scopeAccessedClassifier = false;
-                        break;
-                    case CsmCompletionExpression.SCOPE:
-                    case CsmCompletionExpression.SCOPE_OPEN:
-                        kind = ExprKind.SCOPE;
-                        scopeAccessedClassifier = true;
-                        break;
-                    default:
-                        System.err.println("unexpected expression" + exp);
-                }
+            if (ok && lastDot) {
+                kind = extractKind(exp, tokCount + 1, startIdx, true, true);
                 /*resolve arrows*/
-                if (ok && (kind == ExprKind.ARROW) && (lastDot || findType)
+                if ((kind == ExprKind.ARROW) && (lastDot || findType)
                         && (lastType != null) && (lastType.getArrayDepth() == 0)) {
                     CsmClassifier cls = getClassifier(lastType, contextFile, CsmFunction.OperatorKind.ARROW);
                     if (cls != null) {
@@ -1069,7 +1091,7 @@ abstract public class CsmCompletionQuery {
                 exp = exp.getParameter(0);
 
             default: // The rest of the situations is resolved as a singleton item
-                ok = resolveItem(exp, true, true, ExprKind.NONE);
+                ok = resolveItem(exp, true, true, ExprKind.NONE, ExprKind.NONE);
                 break;
             }
 
@@ -1081,7 +1103,7 @@ abstract public class CsmCompletionQuery {
         * @param first whether this expression is the first one in a dot expression
         * @param last whether this expression is the last one in a dot expression
         */
-        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind) {
+        boolean resolveItem(CsmCompletionExpression item, boolean first, boolean last, ExprKind kind, ExprKind nextKind) {
             boolean cont = true; // whether parsing should continue or not
             boolean methodOpen = false; // helper flag for unclosed methods
             boolean skipConstructors = (kind != ExprKind.NONE && kind != ExprKind.SCOPE);
@@ -1140,21 +1162,23 @@ abstract public class CsmCompletionQuery {
                                 result = new CsmCompletionResult(component, getBaseDocument(), res, var + '*', item, 0, isProjectBeeingParsed(), contextElement);  //NOI18N
                             } else { // not last item or finding type
                                 // find type of variable
-                                lastType = findExactVarType(var, varPos);
-                                if (lastType == null) {
-                                    // try to find with resolver
-                                    CompletionResolver.Result res = null;
-                                    compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
-                                    if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
-                                        res = compResolver.getResult();
-                                        List vars = new ArrayList();
-                                        res.addResulItemsToCol(vars);
-                                        if (vars.size() > 0) {
-                                            // get the first
-                                            CsmObject firstElem = (CsmObject)vars.get(0);
-                                            if(CsmKindUtilities.isVariable(firstElem)) {
-                                                CsmVariable varElem = (CsmVariable) firstElem;
-                                                lastType = varElem.getType();
+                                if (nextKind != ExprKind.SCOPE) {
+                                    lastType = findExactVarType(var, varPos);
+                                    if (lastType == null) {
+                                        // try to find with resolver
+                                        CompletionResolver.Result res = null;
+                                        compResolver.setResolveTypes(CompletionResolver.RESOLVE_VARIABLES);
+                                        if (compResolver.refresh() && compResolver.resolve(varPos, var, true)) {
+                                            res = compResolver.getResult();
+                                            List vars = new ArrayList();
+                                            res.addResulItemsToCol(vars);
+                                            if (vars.size() > 0) {
+                                                // get the first
+                                                CsmObject firstElem = (CsmObject)vars.get(0);
+                                                if(CsmKindUtilities.isVariable(firstElem)) {
+                                                    CsmVariable varElem = (CsmVariable) firstElem;
+                                                    lastType = varElem.getType();
+                                                }
                                             }
                                         }
                                     }

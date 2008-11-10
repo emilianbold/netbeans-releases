@@ -41,7 +41,7 @@
 
 package org.netbeans.modules.cnd.completion.csm;
 
-import java.util.Collection;
+import java.util.ArrayList;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import java.util.Iterator;
+import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnum;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
@@ -101,8 +102,8 @@ public class CsmDeclarationResolver {
     
     public static CsmDeclaration findTopFileDeclaration(CsmFile file, int offset) {
         assert (file != null) : "can't be null file in findTopFileDeclaration";
-        Collection/*<CsmDeclaration>*/ decls = file.getDeclarations();
-        for (Iterator it = decls.iterator(); it.hasNext();) {
+        CsmFilter filter = CsmSelect.getDefault().getFilterBuilder().createOffsetFilter(offset);
+        for (Iterator it = CsmSelect.getDefault().getDeclarations(file, filter); it.hasNext();) {
             CsmDeclaration decl = (CsmDeclaration) it.next();
             assert (decl != null) : "can't be null declaration";
             if (CsmOffsetUtilities.isInObject(decl, offset)) {
@@ -202,8 +203,9 @@ public class CsmDeclarationResolver {
             it = ((CsmNamespaceDefinition) outDecl).getDeclarations().iterator();
         } else if (CsmKindUtilities.isClass(outDecl)) {
             CsmClass cl  = (CsmClass)outDecl;
-            Collection list = cl.getMembers();
-            if (cl.getFriends().size() > 0) {
+            List<CsmDeclaration> list = new ArrayList<CsmDeclaration>();
+            list.addAll(cl.getMembers());
+            if (!cl.getFriends().isEmpty()) {
                 // combine friends with members for search
                 list.addAll(cl.getFriends());
             }

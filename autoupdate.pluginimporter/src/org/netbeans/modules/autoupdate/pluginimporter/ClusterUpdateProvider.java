@@ -123,7 +123,7 @@ public class ClusterUpdateProvider implements UpdateProvider {
         for (File cf: readModules (cluster)) {
             String cnb = (cf.getName ().substring (0, cf.getName ().length () - ".xml".length ())).replaceAll ("-", "."); // NOI18N
             Map<String, String> attr = new HashMap<String, String> (7);
-            readConfigFile (cf, cnb, attr);
+            readConfigFile (cf, attr);
             File jarFile = new File (cluster, attr.get ("jar")); // NOI18N
             assert jarFile.exists () : jarFile + " exists.";
             Manifest mf = new JarFile (jarFile).getManifest ();
@@ -158,6 +158,9 @@ public class ClusterUpdateProvider implements UpdateProvider {
         }
         Collection<File> res = new HashSet<File> ();
         File config = new File (new File (cluster, "config"), "Modules"); // NOI18N
+        if (config.listFiles () == null) {
+            return Collections.emptySet ();
+        }
         for (File cf : config.listFiles ()) {
             assert cf.getName ().endsWith (".xml") : cf + " is XML file";
             if (cf.getName ().endsWith (".xml")) { // NOI18N
@@ -167,7 +170,7 @@ public class ClusterUpdateProvider implements UpdateProvider {
         return res;
     }
 
-    private static void readConfigFile (File cf, String cnb, Map<String, String> attr) {
+    private static void readConfigFile (File cf, Map<String, String> attr) {
         Document document = null;
         InputStream is;
         try {

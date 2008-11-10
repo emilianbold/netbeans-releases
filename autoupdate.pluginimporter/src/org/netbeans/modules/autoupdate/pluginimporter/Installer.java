@@ -125,7 +125,9 @@ public class Installer extends ModuleInstall {
                         LOG.fine ("Already installed plugins: " + importer.getInstalledPlugins ());
                         LOG.fine ("Plugins available on UC: " + importer.getPluginsAvailableToInstall ());
                         LOG.fine ("Plugins available for import: " + importer.getPluginsToImport ());
-                        LOG.info ("Plugins with broken dependencies: " + importer.getBrokenPlugins ());
+                        if (! importer.getBrokenPlugins ().isEmpty ()) {
+                            LOG.info ("Plugins for import with broken dependencies: " + importer.getBrokenPlugins ());
+                        }
                         if ( ! importer.getPluginsToImport ().isEmpty () ||  ! importer.getPluginsAvailableToInstall ().isEmpty ()) {
                             ImportManager notifier = new ImportManager (importFrom, getUserDir (), importer);
                             notifier.notifyAvailable ();

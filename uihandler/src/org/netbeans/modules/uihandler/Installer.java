@@ -67,6 +67,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.NoRouteToHostException;
+import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.UnknownHostException;
@@ -147,6 +148,7 @@ public class Installer extends ModuleInstall implements Runnable {
     static final Logger LOG = Logger.getLogger(Installer.class.getName());
     public static final RequestProcessor RP = new RequestProcessor("UI Gestures"); // NOI18N
     public static final RequestProcessor RP_UI = new RequestProcessor("UI Gestures - Create Dialog"); // NOI18N
+    public static final RequestProcessor RP_SUBMIT = new RequestProcessor("UI Gestures - Submit Data"); // NOI18N
     public static RequestProcessor RP_OPT = null;
     private static final Preferences prefs = NbPreferences.forModule(Installer.class);
     private static OutputStream logStream;
@@ -1242,7 +1244,7 @@ public class Installer extends ModuleInstall implements Runnable {
         private boolean checkingResult, refresh = false;
         protected boolean errorPage = false;
         protected DataType dataType = DataType.DATA_UIGESTURE;
-        protected List<LogRecord> recs = null;
+        final protected List<LogRecord> recs;
 
         public Submit(String msg) {
             this(msg,DataType.DATA_UIGESTURE);
@@ -1252,7 +1254,11 @@ public class Installer extends ModuleInstall implements Runnable {
             this.msg = msg;
             this.dataType = dataType;
             isSubmiting = new AtomicBoolean(false);
-            recs = new ArrayList<LogRecord>(getLogs());
+            if (dataType == DataType.DATA_METRICS) {
+                recs = getLogsMetrics();
+            }else{
+                recs = new ArrayList<LogRecord>(getLogs());
+            }
             if ("ERROR_URL".equals(msg)) { // NOI18N
                 report = true;
             } else {
@@ -1266,7 +1272,6 @@ public class Installer extends ModuleInstall implements Runnable {
         protected abstract void alterMessage(DialogDescriptor dd);
         protected abstract boolean viewData();
         protected abstract void assignInternalURL(URL u);
-        protected abstract void saveUserName();
         protected abstract void addMoreLogs(List<? super String> params, boolean openPasswd);
         protected abstract void showURL(URL externalURL);
 
@@ -1381,7 +1386,7 @@ public class Installer extends ModuleInstall implements Runnable {
             LOG.log(Level.FINE, "doShow, dialogCreated, exiting");
         }
 
-        private synchronized final void doCloseDialog() {
+        protected synchronized final void doCloseDialog() {
             dialogCreated = false;
             closeDialog();
             notifyAll();
@@ -1446,46 +1451,59 @@ public class Installer extends ModuleInstall implements Runnable {
             }
 
             if (submit) { // NOI18N
+                JButton button = null;
+                if (e.getSource() instanceof JButton){
+                    button = (JButton) e.getSource();
+                    button.setEnabled(false);
+                }
+                final JButton submitButton = button;
                 if (isSubmiting.getAndSet(true)) {
                     LOG.info("ALREADY SUBMITTING"); // NOI18N
                     return;
                 }
-                try {
-                    if (dataType == DataType.DATA_UIGESTURE) {
-                        saveUserName();
-                        LogRecord userData = getUserData(true);
-                        LogRecord thrownLog = getThrownLog(recs);
-                        if (thrownLog != null) {
-                            recs.add(thrownLog);//exception selected by user
-                        }
-                        recs.add(TimeToFailure.logFailure());
-                        recs.add(BuildInfo.logBuildInfoRec());
-                        recs.add(userData);
-                        if ((report) && !(reportPanel.asAGuest())) {
-                            if (!checkUserName()) {
-                                reportPanel.showWrongPassword();
-                                return;
+                RP_SUBMIT.post(new Runnable() {
+
+                    public void run() {
+                        if (dataType == DataType.DATA_UIGESTURE) {
+                            LogRecord userData = getUserData(true, reportPanel);
+                            LogRecord thrownLog = getThrownLog(recs);
+                            if (thrownLog != null) {
+                                recs.add(thrownLog);//exception selected by user
                             }
+                            recs.add(TimeToFailure.logFailure());
+                            recs.add(BuildInfo.logBuildInfoRec());
+                            recs.add(userData);
+                            if ((report) && (!reportPanel.asAGuest())) {
+                                if (!checkUserName(reportPanel)) {
+                                    EventQueue.invokeLater(new Runnable(){
+                                        public void run() {
+                                            submitButton.setEnabled(true);
+                                            reportPanel.showWrongPassword();
+                                        }
+                                    });
+                                    isSubmiting.set(false);
+                                    return;
+                                }
+                            }
+                            LOG.fine("posting upload UIGESTURES");// NOI18N
+                        } else if (dataType == DataType.DATA_METRICS) {
+                            LOG.fine("posting upload METRICS");// NOI18N
                         }
-                        LOG.fine("posting upload UIGESTURES");// NOI18N
-                    } else if (dataType == DataType.DATA_METRICS) {
-                        recs = getLogsMetrics();
-                        LOG.fine("posting upload METRICS");// NOI18N
+                        final List<LogRecord> recsFinal = recs;
+                        RP_SUBMIT.post(new Runnable() {
+                            public void run() {
+                                uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
+                            }
+                        });
+                        okToExit = false;
+                        // this should close the descriptor
+                        EventQueue.invokeLater(new Runnable(){
+                            public void run() {
+                                doCloseDialog();
+                            }
+                        });
                     }
-                    final List<LogRecord> recsFinal = recs;
-                    RP.post(new Runnable() {
-                        public void run() {
-                            uploadAndPost(recsFinal, universalResourceLocator[0], dataType);
-                        }
-                    });
-                    okToExit = false;
-                    // this should close the descriptor
-                    doCloseDialog();
-                } catch (InterruptedException exc) {
-                    LOG.log(Level.INFO, "submitting data failed", exc);// NOI18N
-                } finally {
-                    isSubmiting.set(false);
-                }
+                });
                 return;
             }
 
@@ -1548,28 +1566,24 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-        private boolean checkUserName() throws InterruptedException{
-            checkingResult=true;
-            RequestProcessor.Task checking;
-            checking = RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    ExceptionsSettings settings = new ExceptionsSettings();
-                    String login = settings.getUserName();
-                    String passwd = settings.getPasswd();
-                    try {
-                        char[] array = new char[100];
-                        URL url = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
-                        URLConnection connection = url.openConnection();
-                        connection.setRequestProperty("User-Agent", "NetBeans");
-                        Reader reader = new InputStreamReader(connection.getInputStream());
-                        int length = reader.read(array);
-                        checkingResult = new Boolean(new String(array, 0, length));
-                    } catch (Exception exception) {
-                        Logger.getLogger(Installer.class.getName()).log(Level.INFO, "CHECKING PASSWORD FAILED", exception); // NOI18N
-                    }
-                }
-                });
-            checking.waitFinished(10000);
+        private boolean checkUserName(ReportPanel panel) {
+            checkingResult = true;
+            String login = panel.getUserName();
+            String passwd = panel.getPasswd();
+            try {
+                char[] array = new char[100];
+                URL checkingServerURL = new URL(NbBundle.getMessage(Installer.class, "CHECKING_SERVER_URL", login, passwd));
+                URLConnection connection = checkingServerURL.openConnection();
+                connection.setRequestProperty("User-Agent", "NetBeans");
+                connection.setReadTimeout(20000);
+                Reader reader = new InputStreamReader(connection.getInputStream());
+                int length = reader.read(array);
+                checkingResult = new Boolean(new String(array, 0, length));
+            }catch (SocketTimeoutException ste){
+                Logger.getLogger(Installer.class.getName()).log(Level.INFO, "Connection timeout", ste); // NOI18N
+            } catch (Exception exception) {
+                Logger.getLogger(Installer.class.getName()).log(Level.WARNING, "CHECKING PASSWORD FAILED", exception); // NOI18N
+            }
             return checkingResult;
         }
 
@@ -1612,15 +1626,21 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
 
-        protected final LogRecord getUserData(boolean openPasswd) {
+        protected final LogRecord getUserData(boolean openPasswd, ReportPanel panel) {
             LogRecord userData;
-            ExceptionsSettings settings = new ExceptionsSettings();
             ArrayList<String> params = new ArrayList<String>(6);
             params.add(getOS());
             params.add(getVM());
             params.add(getVersion());
-            saveUserName();
-            params.add(settings.getUserName());
+            if (panel != null){
+                if (panel.asAGuest()){
+                    params.add("");
+                }else{
+                    params.add(panel.getUserName());
+                }
+            } else {
+                params.add(new ExceptionsSettings().getUserName());
+            }
             addMoreLogs(params, openPasswd);
             userData = new LogRecord(Level.CONFIG, USER_CONFIGURATION);
             userData.setResourceBundle(NbBundle.getBundle(Installer.class));
@@ -1698,11 +1718,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 reportPanel = new ReportPanel();
             }
             Throwable t = getThrown(recs);
-            if (t != null && reportPanel !=null){
+            if (t != null){
                 reportPanel.setSummary(createMessage(t));
-                if ("ERROR_URL".equals(msg)) {
-                    dim = new Dimension(470, 450);
-                }
+            }
+            if ("ERROR_URL".equals(msg)) {
+                dim = new Dimension(470, 450);
             }
             browser = new JEditorPane();
             try {
@@ -1755,7 +1775,7 @@ public class Installer extends ModuleInstall implements Runnable {
             if (d == null) {
                 return;
             }
-
+            reportPanel.saveUserData();
             dd.setValue(DialogDescriptor.CLOSED_OPTION);
             d.setVisible(false);
             d = null;
@@ -1767,7 +1787,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 AbstractNode root = new AbstractNode(new Children.Array());
                 root.setName("root"); // NOI18N
                 List<LogRecord> shownRecs = new ArrayList<LogRecord>(recs);
-                shownRecs.add(getUserData(false));
+                shownRecs.add(getUserData(false, reportPanel));
                 root.setDisplayName(NbBundle.getMessage(Installer.class, "MSG_RootDisplayName", shownRecs.size(), new Date()));
                 root.setIconBaseWithExtension("org/netbeans/modules/uihandler/logs.gif");
                 LinkedList<Node> nodes = new LinkedList<Node>();
@@ -1787,7 +1807,7 @@ public class Installer extends ModuleInstall implements Runnable {
             view.setVisible(true);
             return false;
         }
-        protected synchronized void assignInternalURL(URL u) {
+        protected void assignInternalURL(URL u) {
             if (browser != null) {
                 try {
                     browser.setPage(u);
@@ -1795,17 +1815,17 @@ public class Installer extends ModuleInstall implements Runnable {
                     Exceptions.printStackTrace(ex);
                 }
             }
+            markAssigned();
+        }
+
+        private synchronized void markAssigned(){
             urlAssigned = true;
             notifyAll();
         }
+
         protected void showURL(URL u) {
             LOG.log(Level.FINE, "opening URL: " + u); // NOI18N
             HtmlBrowser.URLDisplayer.getDefault().showURL(u);
-        }
-        protected void saveUserName() {
-            if (reportPanel != null && report) {
-                reportPanel.saveUserName();
-            }
         }
 
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
@@ -1814,7 +1834,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 params.add(reportPanel.getComment());
                 try {
                     if (openPasswd) {
-                        String passwd = new ExceptionsSettings().getPasswd();
+                        String passwd = reportPanel.getPasswd();
                         if ((passwd.length() != 0) && (!reportPanel.asAGuest())){
                             passwd = PasswdEncryption.encrypt(passwd);
                         }
@@ -1842,6 +1862,13 @@ public class Installer extends ModuleInstall implements Runnable {
                     }
                 }
             }
+            d.addWindowListener(new WindowAdapter() {
+
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    doCloseDialog();
+                }
+            });
             d.setModal(false);
             d.setVisible(true);
             synchronized (this){
@@ -1904,8 +1931,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected void showURL(URL u) {
             hintURL = u;
         }
-        protected void saveUserName() {
-        }
+
         protected void addMoreLogs(List<? super String> params, boolean openPasswd) {
         }
         protected Object showDialogAndGetValue(DialogDescriptor dd) {

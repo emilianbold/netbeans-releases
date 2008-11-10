@@ -7,7 +7,7 @@
 [ -n "$push_username" ] || exit 114
 
 
-ANT_OPTS="-Xmx512m"
+ANT_OPTS="-Xmx512m -XX:MaxPermSize=128m"
 export ANT_OPTS
 HGMERGE=merge
 export HGMERGE

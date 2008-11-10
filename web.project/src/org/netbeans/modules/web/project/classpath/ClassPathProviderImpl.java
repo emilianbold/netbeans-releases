@@ -96,6 +96,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     private static enum ClassPathCache {
         WEB_SOURCE,
         PACKAGED, // #131785
+        WEB_COMPILATION,
     }
     
     public ClassPathProviderImpl(AntProjectHelper helper, PropertyEvaluator evaluator, 
@@ -172,7 +173,17 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
     
     private synchronized ClassPath getCompileTimeClasspath(FileType type) {        
         if (type == FileType.WEB_SOURCE) {
-            return javaClassPathProvider.findClassPath(sourceRoots.getRoots()[0], ClassPath.COMPILE);
+            if (sourceRoots.getRoots().length > 0) {
+                return javaClassPathProvider.findClassPath(sourceRoots.getRoots()[0], ClassPath.COMPILE);
+            } else {
+                ClassPath cp = cache.get(ClassPathCache.WEB_COMPILATION);
+                if (cp == null) {
+                    cp = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                        projectDirectory, evaluator, new String[] {"javac.classpath", WebProjectProperties.J2EE_PLATFORM_CLASSPATH }));
+                    cache.put(ClassPathCache.WEB_COMPILATION, cp);
+                }
+                return cp;
+            }
         }
         return null;
     }

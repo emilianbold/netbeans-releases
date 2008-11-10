@@ -533,13 +533,12 @@ public final class ExecutionService {
 
     private InputProcessor createOutProcessor(OutputWriter writer) {
         LineConvertorFactory convertorFactory = descriptor.getOutConvertorFactory();
-        InputProcessor outProcessor = InputProcessors.ansiStripping(
-                InputProcessors.printing(writer,
-                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, true));
+        InputProcessor outProcessor = InputProcessors.printing(writer,
+                convertorFactory != null ? convertorFactory.newLineConvertor() : null, true);
 
         InputProcessorFactory descriptorOutFactory = descriptor.getOutProcessorFactory();
         if (descriptorOutFactory != null) {
-            outProcessor = InputProcessors.proxy(outProcessor, descriptorOutFactory.newInputProcessor());
+            outProcessor = descriptorOutFactory.newInputProcessor(outProcessor);
         }
 
         return outProcessor;
@@ -547,13 +546,12 @@ public final class ExecutionService {
 
     private InputProcessor createErrProcessor(OutputWriter writer) {
         LineConvertorFactory convertorFactory = descriptor.getErrConvertorFactory();
-        InputProcessor errProcessor = InputProcessors.ansiStripping(
-                InputProcessors.printing(writer,
-                    convertorFactory != null ? convertorFactory.newLineConvertor() : null, false));
+        InputProcessor errProcessor = InputProcessors.printing(writer,
+                convertorFactory != null ? convertorFactory.newLineConvertor() : null, false);
 
         InputProcessorFactory descriptorErrFactory = descriptor.getErrProcessorFactory();
         if (descriptorErrFactory != null) {
-            errProcessor = InputProcessors.proxy(errProcessor, descriptorErrFactory.newInputProcessor());
+            errProcessor = descriptorErrFactory.newInputProcessor(errProcessor);
         }
 
         return errProcessor;

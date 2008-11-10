@@ -209,6 +209,8 @@ public class JavacParser extends Parser {
     private boolean invalid;
     //Last used snapshot
     private Snapshot cachedSnapShot;
+    //Lamport clock of parse calls
+    private long parseId;
     
     JavacParser (final Collection<Snapshot> snapshots, boolean privateParser) {
         this.privateParser = privateParser;
@@ -284,6 +286,7 @@ public class JavacParser extends Parser {
     public void parse(final Snapshot snapshot, final Task task, SchedulerEvent event) throws ParseException {
         assert task != null;
         assert privateParser || Utilities.holdsParserLock();
+        parseId++;
         canceled.set(false);
         try {            
             LOGGER.fine("parse: task: " + task.toString() +"\n" + (snapshot == null ? "null" : snapshot.getText()));      //NOI18N
@@ -351,7 +354,7 @@ public class JavacParser extends Parser {
             //Not sure about the parsing.api contract for multiple files
             //maybe not needed and assertion is enough
             final ClasspathInfo providedInfo = ((ClasspathInfoProvider)task).getClasspathInfo();
-            if (cpInfo != providedInfo) {
+            if (providedInfo != null && cpInfo != providedInfo) {
                 if (sourceCount != 0) {
                     LOGGER.fine ("Task "+task+" has changed ClasspathInfo form: " + cpInfo +" to:" + providedInfo); //NOI18N
                 }
@@ -371,20 +374,35 @@ public class JavacParser extends Parser {
             }
             Phase reachedPhase;
             try {
-                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false);
+                    reachedPhase = moveToPhase(requiredPhase, ciImpl, true, false, false);
             } catch (IOException ioe) {
                 throw new ParseException ("JavacParser failure", ioe);      //NOI18N
             }
             if (reachedPhase.compareTo(requiredPhase)>=0) {
                 Index.cancel.set(canceled);
-                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl));
+                result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationInfo(ciImpl), event);
             }
         }
         else if (isUserTask) {
-            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl));
+            result = new JavacParserResult(JavaSourceAccessor.getINSTANCE().createCompilationController(ciImpl), event);
         }
         else {
             LOGGER.warning("Ignoring unknown task: " + task);                   //NOI18N
+        }
+        //Todo: shared = false should replace this
+        //for now it creates a new parser and passes it outside the infrastructure
+        //used by debugger private api
+        if (task instanceof NewComilerTask) {
+            NewComilerTask nct = (NewComilerTask)task;
+            if (nct.getCompilationController() == null || nct.getTimeStamp() != parseId) {
+                try {
+                    nct.setCompilationController(
+                        JavaSourceAccessor.getINSTANCE().createCompilationController(new CompilationInfoImpl(this, file, root, null, cachedSnapShot, false)),
+                        parseId);
+                } catch (IOException ioe) {
+                    throw new ParseException ("Javac Failure", ioe);
+                }
+            }
         }
         return result;
     }
@@ -433,7 +451,7 @@ public class JavacParser extends Parser {
      * @throws IOException when the javac throws an exception
      */
     Phase moveToPhase (final Phase phase, final CompilationInfoImpl currentInfo,
-            final boolean cancellable, final boolean hasMoreFiles) throws IOException {
+            final boolean cancellable, final boolean hasMoreFiles, final boolean clone) throws IOException {
         JavaSource.Phase parserError = currentInfo.parserCrashed;
         assert parserError != null;
         Phase currentPhase = currentInfo.getPhase();        
@@ -466,7 +484,7 @@ public class JavacParser extends Parser {
                 currentInfo.setCompilationUnit(unit);
                 assert !it.hasNext();
                 final Document doc = listener == null ? null : listener.document;
-                if (doc != null && supportsReparse) {
+                if (doc != null && supportsReparse && !clone) {
                     FindMethodRegionsVisitor v = new FindMethodRegionsVisitor(doc,Trees.instance(currentInfo.getJavacTask()).getSourcePositions());
                     v.visit(unit, null);
                     synchronized (positions) {
@@ -557,7 +575,7 @@ public class JavacParser extends Parser {
             final FileObject root,
             final Snapshot snapshot,
             final JavacTaskImpl javac) throws IOException {                
-        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot);
+        CompilationInfoImpl info = new CompilationInfoImpl(parser, file, root, null,snapshot, false);
         if (file != null) {
             Logger.getLogger("TIMER").log(Level.FINE, "CompilationInfo",    //NOI18N
                     new Object[] {file, info});
@@ -616,7 +634,7 @@ public class JavacParser extends Parser {
     private static JavacTaskImpl createJavacTask(final ClasspathInfo cpInfo, final DiagnosticListener<? super JavaFileObject> diagnosticListener, final String sourceLevel, final boolean backgroundCompilation, ClassNamesForFileOraculum cnih) {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
-        
+        com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -626,13 +644,17 @@ public class JavacParser extends Parser {
         } else {
             options.add("-XDbackgroundCompilation");    //NOI18N
             options.add("-XDcompilePolicy=byfile");     //NOI18N
+            options.add("-target");                     //NOI18N
+            options.add(validatedSourceLevel.requiredTarget().name);
         }
         options.add("-XDide");   // NOI18N, javac runs inside the IDE
+        options.add("-XDsave-parameter-names");   // NOI18N, javac runs inside the IDE
         options.add("-g:");      // NOI18N, Enable some debug info
+        options.add("-g:source"); // NOI18N, Make the compiler to maintian source file info
         options.add("-g:lines"); // NOI18N, Make the compiler to maintain line table
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
-        options.add(validateSourceLevel(sourceLevel));
+        options.add(validatedSourceLevel.name);
         options.add("-proc:none"); // NOI18N, Disable annotation processors
 
         ClassLoader orig = Thread.currentThread().getContextClassLoader();
@@ -655,25 +677,25 @@ public class JavacParser extends Parser {
         }
     }
     
-    private static String validateSourceLevel (String sourceLevel) {        
+    private static com.sun.tools.javac.code.Source validateSourceLevel (String sourceLevel) {
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         if (sourceLevel == null) {
             //Should never happen but for sure
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
         for (com.sun.tools.javac.code.Source source : sources) {
             if (source.name.equals(sourceLevel)) {
-                return sourceLevel;
+                return source;
             }
         }
         SpecificationVersion specVer = new SpecificationVersion (sourceLevel);
         SpecificationVersion JAVA_12 = new SpecificationVersion ("1.2");   //NOI18N
         if (JAVA_12.compareTo(specVer)>0) {
             //Some SourceLevelQueries return 1.1 source level which is invalid, use 1.2
-            return sources[0].name;
+            return sources[0];
         }
         else {
-            return sources[sources.length-1].name;
+            return sources[sources.length-1];
         }
     }
     

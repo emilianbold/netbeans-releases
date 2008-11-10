@@ -71,7 +71,7 @@ public class JSPParserFactory extends ParserFactory {
             if (snapshot == null) {
                 return null;
             }
-            return new Result(snapshot) {
+            return new Result(snapshot, event) {
                 @Override
                 public void invalidate() {
                 }

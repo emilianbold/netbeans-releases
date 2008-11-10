@@ -51,6 +51,7 @@ import org.netbeans.modules.websvc.jaxws.light.api.JAXWSLightSupport;
  *
  * @author Milan Kuchtiak
  */
+@org.openide.util.lookup.ServiceProvider(service=ServiceCreatorProvider.class)
 public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
 
     public JaxWsServiceCreatorProvider() {

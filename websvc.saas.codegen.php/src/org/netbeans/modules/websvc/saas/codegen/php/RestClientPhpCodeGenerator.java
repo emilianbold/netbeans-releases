@@ -177,7 +177,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
         finishProgressReporting();
 
-        return new HashSet<FileObject>(Collections.EMPTY_LIST);
+        return new HashSet<FileObject>(Collections.<FileObject>emptySet());
     }
     
     @Override

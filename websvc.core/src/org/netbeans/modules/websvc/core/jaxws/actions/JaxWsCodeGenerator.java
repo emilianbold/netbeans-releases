@@ -95,10 +95,6 @@ import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlPort;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlService;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.jaxws.nodes.OperationNode;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSOperation;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSParameter;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSPort;
-import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -702,7 +698,7 @@ public class JaxWsCodeGenerator {
         }
     }
 
-    private static String getJSPInvocationBody(WSOperation operation, Object[] args) {
+    private static String getJSPInvocationBody(WsdlOperation operation, Object[] args) {
         String invocationBody = "";
         switch (operation.getOperationType()) {
             case WsdlOperation.TYPE_NORMAL: {
@@ -801,7 +797,7 @@ public class JaxWsCodeGenerator {
         }
 
         public String getJavaInvocationBody(
-                WSOperation operation, String portJavaName,
+                WsdlOperation operation, String portJavaName,
                 String portGetterMethod, String returnTypeName,
                 String operationJavaName, String responseType) {
             String invocationBody = "";
@@ -1008,8 +1004,8 @@ public class JaxWsCodeGenerator {
         message.append("  xmlns=\\\"");
         message.append(namespace);
         message.append("\\\">");
-        List<WSParameter> parameters = operation.getParameters();
-        for (WSParameter parameter : parameters) {
+        List<WsdlParameter> parameters = operation.getParameters();
+        for (WsdlParameter parameter : parameters) {
             String name = parameter.getName();
             message.append("<");
             message.append(name);
@@ -1048,7 +1044,7 @@ public class JaxWsCodeGenerator {
     }
     
      public static String getWSInvocationCode(FileObject target, boolean inJsp,
-            WSService service, WSPort port, WSOperation operation) {
+            WsdlService service, WsdlPort port, WsdlOperation operation) {
 
         // First, collect name of method, port, and service:
 

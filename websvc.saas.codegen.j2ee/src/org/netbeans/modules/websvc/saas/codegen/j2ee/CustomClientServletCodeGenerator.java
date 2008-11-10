@@ -92,7 +92,7 @@ public class CustomClientServletCodeGenerator extends CustomClientPojoCodeGenera
 
     @Override
     public CustomClientSaasBean getBean() {
-        return (CustomClientSaasBean) super.getBean();
+        return super.getBean();
     }
 
     @Override

@@ -86,7 +86,7 @@ public class WatchesModel implements TreeModel {
     private Vector<ModelListener> listeners = new Vector<ModelListener>();
     private ContextProvider     lookupProvider;
     // Watch to Expression or Exception
-    private Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
+    private final Map<Watch, JPDAWatchEvaluating>  watchToValue = new WeakHashMap<Watch, JPDAWatchEvaluating>(); // <node (expression), JPDAWatch>
     //private final JPDAWatch EMPTY_WATCH;
 
     
@@ -257,7 +257,7 @@ public class WatchesModel implements TreeModel {
         private JPDAWatch evaluatedWatch;
         private Expression expression;
         private ParseException parseException;
-        private boolean[] evaluating = new boolean[] { false };
+        private final boolean[] evaluating = new boolean[] { false };
         
         public JPDAWatchEvaluating(WatchesModel model, Watch w, JPDADebuggerImpl debugger) {
             this(model, w, debugger, 0);
@@ -335,6 +335,7 @@ public class WatchesModel implements TreeModel {
             }
         }
 
+        @Override
         public String getToStringValue() throws InvalidExpressionException {
             JPDAWatch evaluatedWatch;
             synchronized (this) {
@@ -353,6 +354,7 @@ public class WatchesModel implements TreeModel {
             }
         }
 
+        @Override
         public String getType() {
             JPDAWatch evaluatedWatch;
             synchronized (this) {
@@ -366,6 +368,7 @@ public class WatchesModel implements TreeModel {
             return evaluatedWatch.getType();
         }
 
+        @Override
         public String getValue() {
             return getValue((JPDAWatch[]) null);
         }
@@ -436,6 +439,7 @@ public class WatchesModel implements TreeModel {
             expressionChanged();
         }
 
+        @Override
         public synchronized void setValue(String value) throws InvalidExpressionException {
             if (evaluatedWatch != null) {
                 evaluatedWatch.setValue(value);
@@ -473,6 +477,7 @@ public class WatchesModel implements TreeModel {
         
         private int cloneNumber = 1;
 
+        @Override
         public JPDAWatchEvaluating clone() {
             return new JPDAWatchEvaluating(model, w, debugger, cloneNumber++);
         }
@@ -509,6 +514,7 @@ public class WatchesModel implements TreeModel {
             return m;
         }
         
+        @Override
         public void watchAdded (Watch watch) {
             WatchesModel m = getModel ();
             if (m == null) return;
@@ -516,6 +522,7 @@ public class WatchesModel implements TreeModel {
             m.fireWatchesChanged ();
         }
         
+        @Override
         public void watchRemoved (Watch watch) {
             WatchesModel m = getModel ();
             if (m == null) return;
@@ -527,10 +534,12 @@ public class WatchesModel implements TreeModel {
         // there is at most one
         private RequestProcessor.Task task;
         
+        @Override
         public void propertyChange (PropertyChangeEvent evt) {
             String propName = evt.getPropertyName();
             // We already have watchAdded & watchRemoved. Ignore PROP_WATCHES:
-            if (DebuggerManager.PROP_WATCHES.equals(propName)) return ;
+            // We care only about the debugger state change and watch expression change here...
+            if (!(JPDADebugger.PROP_STATE.equals(propName) || Watch.PROP_EXPRESSION.equals(propName))) return ;
             final WatchesModel m = getModel ();
             if (m == null) return;
             if (m.debugger.getState () == JPDADebugger.STATE_DISCONNECTED) {

@@ -71,6 +71,7 @@ import java.util.logging.Logger;
 import org.openide.nodes.Node.PropertySet;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup.Item;
+import org.openide.util.Parameters;
 
 
 /** A proxy for another node.
@@ -198,10 +199,8 @@ public class FilterNode extends Node {
             (children == null) ? (original.isLeaf() ? org.openide.nodes.Children.LEAF : new Children(original)) : children,
             lookup
         );
-        
-        if (original == null) {
-            throw new IllegalArgumentException("Original node cannot be null.");  // NOI18N
-        }
+
+        Parameters.notNull("original", original);
 
         this.childrenProvided = children != null;
         this.original = original;
@@ -407,6 +406,8 @@ public class FilterNode extends Node {
      *@since 1.39
      */
     protected final void changeOriginal(Node original, boolean changeChildren) {
+        Parameters.notNull("original", original);
+
         if (
             changeChildren && !(getChildren() instanceof FilterNode.Children) &&
                 !(getChildren() == Children.LEAF /* && original.isLeaf () */)

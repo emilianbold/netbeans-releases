@@ -64,7 +64,7 @@ public interface WSOperation {
     
     public String getReturnTypeName();
     
-    public List<WSParameter> getParameters();
+    public List<? extends WSParameter> getParameters();
     
     public Iterator<String> getExceptions();
     

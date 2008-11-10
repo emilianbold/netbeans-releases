@@ -46,8 +46,8 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Scheduler;
-import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -70,19 +70,22 @@ public class CursorSensitiveScheduller extends CurrentEditorTaskScheduller {
             if (caretListener == null)
                 caretListener = new ACaretListener ();
             editor.addCaretListener (caretListener);
+            Document document = editor.getDocument ();
+            if (currentDocument == document) return;
+            currentDocument = document;
+            Source source = Source.create (currentDocument);
+            schedule (Collections.singleton (source), new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot ()) {});
         }
-        
-        Document document = editor.getDocument ();
-        if (currentDocument == document) return;
-        currentDocument = document;
-        Source source = Source.create (currentDocument);
-        schedule (Collections.singleton (source), new SchedulerEvent (this) {});
+        else {
+            currentDocument = null;
+            schedule(Collections.<Source>emptySet(), null);
+        }
     }
     
     private class ACaretListener implements CaretListener {
 
         public void caretUpdate (CaretEvent e) {
-            schedule (new SchedulerEvent (this) {});
+            schedule (new CursorMovedSchedulerEvent (this, e.getDot ()) {});
         }
     }
 }

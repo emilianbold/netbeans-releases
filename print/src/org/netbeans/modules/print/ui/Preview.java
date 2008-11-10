@@ -112,7 +112,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     }
 
     public void print(PrintProvider[] providers, boolean withPreview) {
-        assert providers != null : "Print providers can not be null"; // NOI18N
+        assert providers != null : "Print providers cannot be null"; // NOI18N
         assert providers.length > 0 : "Must be at least one provider"; // NOI18N
 //out();
 //out("Do action");
