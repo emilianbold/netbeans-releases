@@ -169,7 +169,7 @@ public abstract class RubyTestBase extends GsfTestBase {
 
     protected static void installFakeFastRubyDebugger(RubyPlatform platform) throws IOException {
         String gemplaf = platform.isJRuby() ? "java" : "";
-        installFakeGem("ruby-debug-ide", "0.4.0", gemplaf, platform);
+        installFakeGem("ruby-debug-ide", "0.4.1", gemplaf, platform);
     }
 
     protected static void uninstallFakeGem(final String name, final String version, final String actualPlatform, final RubyPlatform platform) throws IOException {

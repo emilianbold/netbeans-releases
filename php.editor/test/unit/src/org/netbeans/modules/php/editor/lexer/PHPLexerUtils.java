@@ -90,9 +90,9 @@ public class PHPLexerUtils extends TestCase {
         }
     }
     
-    public static TokenSequence<?> seqForText(String text, Language<? extends TokenId> language) {
+    public static <T extends TokenId> TokenSequence<T> seqForText(String text, Language<T> language) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, language);
-        return hi.tokenSequence();
+        return hi.tokenSequence(language);
     }
 
     public static void next(TokenSequence<?> ts, TokenId id, String fixedText) {
