@@ -771,6 +771,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
     }
 
+    Throwable getPrepareDocumentRuntimeException() {
+        return prepareDocumentRuntimeException;
+    }
+
+    
     /** Get the document. This method may be called before the document initialization
      * (<code>prepareTask</code>)
      * has been completed, in such a case the document must not be modified.
@@ -3062,7 +3067,7 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
 
     /** Special runtime exception that holds the original I/O failure.
      */
-    private static final class DelegateIOExc extends IllegalStateException {
+    static final class DelegateIOExc extends IllegalStateException {
         public DelegateIOExc(IOException ex) {
             super(ex.getMessage());
             initCause(ex);
