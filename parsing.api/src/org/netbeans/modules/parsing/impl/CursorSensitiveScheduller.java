@@ -70,13 +70,16 @@ public class CursorSensitiveScheduller extends CurrentEditorTaskScheduller {
             if (caretListener == null)
                 caretListener = new ACaretListener ();
             editor.addCaretListener (caretListener);
+            Document document = editor.getDocument ();
+            if (currentDocument == document) return;
+            currentDocument = document;
+            Source source = Source.create (currentDocument);
+            schedule (Collections.singleton (source), new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot ()) {});
         }
-        
-        Document document = editor.getDocument ();
-        if (currentDocument == document) return;
-        currentDocument = document;
-        Source source = Source.create (currentDocument);
-        schedule (Collections.singleton (source), new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot ()) {});
+        else {
+            currentDocument = null;
+            schedule(Collections.<Source>emptySet(), null);
+        }
     }
     
     private class ACaretListener implements CaretListener {

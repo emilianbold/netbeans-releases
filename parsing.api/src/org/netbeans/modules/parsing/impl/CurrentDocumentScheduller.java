@@ -60,11 +60,18 @@ public class CurrentDocumentScheduller extends CurrentEditorTaskScheduller {
     private Source          source;
     
     protected void setEditor (JTextComponent editor) {
-        Document document = editor.getDocument ();
-        if (currentDocument == document) return;
-        currentDocument = document;            
-        source = Source.create (currentDocument);
-        schedule (Collections.singleton (source), new SchedulerEvent (this) {});
+        if (editor != null) {
+            Document document = editor.getDocument ();
+            if (currentDocument == document) return;
+            currentDocument = document;
+            source = Source.create (currentDocument);
+            schedule (Collections.singleton (source), new SchedulerEvent (this) {});
+        }
+        else {
+            currentDocument = null;
+            source = null;
+            schedule(Collections.<Source>emptySet(), null);
+        }
     }
 }
 
