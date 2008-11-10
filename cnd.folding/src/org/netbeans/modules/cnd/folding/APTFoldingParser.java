@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.folding;
 
 import java.io.*;
@@ -59,41 +58,36 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenStreamBuilder;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 
-
 /**
  * Code Folding parser based on matching balanced { and }
  *@author Vladimir Voskresensky
  */
-/*package*/ class APTFoldingParser extends antlr.LLkParserNoEx       implements APTTokenTypes {
-    
+/*package*/ class APTFoldingParser extends antlr.LLkParserNoEx implements APTTokenTypes {
+
     private static final int CLASS_FOLD = CppFoldRecord.CLASS_FOLD;
     private static final int NAMESPACE_FOLD = CppFoldRecord.NAMESPACE_FOLD;
     private static final int FUNCTION_FOLD = CppFoldRecord.FUNCTION_FOLD;
-    
     private static final int FIRST_TOKEN = APTTokenTypes.FLOATONE;
-    private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE; 
-    
+    private static final int LAST_TOKEN = APTTokenTypes.LAST_LEXER_FAKE_RULE;
     //private int curCurlyLevel = 0;
-    
     private List<CppFoldRecord> parserFolders = new ArrayList<CppFoldRecord>();
-        
     private APTFoldingWalker walker = null;
-    
+
     public APTFoldingParser(TokenStream lexer, APTFoldingWalker walker) {
-        super(lexer,2);
+        super(lexer, 2);
         this.walker = walker;
         tokenNames = _tokenNames;
     }
-    
+
     private void createFolder(int folderKind, APTToken begin, APTToken end) {
         // remove one symbol because we want to leave closing curly
         if (APTFoldingUtils.isStandalone()) {
             parserFolders.add(new CppFoldRecord(folderKind, begin.getLine(), begin.getColumn(), end.getEndLine(), end.getEndColumn()));
         } else {
-            parserFolders.add(new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset()));            
+            parserFolders.add(new CppFoldRecord(folderKind, begin.getOffset(), end.getEndOffset()));
         }
     }
-    
+
     protected List<CppFoldRecord> getFolders() {
         List<CppFoldRecord> walkerFolds = walker.getFolders();
         List<CppFoldRecord> out = new ArrayList<CppFoldRecord>(walkerFolds.size() + parserFolders.size());
@@ -101,7 +95,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         out.addAll(parserFolders);
         return out;
     }
-    
+
     private static APTFoldingParser getParser(String name, TokenStream lexer) {
         APTFile apt = APTBuilder.buildAPT(name, lexer);
         APTFoldingWalker walker = new APTFoldingWalker(apt);
@@ -112,56 +106,57 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         APTFoldingParser parser = new APTFoldingParser(ts, walker);
         return parser;
     }
-    
+
     public static List<CppFoldRecord> parse(String name, Reader source) {
         try {
             TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(name, source);
             APTFoldingParser parser = getParser(name, lexer);
             parser.translation_unit();
             return new ArrayList<CppFoldRecord>(parser.getFolders());
-        } catch(Exception e) {
+        } catch (Exception e) {
             if (reportErrors) {
-                System.err.println("exception: "+e); // NOI18N
+                System.err.println("exception: " + e); // NOI18N
                 e.printStackTrace();
             }
         }
         return null;
     }
-    
     private final static boolean reportErrors = Boolean.getBoolean("folding.parser.report.errors"); // NOI18N
+
+    @Override
     public void reportError(RecognitionException e) {
         if (reportErrors) {
             super.reportError(e);
         }
     }
-    
+
+    @Override
     public void reportError(String s) {
         if (reportErrors) {
             super.reportError(s);
         }
     }
-    
+
     ////////////////////////////////////////////////////////////////////////////
     // help methods
-    
     protected final void balanceParens() throws TokenStreamException {
         assert (LA(0) == LPAREN);
         balanceBracket(LPAREN, RPAREN);
         assert (matchError || LA(1) == RPAREN);
     }
-    
+
     protected final void balanceCurlies() throws TokenStreamException {
         assert (LA(0) == LCURLY);
         balanceBracket(LCURLY, RCURLY);
         assert (matchError || LA(1) == RCURLY);
     }
-    
+
     protected final void balanceTemplateParams() throws TokenStreamException {
         assert (LA(0) == LESSTHAN);
         balanceBracket(LESSTHAN, GREATERTHAN);
         assert (matchError || LA(1) == GREATERTHAN);
     }
-    
+
     private void balanceBracket(int startType, int endType) throws TokenStreamException {
         int level = 0;
         int LA1 = LA(1);
@@ -181,10 +176,10 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
         if (level != 0 || LA1 == EOF) {
             matchError = true;
-            matchException=new RecognitionException("unbalanced bracket " + getBracketName(startType)); // NOI18N
+            matchException = new RecognitionException("unbalanced bracket " + getBracketName(startType)); // NOI18N
         }
     }
-    
+
     private String getBracketName(int kind) {
         String out = ""; // NOI18N
         switch (kind) {
@@ -209,7 +204,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         }
         return out;
     }
-    
+
     protected final void createCurlyFolder(int folderKind) throws TokenStreamException {
         do {
             APTToken begin = (APTToken) LT(1);
@@ -234,9 +229,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             resetMatchError();
         }
     }
-    
+
     // state machine
-    
     public final void translation_unit() throws TokenStreamException {
         // translation_unit:    external_declarations EOF;
         do {
@@ -249,7 +243,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             }
             match(Token.EOF_TYPE);
             if (matchError) {
-                break ;
+                break;
             }
         } while (false);
         if (matchError) {
@@ -269,8 +263,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         //        |
         //                declaration
         //    ;
-        main_loop: 
-            while (true) {
+        main_loop:
+        while (true) {
             // Local LA Cache for 2 element(s):
             int LA1 = LA(1);
             int LA2 = LA(2);
@@ -278,16 +272,16 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 case RCURLY:
                     break main_loop;
                 case EOF:
-                    break main_loop;                
+                    break main_loop;
                 case LITERAL_extern:
-                    if (LA2 == STRING_LITERAL) {                          
+                    if (LA2 == STRING_LITERAL) {
                         linkage_specification();
                         if (matchError) {
                             break main_loop;
-                        } 
+                        }
                         break; // break LA1 switch                        
                     }
-                    // nobreak
+                // nobreak
                 default:
                     if ((LA1 >= FIRST_TOKEN && LA1 <= LAST_TOKEN)) {
                         declaration();
@@ -295,19 +289,19 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                             break main_loop;
                         }
                     } else {
-                        matchError=true;
-                        matchException=new NoViableAltException(LT(1), getFilename());
-                        break main_loop;                        
+                        matchError = true;
+                        matchException = new NoViableAltException(LT(1), getFilename());
+                        break main_loop;
                     }
             }
         } // End of loop
         if (matchError) {
             reportError(matchException);
- //           recover(matchException,_tokenSet_1);
+            //           recover(matchException,_tokenSet_1);
             resetMatchError();
         }
     }
-    
+
     protected final void linkage_specification() throws TokenStreamException {
         //linkage_specification
         //	:	LITERAL_extern StringLiteral
@@ -320,85 +314,85 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
         //		)
         //	;
         main_loop:
-            do {
-                match(LITERAL_extern);
-                if (matchError) {
-                    break main_loop;
-                }
-                match(STRING_LITERAL);
-                if (matchError) {
-                    break main_loop;
-                }
-                // Local LA Cache for 2 element(s):
-                int LA1 = LA(1);
-                int LA2 = LA(2);
-                
-                if ((LA1==LCURLY) && ((LA2 >= FIRST_TOKEN && LA2 <= LAST_TOKEN))) {
-                    APTToken begin = (APTToken) LT(1);
-                    // already checked LCURLY, just skip
-                    consume();
+        do {
+            match(LITERAL_extern);
+            if (matchError) {
+                break main_loop;
+            }
+            match(STRING_LITERAL);
+            if (matchError) {
+                break main_loop;
+            }
+            // Local LA Cache for 2 element(s):
+            int LA1 = LA(1);
+            int LA2 = LA(2);
+
+            if ((LA1 == LCURLY) && ((LA2 >= FIRST_TOKEN && LA2 <= LAST_TOKEN))) {
+                APTToken begin = (APTToken) LT(1);
+                // already checked LCURLY, just skip
+                consume();
 //                    int endCurlyLevel = this.curCurlyLevel;
 //                    this.curCurlyLevel++;
-                    ext_decl_loop:
-                        do {
-                            // nongreedy exit test
+                ext_decl_loop:
+                do {
+                    // nongreedy exit test
 //                            if ((LA(1)==RCURLY) && (curlyLevel == this.curCurlyLevel)) {
-                            if (LA(1)==RCURLY) {
+                    if (LA(1) == RCURLY) {
 //                                if (endCurlyLevel != this.curCurlyLevel - 1) {
 //                                    matchError = true;
 //                                    matchException=new RecognitionException("unbalanced LCURLY " + begin); // NOI18N
 //                                }
-                                break ext_decl_loop;
-                            }
-                            if (LA(1) >= FIRST_TOKEN && LA(2) <= LAST_TOKEN) {
-                                external_declarations();
-                                if (matchError) {
-                                    break main_loop;
-                                }
-                            } else {
-                                break ext_decl_loop;
-                            }
-                        } while (true);
-                        APTToken end = (APTToken) LT(1);
-                        match(RCURLY);
-//                        this.curCurlyLevel--;
+                        break ext_decl_loop;
+                    }
+                    if (LA(1) >= FIRST_TOKEN && LA(2) <= LAST_TOKEN) {
+                        external_declarations();
                         if (matchError) {
                             break main_loop;
+                        }
+                    } else {
+                        break ext_decl_loop;
+                    }
+                } while (true);
+                APTToken end = (APTToken) LT(1);
+                match(RCURLY);
+//                        this.curCurlyLevel--;
+                if (matchError) {
+                    break main_loop;
 //                        } else if (curCurlyLevel < 0) {
 //                            curCurlyLevel = 0;
 //                            matchError = true;
 //                            matchException=new RecognitionException("unbalanced RCURLY " + end);   // NOI18N 
 //                            break main_loop;
-                        }
-                        // create folder
-                        createFolder(CLASS_FOLD, begin, end);
-                } else if (LA1 >= FIRST_TOKEN && LA1 <= LAST_TOKEN) {
-                    external_declarations();
-                } else if (LA1 == EOF) {
-                    break main_loop;
-                } else {
-                    matchError=true;
-                    matchException=new NoViableAltException(LT(1), getFilename());
-                    break main_loop;
                 }
-            } while (false);
-            if (matchError) {
-                reportError(matchException);
-//                recover(matchException,_tokenSet_1);
-                resetMatchError();
+                // create folder
+                createFolder(CLASS_FOLD, begin, end);
+            } else if (LA1 >= FIRST_TOKEN && LA1 <= LAST_TOKEN) {
+                external_declarations();
+            } else if (LA1 == EOF) {
+                break main_loop;
+            } else {
+                matchError = true;
+                matchException = new NoViableAltException(LT(1), getFilename());
+                break main_loop;
             }
+        } while (false);
+        if (matchError) {
+            reportError(matchException);
+//                recover(matchException,_tokenSet_1);
+            resetMatchError();
+        }
     }
-    
+
     private void eat2Token(int type, boolean checkLeftCurly, boolean checkRightCurly) throws TokenStreamException {
         do {
             // Local LA Cache for 2 element(s):
-            int LA1 = LA(1);            
+            int LA1 = LA(1);
             // nongreedy exit test
-            if (LA1==type) {
+            if (LA1 == type) {
                 break;
             }
             // error handling test
-            if (checkLeftCurly && (LA1==LCURLY)) {
+            if (checkLeftCurly && (LA1 == LCURLY)) {
                 break;
             }
             if (checkRightCurly && (LA1 == RCURLY)) {
@@ -412,11 +406,12 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             } else {
                 break;
             }
-        } while (true);        
-    }    
-    
+        } while (true);
+    }
+
     private void eatDeclPrefix() throws TokenStreamException {
-        loop: do {
+        loop:
+        do {
             // Local LA Cache for 2 element(s):
             switch (LA(1)) {
                 case LITERAL_extern:
@@ -440,19 +435,21 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     break;
                 default:
                     break loop;
-            }            
-        } while (true);         
+            }
+        } while (true);
     }
-    
+
+    @SuppressWarnings("fallthrough")
     protected final void declaration() throws TokenStreamException {
-        
-        
-        main_loop:  do {
+
+
+        main_loop:
+        do {
             // eat typedef, template, extern template
             eatDeclPrefix();
             if (matchError) {
                 break main_loop;
-            }       
+            }
             boolean ns = false;
             // Local LA Cache for 2 element(s):
             int LA1 = LA(1);
@@ -463,7 +460,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 {
                     // enum is LITERAL_enum (ID)? { elems } IDs ;
                     consume();
-                    if ( LA(1) == ID ) {
+                    if (LA(1) == ID) {
                         // already checked token ref, just skip
                         consume();
                     }
@@ -483,6 +480,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 }
                 case LITERAL_namespace: // handle namespace the same way as classes
                     ns = true;
+                // nobreak
                 case LITERAL_class:
                 case LITERAL_union:
                 case LITERAL_struct: // handle class, union, struct
@@ -491,7 +489,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     eat2Token(SEMICOLON, true, false);
                     if (matchError) {
                         break main_loop;
-                    }   
+                    }
                     if (LA(1) == LCURLY) {
                         // TODO: for now we just use one level of folding
                         declarationsFold(ns ? NAMESPACE_FOLD : CLASS_FOLD);
@@ -509,18 +507,16 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     if (matchError) {
                         break main_loop;
                     }
-                    break;                        
+                    break;
                 }
-                default:
-                    // handle functions and other elements
+                default: // handle functions and other elements
                 {
                     eat2Token(SEMICOLON, true, true);
                     if (matchError) {
                         break main_loop;
-                    }   
+                    }
                     switch (LA(1)) {
-                        case LCURLY:
-                        {
+                        case LCURLY: {
                             createCurlyFolder(FUNCTION_FOLD);
                             if (matchError) {
                                 break main_loop;
@@ -534,7 +530,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     // allow errors
                     if (LA(1) == SEMICOLON) {
                         consume();
-                    }     
+                    }
                     break;
                 }
             }
@@ -545,21 +541,22 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             resetMatchError();
         }
     }
-    
+
     protected final void declarationsFold(int folderKind) throws TokenStreamException {
-       
-        main_loop:  while (true) {
+
+        main_loop:
+        while (true) {
             APTToken begin = (APTToken) LT(1);
             match(LCURLY);
             if (matchError) {
                 break main_loop;
             }
-            
+
             // declarations loop
             do {
                 // nongreedy exit test
-                if (LA(1)==RCURLY) {
-                    break ;
+                if (LA(1) == RCURLY) {
+                    break;
                 }
 
                 if ((LA(1) >= FIRST_TOKEN && LA(1) <= LAST_TOKEN)) {
@@ -569,26 +566,25 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                     }
                 } else {
                     break;
-                }     
+                }
             } while (true);
-            
+
             APTToken end = (APTToken) LT(1);
             match(RCURLY);
             if (matchError) {
                 break main_loop;
             }
-            
+
             createFolder(folderKind, begin, end);
-            
+
             break;
         } // End of loop main_loop
         if (matchError) {
             reportError(matchException);
- //           recover(matchException,_tokenSet_1);
+            //           recover(matchException,_tokenSet_1);
             resetMatchError();
-        }        
+        }
     }
-    
 //    protected final void namespaceFold() throws TokenStreamException {
 //        
 //        Token  bb = null;
@@ -631,9 +627,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 //            resetMatchError();
 //        }
 //    }
-
     public static final String[] _tokenNames = initTokenNames();
-    
+
     private static String[] initTokenNames() {
         String[] names = new String[LAST_TOKEN + 1];
         // fill array by reflection
@@ -647,7 +642,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
                 try {
                     int value = field.getInt(null);
                     String name = field.getName();
-                    names[value]=name;
+                    names[value] = name;
                 } catch (IllegalArgumentException ex) {
                     ex.printStackTrace();
                 } catch (IllegalAccessException ex) {
@@ -656,5 +651,5 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             }
         }
         return names;
-    }    
+    }
 }
