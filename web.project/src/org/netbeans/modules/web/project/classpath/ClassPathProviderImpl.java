@@ -216,7 +216,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PropertyC
             if (cp == null) {
                 cp = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                         ClassPathFactory.createClassPath(new JspSourcePathImplementation(helper, evaluator)),
-                        ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator)),
+                        ClassPathFactory.createClassPath(ClassPathSupportFactory.createSourcePathImplementation (this.sourceRoots, helper, evaluator, true)),
                     });
                 cache.put(ClassPathCache.WEB_SOURCE, cp);
 
