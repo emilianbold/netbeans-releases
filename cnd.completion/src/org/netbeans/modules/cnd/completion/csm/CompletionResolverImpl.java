@@ -282,6 +282,7 @@ public class CompletionResolverImpl implements CompletionResolver {
      * @param out collection where results are added after check
      * @return true if found visible objects in collection
      */
+    @SuppressWarnings("unchecked")
     private boolean isEnoughAfterFilterVisibileObjects(String strPrefix, boolean match,
             Collection<? extends CsmObject> toCheck, Collection out) {
         boolean foundVisible = false;
@@ -411,7 +412,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resImpl.classesEnumsTypedefs = new ArrayList<CsmClassifier>();
             }
             Collection<CsmClassifier> classesEnums = getClassesEnums(context, prj, strPrefix, match, offset, !needClasses(context, offset));
-            Collection<CsmClassifier> visibleClassesEnums = new ArrayList();
+            Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
             if (isEnoughAfterFilterVisibileObjects(strPrefix, match, classesEnums, visibleClassesEnums)) {
                 resImpl.classesEnumsTypedefs.addAll(visibleClassesEnums);
                 return true;
@@ -507,7 +508,7 @@ public class CompletionResolverImpl implements CompletionResolver {
                 resImpl.libClasses = new ArrayList<CsmClassifier>();
             }
             Collection<CsmClassifier> libClassesEnums = getLibClassesEnums(prj, strPrefix, match);
-            Collection<CsmClassifier> visibleClassesEnums = new ArrayList();
+            Collection<CsmClassifier> visibleClassesEnums = new ArrayList<CsmClassifier>();
             if (isEnoughAfterFilterVisibileObjects(strPrefix, match, libClassesEnums, visibleClassesEnums)) {
                 // we found better classifier in libraries, clear project ones
                 resImpl.classesEnumsTypedefs.clear();
