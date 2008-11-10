@@ -104,10 +104,10 @@ public class CustomizerProviderImpl implements CustomizerProvider {
     private ModelHandle handle;
     
     public static final String PROFILES_SKELETON =
-"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-"<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
-"  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +
-"</profilesXml>";
+"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + //NO18N
+"<profilesXml xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +//NO18N
+"  xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/profiles-1.0.0.xsd\">\n" +//NO18N
+"</profilesXml>";//NO18N
     
     public CustomizerProviderImpl(NbMavenProjectImpl project) {
         this.project = project;
