@@ -152,7 +152,7 @@ public class RemoteClient implements Cancellable {
             if (remoteClient.isConnected()) {
                 disconnect();
             }
-            throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
+            throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
         }
     }
 
@@ -247,10 +247,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     uploadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
                 }
             }
@@ -277,7 +277,7 @@ public class RemoteClient implements Cancellable {
 
             assert file.getParentRelativePath() != null : "Must be underneath base remote directory! [" + file + "]";
             if (!cdBaseRemoteDirectory(file.getParentRelativePath(), true)) {
-                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", file.getParentRelativePath()));
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getParentRelativePath()));
                 return;
             }
 
@@ -456,10 +456,10 @@ public class RemoteClient implements Cancellable {
                 try {
                     downloadFile(transferInfo, baseLocalDir, file);
                 } catch (IOException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
                 } catch (RemoteException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpErrorReason", exc.getMessage().trim()));
+                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
                 }
             }
@@ -484,7 +484,7 @@ public class RemoteClient implements Cancellable {
             }
             if (!cdBaseRemoteDirectory(file.getRelativePath(), false)) {
                 LOGGER.fine("Remote directory " + file.getRelativePath() + " does not exist => ignoring");
-                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", file.getRelativePath()));
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getRelativePath()));
                 return;
             }
             // in fact, useless but probably expected
@@ -525,7 +525,7 @@ public class RemoteClient implements Cancellable {
 
             if (!cdBaseRemoteDirectory(file.getParentRelativePath(), false)) {
                 LOGGER.fine("Remote directory " + file.getParentRelativePath() + " does not exist => ignoring file " + file.getRelativePath());
-                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", file.getParentRelativePath()));
+                transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", file.getParentRelativePath()));
                 return;
             }
 
@@ -564,7 +564,7 @@ public class RemoteClient implements Cancellable {
                 }
             }
         } else {
-            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_FtpUnknownFileType", file.getRelativePath()));
+            transferIgnored(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_UnknownFileType", file.getRelativePath()));
         }
     }
 
@@ -664,7 +664,7 @@ public class RemoteClient implements Cancellable {
     private String getFailureMessage(String fileName, boolean upload) {
         String message = remoteClient.getNegativeReplyString();
         if (message == null) {
-            message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_FtpCannotUploadFile" : "MSG_FtpCannotDownloadFile", fileName);
+            message = NbBundle.getMessage(RemoteClient.class, upload ? "MSG_CannotUploadFile" : "MSG_CannotDownloadFile", fileName);
         }
         return message;
     }
@@ -700,7 +700,7 @@ public class RemoteClient implements Cancellable {
     }
 
     /**
-     * Create file path on FTP server <b>in the current directory</b>.
+     * Create file path on remote server <b>in the current directory</b>.
      * @param filePath file path to create, can be even relative (e.g. "a/b/c/d").
      */
     private boolean createAndCdRemoteDirectory(String filePath) throws RemoteException {
@@ -708,7 +708,7 @@ public class RemoteClient implements Cancellable {
         if (filePath.startsWith(TransferFile.SEPARATOR)) {
             // enter root directory
             if (!remoteClient.changeWorkingDirectory(TransferFile.SEPARATOR)) {
-                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotChangeDirectory", "/"), remoteClient.getReplyString());
+                throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", "/"), remoteClient.getReplyString());
             }
         }
         for (String dir : filePath.split(TransferFile.SEPARATOR)) {
@@ -722,7 +722,7 @@ public class RemoteClient implements Cancellable {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Cannot create directory: " + remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);
                     }
-                    throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotCreateDirectory", dir), remoteClient.getReplyString());
+                    throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotCreateDirectory", dir), remoteClient.getReplyString());
                 } else if (!remoteClient.changeWorkingDirectory(dir)) {
                     if (LOGGER.isLoggable(Level.FINE)) {
                         LOGGER.fine("Cannot enter directory: " + remoteClient.printWorkingDirectory() + TransferFile.SEPARATOR + dir);

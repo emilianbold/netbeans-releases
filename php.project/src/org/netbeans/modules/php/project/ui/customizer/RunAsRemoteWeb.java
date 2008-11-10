@@ -372,7 +372,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
 
-        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection"));
+        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection"));
         Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage"));
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -429,7 +429,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                             .add(GroupLayout.LEADING, uploadFilesComboBox, 0, 229, Short.MAX_VALUE)
                             .add(GroupLayout.LEADING, runAsComboBox, 0, 229, Short.MAX_VALUE))
                         .add(0, 0, 0))))
-        
         );
 
         layout.linkSize(new Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, GroupLayout.HORIZONTAL);
@@ -473,7 +472,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(uploadFilesHintLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        
         );
 
         runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N

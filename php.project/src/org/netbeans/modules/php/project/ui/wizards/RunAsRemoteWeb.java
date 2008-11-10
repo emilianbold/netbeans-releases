@@ -357,7 +357,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_ProjectUrl")); // NOI18N
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
 
-        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_FtpConnection"));
+        Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection"));
         Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage"));
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -409,20 +409,19 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                     .add(layout.createSequentialGroup()
                         .add(layout.createParallelGroup(GroupLayout.LEADING)
                             .add(layout.createSequentialGroup()
-                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)
+                                .add(indexFileTextField, GroupLayout.DEFAULT_SIZE, 114, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(indexFileBrowseButton))
-                            .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
+                            .add(GroupLayout.TRAILING, urlTextField, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
                             .add(uploadFilesHintLabel)
                             .add(GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(remoteConnectionComboBox, 0, 127, Short.MAX_VALUE)
+                                .add(remoteConnectionComboBox, 0, 114, Short.MAX_VALUE)
                                 .addPreferredGap(LayoutStyle.RELATED)
                                 .add(manageRemoteConnectionButton))
-                            .add(uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE)
-                            .add(uploadFilesComboBox, 0, 228, Short.MAX_VALUE)
-                            .add(runAsComboBox, 0, 228, Short.MAX_VALUE))
+                            .add(uploadDirectoryTextField, GroupLayout.DEFAULT_SIZE, 211, Short.MAX_VALUE)
+                            .add(uploadFilesComboBox, 0, 211, Short.MAX_VALUE)
+                            .add(runAsComboBox, 0, 211, Short.MAX_VALUE))
                         .add(0, 0, 0))))
-        
         );
 
         layout.linkSize(new Component[] {indexFileBrowseButton, manageRemoteConnectionButton}, GroupLayout.HORIZONTAL);
@@ -460,7 +459,6 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
                 .addPreferredGap(LayoutStyle.RELATED)
                 .add(uploadFilesHintLabel)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        
         );
 
         runAsLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.runAsLabel.AccessibleContext.accessibleName")); // NOI18N

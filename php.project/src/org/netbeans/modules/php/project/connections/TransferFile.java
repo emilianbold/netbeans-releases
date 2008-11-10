@@ -41,7 +41,6 @@ package org.netbeans.modules.php.project.connections;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
-import org.apache.commons.net.ftp.FTPFile;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
