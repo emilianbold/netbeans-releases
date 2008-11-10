@@ -132,7 +132,7 @@ public class WriterUtils {
     }
 
     /**
-     * @deprecated use the XAM-based model for editing the pom file,
+     * @deprecated use the XAM-based model for editing the profiles file,
      * see org.netbeans.modules.maven.profile package
      *
      * @param pomDir
@@ -180,8 +180,15 @@ public class WriterUtils {
             }
         });
     }
-    
-    public static void writeSettingsModel(final FileObject m2dir, final Settings settings) throws IOException {
+
+    /**
+     * @deprecated use the XAM-based model for editing the settings file,
+     * see org.netbeans.modules.maven.settings package
+     * @param m2dir
+     * @param settings
+     * @throws java.io.IOException
+     */
+    public @Deprecated static void writeSettingsModel(final FileObject m2dir, final Settings settings) throws IOException {
         m2dir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 InputStream inStr = null;
