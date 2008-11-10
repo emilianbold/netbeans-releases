@@ -173,7 +173,7 @@ public final class ReferencesSupport {
         if (jumpToken == null) {
             doc.readLock();
             try {
-                jumpToken = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+                jumpToken = CndTokenUtilities.getTokenCheckPrev(doc, offset, true);
             } finally {
                 doc.readUnlock();
             }
@@ -322,7 +322,7 @@ public final class ReferencesSupport {
         if (tokenUnderOffset == null && doc instanceof AbstractDocument) {
             ((AbstractDocument) doc).readLock();
             try {
-                tokenUnderOffset = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+                tokenUnderOffset = CndTokenUtilities.getTokenCheckPrev(doc, offset, false);
             } finally {
                 ((AbstractDocument) doc).readUnlock();
             }
@@ -361,7 +361,7 @@ public final class ReferencesSupport {
         ReferenceImpl ref = null;
         doc.readLock();
         try {
-            Token<CppTokenId> token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+            Token<CppTokenId> token = CndTokenUtilities.getTokenCheckPrev(doc, offset, false);
             if (isSupportedToken(token)) {
                 ref = createReferenceImpl(file, doc, offset, token, null);
             }
