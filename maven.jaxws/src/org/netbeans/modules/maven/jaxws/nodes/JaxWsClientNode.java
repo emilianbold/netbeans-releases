@@ -47,6 +47,8 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.spi.customizer.ModelHandleUtils;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModel;
 import org.netbeans.modules.websvc.api.jaxws.wsdlmodel.WsdlModelListener;
@@ -271,15 +273,11 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie {
             // remove entry in wsimport configuration
             Project project = FileOwnerQuery.getOwner(wsdlFileObject);
             if (project != null) {
-                try {
-                    ModelHandle mavenHandle = ModelHandleUtils.createModelHandle(project);
-                    if (mavenHandle != null) {
-                        MavenModelUtils.removeWsdlFile(mavenHandle, client.getLocalWsdl());
-                        ModelHandleUtils.writeModelHandle(mavenHandle, project);
+                ModelOperation<POMModel> oper = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        MavenModelUtils.removeWsdlFile(model, client.getLocalWsdl());
                     }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                }
+                };
             }
             // remove wsdl file
             wsdlFileObject.delete();

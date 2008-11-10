@@ -62,7 +62,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 
 /**
- *
  * @author mkleint
  */
 public class WriterUtils {
@@ -72,8 +71,13 @@ public class WriterUtils {
     /** Creates a new instance of WriterUtils */
     private WriterUtils() {
     }
-    
-    public static void writePomModel(FileObject pom, Model newModel) throws IOException {
+
+    /**
+     * @deprecated use the XAM-based model for editing the pom file,
+     * see org.netbeans.modules.maven.model package
+     *
+     */
+    public @Deprecated static void writePomModel(FileObject pom, Model newModel) throws IOException {
         InputStream inStr = null;
         FileLock lock = null;
         OutputStreamWriter outStr = null;
@@ -104,8 +108,13 @@ public class WriterUtils {
             
         }
     }
-    
-    public static Model loadModel(FileObject fo) {
+
+    /**
+     * @deprecated use the XAM-based model for editing the pom file,
+     * see org.netbeans.modules.maven.model package
+     *
+     */
+    public @Deprecated static Model loadModel(FileObject fo) {
         MavenXpp3Reader reader = new MavenXpp3Reader();
         Model model = null;
         InputStreamReader read = null;
@@ -121,8 +130,16 @@ public class WriterUtils {
         }
         return model;
     }
-    
-    public static void writeProfilesModel(final FileObject pomDir, final ProfilesRoot profilesRoot) throws IOException {
+
+    /**
+     * @deprecated use the XAM-based model for editing the pom file,
+     * see org.netbeans.modules.maven.profile package
+     *
+     * @param pomDir
+     * @param profilesRoot
+     * @throws java.io.IOException
+     */
+    public @Deprecated static void writeProfilesModel(final FileObject pomDir, final ProfilesRoot profilesRoot) throws IOException {
         pomDir.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             public void run() throws IOException {
                 InputStream inStr = null;

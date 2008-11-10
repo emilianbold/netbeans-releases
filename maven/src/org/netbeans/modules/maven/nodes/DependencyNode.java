@@ -45,7 +45,6 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -66,24 +65,24 @@ import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.embedder.MavenEmbedder;
 import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Exclusion;
-import org.apache.maven.model.Model;
 import org.apache.maven.model.Profile;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.CommonArtifactActions;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NbArtifact;
-import org.netbeans.modules.maven.embedder.writer.WriterUtils;
 import org.netbeans.modules.maven.queries.MavenFileOwnerQueryImpl;
 import hidden.org.codehaus.plexus.util.FileUtils;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import java.util.Collections;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.maven.model.ModelOperation;
+import org.netbeans.modules.maven.model.Utilities;
+import org.netbeans.modules.maven.model.pom.Exclusion;
+import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -588,26 +587,19 @@ public class DependencyNode extends AbstractNode {
                     return;
                 }
             }
-            try {
-                File fil = mproject.getFile();
-                Model model = EmbedderFactory.getProjectEmbedder().readModel(fil);
-                Iterator it = model.getDependencies().iterator();
-                while (it.hasNext()) {
-                    Dependency dep = (Dependency) it.next();
-                    if (art.getArtifactId().equals(dep.getArtifactId()) && art.getGroupId().equals(dep.getGroupId())) {
-                        model.removeDependency(dep);
-                        break;
+                ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                    public void performOperation(POMModel model) {
+                        org.netbeans.modules.maven.model.pom.Dependency dep =
+                                model.getProject().findDependencyById(art.getGroupId(), art.getArtifactId(), null);
+                        if (dep != null) {
+                            model.getProject().removeDependency(dep);
+                        }
                     }
-                }
-                WriterUtils.writePomModel(FileUtil.toFileObject(project.getPOMFile()), model);
-                NbMavenProject.fireMavenProjectReload(project);
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            } catch (XmlPullParserException ex) {
-                ex.printStackTrace();
-            }
+                };
+                FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+                Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+//not necessary, will get reloaded by filechange event?
+//                NbMavenProject.fireMavenProjectReload(project);
         }
     }
 
@@ -618,72 +610,55 @@ public class DependencyNode extends AbstractNode {
         }
 
         public void actionPerformed(ActionEvent event) {
-            try {
-                List trail = art.getDependencyTrail();
-                String str = (String) trail.get(1);
-                StringTokenizer tok = new StringTokenizer(str, ":"); //NOI18N
-                String groupId = tok.nextToken();
-                String artifactId = tok.nextToken();
-                File fil = DependencyNode.this.project.getPOMFile();
-                Model model = EmbedderFactory.getProjectEmbedder().readModel(fil);
-                Dependency dep = null;
-                if (model.getDependencies() != null) {
-                    Iterator it = model.getDependencies().iterator();
-                    while (it.hasNext()) {
-                        Dependency dependency = (Dependency) it.next();
-                        if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                            dep = dependency;
-                            break;
+            List trail = art.getDependencyTrail();
+            String str = (String) trail.get(1);
+            final StringTokenizer tok = new StringTokenizer(str, ":"); //NOI18N
+            final String groupId = tok.nextToken();
+            final String artifactId = tok.nextToken();
+            ModelOperation<POMModel> operation = new ModelOperation<POMModel>() {
+                public void performOperation(POMModel model) {
+                    org.netbeans.modules.maven.model.pom.Dependency dep = model.getProject().findDependencyById(groupId, artifactId, null);
+                    if (dep == null) {
+                        // now check the active profiles for the dependency..
+                        List<String> profileNames = new ArrayList<String>();
+                        Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
+                        while (it.hasNext()) {
+                            Profile prof = (Profile) it.next();
+                            profileNames.add(prof.getId());
                         }
-                    }
-                }
-                if (dep == null) {
-                    // now check the active profiles for the dependency..
-                    List profileNames = new ArrayList();
-                    Iterator it = project.getOriginalMavenProject().getActiveProfiles().iterator();
-                    while (it.hasNext()) {
-                        Profile prof = (Profile) it.next();
-                        profileNames.add(prof.getId());
-                    }
-                    it = model.getProfiles().iterator();
-                    while (it.hasNext()) {
-                        Profile profile = (Profile) it.next();
-                        if (profileNames.contains(profile.getId())) {
-                            List lst = profile.getDependencies();
-                            if (lst != null) {
-                                Iterator it2 = lst.iterator();
-                                while (it2.hasNext()) {
-                                    Dependency dependency = (Dependency) it2.next();
-                                    if (groupId.equals(dependency.getGroupId()) && artifactId.equals(dependency.getArtifactId())) {
-                                        dep = dependency;
-                                        break;
-                                    }
+                        for (String profileId : profileNames) {
+                            org.netbeans.modules.maven.model.pom.Profile modProf = model.getProject().findProfileById(profileId);
+                            if (modProf != null) {
+                                dep = modProf.findDependencyById(groupId, artifactId, null);
+                                if (dep != null) {
+                                    break;
                                 }
                             }
                         }
                     }
+                    if (dep == null) {
+                        dep = model.getFactory().createDependency();
+                        dep.setArtifactId(artifactId);
+                        dep.setGroupId(groupId);
+                        dep.setType(tok.nextToken());
+                        dep.setVersion(tok.nextToken());
+                        model.getProject().addDependency(dep);
+                        //mkleint: TODO why is the dependency being added? i forgot already..
+                    }
+                    Exclusion ex = dep.findExclusionById(groupId, artifactId);
+                    if (ex == null) {
+                        Exclusion exclude = model.getFactory().createExclusion();
+                        exclude.setArtifactId(art.getArtifactId());
+                        exclude.setGroupId(art.getGroupId());
+                        dep.addExclusion(exclude);
+                    }
                 }
-                if (dep == null) {
-                    dep = new Dependency();
-                    dep.setArtifactId(artifactId);
-                    dep.setGroupId(groupId);
-                    dep.setType(tok.nextToken());
-                    dep.setVersion(tok.nextToken());
-                    model.addDependency(dep);
-                }
-                Exclusion exclude = new Exclusion();
-                exclude.setArtifactId(art.getArtifactId());
-                exclude.setGroupId(art.getGroupId());
-                dep.addExclusion(exclude);
-                WriterUtils.writePomModel(FileUtil.toFileObject(project.getPOMFile()), model);
-                NbMavenProject.fireMavenProjectReload(project);
-            } catch (FileNotFoundException ex) {
-                ex.printStackTrace();
-            } catch (XmlPullParserException ex) {
-                ex.printStackTrace();
-            } catch (IOException ex) {
-                ex.printStackTrace();
-            }
+            };
+
+            FileObject fo = FileUtil.toFileObject(project.getPOMFile());
+            org.netbeans.modules.maven.model.Utilities.performPOMModelOperations(fo, Collections.singletonList(operation));
+            //TODO is the manual reload necessary if pom.xml file is being saved?
+//                NbMavenProject.fireMavenProjectReload(project);
         }
     }
 

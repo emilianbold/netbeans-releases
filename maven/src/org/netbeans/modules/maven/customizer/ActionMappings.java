@@ -71,7 +71,6 @@ import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.apache.maven.profiles.Profile;
 import org.netbeans.modules.maven.spi.grammar.GoalsProvider;
 import org.netbeans.modules.maven.api.customizer.ModelHandle;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
@@ -201,13 +200,20 @@ public class ActionMappings extends javax.swing.JPanel {
         });
         commandLineUpdater = new CheckBoxUpdater(cbCommandLine) {
             public Boolean getValue() {
-                Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null && prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL) != null) {
-                    return Boolean.valueOf(prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL));
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_USE_EXTERNAL) != null) {
+                        return Boolean.valueOf(prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL));
+                    }
                 }
-                String val = handle.getPOMModel().getProperties().getProperty(Constants.HINT_USE_EXTERNAL);
-                if (val != null) {
-                    return Boolean.valueOf(val);
+                org.netbeans.modules.maven.model.pom.Properties mdlprops = handle.getPOMModel().getProject().getProperties();
+                String val;
+                if (mdlprops != null) {
+                    val = mdlprops.getProperty(Constants.HINT_USE_EXTERNAL);
+                    if (val != null) {
+                        return Boolean.valueOf(val);
+                    }
                 }
                 MavenProjectPropsImpl props = project.getLookup().lookup(MavenProjectPropsImpl.class);
                 val = props.get(Constants.HINT_USE_EXTERNAL, true, false);
@@ -222,19 +228,27 @@ public class ActionMappings extends javax.swing.JPanel {
                 boolean hasConfig = props.get(Constants.HINT_USE_EXTERNAL, true, false) != null;
                 //TODO also try to take the value in pom vs inherited pom value into account.
 
-                Profile prof = handle.getNetbeansPrivateProfile(false);
-                if (prof != null && prof.getProperties().getProperty(Constants.HINT_USE_EXTERNAL) != null) {
-                    prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
-                    if (hasConfig) {
+                org.netbeans.modules.maven.model.profile.Profile prof = handle.getNetbeansPrivateProfile(false);
+                if (prof != null) {
+                    org.netbeans.modules.maven.model.profile.Properties profprops = prof.getProperties();
+                    if (profprops != null && profprops.getProperty(Constants.HINT_USE_EXTERNAL) != null) {
+                        prof.getProperties().setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString());
+                        if (hasConfig) {
                         // in this case clean up the auxiliary config
-                        props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                            props.put(Constants.HINT_USE_EXTERNAL, null, true);
+                        }
                     }
                     handle.markAsModified(handle.getProfileModel());
                     return;
                 }
 
                 if (handle.getProject().getProperties().containsKey(Constants.HINT_USE_EXTERNAL)) {
-                    handle.getPOMModel().addProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString()); //NOI18N
+                    org.netbeans.modules.maven.model.pom.Properties mdlprops = handle.getPOMModel().getProject().getProperties();
+                    if (mdlprops == null) {
+                        mdlprops = handle.getPOMModel().getFactory().createProperties();
+                        handle.getPOMModel().getProject().setProperties(mdlprops);
+                    }
+                    mdlprops.setProperty(Constants.HINT_USE_EXTERNAL, value == null ? "true" : value.toString()); //NOI18N
                     handle.markAsModified(handle.getPOMModel());
                     if (hasConfig) {
                         // in this case clean up the auxiliary config
