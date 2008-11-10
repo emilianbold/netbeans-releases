@@ -491,6 +491,7 @@ NodeActionsProvider {
         public void actionPerformed (ActionEvent e) {
             if (newSourceFileChooser == null) {
                 newSourceFileChooser = new JFileChooser();
+                newSourceFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
                 newSourceFileChooser.setFileFilter(new FileFilter() {
 
                     public String getDescription() {
@@ -510,7 +511,6 @@ NodeActionsProvider {
                     }
 
                 });
-                newSourceFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
             }
             int state = newSourceFileChooser.showDialog(org.openide.windows.WindowManager.getDefault().getMainWindow(),
                                       NbBundle.getMessage(SourcesModel.class, "CTL_SourcesModel_AddSrc_Btn"));
