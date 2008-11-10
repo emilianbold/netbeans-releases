@@ -40,7 +40,8 @@ package org.netbeans.performance.j2se;
 
 import java.io.*;
 import java.net.URL;
-import java.util.Collections;
+import java.util.*;
+import java.util.logging.*;
 import java.util.zip.*;
 
 import junit.framework.Assert;
@@ -163,4 +164,38 @@ public class Utilities {
         }
     }
 
+    public static interface ParameterSetter {
+        void setParameters();
+    }
+    
+    public static class MyHandler extends Handler {
+
+        private Map<String, Long> map = new HashMap<String, Long>();
+
+        @Override
+        public void publish(LogRecord record) {
+            Long data;
+            if (record == null) {
+                return;
+            }
+            for (Object o : record.getParameters()) {
+                if (o instanceof Long) {
+                    data = (Long) o;
+                    map.put(record.getMessage(), data);
+                }
+            }
+        }
+
+        public Long get(String key) {
+            return map.get(key);
+        }
+
+        @Override
+        public void flush() {
+        }
+
+        @Override
+        public void close() throws SecurityException {
+        }
+    }
 }
