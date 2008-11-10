@@ -110,9 +110,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         setEnabledRemoveButton();
 
-        // initial disabled status
-        setEnabledFields(false);
-
         // listeners
         registerListeners();
     }
@@ -345,10 +342,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
         }
     }
 
-    private void setEnabledFields(boolean enabled) {
-        configurationPanel.setEnabledFields(enabled);
-    }
-
     private void resetFields() {
         nameTextField.setText(null);
         typeTextField.setText(null);
@@ -444,19 +437,12 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
     void selectCurrentConfig() {
         Configuration cfg = getSelectedConfiguration();
-
-        // change the state of the fields
-        setEnabledFields(cfg != null);
-
         if (cfg != null) {
             switchConfigurationPanel();
-        } else {
-            resetFields();
-        }
-
-        if (cfg != null) {
             // validate fields only if there's valid config
             validateActiveConfig();
+        } else {
+            resetFields();
         }
     }
 
@@ -713,9 +699,6 @@ public class RemoteConnectionsPanel extends JPanel implements ChangeListener {
 
         public JPanel getComponent() {
             return PANEL;
-        }
-
-        public void setEnabledFields(boolean enabled) {
         }
 
         public boolean isValidConfiguration() {

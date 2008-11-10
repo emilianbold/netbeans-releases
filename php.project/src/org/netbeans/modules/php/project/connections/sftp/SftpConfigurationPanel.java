@@ -98,19 +98,6 @@ public class SftpConfigurationPanel extends JPanel implements RemoteConfiguratio
         warningLabel.setText(msg);
     }
 
-    public void setEnabledFields(boolean enabled) {
-        hostTextField.setEnabled(enabled);
-        portTextField.setEnabled(enabled);
-        userTextField.setEnabled(enabled);
-        passwordTextField.setEnabled(enabled);
-        knownHostsFileTextField.setEnabled(enabled);
-        knownHostsFileBrowseButton.setEnabled(enabled);
-        identityFileTextField.setEnabled(enabled);
-        identityFileBrowseButton.setEnabled(enabled);
-        initialDirectoryTextField.setEnabled(enabled);
-        timeoutTextField.setEnabled(enabled);
-    }
-
     public boolean isValidConfiguration() {
         // remember password is dangerous
         // just warning - do it every time

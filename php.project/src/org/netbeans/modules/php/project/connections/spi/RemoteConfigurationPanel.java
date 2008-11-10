@@ -51,7 +51,6 @@ public interface RemoteConfigurationPanel {
     void addChangeListener(ChangeListener listener);
     void removeChangeListener(ChangeListener listener);
     JPanel getComponent();
-    void setEnabledFields(boolean enabled);
     void read(ConfigManager.Configuration configuration);
     void store(ConfigManager.Configuration configuration);
     /**

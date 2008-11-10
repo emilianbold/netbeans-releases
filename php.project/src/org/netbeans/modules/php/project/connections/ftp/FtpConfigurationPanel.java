@@ -101,17 +101,6 @@ public class FtpConfigurationPanel extends JPanel implements RemoteConfiguration
         warningLabel.setText(msg);
     }
 
-    public void setEnabledFields(boolean enabled) {
-        hostTextField.setEnabled(enabled);
-        portTextField.setEnabled(enabled);
-        userTextField.setEnabled(enabled);
-        passwordTextField.setEnabled(enabled);
-        anonymousCheckBox.setEnabled(enabled);
-        initialDirectoryTextField.setEnabled(enabled);
-        timeoutTextField.setEnabled(enabled);
-        passiveModeCheckBox.setEnabled(enabled);
-    }
-
     public boolean isValidConfiguration() {
         // remember password is dangerous
         // just warning - do it every time
