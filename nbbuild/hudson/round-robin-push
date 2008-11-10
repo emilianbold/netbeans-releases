@@ -57,4 +57,11 @@ ant commit-validation $ANT_PARAM || echo commit-validation >$RESULT
 
 testmodule openide.util
 
+FAILED=`cat $RESULT | wc -l`
+if [ "$FAILED" -gt 0 ]; then
+    echo "No push. Failed tests in following modules:"
+    cat $RESULT
+    exit 5
+fi
+
 hg push "$push_url"
