@@ -258,7 +258,8 @@ import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
             resetMatchError();
         }
     }
-    
+
+    @SuppressWarnings("fallthrough")
     protected final void external_declarations() throws TokenStreamException {
         // external_declarations : (external_declaration)*
         // external_declaration

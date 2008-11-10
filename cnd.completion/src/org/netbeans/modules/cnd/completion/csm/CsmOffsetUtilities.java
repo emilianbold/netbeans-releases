@@ -178,6 +178,7 @@ public class CsmOffsetUtilities {
                 return false;
             }
             // check if offset is before parameters
+            @SuppressWarnings("unchecked")
             Collection<CsmParameter> params = fun.getParameters();
             if(!params.isEmpty()) 
             {
