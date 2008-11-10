@@ -70,6 +70,8 @@ import org.netbeans.modules.db.sql.analyzer.FromClause;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
+import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -105,7 +107,27 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
-        final SQLCompletionEnv newEnv = SQLCompletionEnv.create(doc, caretOffset);
+        doQuery(SQLCompletionEnv.forDocument(doc, caretOffset));
+        if (items != null) {
+            items.fill(resultSet);
+        }
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
+        }
+        resultSet.finish();
+    }
+
+    public void query(SQLCompletionResultSet resultSet, String statement, int caretOffset, SubstitutionHandler substitutionHandler) {
+        doQuery(SQLCompletionEnv.forStatement(statement, caretOffset, substitutionHandler));
+        if (items != null) {
+            items.fill(resultSet);
+        }
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
+        }
+    }
+
+    private void doQuery(final SQLCompletionEnv newEnv) {
         try {
             MetadataModels.get(dbconn).runReadAction(new Action<Metadata>() {
                 public void run(Metadata metadata) {
@@ -126,13 +148,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         } catch (MetadataModelException e) {
             reportError(e);
         }
-        if (items != null) {
-            items.fill(resultSet);
-        }
-        if (anchorOffset != -1) {
-            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
-        }
-        resultSet.finish();
     }
 
     // Called by unit tests.
@@ -143,7 +158,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         anchorOffset = -1;
         substitutionOffset = 0;
         if (env != null && env.isSelect()) {
-            items = new SQLCompletionItems(quoter, env.getStatementOffset());
+            items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
             completeSelect();
         }
         return items;

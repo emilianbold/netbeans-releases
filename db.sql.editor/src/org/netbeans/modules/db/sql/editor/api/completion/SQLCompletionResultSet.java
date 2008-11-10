@@ -37,40 +37,46 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.modules.db.sql.editor.api.completion;
 
-import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLCompletionEnvTest extends TestCase {
+public class SQLCompletionResultSet {
 
-    public SQLCompletionEnvTest(String testName) {
-        super(testName);
+    private final List<CompletionItem> items = new CopyOnWriteArrayList<CompletionItem>();
+    private volatile int anchorOffset;
+
+    public static SQLCompletionResultSet create() {
+        return new SQLCompletionResultSet();
     }
 
-    public void testGetContext() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.insertString(0, "select a from b", null);
-        for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertNull(env.getContext());
-        }
-        for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.SELECT, env.getContext());
-        }
-        for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.forDocument(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.FROM, env.getContext());
-        }
+    private SQLCompletionResultSet() {
+    }
+
+    public List<CompletionItem> getItems() {
+        return items;
+    }
+
+    public void addItem(CompletionItem item) {
+        items.add(item);
+    }
+
+    public void addAllItems(Collection<? extends CompletionItem> toAdd) {
+        items.addAll(toAdd);
+    }
+
+    public int getAnchorOffset() {
+        return anchorOffset;
+    }
+
+    public void setAnchorOffset(int anchorOffset) {
+        this.anchorOffset = anchorOffset;
     }
 }
