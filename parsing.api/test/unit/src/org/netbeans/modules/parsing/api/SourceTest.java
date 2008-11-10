@@ -222,6 +222,33 @@ public class SourceTest extends NbTestCase {
         assertNull("Source for fileless document should not have FileObject", source.getFileObject());
     }
 
+    public void testMimeType() throws IOException {
+        FileObject file = createFileObject("empty.txt", "", "\n");
+        Source source = Source.create(file);
+        assertNotNull("No Source for " + file, source);
+        assertEquals("Wrong mimetype", file.getMIMEType(), source.getMimeType());
+    }
+
+    public void testMimeTypeOnSourceForFilebasedDocument() throws IOException {
+        FileObject file = createFileObject("empty.txt", "", "\n");
+        Document doc = openDocument(file);
+
+        // simulate CloneableEditorSupport.Env setting different mimetype
+        doc.putProperty("mimeType", "text/x-different");
+        assertFalse("Document should have different mimetype then file", "text/x-different".equals(file.getMIMEType()));
+
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        assertEquals("Wrong mimetype", "text/x-different", source.getMimeType());
+    }
+
+    public void testMimeTypeOnSourceForFilelessDocument() {
+        Document doc = createDocument("text/x-testtesttest", "");
+        Source source = Source.create(doc);
+        assertNotNull("No Source for " + doc, source);
+        assertEquals("Wrong mimetype", "text/x-testtesttest", source.getMimeType());
+    }
+
     private FileObject createFileObject(String name, String documentContent, String eol) throws IOException {
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject f = workDir.createData(name);

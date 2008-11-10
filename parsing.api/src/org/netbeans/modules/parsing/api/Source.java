@@ -112,21 +112,7 @@ public final class Source {
             return null;
         }
 
-        synchronized (Source.class) {
-            Reference<Source> sourceRef = instances.get(fileObject);
-            Source source = sourceRef == null ? null : sourceRef.get();
-            
-            if (source == null) {
-                source = new Source (
-                    fileObject.getMIMEType (),
-                    null, 
-                    fileObject
-                );
-                instances.put(fileObject, new WeakReference<Source>(source));
-            }
-
-            return source;
-        }
+        return _get(fileObject.getMIMEType(), fileObject);
     }
     
     /**
@@ -164,19 +150,23 @@ public final class Source {
         Document            document
     ) {
         Parameters.notNull("document", document); //NOI18N
+        
+        String mimeType = NbEditorUtilities.getMimeType(document);
+        if (mimeType == null) {
+            throw new NullPointerException("Netbeans documents must have 'mimeType' property"); //NOI18N
+        }
 
         synchronized (Source.class) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings("unchecked") //NOI18N
             Reference<Source> sourceRef = (Reference<Source>) document.getProperty(Source.class);
             Source source = sourceRef == null ? null : sourceRef.get();
 
             if (source == null) {
                 FileObject fileObject = NbEditorUtilities.getFileObject(document);
                 if (fileObject != null) {
-                    source = Source.create(fileObject);
+                    source = Source._get(mimeType, fileObject);
                 } else {
                     // file-less document
-                    String mimeType = NbEditorUtilities.getMimeType(document);
                     source = new Source(mimeType, document, null);
                 }
                 document.putProperty(Source.class, new WeakReference<Source>(source));
@@ -322,6 +312,26 @@ public final class Source {
         this.mimeType =     mimeType;
         this.document =     document;
         this.fileObject =   fileObject;
+    }
+
+    private static Source _get(String mimeType, FileObject fileObject) {
+        assert mimeType != null;
+        assert fileObject != null;
+        
+        synchronized (Source.class) {
+            Reference<Source> sourceRef = instances.get(fileObject);
+            Source source = sourceRef == null ? null : sourceRef.get();
+
+            if (source == null) {
+                source = new Source(mimeType, null, fileObject);
+                instances.put(fileObject, new WeakReference<Source>(source));
+            }
+            // XXX: we may want to update the mime type to the one from the document,
+            // but I'm not sure what would that mean for the rest of the infrastructure.
+            // It would probably need to throw everything (?) away and start from scratch.
+
+            return source;
+        }
     }
 
     private Document _getDocument(boolean forceOpen) {
