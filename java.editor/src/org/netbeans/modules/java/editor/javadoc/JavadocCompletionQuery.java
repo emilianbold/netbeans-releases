@@ -1006,7 +1006,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 //        ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
 //            Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-        for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+        for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
             LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, substitutionOffset, controller.getJavaSource(), false);
             // XXX item.isAnnonInner() is package private :-(
 //            if (item.isAnnonInner())
@@ -1082,7 +1082,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             ClassIndex.NameKind kind = false ?
                 Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
                 Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-            for(ElementHandle<TypeElement> handle : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+            for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                 TypeElement te = handle.resolve(controller);
                 if (te != null && trees.isAccessible(scope, te) && types.isSubtype(types.getDeclaredType(te), baseType))
                     subtypes.add(types.getDeclaredType(te));
@@ -1091,7 +1091,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             HashSet<TypeElement> elems = new HashSet<TypeElement>();
             LinkedList<DeclaredType> bases = new LinkedList<DeclaredType>();
             bases.add(baseType);
-            ClassIndex index = controller.getJavaSource().getClasspathInfo().getClassIndex();
+            ClassIndex index = controller.getClasspathInfo().getClassIndex();
             while(!bases.isEmpty()) {
                 DeclaredType head = bases.remove();
                 TypeElement elem = (TypeElement)head.asElement();

@@ -70,6 +70,10 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.spi.editor.completion.*;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
@@ -106,11 +110,11 @@ public class JavaCompletionProvider implements CompletionProvider {
         return new AsyncCompletionTask(query, EditorRegistry.lastFocusedComponent());
     }
     
-    public static List<? extends CompletionItem> query(JavaSource source, int queryType, int offset, int substitutionOffset) throws IOException {
+    public static List<? extends CompletionItem> query(Source source, int queryType, int offset, int substitutionOffset) throws Exception {
         assert source != null;
         assert (queryType & COMPLETION_QUERY_TYPE) != 0;
-        JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset, false);
-        source.runUserActionTask(query, false);
+        final JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset, false);
+        ParserManager.parse(Collections.singletonList(source), query.getTask());
         if (offset != substitutionOffset) {
             for (JavaCompletionItem jci : query.results) {
                 jci.substitutionOffset += (substitutionOffset - offset);
@@ -119,7 +123,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         return query.results;
     }
     
-    static final class JavaCompletionQuery extends AsyncCompletionQuery implements Task<CompilationController> {
+    static final class JavaCompletionQuery extends AsyncCompletionQuery {
         
         private static final String ERROR = "<error>"; //NOI18N
         private static final String INIT = "<init>"; //NOI18N
@@ -256,14 +260,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                     documentation = null;
                     toolTip = null;
                     anchorOffset = -1;
-                    JavaSource js = JavaSource.forDocument(doc);
-                    if (js != null && queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
-                        FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
+                    Source source = null;
+                    if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
+                        FileObject fo = SourceUtils.getFile(element, ClasspathInfo.create(doc));
                         if (fo != null)
-                            js = JavaSource.forFileObject(fo);
+                            source = Source.create(fo);
                     }
-                    if (js != null) {
-                        Future<Void> f = js.runWhenScanFinished(this, true);
+                    if (source == null)
+                        source = Source.create(doc);
+                    if (source != null) {
+                        Future<Void> f = ParserManager.parseWhenScanFinished(Collections.singletonList(source), getTask());
                         if (!f.isDone()) {
                             component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
                             resultSet.setWaitText(NbBundle.getMessage(JavaCompletionProvider.class, "scanning-in-progress")); //NOI18N
@@ -353,7 +359,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
             resultSet.finish();
         }
-        
+
         public void run(CompilationController controller) throws Exception {
             if (!hasTask || !isTaskCancelled()) {
                 if ((queryType & COMPLETION_QUERY_TYPE) != 0) {
@@ -370,6 +376,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
+        private UserTask getTask() {
+            return new Task();
+        }
         
         private void resolveToolTip(final CompilationController controller) throws IOException {
             Env env = getCompletionEnvironment(controller, false);
@@ -2756,7 +2765,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                 Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
                 Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-            for(ElementHandle<TypeElement> name : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+            for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix != null ? prefix : EMPTY, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                 LazyTypeCompletionItem item = LazyTypeCompletionItem.create(name, kinds, anchorOffset, controller.getJavaSource(), insideNew);
                 if (item.isAnnonInner())
                     continue;
@@ -2777,7 +2786,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.CAMEL_CASE : ClassIndex.NameKind.CAMEL_CASE_INSENSITIVE :
                     Utilities.isCaseSensitive() ? ClassIndex.NameKind.PREFIX : ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX;
-                for(ElementHandle<TypeElement> handle : controller.getJavaSource().getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
+                for(ElementHandle<TypeElement> handle : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
                     TypeElement te = handle.resolve(controller);
                     if (te != null && trees.isAccessible(scope, te) && types.isSubtype(types.getDeclaredType(te), baseType))
                         subtypes.add(types.getDeclaredType(te));
@@ -2786,7 +2795,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 HashSet<TypeElement> elems = new HashSet<TypeElement>();
                 LinkedList<DeclaredType> bases = new LinkedList<DeclaredType>();
                 bases.add(baseType);
-                ClassIndex index = controller.getJavaSource().getClasspathInfo().getClassIndex();
+                ClassIndex index = controller.getClasspathInfo().getClassIndex();
                 while(!bases.isEmpty()) {
                     DeclaredType head = bases.remove();
                     TypeElement elem = (TypeElement)head.asElement();
@@ -4435,6 +4444,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                         return true;                
             }
             return false;
+        }
+
+        private class Task extends UserTask {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                CompilationController controller = CompilationController.get(resultIterator.getParserResult(caretOffset));
+                if (controller != null)
+                    JavaCompletionQuery.this.run(controller);
+            }
         }
         
         private class Env {

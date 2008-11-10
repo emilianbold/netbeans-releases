@@ -47,6 +47,7 @@ import java.net.URL;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.EventListenerList;
+import javax.swing.text.Document;
 import javax.tools.JavaFileManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -65,6 +66,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -174,7 +176,17 @@ public final class ClasspathInfo {
             return create (fo);
         }
     }
-    
+
+    public static ClasspathInfo create(final Document doc) {
+        Parameters.notNull("doc", doc);
+        final Object source = doc.getProperty(Document.StreamDescriptionProperty);
+        if (source instanceof DataObject) {
+            DataObject dObj = (DataObject) source;
+            return create(dObj.getPrimaryFile());
+        } else {
+            return null;
+        }
+    }
     
     private static ClasspathInfo create (final FileObject fo, final JavaFileFilterImplementation filter,
             final boolean backgroundCompilation, final boolean ignoreExcludes,

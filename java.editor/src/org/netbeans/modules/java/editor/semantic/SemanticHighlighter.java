@@ -111,6 +111,11 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.parsing.spi.ParserResultTask;
+import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -127,7 +132,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Lahoda
  */
-public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
+public class SemanticHighlighter extends ParserResultTask {
     
     public static List<TreePathHandle> computeUnusedImports(CompilationInfo info) throws IOException {
         SemanticHighlighter sh = new SemanticHighlighter(info.getFileObject());
@@ -151,22 +156,30 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
     }
     
     private FileObject file;
-    private SemanticHighlighterFactory fact;
+    //XXX: correct rescheduling when troubles traversing token list!
+//    private SemanticHighlighterFactory fact;
     private AtomicBoolean cancel = new AtomicBoolean();
     
-    SemanticHighlighter(FileObject file) {
-        this(file, null);
-    }
-    
-    SemanticHighlighter(FileObject file, SemanticHighlighterFactory fact) {
+//    SemanticHighlighter(FileObject file) {
+//        this(file, null);
+//    }
+//    
+    SemanticHighlighter(FileObject file/*, SemanticHighlighterFactory fact*/) {
         this.file = file;
-        this.fact = fact;
+//        this.fact = fact;
     }
 
-    public void run(CompilationInfo info) throws IOException {
+    @Override
+    public void run(Result result) {
+        CompilationInfo info = CompilationInfo.get(result);
+        
+        if (info == null) {
+            return ;
+        }
+        
         cancel.set(false);
         
-        Document doc = info.getDocument();
+        Document doc = result.getSnapshot().getSource().getDocument();
 
         if (doc == null) {
             Logger.getLogger(SemanticHighlighter.class.getName()).log(Level.FINE, "SemanticHighlighter: Cannot get document!");
@@ -177,13 +190,24 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
             return ;
         }
         
-        if (process(info, doc) && fact != null) {
-            fact.rescheduleImpl(file);
+        if (process(info, doc)/* && fact != null*/) {
+//            fact.rescheduleImpl(file);
         }
     }
     
     public void cancel() {
         cancel.set(true);
+    }
+    
+
+    @Override
+    public int getPriority() {
+        return 100;
+    }
+
+    @Override
+    public Class<? extends Scheduler> getSchedulerClass() {
+        return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
     
     private static class FixAllImportsFixList implements LazyFixList {
@@ -1456,4 +1480,5 @@ public class SemanticHighlighter implements CancellableTask<CompilationInfo> {
         
         return bag;
     }
+
 }

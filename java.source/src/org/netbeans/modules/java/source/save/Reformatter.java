@@ -47,17 +47,26 @@ import javax.swing.text.Document;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.editor.indent.spi.ExtraLock;
 import org.netbeans.modules.editor.indent.spi.ReformatTask;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.parsing.JavacParser;
+import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.impl.Utilities;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 /**
  *
@@ -67,14 +76,14 @@ public class Reformatter implements ReformatTask {
     
     private static final Object CT_HANDLER_DOC_PROPERTY = "code-template-insert-handler"; // NOI18N
 
-    private JavaSource javaSource;
+    private Source source;
     private Context context;
     private CompilationController controller;
     private Document doc;
     private int shift;
 
-    public Reformatter(JavaSource javaSource, Context context) {
-        this.javaSource = javaSource;
+    public Reformatter(Source source, Context context) {
+        this.source = source;
         this.context = context;
         this.doc = context.document();
     }
@@ -82,9 +91,38 @@ public class Reformatter implements ReformatTask {
     public void reformat() throws BadLocationException {
         if (controller == null) {
             try {
-                controller = JavaSourceAccessor.getINSTANCE().createCompilationController(javaSource);
+                if (JavacParser.MIME_TYPE.equals(source.getMimeType())) {
+                    controller = JavaSourceAccessor.getINSTANCE().createCompilationController(source);
+                } else {
+                    ParserManager.parse(Collections.singletonList(source), new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Parser.Result result = findEmbeddedJava(resultIterator);
+                            if (result != null)
+                                controller = CompilationController.get(result);
+                        }
+                        private Parser.Result findEmbeddedJava(final ResultIterator theMess) throws ParseException {
+                            final Collection<Embedding> todo = new LinkedList<Embedding>();
+                            //BFS should perform better than DFS in this dark.
+                            for (Embedding embedding : theMess.getEmbeddings()) {
+                                if (JavacParser.MIME_TYPE.equals(embedding.getMimeType())) {
+                                    return theMess.getResultIterator(embedding).getParserResult();
+                                } else {
+                                    todo.add(embedding);
+                                }
+                            }
+                            for (Embedding embedding : todo) {
+                                Parser.Result result = findEmbeddedJava(theMess.getResultIterator(embedding));
+                                if (result != null) {
+                                    return result;
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                }
                 controller.toPhase(JavaSource.Phase.PARSED);
-            } catch (IOException ioe) {
+            } catch (Exception ex) {
                 controller = null;
                 return;
             }
@@ -99,7 +137,7 @@ public class Reformatter implements ReformatTask {
         try {
             ClassPath empty = ClassPathSupport.createClassPath(new URL[0]);
             ClasspathInfo cpInfo = ClasspathInfo.create(empty, empty, empty);
-            JavacTaskImpl javacTask = JavaSourceAccessor.getINSTANCE().createJavacTask(cpInfo, null, null);
+            JavacTaskImpl javacTask = JavacParser.createJavacTask(cpInfo, null, null,null);
             com.sun.tools.javac.util.Context ctx = javacTask.getContext();
             JavaCompiler.instance(ctx).genEndPos = true;
             CompilationUnitTree tree = javacTask.parse(FileObjects.memoryFileObject("","", text)).iterator().next(); //NOI18N
@@ -275,7 +313,14 @@ public class Reformatter implements ReformatTask {
     }
     
     public ExtraLock reformatLock() {
-        return null;
+        return JavacParser.MIME_TYPE.equals(source.getMimeType()) ? null : new ExtraLock() {
+            public void lock() {
+                Utilities.acquireParserLock();
+            }
+            public void unlock() {
+                Utilities.releaseParserLock();
+            }
+        };
     }
     
     private TreePath getCommonPath(int startOffset, int endOffset) {
@@ -303,8 +348,8 @@ public class Reformatter implements ReformatTask {
     public static class Factory implements ReformatTask.Factory {
 
         public ReformatTask createTask(Context context) {
-            JavaSource js = JavaSource.forDocument(context.document());
-            return js != null ? new Reformatter(js, context) : null;
+            Source source = Source.create(context.document());
+            return source != null ? new Reformatter(source, context) : null;
         }        
     }
 
