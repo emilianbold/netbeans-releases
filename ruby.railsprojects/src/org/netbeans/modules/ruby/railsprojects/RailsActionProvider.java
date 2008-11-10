@@ -61,7 +61,6 @@ import org.netbeans.modules.extexecution.api.print.LineConvertors;
 import org.netbeans.modules.ruby.AstUtilities;
 import org.netbeans.modules.gsf.spi.GsfUtilities;
 import org.netbeans.modules.ruby.RubyUtils;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.rubyproject.GotoTest;
 import org.netbeans.modules.ruby.rubyproject.RSpecSupport;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
@@ -550,7 +549,6 @@ public final class RailsActionProvider extends RubyBaseActionProvider {
         desc.additionalArgs(getApplicationArguments());
         desc.fileLocator(new RailsFileLocator(context, project));
         desc.addStandardRecognizers();
-        desc.addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT);
         LineConvertors.FileLocator locator = RubyProcessCreator.wrap(desc.getFileLocator());
         desc.addOutConvertor(LineConvertors.filePattern(locator,
                 RubyLineConvertorFactory.RUBY_TEST_OUTPUT,

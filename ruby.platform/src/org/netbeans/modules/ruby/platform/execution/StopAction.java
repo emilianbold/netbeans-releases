@@ -74,7 +74,7 @@ final class StopAction extends AbstractAction {
 
     public @Override Object getValue(String key) {
         if (key.equals(Action.SMALL_ICON)) {
-            return new ImageIcon(ExecutionService.class.getResource(
+            return new ImageIcon(RubyExecutionDescriptor.class.getResource(
                     "/org/netbeans/modules/ruby/platform/resources/stop.gif")); // NOI18N
         } else if (key.equals(Action.SHORT_DESCRIPTION)) {
             return NbBundle.getMessage(StopAction.class, "Stop");

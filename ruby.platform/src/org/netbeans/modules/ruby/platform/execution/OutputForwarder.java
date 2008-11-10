@@ -192,7 +192,7 @@ final class OutputForwarder implements Runnable {
                         }
                         if (!printed) {
                             writer.println(l);
-                        }
+                        }r
                     }
                 }
                 handled = true;

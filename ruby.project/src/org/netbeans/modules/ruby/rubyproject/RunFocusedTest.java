@@ -57,11 +57,12 @@ import org.openide.util.Exceptions;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.editor.BaseAction;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.ruby.AstUtilities;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
@@ -227,7 +228,8 @@ public class RunFocusedTest extends BaseAction {
             desc.addOutConvertor(testConvertor);
             desc.addErrConvertor(testConvertor);
         }
-        new RubyExecution(desc, charsetName).run();
+        RubyProcessCreator rpc = new RubyProcessCreator(desc, charsetName);
+        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
     }
     
     private static TestRunner getTestRunner(TestRunner.TestType testType) {

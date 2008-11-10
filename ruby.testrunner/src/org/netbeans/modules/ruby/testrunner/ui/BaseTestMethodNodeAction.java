@@ -45,8 +45,9 @@ import javax.swing.AbstractAction;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
 import org.netbeans.modules.ruby.rubyproject.RubyBaseProject;
 import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
 import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
@@ -109,7 +110,7 @@ abstract class BaseTestMethodNodeAction extends AbstractAction {
         if (testcase.getLocation() == null) {
             return;
         }
-        FileLocation location = OutputUtils.getFileLocation(testcase.getLocation());
+        FileLocation location = ExecutionUtils.getLocation(testcase.getLocation());
         if (location == null) {
             return;
         }

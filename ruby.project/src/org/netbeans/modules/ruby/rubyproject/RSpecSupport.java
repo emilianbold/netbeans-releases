@@ -47,10 +47,11 @@ import org.netbeans.api.project.Project;
 
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.modules.ruby.platform.execution.FileLocator;
+import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.netbeans.modules.ruby.spi.project.support.rake.PropertyEvaluator;
 import org.netbeans.spi.project.ActionProvider;
@@ -260,7 +261,9 @@ public class RSpecSupport {
         }
         
         if (desc != null) {
-            new RubyExecution(desc, charsetName).run();
+            ExecutionService.newService(new RubyProcessCreator(desc, charsetName), 
+                    desc.toExecutionDescriptor(), 
+                    displayName).run();
         }
     }
 }

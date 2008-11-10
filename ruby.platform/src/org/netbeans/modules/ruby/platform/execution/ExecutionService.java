@@ -57,7 +57,8 @@ import javax.swing.Action;
 
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
 import org.openide.ErrorManager;
@@ -303,7 +304,7 @@ public class ExecutionService {
                             }
                         } else {
                             List<String> commandL = new ArrayList<String>();
-                            if (!cmd.getName().startsWith("jruby") || RubyExecution.LAUNCH_JRUBY_SCRIPT) { // NOI18N
+                            if (!cmd.getName().startsWith("jruby") || ExecutionUtils.launchJRubyScript()) { // NOI18N
                                 commandL.add(cmd.getPath());
                             }
                             

@@ -48,7 +48,7 @@ import java.util.List;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
-import org.netbeans.modules.ruby.platform.RubyExecution;
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
 import org.openide.util.Task;
 
 public final class ExecutionServiceTest extends RubyTestBase {
@@ -78,7 +78,7 @@ public final class ExecutionServiceTest extends RubyTestBase {
         descriptor.addAdditionalEnv(Collections.singletonMap("GEM_PATH", gemPath));
         
         List<String> argList = new ArrayList<String>();
-        argList.addAll(RubyExecution.getRubyArgs(platform));
+        argList.addAll(ExecutionUtils.getRubyArgs(platform));
         argList.add("-e");
         File file = new File(getWorkDir(), "gp.txt");
         argList.add("File.open('" + file.getAbsolutePath() + "', 'w'){|f|f.printf ENV['GEM_PATH']}");

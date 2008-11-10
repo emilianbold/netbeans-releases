@@ -61,10 +61,9 @@ import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.netbeans.api.ruby.platform.RubyInstallation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.extexecution.api.ExecutionService;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
 import org.netbeans.modules.extexecution.api.print.LineConvertors;
-import org.netbeans.modules.ruby.platform.RubyExecution;
-import org.netbeans.modules.ruby.platform.execution.OutputRecognizer;
 import org.netbeans.modules.ruby.platform.execution.RubyLineConvertorFactory;
 import org.netbeans.modules.ruby.platform.execution.RubyProcessCreator;
 import org.netbeans.modules.ruby.rubyproject.rake.RakeRunner;
@@ -264,7 +263,8 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
         File pwd = FileUtil.toFile(project.getProjectDirectory());
         String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
 
-        new RubyExecution(new RubyExecutionDescriptor(platform, displayName, pwd, irbPath).
+        RubyExecutionDescriptor desc =
+        new RubyExecutionDescriptor(platform, displayName, pwd, irbPath).
                 showSuspended(false).
                 showProgress(false).
                 classPath(classPath).
@@ -272,10 +272,10 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
                 additionalArgs("--simple-prompt", "--noreadline"). // NOI18N
                 //additionalArgs(getApplicationArguments()).
                 fileLocator(new RubyFileLocator(context, project)).
-                addStandardRecognizers(),
-                getSourceEncoding()
-                ).
-                run();
+                addStandardRecognizers();
+
+        RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
+        ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
     }
     
     public void invokeAction(final String command, final Lookup context) throws IllegalArgumentException {
@@ -376,17 +376,21 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
             File pwd = getSourceFolder(); // Or project directory?
             String classPath = project.evaluator().getProperty(RubyProjectProperties.JAVAC_CLASSPATH);
-            new RubyExecution(new RubyExecutionDescriptor(platform, displayName, pwd, platform.getRake()).
+            RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd, platform.getRake()).
                     fileLocator(fileLocator).
                     allowInput().
                     classPath(classPath).
                     appendJdkToPath(platform.isJRuby()).
                     addStandardRecognizers().
-                    addOutputRecognizer(RubyExecution.RUBY_TEST_OUTPUT),
-                    getSourceEncoding()
-                    ).
-                    run();
-            
+                    addErrConvertor(LineConvertors.filePattern(RubyProcessCreator.wrap(fileLocator),
+                        RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                        RubyLineConvertorFactory.EXT_RE, 1, 2)).
+                    addOutConvertor(LineConvertors.filePattern(RubyProcessCreator.wrap(fileLocator),
+                        RubyLineConvertorFactory.RUBY_TEST_OUTPUT,
+                        RubyLineConvertorFactory.EXT_RE, 1, 2));
+            RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
+            ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName);
+
             return;
         } else if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
             if (!platform.isValid(true)) {
@@ -480,15 +484,14 @@ public final class RubyActionProvider extends RubyBaseActionProvider {
             RubyFileLocator fileLocator = new RubyFileLocator(context, project);
             String displayName = NbBundle.getMessage(RubyActionProvider.class, "RubyDocumentation");
 
-            new RubyExecution(new RubyExecutionDescriptor(platform, displayName, pwd).
+            RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform, displayName, pwd).
                     additionalArgs("-r", "rdoc/rdoc", "-e", "begin; r = RDoc::RDoc.new; r.document(ARGV); end"). // NOI18N
                     fileLocator(fileLocator).
                     postBuild(showBrowser).
-                    addStandardRecognizers(),
-                    getSourceEncoding()
-                    ).
-                    run();
-            
+                    addStandardRecognizers();
+
+            RubyProcessCreator rpc = new RubyProcessCreator(desc, getSourceEncoding());
+            ExecutionService.newService(rpc, desc.toExecutionDescriptor(), displayName).run();
             return;
         }
         

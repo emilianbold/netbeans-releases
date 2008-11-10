@@ -59,13 +59,13 @@ public final class RubyLineConvertorFactory implements LineConvertorFactory {
     private static final String ROL = ".*\\s?"; // NOI18N
     private static final String SEP = "\\:"; // NOI18N
     private static final String STD_SUFFIX = FILE + SEP + LINE + ROL;
-    private static final Pattern RUBY_COMPILER = Pattern.compile(".*?" + STD_SUFFIX); // NOI18N
-    private static final Pattern RUBY_COMPILER_WIN_MY = Pattern.compile(".*?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
+    static final Pattern RUBY_COMPILER = Pattern.compile(".*?" + STD_SUFFIX); // NOI18N
+    static final Pattern RUBY_COMPILER_WIN_MY = Pattern.compile(".*?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
 
     /* Keeping old one. Get rid of this with more specific recongizers? */
-    private static final Pattern RUBY_COMPILER_WIN =
+    static final Pattern RUBY_COMPILER_WIN =
             Pattern.compile("^(?:(?:\\[|\\]|\\-|\\:|[0-9]|\\s|\\,)*)(?:\\s*from )?" + FILE_WIN + SEP + LINE + ROL); // NOI18N
-    private static final Pattern RAILS_RECOGNIZER =
+    static final Pattern RAILS_RECOGNIZER =
             Pattern.compile(".*#\\{RAILS_ROOT\\}/" + STD_SUFFIX); // NOI18N
     public static final Pattern RUBY_TEST_OUTPUT = Pattern.compile("\\s*test.*\\[" + STD_SUFFIX); // NOI18N
     /** Regexp. for extensions. */

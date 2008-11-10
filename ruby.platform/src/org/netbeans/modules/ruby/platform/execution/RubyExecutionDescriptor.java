@@ -50,7 +50,6 @@ import org.netbeans.modules.extexecution.api.ExecutionDescriptor;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.InputProcessorFactory;
 import org.netbeans.modules.extexecution.api.ExecutionDescriptor.LineConvertorFactory;
 import org.netbeans.modules.extexecution.api.print.LineConvertor;
-import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.gems.GemManager;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -137,7 +136,7 @@ public class RubyExecutionDescriptor {
             String home = platform.getHome().getAbsolutePath();
             env.put("JRUBY_HOME", home); // NOI18N
             env.put("JRUBY_BASE", home); // NOI18N
-            env.put("JAVA_HOME", RubyExecution.getJavaHome()); // NOI18N
+            env.put("JAVA_HOME", ExecutionUtils.getJavaHome()); // NOI18N
             addAdditionalEnv(env);
         }
     }
@@ -168,7 +167,6 @@ public class RubyExecutionDescriptor {
     }
 
     public RubyExecutionDescriptor addStandardRecognizers() {
-        outputRecognizers.addAll(RubyExecution.getStandardRubyRecognizers());
         addStandardConvertors = true;
         return this;
     }

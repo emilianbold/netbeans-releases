@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,6 +21,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,51 +37,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.testrunner.ui;
 
-import java.awt.event.ActionEvent;
-import java.util.logging.Logger;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.gsf.api.DeclarationFinder.DeclarationLocation;
-import org.netbeans.modules.ruby.RubyDeclarationFinder;
-import org.netbeans.modules.ruby.platform.execution.ExecutionUtils.FileLocation;
-import org.netbeans.modules.ruby.rubyproject.spi.TestRunner;
-import org.netbeans.modules.ruby.testrunner.ui.Report.Testcase;
-import org.openide.filesystems.FileObject;
+package org.netbeans.modules.ruby.platform.execution;
 
-/**
- * An action for running/debugging a singe test method.
- *
- * @author Erno Mononen
- */
-class RunTestMethodAction extends BaseTestMethodNodeAction {
+import org.netbeans.modules.ruby.platform.execution.ExecutionUtils;
+import java.io.File;
+import java.util.Arrays;
+import org.netbeans.api.ruby.platform.RubyTestBase;
+import org.netbeans.api.ruby.platform.TestUtil;
+import org.openide.util.Utilities;
 
-    private static final Logger LOGGER = Logger.getLogger(RunTestMethodAction.class.getName());
-    private final boolean debug;
+public class ExecutionUtilsTest extends RubyTestBase {
 
-    public RunTestMethodAction(Testcase testcase, Project project, String name, boolean debug) {
-        super(testcase, project, name);
-        this.debug = debug;
+    public ExecutionUtilsTest(String testName) {
+        super(testName);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        if (TestRunner.TestType.RSPEC == testcase.getType()) {
-            runRspec();
-            return;
+    public void testComputeJRubyClassPath() {
+        String[] expectedJars = {
+            "bsf.jar",
+            "jruby.jar",
+            "profile.jar",
+        };
+        Arrays.sort(expectedJars);
+        File jrubyLib = new File(TestUtil.getXTestJRubyHome(), "lib");
+        String cp = ExecutionUtils.computeJRubyClassPath(null, jrubyLib);
+        String finalCP;
+        if (Utilities.isWindows()) {
+            assertTrue(cp.startsWith("\""));
+            assertTrue(cp.endsWith("\""));
+            finalCP = cp.substring(1, cp.length() - 1);
+        } else {
+            finalCP = cp;
         }
-        DeclarationLocation location = RubyDeclarationFinder.getTestDeclaration(getTestSourceRoot(), getTestMethod(), false);
-        if (!(DeclarationLocation.NONE == location)) {
-            getTestRunner(testcase.getType()).runSingleTest(location.getFileObject(), testcase.name, debug);
+        String[] jars = finalCP.split(File.pathSeparator);
+        // assertEquals(Arrays.asList(expectedJars), Arrays.asList(jars));
+        assertEquals(expectedJars.length, jars.length);
+        Arrays.sort(jars);
+        for (int i = 0; i < jars.length; i++) {
+            assertTrue(jars[i] + " ends with " + expectedJars[i], jars[i].endsWith(expectedJars[i]));
         }
-    }
-
-    @Override
-    protected void doRspecRun(FileObject testFile, FileLocation location) {
-        getTestRunner(testcase.getType()).runSingleTest(testFile, String.valueOf(location.line), debug);
     }
 }

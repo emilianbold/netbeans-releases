@@ -85,7 +85,7 @@ final class RerunAction extends AbstractAction implements FileChangeListener {
     @Override
     public Object getValue(String key) {
         if (key.equals(Action.SMALL_ICON)) {
-            return new ImageIcon(ExecutionService.class.getResource(
+            return new ImageIcon(RubyExecutionDescriptor.class.getResource(
                     "/org/netbeans/modules/ruby/platform/resources/rerun.png")); // NOI18N
         } else if (key.equals(Action.SHORT_DESCRIPTION)) {
             return NbBundle.getMessage(ExecutionService.class, "Rerun");

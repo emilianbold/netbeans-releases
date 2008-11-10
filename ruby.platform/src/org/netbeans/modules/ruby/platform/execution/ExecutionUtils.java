@@ -40,109 +40,68 @@ package org.netbeans.modules.ruby.platform.execution;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.concurrent.Callable;
-import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.modules.extexecution.api.ExternalProcessBuilder;
-import org.netbeans.modules.extexecution.api.print.LineConvertors;
-import org.netbeans.modules.ruby.platform.spi.RubyDebuggerImplementation;
-import org.openide.filesystems.FileObject;
+import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import org.netbeans.api.ruby.platform.RubyPlatform;
+import org.netbeans.modules.ruby.platform.execution.OutputRecognizer.FileLocation;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 
 /**
- * A helper class for migrating from the ruby execution API to the new execution API (extexecution).
- * Contains a lot of copy-pasted code from <code>RubyExecution</code> (which will eventually
- * be removed).
+ * Utility methods for external execution.
+ * <p>
+ * <i>Most of the methods here
+ * used to be in <code>RubyExecution</code>.</i>
  *
  * @author Erno Mononen
  */
-public class RubyProcessCreator implements Callable<Process> {
+public final class ExecutionUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(ExecutionUtils.class.getName());
+
+    private static final Pattern[] LOCATION_RECOGNIZER_PATTERNS = new Pattern[]{
+        RubyLineConvertorFactory.RAILS_RECOGNIZER,
+        RubyLineConvertorFactory.RUBY_COMPILER,
+        RubyLineConvertorFactory.RUBY_COMPILER_WIN,
+        RubyLineConvertorFactory.RUBY_COMPILER_WIN_MY};
 
     /** When not set (the default) do stdio syncing for native Ruby binaries */
     private static final boolean SYNC_RUBY_STDIO = System.getProperty("ruby.no.sync-stdio") == null; // NOI18N
-    /** Set to suppress using the -Kkcode flag in case you're using a weird interpreter which doesn't support it */
-    //private static final boolean SKIP_KCODE = System.getProperty("ruby.no.kcode") == null; // NOI18N
-    private static final boolean SKIP_KCODE = true;
     /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
-    private static final boolean LAUNCH_JRUBY_SCRIPT = System.getProperty("ruby.use.jruby.script") != null; // NOI18N
-    private final RubyExecutionDescriptor descriptor;
-    private final String charsetName;
+    private static final boolean LAUNCH_JRUBY_SCRIPT =
+        System.getProperty("ruby.use.jruby.script") != null; // NOI18N
 
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor) {
-        this(descriptor, null);
+    private ExecutionUtils() {
     }
 
-    public RubyProcessCreator(RubyExecutionDescriptor descriptor,
-            String charsetName) {
-
-        if (descriptor.getCmd() == null) {
-            descriptor.cmd(descriptor.getPlatform().getInterpreterFile());
-        }
-
-        descriptor.addBinPath(true);
-        this.descriptor = descriptor;
-        this.charsetName = charsetName;
+    /** When not set (the default) bypass the JRuby launcher unix/ba-file scripts and launch VM directly */
+    public static boolean launchJRubyScript() {
+        return LAUNCH_JRUBY_SCRIPT;
     }
-
     /**
-     * Wraps the given locator as a LineConvertors.FileLocator. Just a temp utility
-     * method to ease the migration to extexecution.
+     * Returns the basic Ruby interpreter command and associated flags (not
+     * application arguments)
      */
-    public static LineConvertors.FileLocator wrap(final FileLocator locator) {
-        LineConvertors.FileLocator wrapper = new LineConvertors.FileLocator() {
-
-            public FileObject find(String filename) {
-                return locator.find(filename);
-            }
-        };
-        return wrapper;
+    public static List<? extends String> getRubyArgs(final RubyPlatform platform) {
+        RubyExecutionDescriptor desc = new RubyExecutionDescriptor(platform);
+        return getRubyArgs(platform.getHome().getAbsolutePath(),
+                platform.getInterpreterFile().getName(), desc, null);
     }
 
-    public Process call() throws Exception {
-        if (descriptor.debug) {
-            RubyDebuggerImplementation debugger = Lookup.getDefault().lookup(RubyDebuggerImplementation.class);
-            debugger.describeProcess(descriptor);
-            if (debugger == null || !debugger.canDebug()) {
-                assert false; //
-                return null;
-            }
-            return debugger.debug();
-        }
-        ExternalProcessBuilder builder = null;
-        List<? extends String> args = buildArgs();
-        if (!descriptor.cmd.getName().startsWith("jruby") || LAUNCH_JRUBY_SCRIPT) { // NOI18N
-            builder = new ExternalProcessBuilder(descriptor.cmd.getPath());
-        } else {
-            builder = new ExternalProcessBuilder(args.get(0));
-            args.remove(0);
-        }
-
-        for (String arg : args) {
-            builder = builder.addArgument(arg);
-
-        }
-        builder = builder.workingDirectory(descriptor.getPwd());
-        for (Entry<String, String> entry : descriptor.getAdditionalEnvironment().entrySet()) {
-            builder = builder.addEnvironmentVariable(entry.getKey(), entry.getValue());
-        }
-
-        return builder.call();
-    }
-
-    private List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor) {
+    private static List<? extends String> getRubyArgs(String rubyHome, String cmdName, RubyExecutionDescriptor descriptor, String charsetName) {
         List<String> argvList = new ArrayList<String>();
         // Decide whether I'm launching JRuby, and if so, take a shortcut and launch
         // the VM directly. This is important because killing JRuby via the launcher script
         // is not working right; now that JRuby on Unix exec's the VM that part is okay but
         // on Windows there are still problems.
-        if (!LAUNCH_JRUBY_SCRIPT && cmdName.startsWith("jruby")) { // NOI18N
+        if (!launchJRubyScript() && cmdName.startsWith("jruby")) { // NOI18N
             String javaHome = getJavaHome();
 
             argvList.add(javaHome + File.separator + "bin" + File.separator + // NOI18N
@@ -194,7 +153,7 @@ public class RubyProcessCreator implements Callable<Process> {
 
             File jrubyLib = new File(rubyHomeDir, "lib"); // NOI18N
             if (!jrubyLib.isDirectory()) {
-                throw new AssertionError('"' + jrubyLib.getAbsolutePath() + "\" exists (\"" + descriptor.getCmd() + "\" is not valid JRuby executable?)");
+                throw new AssertionError('"' + jrubyLib.getAbsolutePath() + "\" exists (\"" + cmdName + "\" is not valid JRuby executable?)");
             }
 
             argvList.add(computeJRubyClassPath(
@@ -220,28 +179,6 @@ public class RubyProcessCreator implements Callable<Process> {
         // TODO: JRUBYOPTS
 
         // Application arguments follow
-        }
-
-        if (!SKIP_KCODE && cmdName.startsWith("ruby")) { // NOI18N
-            String cs = charsetName;
-            if (cs == null) {
-                // Add project encoding flags
-                FileObject fo = descriptor.getFileObject();
-                if (fo != null) {
-                    Charset charset = FileEncodingQuery.getEncoding(fo);
-                    if (charset != null) {
-                        cs = charset.name();
-                    }
-                }
-            }
-
-            if (cs != null) {
-                if (cs.equals("UTF-8")) { // NOI18N
-                    argvList.add("-Ku"); // NOI18N
-                //} else if (cs.equals("")) {
-                // What else???
-                }
-            }
         }
 
         // Is this a native Ruby process? If so, do sync-io workaround.
@@ -273,55 +210,6 @@ public class RubyProcessCreator implements Callable<Process> {
             }
         }
         return argvList;
-    }
-
-    /**
-     * Retruns list of default arguments and options from the descriptor's
-     * <code>initialArgs</code>, <code>script</code> and
-     * <code>additionalArgs</code> in that order.
-     */
-    private List<? extends String> getCommonArgs() {
-        List<String> argvList = new ArrayList<String>();
-        File cmd = descriptor.cmd;
-        assert cmd != null;
-
-        if (descriptor.getInitialArgs() != null) {
-            argvList.addAll(Arrays.asList(descriptor.getInitialArgs()));
-        }
-
-        if (descriptor.getScriptPrefix() != null) {
-            argvList.add(descriptor.getScriptPrefix());
-        }
-
-        if (descriptor.script != null) {
-            argvList.add(descriptor.script);
-        }
-
-        if (descriptor.getAdditionalArgs() != null) {
-            argvList.addAll(Arrays.asList(descriptor.getAdditionalArgs()));
-        }
-        return argvList;
-    }
-
-    protected List<? extends String> buildArgs() {
-        List<String> argvList = new ArrayList<String>();
-        String rubyHome = descriptor.getCmd().getParentFile().getParent();
-        String cmdName = descriptor.getCmd().getName();
-        if (descriptor.isRunThroughRuby()) {
-            argvList.addAll(getRubyArgs(rubyHome, cmdName, descriptor));
-        }
-        argvList.addAll(getCommonArgs());
-        return argvList;
-    }
-
-    public static String getJavaHome() {
-        String javaHome = System.getProperty("jruby.java.home"); // NOI18N
-
-        if (javaHome == null) {
-            javaHome = System.getProperty("java.home"); // NOI18N
-        }
-
-        return javaHome;
     }
 
     /** Package-private for unit test. */
@@ -378,4 +266,149 @@ public class RubyProcessCreator implements Callable<Process> {
         }
         return Utilities.isWindows() ? "\"" + cp.toString() + "\"" : cp.toString(); // NOI18N
     }
+
+    public static void setupProcessEnvironment(Map<String, String> env, final String pwd, boolean appendJdkToPath) {
+        String path = pwd;
+        if (!Utilities.isWindows()) {
+            path = path.replace(" ", "\\ "); // NOI18N
+        }
+
+        // Find PATH environment variable - on Windows it can be some other
+        // case and we should use whatever it has.
+        String pathName = "PATH"; // NOI18N
+
+        if (Utilities.isWindows()) {
+            pathName = "Path"; // NOI18N
+
+            for (String key : env.keySet()) {
+                if ("PATH".equals(key.toUpperCase())) { // NOI18N
+                    pathName = key;
+
+                    break;
+                }
+            }
+        }
+
+        String currentPath = env.get(pathName);
+
+        if (currentPath == null) {
+            currentPath = "";
+        }
+
+        currentPath = path + File.pathSeparator + currentPath;
+
+        if (appendJdkToPath) {
+            // jruby.java.home always points to jdk(?)
+            String jdkHome = System.getProperty("jruby.java.home"); // NOI18N
+
+            if (jdkHome == null) {
+                // #115377 - add jdk bin to path
+                jdkHome = System.getProperty("jdk.home"); // NOI18N
+            }
+
+            String jdkBin = jdkHome + File.separator + "bin"; // NOI18N
+            if (!Utilities.isWindows()) {
+                jdkBin = jdkBin.replace(" ", "\\ "); // NOI18N
+            }
+            currentPath = currentPath + File.pathSeparator + jdkBin;
+        }
+
+        env.put(pathName, currentPath); // NOI18N
+    }
+
+    public static String getJavaHome() {
+        String javaHome = System.getProperty("jruby.java.home"); // NOI18N
+
+        if (javaHome == null) {
+            javaHome = System.getProperty("java.home"); // NOI18N
+        }
+
+        return javaHome;
+    }
+
+    /** Just helper method for logging. */
+    public static void logProcess(final ProcessBuilder pb) {
+        if (LOGGER.isLoggable(Level.FINE)) {
+            File dir = pb.directory();
+            String basedir = dir == null ? "" : "(basedir: " + dir.getAbsolutePath() + ") ";
+            LOGGER.fine("Running: " + basedir + '"' + getProcessAsString(pb.command()) + '"');
+            LOGGER.fine("Environment: " + pb.environment());
+        }
+    }
+
+    /** Just helper method for logging. */
+    private static String getProcessAsString(List<? extends String> process) {
+
+        StringBuilder sb = new StringBuilder();
+        for (String arg : process) {
+            sb.append(arg).append(' ');
+        }
+        return sb.toString().trim();
+    }
+
+    // TODO: find a better place for this method (doesn't have anything to
+    // do with external execution)
+    public static FileLocation getLocation(String line) {
+
+        final int fileGroup = 1;
+        final int lineGroup = 2;
+
+        if (line.length() > 400) {
+            return null;
+        }
+
+        for (Pattern pattern : LOCATION_RECOGNIZER_PATTERNS) {
+            Matcher match = pattern.matcher(line);
+
+            if (match.matches()) {
+                String file = null;
+                int lineno = -1;
+
+                if (fileGroup != -1) {
+                    file = match.group(fileGroup);
+                    // Make some adjustments - easier to do here than in the regular expression
+                    // (See 109721 and 109724 for example)
+                    if (file.startsWith("\"")) { // NOI18N
+                        file = file.substring(1);
+                    }
+                    if (file.startsWith("./")) { // NOI18N
+                        file = file.substring(2);
+                    }
+                    if (!(RubyLineConvertorFactory.EXT_RE.matcher(file).matches() || new File(file).isFile())) {
+                        return null;
+                    }
+                }
+
+                if (lineGroup != -1) {
+                    String linenoStr = match.group(lineGroup);
+
+                    try {
+                        lineno = Integer.parseInt(linenoStr);
+                    } catch (NumberFormatException nfe) {
+                        Exceptions.printStackTrace(nfe);
+                        lineno = 0;
+                    }
+                }
+
+                return new FileLocation(file, lineno);
+            }
+        }
+
+        return null;
+    }
+
+    // TODO: move somewhere else (doesn't have anything to
+    // do with external execution)
+    public static final class FileLocation {
+
+        public final String file;
+        public final int line;
+
+        public FileLocation(String file, int line) {
+            this.file = file;
+            this.line = line;
+        }
+    }
+
+
 }
