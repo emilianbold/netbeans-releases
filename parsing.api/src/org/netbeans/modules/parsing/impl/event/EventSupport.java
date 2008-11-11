@@ -56,7 +56,9 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenHierarchyEvent;
 import org.netbeans.api.lexer.TokenHierarchyListener;
 import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.impl.CurrentDocumentScheduller;
 import org.netbeans.modules.parsing.impl.CurrentEditorTaskScheduller;
+import org.netbeans.modules.parsing.impl.CursorSensitiveScheduller;
 import org.netbeans.modules.parsing.impl.SelectedNodesScheduller;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceFlags;
@@ -151,7 +153,9 @@ public final class EventSupport {
     private void resetStateImpl() {
         if (!k24) {
             SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentEditorTaskScheduller.class);
+            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CurrentDocumentScheduller.class);
             SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(SelectedNodesScheduller.class);
+            SourceAccessor.getINSTANCE().getCache(source).scheduleTasks(CursorSensitiveScheduller.class);
             TaskProcessor.resetStateImpl (this.source);
         }
     }
