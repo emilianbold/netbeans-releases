@@ -447,8 +447,13 @@ class ExpressionScanner extends TreeScanner<List<Tree>, ExpressionScanner.Expres
         return reduce(result, scan(node.getBlock(), p));
     }
 
-    //public List<Tree> visitThrow(ThrowTree node, ExpressionScanner.ExpressionsInfo p) {
-    //}
+    public List<Tree> visitThrow(ThrowTree node, ExpressionScanner.ExpressionsInfo p) {
+        List<Tree> result = null;
+        if (acceptsTree(node)) {
+            result = scan(node.getExpression(), p);
+        }
+        return result;
+    }
 
     //public List<Tree> visitCompilationUnit(CompilationUnitTree node, ExpressionScanner.ExpressionsInfo p) {
     //}

@@ -504,15 +504,17 @@ public final class TextRegionManager {
                     if (midRegion == region)
                         return low;
                     if (midRegion.startOffset() != offset)
-                        throw new IllegalStateException("Region: " + region + " not found."); // NOI18N
+                        throw new IllegalStateException("Region: " + region + " not found:\n" + // NOI18N
+                                dumpRegions(null, regions, 4)); // NOI18N
                     low++;
                 }
                 break;
             }
         }
-        throw new IllegalStateException("Region: " + region + " not found."); // NOI18N
+        throw new IllegalStateException("Region: " + region + " not found:\n" + // NOI18N
+                dumpRegions(null, regions, 4)); // NOI18N
     }
-    
+
     static void addRegion(TextRegion<?> parent, TextRegion<?> region) {
         if (region.parent() != null)
             throw new IllegalArgumentException("Region:" + region + " already added."); // NOI18N
@@ -607,14 +609,17 @@ public final class TextRegionManager {
         return sb.toString();
     }
     
-    private void dumpRegions(StringBuilder sb, List<TextRegion<?>> regions, int indent) {
+    private static StringBuilder dumpRegions(StringBuilder sb, List<TextRegion<?>> regions, int indent) {
+        if (sb == null)
+            sb = new StringBuilder(100);
         if (regions == null)
-            return;
+            return sb;
         for (TextRegion<?> region : regions) {
             ArrayUtilities.appendSpaces(sb, indent);
             sb.append(region).append('\n');
             dumpRegions(sb, region.regions(), indent + 4);
         }
+        return sb;
     }
     
     static interface EditingNotify {

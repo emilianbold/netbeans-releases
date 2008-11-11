@@ -46,9 +46,13 @@
 package org.netbeans.modules.php.editor.codegen.ui;
 
 import java.util.List;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTree;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.php.editor.codegen.CGSGenerator;
+import org.netbeans.modules.php.editor.codegen.CGSInfo;
 import org.netbeans.modules.php.editor.codegen.Property;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -58,14 +62,67 @@ public class ConstructorPanel extends javax.swing.JPanel {
 
     private final String className;
     private final List<Property> properties;
+    private final CGSInfo cgsInfo;
 
     /** Creates new form ConstructorPanel */
-    public ConstructorPanel(String className, List<Property> properties, String panelTitle) {
+    public ConstructorPanel(CGSGenerator.GenType genType, CGSInfo cgsInfo) {
         initComponents();
-        this.className = className;
-        this.properties = properties;
-        this.label.setText(panelTitle);
+        this.className = cgsInfo.getClassName();
+        switch (genType) {
+            case CONSTRUCTOR: properties = cgsInfo.getProperties(); break;
+            case GETTER: properties = cgsInfo.getPossibleGetters(); break;
+            case SETTER: properties = cgsInfo.getPossibleSetters(); break;
+            default: properties = cgsInfo.getPossibleGettersSetters(); break;
+        }
+        this.cgsInfo = cgsInfo;
+        initPanel(genType);
         initTree();
+    }
+
+    private void initPanel(CGSGenerator.GenType genType) {
+    String panelTitle = "";                     //NOI18N
+        boolean customizeMethodGeneration = true;
+        String name = properties.get(0).getName();
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        switch (genType) {
+            case CONSTRUCTOR:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_CONSTRUCTOR");    //NOI18N
+                customizeMethodGeneration = false;
+                break;
+            case GETTER:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS");    //NOI18N
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    model.addElement(way.getGetterExample(name));
+                }
+                break;
+            case SETTER:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_SETTERS");    //NOI18N
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    model.addElement(way.getSetterExample(name));
+                }
+                break;
+            case GETTER_AND_SETTER:
+                panelTitle = NbBundle.getMessage(CGSGenerator.class, "LBL_PANEL_GETTERS_AND_SETTERS");    //NOI18N
+                for (CGSGenerator.GenWay way : CGSGenerator.GenWay.values()) {
+                    model.addElement(way.getGetterExample(name) + ", " + way.getSetterExample(name));
+                }
+                break;
+        }
+        this.label.setText(panelTitle);
+        this.pGSCustomize.setVisible(customizeMethodGeneration);
+        cbMethodGeneration.setModel(model);
+        int index = 0;
+        if (cgsInfo.getHowToGenerate() != null) {
+            for (CGSGenerator.GenWay genWay : CGSGenerator.GenWay.values()) {
+                if (genWay.equals(cgsInfo.getHowToGenerate())) {
+                    break;
+                }
+                index++;
+            }
+        }
+        cbMethodGeneration.setSelectedIndex(index);
+        cbGenerateDoc.setSelected(cgsInfo.isGenerateDoc());
+        cbGenerateDoc.setVisible(false);
     }
 
     private void initTree(){
@@ -99,18 +156,60 @@ public class ConstructorPanel extends javax.swing.JPanel {
 
         label = new javax.swing.JLabel();
         scrollPane = new javax.swing.JScrollPane();
+        pGSCustomize = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cbMethodGeneration = new javax.swing.JComboBox();
+        cbGenerateDoc = new javax.swing.JCheckBox();
 
         label.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.label.text")); // NOI18N
+
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.jLabel1.text")); // NOI18N
+
+        cbMethodGeneration.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        cbMethodGeneration.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbMethodGenerationActionPerformed(evt);
+            }
+        });
+
+        org.jdesktop.layout.GroupLayout pGSCustomizeLayout = new org.jdesktop.layout.GroupLayout(pGSCustomize);
+        pGSCustomize.setLayout(pGSCustomizeLayout);
+        pGSCustomizeLayout.setHorizontalGroup(
+            pGSCustomizeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pGSCustomizeLayout.createSequentialGroup()
+                .add(jLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 105, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbMethodGeneration, 0, 247, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        pGSCustomizeLayout.setVerticalGroup(
+            pGSCustomizeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(pGSCustomizeLayout.createSequentialGroup()
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .add(pGSCustomizeLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                    .add(jLabel1)
+                    .add(cbMethodGeneration, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .add(65, 65, 65))
+        );
+
+        cbGenerateDoc.setText(org.openide.util.NbBundle.getMessage(ConstructorPanel.class, "ConstructorPanel.cbGenerateDoc.text")); // NOI18N
+        cbGenerateDoc.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cbGenerateDocActionPerformed(evt);
+            }
+        });
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
-                    .add(label))
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, label)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, cbGenerateDoc, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(org.jdesktop.layout.GroupLayout.LEADING, pGSCustomize, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -119,14 +218,31 @@ public class ConstructorPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .add(label)
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
+                .add(scrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 226, Short.MAX_VALUE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(pGSCustomize, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 45, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(cbGenerateDoc)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cbMethodGenerationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbMethodGenerationActionPerformed
+        int selectedIndex = cbMethodGeneration.getSelectedIndex();
+        cgsInfo.setHowToGenerate(CGSGenerator.GenWay.values()[selectedIndex]);
+    }//GEN-LAST:event_cbMethodGenerationActionPerformed
+
+    private void cbGenerateDocActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbGenerateDocActionPerformed
+        cgsInfo.setGenerateDoc(cbGenerateDoc.isSelected());
+    }//GEN-LAST:event_cbGenerateDocActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox cbGenerateDoc;
+    private javax.swing.JComboBox cbMethodGeneration;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel label;
+    private javax.swing.JPanel pGSCustomize;
     private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
