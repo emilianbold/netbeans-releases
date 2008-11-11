@@ -56,7 +56,7 @@ import org.openide.util.NbBundle;
  */
 public class RPMPackager implements PackagerDescriptor {
 
-    public static String PACKAGER_NAME = "RPM"; // NOI18N
+    public static final String PACKAGER_NAME = "RPM"; // NOI18N
 
     public String getName() {
         return PACKAGER_NAME;

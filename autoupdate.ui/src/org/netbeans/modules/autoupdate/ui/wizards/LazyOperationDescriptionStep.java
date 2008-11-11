@@ -52,6 +52,8 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.UpdateElement;
+import org.netbeans.api.autoupdate.UpdateManager;
+import org.netbeans.api.autoupdate.UpdateUnit;
 import org.netbeans.modules.autoupdate.ui.Utilities;
 import org.netbeans.modules.autoupdate.ui.actions.AutoupdateCheckScheduler;
 import org.netbeans.modules.autoupdate.ui.wizards.LazyInstallUnitWizardIterator.LazyUnit;
@@ -145,13 +147,26 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                         OperationContainer.createForUpdate() :
                         OperationContainer.createForInstall();
                     boolean allOk = true;
+                    InstallUnitWizardModel model = new InstallUnitWizardModel (operationType, oc);
                     for (UpdateElement el : updates) {
-                        allOk &= oc.canBeAdded (el.getUpdateUnit (), el);
+                        UpdateUnit uu = el.getUpdateUnit ();
+                        if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == uu.getType ()) {
+                            allOk &= model.getCustomHandledContainer ().canBeAdded (uu, el);
+                        } else {
+                            allOk &= oc.canBeAdded (uu, el);
+                        }
                     }
                     hasUpdates = hasUpdates && allOk;
                     if (allOk) {
-                        oc.add (updates);
-                        final WizardDescriptor.Iterator<WizardDescriptor> panels = new InstallUnitWizardIterator (new InstallUnitWizardModel (operationType, oc), true);
+                        for (UpdateElement el : updates) {
+                            UpdateUnit uu = el.getUpdateUnit ();
+                            if (UpdateManager.TYPE.CUSTOM_HANDLED_COMPONENT == uu.getType ()) {
+                                model.getCustomHandledContainer ().add (el);
+                            } else {
+                                oc.add (el);
+                            }
+                        }
+                        final WizardDescriptor.Iterator<WizardDescriptor> panels = new InstallUnitWizardIterator (model, true);
                         SwingUtilities.invokeLater (new Runnable () {
                             public void run () {
                                 wd.setPanelsAndSettings (panels, wd);

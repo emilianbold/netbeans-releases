@@ -50,6 +50,15 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void testDerefArrayByArrow() throws Exception {
+        //IZ#149783: IDE does not recognize array as pointer
+        performTest("iz149783.c", 9, 10, "iz149783.c", 2, 5);
+        performTest("iz149783.c", 10, 15, "iz149783.c", 2, 5);
+        performTest("iz149783.c", 11, 15, "iz149783.c", 2, 5);
+        // IZ#151609: Unresolved struct array member
+        performTest("iz149783.c", 13, 22, "iz149783.c", 2, 5);
+    }
+
     public void testOperatorsInBaseClasses() throws Exception {
         // IZ#147312: Code completion issue with operator-> and operator*
         performTest("iz147312_operators_in_base_cls.cc", 85, 10, // o.myMethod1();
@@ -656,6 +665,12 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#148022 : Unable to resolve outside definition of a private member class
         performTest("IZ148022.cc", 10, 14, "IZ148022.cc", 5, 9);
         performTest("IZ148022.cc", 11, 14, "IZ148022.cc", 7, 9);
+    }
+
+    public void testIZ148929() throws Exception {
+        // IZ#148929 : Unable to resolve destructor of a nested class
+        performTest("iz148929.cc", 13, 7, "iz148929.cc", 16, 1);
+        performTest("iz148929.cc", 16, 9, "iz148929.cc", 13, 5);
     }
 
     public static class Failed extends HyperlinkBaseTestCase {

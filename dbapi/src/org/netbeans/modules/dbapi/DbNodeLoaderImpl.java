@@ -59,6 +59,7 @@ import org.openide.util.lookup.Lookups;
  *  
  * @author David Van Couvering
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.explorer.DbNodeLoader.class)
 public class DbNodeLoaderImpl implements DbNodeLoader, ChangeListener {
     
             /** 

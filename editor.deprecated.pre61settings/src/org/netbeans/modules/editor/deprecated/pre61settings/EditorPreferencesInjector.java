@@ -68,6 +68,7 @@ import org.netbeans.modules.editor.settings.storage.spi.TypedValue;
  *
  * @author vita
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
 public final class EditorPreferencesInjector extends StorageFilter<String, TypedValue> implements PropertyChangeListener, SettingsChangeListener {
 
     public EditorPreferencesInjector() {

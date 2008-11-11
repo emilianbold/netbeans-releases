@@ -60,6 +60,7 @@ import org.openide.nodes.Node;
 import org.openide.nodes.Node.Property;
 import org.openide.util.NbBundle;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.ui.spi.ExtensibilityElementConfigurator.class)
 public class PartnerLinkTypeRoleConfigurator extends
         ExtensibilityElementConfigurator {
     

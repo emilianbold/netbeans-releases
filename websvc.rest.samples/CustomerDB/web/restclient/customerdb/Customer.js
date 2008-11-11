@@ -43,6 +43,8 @@
 * Support js for Customer
 */
 
+var useWrapCustomer = true;
+
 function Customer(uri_) {
     this.Customer(uri_, false);
 }
@@ -197,6 +199,10 @@ Customer.prototype = {
       if(c != -1) {
          var myObj = eval('(' +c+')');
          var customer = myObj.customer;
+         if(customer == null || customer == undefined) {
+            customer = myObj;
+            useWrapCustomer = false;
+         }
          this.uri = customer['@uri'];
          this.customerId = this.findValue(this.customerId, customer['customerId']);
          this.zip = this.findValue(this.zip, customer['zip']);
@@ -224,7 +230,10 @@ Customer.prototype = {
 
    flush : function() {
       var remote = new CustomerRemote(this.uri);
-      return remote.putJson_('{'+this.toString()+'}');
+      if(useWrapCustomer)
+         return remote.putJson_('{'+this.toString()+'}');
+      else
+         return remote.putJson_(this.toString());
    },
 
    delete_ : function() {
@@ -236,7 +245,6 @@ Customer.prototype = {
       if(!this.initialized)
          this.init();
       var myObj = 
-         '"customer":'+
          '{'+
          '"@uri":"'+this.uri+'"'+
                   ', "customerId":"'+this.customerId+'"'+
@@ -253,6 +261,9 @@ Customer.prototype = {
          ', "discountCode":{"@uri":"'+this.discountCode.getUri()+'"}'+
 
          '}';
+      if(useWrapCustomer) {
+          myObj = '"customer":'+myObj;
+      }
       return myObj;
    },
 

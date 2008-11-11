@@ -115,9 +115,12 @@ function updateCustomer(index) {
 //function to create a customer
 function createCustomer() {
     var uri = customersObj.getUri();
-    var id = 1000+customersObj.getItems().length;
-    var customer = new Customer(uri+id+'/', true);
     var f = document.form1;
+    var id = f.id_.value;
+    while(id == '') {
+        id = prompt("Please provide Id for new customer: ", '');
+    }
+    var customer = new Customer(uri+id+'/', true);
     customer.setCustomerId(id);
     customer.setName(f.name_.value);
     customer.setEmail(f.email.value);
@@ -146,7 +149,7 @@ function createCustomer() {
 function deleteCustomer(index) {
     var customer = customersObj.getItems()[index];
     var id = customer.getCustomerId();
-    var status = customer.delete_();
+    var status = customersObj.removeItem(customer);
     if(status) {
         alert('Delete succeeded for customer with Id: \''+id+'\'. Redirecting to "View Customers" page.');
         showCustomers();
@@ -165,7 +168,8 @@ function getDiscountCodes() {
 //function to create new customer form
 function createNewCustomerForm() {
     var editable = true;
-    var str = createField('name_', 'Name: ', '', editable);
+    var str = createField('id_', 'Id: ', '', editable);
+    str += createField('name_', 'Name: ', '', editable);
     str += createField('email', 'Email: ', '', editable);
     str += createField('line1', 'Address Line1: ', '', editable);
     str += createField('line2', 'Address Line2: ', '', editable);

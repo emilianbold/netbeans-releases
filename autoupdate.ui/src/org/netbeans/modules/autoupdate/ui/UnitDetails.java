@@ -97,7 +97,13 @@ public class UnitDetails extends DetailsPanel{
                     text += "<br>";
 
                 }
-                text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
+                if (u instanceof Unit.Update) {
+                    Unit.Update uu = ((Unit.Update) u);
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_InstalledVersion") + "</b>" + u.annotate(uu.getInstalledVersion ()) + "<br>"; // NOI18N
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_AvailableVersion") + "</b>" + u.annotate(uu.getAvailableVersion ()) + "<br>"; // NOI18N
+                } else {
+                    text += "<b>" + getBundle ("UnitDetails_Plugin_Version") + "</b>" + u.annotate(u.getDisplayVersion()) + "<br>"; // NOI18N
+                }
                 if (u.getAuthor () != null && u.getAuthor ().length () > 0) {
                     text += "<b>" + getBundle ("UnitDetails_Plugin_Author") + "</b>" + u.annotate(u.getAuthor ()) + "<br>"; // NOI18N
                 }

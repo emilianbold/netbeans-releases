@@ -41,7 +41,8 @@
 
 package org.netbeans.modules.j2ee.ddloaders.web.multiview;
 
-import org.netbeans.core.spi.multiview.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.nodes.*;
 import org.netbeans.modules.j2ee.dd.api.web.*;
 import org.netbeans.modules.j2ee.ddloaders.web.*;
@@ -56,6 +57,9 @@ import org.openide.util.HelpCtx;
  * @author mkuchtiak
  */
 public class FiltersMultiViewElement extends ToolBarMultiViewElement implements java.beans.PropertyChangeListener {
+
+    private static final Logger LOG = Logger.getLogger(FiltersMultiViewElement.class.getName());
+    
     private SectionView view;
     private ToolBarDesignEditor comp;
     private DDDataObject dObj;
@@ -93,6 +97,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
         return view;
     }
     
+    @Override
     public void componentShowing() {
         super.componentShowing();
         dObj.setLastOpenView(index);
@@ -121,11 +126,13 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
         dObj.checkParseable();
     }
     
+    @Override
     public void componentOpened() {
         super.componentOpened();
         dObj.getWebApp().addPropertyChangeListener(this);
     }
     
+    @Override
     public void componentClosed() {
         super.componentClosed();
         dObj.getWebApp().removePropertyChangeListener(this);
@@ -203,6 +210,7 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             return NbBundle.getMessage(FiltersMultiViewElement.class,"TTL_filterPanel",filterName,mappings);
         }
         
+        @Override
         public Error validateView() {
             return SectionValidator.validateFilters(webApp);
         }
@@ -214,23 +222,19 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
             setDisplayName(NbBundle.getMessage(PagesMultiViewElement.class,"TTL_FilterMappings"));
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/mappingsNode.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"filterMappingsNode"); //NOI18N
         }
     }
     
     private class FilterNode extends org.openide.nodes.AbstractNode {
-        private Filter filter;
-        private WebApp webApp;
-        private SectionView view;
         FilterNode(SectionView view, WebApp webApp, Filter filter) {
             super(org.openide.nodes.Children.LEAF);
-            this.filter=filter;
-            this.webApp=webApp;
-            this.view=view;
             setDisplayName(filter.getFilterName());
             setIconBaseWithExtension("org/netbeans/modules/j2ee/ddloaders/web/multiview/resources/class.gif"); //NOI18N
         }
+        @Override
         public HelpCtx getHelpCtx() {
             return new HelpCtx(HELP_ID_PREFIX+"filterNode"); //NOI18N
         }
@@ -279,7 +283,9 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
                             String className = DDUtils.getResourcePath(groups,fo);
                             dialogPanel.getTextComponents()[1].setText(className);
                         }
-                    } catch (java.io.IOException ex) {}
+                    } catch (java.io.IOException ex) {
+                        LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+                    }
                 }
             });
             EditDialog dialog = new EditDialog(dialogPanel,NbBundle.getMessage(FiltersMultiViewElement.class,"TTL_Filter"),true) {
@@ -320,7 +326,9 @@ public class FiltersMultiViewElement extends ToolBarMultiViewElement implements 
                     SectionPanel pan = new SectionPanel(view, node, view.getFilterTitle(filter), filter);
                     pan.setHeaderActions(new javax.swing.Action[]{removeAction});
                     view.getFiltersContainer().addSection(pan, true);
-                } catch (ClassNotFoundException ex){}
+                } catch (ClassNotFoundException ex) {
+                    LOG.log(Level.FINE, "ignored exception", ex); //NOI18N
+                }
                 finally {
                     dObj.setChangedFromUI(false);
                 }

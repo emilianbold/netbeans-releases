@@ -12,18 +12,35 @@ var proxy = "";
 
 djd43.provide("rdj.includeJS");
 rdj.includeJS = function(file) {
-    if(window.XMLHttpRequest)
-    var req = new XMLHttpRequest();
-    else
-    var req = new ActiveXObject("Microsoft.XMLHTTP");
-    req.open("GET", file,false);
-    req.onreadystatechange = function(){
-        if (req.readyState == 4)
+    var xmlHttpReq;
+    try
+    {    // Firefox, Opera 8.0+, Safari, IE7.0+
+        xmlHttpReq=new XMLHttpRequest();
+    }
+    catch (e)
+    {    // Internet Explorer 6.0+, 5.0+
+        try
         {
-            window.eval(req.responseText);
+            xmlHttpReq=new ActiveXObject("Msxml2.XMLHTTP");
+        }
+        catch (e)
+        {
+            try
+            {
+                xmlHttpReq=new ActiveXObject("Microsoft.XMLHTTP");
+            }
+            catch (e)
+            {
+                this.debug("Your browser does not support AJAX!");
+            }
         }
     }
-    req.send(null);
+    xmlHttpReq.open("GET", file,false);
+    xmlHttpReq.send(null);
+    if (xmlHttpReq.readyState == 4)
+    {
+        window.eval(xmlHttpReq.responseText);
+    }
 }
 
 djd43.provide("rdj.includeCSS");

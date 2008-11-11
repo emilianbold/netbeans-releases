@@ -58,8 +58,6 @@ import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
  */
 public class ExpressionStatementImpl extends StatementBase implements CsmExpressionStatement {
     
-    private ExpressionBase expression;
-    
     public ExpressionStatementImpl(AST ast, CsmFile file, CsmScope scope) {
         super(ast, file, scope);
     }
@@ -69,6 +67,6 @@ public class ExpressionStatementImpl extends StatementBase implements CsmExpress
     }
 
     public CsmExpression getExpression() {
-        return expression;
+        return null;
     }
 }

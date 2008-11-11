@@ -69,6 +69,7 @@ import com.sun.source.tree.Tree;
  * </ul>
  * </p> 
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class, position=200)
 public class FacesRefactoringsPluginFactory implements RefactoringPluginFactory {
     
     public RefactoringPlugin createInstance(AbstractRefactoring refactoring) {

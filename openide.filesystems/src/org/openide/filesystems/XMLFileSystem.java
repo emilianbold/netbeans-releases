@@ -317,7 +317,7 @@ public final class XMLFileSystem extends AbstractFileSystem {
         String oldDisplayName = getDisplayName();
 
         if (urls.length == 0) {
-            urlsToXml = new URL[] {  };
+            urlsToXml = urls;
             refreshChildrenInAtomicAction((AbstractFolder) getRoot(), rootElem = new ResourceElem(true, urls, null)); // NOI18N
             rootElem = null;
 
@@ -326,13 +326,9 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
         Handler handler = new Handler(DTD_MAP, rootElem = new ResourceElem(true, urls, null), validate); // NOI18N        
 
-        URL[] origUrls = urlsToXml;
-        urlsToXml = new URL[urls.length];
-
         try {
             _setSystemName("XML_" + urls[0].toExternalForm().replace('/','-')); // NOI18N
         } catch (PropertyVetoException pvx) {
-            urlsToXml = origUrls;
             rootElem = null;
             throw pvx;
         }
@@ -347,17 +343,15 @@ public final class XMLFileSystem extends AbstractFileSystem {
 
             for (int index = 0; index < urls.length; index++) {
                 act = urls[index];
-                urlsToXml[index] = act;
                 handler.urlContext = act;
 
                 String systemId = act.toExternalForm();
 
                 xp.parse(systemId);
             }
-
+            urlsToXml = (URL[]) urls.clone();
             refreshChildrenInAtomicAction((AbstractFolder) getRoot(), rootElem);
         } catch (IOException iox) {
-            urlsToXml = origUrls;
             Exceptions.attachMessage(iox, Arrays.toString(urls));
             throw iox;
         } catch (Exception e) {
@@ -476,14 +470,13 @@ public final class XMLFileSystem extends AbstractFileSystem {
         if (urls == null) {
             urls = new URL[1];
             urls[0] = (URL) fields.get("uriId", null); // NOI18N
+            if (urls[0] == null) {
+                throw new IOException("missing uriId"); // NOI18N
+            }
         }
 
         try {
-            if (urlsToXml.length != 1) {
-                setXmlUrls(urlsToXml);
-            } else {
-                setXmlUrl(urlsToXml[0]);
-            }
+            setXmlUrls(urls);
         } catch (PropertyVetoException ex) {
             IOException x = new IOException(ex.getMessage());
             ExternalUtil.copyAnnotation(x, ex);

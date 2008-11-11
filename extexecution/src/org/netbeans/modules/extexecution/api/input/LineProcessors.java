@@ -104,7 +104,9 @@ public final class LineProcessors {
 
     /**
      * Returns the processor converting lines with convertor and
-     * printing the result to the given output writer.
+     * printing the result to the given output writer. If the covertor does
+     * not handle line passed to it (returning <code>null</code>) raw
+     * lines are printed.
      * <p>
      * Reset action on the returned processor resets the writer if it is enabled
      * by passing <code>true</code> as <code>resetEnabled</code>. Processor
@@ -213,17 +215,22 @@ public final class LineProcessors {
             LOGGER.log(Level.FINEST, line);
 
             if (convertor != null) {
-                for (ConvertedLine converted : convertor.convert(line)) {
-                    if (converted.getListener() == null) {
-                        out.println(converted.getText());
-                    } else {
-                        try {
-                            out.println(converted.getText(), converted.getListener());
-                        } catch (IOException ex) {
-                            LOGGER.log(Level.INFO, null, ex);
+                List<ConvertedLine> convertedLines = convertor.convert(line);
+                if (convertedLines != null) {
+                    for (ConvertedLine converted : convertedLines) {
+                        if (converted.getListener() == null) {
                             out.println(converted.getText());
+                        } else {
+                            try {
+                                out.println(converted.getText(), converted.getListener());
+                            } catch (IOException ex) {
+                                LOGGER.log(Level.INFO, null, ex);
+                                out.println(converted.getText());
+                            }
                         }
                     }
+                } else {
+                    out.println(line);
                 }
             } else {
                 out.println(line);

@@ -58,7 +58,7 @@ import org.openide.util.Utilities;
 
 class EventProperty extends PropertySupport.ReadWrite {
 
-    private static String NO_EVENT;
+    private static String NO_EVENT = FormUtils.getBundleString("CTL_NoEvent"); // NOI18N
 
     private static boolean somethingChanged; // flag for "postSetAction" relevance
     private static boolean invalidValueTried; // flag for "postSetAction" relevance
@@ -234,22 +234,17 @@ class EventProperty extends PropertySupport.ReadWrite {
         if ("canEditAsText".equals(key)) // NOI18N
             return Boolean.TRUE;
 
-        if ("initialEditValue".equals(key)) { // NOI18N
-            somethingChanged = false; // entering edit mode
-            invalidValueTried = false;
-            return selectedEventHandler != null ? null :
-                getFormEvents().findFreeHandlerName(event, event.getComponent());
-        }
-
         if ("postSetAction".equals(key)) // NOI18N
             return new javax.swing.AbstractAction() {
                 public void actionPerformed(ActionEvent ev) {
                     // if Enter was pressed without echange or existing handler
                     // chosen, switch to editor
-                    if (!somethingChanged && !invalidValueTried)
+                    if (!somethingChanged && !invalidValueTried && (selectedEventHandler != null)) {
                         getFormEvents().attachEvent(event,
                                                     selectedEventHandler,
                                                     null);
+                    }
+                    somethingChanged = false;
                 }
             };
 
@@ -328,8 +323,6 @@ class EventProperty extends PropertySupport.ReadWrite {
         @Override
         public String getAsText() {
             if (this.getValue() == null) {
-                if (NO_EVENT == null)
-                    NO_EVENT = FormUtils.getBundleString("CTL_NoEvent"); // NOI18N
                 return NO_EVENT;
             }
             return this.getValue().toString();
@@ -337,6 +330,11 @@ class EventProperty extends PropertySupport.ReadWrite {
 
         @Override
         public void setAsText(String txt) {
+            if (NO_EVENT.equals(txt) && (getValue() == null)) {
+                invalidValueTried = false;
+                setValue(null);
+                return;
+            }
             if (!"".equals(txt) && !Utilities.isJavaIdentifier(txt)) { // NOI18N
                 // invalid handler name entered
                 invalidValueTried = true;
@@ -369,7 +367,10 @@ class EventProperty extends PropertySupport.ReadWrite {
         @Override
         public String[] getTags() {
             String[] handlers = getEventHandlers();
-            return handlers.length > 1 ? handlers : null;
+            if ((handlers.length == 0) && (getValue() == null)) {
+                handlers = new String[] {getFormEvents().findFreeHandlerName(event, event.getComponent())};
+            }
+            return handlers.length > 0 ? handlers : null;
         }
 
         @Override

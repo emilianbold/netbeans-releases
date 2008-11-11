@@ -50,6 +50,7 @@ import junit.textui.TestRunner;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.actions.OpenAction;
@@ -58,6 +59,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TestOut;
+import org.netbeans.jemmy.operators.JMenuBarOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.test.java.JavaTestCase;
@@ -72,7 +74,7 @@ import org.netbeans.test.java.Utilities;
 public class ErrorAnnotations extends JavaTestCase {
 
     // default timeout for actions in miliseconds
-    private static final int ACTION_TIMEOUT = 3000;
+    private static final int ACTION_TIMEOUT = 1500;
 
     // name of sample project
     private static final String TEST_PROJECT_NAME = "default";
@@ -131,6 +133,7 @@ public class ErrorAnnotations extends JavaTestCase {
             workDir = wd.toString();
         } catch (IOException e) {
         }
+        openDefaultProject();
     }
 
     /**
@@ -164,13 +167,15 @@ public class ErrorAnnotations extends JavaTestCase {
      * Tests undo after simple annotations test.
      */
     public void testUndo() {
+        EditorWindowOperator ewo = new EditorWindowOperator();
+        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
+        editor.requestFocus();
+        Utilities.takeANap(ACTION_TIMEOUT);
         // undo
         new ActionNoBlock("Edit|Undo", null).perform();
 
         Utilities.takeANap(ACTION_TIMEOUT);
 
-        EditorWindowOperator ewo = new EditorWindowOperator();
-        EditorOperator editor = ewo.getEditor(TEST_CLASS_NAME);
         log(editor.getText());
         Object[] annots = editor.getAnnotations();
 

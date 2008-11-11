@@ -47,6 +47,7 @@ import org.netbeans.modules.uml.core.coreapplication.ICodeGeneratorFactory;
 import org.netbeans.modules.uml.codegen.java.JavaCodegen;
 
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.uml.core.coreapplication.ICodeGeneratorFactory.class)
 public class CodeGeneratorFactory implements ICodeGeneratorFactory {
 
 

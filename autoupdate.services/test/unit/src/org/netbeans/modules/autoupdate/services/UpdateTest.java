@@ -42,11 +42,13 @@
 package org.netbeans.modules.autoupdate.services;
 
 import org.netbeans.api.autoupdate.UpdateUnit;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *
  * @author Radek Matous
  */
+@RandomlyFails // NB-Core-Build #1634
 public class UpdateTest extends OperationsTestImpl {
     
     public UpdateTest(String testName) {

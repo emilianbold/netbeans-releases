@@ -50,9 +50,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PackageConfiguration;
+import org.netbeans.modules.cnd.discovery.api.PkgConfigManager.PkgConfig;
+import org.netbeans.modules.cnd.discovery.api.Progress;
 import org.netbeans.modules.cnd.discovery.api.SourceFileProperties;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -78,20 +83,31 @@ public class LogReader {
         setWorkingDir(root);
     }
     
-    private void run() {
-        if (TRACE) System.out.println("LogReader is run for " + fileName); //NOI18N
+    private void run(Progress progress) {
+        if (TRACE) {System.out.println("LogReader is run for " + fileName);} //NOI18N
         Pattern pattern = Pattern.compile(";|\\|\\||&&"); // ;, ||, && //NOI18N
         result = new ArrayList<SourceFileProperties>();
         File file = new File(fileName);
         if (file.exists() && file.canRead()){
             try {
+                PkgConfig pkgConfig = PkgConfigManager.getDefault().getPkgConfig(null);
                 BufferedReader in = new BufferedReader(new FileReader(file));
+                long length = file.length();
+                long read = 0;
+                int done = 0;
+                if (length <= 0){
+                    progress = null;
+                }
+                if (progress != null) {
+                    progress.start(100);
+                }
                 int nFoundFiles = 0;
                 while(true){
                     String line = in.readLine();
                     if (line == null){
                         break;
                     }
+                    read += line.length()+1;
                     line = line.trim();
                     while (line.endsWith("\\")) { // NOI18N
                         String oneMoreLine = in.readLine();
@@ -100,7 +116,7 @@ public class LogReader {
                         }
                         line = line.substring(0, line.length() - 1) + " " + oneMoreLine.trim(); //NOI18N
                     }
-                    line = trimBackApostropheCalls(line);
+                    line = trimBackApostropheCalls(line, pkgConfig);
 
                     String[] cmds = pattern.split(line);
                     for (int i = 0; i < cmds.length; i++) {
@@ -108,7 +124,15 @@ public class LogReader {
                             nFoundFiles++;
                         }
                     }
-
+                    if (read*100/length > done && done < 100){
+                        done++;
+                        if (progress != null) {
+                            progress.increment();
+                        }
+                    }
+                }
+                if (progress != null) {
+                    progress.done();
                 }
                 if (TRACE) {
                     System.out.println("Files found: " + nFoundFiles); //NOI18N
@@ -121,9 +145,9 @@ public class LogReader {
         }
     }
     
-    public List<SourceFileProperties> getResults() {
+    public List<SourceFileProperties> getResults(Progress progress) {
         if (result == null) {
-            run();
+            run(progress);
         }
         return result;
     }
@@ -136,22 +160,22 @@ public class LogReader {
 
         if (line.startsWith(CURRENT_DIRECTORY)) {
             workDir = line.substring(CURRENT_DIRECTORY.length() + 1).trim();
-            if (TRACE) message = "**>> by [" + CURRENT_DIRECTORY + "] "; //NOI18N
+            if (TRACE) {message = "**>> by [" + CURRENT_DIRECTORY + "] ";} //NOI18N
         } else if (line.indexOf(ENTERING_DIRECTORY) >= 0) {
             String dirMessage = line.substring(line.indexOf(ENTERING_DIRECTORY) + ENTERING_DIRECTORY.length() + 1).trim();
             workDir = dirMessage.replaceAll("`|'|\"", ""); //NOI18N
-            if (TRACE) message = "**>> by [" + ENTERING_DIRECTORY + "] "; //NOI18N
+            if (TRACE) {message = "**>> by [" + ENTERING_DIRECTORY + "] ";} //NOI18N
             baseWorkingDir = workDir;
         } else if (line.startsWith(LABEL_CD)) {
             int end = line.indexOf(MAKE_DELIMITER);
             workDir = (end == -1 ? line : line.substring(0, end)).substring(LABEL_CD.length()).trim();
-            if (TRACE) message = "**>> by [ " + LABEL_CD + "] "; //NOI18N
+            if (TRACE) {message = "**>> by [ " + LABEL_CD + "] ";} //NOI18N
             if (workDir.startsWith("/")){ // NOI18N
                 baseWorkingDir = workDir;
             }
         } else if (line.startsWith("/") && line.indexOf(" ") < 0) {  //NOI18N
             workDir = line.trim();
-            if (TRACE) message = "**>> by [just path string] "; //NOI18N
+            if (TRACE) {message = "**>> by [just path string] ";} //NOI18N
         }
 
         if (workDir == null) {
@@ -159,20 +183,20 @@ public class LogReader {
         }
 
         if (!workDir.startsWith(".") && (new File(workDir).exists())) { // NOI18N
-            if (TRACE) System.err.print(message);
+            if (TRACE) {System.err.print(message);}
             setWorkingDir(workDir);
             return true;
         } else {
             String dir = workingDir + File.separator + workDir;
             if (new File(dir).exists()) {
-                if (TRACE) System.err.print(message);
+                if (TRACE) {System.err.print(message);}
                 setWorkingDir(dir);
                 return true;
             }
             if (baseWorkingDir != null) {
                 dir = baseWorkingDir + File.separator + workDir;
                 if (new File(dir).exists()) {
-                    if (TRACE) System.err.print(message);
+                    if (TRACE) {System.err.print(message);}
                     setWorkingDir(dir);
                     return true;
                 }
@@ -244,8 +268,9 @@ public class LogReader {
        
         if (li.compilerType != CompilerType.UNKNOWN) {
             li.compileLine = line.substring(start);
-            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t'))
+            while(end < line.length() && (line.charAt(end) == ' ' || line.charAt(end) == '\t')){
                 end++;
+            }
             if (end >= line.length() || line.charAt(end)!='-') {
                 // suspected compiler invocation has no options or a part of a path?? -- noway
                 li.compilerType =  CompilerType.UNKNOWN;
@@ -263,9 +288,7 @@ public class LogReader {
                         // no, it's not a compile line
                         li.compilerType = CompilerType.UNKNOWN;
                         // I hope
-                        if (TRACE) {
-                            System.err.println("Suspicious line: " + line);
-                        }
+                        if (TRACE) {System.err.println("Suspicious line: " + line);}
                     }
                 }
             }
@@ -274,9 +297,7 @@ public class LogReader {
     }
     
     private void setWorkingDir(String workingDir) {
-        if (TRACE) {
-            System.err.println("**>> new working dir: " + workingDir);
-        }
+        if (TRACE) {System.err.println("**>> new working dir: " + workingDir);}
         this.workingDir = workingDir;
     }
     
@@ -303,22 +324,52 @@ public class LogReader {
        return false;
     }
 
-    private static String trimBackApostropheCalls(String line) {
-        int i = line.indexOf('`');
-        if (line.lastIndexOf('`') == i) { // do not trim unclosed `quotes`
+    private static final String PKG_CONFIG_PATTERN = "pkg-config "; //NOI18N
+    private static String trimBackApostropheCalls(String line, PkgConfig pkgConfig) {
+        int i = line.indexOf('`'); //NOI18N
+        if (line.lastIndexOf('`') == i) {  //NOI18N // do not trim unclosed `quotes`
             return line;
         }
         if (i < 0 || i == line.length() - 1) {
             return line;
         } else {
-            String out = line.substring(0, i-1);
+            StringBuilder out = new StringBuilder(line.substring(0, i-1));
             line = line.substring(i+1);
-            int j = line.indexOf('`');
+            int j = line.indexOf('`'); //NOI18N
             if (j < 0) {
                 return line;
             }
-            out += line.substring(j+1);
-            return trimBackApostropheCalls(out);
+            String pkg = line.substring(0,j);
+            if (pkg.startsWith(PKG_CONFIG_PATTERN)) { //NOI18N
+                pkg = pkg.substring(PKG_CONFIG_PATTERN.length());
+                StringTokenizer st = new StringTokenizer(pkg);
+                boolean readFlags = false;
+                while(st.hasMoreTokens()) {
+                    String aPkg = st.nextToken();
+                    if (aPkg.equals("--cflags")) { //NOI18N
+                        readFlags = true;
+                        continue;
+                    }
+                    if (aPkg.startsWith("-")) { //NOI18N
+                        readFlags = false;
+                        continue;
+                    }
+                    if (readFlags) {
+                        PackageConfiguration pc = pkgConfig.getPkgConfig(aPkg);
+                        if (pc != null) {
+                            for(String p : pc.getIncludePaths()){
+                                out.append(" -I"+p); //NOI18N
+                            }
+                            for(String p : pc.getMacros()){
+                                out.append(" -D"+p); //NOI18N
+                            }
+                            out.append(" "); //NOI18N
+                        }
+                    }
+                }
+            }
+            out.append(line.substring(j+1));
+            return trimBackApostropheCalls(out.toString(), pkgConfig);
         }
     }
     
@@ -331,7 +382,7 @@ public class LogReader {
         // -DSUNDDI -DUSE_INET6 -DSOLARIS2=11 -I. -DIPFILTER_LOOKUP -DIPFILTER_LOG -c ../ipmon_l.c -o ipmon_l.o
         List<String> userIncludes = new ArrayList<String>();
         Map<String, String> userMacros = new HashMap<String, String>();
-        String what = DiscoveryUtils.gatherComlilerLine(line, isScriptOutput, userIncludes, userMacros,null);
+        String what = DiscoveryUtils.gatherCompilerLine(line, isScriptOutput, userIncludes, userMacros,null);
         if (what == null){
             return false;
         }
@@ -355,9 +406,7 @@ public class LogReader {
         }
         File f = new File(file);
         if (!f.exists() || !f.isFile()) {
-            if (TRACE)  {
-                System.err.println("**** Not found "+file); //NOI18N
-            }
+            if (TRACE)  {System.err.println("**** Not found "+file);} //NOI18N
             
             if (!what.startsWith("/")){  //NOI18N
                 try {
@@ -365,28 +414,26 @@ public class LogReader {
                     String[] out = new String[1];
                     boolean areThereOnlyOne = findFiles(new File(root), what, out);
                     if (out[0] == null) {
-                        if (TRACE) System.err.println("** And there is no such file under root"); 
+                        if (TRACE) {System.err.println("** And there is no such file under root");}
                     } else {
                         if (areThereOnlyOne) {
                             result.add(new CommandLineSource(isCPP, out[0], what, userIncludes, userMacros));
-                            if (TRACE) System.err.println("** Gotcha: " + out[0] + File.separator + what);
+                            if (TRACE) {System.err.println("** Gotcha: " + out[0] + File.separator + what);}
                             // kinda adventure but it works
                             setWorkingDir(out[0]);
                             return true;
                         } else {
-                            if (TRACE) System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");
+                            if (TRACE) {System.err.println("**There are several candidates and I'm not clever enough yet to find correct one.");}
                         }
                     }
                 } catch (IOException ex) {
-                    if (TRACE) Exceptions.printStackTrace(ex);
+                    if (TRACE) {Exceptions.printStackTrace(ex);}
                 }
             } 
             
-            if (TRACE) System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]"); //NOI18N
+            if (TRACE) {System.err.println(""+ (line.length() > 120 ? line.substring(0,117) + ">>>" : line) + " [" + what + "]");} //NOI18N
             return false;
-        } else if (TRACE) {
-            if (TRACE) System.err.println("**** Gotcha: " + file);
-        }
+        } else if (TRACE) {System.err.println("**** Gotcha: " + file);}
         result.add(new CommandLineSource(isCPP, workingDir, what, userIncludesCached, userMacrosCached));
         return true;
     }
@@ -472,7 +519,7 @@ public class LogReader {
         String root = args[1];
         LogReader.TRACE = true;
         LogReader clrf = new LogReader(objFileName, root);
-        List<SourceFileProperties> list = clrf.getResults();
+        List<SourceFileProperties> list = clrf.getResults(null);
         System.err.print("\n*** Results: ");
         for (SourceFileProperties sourceFileProperties : list) {
             String fileName = sourceFileProperties.getItemName();

@@ -47,6 +47,7 @@ import org.netbeans.modules.vmd.api.model.DesignDocument;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.AccessControllerFactory.class)
 public class ScreenAccessControllerFactory implements AccessControllerFactory {
 
     public AccessController createAccessController (DesignDocument document) {

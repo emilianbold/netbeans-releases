@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.extexecution.api.print;
 
+import org.openide.util.Parameters;
 import org.openide.windows.OutputListener;
 
 /**
@@ -47,14 +48,40 @@ import org.openide.windows.OutputListener;
  *
  * @author Petr Hejl
  */
-public interface ConvertedLine {
+public final class ConvertedLine {
+
+    private final String text;
+
+    private final OutputListener listener;
+
+    private ConvertedLine(String text, OutputListener listener) {
+        assert text != null;
+
+        this.text = text;
+        this.listener = listener;
+    }
+
+    /**
+     * Returns the converted line presenting the given text and with the given
+     * listener registered when it is diplayed.
+     *
+     * @param text line text
+     * @param listener line listener to register, may be <code>null</code>
+     * @return converted line
+     */
+    public static ConvertedLine forText(String text, OutputListener listener) {
+        Parameters.notNull("text", text);
+        return new ConvertedLine(text, listener);
+    }
 
     /**
      * Returns the text to display.
      *
      * @return the text to display
      */
-    String getText();
+    public String getText() {
+        return text;
+    }
 
     /**
      * Returns the corresponding listener for actions taken on the line
@@ -63,6 +90,8 @@ public interface ConvertedLine {
      * @return the corresponding listener for actions taken on the line
      *             or <code>null</code>
      */
-    OutputListener getListener();
+    public OutputListener getListener() {
+        return listener;
+    }
 
 }

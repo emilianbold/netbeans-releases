@@ -90,51 +90,7 @@ made subject to such option by the copyright holder.
 	  finder="on /webservices find webservice-description by webservice-description-name,on /webservices/webservice-description/port-component find handler by handler-name,on /webservices/webservice-description/port-component/handler find init-param by param-name,on /webservices/webservice-description find port-component by port-component-name"/>
   </target>
 
-  <target name="compile" depends="dd2beansgen,init">
-      <!-- the following code is copied from common.xml it just adds fork="true" to the javac to prevent
-        OutOfMemoryError when running ant without special args
-        -->
-        <mkdir dir="${build.classes.dir}"/>
-        <depend srcdir="${src.dir}" destdir="${build.classes.dir}" cache="build/depcache">
-            <classpath refid="cp"/>
-        </depend>
-        <javac fork="true" srcdir="${src.dir}" destdir="${build.classes.dir}" debug="${build.compiler.debug}" debuglevel="${build.compiler.debuglevel}" deprecation="${build.compiler.deprecation}" optimize="${build.compiler.optimize}" source="${javac.source}" target="${javac.target}" includeantruntime="false">
-            <classpath refid="cp"/>
-            <compilerarg line="${javac.compilerargs}"/>
-        </javac>
-        <!-- Sanity check: -->
-        <pathconvert pathsep=":" property="class.files.in.src">
-            <path>
-                <fileset dir="${src.dir}">
-                    <include name="**/*.class"/>
-                </fileset>
-            </path>
-        </pathconvert>
-        <fail>
-            <condition>
-                <not>
-                    <equals arg1="${class.files.in.src}" arg2=""/>
-                </not>
-            </condition>
-            You have stray *.class files in ${src.dir} which you must remove.
-            Probably you failed to clean your sources before updating them from CVS.
-        </fail>
-        <!-- OK, continue: -->
-        <copy todir="${build.classes.dir}">
-            <!-- #58298: strip comments to save some space -->
-            <fileset dir="${src.dir}" includes="**/*.properties"/>
-            <filterchain>
-                <tokenfilter>
-                    <!-- #61965: preserve #NOI18N and similar comments -->
-                    <filetokenizer/>
-                    <replaceregex pattern="^#(?!(PART)?(NO)?I18N).*[\r\n]+" replace="" flags="gm"/>
-                </tokenfilter>
-            </filterchain>
-        </copy>
-        <copy todir="${build.classes.dir}">
-            <fileset dir="${src.dir}" excludes="${jar-excludes}"/>
-        </copy>
-  </target>
+  <target name="compile" depends="dd2beansgen,projectized-common.compile"/>
   
   <target name="clean" depends="clean-ddgen-src, clean-javadoc, projectized-common.clean"/>
 

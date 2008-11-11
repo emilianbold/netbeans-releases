@@ -42,9 +42,8 @@ package org.netbeans.modules.maven.classpath;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.openide.filesystems.FileUtil;
@@ -53,35 +52,39 @@ import org.openide.filesystems.FileUtil;
  * class path def for runtime..
  * @author  Milos Kleint
  */
-class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
+public class RuntimeClassPathImpl extends AbstractProjectClassPathImpl {
     
-    /** Creates a new instance of SrcClassPathImpl */
+    /** Creates a new instance of RuntimeClassPathImpl */
     public RuntimeClassPathImpl(NbMavenProjectImpl proj) {
         super(proj);
         
     }
     
     URI[] createPath() {
-        List<URI> lst = new ArrayList<URI>();
-        MavenProject prj = getMavenProject().getOriginalMavenProject();
-        if (prj != null && prj.getBuild() != null) {
-            File fil = new File(prj.getBuild().getOutputDirectory());
-            fil = FileUtil.normalizeFile(fil);
-            lst.add(fil.toURI());
-        }
-        try {
-            @SuppressWarnings("unchecked")
-            List<String> srcs = getMavenProject().getOriginalMavenProject().getRuntimeClasspathElements();
-            for (String str : srcs) {
-                File fil = FileUtil.normalizeFile(new File(str));
-                lst.add(fil.toURI());
-            }
-        } catch (DependencyResolutionRequiredException ex) {
-            ex.printStackTrace();
-        }
+        List<URI> lst = createPath(getMavenProject().getOriginalMavenProject());
         URI[] uris = new URI[lst.size()];
         uris = lst.toArray(uris);
         return uris;
     }
-    
+
+    public static List<URI> createPath(MavenProject prj) {
+        assert prj != null;
+        List<URI> lst = new ArrayList<URI>();
+        if (prj.getBuild() != null) {
+            File fil = new File(prj.getBuild().getOutputDirectory());
+            fil = FileUtil.normalizeFile(fil);
+            lst.add(fil.toURI());
+        }
+        @SuppressWarnings("unchecked")
+        List<Artifact> arts = prj.getRuntimeArtifacts();
+        for (Artifact art : arts) {
+            if (art.getFile() != null) {
+                File fil = FileUtil.normalizeFile(art.getFile());
+                lst.add(fil.toURI());
+            } else {
+              //NOPMD   //null means dependencies were not resolved..
+            }
+        }
+        return lst;
+    }
 }

@@ -757,6 +757,7 @@ public class JavaI18nSupport extends I18nSupport {
     
     
     /** Factory for {@code JavaI18nSupport}. */
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.i18n.I18nSupport.Factory.class)
     public static class Factory extends I18nSupport.Factory {
         
         /** Implements interface. */

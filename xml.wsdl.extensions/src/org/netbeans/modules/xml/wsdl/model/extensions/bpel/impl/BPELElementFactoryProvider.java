@@ -60,6 +60,7 @@ import org.w3c.dom.Element;
  */
 public class BPELElementFactoryProvider {
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class CorrelationPropertyFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(BPELQName.PROPERTY.getQName());
@@ -69,6 +70,7 @@ public class BPELElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PartnerLinkTypeFactory extends ElementFactory {
         public Set<QName> getElementQNames() {
             return Collections.singleton(BPELQName.PARTNER_LINK_TYPE.getQName());
@@ -78,6 +80,7 @@ public class BPELElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class RoleFactory  extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(BPELQName.ROLE.getQName());
@@ -87,6 +90,7 @@ public class BPELElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class PropertyAliasFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(BPELQName.PROPERTY_ALIAS.getQName());
@@ -96,6 +100,7 @@ public class BPELElementFactoryProvider {
         }
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class QueryFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             return Collections.singleton(BPELQName.QUERY.getQName());
@@ -105,6 +110,7 @@ public class BPELElementFactoryProvider {
         }
     }
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class DocumentationFactory extends ElementFactory{
         public Set<QName> getElementQNames() {
             Set<QName> set = new HashSet<QName>();

@@ -57,6 +57,7 @@ import org.openide.windows.OutputWriter;
 /**
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.windows.IOProvider.class)
 public class InputOutputProviderImpl extends IOProvider {
 
     static NbTestCase running;

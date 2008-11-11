@@ -61,7 +61,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.vmd.midp.codegen.MidpDatabindingCodeSupport;
-import org.netbeans.modules.vmd.midp.components.databinding.DataSetAbstractCD;
 import org.openide.util.NbBundle;
 
 /**

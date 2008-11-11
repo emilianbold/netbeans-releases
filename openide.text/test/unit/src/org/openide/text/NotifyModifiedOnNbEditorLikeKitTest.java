@@ -41,17 +41,9 @@
 
 package org.openide.text;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import junit.framework.*;
 
-import org.netbeans.junit.*;
 
-import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
-import org.openide.util.lookup.*;
 
 
 /** Testing different features of NotifyModifieTest with NbEditorKit
@@ -69,11 +61,13 @@ public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
     // overwrite editor kit
     //
     
+    @Override
     protected javax.swing.text.EditorKit createEditorKit () {
-        NbLikeEditorKit k = new NbLikeEditorKit ();
-        return k;
+        NbLikeEditorKit tmp = new NbLikeEditorKit ();
+        return tmp;
     }
     
+    @Override
     protected void doesVetoedInsertFireBadLocationException (javax.swing.text.BadLocationException e) {
         if (e == null) {
             fail("Vetoed insert has to generate BadLocationException");
@@ -81,6 +75,7 @@ public class NotifyModifiedOnNbEditorLikeKitTest extends NotifyModifiedTest {
     }
     
     private static RequestProcessor testRP = new RequestProcessor("Test");
+    @Override
     protected void checkThatDocumentLockIsNotHeld () {
         class X implements Runnable {
             private boolean second;

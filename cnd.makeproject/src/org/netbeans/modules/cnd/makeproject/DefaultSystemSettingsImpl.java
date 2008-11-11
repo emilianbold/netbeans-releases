@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
  * It provides  
  * @author Leonid Mesnik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.project.DefaultSystemSettings.class)
 public class DefaultSystemSettingsImpl extends DefaultSystemSettings {    
     private static BasicCompiler getDefaultCompiler(NativeFileItem.Language language) {
         int kind;        

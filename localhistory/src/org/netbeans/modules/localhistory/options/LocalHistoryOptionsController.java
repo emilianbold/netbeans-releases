@@ -79,11 +79,11 @@ public final class LocalHistoryOptionsController extends OptionsPanelController 
     public boolean isValid() {
         boolean valid = true;
         try {            
-            Long.parseLong(panel.daysTextField.getText());
+            Integer.parseInt(panel.daysTextField.getText());
         } catch (NumberFormatException e) {
             valid = false;
         }
-        panel.warningLabel.setVisible(!valid);
+        panel.warningLabel.setVisible(!valid); 
         return valid;
     }
 

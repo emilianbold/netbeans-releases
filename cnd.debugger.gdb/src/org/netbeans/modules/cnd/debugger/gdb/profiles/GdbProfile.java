@@ -350,7 +350,7 @@ public class GdbProfile implements ConfigurationAuxObject {
 	return sheet;
     }
     
-    private class GdbCommandNodeProp extends PropertySupport {
+    private class GdbCommandNodeProp extends PropertySupport<String> {
         public GdbCommandNodeProp() {
             super(PROP_GDB_COMMAND, String.class,
                     NbBundle.getMessage(GdbProfile.class, "LBL_GDB_COMMAND"), // NOI18N
@@ -358,16 +358,17 @@ public class GdbProfile implements ConfigurationAuxObject {
                     true, false);
         }
         
-        public Object getValue() {
+        public String getValue() {
             return getGdbCommand();
         }
         
-        public void setValue(Object v) {
-            setGdbCommand((String)v);
+        public void setValue(String v) {
+            // TODO: shouldn't we check for null here?
+            setGdbCommand(v);
         }
     }
     
-    private class ArrayRepeatThresholdNodeProp extends PropertySupport {
+    private class ArrayRepeatThresholdNodeProp extends PropertySupport<Integer> {
         public ArrayRepeatThresholdNodeProp() {
             super(PROP_ARRAY_REPEAT_THRESHOLD, Integer.class,
                     NbBundle.getMessage(GdbProfile.class, "LBL_ArrayRepeatThreshold"), // NOI18N
@@ -375,13 +376,14 @@ public class GdbProfile implements ConfigurationAuxObject {
                     true, true);
         }
         
-        public Object getValue() {
+        public Integer getValue() {
             return getArrayRepeatThreshold();
         }
         
-        public void setValue(Object v) {
-            if (v instanceof Integer) {
-                setArrayRepeatThreshold(((Integer) v).intValue());
+        public void setValue(Integer v) {
+            // TODO: why do we need to check it here?
+            if (v != null) {
+                setArrayRepeatThreshold(v);
             }
         }
     }

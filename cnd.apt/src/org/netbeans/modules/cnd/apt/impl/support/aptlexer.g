@@ -197,6 +197,7 @@ tokens {
     LITERAL___real="__real__"; // NOI18N          
     LITERAL___global="__global"; // NOI18N
     LITERAL__Complex="_Complex"; // NOI18N
+    LITERAL___thread="__thread"; // NOI18N
 
 	ASSIGNEQUAL;
 	COLON;

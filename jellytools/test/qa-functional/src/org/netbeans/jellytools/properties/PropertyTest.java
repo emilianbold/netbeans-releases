@@ -59,6 +59,20 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class PropertyTest extends JellyTestCase {
     
+    
+    public static final String[] tests = new String[] {
+        "testGetName",
+        "testGetValue",
+        "testGetShortDescription",
+        "testOpenEditor",
+        "testSetDefaultValue",
+        "testGetRendererName",
+        "testCanEditAsText",
+        "testIsEnabled",
+        "testClose"/*,
+        there is no print settings! "testSetValue"*/
+    };
+    
     /** Use for internal test execution inside IDE
      * @param args command line arguments
      */
@@ -85,16 +99,7 @@ public class PropertyTest extends JellyTestCase {
         return suite;
          */
         return (NbTestSuite) createModuleTest(PropertyTest.class, 
-        "testGetName",
-        "testGetValue",
-        "testGetShortDescription",
-        "testOpenEditor",
-        "testSetDefaultValue",
-        "testGetRendererName",
-        "testCanEditAsText",
-        "testIsEnabled",
-        "testClose"/*,
-        there is no print settings! "testSetValue"*/);
+        tests);
     }
     
     private static Property property;

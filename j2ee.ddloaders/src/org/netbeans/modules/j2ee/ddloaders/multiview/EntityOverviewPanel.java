@@ -49,7 +49,6 @@ import org.netbeans.modules.xml.multiview.ItemEditorHelper;
 import org.netbeans.modules.xml.multiview.ItemCheckBoxHelper;
 import org.netbeans.modules.xml.multiview.XmlMultiViewDataSynchronizer;
 import org.netbeans.modules.xml.multiview.ui.SectionNodeView;
-
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -169,9 +168,7 @@ public class EntityOverviewPanel extends EntityOverviewForm {
                 }
 
                 public void setItemValue(String value) {
-                    if (Utils.isValidPackageName(value)) {
-//                        entityHelper.setPrimKeyClass(JMIUtils.resolveType(value));
-                    } else {
+                    if (!Utils.isValidPackageName(value)) {
                         primaryKeyComboBoxHelper.refresh();
                     }
                 }
@@ -215,10 +212,12 @@ public class EntityOverviewPanel extends EntityOverviewForm {
         primaryKeyFieldComboBox.setModel(new DefaultComboBoxModel(items));
     }
 
+    @Override
     public void dataModelPropertyChange(Object source, String propertyName, Object oldValue, Object newValue) {
         super.dataModelPropertyChange(source, propertyName, oldValue, newValue);
     }
 
+    @Override
     public void refreshView() {
         initPrimaryKeyFieldComboBox();
         super.refreshView();

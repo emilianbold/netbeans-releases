@@ -57,6 +57,7 @@ import org.netbeans.modules.xml.xam.dom.NamedComponentReference;
  * 
  * @author ads
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.InnerEventDispatcher.class)
 public class ImportChangeHandlingService extends InnerEventDispatcherAdapter {
     
 

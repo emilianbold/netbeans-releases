@@ -63,13 +63,15 @@ import org.netbeans.modules.db.metadata.model.api.Action;
 import org.netbeans.modules.db.metadata.model.api.Catalog;
 import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
-import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.netbeans.modules.db.api.metadata.DBConnMetadataModelProvider;
 import org.netbeans.modules.db.metadata.model.api.Schema;
 import org.netbeans.modules.db.metadata.model.api.Table;
 import org.netbeans.modules.db.sql.analyzer.FromClause;
 import org.netbeans.modules.db.sql.analyzer.QualIdent;
 import org.netbeans.modules.db.sql.analyzer.SQLStatement;
 import org.netbeans.modules.db.sql.analyzer.SQLStatementAnalyzer;
+import org.netbeans.modules.db.sql.editor.api.completion.SQLCompletionResultSet;
+import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
 import org.netbeans.modules.db.sql.lexer.SQLTokenId;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -105,9 +107,29 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
 
     @Override
     protected void query(CompletionResultSet resultSet, final Document doc, final int caretOffset) {
-        final SQLCompletionEnv newEnv = SQLCompletionEnv.create(doc, caretOffset);
+        doQuery(SQLCompletionEnv.forDocument(doc, caretOffset));
+        if (items != null) {
+            items.fill(resultSet);
+        }
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
+        }
+        resultSet.finish();
+    }
+
+    public void query(SQLCompletionResultSet resultSet, String statement, int caretOffset, SubstitutionHandler substitutionHandler) {
+        doQuery(SQLCompletionEnv.forStatement(statement, caretOffset, substitutionHandler));
+        if (items != null) {
+            items.fill(resultSet);
+        }
+        if (anchorOffset != -1) {
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
+        }
+    }
+
+    private void doQuery(final SQLCompletionEnv newEnv) {
         try {
-            MetadataModels.get(dbconn).runReadAction(new Action<Metadata>() {
+            DBConnMetadataModelProvider.get(dbconn).runReadAction(new Action<Metadata>() {
                 public void run(Metadata metadata) {
                     Connection conn = dbconn.getJDBCConnection();
                     if (conn == null) {
@@ -126,13 +148,6 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         } catch (MetadataModelException e) {
             reportError(e);
         }
-        if (items != null) {
-            items.fill(resultSet);
-        }
-        if (anchorOffset != -1) {
-            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
-        }
-        resultSet.finish();
     }
 
     // Called by unit tests.
@@ -143,7 +158,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         anchorOffset = -1;
         substitutionOffset = 0;
         if (env != null && env.isSelect()) {
-            items = new SQLCompletionItems(quoter, env.getStatementOffset());
+            items = new SQLCompletionItems(quoter, env.getSubstitutionHandler());
             completeSelect();
         }
         return items;
@@ -208,8 +223,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         if (fromClause != null) {
             completeSimpleIdentBasedOnFromClause(typedPrefix, quoted);
         } else {
-            Catalog defaultCatalog = metadata.getDefaultCatalog();
-            Schema defaultSchema = metadata.getDefaultCatalog().getDefaultSchema();
+            Schema defaultSchema = metadata.getDefaultSchema();
             if (defaultSchema != null) {
                 // All columns in default schema, but only if a prefix has been typed, otherwise there
                 // would be too many columns.
@@ -222,6 +236,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
                 items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
             }
             // All schemas.
+            Catalog defaultCatalog = metadata.getDefaultCatalog();
             items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
             // All catalogs.
             items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
@@ -251,13 +266,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     }
 
     private void completeFromSimpleIdent(String typedPrefix, boolean quoted) {
-        Catalog defaultCatalog = metadata.getDefaultCatalog();
-        Schema schema = defaultCatalog.getDefaultSchema();
-        if (schema != null) {
+        Schema defaultSchema = metadata.getDefaultSchema();
+        if (defaultSchema != null) {
             // All tables in default schema.
-            items.addTables(schema, null, typedPrefix, quoted, substitutionOffset);
+            items.addTables(defaultSchema, null, typedPrefix, quoted, substitutionOffset);
         }
         // All schemas.
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
         items.addSchemas(defaultCatalog, null, typedPrefix, quoted, substitutionOffset);
         // All catalogs.
         items.addCatalogs(metadata, null, typedPrefix, quoted, substitutionOffset);
@@ -299,8 +314,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             items.addColumns(table, typedPrefix, quoted, substitutionOffset);
         }
         // Tables from default schema, restricted to non-aliased table names in the FROM clause.
-        Catalog defaultCatalog = metadata.getDefaultCatalog();
-        Schema defaultSchema = defaultCatalog.getDefaultSchema();
+        Schema defaultSchema = metadata.getDefaultSchema();
         if (defaultSchema != null) {
             Set<String> simpleTableNames = new HashSet<String>();
             for (Table table : tables) {
@@ -325,6 +339,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             }
 
         }
+        Catalog defaultCatalog = metadata.getDefaultCatalog();
         items.addSchemas(defaultCatalog, schemaNames, typedPrefix, quoted, substitutionOffset);
         items.addCatalogs(metadata, catalogNames, typedPrefix, quoted, substitutionOffset);
     }
@@ -415,14 +430,13 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         Table table = null;
         switch (tableName.size()) {
             case 1:
-                Catalog catalog = metadata.getDefaultCatalog();
-                Schema schema = catalog.getDefaultSchema();
+                Schema schema = metadata.getDefaultSchema();
                 if (schema != null) {
                     return schema.getTable(tableName.getSimpleName());
                 }
                 break;
             case 2:
-                catalog = metadata.getDefaultCatalog();
+                Catalog catalog = metadata.getDefaultCatalog();
                 schema = catalog.getSchema(tableName.getFirstQualifier());
                 if (schema != null) {
                     table = schema.getTable(tableName.getSimpleName());

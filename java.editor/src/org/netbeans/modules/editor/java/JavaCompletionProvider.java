@@ -84,10 +84,10 @@ import org.openide.util.NbBundle;
  */
 public class JavaCompletionProvider implements CompletionProvider {
     
-    private static final boolean autoMode = Boolean.getBoolean("org.netbeans.modules.editor.java.completionAutoMode");
-
     public int getAutoQueryTypes(JTextComponent component, String typedText) {
-        if (".".equals(typedText) || (autoMode && JavaCompletionQuery.isJavaIdentifierPart(typedText))) {
+        if (typedText != null && typedText.length() > 0
+                && (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(typedText.charAt(typedText.length() - 1)) >= 0
+                || (Utilities.autoPopupOnJavaIdentifierPart() && JavaCompletionQuery.isJavaIdentifierPart(typedText)))) {
             if (Utilities.isJavaContext(component, component.getSelectionStart() - 1))
                 return COMPLETION_QUERY_TYPE;
         }
@@ -257,12 +257,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                     toolTip = null;
                     anchorOffset = -1;
                     JavaSource js = JavaSource.forDocument(doc);
+                    if (js != null && queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
+                        FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
+                        if (fo != null)
+                            js = JavaSource.forFileObject(fo);
+                    }
                     if (js != null) {
-                        if (queryType == DOCUMENTATION_QUERY_TYPE && element != null) {
-                            FileObject fo = SourceUtils.getFile(element, js.getClasspathInfo());
-                            if (fo != null)
-                                js = JavaSource.forFileObject(fo);
-                        }
                         Future<Void> f = js.runWhenScanFinished(this, true);
                         if (!f.isDone()) {
                             component.putClientProperty("completion-active", Boolean.FALSE); //NOI18N
@@ -306,8 +306,12 @@ public class JavaCompletionProvider implements CompletionProvider {
                         try {
                             String prefix = component.getDocument().getText(offset, newOffset - offset);
                             filterPrefix = isJavaIdentifierPart(prefix) ? prefix : null;
-                            if (filterPrefix != null && filterPrefix.length() == 0)
+                            if (filterPrefix == null) {
+                                if (Utilities.getJavaCompletionAutoPopupTriggers().indexOf(prefix.charAt(prefix.length() - 1)) >= 0)
+                                    return false;
+                            } else if (filterPrefix.length() == 0) {
                                 anchorOffset = newOffset;
+                            }
                         } catch (BadLocationException e) {}
                         return true;
                     }
@@ -686,7 +690,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return;
             }
             if (offset <= sourcePositions.getStartPosition(root, pkg)) {
-                addPackages(env, env.getPrefix());
+                addPackages(env, env.getPrefix(), true);
             } else {
                 TokenSequence<JavaTokenId> first = findFirstNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, pkg), offset);
                 if (first != null && first.token().id() == JavaTokenId.SEMICOLON)
@@ -704,7 +708,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, im, offset);
                 if (last != null && last.token().id() == JavaTokenId.IMPORT && Utilities.startsWith(STATIC_KEYWORD, prefix))
                     addKeyword(env, STATIC_KEYWORD, SPACE, false);
-                addPackages(env, prefix);
+                addPackages(env, prefix, false);
             }            
         }
         
@@ -1306,7 +1310,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                                     }
                                     if (el instanceof PackageElement)
-                                        addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false);
+                                        addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false, false);
                                     else if (type.getKind() == TypeKind.DECLARED)
                                         addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                                     return;
@@ -1320,7 +1324,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                         }
                         if (el instanceof PackageElement)
-                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false);
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false, false);
                         else if (type.getKind() == TypeKind.DECLARED)
                             addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                         return;
@@ -1352,7 +1356,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                             el = controller.getElements().getPackageElement(((TypeElement)el).getQualifiedName());
                         }
                         if (el instanceof PackageElement)
-                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false);
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE), null, false, false);
                         else if (type.getKind() == TypeKind.DECLARED)
                             addMemberConstantsAndTypes(env, (DeclaredType)type, el);
                         return;
@@ -1438,7 +1442,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                                 results.add(JavaCompletionItem.createTypeItem((TypeElement)e, (DeclaredType)ex, anchorOffset, true, elements.isDeprecated(e), false, true));
                                         }
                                 }
-                                addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew);
+                                addPackageContent(env, (PackageElement)el, kinds, baseType, insideNew, false);
                                 if (results.isEmpty() && ((PackageElement)el).getQualifiedName() == el.getSimpleName()) {
                                     // no package content? Check for unimported class
                                     ClassIndex ci = controller.getClasspathInfo().getClassIndex();
@@ -1457,7 +1461,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 } else if (parent.getKind() == Tree.Kind.COMPILATION_UNIT && ((CompilationUnitTree)parent).getPackageName() == fa) {
                     PackageElement pe = controller.getElements().getPackageElement(fullName(exp));
                     if (pe != null)
-                        addPackageContent(env, pe, EnumSet.of(ElementKind.PACKAGE), null, false);
+                        addPackageContent(env, pe, EnumSet.of(ElementKind.PACKAGE), null, false, true);
                 }
             }
         }
@@ -1685,7 +1689,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private void insideSwitch(Env env) throws IOException {
             int offset = env.getOffset();
-            String prefix = env.getPrefix();
             TreePath path = env.getPath();
             SwitchTree st = (SwitchTree)path.getLeaf();
             SourcePositions sourcePositions = env.getSourcePositions();
@@ -1731,7 +1734,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
             } else {
                 TokenSequence<JavaTokenId> ts = findLastNonWhitespaceToken(env, cst, offset);
-                if (ts != null && ts.token().id() == JavaTokenId.COLON) {
+                if (ts != null && ts.token().id() != JavaTokenId.DEFAULT) {
                     localResult(env);
                     addKeywordsForBlock(env);
                 }
@@ -2005,7 +2008,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     default:
                         Element el = controller.getTrees().getElement(expPath);
                         if (el instanceof PackageElement) {
-                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT), null, false);
+                            addPackageContent(env, (PackageElement)el, EnumSet.of(CLASS, ENUM, ANNOTATION_TYPE, INTERFACE, FIELD, METHOD, ENUM_CONSTANT), null, false, false);
                         }
                 }
             } else {
@@ -2649,7 +2652,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             }
         }
         
-        private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, boolean insideNew) throws IOException {
+        private void addPackageContent(final Env env, PackageElement pe, EnumSet<ElementKind> kinds, DeclaredType baseType, boolean insideNew, boolean insidePkgStmt) throws IOException {
             Set<? extends TypeMirror> smartTypes = queryType == COMPLETION_QUERY_TYPE ? env.getSmartTypes() : null;
             String prefix = env.getPrefix();
             CompilationController controller = env.getController();
@@ -2668,15 +2671,15 @@ public class JavaCompletionProvider implements CompletionProvider {
             String pkgName = pe.getQualifiedName() + "."; //NOI18N
             if (prefix != null && prefix.length() > 0)
                 pkgName += prefix;
-            addPackages(env, pkgName);
+            addPackages(env, pkgName, insidePkgStmt);
         }
         
-        private void addPackages(Env env, String fqnPrefix) {
+        private void addPackages(Env env, String fqnPrefix, boolean inPkgStmt) {
             if (fqnPrefix == null)
                 fqnPrefix = EMPTY;
             for (String pkgName : env.getController().getClasspathInfo().getClassIndex().getPackageNames(fqnPrefix, true,EnumSet.allOf(ClassIndex.SearchScope.class)))
                 if (pkgName.length() > 0)
-                    results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, false));
+                    results.add(JavaCompletionItem.createPackageItem(pkgName, anchorOffset, inPkgStmt));
         }
         
         private void addTypes(Env env, EnumSet<ElementKind> kinds, DeclaredType baseType, Set<? extends Element> toExclude, boolean insideNew) throws IOException {
@@ -2695,7 +2698,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 addLocalAndImportedTypes(env, kinds, baseType, toExclude, insideNew);
                 hasAdditionalItems = true;
             }
-            addPackages(env, env.getPrefix());
+            addPackages(env, env.getPrefix(), false);
         }
         
         private void addLocalAndImportedTypes(final Env env, final EnumSet<ElementKind> kinds, final DeclaredType baseType, final Set<? extends Element> toExclude, boolean insideNew) throws IOException {
@@ -3296,7 +3299,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 for (VariableElement variableElement : ElementFilter.fieldsIn(members)) {
                     Name name = variableElement.getSimpleName();
                     if (!name.contentEquals(ERROR)) {
-                        String nameBase = Character.toUpperCase(name.charAt(0)) + name.subSequence(1, name.length()).toString();
+                        String nameBase = GeneratorUtils.getCapitalizedName(name).toString();
                         String setterName = "set" + nameBase; //NOI18N
                         String getterName = (variableElement.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + nameBase; //NOI18N
                         if ((prefix == null || startsWith(env, getterName, prefix)) && !GeneratorUtils.hasGetter(controller, variableElement, methods)) {
@@ -3705,6 +3708,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                         sourcePositions = env.getSourcePositions();
                         root = env.getRoot();
                         int idEndPos = (int)sourcePositions.getEndPosition(root, nc.getIdentifier());
+                        if (idEndPos < 0)
+                            idEndPos = (int)sourcePositions.getStartPosition(root, nc);
                         if (idEndPos < 0 || idEndPos >= offset || controller.getText().substring(idEndPos, offset).indexOf('(') < 0)
                             break;
                         argTypes = getArgumentsUpToPos(env, nc.getArguments(), idEndPos, lastTree != null ? (int)sourcePositions.getStartPosition(root, lastTree) : offset);
@@ -4123,7 +4128,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                         }
                                     }
                                 }
-                                if (toRemove != null)
+                                if (toRemove != null && !toRemove.getKind().isPrimitive() &&
+                                        !"java.lang.String".equals(toRemove.toString()) && !"char[]".equals(toRemove.toString())) //NOI18N
                                     ret.remove(toRemove);
                             }
                             break;
@@ -4257,12 +4263,12 @@ public class JavaCompletionProvider implements CompletionProvider {
             Tree grandParent = gpPath != null ? gpPath.getLeaf() : null;
             SourcePositions sourcePositions = controller.getTrees().getSourcePositions();
             CompilationUnitTree root = controller.getCompilationUnit();
+            TreeUtilities tu = controller.getTreeUtilities();
             if (upToOffset && tree.getKind() == Tree.Kind.CLASS) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 return new Env(offset, prefix, controller, orig, sourcePositions, null);
             } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.CLASS)) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                TreeUtilities tu = controller.getTreeUtilities();
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                 String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
                 final SourcePositions[] sp = new SourcePositions[1];
@@ -4288,6 +4294,16 @@ public class JavaCompletionProvider implements CompletionProvider {
                         case METHOD:
                             stmts = ((MethodTree)path.getLeaf()).getParameters();
                             break;
+                        case SWITCH:
+                            CaseTree lastCase = null;
+                            for (CaseTree caseTree : ((SwitchTree)path.getLeaf()).getCases())
+                                lastCase = caseTree;
+                            if (lastCase != null)
+                                stmts = lastCase.getStatements();
+                            break;
+                        case CASE:
+                            stmts = ((CaseTree)path.getLeaf()).getStatements();
+                            break;
                     }
                     if (stmts != null) {
                         for (StatementTree st : stmts) {
@@ -4302,8 +4318,11 @@ public class JavaCompletionProvider implements CompletionProvider {
                 return new Env(offset, prefix, controller, path, sourcePositions, scope);
             } else if (grandParent != null && grandParent.getKind() == Tree.Kind.CLASS &&
                     parent != null && parent.getKind() == Tree.Kind.VARIABLE && unwrapErrTree(((VariableTree)parent).getInitializer()) == tree) {
+                if (tu.isEnum((ClassTree)grandParent)) {
+                    controller.toPhase(Phase.RESOLVED);
+                    return null;
+                }
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                TreeUtilities tu = controller.getTreeUtilities();
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));
                 final SourcePositions[] sp = new SourcePositions[1];
@@ -4333,7 +4352,6 @@ public class JavaCompletionProvider implements CompletionProvider {
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) >= 0 &&
                     sourcePositions.getStartPosition(root, ((VariableTree)tree).getInitializer()) <= offset) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
-                TreeUtilities tu = controller.getTreeUtilities();
                 tree = ((VariableTree)tree).getInitializer();
                 final int initPos = (int)sourcePositions.getStartPosition(root, tree);
                 String initText = controller.getText().substring(initPos, offset);

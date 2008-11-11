@@ -311,7 +311,7 @@ final class ResourceWizardPanel extends JPanel {
             ErrorManager.getDefault().notify(ex);
         }
             
-        return SelectorUtils.selectOrCreateBundle(fo, template);        
+        return SelectorUtils.selectOrCreateBundle(fo, template, null);
     }
     
     // Variables declaration

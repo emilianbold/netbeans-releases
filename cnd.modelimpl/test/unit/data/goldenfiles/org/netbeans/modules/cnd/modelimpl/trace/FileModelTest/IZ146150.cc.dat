@@ -16,7 +16,7 @@ FUNCTION __errno_location [2:1/1-2:35/35] FunctionImpl SCOPE: $Global$
     SIGNATURE __errno_location()
     UNIQUE NAME F:__errno_location()
     PARAMETERS:
-    RETURNS int TEXT=int  [2:1/1-2:14/14]
+    RETURNS int TEXT=int  [2:8/8-2:14/14]
 
 ========== Dumping model of PROJECT DummyProject
 FUNCTION __errno_location [2:1/1-2:35/35] FunctionImpl SCOPE: $Global$ 
@@ -24,5 +24,5 @@ FUNCTION __errno_location [2:1/1-2:35/35] FunctionImpl SCOPE: $Global$
     SIGNATURE __errno_location()
     UNIQUE NAME F:__errno_location()
     PARAMETERS:
-    RETURNS int TEXT=int  [2:1/1-2:14/14]
+    RETURNS int TEXT=int  [2:8/8-2:14/14]
 

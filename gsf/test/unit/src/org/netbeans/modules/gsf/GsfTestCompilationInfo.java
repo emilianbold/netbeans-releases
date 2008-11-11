@@ -113,6 +113,8 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
         return source;
     }
 
+    static Index mostRecentIndex;
+
     public Index getIndex(String mimeType) {
         if (index == null) {
             test.initializeRegistry();
@@ -121,6 +123,7 @@ public final class GsfTestCompilationInfo extends CompilationInfo {
                 index = cpi.getClassIndex(mimeType);
                 ClassIndex classIndex = (ClassIndex)index;
                 updateIndexForTests(cpi, classIndex, source);
+                mostRecentIndex = index;
             }
         }
         

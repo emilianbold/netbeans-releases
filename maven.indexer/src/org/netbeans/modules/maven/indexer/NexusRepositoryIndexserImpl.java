@@ -123,6 +123,7 @@ import org.sonatype.nexus.index.updater.IndexUpdater;
  *
  * @author Anuradha G
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.indexer.spi.RepositoryIndexerImplementation.class)
 public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementation,
         BaseQueries, ChecksumQueries, ArchetypeQueries, DependencyInfoQueries,
         ClassesQuery, GenericFindQuery {
@@ -650,17 +651,13 @@ public class NexusRepositoryIndexserImpl implements RepositoryIndexerImplementat
                 public List<NBVersionInfo> run() throws Exception {
                     final List<NBVersionInfo> infos = new ArrayList<NBVersionInfo>();
                     loadIndexingContext(allrepos);
-                    try {
-                        checkIndexAvailability(allrepos);
-                        BooleanQuery bq = new BooleanQuery();
-                        String id = groupId + AbstractIndexCreator.FS + artifactId + AbstractIndexCreator.FS;
-                        bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
-                        FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
-                        FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
-                        infos.addAll(convertToNBVersionInfo(response.getResults()));
-                    } finally {
-                        unloadIndexingContext(allrepos);
-                    }
+                    checkIndexAvailability(allrepos);
+                    BooleanQuery bq = new BooleanQuery();
+                    String id = groupId + AbstractIndexCreator.FS + artifactId + AbstractIndexCreator.FS;
+                    bq.add(new BooleanClause(new PrefixQuery(new Term(ArtifactInfo.UINFO, id)), BooleanClause.Occur.MUST));
+                    FlatSearchRequest fsr = new FlatSearchRequest(bq, ArtifactInfo.VERSION_COMPARATOR);
+                    FlatSearchResponse response = searcher.searchFlatPaged(fsr, getContexts(allrepos));
+                    infos.addAll(convertToNBVersionInfo(response.getResults()));
                     return infos;
                 }
             });

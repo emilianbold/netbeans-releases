@@ -164,6 +164,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2007.05.03
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public final class Validator extends BpelValidator {
     
   @Override
@@ -200,7 +201,12 @@ public final class Validator extends BpelValidator {
       }
     }
     for (Model wsdl : wsdls) {
-      Types types = ((WSDLModel) wsdl).getDefinitions().getTypes();
+      Definitions definitions = ((WSDLModel) wsdl).getDefinitions();
+
+      if (definitions == null) {
+        continue;
+      }
+      Types types = definitions.getTypes();
 
       if (types == null) {
         continue;

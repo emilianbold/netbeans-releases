@@ -49,6 +49,7 @@ import org.openide.filesystems.FileObject;
 /**
  * @author Tomas Stupka
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=1)
 public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {                        
     public Charset getEncoding(FileObject fo) {   
         return Utils.getAssociatedEncoding(fo);

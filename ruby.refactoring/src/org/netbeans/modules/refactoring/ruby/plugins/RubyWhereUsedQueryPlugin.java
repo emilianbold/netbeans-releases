@@ -180,7 +180,7 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     String name = tph.getName();
                 
                     // Find overrides of the class
-                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+                    RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
                     String fqn = AstUtilities.getFqnName(tph.getPath());
                     Set<IndexedClass> classes = index.getSubClasses(null, fqn, name, isFindDirectSubclassesOnly());
 

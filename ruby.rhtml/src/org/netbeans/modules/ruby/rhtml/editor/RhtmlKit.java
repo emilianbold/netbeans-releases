@@ -58,6 +58,7 @@ import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit.ExtDefaultKeyTypedAction;
+import org.netbeans.modules.gsf.GsfEditorKitFactory.NextCharProvider;
 import org.netbeans.modules.html.editor.HTMLKit;
 import org.netbeans.modules.editor.gsfret.InstantRenameAction;
 import org.netbeans.modules.gsf.DeleteToNextCamelCasePosition;
@@ -313,7 +314,7 @@ public class RhtmlKit extends HTMLKit {
         }
     }
     
-    private class RhtmlDeleteCharAction extends ExtDeleteCharAction {
+    private class RhtmlDeleteCharAction extends ExtDeleteCharAction implements NextCharProvider {
         private DeleteCharAction htmlAction;
 
         public RhtmlDeleteCharAction(String nm, boolean nextChar, DeleteCharAction htmlAction) {
@@ -323,14 +324,23 @@ public class RhtmlKit extends HTMLKit {
 
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
-            Caret caret = target.getCaret();
-            BaseDocument doc = (BaseDocument)target.getDocument();
-            int dotPos = caret.getDot();
-            if (handleDeletion(doc, dotPos)) {
-                return;
-            }
+            target.putClientProperty(NextCharProvider.class, this);
+            try {
+                Caret caret = target.getCaret();
+                BaseDocument doc = (BaseDocument)target.getDocument();
+                int dotPos = caret.getDot();
+                if (handleDeletion(doc, dotPos)) {
+                    return;
+                }
 
-            htmlAction.actionPerformed(evt, target);
+                htmlAction.actionPerformed(evt, target);
+            } finally {
+                target.putClientProperty(NextCharProvider.class, null);
+            }
+        }
+
+        public boolean getNextChar() {
+            return nextChar;
         }
     }
     

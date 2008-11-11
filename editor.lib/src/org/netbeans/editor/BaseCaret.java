@@ -678,7 +678,7 @@ AtomicLockListener, FoldHierarchyListener {
                     // of the visible window to see the context around the caret.
                     // This should work fine with PgUp/Down because these
                     // scroll the view explicitly.
-                    if (!updateAfterFoldHierarchyChange &&
+                    if (/* # 70915 !updateAfterFoldHierarchyChange && */
                         (caretBounds.y > visibleBounds.y + visibleBounds.height + caretBounds.height
                             || caretBounds.y + caretBounds.height < visibleBounds.y - caretBounds.height)
                     ) {
@@ -694,14 +694,14 @@ AtomicLockListener, FoldHierarchyListener {
                     if (scrollViewToCaret) {
                         c.scrollRectToVisible(scrollBounds);
                     }
-                        
+
                     resetBlink();
                     c.repaint(caretBounds);
                 }
             }
         }
     }
-    
+
     private void updateSystemSelection() {
         if (getDot() != getMark() && component != null) {
             Clipboard clip = getSystemSelection();

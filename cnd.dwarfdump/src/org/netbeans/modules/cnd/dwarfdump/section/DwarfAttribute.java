@@ -49,6 +49,7 @@
 
 package org.netbeans.modules.cnd.dwarfdump.section;
 
+import java.io.ByteArrayOutputStream;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.ATTR;
 import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.FORM;
 import java.io.PrintStream;
@@ -94,6 +95,18 @@ public class DwarfAttribute {
     
     public void dump() {
         dump(System.out, null);
+    }
+
+    @Override
+    public String toString() {
+        return toString(null);
+    }
+
+    public String toString(Object value) {
+        ByteArrayOutputStream st = new ByteArrayOutputStream();
+        PrintStream out = new PrintStream(st);
+        dump(out, value);
+        return st.toString();
     }
 }
 

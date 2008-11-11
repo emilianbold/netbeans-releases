@@ -49,6 +49,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 
 /**Jsp Lexer Test
@@ -103,6 +104,10 @@ public class JspLexerTest extends NbTestCase {
         
         assertFalse(ts.moveNext());
     }
-    
+
+      public void testRegressions() throws Exception {
+        LexerTestUtilities.checkTokenDump(this, "testfiles/testRegressions.jsp.txt",
+                JspTokenId.language());
+    }
     
 }

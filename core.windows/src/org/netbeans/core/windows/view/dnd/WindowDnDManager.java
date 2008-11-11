@@ -944,6 +944,9 @@ implements DropTargetGlassPane.Observer, DropTargetGlassPane.Informer {
                 return;
             }
 
+            if(windowDnDManager.startingTransfer == null)
+                return;
+
             // move separate windows along with the mouse
             /*if (Constants.MODE_STATE_SEPARATED == mode.getState()) {
                 handleWindowMove(mode, windowDnDManager.startingTransfer, evt);

@@ -89,26 +89,27 @@ public class Axis2ServiceChildren extends Children.Keys<OperationInfo> {
     @Override
     protected void addNotify() {
         getImplClass();
-        assert(implClass != null);
-        if (fcl == null) {
-            fcl = new FileChangeAdapter() {
-                @Override
-                public void fileChanged(FileEvent fe) {
-                    updateKeys();
-                }
-            };
-            implClass.addFileChangeListener(fcl);
-        };
+        if (implClass != null) {
+            if (fcl == null) {
+                fcl = new FileChangeAdapter() {
+                    @Override
+                    public void fileChanged(FileEvent fe) {
+                        updateKeys();
+                    }
+                };
+                implClass.addFileChangeListener(fcl);
+            }
+        }
         updateKeys();
     }
     
     @Override
     protected void removeNotify() {
-        getImplClass();
-        assert(implClass != null);
-        if (fcl != null) {
-            implClass.removeFileChangeListener(fcl);
-            fcl = null;
+        if (implClass != null) {
+            if (fcl != null) {
+                implClass.removeFileChangeListener(fcl);
+                fcl = null;
+            }
         }
     }
     

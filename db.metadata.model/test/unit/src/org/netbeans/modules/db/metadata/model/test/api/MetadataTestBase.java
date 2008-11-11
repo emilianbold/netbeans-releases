@@ -44,7 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.metadata.model.api.MetadataObject;
+import org.netbeans.modules.db.metadata.model.api.MetadataElement;
 
 /**
  *
@@ -56,19 +56,19 @@ public class MetadataTestBase extends NbTestCase {
         super(name);
     }
 
-    public static <T extends MetadataObject> void assertNames(Set<String> names, Collection<T> objects) {
+    public static <T extends MetadataElement> void assertNames(Set<String> names, Collection<T> elements) {
         Set<String> computedNames = new HashSet<String>();
-        for (MetadataObject object : objects) {
-            computedNames.add(object.getName());
+        for (MetadataElement element : elements) {
+            computedNames.add(element.getName());
         }
         assertEquals(names, computedNames);
     }
 
-    public static <T extends MetadataObject> void assertNames(List<String> names, Collection<T> objects) {
-        assertEquals(names.size(), objects.size());
+    public static <T extends MetadataElement> void assertNames(List<String> names, Collection<T> elements) {
+        assertEquals(names.size(), elements.size());
         int i = 0;
-        for (MetadataObject object : objects) {
-            assertEquals(names.get(i++), object.getName());
+        for (MetadataElement element : elements) {
+            assertEquals(names.get(i++), element.getName());
         }
     }
 }

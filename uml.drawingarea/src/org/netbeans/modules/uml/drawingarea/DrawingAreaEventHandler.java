@@ -263,10 +263,16 @@ public class DrawingAreaEventHandler
                 // The call to getImportElement acutally retrieves the
                 // cloned element that lives in the importing project, not the
                 // element that is in the original project.
-                IElement clone = ((IElementImport)element).getImportedElement();
-                IElement origOwner = clone.getOwner();
-                pEle = FactoryRetriever.instance().findElementByID(origOwner,
-                        clone.getXMIID());
+                
+               // Fixed issue 149444
+//                IElement clone = ((IElementImport)element).getImportedElement();
+//                IElement origOwner = clone.getOwner();
+//                pEle = FactoryRetriever.instance().findElementByID(origOwner, clone.getXMIID());
+                
+                pEle = ((IElementImport)element).getImportedElement();
+                IElement origOwner = pEle.getOwner();
+                secondary = FactoryRetriever.instance().findElementByID(origOwner,
+                        pEle.getXMIID());
             }
             else if(element instanceof IPackageImport)
             {
@@ -303,7 +309,8 @@ public class DrawingAreaEventHandler
         if (element instanceof IElement)
         {
             IElement pModEle = (IElement)element;
-            
+            IElement secondary = null;
+             
             if(element instanceof IElementImport)
             {
                 IProject ownerProject = pModEle.getProject();
@@ -311,16 +318,23 @@ public class DrawingAreaEventHandler
                 // The call to getImportElement acutally retrieves the
                 // cloned element that lives in the importing project, not the
                 // element that is in the original project.
-                IElement clone = ((IElementImport)element).getImportedElement();
-                IElement origOwner = clone.getOwner();
-                pModEle = FactoryRetriever.instance().findElementByID(origOwner, clone.getXMIID());
+                
+                // Fixed issue 149444
+//                IElement clone = ((IElementImport)element).getImportedElement();
+//                IElement origOwner = clone.getOwner();
+//                pModEle = FactoryRetriever.instance().findElementByID(origOwner, clone.getXMIID());
+                
+                pModEle = ((IElementImport)element).getImportedElement();
+                IElement origOwner = pModEle.getOwner();
+                secondary = FactoryRetriever.instance().findElementByID(origOwner,
+                        pModEle.getXMIID());
             }
             
             // I have had to make this not be a delayed event because, if it is
             // delayed the owner of the deleted element will be removed.  Since
             // our logic needs to know who owns the element, it is kind of
             // important.
-            notifyChangeListeners(pModEle, null, 
+            notifyChangeListeners(pModEle, secondary, 
                                   ModelElementChangedKind.DELETE,
                                   false);
         }

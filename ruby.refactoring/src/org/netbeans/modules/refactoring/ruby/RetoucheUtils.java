@@ -220,7 +220,7 @@ public class RetoucheUtils {
 
     /** Return the most distant method in the hierarchy that is overriding the given method, or null */
     public static IndexedMethod getOverridingMethod(RubyElementCtx element, CompilationInfo info) {
-        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE));
+        RubyIndex index = RubyIndex.get(info.getIndex(RubyMimeResolver.RUBY_MIME_TYPE), info.getFileObject());
         String fqn = AstUtilities.getFqnName(element.getPath());
 
         return index.getOverridingMethod(fqn, element.getName());

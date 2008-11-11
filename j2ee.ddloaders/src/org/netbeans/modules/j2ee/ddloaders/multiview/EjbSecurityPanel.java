@@ -264,7 +264,6 @@ public class EjbSecurityPanel extends SecurityForm {
     }
     
     private void updateRunAs(RunAs runAs) {
-        String prevRoleName = runAs.getRoleName();
         String newRoleName = getRunAsRoleNameTF().getText();
         runAs.setRoleName(newRoleName);
         runAs.setDescription(this.getRunAsDescriptionTF().getText());

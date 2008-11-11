@@ -40,6 +40,8 @@
 package org.netbeans.nbbuild.extlibs;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -160,16 +162,18 @@ public class DownloadBinaries extends Task {
                         if (hashAndFile.length < 2) {
                             throw new BuildException("Bad line '" + line + "' in " + manifest, getLocation());
                         }
-                        File f = new File(manifest.getParentFile(), hashAndFile[1]);
+                        String expectedHash = hashAndFile[0];
+                        String baseName = hashAndFile[1];
+                        File f = new File(manifest.getParentFile(), baseName);
                         if (!clean) {
-                            if (!f.exists() || !hash(f).equals(hashAndFile[0])) {
+                            if (!f.exists() || !hash(f).equals(expectedHash)) {
                                 log("Creating " + f);
-                                String cacheName = hashAndFile[0] + "-" + f.getName();
+                                String cacheName = expectedHash + "-" + baseName;
                                 if (cache != null) {
                                     cache.mkdirs();
                                     File cacheFile = new File(cache, cacheName);
                                     if (!cacheFile.exists()) {
-                                        download(cacheName, cacheFile);
+                                        download(cacheName, cacheFile, expectedHash);
                                     }
                                     if (f.isFile() && !f.delete()) {
                                         throw new BuildException("Could not delete " + f);
@@ -180,21 +184,21 @@ public class DownloadBinaries extends Task {
                                         throw new BuildException("Could not copy " + cacheFile + " to " + f + ": " + x, x, getLocation());
                                     }
                                 } else {
-                                    download(cacheName, f);
+                                    download(cacheName, f, expectedHash);
                                 }
                             }
                             String actualHash = hash(f);
-                            if (!actualHash.equals(hashAndFile[0])) {
+                            if (!actualHash.equals(expectedHash)) {
                                 throw new BuildException("File " + f + " requested by " + manifest + " to have hash " +
-                                        hashAndFile[0] + " actually had hash " + actualHash, getLocation());
+                                        expectedHash + " actually had hash " + actualHash, getLocation());
                             }
                             log("Have " + f + " with expected hash", Project.MSG_VERBOSE);
                         } else {
                             if (f.exists()) {
                                 String actualHash = hash(f);
-                                if (!actualHash.equals(hashAndFile[0])) {
+                                if (!actualHash.equals(expectedHash)) {
                                     throw new BuildException("File " + f + " requested by " + manifest + " to have hash " +
-                                            hashAndFile[0] + " actually had hash " + actualHash, getLocation());
+                                            expectedHash + " actually had hash " + actualHash, getLocation());
                                 }
                                 log("Deleting " + f);
                                 f.delete();
@@ -211,7 +215,7 @@ public class DownloadBinaries extends Task {
         }
     }
 
-    private void download(String cacheName, File destination) {
+    private void download(String cacheName, File destination, String expectedHash) {
         if (server == null) {
             throw new BuildException("Must specify a server to download files from", getLocation());
         }
@@ -235,18 +239,31 @@ public class DownloadBinaries extends Task {
                 log("Downloading: " + url);
                 InputStream is = conn.getInputStream();
                 try {
-                    OutputStream os = new FileOutputStream(destination);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     try {
                         byte[] buf = new byte[4096];
                         int read;
                         while ((read = is.read(buf)) != -1) {
-                            os.write(buf, 0, read);
+                            baos.write(buf, 0, read);
                         }
-                        os.close();
                     } catch (IOException x) {
+                        throw new BuildException(x); // should not happen
+                    }
+                    byte[] data = baos.toByteArray();
+                    String actualHash = hash(new ByteArrayInputStream(data));
+                    if (!expectedHash.equals(actualHash)) {
+                        throw new BuildException("Download of " + url + " produced content with hash " +
+                                actualHash + " when " + expectedHash + " was expected", getLocation());
+                    }
+                    OutputStream os = new FileOutputStream(destination);
+                    try {
+                        os.write(data);
+                    } catch (IOException x) {
+                        os.close();
                         destination.delete();
                         throw x;
                     }
+                    os.close();
                 } finally {
                     is.close();
                 }
@@ -259,25 +276,29 @@ public class DownloadBinaries extends Task {
     }
 
     private String hash(File f) {
+        try {
+            FileInputStream is = new FileInputStream(f);
+            try {
+                return hash(is);
+            } finally {
+                is.close();
+            }
+        } catch (IOException x) {
+            throw new BuildException("Could not get hash for " + f + ": " + x, x, getLocation());
+        }
+    }
+
+    private String hash(InputStream is) throws IOException {
         MessageDigest digest;
         try {
             digest = MessageDigest.getInstance("SHA-1");
         } catch (NoSuchAlgorithmException x) {
             throw new BuildException(x, getLocation());
         }
-        try {
-            FileInputStream is = new FileInputStream(f);
-            try {
-                byte[] buf = new byte[4096];
-                int r;
-                while ((r = is.read(buf)) != -1) {
-                    digest.update(buf, 0, r);
-                }
-            } finally {
-                is.close();
-            }
-        } catch (IOException x) {
-            throw new BuildException("Could not get hash for " + f + ": " + x, x, getLocation());
+        byte[] buf = new byte[4096];
+        int r;
+        while ((r = is.read(buf)) != -1) {
+            digest.update(buf, 0, r);
         }
         return String.format("%040X", new BigInteger(1, digest.digest()));
     }

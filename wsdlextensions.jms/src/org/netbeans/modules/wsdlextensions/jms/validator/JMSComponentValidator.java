@@ -83,6 +83,7 @@ import org.netbeans.modules.wsdlextensions.jms.JMSJNDIEnvEntry;
  *
  * 
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class JMSComponentValidator
         implements Validator {
     

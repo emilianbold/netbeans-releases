@@ -563,6 +563,11 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         public String getDescription() {
             return tc.getToolTipText();
         }
+
+        @Override
+        public String getShortDescription() {
+            return tc.getToolTipText();
+        }
         
         public TopComponent getTopComponent () {
             return tc;

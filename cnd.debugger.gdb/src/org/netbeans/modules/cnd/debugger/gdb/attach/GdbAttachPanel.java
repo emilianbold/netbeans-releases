@@ -307,7 +307,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         }
     }
     
-    class FilterItem {
+    static class FilterItem {
         
         private String text;
         private Pattern pattern;
@@ -339,7 +339,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         }
     }
     
-    class PItem {
+    static class PItem {
         
         private ProjectInformation pinfo;
         
@@ -361,7 +361,7 @@ public class GdbAttachPanel extends JPanel implements Controller, ProcessListRea
         }
     }
     
-    class AttachTableModel extends DefaultTableModel {
+    static class AttachTableModel extends DefaultTableModel {
         
         @Override
         public boolean isCellEditable(int row, int col) {

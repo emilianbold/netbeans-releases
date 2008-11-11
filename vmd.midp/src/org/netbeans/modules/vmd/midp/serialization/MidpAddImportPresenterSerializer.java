@@ -50,6 +50,7 @@ import java.util.Arrays;
 /**
  * @author David Kaspar
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.vmd.api.model.PresenterSerializer.class)
 public class MidpAddImportPresenterSerializer implements PresenterSerializer {
 
     public List<Element> serialize (Document document) {

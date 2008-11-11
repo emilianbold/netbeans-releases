@@ -71,6 +71,7 @@ abstract class OperationValidator {
     private final static OperationValidator FOR_ENABLE = new EnableValidator();
     private final static OperationValidator FOR_DISABLE = new DisableValidator();
     private final static OperationValidator FOR_CUSTOM_INSTALL = new CustomInstallValidator();
+    private final static OperationValidator FOR_CUSTOM_UNINSTALL = new CustomUninstallValidator();
     private static final Logger LOGGER = Logger.getLogger (OperationValidator.class.getName ());
     
     /** Creates a new instance of OperationValidator */
@@ -101,6 +102,9 @@ abstract class OperationValidator {
             break;
         case CUSTOM_INSTALL:
             isValid = FOR_CUSTOM_INSTALL.isValidOperationImpl(updateUnit, updateElement);
+            break;
+        case CUSTOM_UNINSTALL:
+            isValid = FOR_CUSTOM_UNINSTALL.isValidOperationImpl(updateUnit, updateElement);
             break;
         default:
             assert false;
@@ -133,6 +137,9 @@ abstract class OperationValidator {
             break;
         case CUSTOM_INSTALL:
             retval = FOR_CUSTOM_INSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
+            break;
+        case CUSTOM_UNINSTALL:
+            retval = FOR_CUSTOM_UNINSTALL.getRequiredElementsImpl(updateElement, moduleInfos, brokenDependencies);
             break;
         default:
             assert false;
@@ -423,19 +430,37 @@ abstract class OperationValidator {
             if (impl != null && impl instanceof NativeComponentUpdateElementImpl) {
                 NativeComponentUpdateElementImpl ni = (NativeComponentUpdateElementImpl) impl;
                 if (ni.getInstallInfo ().getCustomInstaller () != null) {
-                    res = unit.getInstalled() == null && containsElement (uElement, unit);
+                    res = containsElement (uElement, unit);
                 }
             }
             return res;
         }
-        
+
         List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
             LOGGER.log (Level.INFO, "CustomInstallValidator doesn't care about required elements."); // XXX
+            return Collections.emptyList ();
+        }
+    }
+
+    private static class CustomUninstallValidator extends OperationValidator {
+        boolean isValidOperationImpl (UpdateUnit unit, UpdateElement uElement) {
+            boolean res = false;
+            UpdateElementImpl impl = Trampoline.API.impl (uElement);
+            assert impl != null;
+            if (impl != null && impl instanceof NativeComponentUpdateElementImpl) {
+                NativeComponentUpdateElementImpl ni = (NativeComponentUpdateElementImpl) impl;
+                res = ni.getNativeItem ().getUpdateItemDeploymentImpl ().getCustomUninstaller () != null;
+            }
+            return res;
+        }
+
+        List<UpdateElement> getRequiredElementsImpl (UpdateElement uElement, List<ModuleInfo> moduleInfos, Collection<String> brokenDependencies) {
+            LOGGER.log (Level.INFO, "CustomUninstallValidator doesn't care about required elements."); // XXX
             return Collections.emptyList ();
             //return new LinkedList<UpdateElement> (Utilities.findRequiredUpdateElements (uElement, moduleInfos));
         }
     }
-    
+
     private static Set<Module> findRequiredModulesForDeactivate (final Set<Module> requestedToDeactivate, ModuleManager mm) {
         // go up and find kits which depending on requestedToDeactivate modules
         Set<Module> extendReqToDeactivate = new HashSet<Module> (requestedToDeactivate);

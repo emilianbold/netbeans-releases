@@ -53,13 +53,13 @@ import org.openide.util.NbBundle;
  */
 public class TypeInfo {
     
-    private GdbDebugger debugger;
+    private final GdbDebugger debugger;
     private String resolvedType;
     private String rawInfo;
     private Map<String, Object> map;
     private Map<String, TypeInfo> ticache;
-    private static Map<String, Map<String, Object>> mcache = new HashMap<String, Map<String, Object>>();
-    protected static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private static final Map<String, Map<String, Object>> mcache = new HashMap<String, Map<String, Object>>();
+    protected static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
 //    private static final boolean disable_caches = Boolean.getBoolean("gdb.disable.ti.caches");
 //    private static final boolean disable_ti_cache = disable_caches || Boolean.getBoolean("gdb.disable.ti.cache");
 //    private static final boolean disable_map_cache = disable_caches || Boolean.getBoolean("gdb.disable.map.cache");

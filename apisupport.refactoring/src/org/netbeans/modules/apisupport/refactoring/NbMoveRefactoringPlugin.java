@@ -182,8 +182,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         try {
             initClasses();
             Project cachedProject = null;
-            String[] cachedServices = null;
-            FileObject[] cachedServicesFiles = null;
             Manifest cachedManifest = null;
             
             Lookup lkp = refactoring.getRefactoringSource();
@@ -199,7 +197,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
                 
                 if (infoholder.isClass) {
                     checkManifest(project, infoholder.fullName, refactoringElements);
-                    checkMetaInfServices(project, infoholder.fullName, refactoringElements);
                     checkLayer(project, infoholder.fullName, refactoringElements);
                 }
                 if (infoholder.isMethod) {
@@ -220,34 +217,10 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
 //                if (project != null && project instanceof NbModuleProject) {
 //                    if (cachedProject == null || cachedProject != project) {
 //                        cachedProject = (NbModuleProject)project;
-//                        cachedServices = loadMetaInfServices(cachedProject);
 //                        cachedManifest = cachedProject.getManifest();
-//                        FileObject services = Utility.findMetaInfServices(cachedProject);
-//                        if (services == null) {
-//                            cachedServicesFiles = new FileObject[0];
-//                        } else {
-//                            cachedServicesFiles = services.getChildren();
-//                        }
 //                    }
 //                    String name = res.getName();
 //                    String clazzName = name.replaceAll("\\.java$", ".class"); //NOI18N
-//                    String serviceName = name.replaceAll("\\.java$", "").replace('/', '.'); //NOI18N
-//                    JavaClass clazz = findClazz(res, serviceName);
-//                    //check services for this one
-//                    for (int i = 0; i < cachedServices.length; i++) {
-//                        serviceName = serviceName.replaceAll("[.]", "\\."); //NOI18N
-//			// #65343 somehow the reading of individual services files can happen.
-//                        if (cachedServices[i] != null) {
-//                            if (cachedServices[i].matches("^" + serviceName + "[ \\\n]?")) { //NOI18N
-//                                RefactoringElementImplementation elem =
-//                                        new ServicesMoveRefactoringElement(clazz, cachedServicesFiles[i], cachedProject);
-//                                refactoringElements.add(refactoring, elem);
-//                            }
-//                        } else {
-//                            //huh? reading the service file failed for some reason, report or silently ignore?
-//			    ErrorManager.getDefault().log(ErrorManager.WARNING, "Error loading one of the files in folder " + cachedServices);
-//                        }
-//                    }
 //                    // check main attributes..
 //                    Attributes attrs = cachedManifest.getMainAttributes();
 //                    Iterator itx = attrs.entrySet().iterator();
@@ -290,7 +263,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
 //                if (project != null && project instanceof NbModuleProject) {
 //                    if (cachedProject == null || cachedProject != project) {
 //                        cachedProject = (NbModuleProject)project;
-//                        cachedServices = loadMetaInfServices(cachedProject);
 //                        cachedManifest = cachedProject.getManifest();
 //                    }
 //                }
@@ -315,14 +287,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
         }
         return problem;
     }
-    protected RefactoringElementImplementation createMetaInfServicesRefactoring(String fqclazz,
-                                                                                FileObject serviceFile,
-                                                                                int line) {
-        return null;
-//TODO        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    
     protected RefactoringElementImplementation createManifestRefactoring(
             String fqname,
             FileObject manifestFile,
@@ -345,20 +309,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
 //        //what to do now.. we should match always something, better to return wrong, than nothing?
 //        return (JavaClass)res.getClassifiers().iterator().next();
 //    }
-    
-    protected final String[] loadMetaInfServices(Project project) {
-        FileObject services = Utility.findMetaInfServices(project);
-        if (services == null) {
-            return new String[0];
-        }
-        
-        FileObject[] files = services.getChildren();
-        String[] ret = new String[files.length];
-        for (int i = 0; i < files.length; i++) {
-            ret[i] = Utility.readFileIntoString(files[i]);
-        }
-        return ret;
-    }
     
     private static String findPackageName(Project project, FileObject fo) {
         Sources srcs = ProjectUtils.getSources(project);
@@ -479,102 +429,6 @@ public class NbMoveRefactoringPlugin extends AbstractRefactoringPlugin {
 //                }
 //            }
         }
-    }
-    
-    public final class ServicesMoveRefactoringElement extends AbstractRefactoringElement {
-        
-        private String clazz;
-        private String oldName;
-        private Project project;
-        /**
-         * Creates a new instance of ServicesRenameRefactoringElement
-         */
-        public ServicesMoveRefactoringElement(String clazz, FileObject file, Project proj) {
-//            this.name = clazz.getSimpleName();
-            parentFile = file;
-            this.clazz = clazz;
-            oldName = clazz;
-            project = proj;
-        }
-        
-        /** Returns text describing the refactoring formatted for display (using HTML tags).
-         * @return Formatted text.
-         */
-        public String getDisplayText() {
-            return NbBundle.getMessage(NbMoveRefactoringPlugin.class, "TXT_ServicesRename", this.name);
-        }
-        
-        public void performChange() {
-//            MoveClassRefactoring move = (MoveClassRefactoring)refactoring;
-//            NbModuleProject newproject = (NbModuleProject)FileOwnerQuery.getOwner(move.getTargetClassPathRoot());
-//            FileObject newFile = parentFile;
-//            if (newproject != project) {
-//                FileObject services = Utility.findMetaInfServices(newproject);
-//                try {
-//                    if (services == null) {
-//                        services = createMetaInf(newproject);
-//                    }
-//                    newFile = services.getFileObject(parentFile.getNameExt());
-//                    if (newFile == null) {
-//                        newFile = services.createData(parentFile.getNameExt());
-//                    }
-//                } catch (IOException ex) {
-//                    err.notify(ex);
-//                }
-//            }
-//            String oldcontent = Utility.readFileIntoString(parentFile);
-//            String longName = oldName;
-//            String newName = clazz.getName();
-//            if (oldcontent != null) {
-//                longName = longName.replaceAll("[.]", "\\."); //NOI18N
-//                if (newFile == parentFile) {
-//                    // same file, just replace
-//                    oldcontent = oldcontent.replaceAll("^" + longName, newName); //NOI18N
-//                    Utility.writeFileFromString(parentFile, oldcontent);
-//                } else {
-//                    // moving to a different file.
-//                    oldcontent = oldcontent.replaceAll("^" + longName + "[ \\\n]?", ""); //NOI18N
-//                    String newcontent = Utility.readFileIntoString(newFile);
-//                    newcontent = newName + "\n" + newcontent; // NOI18N
-//                    Utility.writeFileFromString(newFile, newcontent);
-//                    //check if we want to delete the old file or just update it.
-//                    StringTokenizer tok = new StringTokenizer(oldcontent, "\n"); //NOI18N
-//                    boolean hasMoreThanComments = false;
-//                    while (tok.hasMoreTokens()) {
-//                        String token = tok.nextToken().trim();
-//                        if (token.length() > 0 && (! Pattern.matches("^[#].*", token))) { //NOI18N
-//                            hasMoreThanComments = true;
-//                            break;
-//                        }
-//                    }
-//                    if (hasMoreThanComments) {
-//                        Utility.writeFileFromString(parentFile, oldcontent);
-//                    } else {
-//                        try {
-//                            parentFile.delete();
-//                        } catch (IOException exc) {
-//                            err.notify(exc);
-//                        }
-//                    }
-//                    
-//                }
-//            }
-        }
-    }
-    
-    private static FileObject createMetaInf(Project project) throws IOException {
-        Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
-        if (grps == null) {
-            grps = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        }
-        for (int i = 0; i < grps.length; i++) {
-            FileObject fo = grps[i].getRootFolder().getFileObject("META-INF"); //NOI18N
-            if (fo != null) {
-                return fo.createFolder("services"); //NOI18N
-            }
-        }
-        return grps[0].getRootFolder().createFolder("META-INF").createFolder("services"); //NOI18N
     }
     
     private static EditableManifest readManifest(FileObject fo) {

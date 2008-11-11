@@ -62,10 +62,11 @@ import org.netbeans.api.project.TestUtil;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.modules.java.j2seproject.J2SEProjectGenerator;
 import org.netbeans.modules.java.j2seproject.SourceRootsTest;
-import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
 import org.openide.util.Mutex;
 
 public class SourcePathImplementationTest extends NbTestCase {
@@ -190,8 +191,8 @@ public class SourcePathImplementationTest extends NbTestCase {
         tl.forbid(ClassPath.PROP_ROOTS);
         cp.addPropertyChangeListener(tl);
         EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty(J2SEProjectProperties.INCLUDES, "javax/swing/");
-        ep.setProperty(J2SEProjectProperties.EXCLUDES, "**/doc-files/");
+        ep.setProperty(ProjectProperties.INCLUDES, "javax/swing/");
+        ep.setProperty(ProjectProperties.EXCLUDES, "**/doc-files/");
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         pm.saveProject(pp);
         assertEquals(Collections.singleton(ClassPath.PROP_INCLUDES), tl.getEvents());
@@ -230,19 +231,19 @@ public class SourcePathImplementationTest extends NbTestCase {
         L l = new L();
         cp.addPropertyChangeListener(l);
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty(J2SEProjectProperties.INCLUDES, "whatever/");
+        ep.setProperty(ProjectProperties.INCLUDES, "whatever/");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
         assertEquals(1, l.cnt);
         assertFalse(cpe2.includes("stuff/"));
         assertTrue(cpe2.includes("whatever/"));
-        ep.setProperty(J2SEProjectProperties.INCLUDES, "whateverelse/");
+        ep.setProperty(ProjectProperties.INCLUDES, "whateverelse/");
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
         assertEquals(2, l.cnt);
         assertFalse(cpe2.includes("stuff/"));
         assertFalse(cpe2.includes("whatever/"));
-        ep.remove(J2SEProjectProperties.INCLUDES);
+        ep.remove(ProjectProperties.INCLUDES);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ProjectManager.getDefault().saveProject(p);
         assertEquals(3, l.cnt);

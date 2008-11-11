@@ -60,6 +60,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.SourceLevelQueryImplementation.class, position=160)
 public class J2SELibrarySourceLevelQueryImpl implements SourceLevelQueryImplementation {
     
     private static final String JDK_12 = "1.2";     //NOI18N

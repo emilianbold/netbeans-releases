@@ -55,6 +55,7 @@ import org.netbeans.spi.mobility.project.support.DefaultPropertyParsers;
  *
  * @author Adam Sotona
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.mobility.project.ProjectPropertiesDescriptor.class, position=20)
 public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
 
     //ToDo - move selected properties to Ricoh deployment plugin 
@@ -150,6 +151,6 @@ public class RicohPropertiesDescriptor implements ProjectPropertiesDescriptor {
         if (uid != null) set.remove(uid);
         uid = new PropertyDescriptor(RICOH_UID, true, DefaultPropertyParsers.STRING_PARSER,  randomUID());
         set.add(uid);
-        return set;
+        return new HashSet <PropertyDescriptor>(set);
     }
 }

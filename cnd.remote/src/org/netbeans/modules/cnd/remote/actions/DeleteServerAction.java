@@ -61,7 +61,7 @@ public class DeleteServerAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent e) {
-        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        ServerList registry = Lookup.getDefault().lookup(ServerList.class);
         registry.removeServer(record);
     }
 

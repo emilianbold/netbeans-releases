@@ -71,8 +71,8 @@ public class FolderBasedOptionPanel extends JPanel implements ActionListener {
 
         initComponents();
         
-        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
-            setOpaque( false );
+//        if( "Windows".equals(UIManager.getLookAndFeel().getID()) ) //NOI18N
+//            setOpaque( false );
 
         DefaultComboBoxModel model = new DefaultComboBoxModel();
         for (String mimeType : controller.getMimeTypes())

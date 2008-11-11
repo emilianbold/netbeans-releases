@@ -46,10 +46,8 @@ import java.net.URL;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
@@ -61,7 +59,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.Utilities;
 import org.openide.windows.TopComponent;
 import org.openide.filesystems.URLMapper;
@@ -82,10 +79,10 @@ public class EditorContextImpl extends EditorContext {
     private static String fronting = System.getProperty("netbeans.debugger.fronting"); // NOI18N
     
     private ChangeListener          changedFilesListener;
-    private Map                     timeStampToRegistry = new HashMap();
-    private Set                     modifiedDataObjects;
+    private Map<Object, Registry>   timeStampToRegistry = new HashMap<Object, Registry>();
+    private Set<DataObject>         modifiedDataObjects;
 
-    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    //private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     
     /**
@@ -106,16 +103,16 @@ public class EditorContextImpl extends EditorContext {
         }
         if (fronting != null) {
             if (fronting.equals("true")) { // NOI18N
-                l.show(Line.SHOW_TOFRONT); //FIX 47825
+                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT); //FIX 47825
             } else {
-                l.show(Line.SHOW_GOTO);
+                l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
             }
             return true;
         }
         if (Utilities.isWindows()) {
-            l.show(Line.SHOW_TOFRONT); //FIX 47825
+            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FRONT); //FIX 47825
         } else  {
-            l.show(Line.SHOW_GOTO);
+            l.show(Line.ShowOpenType.OPEN, Line.ShowVisibilityType.FOCUS);
         }
         return true;
     }
@@ -126,12 +123,11 @@ public class EditorContextImpl extends EditorContext {
      * @param timeStamp a new time stamp
      */
     public void createTimeStamp(Object timeStamp) {
-        modifiedDataObjects = new HashSet(DataObject.getRegistry().getModifiedSet());
+        modifiedDataObjects = new HashSet<DataObject>(DataObject.getRegistry().getModifiedSet());
         Registry r = new Registry();
         timeStampToRegistry.put(timeStamp, r);
-        Iterator i = modifiedDataObjects.iterator();
-        while (i.hasNext()) {
-            r.register ((DataObject) i.next ());
+        for (DataObject dataObject : modifiedDataObjects) {
+            r.register(dataObject);
         }
         if (changedFilesListener == null) {
             changedFilesListener = new ChangedFilesListener();
@@ -199,7 +195,7 @@ public class EditorContextImpl extends EditorContext {
         if (timeStamp == null) {
             return a.getLine().getLineNumber() + 1;
         }
-        DataObject dobj = (DataObject)a.getLine().getLookup().lookup(DataObject.class);
+        DataObject dobj = a.getLine().getLookup().lookup(DataObject.class);
         if (dobj != null) {
             Line.Set lineSet = getLineSet(dobj, timeStamp);
             return lineSet.getOriginalLineNumber(a.getLine()) + 1;
@@ -215,7 +211,7 @@ public class EditorContextImpl extends EditorContext {
      * @param url an url
      */
     public void updateTimeStamp(Object timeStamp, String url) {
-        Registry registry = (Registry) timeStampToRegistry.get(timeStamp);
+        Registry registry = timeStampToRegistry.get(timeStamp);
         registry.register(getDataObject(url));
     }
 
@@ -254,9 +250,7 @@ public class EditorContextImpl extends EditorContext {
     /** Look in all open C/C++ files and find the one showing. Return its URL */
     private String digForIt() {
         TopComponent.Registry reg = TopComponent.getRegistry();
-        Iterator iter = reg.getOpened().iterator();
-        while (iter.hasNext()) {
-            Object o = iter.next();
+        for (TopComponent o : reg.getOpened()) {
             if (o instanceof CppEditorComponent) {
                 CppEditorComponent cec = (CppEditorComponent) o;
                 if (cec.isShowing()) {
@@ -311,15 +305,15 @@ public class EditorContextImpl extends EditorContext {
         if (doc == null) {
             return "";  // NOI18N
         }
-        int offset = ep.getCaret().getDot();
-        String t = null;
+        //int offset = ep.getCaret().getDot();
+        //String t = null;
 //        if ( (ep.getSelectionStart () <= offset) &&
 //             (offset <= ep.getSelectionEnd ())
 //        )   t = ep.getSelectedText ();
 //        if (t != null) return t;
         
-        int line = NbDocument.findLineNumber(doc, offset);
-        int col = NbDocument.findLineColumn(doc, offset);
+        //int line = NbDocument.findLineNumber(doc, offset);
+        //int col = NbDocument.findLineColumn(doc, offset);
         // XXX - Fixup
         /*
         try {
@@ -465,7 +459,7 @@ public class EditorContextImpl extends EditorContext {
         
         if (timeStamp != null) {
             // get original
-            Registry registry = (Registry) timeStampToRegistry.get(timeStamp);
+            Registry registry = timeStampToRegistry.get(timeStamp);
             Line.Set ls = null;
             
             // Workaround for #54754 
@@ -481,7 +475,7 @@ public class EditorContextImpl extends EditorContext {
         }
         
         // get current
-        LineCookie lineCookie = (LineCookie) dataObject.getCookie(LineCookie.class);
+        LineCookie lineCookie = dataObject.getCookie(LineCookie.class);
         if (lineCookie == null) {
             return null;
         }
@@ -494,10 +488,11 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         try {
-            if (timeStamp == null)
+            if (timeStamp == null) {
                 return ls.getCurrent(lineNumber - 1);
-            else
+            } else {
                 return ls.getOriginal(lineNumber - 1);
+            }
         } catch (IndexOutOfBoundsException e) {
         } catch (IllegalArgumentException e) {
         }
@@ -530,10 +525,10 @@ public class EditorContextImpl extends EditorContext {
     
     private static class Registry {
         
-        private Map dataObjectToLineSet = new HashMap();
+        private Map<DataObject, Line.Set> dataObjectToLineSet = new HashMap<DataObject, Line.Set>();
         
         void register(DataObject dataObject) {
-            LineCookie lc = (LineCookie) dataObject.getCookie(LineCookie.class);
+            LineCookie lc = dataObject.getCookie(LineCookie.class);
             if (lc == null) {
                 return;
             }
@@ -541,23 +536,20 @@ public class EditorContextImpl extends EditorContext {
         }
         
         Line.Set getLineSet (DataObject dataObject) {
-            return (Line.Set) dataObjectToLineSet.get(dataObject);
+            return dataObjectToLineSet.get(dataObject);
         }
     }
     
     private class ChangedFilesListener implements ChangeListener {
         public void stateChanged(ChangeEvent e) {
-            Set newDOs = new HashSet(DataObject.getRegistry().getModifiedSet());
+            Set<DataObject> newDOs = new HashSet<DataObject>(DataObject.getRegistry().getModifiedSet());
             newDOs.removeAll(modifiedDataObjects);
-            Iterator i1 = timeStampToRegistry.values().iterator();
-            while (i1.hasNext()) {
-                Registry r = (Registry) i1.next();
-                Iterator i2 = newDOs.iterator();
-                while (i2.hasNext()) {
-                    r.register ((DataObject) i2.next());
+            for (Registry r : timeStampToRegistry.values()) {
+                for (DataObject dataObject : newDOs) {
+                    r.register(dataObject);
                 }
             }
-            modifiedDataObjects = new HashSet(DataObject.getRegistry().getModifiedSet());
+            modifiedDataObjects = new HashSet<DataObject>(DataObject.getRegistry().getModifiedSet());
         }
     }
     

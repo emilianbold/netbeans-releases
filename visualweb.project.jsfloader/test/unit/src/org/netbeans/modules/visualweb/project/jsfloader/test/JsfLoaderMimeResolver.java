@@ -34,6 +34,7 @@ import org.openide.filesystems.MIMEResolver;
  *
  * @author sandipchitale
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.filesystems.MIMEResolver.class)
 public class JsfLoaderMimeResolver extends MIMEResolver {
 
     public JsfLoaderMimeResolver() {

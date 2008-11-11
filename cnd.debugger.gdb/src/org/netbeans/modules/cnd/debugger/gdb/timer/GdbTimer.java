@@ -60,7 +60,7 @@ public abstract class GdbTimer {
     
     private static GdbTimer default_instance;
     
-    private static Map<String, GdbTimer> map = new HashMap();
+    private static Map<String, GdbTimer> map = new HashMap<String, GdbTimer>();
     
     /** GdbTimer factory */
     public static GdbTimer getTimer(String name) {
@@ -81,8 +81,6 @@ public abstract class GdbTimer {
         map.remove(name);
     }
         
-    
-    GdbTimer() {}
     
     /** Start the timer running */
     public abstract void start(String msg);

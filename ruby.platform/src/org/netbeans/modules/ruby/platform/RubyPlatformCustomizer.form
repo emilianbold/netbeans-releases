@@ -34,9 +34,11 @@
                       <Component id="addButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="removeButton" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
+                      <Component id="gemManagerButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="autoDetectButton" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="22" max="32767" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
                       <Component id="progressPanel" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -52,7 +54,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="platformsListSP" pref="287" max="32767" attributes="0"/>
+                      <Component id="platformsListSP" pref="312" max="32767" attributes="0"/>
                       <EmptySpace min="-2" pref="6" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
@@ -66,6 +68,7 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="addButton" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="removeButton" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="gemManagerButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="autoDetectButton" linkSize="5" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="progressPanel" linkSize="5" alignment="1" min="-2" pref="25" max="-2" attributes="0"/>
@@ -141,6 +144,16 @@
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="removeButtonremovePlatform"/>
       </Events>
     </Component>
+    <Component class="javax.swing.JButton" name="gemManagerButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/ruby/platform/Bundle.properties" key="RubyPlatformCustomizer.gemManagerButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="gemManagerButtonActionPerformed"/>
+      </Events>
+    </Component>
     <Component class="javax.swing.JButton" name="autoDetectButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
@@ -173,8 +186,8 @@
                   <Group type="103" groupAlignment="0" attributes="0">
                       <Group type="102" alignment="0" attributes="0">
                           <Group type="103" groupAlignment="0" attributes="0">
-                              <Component id="gemHomeValue" alignment="0" pref="287" max="32767" attributes="0"/>
-                              <Component id="gemPathSP" alignment="0" pref="287" max="32767" attributes="1"/>
+                              <Component id="gemHomeValue" alignment="0" pref="396" max="32767" attributes="0"/>
+                              <Component id="gemPathSP" alignment="0" pref="396" max="32767" attributes="1"/>
                           </Group>
                           <EmptySpace max="-2" attributes="0"/>
                           <Group type="103" groupAlignment="1" attributes="0">
@@ -183,9 +196,9 @@
                               <Component id="browseGemHome" linkSize="8" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <Component id="plfInterpreterValue" alignment="0" pref="382" max="32767" attributes="0"/>
-                      <Component id="plfNameValue" alignment="0" pref="382" max="32767" attributes="0"/>
-                      <Component id="gemToolValue" alignment="0" pref="382" max="32767" attributes="1"/>
+                      <Component id="plfInterpreterValue" alignment="0" pref="491" max="32767" attributes="0"/>
+                      <Component id="plfNameValue" alignment="0" pref="491" max="32767" attributes="0"/>
+                      <Component id="gemToolValue" alignment="0" pref="491" max="32767" attributes="1"/>
                   </Group>
               </Group>
           </Group>
@@ -412,7 +425,7 @@
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="rubyDebuggerLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="upperSep" pref="369" max="32767" attributes="0"/>
+                          <Component id="upperSep" pref="478" max="32767" attributes="0"/>
                       </Group>
                       <Group type="102" alignment="0" attributes="0">
                           <Component id="engineLabel" min="-2" max="-2" attributes="0"/>

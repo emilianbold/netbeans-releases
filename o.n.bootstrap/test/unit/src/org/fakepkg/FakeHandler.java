@@ -49,6 +49,7 @@ import org.netbeans.CLIHandler;
  *
  * @author Jaroslav Tulach
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.CLIHandler.class)
 public class FakeHandler extends CLIHandler {
     public static Runnable toRun;
     public static Map chained;

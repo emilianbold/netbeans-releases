@@ -57,14 +57,13 @@ import org.openide.util.Exceptions;
  *
  * @author  Tim Boudreau, Jesse Glick
  */
-public class OutputDocument implements Document, Element, ChangeListener, Runnable {
+public class OutputDocument implements Document, Element, ChangeListener {
     private List<DocumentListener> dlisteners = new ArrayList<DocumentListener>();
     private volatile Timer timer = null;
 
     private OutWriter writer;
     
     private StringBuffer inBuffer;
-    private boolean lastInput;
     private AbstractOutputPane pane;
    
     /** Creates a new instance of OutputDocument */
@@ -460,11 +459,7 @@ public class OutputDocument implements Document, Element, ChangeListener, Runnab
             if (Controller.VERBOSE) Controller.log("Writer says it is not dirty, firing no change");
         }
     }
-    
-    public void run() {
-        stateChanged(null);
-    }   
-    
+
     private void fireDocumentEvent (DocumentEvent de) {
         for (DocumentListener dl: new ArrayList<DocumentListener>(dlisteners)) {
             //#114290
@@ -621,6 +616,8 @@ public class OutputDocument implements Document, Element, ChangeListener, Runnab
                         endOffset = getLines().getLineStart(lineIndex+1);
                     }
                     assert endOffset >= startOffset : "Illogical getLine #" + lineIndex
+                        + ", startOffset=" + startOffset + ", endOffset=" + endOffset
+                        + ", charCount=" + getLines().getCharCount()
                         + " with lines " + getLines() + " or writer has been reset"
                         + ". writer: " + (writer == null ? "is null" : 
                             ("writer.isDisposed(): " + writer.isDisposed()

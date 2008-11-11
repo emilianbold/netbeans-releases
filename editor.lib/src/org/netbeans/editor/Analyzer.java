@@ -48,8 +48,11 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Segment;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.modules.editor.lib.EditorPreferencesKeys;
+import org.netbeans.spi.lexer.MutableTextInput;
 
 /**
 * Various text analyzes over the document
@@ -527,14 +530,28 @@ public class Analyzer {
 
             // Enter the loop where all data from reader will be read
             Segment text = toLF.nextConverted();
-            while (text != null) {
-                try {
-                    doc.insertString(pos, new String(text.array, text.offset, text.count), null);
-                } catch (BadLocationException e) {
-                    throw new IllegalStateException(e.toString());
+            // Switch off token hierarchy before loading in case the document is large
+            // and it will be read by multiple buffers
+            TokenHierarchy<?> hi = TokenHierarchy.get(doc);
+            MutableTextInput<? extends Document> mti = (MutableTextInput<? extends Document>)doc.getProperty(MutableTextInput.class);
+            boolean deactivateTokenHierarchy = (mti != null && toLF.isReadWholeBuffer()); // Likely a next chunk(s) will follow
+            if (deactivateTokenHierarchy) {
+                mti.tokenHierarchyControl().setActive(false);
+            }
+            try {
+                while (text != null) {
+                    try {
+                        doc.insertString(pos, new String(text.array, text.offset, text.count), null);
+                    } catch (BadLocationException e) {
+                        throw new IllegalStateException(e.toString());
+                    }
+                    pos += text.count;
+                    text = toLF.nextConverted();
                 }
-                pos += text.count;
-                text = toLF.nextConverted();
+            } finally {
+                if (deactivateTokenHierarchy) {
+                    mti.tokenHierarchyControl().setActive(true);
+                }
             }
 
             if (testLS) {

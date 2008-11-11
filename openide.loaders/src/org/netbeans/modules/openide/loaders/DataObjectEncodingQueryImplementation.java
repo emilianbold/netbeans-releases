@@ -53,6 +53,7 @@ import org.openide.loaders.DataObjectNotFoundException;
  *
  * @author Tomas Zezula
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.FileEncodingQueryImplementation.class, position=100)
 public class DataObjectEncodingQueryImplementation extends FileEncodingQueryImplementation {
     private static ThreadLocal<DataFolder> TARGET = new ThreadLocal<DataFolder>();
     private static final Logger LOG = Logger.getLogger(DataObjectEncodingQueryImplementation.class.getName());

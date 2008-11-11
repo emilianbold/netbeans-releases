@@ -43,6 +43,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.FileSet;
 import org.netbeans.junit.NbTestCase;
@@ -100,6 +101,24 @@ public class DownloadBinariesTest extends NbTestCase {
         write(list, "5C372AB96C721258C5C12BB8EAD291BBBA5DACE6 hello");
         downloadBinaries(false);
         assertEquals(7, new File(workdir, "hello").length());
+    }
+
+    public void testCorruptDownload() throws Exception {
+        write(list, "F572D396FAE9206628714FB2CE00F72E94F2258F hello");
+        File serverFile = new File(server, "F572D396FAE9206628714FB2CE00F72E94F2258F-hello");
+        write(serverFile, "bogus content\n");
+        try {
+            downloadBinaries(false);
+            fail();
+        } catch (BuildException x) {/* expected */}
+        File cacheFile = new File(cache, "F572D396FAE9206628714FB2CE00F72E94F2258F-hello");
+        assertFalse(cacheFile.exists());
+        File workdirFile = new File(workdir, "hello");
+        assertFalse(workdirFile.exists());
+        write(serverFile, "hello\n");
+        downloadBinaries(false);
+        assertEquals(6, cacheFile.length());
+        assertEquals(6, workdirFile.length());
     }
 
     // XXX test cleaning binary

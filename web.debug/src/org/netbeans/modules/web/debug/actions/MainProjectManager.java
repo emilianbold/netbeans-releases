@@ -58,17 +58,12 @@ public class MainProjectManager implements ProjectActionPerformer {
         return mainProjectManager;
     }
 
-    private Action a;
     private Project mainProject;
     private PropertyChangeSupport pcs;
 
 
     private MainProjectManager () {
         pcs = new PropertyChangeSupport (this);
-        a = MainProjectSensitiveActions.mainProjectSensitiveAction (
-            this, null, null
-        );
-        //a.isEnabled ();
     }
 
     public Project getMainProject () {

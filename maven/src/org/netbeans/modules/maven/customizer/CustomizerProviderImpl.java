@@ -77,6 +77,7 @@ import org.jdom.output.Format;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.MavenProjectPropsImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.execute.model.io.jdom.NetbeansBuildActionJDOMWriter;
 import org.netbeans.modules.maven.execute.model.io.xpp3.NetbeansBuildActionXpp3Reader;
 import org.netbeans.spi.project.ui.CustomizerProvider;
@@ -191,7 +192,9 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     active = c;
                 }
             }
-            
+            if (active == null) { //#152706
+                active = configs.get(0); //default if current not found..
+            }
         } else {
             configs.add(ModelHandle.createDefaultConfiguration());
             active = configs.get(0);
@@ -354,6 +357,12 @@ public class CustomizerProviderImpl implements CustomizerProvider {
                     outStr = new OutputStreamWriter(fo.getOutputStream(lock), encoding);
                     Format form = Format.getRawFormat().setEncoding(encoding);
                     form = form.setLineSeparator(System.getProperty("line.separator")); //NOI18N
+                    @SuppressWarnings("unchecked")
+                    List<NetbeansActionMapping> maps = mapping.getActions();
+                    //no packaging elements make sense in nbactions files.
+                    for (NetbeansActionMapping m : maps) {
+                        m.setPackagings(null);
+                    }
                     writer.write(mapping, doc, outStr, form);
                 } catch (JDOMException exc){
                     throw (IOException) new IOException("Cannot parse the nbactions.xml by JDOM.").initCause(exc); //NOI18N

@@ -226,10 +226,17 @@ public class STSIssuedSupportingToken extends ProfileBaseForm {
             return;
         }
         if (source.equals(tokenTypeCombo) || source.equals(keyTypeCombo) || source.equals(keySizeCombo)) {
-            stmh.setIssuedTokenRSTAttributes(token, 
-                    (String)tokenTypeCombo.getSelectedItem(), 
-                    (String)keyTypeCombo.getSelectedItem(), 
-                    (String)keySizeCombo.getSelectedItem());
+            if (ComboConstants.ISSUED_KEYTYPE_NOPROOF.equals(keyTypeCombo.getSelectedItem())) {
+                stmh.setIssuedTokenRSTAttributes(token,
+                        (String)tokenTypeCombo.getSelectedItem(),
+                        (String)keyTypeCombo.getSelectedItem(),
+                        null);
+            } else {
+                stmh.setIssuedTokenRSTAttributes(token,
+                        (String)tokenTypeCombo.getSelectedItem(),
+                        (String)keyTypeCombo.getSelectedItem(),
+                        (String)keySizeCombo.getSelectedItem());
+            }
         }
 
         if (source.equals(issuerAddressField) || source.equals(issuerMetadataField)) {
@@ -244,6 +251,13 @@ public class STSIssuedSupportingToken extends ProfileBaseForm {
     protected void enableDisable() {
         boolean secConvEnabled = secConvChBox.isSelected();
         derivedKeysChBox.setEnabled(secConvEnabled);
+
+        boolean keySizeNeeded = true;
+        if (ComboConstants.ISSUED_KEYTYPE_NOPROOF.equals(keyTypeCombo.getSelectedItem())) {
+            keySizeNeeded = false;
+        }
+        keySizeCombo.setEnabled(keySizeNeeded);
+        keySizeLabel.setEnabled(keySizeNeeded);
     }
     
     /** This method is called from within the constructor to

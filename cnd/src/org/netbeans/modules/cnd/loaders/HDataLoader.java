@@ -59,6 +59,7 @@ import org.openide.util.SharedClassObject;
  *  This data loader recognizes .h header data files, creates a data object for
  *  each file, and sets up an appropriate action menus for .h file objects.
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.filecreation.CndHandlableExtensions.class)
 public final class HDataLoader extends CndAbstractDataLoaderExt {
     
     private static HDataLoader instance = null;

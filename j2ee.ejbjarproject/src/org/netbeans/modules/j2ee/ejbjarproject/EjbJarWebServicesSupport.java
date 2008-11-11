@@ -94,13 +94,16 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
+import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProperties;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.modules.websvc.api.webservices.WsCompileEditorSupport;
 import org.netbeans.modules.websvc.api.webservices.StubDescriptor;
+import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import static org.netbeans.modules.websvc.spi.webservices.WebServicesConstants.*;
-import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathProviderImpl;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.openide.ErrorManager;
 
 /**
@@ -922,13 +925,23 @@ public class EjbJarWebServicesSupport implements WebServicesSupportImpl{
                 ClassPathProviderImpl cpProvider = project.getClassPathProvider();
                 projectSourcesClassPath = ClassPathSupport.createProxyClassPath(new ClassPath[] {
                     cpProvider.getProjectSourcesClassPath(ClassPath.SOURCE),
-                    cpProvider.getJ2eePlatformClassPath(),
+                    getJ2eePlatformClassPath(),
                 });
             }
             return projectSourcesClassPath;
         }
     }
     
+    public synchronized ClassPath getJ2eePlatformClassPath() {
+        if (platformClassPath == null) {
+            platformClassPath = ClassPathFactory.createClassPath(ProjectClassPathSupport.createPropertyBasedClassPathImplementation(
+                    FileUtil.toFile(project.getProjectDirectory()), project.evaluator(), new String[] {EjbJarProjectProperties.J2EE_PLATFORM_CLASSPATH }));
+        }
+        return platformClassPath;
+    }
+    
+    private ClassPath platformClassPath = null;
+        
     // Service stub descriptors
     private static final JAXRPCStubDescriptor seiServiceStub = new JAXRPCStubDescriptor(
             StubDescriptor.SEI_SERVICE_STUB,

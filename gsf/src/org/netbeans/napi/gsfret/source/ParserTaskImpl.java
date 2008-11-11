@@ -169,7 +169,7 @@ public class ParserTaskImpl {
                     Parser.Job job = new Parser.Job(sourceFiles, delegatingListener, reader, null);
                     parser.parseFiles(job);
                     ParserResult result = resultHolder[0];
-                    assert result != null;
+                    assert result != null : "Parser " + parser.getClass().getName() + " returned null instead of an invalid parser result!";
                     results.add(result);
                 }
             }

@@ -84,6 +84,7 @@ import org.openide.filesystems.FileUtil;
  * @author ads
  *
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.php.model.impl.refs.resolvers.ModelResolver.class)
 public class FlatModelResolver implements ModelResolver {
     
     private static final String INCLUDE     = "include";               // NOI18N

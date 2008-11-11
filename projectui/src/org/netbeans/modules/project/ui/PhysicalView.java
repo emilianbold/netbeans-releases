@@ -142,7 +142,7 @@ public class PhysicalView {
         return nodes;
     }
    
-    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter {
+    static final class VisibilityQueryDataFilter implements ChangeListener, ChangeableDataFilter, DataFilter.FileBased {
         
         private final ChangeSupport changeSupport = new ChangeSupport( this );
         
@@ -150,9 +150,8 @@ public class PhysicalView {
             VisibilityQuery.getDefault().addChangeListener( this );
         }
                 
-        public boolean acceptDataObject(DataObject obj) {                
-            FileObject fo = obj.getPrimaryFile();                
-            return VisibilityQuery.getDefault().isVisible( fo );
+        public boolean acceptDataObject(DataObject obj) {
+            return VisibilityQuery.getDefault().isVisible(obj.getPrimaryFile());
         }
         
         public void stateChanged( ChangeEvent e) {            
@@ -170,6 +169,10 @@ public class PhysicalView {
                         
         public void removeChangeListener( ChangeListener listener ) {
             changeSupport.removeChangeListener( listener );
+        }
+
+        public boolean acceptFileObject(FileObject fo) {
+            return VisibilityQuery.getDefault().isVisible(fo);
         }
         
     }

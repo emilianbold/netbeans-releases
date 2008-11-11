@@ -40,10 +40,9 @@
 package org.netbeans.modules.autoupdate.services;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
+import java.util.concurrent.CopyOnWriteArraySet;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.modules.Dependency;
 import org.openide.modules.ModuleInfo;
@@ -55,7 +54,7 @@ import org.openide.modules.ModuleInfo;
 public class DependencyAggregator extends Object {
     private static Map<DependencyDecoratorKey, DependencyAggregator> key2dependency = new HashMap<DependencyDecoratorKey, DependencyAggregator> (11, 11);
     
-    private Collection<ModuleInfo> depending = new HashSet<ModuleInfo> ();
+    private Collection<ModuleInfo> depending = new CopyOnWriteArraySet<ModuleInfo> ();
     private final DependencyDecoratorKey key;
     
     private DependencyAggregator (DependencyDecoratorKey key) {
@@ -88,7 +87,7 @@ public class DependencyAggregator extends Object {
     }
     
     public Collection<ModuleInfo> getDependening () {
-        return Collections.unmodifiableCollection (depending);
+        return depending;
     }
     
     @Override

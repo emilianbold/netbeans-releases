@@ -83,6 +83,7 @@ public class LogTestCase extends JavaTestCase {
      */
     protected void setUp() {
         prepareProject();
+        openDefaultProject();
         try {
             //logs and refs
             refFile = new File(getWorkDir(), getName() + ".ref");

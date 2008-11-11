@@ -30,6 +30,9 @@ import org.netbeans.modules.bpel.debugger.api.BpelDocumentsRegistry;
  *
  * @author Alexander Zgursky
  */
+/* XXX would need a public no-arg constructor
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.debugger.api.BpelDocumentsRegistry.class)
+*/
 public class BpelDocumentsRegistryImpl implements BpelDocumentsRegistry {
     
     private List<Listener> myListeners = new LinkedList<Listener>();

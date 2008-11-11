@@ -51,6 +51,7 @@ import static org.netbeans.modules.xml.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.11.13
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.search.spi.SearchEngine.class)
 public class Engine extends SearchEngine.Adapter {
 
   public void search(SearchOption option) throws SearchException {

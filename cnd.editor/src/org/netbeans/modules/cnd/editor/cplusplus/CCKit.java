@@ -374,7 +374,7 @@ public class CCKit extends NbEditorKit {
                     doc.insertString(dotPos, "\"\"", null); //NOI18N
                     dotPos += 1;
                     caret.setDot(dotPos);
-                    return new Integer(dotPos);
+                    return dotPos;
                 } catch (BadLocationException ex) {
                 }
             } else {

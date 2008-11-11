@@ -63,6 +63,7 @@ import org.xml.sax.SAXException;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageDescription.class)
 public final class CodeTemplatesStorage implements StorageDescription<String, CodeTemplateDescription> {
 
     private static final Logger LOG = Logger.getLogger(CodeTemplatesStorage.class.getName());

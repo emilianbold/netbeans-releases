@@ -119,7 +119,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized List<JTextComponent> getVisibleEditors() {
-        return new ArrayList(visibleEditors);
+        return new ArrayList<JTextComponent>(visibleEditors);
     }
 
     public synchronized Collection<FileObject> getVisibleEditorsFiles() {

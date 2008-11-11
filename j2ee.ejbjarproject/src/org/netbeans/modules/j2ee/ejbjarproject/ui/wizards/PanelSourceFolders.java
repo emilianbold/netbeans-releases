@@ -52,6 +52,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.j2ee.common.FileSearchUtility;
+import org.netbeans.modules.java.api.common.project.ui.wizards.FolderList;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel;
 import org.netbeans.modules.j2ee.ejbjarproject.EjbJarProvider;
 import org.openide.DialogDisplayer;

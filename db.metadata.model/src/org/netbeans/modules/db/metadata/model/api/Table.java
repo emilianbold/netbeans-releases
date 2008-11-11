@@ -46,7 +46,7 @@ import org.netbeans.modules.db.metadata.model.spi.TableImplementation;
  *
  * @author Andrei Badea
  */
-public class Table extends MetadataObject {
+public class Table extends MetadataElement {
 
     final TableImplementation impl;
 

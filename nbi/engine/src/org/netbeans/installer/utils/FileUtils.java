@@ -1194,17 +1194,18 @@ public final class FileUtils {
     public static FilesList mkdirs(
             final File file) throws IOException {
         FilesList list = new FilesList();
-        
-        if (!exists(file.getParentFile())) {
-            list.add(mkdirs(file.getParentFile()));
-        }
-        
-        if (exists(file) && file.isFile()) {
-            throw new IOException(ResourceUtils.getString(FileUtils.class,
-                    ERROR_CANT_CREATE_DIR_EXIST_FILE_KEY, file));
-        }
-        
-        if (!exists(file)) {
+
+        if (exists(file)) {
+            if (file.isFile()) {
+                throw new IOException(ResourceUtils.getString(FileUtils.class,
+                        ERROR_CANT_CREATE_DIR_EXIST_FILE_KEY, file));
+            }
+        } else {
+            final File parent = file.getParentFile();
+            if (parent != null && !exists(parent)) {
+                list.add(mkdirs(parent));
+            }
+
             if (file.mkdir()) {
                 list.add(file);
             } else {
@@ -1212,7 +1213,7 @@ public final class FileUtils {
                         ERROR_CANT_CREATE_DIR_KEY, file));
             }
         }
-        
+
         return list;
     }
     

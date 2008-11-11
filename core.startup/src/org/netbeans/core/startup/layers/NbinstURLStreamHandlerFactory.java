@@ -55,6 +55,7 @@ import org.openide.util.Exceptions;
 /**
  * StreamHandlerFactory for nbinst protocol
  */
+@org.openide.util.lookup.ServiceProvider(service=java.net.URLStreamHandlerFactory.class)
 public class NbinstURLStreamHandlerFactory implements URLStreamHandlerFactory {
 
     /**

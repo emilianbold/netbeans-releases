@@ -65,7 +65,7 @@ import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.modules.ruby.platform.RubyExecution;
 import org.netbeans.modules.ruby.platform.Util;
 import org.netbeans.modules.ruby.railsprojects.RailsProject;
-import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.platform.execution.RubyExecutionDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -378,7 +378,7 @@ public class PluginManager {
         Util.adjustProxy(pb);
         
         // PATH additions for JRuby etc.
-        new RubyExecution(new ExecutionDescriptor(platform, "plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
+        new RubyExecution(new RubyExecutionDescriptor(platform, "plugin", pb.directory()).cmd(cmd)).setupProcessEnvironment(pb.environment()); // NOI18N
         
         if (lines == null) {
             lines = new ArrayList<String>(40);

@@ -50,6 +50,7 @@ import java.io.File;
  * 
  * @author Maros Sandor
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation.class, position=50)
 public class VcsCollocationQueryImplementation implements CollocationQueryImplementation {
 
     public boolean areCollocated(File a, File b) {

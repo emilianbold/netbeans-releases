@@ -46,14 +46,16 @@
  */
 package org.netbeans.modules.j2ee.dd.impl.common;
 
-import org.netbeans.modules.schema2beans.BaseBean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.schema2beans.Version;
-import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.common.IconInterface;
 import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.common.DisplayNameInterface;
 
 public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple implements DisplayNameInterface, IconInterface {
+    
+    private static final Logger LOG = Logger.getLogger(ComponentBeanMultiple.class.getName());
     
     public ComponentBeanMultiple(java.util.Vector comps, Version version) {
 	super(comps, version);
@@ -100,14 +102,15 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public void setDisplayName(String displayName) {
         try {
             setDisplayName(null,displayName);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     
     public void setAllDisplayNames(java.util.Map displayNames) throws VersionNotSupportedException {
         removeAllDisplayNames();
         if (displayNames!=null) {
             java.util.Iterator keys = displayNames.keySet().iterator();
-            String[] newDisplayName = new String[displayNames.size()]; 
             int i=0;
             while (keys.hasNext()) {
                 String key = (String) keys.next();
@@ -155,7 +158,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public void removeDisplayName() {
         try {
             removeDisplayNameForLocale(null);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     public void removeAllDisplayNames() {
         setDisplayName(new String[]{});
@@ -168,7 +173,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public void setSmallIcon(String icon) {
         try {
             setSmallIcon(null,icon);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     public void setLargeIcon(String locale, String icon) throws VersionNotSupportedException {
         setIcon(locale, icon, false);
@@ -176,7 +183,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public void setLargeIcon(String icon) {
         try {
             setLargeIcon(null,icon);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     public void setAllIcons(String[] locales, String[] smallIcons, String[] largeIcons) throws VersionNotSupportedException {
         org.netbeans.modules.j2ee.dd.api.common.Icon[] newIcons = new org.netbeans.modules.j2ee.dd.api.common.Icon[locales.length];
@@ -186,7 +195,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
                 if (smallIcons[i]!=null) newIcons[i].setSmallIcon(smallIcons[i]);
                 if (largeIcons[i]!=null) newIcons[i].setLargeIcon(largeIcons[i]);
                 if (locales[i]!=null) newIcons[i].setXmlLang(locales[i]);
-            } catch (ClassNotFoundException ex){}
+            } catch (ClassNotFoundException ex) {
+                LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+            }
         }
         setIcon(newIcons);
     }
@@ -205,7 +216,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
                         setIcon(i, icon);
                     }
                 }
-            } catch (VersionNotSupportedException ex){}
+            } catch (VersionNotSupportedException ex) {
+                LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+            }
             if (!found) {
                 addIcon(icon);
             }
@@ -218,7 +231,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public String getSmallIcon() {
         try {
             return getSmallIcon(null);
-        } catch (VersionNotSupportedException ex){return null;}
+        } catch (VersionNotSupportedException ex){
+            return null;
+        }
     }
     public String getLargeIcon(String locale) throws VersionNotSupportedException {
         return getIcon(locale,false);
@@ -226,7 +241,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public String getLargeIcon() {
         try {
             return getLargeIcon(null);
-        } catch (VersionNotSupportedException ex){return null;}
+        } catch (VersionNotSupportedException ex){
+            return null;
+        }
     }
     public org.netbeans.modules.j2ee.dd.api.common.Icon getDefaultIcon() {
         org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
@@ -234,7 +251,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             try {
                 String loc=icons[i].getXmlLang();
                 if (loc==null) return icons[i];
-            } catch (VersionNotSupportedException ex){}
+            } catch (VersionNotSupportedException ex) {
+                LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+            }
         }
         return null;
     }
@@ -246,7 +265,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             String loc=null;
             try {
                 loc=icons[i].getXmlLang();
-            } catch (VersionNotSupportedException ex){}
+            } catch (VersionNotSupportedException ex) {
+                LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+            }
             map.put(loc, iconPair);
         }
         return map;
@@ -270,12 +291,16 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
     public void removeSmallIcon() {
         try {
             removeSmallIcon(null);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     public void removeLargeIcon() {
         try {
             removeLargeIcon(null);
-        } catch (VersionNotSupportedException ex){}
+        } catch (VersionNotSupportedException ex) {
+            LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+        }
     }
     public void removeIcon() {
         org.netbeans.modules.j2ee.dd.api.common.Icon[] icons = getIcon();
@@ -283,7 +308,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
             try {
                 String loc=icons[i].getXmlLang();
                 if (loc==null) removeIcon(icons[i]);
-            } catch (VersionNotSupportedException ex){}
+            } catch (VersionNotSupportedException ex) {
+                LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+            }
         }
     }
     public void removeAllIcons() {
@@ -313,7 +340,9 @@ public abstract class ComponentBeanMultiple extends DescriptionBeanMultiple impl
                     if (isSmall) newIcon.setSmallIcon(icon);
                     else newIcon.setLargeIcon(icon);
                     addIcon(newIcon);
-                } catch (ClassNotFoundException ex){}
+                } catch (ClassNotFoundException ex) {
+                    LOG.log(Level.FINE, "exception ignored", ex);  //NOI18N
+                }
             }
         }
     }

@@ -539,7 +539,8 @@ Property *ScriptDebugger::getProperty(IDebugProperty *pDebugProperty, tstring na
         pProp->type = TYPE_OBJECT;
         pProp->childrenCount = -1;
 	    if(pProp->fullName.length() > 1) {
-            if(propertyInfo.m_bstrType == TYPE_OBJECT) {
+            if(propertyInfo.m_bstrType == TYPE_OBJECT || propertyInfo.m_bstrType == TYPE_SINGLE ||
+               propertyInfo.m_bstrType == TYPE_VARIANT) {
 			    tstring fullName = pProp->fullName;
 			    if(fullName.substr(0, 1) == DOT) {
 				    fullName = fullName.substr(1);

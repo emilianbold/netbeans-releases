@@ -71,6 +71,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.db.explorer.ConnectionManager;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.DatabaseException;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.Database;
@@ -84,7 +85,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 import org.openide.util.Utilities;
 
 /**
@@ -502,10 +502,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             public void execute() throws Exception {
                 disconnectSync();
 
+                checkConfiguration();
+
                 ProgressHandle progress = ProgressHandleFactory.createHandle(
                     Utils.getMessage("MSG_ConnectingToServer"));
-
-                checkConfiguration();
 
                 try {
                     progress.start();
@@ -599,10 +599,12 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             cmd.syncUp();
 
             Throwable e = cmd.getException();
-            if (e instanceof DatabaseException) {
-                throw (DatabaseException)e;
-            } else {
-                throw Utils.launderThrowable(e);
+            if (e != null) {
+                if (e instanceof DatabaseException) {
+                    throw (DatabaseException)e;
+                } else {
+                    throw Utils.launderThrowable(e);
+                }
             }
         } catch (InterruptedException e) {
             disconnect();
@@ -619,7 +621,9 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             public void execute() throws Exception {
                 try {
                     Connection conn = connProcessor.getConnection();
-                    conn.prepareStatement(CREATE_DATABASE_SQL + dbname).executeUpdate();
+                    Quoter quoter = connProcessor.getQuoter();
+                    String quotedName = quoter.quoteIfNeeded(dbname);
+                    conn.prepareStatement(CREATE_DATABASE_SQL + quotedName).executeUpdate();
                 } finally {
                     refreshDatabaseList();
                 }
@@ -633,13 +637,21 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
             public void execute() throws Exception {
                 try {
                     Connection conn = connProcessor.getConnection();
-                    conn.prepareStatement(DROP_DATABASE_SQL + dbname).executeUpdate();
+                    Quoter quoter = connProcessor.getQuoter();
+                    String quotedName = quoter.quoteIfNeeded(dbname);
+                    conn.prepareStatement(DROP_DATABASE_SQL + quotedName).executeUpdate();
 
                     if (deleteConnections) {
+                        String hostname = getHost();
+
+                        String ipaddr = Utils.getHostIpAddress(hostname);
                         DatabaseConnection[] dbconns = ConnectionManager.getDefault().getConnections();
                         for (DatabaseConnection dbconn : dbconns) {
                             if (dbconn.getDriverClass().equals(MySQLOptions.getDriverClass()) &&
-                                    dbconn.getDatabaseURL().contains("/" + dbname)) {
+                                    dbconn.getDatabaseURL().contains("/" + dbname) &&
+                                    (dbconn.getDatabaseURL().contains(getHost()) ||
+                                     dbconn.getDatabaseURL().contains(ipaddr)) &&
+                                     dbconn.getDatabaseURL().contains(getPort())) {
                                 ConnectionManager.getDefault().removeConnection(dbconn);
                             }
                         }
@@ -711,9 +723,10 @@ public class MySQLDatabaseServer implements DatabaseServer, PropertyChangeListen
     public void grantFullDatabaseRights(final String dbname, final DatabaseUser grantUser) {
         new DatabaseCommand(true) {
             @Override
-            public void execute() throws Exception {                
+            public void execute() throws Exception {
+                String quotedName = connProcessor.getQuoter().quoteIfNeeded(dbname);
                 PreparedStatement ps = connProcessor.getConnection().
-                        prepareStatement(GRANT_ALL_SQL_1 + dbname + GRANT_ALL_SQL_2);
+                        prepareStatement(GRANT_ALL_SQL_1 + quotedName + GRANT_ALL_SQL_2);
                 ps.setString(1, grantUser.getUser());
                 ps.setString(2, grantUser.getHost());
                 ps.executeUpdate();

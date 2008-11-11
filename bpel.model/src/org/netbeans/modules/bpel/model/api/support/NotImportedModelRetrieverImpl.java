@@ -36,6 +36,7 @@ import org.openide.filesystems.FileObject;
  * 
  * @author nk160297
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.bpel.model.xam.spi.NotImportedModelRetriever.class)
 public class NotImportedModelRetrieverImpl implements NotImportedModelRetriever {
 
 

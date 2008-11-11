@@ -42,6 +42,7 @@
 package org.netbeans.modules.j2ee.common.project.ui;
 
 
+import org.netbeans.modules.java.api.common.project.ui.LibrariesNode;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -59,17 +60,17 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.WeakListeners;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
+import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.java.api.common.project.ui.ProjectUISupport;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -124,14 +125,17 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return new J2eePlatformNode(project, evaluator, platformPropName, cs);
     }
 
+    @Override
     public String getName () {
         return this.getDisplayName();
     }
     
+    @Override
     public String getDisplayName() {
         return "";
     }
     
+    @Override
     public String getHtmlDisplayName() {
         if (getPlatform() != null)
             return getPlatform().getDisplayName();
@@ -139,6 +143,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
             return NbBundle.getMessage(J2eePlatformNode.class, "LBL_J2eeServerMissing");
     }
     
+    @Override
     public Image getIcon(int type) {
         Image result = null;
         if (getPlatform() != null) {
@@ -147,14 +152,17 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         return result != null ? result : brokenIcon;
     }
     
+    @Override
     public Image getOpenedIcon(int type) {
         return getIcon(type);
     }
 
+    @Override
     public boolean canCopy() {
         return false;
     }
     
+    @Override
     public Action[] getActions(boolean context) {
         return new SystemAction[0];
     }
@@ -218,9 +226,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
 
     private static class PlatformContentChildren extends Children.Keys<SourceGroup> {
 
-        private ClassPathSupport cs;
         PlatformContentChildren (ClassPathSupport cs) {
-            this.cs = cs;
         }
 
         @Override
@@ -234,7 +240,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         }
 
         protected Node[] createNodes(SourceGroup sg) {
-            return new Node[] {ActionFilterNode.create(PackageView.createPackageView(sg), null, null, null, null, null, null)};
+            return new Node[] {ProjectUISupport.createFilteredLibrariesNode(PackageView.createPackageView(sg), null, null, null, null, null, null)};
         }
 
         private List<SourceGroup> getKeys () {
@@ -249,7 +255,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
                     if (file != null) {
                         FileObject archiveFile = FileUtil.getArchiveRoot(file);
                         if (archiveFile != null) {
-                            result.add(new LibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
+                            result.add(ProjectUISupport.createLibrariesSourceGroup(archiveFile, file.getNameExt(), icon, icon));
                         }
                     }
                 }

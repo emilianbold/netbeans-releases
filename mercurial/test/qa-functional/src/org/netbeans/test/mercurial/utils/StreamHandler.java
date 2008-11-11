@@ -21,13 +21,14 @@ import java.io.OutputStream;
  */
 public class StreamHandler extends Thread {
 
-    InputStream in;
-    OutputStream out;
+    InputStream in = null;
+    OutputStream out = null;
     
     /** Creates a new instance of StreamHandler */
     public StreamHandler(InputStream in, OutputStream out) {
         this.in = new BufferedInputStream(in);
-        this.out = new BufferedOutputStream(out);
+        if (out != null)
+            this.out = new BufferedOutputStream(out);
     }
     
     public void run () {
@@ -36,14 +37,17 @@ public class StreamHandler extends Thread {
                 try {
                     int i;
                     while((i = in.read()) != -1) {
-                        out.write(i);
+                        if (out != null)
+                           out.write(i);
                     }
                 } finally {
                     in.close();
                 }
-                out.flush();
+                if (out != null)
+                    out.flush();
             } finally {
-                out.close();
+                if (out != null)
+                    out.close();
             }
         } catch (IOException ex) {
           ex.printStackTrace();

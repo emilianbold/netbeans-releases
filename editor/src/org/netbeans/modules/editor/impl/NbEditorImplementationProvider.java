@@ -56,6 +56,7 @@ import org.openide.windows.TopComponent;
  * 
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.editor.EditorImplementationProvider.class)
 public final class NbEditorImplementationProvider implements EditorImplementationProvider {
 
     private static final Action [] NO_ACTIONS = new Action[0];

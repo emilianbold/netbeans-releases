@@ -122,10 +122,10 @@ public final class ShapeUniqueAnchor extends Anchor
         if (! requiresRecalculation)
             return;
         
-//        HashMap<Entry, Float> topmap = new HashMap<Entry, Float> ();
-//        HashMap<Entry, Float> bottommap = new HashMap<Entry, Float> ();
-//        HashMap<Entry, Float> leftmap = new HashMap<Entry, Float> ();
-//        HashMap<Entry, Float> rightmap = new HashMap<Entry, Float> ();
+        HashMap<Entry, Float> topmap = new HashMap<Entry, Float> ();
+        HashMap<Entry, Float> bottommap = new HashMap<Entry, Float> ();
+        HashMap<Entry, Float> leftmap = new HashMap<Entry, Float> ();
+        HashMap<Entry, Float> rightmap = new HashMap<Entry, Float> ();
         
         ArrayList <Entry> topList = new ArrayList <Entry>();
         ArrayList <Entry> bottomList = new ArrayList <Entry>();
@@ -185,12 +185,12 @@ public final class ShapeUniqueAnchor extends Anchor
             {
                 if (entry.isAttachedToConnectionSource())
                 {
-//                    rightmap.put(entry, 0f);
+                    rightmap.put(entry, 0f);
                     rightList.add(entry);
                 }
                 else
                 {
-//                    bottommap.put(entry, 0f);
+                    bottommap.put(entry, 0f);
                     bottomList.add(entry);
                 }
             }
@@ -199,12 +199,12 @@ public final class ShapeUniqueAnchor extends Anchor
                 //direction = dx >= 0.0f ? Direction.RIGHT : Direction.LEFT;
                 if(dx > 0.0f)
                 {
-//                    rightmap.put(entry, dy / dx);
+                    rightmap.put(entry, dy / dx);
                     rightList.add(entry);
                 }
                 else
                 {
-//                    leftmap.put(entry, - dy / dx);
+                    leftmap.put(entry, - dy / dx);
                     leftList.add(entry);
                 }
             }
@@ -213,12 +213,12 @@ public final class ShapeUniqueAnchor extends Anchor
                 //direction = dy >= 0.0F ? Direction.BOTTOM : Direction.TOP;
                 if(dy >= 0.0F)
                 {
-//                    bottommap.put(entry,  dx / dy);
+                    bottommap.put(entry,  dx / dy);
                     bottomList.add(entry);
                 }
                 else
                 {
-//                    topmap.put(entry, -dx / dy);
+                    topmap.put(entry, -dx / dy);
                     topList.add(entry);
                 }
             }
@@ -226,13 +226,14 @@ public final class ShapeUniqueAnchor extends Anchor
         
         int edgeGap = 0;
         int len = rightList.size();
+        Entry[] sortedEntries = toArray(rightList, rightmap);
 
         // Inside the loop I need to now calculate the new slop (based on the 
         // location of the entries new point), and then 
         int x = bounds.x + bounds.width + edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = rightList.get(a);
+            Entry curEntry = sortedEntries[a];
             int y = bounds.y + (a + 1) * bounds.height / (len + 1);
             
             Point newPt = null;
@@ -249,11 +250,12 @@ public final class ShapeUniqueAnchor extends Anchor
         }
 
         len = leftList.size();
-
+        sortedEntries = toArray(leftList, leftmap);
+        
         x = bounds.x - edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = leftList.get(a);
+            Entry curEntry = sortedEntries[a];
             int y = bounds.y + (a + 1) * bounds.height / (len + 1);
             
             Point newPt = null;
@@ -270,11 +272,12 @@ public final class ShapeUniqueAnchor extends Anchor
         }
         
         len = topList.size();
-
+        sortedEntries = toArray(topList,topmap);
+        
         int y = bounds.y - edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = topList.get(a);
+            Entry curEntry = sortedEntries[a];
             x = bounds.x + (a + 1) * bounds.width / (len + 1);
             
             Point newPt = null;
@@ -291,11 +294,12 @@ public final class ShapeUniqueAnchor extends Anchor
         }
 
         len = bottomList.size();
+        sortedEntries = toArray(bottomList,bottommap);
 
         y = bounds.y + bounds.height + edgeGap;
         for (int a = 0; a < len; a ++)
         {
-            Entry curEntry = bottomList.get(a);
+            Entry curEntry = sortedEntries[a];
             x = bounds.x + (a + 1) * bounds.width / (len + 1);
             
             Point newPt = null;
@@ -343,30 +347,36 @@ public final class ShapeUniqueAnchor extends Anchor
     }
     
     
-    private Entry[] toArray(final HashMap<Entry, Float> map)
+    private Entry[] toArray(List < Entry > entries, final HashMap<Entry, Float> map)
     {
         Set<Entry> keys = map.keySet();
-        Entry[] entries = keys.toArray(new Entry[keys.size()]);
-        Arrays.sort(entries, new Comparator<Entry>()
+        
+        Entry[] retVal = new Entry[entries.size()];
+        if(entries.size() > 0)
         {
-
-            public int compare(Entry o1, Entry o2)
+            entries.toArray(retVal);
+        
+            Arrays.sort(retVal, new Comparator<Entry>()
             {
-                float f = map.get(o1) - map.get(o2);
-                if (f > 0.0f)
+
+                public int compare(Entry o1, Entry o2)
                 {
-                    return 1;
+                    float f = map.get(o1) - map.get(o2);
+                    if (f > 0.0f)
+                    {
+                        return 1;
+                    }
+                    else if (f < 0.0f)
+                    {
+                        return -1;
+                    }
+                    else
+                    {
+                        return 0;
+                    }
                 }
-                else if (f < 0.0f)
-                {
-                    return -1;
-                }
-                else
-                {
-                    return 0;
-                }
-            }
-        });
-        return entries;
+            });
+        }
+        return retVal;
     }
 }

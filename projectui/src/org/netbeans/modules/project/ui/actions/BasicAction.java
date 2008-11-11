@@ -44,7 +44,7 @@ package org.netbeans.modules.project.ui.actions;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import org.openide.util.Utilities;
+import org.openide.util.ImageUtilities;
 
 /** Basic action. Serves as a base class for all projects specific
  * actions.
@@ -76,7 +76,7 @@ abstract class BasicAction extends AbstractAction {
     
     protected final void setSmallIcon( String iconResource ) {
         if ( iconResource != null ) {
-            putValue( SMALL_ICON, new ImageIcon( Utilities.loadImage( iconResource ) ) );
+            putValue( SMALL_ICON, new ImageIcon( ImageUtilities.loadImage( iconResource ) ) );
         }
     }
         

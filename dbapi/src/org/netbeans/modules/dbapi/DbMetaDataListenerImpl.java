@@ -52,6 +52,7 @@ import org.openide.util.lookup.Lookups;
  *
  * @author Andrei Badea
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.db.explorer.DbMetaDataListener.class)
 public class DbMetaDataListenerImpl implements DbMetaDataListener {
 
     /** 

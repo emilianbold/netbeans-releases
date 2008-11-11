@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.util.List;
@@ -49,8 +48,8 @@ import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.modules.cnd.api.model.CsmClass;
 
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -68,19 +67,17 @@ import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 
 /**
-* Java completion query specifications
-*
-* @author Miloslav Metelka
-* @version 1.00
-*/
-
+ * Java completion query specifications
+ *
+ * @author Miloslav Metelka
+ * @version 1.00
+ */
 abstract public class CsmCompletion {
 
     public static final int PUBLIC_LEVEL = 3;
     public static final int PROTECTED_LEVEL = 2;
     public static final int PACKAGE_LEVEL = 1;
     public static final int PRIVATE_LEVEL = 0;
-
     public static final SimpleClass BOOLEAN_CLASS = new SimpleClass("boolean", ""); // NOI18N
     public static final SimpleClass BYTE_CLASS = new SimpleClass("byte", ""); // NOI18N
     public static final SimpleClass CHAR_CLASS = new SimpleClass("char", ""); // NOI18N
@@ -90,7 +87,6 @@ abstract public class CsmCompletion {
     public static final SimpleClass LONG_CLASS = new SimpleClass("long", ""); // NOI18N
     public static final SimpleClass SHORT_CLASS = new SimpleClass("short", ""); // NOI18N
     public static final SimpleClass VOID_CLASS = new SimpleClass("void", ""); // NOI18N
-
     public static final BaseType BOOLEAN_TYPE = new BaseType(BOOLEAN_CLASS, 0);
     public static final BaseType BYTE_TYPE = new BaseType(BYTE_CLASS, 0);
     public static final BaseType CHAR_TYPE = new BaseType(CHAR_CLASS, 0);
@@ -100,30 +96,19 @@ abstract public class CsmCompletion {
     public static final BaseType LONG_TYPE = new BaseType(LONG_CLASS, 0);
     public static final BaseType SHORT_TYPE = new BaseType(SHORT_CLASS, 0);
     public static final BaseType VOID_TYPE = new BaseType(VOID_CLASS, 0);
-
     public static final SimpleClass INVALID_CLASS = new SimpleClass("", ""); // NOI18N
     public static final BaseType INVALID_TYPE = new BaseType(INVALID_CLASS, 0);
-
     public static final SimpleClass NULL_CLASS = new SimpleClass("null", ""); // NOI18N
     public static final BaseType NULL_TYPE = new BaseType(NULL_CLASS, 0);
-
-    public static final SimpleClass OBJECT_CLASS_ARRAY
-    = new SimpleClass("java.lang.Object[]", "java.lang".length(), true); // NOI18N
+    public static final SimpleClass OBJECT_CLASS_ARRAY = new SimpleClass("java.lang.Object[]", "java.lang".length(), true); // NOI18N
     public static final BaseType OBJECT_TYPE_ARRAY = new BaseType(OBJECT_CLASS_ARRAY, 0);
-
-    public static final SimpleClass OBJECT_CLASS
-    = new SimpleClass("java.lang.Object", "java.lang".length(), true); // NOI18N
+    public static final SimpleClass OBJECT_CLASS = new SimpleClass("java.lang.Object", "java.lang".length(), true); // NOI18N
     public static final BaseType OBJECT_TYPE = new BaseType(OBJECT_CLASS, 0);
-
-    public static final SimpleClass CLASS_CLASS
-    = new SimpleClass("java.lang.Class", "java.lang".length(), true); // NOI18N
+    public static final SimpleClass CLASS_CLASS = new SimpleClass("java.lang.Class", "java.lang".length(), true); // NOI18N
     public static final BaseType CLASS_TYPE = new BaseType(CLASS_CLASS, 0);
-
-    public static final SimpleClass STRING_CLASS
-    = new SimpleClass("char", 0, true); // NOI18N
+    public static final SimpleClass STRING_CLASS = new SimpleClass("char", 0, true); // NOI18N
     public static final BaseType STRING_TYPE = new BaseType(STRING_CLASS, 1, false, 0);
-    public static final SimpleClass CONST_STRING_CLASS
-    = new SimpleClass("const char", 0, true); // NOI18N
+    public static final SimpleClass CONST_STRING_CLASS = new SimpleClass("const char", 0, true); // NOI18N
     public static final BaseType CONST_STRING_TYPE = new BaseType(CONST_STRING_CLASS, 1, false, 0);
 
     // the bit for local member. the modificator is not saved within this bit.
@@ -131,16 +116,16 @@ abstract public class CsmCompletion {
 
     // the bit for deprecated flag. it is saved to copde completion  DB
     public static final int DEPRECATED_BIT = (1 << 20);
+    private static final Map<CharSequence, CsmClassifier> str2PrimitiveClass = new HashMap<CharSequence, CsmClassifier>();
+    private static final Map<CharSequence, CsmType> str2PrimitiveType = new HashMap<CharSequence, CsmType>();
+    private static final Map<CharSequence, CsmType> str2PredefinedType = new HashMap<CharSequence, CsmType>();
 
-    private static final HashMap str2PrimitiveClass = new HashMap();
-    private static final HashMap str2PrimitiveType = new HashMap();
-    private static final HashMap str2PredefinedType = new HashMap();
 
     static {
         // initialize primitive types cache
-        BaseType[] types = new BaseType[] {
+        BaseType[] types = new BaseType[]{
             BOOLEAN_TYPE, BYTE_TYPE, CHAR_TYPE, DOUBLE_TYPE, FLOAT_TYPE,
-            INT_TYPE, LONG_TYPE, SHORT_TYPE, VOID_TYPE 
+            INT_TYPE, LONG_TYPE, SHORT_TYPE, VOID_TYPE
         };
 
         for (int i = types.length - 1; i >= 0; i--) {
@@ -150,9 +135,9 @@ abstract public class CsmCompletion {
         }
 
         // initialize predefined types cache
-        types = new BaseType[] {
-            NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE
-        };
+        types = new BaseType[]{
+                    NULL_TYPE, OBJECT_TYPE_ARRAY, OBJECT_TYPE, CLASS_TYPE, STRING_TYPE, CONST_STRING_TYPE
+                };
 
         for (int i = types.length - 1; i >= 0; i--) {
             String typeName = types[i].getClassifier().getName().toString();
@@ -161,7 +146,6 @@ abstract public class CsmCompletion {
             str2PredefinedType.put(types[i].format(true), types[i]);
         }
     }
-
     public static final CsmParameter[] EMPTY_PARAMETERS = new CsmParameter[0];
     public static final CsmClassifier[] EMPTY_CLASSES = new CsmClassifier[0];
     public static final CsmNamespace[] EMPTY_NAMESPACES = new CsmNamespace[0];
@@ -169,15 +153,11 @@ abstract public class CsmCompletion {
     public static final CsmConstructor[] EMPTY_CONSTRUCTORS = new CsmConstructor[0];
     public static final CsmMethod[] EMPTY_METHODS = new CsmMethod[0];
     public static final String SCOPE = "::";  //NOI18N
-
     private static int debugMode;
-
     /** Map holding the simple class instances */
 //    private static HashMap classCache = new HashMap(5003);
-
     /** Map holding the cached types */
     //private static HashMap typeCache = new HashMap(5003);
-
     /** Debug expression creation */
     public static final int DEBUG_EXP = 1;
     /** Debug finding packages/classes/fields/methods */
@@ -210,17 +190,17 @@ abstract public class CsmCompletion {
     }
 
     public static CsmClassifier getPrimitiveClass(String s) {
-        return (CsmClassifier)str2PrimitiveClass.get(s);
+        return str2PrimitiveClass.get(s);
     }
 
     public static CsmType getPrimitiveType(String s) {
-        return (CsmType)str2PrimitiveType.get(s);
+        return str2PrimitiveType.get(s);
     }
 
     public static CsmType getPredefinedType(String s) {
         CsmType ret = getPrimitiveType(s);
         if (ret == null) {
-            ret = (CsmType)str2PredefinedType.get(s);
+            ret = str2PredefinedType.get(s);
         }
         return ret;
     }
@@ -229,35 +209,18 @@ abstract public class CsmCompletion {
         return str2PrimitiveClass.values().iterator();
     }
 
-//    public static CsmClassifier getSimpleClass(String fullClassName, int packageNameLen) {
-//        CsmClassifier cls = (CsmClassifier)classCache.get(fullClassName);
-//        if (cls == null // not in cache yet
-////                || packageNameLen != cls.getPackageName().length() // different class
-//           ) {
-//            cls = new SimpleClass(fullClassName, packageNameLen, true);
-//            classCache.put(fullClassName, cls);
-//        }
-//        return cls;
-//    }
-
     public static CsmClassifier getSimpleClass(CsmClassifier clazz) {
-        CharSequence fullClassName = clazz.getQualifiedName();
         CsmClassifier cls = null;//(CsmClassifier)classCache.get(fullClassName);
-        if (clazz != null 
-//        if (cls == null// not in cache yet
-//                || packageNameLen != cls.getPackageName().length() // different class
-           ) {
+        if (clazz != null) {
             cls = new SimpleClass(clazz);
-//            classCache.put(fullClassName, cls);
         }
-        return cls;        
-//        return getSimpleClass(cls.getQualifiedName(), 0/*cls.getPackageName().length()*/);
+        return cls;
     }
 
     public static CsmClassifier createSimpleClass(String fullClassName) {
         int nameInd = fullClassName.lastIndexOf(CsmCompletion.SCOPE) + 1;
         return createSimpleClass(fullClassName.substring(nameInd),
-                                 (nameInd > 0) ? fullClassName.substring(0, nameInd - 1) : ""); // NOI18N
+                (nameInd > 0) ? fullClassName.substring(0, nameInd - 1) : ""); // NOI18N
     }
 
     public static CsmClassifier createSimpleClass(String name, String packageName) {
@@ -275,17 +238,17 @@ abstract public class CsmCompletion {
     public static CsmType getObjectType(CsmObject obj) {
         CsmType type = null;
         if (CsmKindUtilities.isClassifier(obj)) {
-            type = CsmCompletion.getType((CsmClassifier)obj, 0);
+            type = CsmCompletion.getType((CsmClassifier) obj, 0);
         } else if (CsmKindUtilities.isFunction(obj)) {
             CsmFunction fun = (CsmFunction) obj;
             if (CsmKindUtilities.isConstructor(fun)) {
-                CsmClassifier cls = ((CsmConstructor)obj).getContainingClass();
-                type = CsmCompletion.getType(cls, 0);                  
+                CsmClassifier cls = ((CsmConstructor) obj).getContainingClass();
+                type = CsmCompletion.getType(cls, 0);
             } else {
                 type = fun.getReturnType();
             }
         } else if (CsmKindUtilities.isVariable(obj)) {
-            type = ((CsmVariable)obj).getType();
+            type = ((CsmVariable) obj).getType();
         } else if (CsmKindUtilities.isEnumerator(obj)) {
             type = INT_TYPE;
         } else {
@@ -295,11 +258,11 @@ abstract public class CsmCompletion {
     }
 
     /** Create new type or get the existing one from the cache. The cache holds
-    * the arrays with the increasing array depth for the particular class
-    * as the members. Simple class is used for the caching to make it independent
-    * on the real completion classes that can become obsolete and thus should
-    * be garbage collected.
-    */
+     * the arrays with the increasing array depth for the particular class
+     * as the members. Simple class is used for the caching to make it independent
+     * on the real completion classes that can become obsolete and thus should
+     * be garbage collected.
+     */
     public static CsmType getType(CsmClassifier cls, int arrayDepth) {
         if (cls == null) {
             return null;
@@ -307,22 +270,18 @@ abstract public class CsmCompletion {
         return new BaseType(getSimpleClass(cls), arrayDepth);
     }
 
-    public static class SimpleClass implements CsmClassifier {
+    public static class SimpleClass implements CsmClassifier<CsmClassifier> {
 
         protected CharSequence name;
-
         protected String packageName = "";
-
         protected CharSequence fullName;
-
         protected CsmDeclaration.Kind kind;
-        
         // a cache
         // our toString() is called very often by JCCellRenderer and is too
         // expensive due to string replace operations and string concatenation
         private String stringValue;
         private CsmClassifier clazz;
-        
+
         public SimpleClass(CsmClassifier clazz) {
             this.clazz = clazz;
             this.name = clazz.getName();
@@ -336,10 +295,10 @@ abstract public class CsmCompletion {
             this.kind = kind;
             if (name == null || kind == null) {
                 throw new NullPointerException(
-                    "className=" + name + ", kind=" + kind); // NOI18N
+                        "className=" + name + ", kind=" + kind); // NOI18N
             }
         }
-        
+
         public SimpleClass(String name, String packageName) {
             this(name, packageName, CsmDeclaration.Kind.BUILT_IN);
         }
@@ -348,7 +307,7 @@ abstract public class CsmCompletion {
             this.fullName = fullName;
             // <> Fix BugId 056449, java.lang.StringIndexOutOfBoundsException: String index out of range: -12
             if (packageNameLen <= 0 || packageNameLen >= fullName.length()) {
-            // </>
+                // </>
                 name = fullName;
                 packageName = ""; // NOI18N
             } else {
@@ -356,7 +315,7 @@ abstract public class CsmCompletion {
                 name = fullName.substring(packageNameLen + 1);
                 packageName = fullName.substring(0, packageNameLen);
                 if (intern) {
-                    name = ((String)name).intern();
+                    name = ((String) name).intern();
                     packageName = packageName.intern();
                 }
             }
@@ -385,7 +344,7 @@ abstract public class CsmCompletion {
             }
             return fullName;
         }
-	
+
         public CharSequence getUniqueName() {
             return getQualifiedName();
         }
@@ -426,7 +385,7 @@ abstract public class CsmCompletion {
             if (this == o) {
                 return 0;
             }
-            CsmClassifier c = (CsmClassifier)o;
+            CsmClassifier c = (CsmClassifier) o;
 
 //XXX            int order = packageName.compareTo(c.getPackageName());
             int order = 0;
@@ -447,9 +406,9 @@ abstract public class CsmCompletion {
                 return true;
             }
             if (o instanceof CsmClassifier) {
-                CsmClassifier c = (CsmClassifier)o;
-                String className = (c.getName() == null) ? null : c.getName().toString().replace('.','$');
-                String thisName = name.toString().replace('.','$');
+                CsmClassifier c = (CsmClassifier) o;
+                String className = (c.getName() == null) ? null : c.getName().toString().replace('.', '$');
+                String thisName = name.toString().replace('.', '$');
                 return thisName.equals(className);//XXX && packageName.equals(c.getPackageName());
             }
             return false;
@@ -459,8 +418,8 @@ abstract public class CsmCompletion {
         public String toString() {
             if (stringValue == null) {
                 stringValue = (getPackageName().length() > 0)
-                       ? getPackageName() + '.' + getName().toString().replace('.', '$')
-                       : getName().toString().replace('.', '$');
+                        ? getPackageName() + '.' + getName().toString().replace('.', '$')
+                        : getName().toString().replace('.', '$');
             }
             return stringValue;
         }
@@ -479,7 +438,8 @@ abstract public class CsmCompletion {
             return null;
         }
 
-        public CsmUID<CsmClass> getUID() {
+        @SuppressWarnings("unchecked")
+        public CsmUID<CsmClassifier> getUID() {
             if (clazz != null) {
                 return clazz.getUID();
             }
@@ -489,14 +449,12 @@ abstract public class CsmCompletion {
         public boolean isValid() {
             return CsmBaseUtilities.isValid(clazz);
         }
-
     }
 
     /** Description of the type */
     public static class BaseType implements CsmType {
 
         protected CsmClassifier clazz;
-
         protected int arrayDepth;
         protected int pointerDepth;
         protected boolean reference;
@@ -510,7 +468,7 @@ abstract public class CsmCompletion {
                 throw new IllegalArgumentException("Array depth " + arrayDepth + " < 0."); // NOI18N
             }
         }
-        
+
         public BaseType(CsmClassifier clazz, int pointerDepth, boolean reference, int arrayDepth) {
             this.clazz = clazz;
             this.arrayDepth = arrayDepth;
@@ -524,15 +482,13 @@ abstract public class CsmCompletion {
         BaseType() {
         }
 
-
-
         public int getArrayDepth() {
             return arrayDepth;
         }
 
         public String format(boolean useFullName) {
             StringBuilder sb = new StringBuilder(useFullName ? getClassifier().getQualifiedName()
-                                               : getClassifier().getName());
+                    : getClassifier().getName());
             int pd = pointerDepth;
             while (pd > 0) {
                 sb.append("*"); // NOI18N
@@ -550,7 +506,7 @@ abstract public class CsmCompletion {
             if (this == o) {
                 return 0;
             }
-            CsmType t = (CsmType)o;
+            CsmType t = (CsmType) o;
             int order = clazz.getQualifiedName().toString().compareTo(t.getClassifier().getQualifiedName().toString());
             if (order == 0) {
                 order = arrayDepth - t.getArrayDepth();
@@ -569,7 +525,7 @@ abstract public class CsmCompletion {
                 return true;
             }
             if (o instanceof CsmType) {
-                CsmType t = (CsmType)o;
+                CsmType t = (CsmType) o;
                 return clazz.equals(t.getClassifier()) && arrayDepth == t.getArrayDepth();
             }
             return false;
@@ -582,7 +538,7 @@ abstract public class CsmCompletion {
 
         public CsmClassifier getClassifier() {
             if (clazz instanceof SimpleClass) {
-                return ((SimpleClass)clazz).clazz == null ? clazz : ((SimpleClass)clazz).clazz;
+                return ((SimpleClass) clazz).clazz == null ? clazz : ((SimpleClass) clazz).clazz;
             } else {
                 return clazz;
             }
@@ -623,10 +579,10 @@ abstract public class CsmCompletion {
         public CharSequence getText() {
             return format(true);
         }
-	
-	public CharSequence getCanonicalText() {
-	    return getText();
-	}
+
+        public CharSequence getCanonicalText() {
+            return getText();
+        }
 
         public CsmFile getContainingFile() {
             return null;
@@ -651,7 +607,6 @@ abstract public class CsmCompletion {
         public boolean isBuiltInBased(boolean resolveTypeChain) {
             return CsmKindUtilities.isBuiltIn(clazz);
         }
-
     }
 
     public static int getDebugMode() {

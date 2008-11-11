@@ -50,6 +50,7 @@ import org.openide.util.Enumerations;
  *
  * @author Vladimir Voskresensky
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.loaders.DataLoaderPool.class)
 public class CndDataLoaderPool extends DataLoaderPool {
     private final DataLoader[] loaders;
     public CndDataLoaderPool() {

@@ -74,8 +74,8 @@ public enum FORM {
     private static final HashMap<Integer, FORM> hashmap = new HashMap<Integer, FORM>();
     
     static {
-        for (FORM elem : FORM.values()) {
-            hashmap.put(new Integer(elem.value), elem);
+        for (FORM elem : values()) {
+            hashmap.put(elem.value, elem);
         }
     }
     
@@ -84,7 +84,7 @@ public enum FORM {
     }
     
     public static FORM get(int val) {
-        return hashmap.get(new Integer(val));
+        return hashmap.get(val);
     }
     
     

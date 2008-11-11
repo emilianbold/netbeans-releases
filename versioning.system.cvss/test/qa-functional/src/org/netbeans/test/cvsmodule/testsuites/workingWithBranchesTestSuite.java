@@ -67,7 +67,8 @@ public class workingWithBranchesTestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        if (System.getProperty("os.name").contains("Windows")) {
+        String osName = System.getProperty("os.name");
+        if (osName.contains("Windows")&&!(osName.contains("Vista"))) {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
         } else {
             return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()

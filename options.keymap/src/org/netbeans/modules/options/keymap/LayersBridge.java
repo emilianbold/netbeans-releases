@@ -72,6 +72,7 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Jancura
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.core.options.keymap.spi.KeymapManager.class)
 public class LayersBridge extends KeymapManager {
     
     static final String         KEYMAPS_FOLDER = "Keymaps";
@@ -171,32 +172,36 @@ public class LayersBridge extends KeymapManager {
     
     private List<String> keymapNames;
     private Map<String, String> keymapDisplayNames;
-    
+
+    private void refreshKeymapNames() {
+        DataFolder root = getRootFolder(KEYMAPS_FOLDER, null);
+        Enumeration en = root.children(false);
+        keymapNames = new ArrayList<String>();
+        keymapDisplayNames = new HashMap<String, String>();
+        while (en.hasMoreElements()) {
+            FileObject f = ((DataObject) en.nextElement()).getPrimaryFile();
+            if (f.isFolder()) {
+                String name = f.getNameExt();
+                String displayName;
+
+                try {
+                    displayName = f.getFileSystem().getStatus().annotateName(name, Collections.singleton(f));
+                } catch (FileStateInvalidException fsie) {
+                    // ignore
+                    displayName = name;
+                }
+                keymapNames.add(name);
+                keymapDisplayNames.put(name, displayName);
+            }
+        }
+        if (keymapNames.isEmpty()) {
+            keymapNames.add("NetBeans"); //NOI18N
+        }
+    }
+
     public List<String> getProfiles() {
         if (keymapNames == null) {
-            DataFolder root = getRootFolder(KEYMAPS_FOLDER, null);
-            Enumeration en = root.children(false);
-            keymapNames = new ArrayList<String>();
-            keymapDisplayNames = new HashMap<String, String>();
-            while (en.hasMoreElements()) {
-                FileObject f = ((DataObject) en.nextElement()).getPrimaryFile();
-                if (f.isFolder()) {
-                    String name = f.getNameExt();
-                    String displayName;
-                    
-                    try {
-                        displayName = f.getFileSystem().getStatus().annotateName(name, Collections.singleton(f));
-                    } catch (FileStateInvalidException fsie) {
-                        // ignore
-                        displayName = name;
-                    }
-                    keymapNames.add(name);
-                    keymapDisplayNames.put(name, displayName);
-                }
-            }
-            if (keymapNames.isEmpty()) {
-                keymapNames.add("NetBeans"); //NOI18N
-            }
+            refreshKeymapNames();
         }
         return Collections.unmodifiableList(keymapNames);
     }
@@ -410,6 +415,7 @@ public class LayersBridge extends KeymapManager {
     }
     
     public void refreshActions() {
+        refreshKeymapNames();
     }
 
     public String getCurrentProfile() {

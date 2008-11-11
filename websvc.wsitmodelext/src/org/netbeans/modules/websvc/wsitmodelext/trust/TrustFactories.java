@@ -56,6 +56,7 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 
 public class TrustFactories {
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class TokenTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -71,6 +72,7 @@ public class TrustFactories {
         }
     }   
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class KeyTypeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {
@@ -86,6 +88,7 @@ public class TrustFactories {
         }
     }   
 
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.wsdl.model.spi.ElementFactory.class)
     public static class KeySizeFactory extends ElementFactory {
         @Override
         public Set<QName> getElementQNames() {

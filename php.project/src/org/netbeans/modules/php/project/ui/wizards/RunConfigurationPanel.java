@@ -285,15 +285,19 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         getComponent();
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, " "); // NOI18N
         String error = null;
+        String indexFile = null;
         switch (getRunAsType()) {
             case LOCAL:
                 error = validateRunAsLocalWeb();
+                indexFile = runAsLocalWeb.getIndexFile();
                 break;
             case REMOTE:
                 error = validateRunAsRemoteWeb();
+                indexFile = runAsRemoteWeb.getIndexFile();
                 break;
             case SCRIPT:
                 error = validateRunAsScript();
+                indexFile = runAsScript.getIndexFile();
                 break;
             default:
                 assert false : "Unhandled RunAsType type: " + getRunAsType();
@@ -304,7 +308,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty(VALID, false);
             return false;
         }
-        validateAsciiTexts();
+        // index file is just warning
+        String warning = RunAsValidator.validateIndexFile(sourcesFolderProvider.getSourcesFolder(), indexFile, null);
+        if (wizardType == wizardType.EXISTING
+                && warning != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
+        } else {
+            validateAsciiTexts();
+        }
 
         descriptor.putProperty(VALID, true);
         return true;
@@ -342,11 +353,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsLocalWeb() {
-        String indexFile = null;
-        if (wizardType == wizardType.EXISTING) {
-            indexFile = runAsLocalWeb.getIndexFile();
-        }
-        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
+        String error = RunAsValidator.validateWebFields(runAsLocalWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), null, null);
         if (error != null) {
             return error;
         }
@@ -358,11 +365,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsRemoteWeb() {
-        String indexFile = null;
-        if (wizardType == wizardType.EXISTING) {
-            indexFile = runAsRemoteWeb.getIndexFile();
-        }
-        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
+        String error = RunAsValidator.validateWebFields(runAsRemoteWeb.getUrl(), sourcesFolderProvider.getSourcesFolder(), null, null);
         if (error != null) {
             return error;
         }
@@ -382,11 +385,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateRunAsScript() {
-        String indexFile = null;
-        if (wizardType == wizardType.EXISTING) {
-            indexFile = runAsScript.getIndexFile();
-        }
-        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), indexFile, null);
+        return RunAsValidator.validateScriptFields(runAsScript.getPhpInterpreter(), sourcesFolderProvider.getSourcesFolder(), null, null);
     }
 
     private String validateServerLocation() {
@@ -581,6 +580,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
         if (fire) {
             model.fireContentsChanged();
+            // needed because text field is changed => combobox is editable (see LocalServer.ComboBoxEditor#processUpdate)
+            runAsLocalWeb.setCopyFiles(runAsLocalWeb.isCopyFiles());
         }
     }
 

@@ -40,6 +40,9 @@
 package org.netbeans.modules.cnd.modelimpl.csm;
 
 import antlr.collections.AST;
+import java.io.DataInput;
+import java.io.DataOutput;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -109,5 +112,16 @@ public class ForwardClass extends ClassImpl {
     @Override
     public Collection<CsmMember> getMembers() {
         return Collections.emptyList();
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // impl of SelfPersistent
+    @Override
+    public void write(DataOutput output) throws IOException {
+        super.write(output);
+    }
+
+    public ForwardClass(DataInput input) throws IOException {
+        super(input);
     }
 }

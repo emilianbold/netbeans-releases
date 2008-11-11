@@ -41,8 +41,12 @@
 
 package org.netbeans.modules.websvc.core;
 
+import org.netbeans.modules.websvc.spi.support.ClientCreatorProvider;
+import org.netbeans.modules.websvc.api.support.ClientCreator;
 import java.util.Collection;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.websvc.api.support.ServiceCreator;
+import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;
 import org.openide.WizardDescriptor;
 import org.openide.util.Lookup;
 

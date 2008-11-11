@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
  *
  * @author Alexander Simon
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider.class)
 public class GotoDeclarationProviderImpl extends CndEditorActionsProvider {
     
     public ExtKit.GotoDeclarationAction getGotoDeclarationAction() {

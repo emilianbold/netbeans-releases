@@ -63,6 +63,7 @@ import org.openide.util.WeakListeners;
  *
  * @author Vita Stejskal
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.editor.settings.storage.spi.StorageFilter.class)
 public final class MacroShortcutsInjector extends StorageFilter<Collection<KeyStroke>, MultiKeyBinding> implements PropertyChangeListener {
 
     public static void refreshShortcuts() {

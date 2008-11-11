@@ -630,6 +630,7 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         return HintsSettings.getPreferences(this, rule, null);
     }
     
+    @org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.gsf.api.HintsProvider.Factory.class)
     public static class HintsManagerFactory extends HintsProvider.Factory {
         public HintsManagerFactory() {
         }

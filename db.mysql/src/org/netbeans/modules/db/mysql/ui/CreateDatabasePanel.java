@@ -72,6 +72,10 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                         "CreateNewDatabasePanel.MSG_SpecifyDatabase");
         }
 
+        if (this.isGrantAccess() && Utils.isEmpty((String)comboUsers.getSelectedItem())) {
+            error = NbBundle.getMessage(CreateDatabasePanel.class, "CreateDatbasePanel.MSG_NoGrantUserSelected");
+        }
+
         if (error != null) {
             messageLabel.setText(error);
             okButton.setEnabled(false);
@@ -130,6 +134,9 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
                     task = RequestProcessor.getDefault().create(new Runnable() {
                         public void run() {
                             createDatabase();
+                            if (isGrantAccess()) {
+                                grantAccess();
+                            }
                         }
                     });
 
@@ -170,6 +177,13 @@ public class CreateDatabasePanel extends javax.swing.JPanel {
         dialog.setVisible(true);
 
         return dbconn;
+    }
+
+    private void grantAccess() {
+        String dbname = getDatabaseName();
+        DatabaseUser user = (DatabaseUser)comboUsers.getSelectedItem();
+        assert(user != null);
+        server.grantFullDatabaseRights(dbname, user);
     }
 
     /**

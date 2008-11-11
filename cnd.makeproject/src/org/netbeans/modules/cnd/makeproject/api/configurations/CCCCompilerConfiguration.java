@@ -50,10 +50,10 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguration {
-    public static int MT_LEVEL_NONE = 0;
-    public static int MT_LEVEL_SAFE = 1;
-    public static int MT_LEVEL_AUTOMATIC = 2;
-    public static int MT_LEVEL_OPENMP = 3;
+    public static final int MT_LEVEL_NONE = 0;
+    public static final int MT_LEVEL_SAFE = 1;
+    public static final int MT_LEVEL_AUTOMATIC = 2;
+    public static final int MT_LEVEL_OPENMP = 3;
     private static final String[] MT_LEVEL_NAMES = {
 	getString("NoneTxt"),
 	getString("SafeTxt"),
@@ -63,11 +63,11 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private static final String[] MT_LEVEL_OPTIONS = null;
     private IntConfiguration mpLevel;
     
-    public static int LIBRARY_LEVEL_NONE = 0;
-    public static int LIBRARY_LEVEL_RUNTIME = 1;
-    public static int LIBRARY_LEVEL_CLASSIC = 2;
-    public static int LIBRARY_LEVEL_BINARY = 3;
-    public static int LIBRARY_LEVEL_CONFORMING = 4;
+    public static final int LIBRARY_LEVEL_NONE = 0;
+    public static final int LIBRARY_LEVEL_RUNTIME = 1;
+    public static final int LIBRARY_LEVEL_CLASSIC = 2;
+    public static final int LIBRARY_LEVEL_BINARY = 3;
+    public static final int LIBRARY_LEVEL_CONFORMING = 4;
     private static final String[] LIBRARY_LEVEL_NAMES = {
 	getString("NoneTxt"),
 	getString("RuntimeOnlyTxt"),
@@ -78,10 +78,10 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private static final String[] LIBRARY_LEVEL_OPTIONS = null;
     private IntConfiguration libraryLevel;
     
-    public static int STANDARDS_OLD = 0;
-    public static int STANDARDS_LEGACY = 1;
-    public static int STANDARDS_DEFAULT = 2;
-    public static int STANDARDS_MODERN = 3;
+    public static final int STANDARDS_OLD = 0;
+    public static final int STANDARDS_LEGACY = 1;
+    public static final int STANDARDS_DEFAULT = 2;
+    public static final int STANDARDS_MODERN = 3;
     private static final String[] STANDARDS_NAMES = {
 	getString("OldTxt"),
 	getString("LegacyTxt"),
@@ -91,9 +91,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
     private static final String[] STANDARD_OPTIONS = null;
     private IntConfiguration standardsEvolution;
 
-    public static int LANGUAGE_EXT_NONE = 0;
-    public static int LANGUAGE_EXT_DEFAULT = 1;
-    public static int LANGUAGE_EXT_ALL = 2;
+    public static final int LANGUAGE_EXT_NONE = 0;
+    public static final int LANGUAGE_EXT_DEFAULT = 1;
+    public static final int LANGUAGE_EXT_ALL = 2;
     private static final String[] LANGUAGE_EXT_NAMES = {
 	getString("NoneTxt"),
 	getString("DefaultTxt"),

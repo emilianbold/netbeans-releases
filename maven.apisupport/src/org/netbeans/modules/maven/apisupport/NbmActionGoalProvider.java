@@ -61,6 +61,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author mkleint
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.maven.spi.actions.MavenActionsProvider.class, position=55)
 public class NbmActionGoalProvider implements MavenActionsProvider {
     static final String NBMRELOAD = "nbmreload";
     

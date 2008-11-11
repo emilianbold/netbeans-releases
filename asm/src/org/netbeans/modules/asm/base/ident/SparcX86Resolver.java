@@ -70,6 +70,7 @@ import org.netbeans.modules.asm.base.generated.IdentScanner;
 import org.netbeans.modules.asm.base.generated.IdentScannerTokenTypes;
 import org.netbeans.modules.asm.base.syntax.IdentResolver;
 
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.asm.model.AsmTypesProvider.class)
 public class SparcX86Resolver implements AsmTypesProvider {
 
     public static final AsmSyntaxProvider ATT_X86_SYNTAX =

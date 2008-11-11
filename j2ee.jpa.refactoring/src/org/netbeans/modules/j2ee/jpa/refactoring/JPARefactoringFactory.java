@@ -66,6 +66,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Erno Mononen
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.refactoring.spi.RefactoringPluginFactory.class)
 public class JPARefactoringFactory implements RefactoringPluginFactory{
     
     public JPARefactoringFactory() {

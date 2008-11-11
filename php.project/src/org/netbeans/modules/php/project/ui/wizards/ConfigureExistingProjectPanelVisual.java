@@ -65,7 +65,7 @@ import org.openide.util.NbBundle;
 
 class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
 
-    private static final long serialVersionUID = 976589754123313213L;
+    private static final long serialVersionUID = 976589754127753213L;
 
     ConfigureExistingProjectPanelVisual(ConfigureProjectPanel wizardPanel) {
         // Provide a name in the title bar.
@@ -237,6 +237,11 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
     public void setProjectName(String projectName) {
         projectNameTextField.setText(projectName);
         projectNameTextField.selectAll();
+    }
+
+    @Override
+    public String getSourcesFolder() {
+        return sourcesTextField.getText();
     }
 
     // because of compatibility with ConfigureNewProjectPanelVisual

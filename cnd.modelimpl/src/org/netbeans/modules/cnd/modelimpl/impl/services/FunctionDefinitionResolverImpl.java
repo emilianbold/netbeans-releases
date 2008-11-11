@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
  *
  * @author eu155513
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver.class)
 public class FunctionDefinitionResolverImpl extends CsmFunctionDefinitionResolver {
 
     @Override

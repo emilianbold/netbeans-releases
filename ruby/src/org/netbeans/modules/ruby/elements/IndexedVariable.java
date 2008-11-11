@@ -41,6 +41,7 @@ package org.netbeans.modules.ruby.elements;
 
 import org.netbeans.modules.gsf.api.ElementKind;
 import org.netbeans.modules.ruby.RubyIndex;
+import org.openide.filesystems.FileObject;
 
 /**
  *
@@ -54,16 +55,16 @@ public class IndexedVariable extends IndexedElement {
     private String in;
 
     private IndexedVariable(String name, RubyIndex index, String fileUrl, String fqn,
-        String clz, String require, String attributes, int flags, ElementKind kind) {
-        super(index, fileUrl, fqn, clz, require, attributes, flags);
+        String clz, String require, String attributes, int flags, ElementKind kind, FileObject context) {
+        super(index, fileUrl, fqn, clz, require, attributes, flags, context);
         this.name = name;
         this.kind = kind;
     }
 
     public static IndexedVariable create(RubyIndex index, String name, String fqn, String clz,
-        String fileUrl, String require, String attributes, int flags, ElementKind kind) {
+        String fileUrl, String require, String attributes, int flags, ElementKind kind, FileObject context) {
         IndexedVariable m =
-            new IndexedVariable(name, index, fileUrl, fqn, clz, require, attributes, flags, kind);
+            new IndexedVariable(name, index, fileUrl, fqn, clz, require, attributes, flags, kind, context);
 
         return m;
     }

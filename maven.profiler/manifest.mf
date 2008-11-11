@@ -3,5 +3,5 @@ OpenIDE-Module: org.netbeans.modules.maven.profiler/1
 OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/maven/profiler/Bundle.properties
 OpenIDE-Module-Layer: org/netbeans/modules/maven/profiler/layer.xml
 OpenIDE-Module-Public-Packages: -
-OpenIDE-Module-Specification-Version: 1.0.3
+OpenIDE-Module-Specification-Version: 1.1
 AutoUpdate-Show-In-Client: false

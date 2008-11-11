@@ -49,6 +49,7 @@ import org.openide.awt.StatusLineElementProvider;
  *
  * @author nenik
  */
+@org.openide.util.lookup.ServiceProvider(service=org.openide.awt.StatusLineElementProvider.class, position=30)
 public class OnlineStatusIndicatorProvider implements StatusLineElementProvider {
     public Component getStatusLineElement () {
         return OnlineStatusIndicator.getDefault().getComponent();

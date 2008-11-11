@@ -463,6 +463,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
 
         try {
             filesList.add(new File(nbCluster,"servicetag/registration.xml"));
+            filesList.add(new File(nbCluster,"servicetag/servicetag"));
             filesList.add(new File(nbCluster,"servicetag"));
             File coreProp = new File(nbCluster,NetBeansUtils.CORE_PROPERTIES);
             filesList.add(coreProp);
@@ -473,7 +474,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             LogManager.log(e);
         }
 
-	
+	product.setProperty("installation.timestamp", new Long(System.currentTimeMillis()).toString());
+        
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }
@@ -534,6 +536,8 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                         e);
             }
         }
+        
+        product.setProperty("uninstallation.timestamp", new Long(System.currentTimeMillis()).toString());
 
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);

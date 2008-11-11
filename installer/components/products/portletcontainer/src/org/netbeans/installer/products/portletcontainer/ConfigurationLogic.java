@@ -45,6 +45,7 @@ import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.ProductConfigurationLogic;
 import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.SystemUtils;
 import org.netbeans.installer.utils.applications.JavaUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
@@ -96,7 +97,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         
         // resolve the dependency
         dependencies.get(0).setVersionResolved(sources.get(0).getVersion());
-        
+        /*
         // stop the default domain //////////////////////////////////////////////////
         try {
             progress.setDetail(getString("CL.install.stop.as")); // NOI18N
@@ -128,7 +129,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
                     getString("CL.install.error.portletcontainer.installer"), // NOI18N
                     e);
         }
-        
+        */
+        try {
+            progress.setDetail(getString("CL.install.portletcontainer.installer")); // NOI18N
+	    final File targetFile = new File(asLocation,
+                            "lib" + File.separator + "addons" + File.separator + PC_INSTALLER);
+            FileUtils.copyFile(pcInstaller, targetFile);
+            getProduct().getInstalledFiles().add(targetFile);
+	} catch (IOException e) {
+            throw new InstallationException(
+                    getString("CL.install.error.portletcontainer.installer"), // NOI18N
+                    e);
+        }
         /////////////////////////////////////////////////////////////////////////////
         progress.setPercentage(Progress.COMPLETE);
     }

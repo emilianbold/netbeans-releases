@@ -161,7 +161,7 @@ public class DBColumnDrop extends DBConnectionDrop {
             PersistenceUnit unit = J2EEUtils.initPersistenceUnit(persistenceXML, column.getDatabaseConnection());
 
             // Initializes project's classpath
-            J2EEUtils.updateProjectForUnit(persistenceXML, unit, column.getJDBCDriver());
+            J2EEUtils.updateProjectForUnit(formFile, unit, column.getJDBCDriver());
 
             // Obtain description of entity mappings
             PersistenceScope scope = PersistenceScope.getPersistenceScope(formFile);

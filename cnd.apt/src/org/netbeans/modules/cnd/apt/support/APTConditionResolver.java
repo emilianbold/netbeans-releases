@@ -111,7 +111,7 @@ public final class APTConditionResolver {
             if (APT_EXPR_TRACE) System.out.println("Value is "+r);// NOI18N
             APTUtils.LOG.log(Level.FINE, 
                         "stream {0} \n was expanded for condition resolving to \n {1} \n with result {2}", // NOI18N
-                        new Object[] { expr, expandedTS, new Long(r) });
+                        new Object[] { expr, expandedTS, Long.valueOf(r) });
             res = (r==0)?false:true;
         } catch (NullPointerException ex) {
             APTUtils.LOG.log(Level.SEVERE, 
@@ -138,9 +138,5 @@ public final class APTConditionResolver {
         return new APTExpandedStream(orig, callback, true);
     }
 
-    private static boolean isEmpty(AST ast) {
-	return (ast == null || ast.getType() == APTTokenTypes.EOF);
-    }  
-    
     public static final boolean PREPROCESSOR_ERROR_DEFAULT_RETURN_VALUE = false;
 }

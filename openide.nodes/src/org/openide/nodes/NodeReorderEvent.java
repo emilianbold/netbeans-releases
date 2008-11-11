@@ -63,7 +63,7 @@ public final class NodeReorderEvent extends NodeEvent {
     NodeReorderEvent(Node n, int[] newIndices) {
         super(n);
         this.newIndices = newIndices;
-        this.currSnapshot = n.getChildren().entrySupport().createSnapshot();
+        this.currSnapshot = n.getChildren().snapshot();
     }
     
     /** Provides static and immmutable info about the number, and instances of

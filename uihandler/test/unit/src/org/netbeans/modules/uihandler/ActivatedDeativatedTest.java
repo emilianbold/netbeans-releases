@@ -87,6 +87,7 @@ public class ActivatedDeativatedTest extends NbTestCase {
         if (log.toString().indexOf("A start") == -1) {
             fail("A shall start: " + log);
         }
+        Installer.logDeactivated();
         
         assertTrue("Allowed to close", o.closing());
         if (log.toString().indexOf("D stop") == -1) {

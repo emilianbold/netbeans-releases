@@ -17,6 +17,7 @@ import org.netbeans.modules.xml.xam.spi.Validator.ResultItem;
  *
  * @author afung
  */
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.xml.xam.spi.Validator.class)
 public class SOAPComponentValidator implements Validator {
     
     /** Creates a new instance of SOAPComponentValidator */

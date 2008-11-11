@@ -244,8 +244,15 @@ module Test
   module Unit
     class TestCase
       SUBCLASSES = []
-      def self.inherited(subclass)
-        SUBCLASSES << subclass
+      class << self
+        #see IZ 150626
+        alias_method :nb_mediator_existing_inherited, :inherited unless
+          instance_methods.include?("nb_mediator_existing_inherited")
+        def inherited(subclass)
+          nb_mediator_existing_inherited(subclass)
+          SUBCLASSES << subclass
+          super
+        end
       end
     end
   end
@@ -255,8 +262,15 @@ module Test
   module Unit
     class TestSuite
       SUBCLASSES = []
-      def self.inherited(subclass)
-        SUBCLASSES << subclass
+      class << self
+        #see IZ 150626
+        alias_method :nb_mediator_existing_inherited, :inherited unless
+          instance_methods.include?("nb_mediator_existing_inherited")
+        def inherited(subclass)
+          nb_mediator_existing_inherited(subclass)
+          SUBCLASSES << subclass
+          super
+        end
       end
     end
   end
