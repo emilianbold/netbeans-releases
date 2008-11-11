@@ -93,6 +93,13 @@ public class Table extends MetadataElement {
         return impl.getColumn(name);
     }
 
+    /**
+     * Refresh the table metadata from the database
+     */
+    public void refresh() {
+        impl.refresh();
+    }
+
     @Override
     public String toString() {
         return "Table[name='" + getName() + "']"; // NOI18N

@@ -50,6 +50,7 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataModel;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModels;
+import org.netbeans.modules.db.metadata.model.api.Table;
 import org.openide.util.Mutex;
 
 /**
@@ -59,10 +60,10 @@ import org.openide.util.Mutex;
  *
  * @author Andrei Badea
  */
-public class DBConnMetadataModelProvider {
-    private static final Logger LOGGER = Logger.getLogger(DBConnMetadataModelProvider.class.getName());
+public class DBConnMetadataModelManager {
+    private static final Logger LOGGER = Logger.getLogger(DBConnMetadataModelManager.class.getName());
 
-    private DBConnMetadataModelProvider() {}
+    private DBConnMetadataModelManager() {}
 
     public static MetadataModel get(final DatabaseConnection dbconn) {
         return MetadataModels.get(checkAndGetConnection(dbconn), dbconn.getSchema());
@@ -133,7 +134,16 @@ public class DBConnMetadataModelProvider {
             try {
                 get(dbconn).runReadAction(new Action<Metadata>() {
                     public void run(Metadata md) {
-                        md.refreshTable(tableName);
+                        Table table = md.getDefaultSchema().getTable(tableName);
+
+                        // There is a slight possibility that the table was removed
+                        // between the time tableChanged() was invoked and now,
+                        // so check first...
+                        if (table != null) {
+                            md.getDefaultSchema().getTable(tableName).refresh();
+                        } else {
+                            LOGGER.log(Level.INFO, "Table '" + tableName + "' that was just changed no longer exists");
+                        }
                     }
                 });
             } catch (MetadataModelException mde) {
