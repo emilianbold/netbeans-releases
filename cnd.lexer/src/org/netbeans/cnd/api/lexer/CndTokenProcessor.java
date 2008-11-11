@@ -50,8 +50,7 @@ import org.netbeans.api.lexer.Token;
 public interface CndTokenProcessor<T extends Token> {
     void start(int startOffset, int firstTokenOffset);
     void end(int offset, int lastTokenOffset);
-    int getLastSeparatorOffset();
-
+    boolean isStopped();
     /**
      *
      * @param token current token

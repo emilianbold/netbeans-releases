@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.editor.cplusplus;
 
 import java.awt.Cursor;
@@ -53,11 +52,13 @@ import javax.swing.text.TextAction;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
+import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.cnd.api.lexer.Filter;
-import org.netbeans.editor.TokenItem;
 
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.openide.util.Lookup;
 
 import org.netbeans.editor.BaseAction;
@@ -82,9 +83,9 @@ import org.netbeans.modules.cnd.editor.spi.cplusplus.CCSyntaxSupport;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.CndEditorActionsProvider;
 import org.netbeans.modules.cnd.editor.spi.cplusplus.SyntaxSupportProvider;
 
-
 /** C++ editor kit with appropriate document */
 public class CCKit extends NbEditorKit {
+
     private InputAttributes lexerAttrs = null;
     private static final String ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY = "abbrev-ignore-modification"; // NOI18N
 
@@ -92,50 +93,49 @@ public class CCKit extends NbEditorKit {
     public String getContentType() {
         return MIMENames.CPLUSPLUS_MIME_TYPE;
     }
-    
+
 // Work-in-progress...
 //    public HelpCtx getHelpCtx() {
 //        System.err.println("CCKit.getHelpCts: Using JavaKit help ID");
 //        return new HelpCtx("org.netbeans.modules.editor.java.JavaKit");
 //    }
-    
     @Override
     public Document createDefaultDocument() {
         Document doc = super.createDefaultDocument();
-        return doc; 
+        return doc;
     }
 
     /** Initialize document by adding the draw-layers for example. */
     @Override
     protected void initDocument(BaseDocument doc) {
         super.initDocument(doc);
-        doc.putProperty(InputAttributes.class, getLexerAttributes());        
+        doc.putProperty(InputAttributes.class, getLexerAttributes());
         doc.putProperty(Language.class, getLanguage());
         doc.putProperty(SyntaxUpdateTokens.class,
-              new SyntaxUpdateTokens() {
-                  private List<TokenInfo> tokenList = new ArrayList<TokenInfo>();
-                  
-                  public void syntaxUpdateStart() {
-                      tokenList.clear();
-                  }
-      
-                  public List syntaxUpdateEnd() {
-                      return tokenList;
-                  }
-      
-                  public void syntaxUpdateToken(TokenID id, TokenContextPath contextPath, int offset, int length) {
-                      if (CCTokenContext.LINE_COMMENT == id) {
-                          tokenList.add(new TokenInfo(id, contextPath, offset, length));
-                      }
-                  }
-              }
-          );
+                new SyntaxUpdateTokens() {
+
+                    private List<TokenInfo> tokenList = new ArrayList<TokenInfo>();
+
+                    public void syntaxUpdateStart() {
+                        tokenList.clear();
+                    }
+
+                    public List syntaxUpdateEnd() {
+                        return tokenList;
+                    }
+
+                    public void syntaxUpdateToken(TokenID id, TokenContextPath contextPath, int offset, int length) {
+                        if (CCTokenContext.LINE_COMMENT == id) {
+                            tokenList.add(new TokenInfo(id, contextPath, offset, length));
+                        }
+                    }
+                });
     }
-    
+
     protected Language<CppTokenId> getLanguage() {
         return CppTokenId.languageCpp();
     }
-    
+
     protected final synchronized InputAttributes getLexerAttributes() {
         // for now use shared attributes for all documents to save memory
         // in future we can make attributes per document based on used compiler info
@@ -145,11 +145,11 @@ public class CCKit extends NbEditorKit {
         }
         return lexerAttrs;
     }
-    
+
     protected Filter<CppTokenId> getFilter() {
         return CndLexerUtilities.getGccCppFilter();
-    }   
-    
+    }
+
     /** Create new instance of syntax coloring scanner
      * @param doc document to operate on. It can be null in the cases the syntax
      *   creation is not related to the particular document
@@ -162,15 +162,15 @@ public class CCKit extends NbEditorKit {
     /** Create syntax support */
     @Override
     public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
-	SyntaxSupportProvider ss = (SyntaxSupportProvider) Lookup.getDefault().lookup(SyntaxSupportProvider.class);
-	SyntaxSupport sup = null;
-	if (ss != null) { 
-	    sup = ss.createSyntaxSupport(doc);
-	}
+        SyntaxSupportProvider ss = (SyntaxSupportProvider) Lookup.getDefault().lookup(SyntaxSupportProvider.class);
+        SyntaxSupport sup = null;
+        if (ss != null) {
+            sup = ss.createSyntaxSupport(doc);
+        }
         if (sup == null) {
             sup = new CCSyntaxSupport(doc);
         }
-	return sup;        
+        return sup;
     }
 
     /** Create the formatter appropriate for this kit */
@@ -182,37 +182,38 @@ public class CCKit extends NbEditorKit {
     protected Action getCommentAction() {
         return new CommentAction("//"); // NOI18N
     }
-    
+
     protected Action getUncommentAction() {
         return new UncommentAction("//"); // NOI18N
     }
-    
+
     protected Action getToggleCommentAction() {
         return new ToggleCommentAction("//"); // NOI18N
     }
-    
-    protected @Override Action[] createActions() {
-        Action[] ccActions = new Action[] {
-	    new CCDefaultKeyTypedAction(),
-	    new CCFormatAction(),
-//	    new CppFoldTestAction(),
+
+    protected 
+    @Override
+    Action[] createActions() {
+        Action[] ccActions = new Action[]{
+            new CCDefaultKeyTypedAction(),
+            new CCFormatAction(),
+            //	    new CppFoldTestAction(),
             new CCInsertBreakAction(),
             new CCDeleteCharAction(deletePrevCharAction, false),
             getToggleCommentAction(),
             getCommentAction(),
             getUncommentAction(),
             new InsertSemicolonAction(true),
-            new InsertSemicolonAction(false),            
-	};
+            new InsertSemicolonAction(false),};
         ccActions = TextAction.augmentList(super.createActions(), ccActions);
         Action[] extra = CndEditorActionsProvider.getDefault().getActions(getContentType());
         if (extra.length > 0) {
-            ccActions = TextAction.augmentList(ccActions,extra);
+            ccActions = TextAction.augmentList(ccActions, extra);
         }
-        
+
         return ccActions;
     }
-    
+
 //    public static class CppFoldTestAction extends BaseAction {
 //	public CppFoldTestAction() {
 //	    super("cpp-fold-test-action"); // NOI18N
@@ -233,39 +234,37 @@ public class CCKit extends NbEditorKit {
 //            FoldUtilities.expand(hierarchy, types);
 //	}
 //    }
-
     /** Holds action classes to be created as part of createAction.
-        This allows dependent modules to add editor actions to this
-        kit on startup.
-    */
-
+    This allows dependent modules to add editor actions to this
+    kit on startup.
+     */
     @Override
     protected void updateActions() {
- 	super.updateActions();
-	addSystemActionMapping(formatAction, CCFormatAction.class);
-    }   
+        super.updateActions();
+        addSystemActionMapping(formatAction, CCFormatAction.class);
+    }
 
     public class CCFormatAction extends BaseAction {
 
-	public CCFormatAction() {
-	    super(BaseKit.formatAction,
-		  MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
-	    putValue ("helpID", CCFormatAction.class.getName ()); // NOI18N
-	}
+        public CCFormatAction() {
+            super(BaseKit.formatAction,
+                    MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
+            putValue("helpID", CCFormatAction.class.getName()); // NOI18N
+        }
 
-	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
-	    if (target != null) {
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
+            if (target != null) {
 
-		if (!target.isEditable() || !target.isEnabled()) {
-		    target.getToolkit().beep();
-		    return;
-		}
+                if (!target.isEditable() || !target.isEnabled()) {
+                    target.getToolkit().beep();
+                    return;
+                }
 
-		final BaseDocument doc = (BaseDocument)target.getDocument();
+                final BaseDocument doc = (BaseDocument) target.getDocument();
                 // Set hourglass cursor
                 Cursor origCursor = target.getCursor();
                 target.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-                
+
                 doc.runAtomic(new Runnable() {
 
                     public void run() {
@@ -309,58 +308,38 @@ public class CCKit extends NbEditorKit {
                 });
                 target.setCursor(origCursor);
 
-	    }
-	}
+            }
+        }
     }
 
-    
     public static class CCDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-      
+
         @Override
         protected void checkIndentHotChars(JTextComponent target, String typedText) {
-            // This block is obsolete cause getKeywordBasedReformatBlock() is already called in CCFormatter.getReformatBlock()        
-            /*  
-            boolean reindent = false;
-	
-	    BaseDocument doc = Utilities.getDocument(target);
-	    int dotPos = target.getCaret().getDot();
-	    if (doc != null) {
-                reindent = CCFormatter.getKeywordBasedReformatBlock(doc, dotPos, typedText) != null;
-	  
-		// Reindent the line if necessary
-		if (reindent) {
-		    try {
-			Utilities.reformatLine(doc, dotPos);
-		    } catch (BadLocationException e) {
-		    }
-		}
-	    }*/
-	
             BaseDocument doc = Utilities.getDocument(target);
             if (doc != null) {
                 // To fix IZ#130504 we need to differ different reasons line indenting request,
                 // but ATM there is no way to transfer this info from here to FormatSupport 
                 // correctly over FormatWriter because it's final class for some reasons.
                 // But java editor has the same bug, so one day we may have such possibility 
-                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE); 
+                doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, Boolean.TRUE);
                 doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, Boolean.TRUE);
                 super.checkIndentHotChars(target, typedText);
                 doc.putProperty(CCFormatter.IGNORE_IN_COMMENTS_MODE, null);
                 doc.putProperty(ABBREV_IGNORE_MODIFICATION_DOC_PROPERTY, null);
             }
-            
-       	}
-        
+
+        }
+
         @Override
         protected void insertString(BaseDocument doc, int dotPos,
-                                    Caret caret, String str,
-                                    boolean overwrite) throws BadLocationException {
+                Caret caret, String str,
+                boolean overwrite) throws BadLocationException {
             super.insertString(doc, dotPos, caret, str, overwrite);
             BracketCompletion.charInserted(doc, dotPos, caret, str.charAt(0));
         }
-        
     } // end class CCDefaultKeyTypedAction
-    
+
     public static class CCInsertBreakAction extends InsertBreakAction {
 
         static final long serialVersionUID = -1506173310438326380L;
@@ -369,7 +348,7 @@ public class CCKit extends NbEditorKit {
         @Override
         protected Object beforeBreak(JTextComponent target, BaseDocument doc, Caret caret) {
             int dotPos = caret.getDot();
-            if (BracketCompletion.posWithinString(doc, dotPos)) { 
+            if (BracketCompletion.posWithinString(doc, dotPos)) {
                 try {
                     doc.insertString(dotPos, "\"\"", null); //NOI18N
                     dotPos += 1;
@@ -384,21 +363,21 @@ public class CCKit extends NbEditorKit {
                         String insString = "}"; // NOI18N
                         // XXX: vv159170 simplest hack
                         // insert "};" for "{" when in "enum", "class", "struct" and union completion
-                        CCSyntaxSupport sup = (CCSyntaxSupport)Utilities.getSyntaxSupport(target);
-                        TokenItem item = sup.getTokenChain(dotPos - 1, dotPos);
-                        while (item != null && item.getTokenID() == CCTokenContext.WHITESPACE) {
-                            item = item.getPrevious();
-                        }
-                        if (item == null || item.getTokenID() != CCTokenContext.LBRACE) {
+                        // NOI18N
+                        // XXX: vv159170 simplest hack
+                        // insert "};" for "{" when in "enum", "class", "struct" and union completion
+                        TokenItem<CppTokenId> firstNonWhiteBwd = CndTokenUtilities.getFirstNonWhiteBwd(doc, end);
+                        CCSyntaxSupport sup = (CCSyntaxSupport) Utilities.getSyntaxSupport(target);
+                        if (firstNonWhiteBwd == null || firstNonWhiteBwd.id() != CppTokenId.LBRACE) {
                             return Boolean.FALSE;
                         }
-                        int lBracePos = item.getOffset();
-                        int lastSepOffset = sup.getLastCommandSeparator(lBracePos - 1);           
+                        int lBracePos = firstNonWhiteBwd.offset();
+                        int lastSepOffset = BracketCompletion.getLastCommandSeparator(doc, lBracePos - 1);
                         if (lastSepOffset == -1 && lBracePos > 0) {
                             lastSepOffset = 0;
                         }
                         if (lastSepOffset != -1 && lastSepOffset < dotPos) {
-                            TokenItem keyword = sup.getTokenChain(lastSepOffset, lBracePos);
+                            org.netbeans.editor.TokenItem keyword = sup.getTokenChain(lastSepOffset, lBracePos);
                             while (keyword != null && keyword.getOffset() < lBracePos) {
                                 if (keyword.getTokenID() == CCTokenContext.CLASS ||
                                         keyword.getTokenID() == CCTokenContext.UNION ||
@@ -408,13 +387,7 @@ public class CCKit extends NbEditorKit {
                                     break;
                                 }
                                 keyword = keyword.getNext();
-                            } 
-//                            String text = doc.getText(lastSepOffset, dotPos - lastSepOffset);
-//                            if (DEBUG) System.out.println("current text " + text); // NOI18N
-//                            String regexp=".*\\b(class|union|struct|enum)\\b.*";//NOI18N
-//                            if (text != null && text.matches(regexp)) {
-//                                insString = "};"; // NOI18N
-//                            }
+                            }
                         }
                         doc.insertString(end, insString, null); // NOI18N
                         // Lock does not need because method is invoked from BaseKit that already lock indent.
@@ -426,7 +399,7 @@ public class CCKit extends NbEditorKit {
                 }
             }
             return null;
-        } 
+        }
 
         @Override
         protected void afterBreak(JTextComponent target, BaseDocument doc, Caret caret, Object cookie) {
@@ -434,13 +407,11 @@ public class CCKit extends NbEditorKit {
                 if (cookie instanceof Integer) {
                     // integer
                     int nowDotPos = caret.getDot();
-                    caret.setDot(nowDotPos+1);
+                    caret.setDot(nowDotPos + 1);
                 }
             }
-        } 
-
+        }
     } // end class CCInsertBreakAction
-
 
     public static class CCDeleteCharAction extends ExtDeleteCharAction {
 
@@ -450,9 +421,8 @@ public class CCKit extends NbEditorKit {
 
         @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch)
-        throws BadLocationException {
+                throws BadLocationException {
             BracketCompletion.charBackspaced(doc, dotPos, caret, ch);
         }
     } // end class CCDeleteCharAction    
-    
 }

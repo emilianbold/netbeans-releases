@@ -38,8 +38,8 @@
  */
 package org.netbeans.modules.cnd.completion.impl.xref;
 
-import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
@@ -51,7 +51,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
  */
 public class ThisReferenceImpl extends ReferenceImpl {
 
-    public ThisReferenceImpl(CsmFile file, BaseDocument doc, int offset, Token<CppTokenId> token, CsmReferenceKind kind) {
+    public ThisReferenceImpl(CsmFile file, BaseDocument doc, int offset, TokenItem<CppTokenId> token, CsmReferenceKind kind) {
         super(file, doc, offset, token, kind);
     }
 
