@@ -57,9 +57,7 @@ import org.apache.commons.net.ftp.FTPReply;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.spi.RemoteClient;
 import org.netbeans.modules.php.project.connections.spi.RemoteFile;
-import org.netbeans.modules.php.project.connections.ui.PasswordPanel;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.php.project.connections.common.PasswordPanel;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
 
@@ -175,11 +173,8 @@ public class FtpClient implements RemoteClient {
         if (password != null) {
             return password;
         }
-        PasswordPanel passwordPanel = new PasswordPanel(configuration.getUserName());
-        DialogDescriptor input = new DialogDescriptor(passwordPanel,
-                NbBundle.getMessage(FtpClient.class, "LBL_EnterPassword", configuration.getDisplayName()));//NOI18N
-        input.setOptions(new Object[]{passwordPanel.getOKButton(), passwordPanel.getCancelButton()});
-        if (DialogDisplayer.getDefault().notify(input) == passwordPanel.getOKButton()) {
+        PasswordPanel passwordPanel = new PasswordPanel(configuration.getDisplayName(), configuration.getUserName());
+        if (passwordPanel.open()) {
             password = passwordPanel.getPassword();
             PASSWORDS.put(configuration.hashCode(), password);
             return password;

@@ -146,6 +146,7 @@ public class RemoteClient implements Cancellable {
 
     public void connect() throws RemoteException {
         remoteClient.connect();
+        assert remoteClient.isConnected() : "Remote client should be connected";
 
         // cd to base remote directory
         if (!cdBaseRemoteDirectory()) {
